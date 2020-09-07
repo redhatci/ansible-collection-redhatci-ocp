@@ -1,4 +1,9 @@
 ---
+- name: "Create {{ dci_cluster_configs_dir }}"
+  file:
+    path: "{{ dci_cluster_configs_dir }}"
+    state: directory
+
 - name: "oc-setup : Get oc binary and KUBECONFIG from provisioner node"
   delegate_to: "{{ groups['provisioner'][0] }}"
   fetch:
