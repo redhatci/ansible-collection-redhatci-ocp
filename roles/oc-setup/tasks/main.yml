@@ -12,9 +12,8 @@
     - install
 
 - name: "oc-setup : Check inventory to match ocp cluster config"
-  environment:
-    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
   k8s_info:
+    kubeconfig: "{{ dci_cluster_configs_dir }}/kubeconfig"
     api_version: v1
     kind: node
     name: "{{ hostvars[item].name }}"
