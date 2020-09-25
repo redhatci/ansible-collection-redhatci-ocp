@@ -1,0 +1,19 @@
+---
+- name: "oc-setup : Get oc binary and KUBECONFIG from provisioner node"
+  delegate_to: "{{ groups['provisioner'][0] }}"
+  fetch:
+    src: "{{ item }}"
+    dest: "{{ dci_cluster_configs_dir }}/"
+    flat: true
+  loop:
+  - /usr/local/bin/oc
+  - ~/clusterconfigs/auth/kubeconfig
+
+- name: "oc-setup : Install packages needed for login"
+  package:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items:
+  - httpd-tools
+...
