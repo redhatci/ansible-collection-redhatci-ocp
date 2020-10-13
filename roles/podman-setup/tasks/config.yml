@@ -1,0 +1,40 @@
+---
+- name: "podman-setup : Check /proc/sys/user/max_user_namespaces is correct"
+  lineinfile:
+    path: /proc/sys/user/max_user_namespaces
+    regexp: "^0"
+    state: absent
+  check_mode: yes
+  changed_when: false
+  register: out
+
+- name: "podman-setup : Create /etc/sysctl.d/userns.conf"
+  become: true
+  copy:
+    content: |
+      user.max_user_namespaces=28633
+    dest: /etc/sysctl.d/userns.conf
+  when: out.found
+
+- name: "podman-setup : Update sysctl"
+  become: true
+  command: sysctl -p /etc/sysctl.d/userns.conf
+  when: out.found
+
+- name: "podman-setup : Add subuid entry"
+  become: true
+  lineinfile:
+    path: /etc/subuid
+    regexp: "^{{ ansible_user }}"
+    line: "{{ ansible_user }}:100000:65536"
+
+- name: "podman-setup : Add subgid entry"
+  become: true
+  lineinfile:
+    path: /etc/subgid
+    regexp: "^{{ ansible_user }}"
+    line: "{{ ansible_user }}:100000:65536"
+
+- name: "podman-setup : Run podman system migrate"
+  command: podman system migrate
+...
