@@ -1,0 +1,11 @@
+---
+- name: "podman-setup : Install binaries and other packages in jumphost"
+  include_tasks: install.yml
+  tags:
+    - install
+
+- name: "podman-setup : Configure jumphost system"
+  include_tasks: config.yml
+  tags:
+    - config
+...

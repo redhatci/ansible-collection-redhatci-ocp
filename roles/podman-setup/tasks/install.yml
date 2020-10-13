@@ -1,0 +1,10 @@
+---
+- name: "podman-setup : Install packages needed for podman"
+  package:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items:
+  - podman
+  - slirp4netns
+...
