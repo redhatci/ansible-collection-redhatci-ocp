@@ -1,0 +1,12 @@
+---
+- name: "image-side-load : Generate temp dir to hold podman images"
+  tempfile:
+    state: directory
+    prefix: dci.
+    suffix: .images.d
+  register: imagedir
+
+- name: "image-side-load: Set fact for image temp dir"
+  set_fact:
+    dci_image_temp_dir: "{{ imagedir.path }}"
+...
