@@ -1,0 +1,39 @@
+---
+- name: "image-side-load : Tar all podman images"
+  command: "podman save -o {{ dci_image_temp_dir }}/{{ item | regex_replace(':', '_') | basename }}.tar {{ item }}"
+  with_items: "{{ dci_images_to_side_load }}"
+
+- name: "image-side-load : Tar all images into a big tarball"
+  archive:
+    path: "{{ dci_image_temp_dir }}/*.tar"
+    dest: "{{ dci_image_temp_dir }}/image-files.tar.gz"
+
+- block:
+  - name: "image-side-load : Create a directory to hold podman images on all cluster nodes"
+    delegate_to: "{{ item }}"
+    file:
+      path: "/var/tmp/podman-images"
+      state: directory
+    with_items: "{{ groups['masters'] + groups['workers'] }}"
+
+  - name: "image-side-load : Untar podman images on all cluster nodes"
+    delegate_to: "{{ item }}"
+    unarchive:
+      src: "{{ dci_image_temp_dir }}/image-files.tar.gz"
+      dest: "/var/tmp/podman-images"
+      copy: true
+    with_items: "{{ groups['masters'] + groups['workers'] }}"
+
+  - name: "image-side-load : Load podman images on all cluster nodes"
+    delegate_to: "{{ item }}"
+    become: true
+    command: 'find /var/tmp/podman-images/ -name *.tar -exec podman load -i {} \;'
+    with_items: "{{ groups['masters'] + groups['workers'] }}"
+
+  vars:
+    ansible_ssh_common_args: "-F {{ lookup('env', 'HOME') }}/.ssh/{{ cluster }}-config"
+
+  rescue:
+  - fail:
+      msg: "Could not load podman images on cluster nodes, cannot continue"
+...

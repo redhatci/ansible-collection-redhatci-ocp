@@ -1,0 +1,13 @@
+Host provisioner
+    Hostname              {{ groups['provisioner'][0] }}
+    User                  {{ hostvars[groups['provisioner'][0]].ansible_user }}
+    IdentityFile          ~/.ssh/id_rsa
+    StrictHostKeyChecking no
+    UserKnownHostsFile    /dev/null
+
+Host worker-* master-*
+    User                  core
+    ProxyJump             provisioner
+    IdentityFile          ~/.ssh/{{ cluster }}-provisioner_rsa
+    StrictHostKeyChecking no
+    UserKnownHostsFile    /dev/null

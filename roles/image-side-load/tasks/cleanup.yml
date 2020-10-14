@@ -1,0 +1,17 @@
+---
+- name: "image-side-load : Clean up temp dir"
+  file:
+    path: "{{ dci_image_temp_dir }}"
+    state: absent
+
+- name: "image-side-load : Remove image tar files from cluster nodes"
+  delegate_to: "{{ item }}"
+  vars:
+    ssh_common_args: "-F {{ lookup('env', 'HOME') }}/.ssh/{{ cluster }}-config"
+  ignore_errors: true
+  ignore_unreachable: true
+  file:
+    path: "/var/tmp/podman-images"
+    state: absent
+  with_items: "{{ groups['masters'] + groups['workers'] }}"
+...

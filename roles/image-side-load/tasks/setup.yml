@@ -1,0 +1,21 @@
+---
+- name: "image-side-load : Pull all images down to local podman registry"
+  podman_image:
+    name: "{{ item }}"
+  with_items: "{{ dci_images_to_side_load }}"
+  retries: 3
+  delay: 10
+
+- name: "image-side-load : Get provisioner SSH identity"
+  delegate_to: "{{ groups['provisioner'][0] }}"
+  fetch:
+    src: "~{{ ansible_user }}/.ssh/id_rsa"
+    dest: "~/.ssh/{{ cluster }}-provisioner_rsa"
+    flat: true
+
+- name: "image-side-load : Write SSH config to connect to cluster nodes directly"
+  template:
+    src: "templates/ssh_config.j2"
+    dest: "~/.ssh/{{ cluster }}-config"
+    mode: 0600
+...
