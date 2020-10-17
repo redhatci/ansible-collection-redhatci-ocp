@@ -1,0 +1,7 @@
+---
+- name: "redhat-tests : Run the openshift conformance test suite"
+  shell: >
+    podman run --pull=always --rm
+    -e TESTS={{ dci_openshift_agent_conformance }}
+    -v {{ dci_cluster_configs_dir }}:/tests:Z {{ dci_ose_tests_image }}
+...
