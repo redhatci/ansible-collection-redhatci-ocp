@@ -1,0 +1,13 @@
+---
+- name: "podman-setup : Run podman system migrate for main account"
+  become_user: "{{ ansible_user }}"
+  shell: podman system migrate
+
+# it is possible the additional uids don't exist yet, in which case we
+# don't have to run podman system migrate
+- name: "podman-setup : Run podman system migrate for additional uids"
+  become_user: "{{ item.item.split(':')[0] }}"
+  shell: |
+    id -u {{ item.item.split(':')[0] }} && podman system migrate || echo "User doesn't exist yet"
+  with_items: "{{ additional_subuids_added.results | selectattr('changed', 'equalto', true) | list }}"
+...

@@ -1,0 +1,48 @@
+---
+- name: "local-registry-setup : Create sample index file"
+  copy:
+    dest: "{{ registry_cache_dir }}/index.html"
+    content: "hello"
+    owner: "{{ registry_user }}"
+    group: "{{ registry_user }}"
+    mode: 0644
+
+- name: "local-registry-setup : Create htpasswd file"
+  shell: >
+    htpasswd -bBc {{ registry_dir }}/auth/htpasswd
+    {{ registry_http_user }} {{ registry_http_pass }}
+
+- name: "local-registry-setup : Ensure htpasswd file is readable by registry user"
+  file:
+    path: "{{ registry_dir }}/auth/htpasswd"
+    state: file
+    mode: 0644
+    owner: "{{ registry_user }}"
+    group: "{{ registry_user }}"
+
+- name: "local-registry-setup : Create auths.json file"
+  copy:
+    dest: "{{ registry_cache_dir }}/{{ registry_fqdn }}-auths.json"
+    mode: 0644
+    owner: "{{ registry_user }}"
+    group: "{{ registry_user }}"
+    content: >
+      {
+        "{{ registry_fqdn }}:{{ registry_http_port }}": {
+          "auth": "{{ (registry_http_user + ':' + registry_http_pass) | b64encode }}",
+          "email": "{{ registry_http_user }}@{{ registry_fqdn }}"
+        }
+      }
+
+- name: "local-registry-setup : Open ports on firewall"
+  firewalld:
+    zone: "{{ item[0] }}"
+    port: "{{ item[1] }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  ignore_errors: true
+  with_nested:
+  - "{{ registry_firewalld_zones }}"
+  - ["{{ registry_cache_http_port }}/tcp", "{{ registry_http_port }}/tcp"]
+...

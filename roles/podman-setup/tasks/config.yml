@@ -9,7 +9,6 @@
   register: out
 
 - name: "podman-setup : Create /etc/sysctl.d/userns.conf"
-  become: true
   copy:
     content: |
       user.max_user_namespaces=28633
@@ -17,24 +16,37 @@
   when: out.found
 
 - name: "podman-setup : Update sysctl"
-  become: true
   command: sysctl -p /etc/sysctl.d/userns.conf
   when: out.found
 
 - name: "podman-setup : Add subuid entry"
-  become: true
   lineinfile:
     path: /etc/subuid
     regexp: "^{{ ansible_user }}"
     line: "{{ ansible_user }}:100000:65536"
+  notify:
+  - "podman-setup : Run podman system migrate for main account"
+
+- name: "podman-setup : Add additional subuid entries"
+  lineinfile:
+    path: /etc/subuid
+    regexp: "^{{ item.split(':')[0] }}"
+    line: "{{ item }}"
+  with_items: "{{ podman_additional_subuids }}"
+  register: additional_subuids_added
+  notify:
+  - "podman-setup : Run podman system migrate for additional uids"
 
 - name: "podman-setup : Add subgid entry"
-  become: true
   lineinfile:
     path: /etc/subgid
     regexp: "^{{ ansible_user }}"
     line: "{{ ansible_user }}:100000:65536"
 
-- name: "podman-setup : Run podman system migrate"
-  command: podman system migrate
+- name: "podman-setup : Add additional subgid entries"
+  lineinfile:
+    path: /etc/subgid
+    regexp: "^{{ item.split(':')[0] }}"
+    line: "{{ item }}"
+  with_items: "{{ podman_additional_subgids }}"
 ...

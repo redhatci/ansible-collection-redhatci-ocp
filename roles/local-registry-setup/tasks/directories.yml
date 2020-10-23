@@ -1,0 +1,39 @@
+---
+- name: "local-registry-setup : Create registry directory structure"
+  file:
+    path: "{{ registry_dir }}"
+    state: directory
+    owner: "{{ registry_user }}"
+    group: "{{ registry_user }}"
+    mode: 0755
+
+- name: "local-registry-setup : Create registry directory structure"
+  file:
+    path: "{{ registry_dir }}/{{ item }}"
+    state: directory
+    owner: "{{ registry_user }}"
+    group: "{{ registry_user }}"
+    mode: 0755
+  with_items:
+  - auth
+  - certs
+  - data
+
+- name: "local-registry-setup : Create cache directory structure"
+  file:
+    path: "{{ registry_cache_dir }}"
+    state: directory
+    owner: "{{ registry_user }}"
+    group: "{{ registry_user }}"
+    mode: 0775
+    setype: httpd_sys_content_t
+
+- name: "local-registry-setup : Create cache directory structure"
+  file:
+    path: "{{ registry_cache_dir }}/registry"
+    state: directory
+    owner: "{{ registry_user }}"
+    group: "{{ registry_user }}"
+    mode: 0775
+    setype: httpd_sys_content_t
+...

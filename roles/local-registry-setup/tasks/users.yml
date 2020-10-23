@@ -1,0 +1,18 @@
+---
+- name: "local-registry-setup : Add registry user"
+  user:
+    name: "{{ registry_user }}"
+    groups: wheel
+    append: true
+  register: registry_getent
+
+- name: "local-registry-setup : Enable linger for registry user"
+  shell: loginctl enable-linger {{ registry_user }}
+  changed_when: false
+
+- name: "local-registry-setup : Add ourselves to the registry group"
+  user:
+    name: "{{ ansible_user }}"
+    groups: "{{ registry_user }}"
+    append: true
+...
