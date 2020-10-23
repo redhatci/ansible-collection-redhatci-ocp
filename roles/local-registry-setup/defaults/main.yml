@@ -1,0 +1,51 @@
+---
+registry_extra_packages:
+- httpd-tools
+registry_firewalld_zones:
+- public
+- libvirt
+registry_fqdn: "{{ ansible_fqdn }}"
+registry_dir: "/opt/registry"
+registry_user: "{{ ansible_user }}"
+registry_container: mirrored-registry
+registry_container_image: docker.io/library/registry:2
+registry_http_user: "dummy"
+registry_http_pass: "dummy"
+registry_http_secret: "SomeVeryRandomStringForSecret"
+registry_http_port: 5000
+registry_cert_self: true
+registry_cert_ca: "{{ registry_dir }}/certs/{{ registry_fqdn }}-ca.crt"
+registry_cert_crt: "{{ registry_dir }}/certs/{{ registry_fqdn }}.crt"
+registry_cert_key: "{{ registry_dir }}/certs/{{ registry_fqdn }}.key"
+registry_cert_csr: "{{ registry_dir }}/certs/{{ registry_fqdn }}.csr"
+registry_cert_alt_name: "DNS:{{ registry_fqdn }}"
+registry_cache_dir: "{{ provision_cache_store | default('/opt/cache') }}"
+registry_cache_http_port: 8080
+registry_cache_container: cached-images
+registry_cache_container_image: registry.centos.org/centos/httpd-24-centos7:latest
+registry_services:
+- svc: "{{ registry_container }}"
+  cmd: >
+    podman create
+    --name {{ registry_container }}
+    --security-opt label=disable
+    --publish {{ registry_http_port }}:5000
+    --volume {{ registry_dir }}/data:/var/lib/registry:z
+    --volume {{ registry_dir }}/auth:/auth:z
+    --volume {{ registry_dir }}/certs:/certs:z
+    --env "REGISTRY_AUTH=htpasswd"
+    --env "REGISTRY_AUTH_HTPASSWD_REALM=Registry"
+    --env "REGISTRY_HTTP_SECRET={{ registry_http_secret }}"
+    --env "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd"
+    --env "REGISTRY_HTTP_TLS_CERTIFICATE=/certs/{{ registry_cert_crt | basename }}"
+    --env "REGISTRY_HTTP_TLS_KEY=/certs/{{ registry_cert_key | basename }}"
+    {{ registry_container_image }}
+- svc: "{{ registry_cache_container }}"
+  cmd: >
+    podman create
+    --name {{ registry_cache_container }}
+    --security-opt label=disable
+    --publish {{ registry_cache_http_port }}:8080
+    --volume {{ registry_cache_dir }}:/var/www/html:z
+    {{ registry_cache_container_image }}
+...

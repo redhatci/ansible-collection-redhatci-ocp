@@ -1,0 +1,37 @@
+---
+- name: "local-registry-setup : Create and configure user"
+  include_tasks: users.yml
+  tags:
+  - users
+
+- name: "local-registry-setup : Create directory structure"
+  include_tasks: directories.yml
+  tags:
+  - directories
+
+- name: "local-registry-setup : Install additional packages"
+  include_tasks: packages.yml
+  tags:
+  - packages
+
+- name: "local-registry-setup : Configure system"
+  include_tasks: config.yml
+  tags:
+  - config
+
+- name: "local-registry-setup : Create self-signed certificates"
+  include_tasks: certificates.yml
+  tags:
+  - ssl
+  - config
+  when: registry_cert_self|bool
+
+- name: "local-registry-setup : Setup podman containers and services"
+  include_tasks: service.yml
+  vars:
+    podman_svc: "{{ item.svc }}"
+    podman_cmd: "{{ item.cmd }}"
+  tags:
+  - services
+  with_items: "{{ registry_services }}"
+...
