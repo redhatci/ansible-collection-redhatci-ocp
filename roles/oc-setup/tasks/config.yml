@@ -5,15 +5,16 @@
     htpasswd -cbB {{ dci_cluster_configs_dir }}/users.htpasswd admin admin
     # append nonadmin user
     htpasswd -bB {{ dci_cluster_configs_dir }}/users.htpasswd nonadmin nonadmin
+    ls -lh {{ dci_cluster_configs_dir }}/
 
 - name: "oc-setup : Set htpasswd config secret in openshift"
   environment:
     KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
-  shell: |
-    {{ dci_cluster_configs_dir }}/oc create secret generic htpass-secret \
-      --from-file=htpasswd={{ dci_cluster_configs_dir }}/users.htpasswd \
-      --namespace openshift-config \
-      --dry-run --output yaml | {{ dci_cluster_configs_dir }}/oc apply -f -
+  shell: >
+    {{ dci_cluster_configs_dir }}/oc create secret generic htpass-secret
+    --from-file=htpasswd={{ dci_cluster_configs_dir }}/users.htpasswd
+    --namespace openshift-config
+    --dry-run --output yaml | {{ dci_cluster_configs_dir }}/oc apply -f -
 
 - name: "oc-setup : Upload the IDP config to the jumphost"
   copy:
