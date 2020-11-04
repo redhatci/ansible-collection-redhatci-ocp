@@ -11,6 +11,19 @@
   tags:
     - install
 
+- name: "oc-setup : Check inventory to match ocp cluster config"
+  environment:
+    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+  k8s_info:
+    api_version: v1
+    kind: node
+    name: "{{ hostvars[item].name }}"
+  register: node
+  with_items: "{{ groups['masters'] + groups['workers'] }}"
+  failed_when: "'resources' not in node or node.resources == []"
+  tags:
+    - check
+
 - name: "oc-setup : Configure clients in jumphost"
   include_tasks: config.yml
   tags:
