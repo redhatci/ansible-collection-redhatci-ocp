@@ -11,6 +11,7 @@
   environment:
     KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
   shell: >
+    set -o pipefail;
     {{ dci_cluster_configs_dir }}/oc create secret generic htpass-secret
     --from-file=htpasswd={{ dci_cluster_configs_dir }}/users.htpasswd
     --namespace openshift-config
