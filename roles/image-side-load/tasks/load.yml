@@ -34,6 +34,7 @@
     ansible_ssh_common_args: "-F {{ lookup('env', 'HOME') }}/.ssh/{{ cluster }}-config"
 
   rescue:
-  - fail:
+  - name: Failure message
+    fail:
       msg: "Could not load podman images on cluster nodes, cannot continue"
 ...
