@@ -1,0 +1,36 @@
+---
+- name: "Create directory"
+  file:
+    path: "{{ get_logs_folder }}"
+    state: directory
+  ignore_errors: True
+
+- name: "Get a list of all pods"
+  k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ get_logs_ns }}"
+  register: pod_list
+  ignore_errors: True
+
+- name: "Print pods names"
+  debug:
+    msg: "pod_list: {{ pod_list | json_query('resources[*].metadata.name') }}"
+  ignore_errors: True
+
+- name: "Get logs from each pods"
+  shell: |
+    {{ oc_tool_path }} logs --namespace={{ get_logs_ns }} --all-containers=true {{ item }} > {{ get_logs_folder }}/{{ item }}.log
+  loop: "{{ pod_list | json_query('resources[*].metadata.name') }}"
+  ignore_errors: True
+
+- name: "Get pods status from namespace"
+  shell: |
+    {{ oc_tool_path }} get pods --namespace={{ get_logs_ns }} --show-labels -o wide > {{ get_logs_folder }}/{{ get_logs_ns }}_status.log
+  ignore_errors: True
+
+- name: "Get events from from namespace"
+  shell: |
+    {{ oc_tool_path }} get events --namespace={{ get_logs_ns }} > {{ get_logs_folder }}/{{ get_logs_ns }}_events.log
+  ignore_errors: True
+...
