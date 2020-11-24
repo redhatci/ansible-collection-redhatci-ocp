@@ -1,0 +1,70 @@
+---
+- name: Get all nodes
+  k8s_info:
+    kind: Node
+  register: nodes
+  no_log: true
+
+- name: Get worker node count
+  set_fact:
+    worker_node_count: "{{ worker_node_count|default(0)|int + 1 }}"
+  when: "'node-role.kubernetes.io/worker' in item.metadata.labels"
+  loop: "{{ nodes.resources }}"
+  no_log: true
+
+- name: Check enough worker nodes availability
+  fail:
+    msg: "Not enough worker nodes ({{ worker_node_count }}) to perform required tasks"
+  when: worker_node_count|int <= 1
+
+- name: Set the cache location
+  set_fact:
+    provision_cache_store: "{{ hostvars[groups['registry_host'][0]].provision_cache_store | default('/opt/cache')}}"
+  when:
+    - "'registry_host' in groups"
+    - "groups['registry_host']|length >= 1"
+    - "groups['registry_host'][0] in hostvars"
+
+- name: Set default cache location if not set already
+  set_fact:
+    provision_cache_store: "/opt/cache"
+  when: provision_cache_store is undefined
+
+- name: Get oc version output
+  shell: |
+    oc version
+  register: oc_version_str
+
+- name: Get OCP version
+  set_fact:
+     ocp_version: "{{ '.'.join(item.split(':')[1].strip().split('.')[0:2]) }}"
+     ocp_version_maj: "{{ item.split(':')[1].strip().split('.')[0] }}"
+     ocp_version_min: "{{ item.split(':')[1].strip().split('.')[1] }}"
+  when: "'Server Version' in item"
+  loop: "{{ oc_version_str.stdout_lines }}"
+
+- name: Fail if the ocp version is not set
+  fail:
+    msg: "OCP version is not set"
+  when: not ocp_version
+
+- include_vars: version/ocp4_4.yaml
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int == 4
+- include_vars: version/ocp4_5.yaml
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int == 5
+- include_vars: version/ocp_latest.yaml
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int >= 6
+
+- name: Increase maxUnavailable count to 2 which will fasten the node update
+  shell: |
+    oc patch mcp worker --type=merge -p '{"spec":{"maxUnavailable":2}}'
+
+- name: Deploy Red Hat Catalog Source
+  include_tasks: redhat-catalog-source.yml
+...

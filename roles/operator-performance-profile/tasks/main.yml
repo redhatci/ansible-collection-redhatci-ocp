@@ -1,0 +1,153 @@
+---
+- name: Create namespace for Performance Addon operator
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          openshift.io/cluster-monitoring: "true"
+        name: openshift-performance-addon
+      spec: {}
+
+- name: Create operatorgroup for Performance Addon operator
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: openshift-performance-addon-operatorgroup
+        namespace: openshift-performance-addon
+      spec:
+        targetNamespaces:
+          - openshift-performance-addon
+
+- name: Create subscription for Performance Addon operator
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: performance-addon-operator-subscription
+        namespace: openshift-performance-addon
+      spec:
+        channel: "{{ ocp_version|string }}"
+        name: performance-addon-operator
+        source: "{{ redhat_catalog_source }}"
+        sourceNamespace: openshift-marketplace
+
+- name: Check if performance-addon-operator csv is installed
+  k8s_info:
+    api: operators.coreos.com/v1alpha1
+    namespace: openshift-performance-addon
+    kind: ClusterServiceVersion
+  register: csv
+  retries: 30
+  delay: 5
+  until:
+    - "csv.resources|length == 1"
+    - "'status' in csv.resources[0]"
+    - "'phase' in csv.resources[0].status"
+    - ("csv.resources[0].status.phase == 'Succeeded'" or "csv.resources[0].status.phase == 'Present'")
+
+# TODO(skramaja): This workaround is required only for ocp versions <= 4.5
+- name: Apply label to worker mcp
+  shell: |
+    oc label mcp worker machineconfiguration.openshift.io/role=worker --overwrite
+
+########## Add all the PerformanceProfile creations in this block #############
+
+- name: Create basic PerformanceProfile
+  k8s:
+    api: "performance.openshift.io/v1alpha1"
+    definition: "{{ lookup('file', 'performance-profile-basic.yml') }}"
+  when: performance_profile_basic|default(true)|bool
+  register: profile_state
+
+###############################################################################
+
+- name: Get PerformanceProfile
+  k8s_info:
+    api: "performance.openshift.io/v1alpha1"
+    kind: PerformanceProfile
+    namespace: default
+  register: profiles
+
+- name: Set the PerformanceProfile name
+  set_fact:
+    profile_name: "{{ profiles.resources[0].metadata.name }}"
+  when: profiles.resources|length == 1
+
+- name: Check if one (only one) PerformanceProfile is present
+  fail:
+    msg: "One PerformanceProfile (profiles.resources|length) is required"
+  when: profiles.resources|length != 1
+
+- name: PerformanceProfile validation block
+  when: profile_name is defined and profile_state is changed
+  block:
+    # TODO: Remove this delay once valid events are catpured
+    - pause:
+        seconds: 10
+
+    - name: Check for KubeletConfig creation
+      k8s_info:
+        api: machineconfiguration.openshift.io/v1
+        kind: KubeletConfig
+        name: "performance-{{ profile_name }}"
+        namespace: default
+      register: kubelet
+      retries: 30
+      delay: 5
+      until: "kubelet.resources|length == 1"
+      failed_when: "kubelet.resources|length != 1"
+
+    - name: Check for MachineConfig creation
+      k8s_info:
+        api: machineconfiguration.openshift.io/v1
+        kind: MachineConfig
+        name: "performance-{{ profile_name }}"
+        namespace: default
+      register: machine
+      retries: 30
+      delay: 5
+      until: "machine.resources|length == 1"
+      failed_when: "machine.resources|length != 1"
+
+    - name: Set performance profile MachineConfig time
+      set_fact:
+        perf_machine_created: "{{ machine.resources[0].metadata.creationTimestamp }}"
+
+    - name: Give a delay for the worker config to be rendered after performance MachineConfig is created
+      pause:
+        seconds: 10
+
+    - name: Get all MachineConfigs
+      k8s_info:
+        api: machineconfiguration.openshift.io/v1
+        kind: MachineConfig
+        namespace: default
+      register: mc_list
+      no_log: true
+
+    - name: Get rendered-worker name
+      set_fact:
+        worker_machine_id: "{{ item.metadata.name }}"
+        worker_machine_created: "{{ item.metadata.creationTimestamp }}"
+      when:
+        - "'rendered-worker' in item.metadata.name"
+        - "item.metadata.creationTimestamp > perf_machine_created"
+      loop: "{{ mc_list.resources }}"
+      no_log: true
+
+    - name: Check if rendered-worker is created with performance profile configuration
+      fail:
+        msg: "rendered-worker is not updated with performance profile"
+      when: worker_machine_id is undefined
+
+    - pause:
+        seconds: 15
+
+    - name: Check nodes
+      include_tasks: nodes-ok.yml
+...
