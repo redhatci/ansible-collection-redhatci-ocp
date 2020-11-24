@@ -1,0 +1,134 @@
+---
+- name: Create namespace for SR-IOV operator
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: openshift-sriov-network-operator
+        labels:
+          openshift.io/run-level: "1"
+
+- name: Create operatorgroup for SR-IOV operator
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: sriov-network-operators
+        namespace: openshift-sriov-network-operator
+      spec:
+        targetNamespaces:
+        - openshift-sriov-network-operator
+
+- name: Create subscription for SR-IOV operator
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: sriov-network-operator-subsription
+        namespace: openshift-sriov-network-operator
+      spec:
+        channel: "{{ ocp_version|string }}"
+        name: sriov-network-operator
+        source: "{{ redhat_catalog_source }}"
+        sourceNamespace: openshift-marketplace
+
+- name: get sriov-network-operator csv
+  k8s_info:
+    api: operators.coreos.com/v1alpha1
+    namespace: openshift-sriov-network-operator
+    kind: ClusterServiceVersion
+  register: csv
+  retries: 30
+  delay: 5
+  no_log: true
+  until:
+    - "csv.resources|length == 1"
+    - "'status' in csv.resources[0]"
+    - "'phase' in csv.resources[0].status"
+    - "csv.resources[0].status.phase == 'Succeeded'"
+
+# TODO: Convert this in to a loop for applying multiple configurations
+# sriov_network:
+#   - name: sriov-network-intel-numa0
+#     vlan: 500
+#     resource: intelnuma0
+#     numvfs: 16
+#     namespace: example-cnf
+#     devices:
+#       - ens2f1
+#   - name: sriov-network-intel-numa1
+#     vlan: 501
+#     resource: intelnuma1
+#     numvfs: 16
+#     namespace: example-cnf
+#     devices:
+#       - ens3f1
+- name: create SriovNetworkNodePolicy for intel nic ens2f1
+  k8s:
+    definition:
+      apiVersion: sriovnetwork.openshift.io/v1
+      kind: SriovNetworkNodePolicy
+      metadata:
+        name: sriov-policy-intel-numa0
+        namespace: openshift-sriov-network-operator
+      spec:
+        nodeSelector:
+          node-role.kubernetes.io/worker: ""
+        resourceName: intelnuma0
+        priority: 99
+        mtu: 9000
+        numVfs: 16
+        nicSelector:
+          pfNames:
+          - ens2f1
+        deviceType: vfio-pci
+
+# Ensure namespace for the provided variable 'sriov_network_target_namespace' is present
+- name: "create namespace - {{ sriov_network_target_namespace }}"
+  k8s:
+    api: v1
+    kind: Namespace
+    name: "{{ sriov_network_target_namespace }}"
+
+- name: create SriovNetwork for Intel nic ens2f1
+  k8s:
+    definition: "{{ lookup('template', 'sriov-network.yaml.j2') }}"
+  vars:
+    sriov_network_name: sriov-network-intel-numa0
+    sriov_network_resource: intelnuma0
+    sriov_network_vlan: "{{ sriov_network_vlan_intel_numa0 }}"
+
+- name: Get all nodes
+  k8s_info:
+    kind: Node
+  register: nodes
+  no_log: true
+
+- name: Get one worker node
+  set_fact:
+    worker_node: "{{ item.metadata.name }}"
+  when: "'node-role.kubernetes.io/worker' in item.metadata.labels"
+  loop: "{{ nodes.resources }}"
+  no_log: true
+
+- name: Get SriovNetworkNodeState for one of the worker node
+  k8s_info:
+    api: sriovnetwork.openshift.io/v1
+    kind: SriovNetworkNodeState
+    namespace: openshift-sriov-network-operator
+    name: "{{ worker_node }}"
+  register: state
+  retries: 300
+  delay: 10
+  until:
+    - "state.resources|length == 1"
+    - "'interfaces' in state.resources[0].spec"
+    - "state.resources[0].spec.interfaces|length > 0"
+    - "'syncStatus' in state.resources[0].status"
+    - "state.resources[0].status.syncStatus == 'Succeeded'"
+
+- name: Check nodes
+  include_tasks: nodes-ok.yml
