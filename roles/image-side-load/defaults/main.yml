@@ -1,9 +1,0 @@
----
-dci_images_to_side_load:
-- "docker.io/library/busybox:1.29"
-- "docker.io/library/httpd:2.4.38-alpine"
-- "docker.io/library/nginx:1.14-alpine"
-- "gcr.io/kubernetes-e2e-test-images/mounttest:1.0"
-- "k8s.gcr.io/pause:3.2"
-- "us.gcr.io/k8s-artifacts-prod/e2e-test-images/agnhost:2.12"
-...
