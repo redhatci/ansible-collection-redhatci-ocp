@@ -31,9 +31,12 @@
   when: provision_cache_store is undefined
 
 - name: Get oc version output
+  environment:
+    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
   shell: |
-    oc version
+    {{ dci_cluster_configs_dir }}/oc version
   register: oc_version_str
+  delegate_to: localhost
 
 - name: Get OCP version
   set_fact:
@@ -48,22 +51,28 @@
     msg: "OCP version is not set"
   when: not ocp_version
 
-- include_vars: version/ocp4_4.yaml
+- include_vars: ocp4_4.yaml
   when:
     - ocp_version_maj|int == 4
     - ocp_version_min|int == 4
-- include_vars: version/ocp4_5.yaml
+- include_vars: ocp4_5.yaml
   when:
     - ocp_version_maj|int == 4
     - ocp_version_min|int == 5
-- include_vars: version/ocp_latest.yaml
+- include_vars: ocp_latest.yaml
   when:
     - ocp_version_maj|int == 4
     - ocp_version_min|int >= 6
 
-- name: Increase maxUnavailable count to 2 which will fasten the node update
+- name: Disable default catalog sources for disconnected deployment
+  environment:
+    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
   shell: |
-    oc patch mcp worker --type=merge -p '{"spec":{"maxUnavailable":2}}'
+    {{ dci_cluster_configs_dir }}/oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int >= 6
+  delegate_to: localhost
 
 - name: Deploy Red Hat Catalog Source
   include_tasks: redhat-catalog-source.yml

@@ -1,0 +1,15 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: {{ name }}
+  namespace: openshift-sriov-network-operator
+spec:
+  nodeSelector:
+    node-role.kubernetes.io/worker: ""
+  resourceName: {{ resource_name }}
+  priority: 99
+  mtu: 9000
+  numVfs: {{ num_vfs }}
+  nicSelector:
+    pfNames: {{ interfaces }}
+  deviceType: {{ device_type|default('vfio-pci') }}
