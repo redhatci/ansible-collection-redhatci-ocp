@@ -1,0 +1,7 @@
+---
+redhat_catalog_source: mirrored-redhat-operators
+catalog_repo_name: olm
+catalog_image_name: redhat-operators
+catalog_image_version: v1
+
+sriov_network_target_namespace: example-cnf

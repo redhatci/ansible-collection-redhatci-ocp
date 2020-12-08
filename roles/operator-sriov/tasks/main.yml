@@ -66,39 +66,45 @@
 #     namespace: example-cnf
 #     devices:
 #       - ens3f1
-- name: create SriovNetworkNodePolicy for intel nic ens2f1
+- name: create SriovNetworkNodePolicy for intel nic ens2f1 - 1
   k8s:
-    definition:
-      apiVersion: sriovnetwork.openshift.io/v1
-      kind: SriovNetworkNodePolicy
-      metadata:
-        name: sriov-policy-intel-numa0
-        namespace: openshift-sriov-network-operator
-      spec:
-        nodeSelector:
-          node-role.kubernetes.io/worker: ""
-        resourceName: intelnuma0
-        priority: 99
-        mtu: 9000
-        numVfs: 16
-        nicSelector:
-          pfNames:
-          - ens2f1
-        deviceType: vfio-pci
+    definition: "{{ lookup('template', 'sriov-policy.yaml.j2') }}"
+  vars:
+    name: intel-numa0-policy1
+    resource_name:  intel_numa0_res1
+    num_vfs: 32
+    interfaces: ["ens2f1#0-15"]
+
+- name: create SriovNetworkNodePolicy for intel nic ens2f1 - 2
+  k8s:
+    definition: "{{ lookup('template', 'sriov-policy.yaml.j2') }}"
+  vars:
+    name: intel-numa0-policy2
+    resource_name:  intel_numa0_res2
+    num_vfs: 32
+    interfaces: ["ens2f1#16-31"]
 
 # Ensure namespace for the provided variable 'sriov_network_target_namespace' is present
-- name: "create namespace - {{ sriov_network_target_namespace }}"
+- name: "create namespace"
   k8s:
     api: v1
     kind: Namespace
     name: "{{ sriov_network_target_namespace }}"
 
-- name: create SriovNetwork for Intel nic ens2f1
+- name: create SriovNetwork for Intel nic ens2f1 - 1
   k8s:
     definition: "{{ lookup('template', 'sriov-network.yaml.j2') }}"
   vars:
-    sriov_network_name: sriov-network-intel-numa0
-    sriov_network_resource: intelnuma0
+    sriov_network_name: intel-numa0-net1
+    sriov_network_resource: intel_numa0_res1
+    sriov_network_vlan: "{{ sriov_network_vlan_intel_numa0 }}"
+
+- name: create SriovNetwork for Intel nic ens2f1 - 2
+  k8s:
+    definition: "{{ lookup('template', 'sriov-network.yaml.j2') }}"
+  vars:
+    sriov_network_name: intel-numa0-net2
+    sriov_network_resource: intel_numa0_res2
     sriov_network_vlan: "{{ sriov_network_vlan_intel_numa0 }}"
 
 - name: Get all nodes
@@ -131,4 +137,7 @@
     - "state.resources[0].status.syncStatus == 'Succeeded'"
 
 - name: Check nodes
-  include_tasks: nodes-ok.yml
+  include_role:
+    name: prepare-cnf
+    tasks_from: nodes-ok.yml
+...
