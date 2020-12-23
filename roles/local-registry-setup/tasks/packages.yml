@@ -1,7 +1,0 @@
----
-- name: "local-registry-setup : Install additional packages"
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ registry_extra_packages }}"
-...
