@@ -1,0 +1,6 @@
+- name: Install skopeo
+  package:
+    name:
+      - skopeo
+    state: present
+  become: true
