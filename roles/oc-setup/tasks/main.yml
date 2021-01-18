@@ -1,11 +1,4 @@
 ---
-- name: "oc-setup : Set facts"
-  include_tasks: facts.yml
-  when:
-    - dci_cluster_configs_dir is undefined
-  tags:
-    - facts
-
 - name: "oc-setup : Install binaries and other packages in jumphost"
   include_tasks: install.yml
   tags:

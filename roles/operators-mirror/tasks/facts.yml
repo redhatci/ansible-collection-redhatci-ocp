@@ -1,0 +1,5 @@
+# The mirror_list  should come from inventory or settings
+- name: Basic facts
+  set_fact:
+    mirrors: {}
+    base_version: "{{ version.split('.')[0] }}.{{ version.split('.')[1] }}"

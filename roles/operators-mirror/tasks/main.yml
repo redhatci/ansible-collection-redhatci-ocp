@@ -1,0 +1,17 @@
+---
+- block:
+    - name: "operators-mirror : Set Facts"
+      include_tasks: facts.yml
+    - name: "operators-mirror : Install Packages"
+      include_tasks: install.yml
+    - name: "operators-mirror : Mirror"
+      include_tasks: mirror.yml
+  when:
+    - "'registry_host' in groups"
+    - groups['registry_host'] | length > 0
+    - hostvars[groups['registry_host'][0]].local_registry is defined
+    - hostvars[groups['registry_host'][0]].local_repo is defined
+    - hostvars[groups['registry_host'][0]].provision_cache_store is defined
+    - opm_mirror_list is defined
+  tags:
+    - mirror
