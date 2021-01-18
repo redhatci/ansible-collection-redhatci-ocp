@@ -10,7 +10,7 @@
     - "'resources' in mcp_master"
     - "mcp_master.resources|length == 1"
     - "'status' in mcp_master.resources[0]"
-    - "mcp_master.resources[0].status.readyMachineCount == groups['masters']|length"
+    - "mcp_master.resources[0].status.readyMachineCount == mcp_master.resources[0].status.machineCount"
     - "mcp_master.resources[0].status.updatedMachineCount == mcp_master.resources[0].status.machineCount"
 
 - name: Check the worker nodes managed by MCP are updated and ready
@@ -24,6 +24,6 @@
     - "'resources' in mcp_worker"
     - "mcp_worker.resources|length == 1"
     - "'status' in mcp_worker.resources[0]"
-    - "mcp_worker.resources[0].status.readyMachineCount == groups['workers']|length"
+    - "mcp_worker.resources[0].status.readyMachineCount == mcp_worker.resources[0].status.machineCount"
     - "mcp_worker.resources[0].status.updatedMachineCount == mcp_worker.resources[0].status.machineCount"
 ...
