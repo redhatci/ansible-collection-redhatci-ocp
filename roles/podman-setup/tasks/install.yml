@@ -1,9 +1,0 @@
----
-- name: "podman-setup : Install packages needed for podman"
-  package:
-    name:
-      - podman
-      - slirp4netns
-    state: present
-  become: true
-...
