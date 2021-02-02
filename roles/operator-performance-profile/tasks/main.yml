@@ -31,7 +31,6 @@
         name: performance-addon-operator-subscription
         namespace: openshift-performance-addon
       spec:
-        channel: "{{ ocp_version|string }}"
         name: performance-addon-operator
         source: "{{ redhat_catalog_source }}"
         sourceNamespace: openshift-marketplace

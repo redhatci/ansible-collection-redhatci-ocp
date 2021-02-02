@@ -59,10 +59,14 @@
   when:
     - ocp_version_maj|int == 4
     - ocp_version_min|int == 5
+- include_vars: ocp4_6.yaml
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int == 6
 - include_vars: ocp_latest.yaml
   when:
     - ocp_version_maj|int == 4
-    - ocp_version_min|int >= 6
+    - ocp_version_min|int >= 7
 
 - name: Disable default catalog sources for disconnected deployment
   environment:

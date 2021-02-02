@@ -1,13 +1,39 @@
+- name: set OPM version
+  set_fact:
+    opm_version: "v{{ base_version }}"
+    filter_by_arg: "--index-filter-by-os"
+
+- name: change filter according to the version
+  set_fact:
+    filter_by_arg: "--filter-by-os"
+  when: base_version|float <= 4.6
+
 - name: Build catalog
-  shell:
-    cmd: >
-      set -x;
-      {{ provision_cache_store }}/{{ version }}/oc adm catalog build
-      --appregistry-org redhat-operators
-      --from={{ opm_from_registry }}:v{{ base_version }}
-      --filter-by-os="linux/amd64"
-      --to={{ local_registry }}{{ opm_local_registry_path }}:v{{ base_version }}
-      -a {{ dci_pullsecret_file }} --insecure
+  block:
+    - name: fetching v{{ base_version }}
+      shell:
+        cmd: >
+          set -x;
+          {{ provision_cache_store }}/{{ version }}/oc adm catalog build
+          --appregistry-org redhat-operators
+          --from={{ opm_from_registry }}:{{ opm_version }}
+          --filter-by-os="linux/amd64"
+          --to={{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
+          -a {{ dci_pullsecret_file }} --insecure
+  rescue:
+    - name: using the latest version instead
+      set_fact:
+        opm_version: "latest"
+    - name: Build catalog with latest version
+      shell:
+        cmd: >
+          set -x;
+          {{ provision_cache_store }}/{{ version }}/oc adm catalog build
+          --appregistry-org redhat-operators
+          --from={{ opm_from_registry }}:{{ opm_version }}
+          --filter-by-os="linux/amd64"
+          --to={{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
+          -a {{ dci_pullsecret_file }} --insecure
 
 - name: Mirror catalog manifests
   shell:
@@ -15,10 +41,12 @@
     cmd: >
       set -x;
       {{ provision_cache_store }}/{{ version }}/oc adm catalog mirror
-      {{ local_registry }}{{ opm_local_registry_path }}:v{{ base_version }}
+      {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
       --filter-by-os="linux/amd64" --manifests-only
       --to-manifests={{ manifests_dir }}
+      {{ filter_by_arg }}="linux/amd64" --manifests-only
+      --to-manifests={{ dci_cluster_configs_dir }}/redhat-operators-manifests
 
 - name: Copy Containers from opm_mirror_list
   shell:
