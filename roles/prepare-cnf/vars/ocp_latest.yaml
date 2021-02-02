@@ -1,7 +1,7 @@
 ---
 redhat_catalog_source: redhat-operators-jump
-catalog_repo_name: redhat
-catalog_image_name: redhat-operator-index
-catalog_image_version: "v{{ ocp_version }}"
+catalog_repo_name: olm
+catalog_image_name: redhat-operators
+catalog_image_version: latest
 
 sriov_network_target_namespace: example-cnf

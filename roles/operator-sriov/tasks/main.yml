@@ -30,7 +30,6 @@
         name: sriov-network-operator-subsription
         namespace: openshift-sriov-network-operator
       spec:
-        channel: "{{ ocp_version|string }}"
         name: sriov-network-operator
         source: "{{ redhat_catalog_source }}"
         sourceNamespace: openshift-marketplace
