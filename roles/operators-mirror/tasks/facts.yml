@@ -3,3 +3,4 @@
   set_fact:
     mirrors: {}
     base_version: "{{ version.split('.')[0] }}.{{ version.split('.')[1] }}"
+    manifests_dir: "redhat-operators-manifests"
