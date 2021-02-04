@@ -18,6 +18,7 @@
       {{ local_registry }}{{ opm_local_registry_path }}:v{{ base_version }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
       --filter-by-os="linux/amd64" --manifests-only
+      --to-manifests={{ manifests_dir }}
 
 - name: Copy Containers from opm_mirror_list
   shell:
@@ -30,7 +31,7 @@
   delay: 5
   until:
     - copy is not failed
-  loop: "{{ lookup('file', dci_cluster_configs_dir + '/redhat-operators-manifests/mapping.txt').splitlines() }}"
+  loop: "{{ lookup('file', dci_cluster_configs_dir + '/'+ manifests_dir + '/mapping.txt').splitlines() }}"
   when:
     - item | regex_findall(opm_mirror_list | join('|'))
 
@@ -40,7 +41,7 @@
             + '/' + item.split('=')[0].split('/')[1] :
             item.split('=')[1].split('/')[0]
             + '/' + item.split('=')[1].split('/')[1]}) }}"
-  loop: "{{ lookup('file', dci_cluster_configs_dir + '/redhat-operators-manifests/mapping.txt').splitlines() }}"
+  loop: "{{ lookup('file', dci_cluster_configs_dir + '/' + manifests_dir + '/mapping.txt').splitlines() }}"
   when:
     - item | regex_findall(opm_mirror_list | join('|'))
 
