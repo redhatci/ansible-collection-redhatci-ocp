@@ -21,7 +21,7 @@
         targetNamespaces:
         - openshift-sriov-network-operator
 
-- name: Create subscription for SR-IOV operator
+- name: Create subscription for SR-IOV operator with channel (4.5 and older)
   k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1
@@ -33,6 +33,22 @@
         name: sriov-network-operator
         source: "{{ redhat_catalog_source }}"
         sourceNamespace: openshift-marketplace
+        channel: "{{ ocp_version|string }}"
+  when: ocp_version|float < 4.6
+
+- name: Create subscription for SR-IOV operator without channel
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: sriov-network-operator-subsription
+        namespace: openshift-sriov-network-operator
+      spec:
+        name: sriov-network-operator
+        source: "{{ redhat_catalog_source }}"
+        sourceNamespace: openshift-marketplace
+  when: ocp_version|float >= 4.6
 
 - name: get sriov-network-operator csv
   k8s_info:
