@@ -22,7 +22,7 @@
         targetNamespaces:
           - openshift-performance-addon
 
-- name: Create subscription for Performance Addon operator
+- name: Create subscription for Performance Addon operator without channel
   k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1
@@ -34,6 +34,23 @@
         name: performance-addon-operator
         source: "{{ redhat_catalog_source }}"
         sourceNamespace: openshift-marketplace
+  when: ocp_version|float >= 4.6
+
+- name: Create subscription for Performance Addon operator with channel (4.5 and older)
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: performance-addon-operator-subscription
+        namespace: openshift-performance-addon
+      spec:
+        name: performance-addon-operator
+        source: "{{ redhat_catalog_source }}"
+        sourceNamespace: openshift-marketplace
+        channel: "{{ ocp_version|string }}"
+  when: ocp_version|float < 4.6
+
 
 - name: Check if performance-addon-operator csv is installed
   k8s_info:
