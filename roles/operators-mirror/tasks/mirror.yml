@@ -6,34 +6,21 @@
 - name: change filter according to the version
   set_fact:
     filter_by_arg: "--filter-by-os"
-  when: base_version|float <= 4.6
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int <= 6
 
-- name: Build catalog
-  block:
-    - name: fetching v{{ base_version }}
-      shell:
-        cmd: >
-          set -x;
-          {{ provision_cache_store }}/{{ version }}/oc adm catalog build
-          --appregistry-org redhat-operators
-          --from={{ opm_from_registry }}:{{ opm_version }}
-          --filter-by-os="linux/amd64"
-          --to={{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
-          -a {{ dci_pullsecret_file }} --insecure
-  rescue:
-    - name: using the latest version instead
-      set_fact:
-        opm_version: "latest"
-    - name: Build catalog with latest version
-      shell:
-        cmd: >
-          set -x;
-          {{ provision_cache_store }}/{{ version }}/oc adm catalog build
-          --appregistry-org redhat-operators
-          --from={{ opm_from_registry }}:{{ opm_version }}
-          --filter-by-os="linux/amd64"
-          --to={{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
-          -a {{ dci_pullsecret_file }} --insecure
+- name: "Build Operator catalog image"
+  include_tasks: build-catalog-image.yml
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int < 6
+
+- name: "Build Operator catalog index"
+  include_tasks: build-catalog-index.yml
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int >= 6
 
 - name: Mirror catalog manifests
   shell:
@@ -43,12 +30,32 @@
       {{ provision_cache_store }}/{{ version }}/oc adm catalog mirror
       {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
-      --filter-by-os="linux/amd64" --manifests-only
-      --to-manifests={{ manifests_dir }}
       {{ filter_by_arg }}="linux/amd64" --manifests-only
-      --to-manifests={{ dci_cluster_configs_dir }}/redhat-operators-manifests
+      --to-manifests={{ manifests_dir }} 2>&1
+  register: catalog_manifests_output
 
-- name: Copy Containers from opm_mirror_list
+- name: "Set manifests database path"
+  set_fact:
+    manifests_database: "{{ catalog_manifests_output.stdout | regex_search('[^ ]+bundles.db') }}"
+
+- name: "Extract dependencies for operators"
+  shell:
+    chdir: "{{ dci_cluster_configs_dir }}"
+    cmd: >
+      set -x;
+      echo "select image from related_image where operatorbundle_name like '%{{ item }}%';"
+      | sqlite3 {{ manifests_database }}
+  loop: "{{ opm_mirror_list }}"
+  register: opm_deps
+  notify:
+    - "Clean up temporary manifest files"
+
+- name: "Create opm dependency list"
+  set_fact:
+    opm_dep_list: "{{ opm_dep_list | default([]) }} + {{ item.stdout_lines }}"
+  loop: "{{ opm_deps.results }}"
+
+- name: Copy Containers using the dependency list
   shell:
     cmd: >
       skopeo copy --authfile {{ dci_pullsecret_file }}
@@ -61,7 +68,7 @@
     - copy is not failed
   loop: "{{ lookup('file', dci_cluster_configs_dir + '/'+ manifests_dir + '/mapping.txt').splitlines() }}"
   when:
-    - item | regex_findall(opm_mirror_list | join('|'))
+    - item | regex_findall(opm_dep_list | join('|'))
 
 - name: Generate mirror entries
   set_fact:
@@ -71,7 +78,7 @@
             + '/' + item.split('=')[1].split('/')[1]}) }}"
   loop: "{{ lookup('file', dci_cluster_configs_dir + '/' + manifests_dir + '/mapping.txt').splitlines() }}"
   when:
-    - item | regex_findall(opm_mirror_list | join('|'))
+    - item | regex_findall(opm_dep_list | join('|'))
 
 - name: Generate mirror bundle
   template:
