@@ -1,0 +1,18 @@
+---
+- name: "Prune source index but opm list"
+  shell:
+    cmd: >
+      set -x;
+      REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
+      {{ provision_cache_store }}/{{ version }}/opm index prune
+      --from-index registry.redhat.io/redhat/redhat-operator-index:{{ opm_version }}
+      --packages {{ opm_mirror_list | join(",") }}
+      --tag {{ local_registry }}/olm/redhat-operator-index:{{ opm_version }}
+
+- name: "Push the new index image to the local registry"
+  shell:
+    cmd: >
+      podman push {{ local_registry }}/olm/redhat-operator-index:{{ opm_version }}
+      --authfile {{ dci_pullsecret_file }}
+
+...
