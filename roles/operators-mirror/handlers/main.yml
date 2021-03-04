@@ -1,0 +1,7 @@
+---
+- name: "Clean up temporary manifest files"
+  file:
+    path: "{{ manifests_database | dirname }}"
+    state: absent
+
+...

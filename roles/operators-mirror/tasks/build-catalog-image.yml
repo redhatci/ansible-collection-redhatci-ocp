@@ -1,0 +1,12 @@
+---
+- name: Build Operator catalog image v{{ base_version }}
+  shell:
+    cmd: >
+      set -x;
+      {{ provision_cache_store }}/{{ version }}/oc adm catalog build
+      --appregistry-org redhat-operators
+      --from={{ opm_from_registry }}:{{ opm_version }}
+      --filter-by-os="linux/amd64"
+      --to={{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
+      -a {{ dci_pullsecret_file }} --insecure
+...
