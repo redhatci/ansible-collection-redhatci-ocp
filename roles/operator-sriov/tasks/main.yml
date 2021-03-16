@@ -32,9 +32,11 @@
       spec:
         name: sriov-network-operator
         source: "{{ redhat_catalog_source }}"
-        sourceNamespace: openshift-marketplace
+        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
         channel: "{{ ocp_version|string }}"
-  when: ocp_version|float < 4.6
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int <= 5
 
 - name: Create subscription for SR-IOV operator without channel
   k8s:
@@ -42,13 +44,15 @@
       apiVersion: operators.coreos.com/v1alpha1
       kind: Subscription
       metadata:
-        name: sriov-network-operator-subsription
+        name: sriov-network-operator-subscription
         namespace: openshift-sriov-network-operator
       spec:
         name: sriov-network-operator
         source: "{{ redhat_catalog_source }}"
-        sourceNamespace: openshift-marketplace
-  when: ocp_version|float >= 4.6
+        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int >= 6
 
 - name: get sriov-network-operator csv
   k8s_info:

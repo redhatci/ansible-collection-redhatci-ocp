@@ -1,0 +1,48 @@
+---
+- name: create CNV Namespace
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ cnv_ns }}"
+
+- name: create Operator Group
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: "kubevirt-hyperconverged-group"
+        namespace: "{{ cnv_ns }}"
+      spec:
+        targetNamespaces:
+          - "{{ cnv_ns }}"
+
+- name: create Subscription
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: hco-operatorhub
+        namespace: "{{ cnv_ns }}"
+      spec:
+        channel: "{{ cnv_version| string  }}"
+        source: "{{ opm_catalog_source_name | default('redhat-operators') }}"
+        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
+        name: kubevirt-hyperconverged
+
+- name: Check if cnv csv is installed
+  k8s_info:
+    api: operators.coreos.com/v1alpha1
+    namespace: "{{ cnv_ns }}"
+    kind: ClusterServiceVersion
+  register: csv
+  retries: 30
+  delay: 60
+  until:
+    - "csv.resources|length == 1"
+    - "'status' in csv.resources[0]"
+    - "'phase' in csv.resources[0].status"
+    - ("csv.resources[0].status.phase == 'Succeeded'" or "csv.resources[0].status.phase == 'Present'")

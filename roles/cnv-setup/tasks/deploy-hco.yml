@@ -1,0 +1,59 @@
+---
+# this may happen at 2.4.
+- name: set API version for <= 2.4
+  when:
+    - cnv_version is version('2.4', '<=')
+  set_fact:
+      api_version: v1alpha1
+  changed_when: false
+
+- name: set API version for > 2.4
+  when:
+    - cnv_version is version('2.4', '>')
+  set_fact:
+    api_version: v1beta1
+  changed_when: false
+
+- name: install hco
+  k8s:
+    definition:
+      apiVersion: "hco.kubevirt.io/{{ api_version }}"
+      kind: HyperConverged
+      metadata:
+        name: kubevirt-hyperconverged
+        namespace: "{{ cnv_ns }}"
+      spec:
+        BareMetalPlatform: true
+  register: result
+  retries: 5
+  delay: 60
+  until: result is not failed
+
+- name: Check for hyperconverged
+  community.kubernetes.k8s_info:
+    api_version: "hco.kubevirt.io/{{ api_version }}"
+    namespace: "{{ cnv_ns }}"
+    kind: HyperConverged
+    wait: true
+    wait_condition:
+      type: Available
+      status: "True"
+    wait_timeout: 3600
+
+- name: Check for hyperconverged operator
+  k8s_info:
+    namespace: "{{ cnv_ns }}"
+    kind: pods
+    label_selectors:
+      - name=hyperconverged-cluster-operator
+  register: hco_pods
+  retries: "{{ cnv_hco_api_check_count }}"
+  delay: 60
+  no_log: false
+  until:
+    - "hco_pods.resources|length == 1"
+    - "'status' in hco_pods.resources[0]"
+    - "'containerStatuses' in hco_pods.resources[0].status"
+    - "hco_pods.resources[0].status.containerStatuses|length == 1"
+    - "'ready' in hco_pods.resources[0].status.containerStatuses[0]"
+    - "hco_pods.resources[0].status.containerStatuses[0].ready|bool"
