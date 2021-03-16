@@ -1,0 +1,3 @@
+---
+sriov_network_target_namespace: example-cnf
+...

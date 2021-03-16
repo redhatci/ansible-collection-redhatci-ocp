@@ -1,8 +1,16 @@
 # The mirror_list  should come from inventory or settings
 - name: Basic facts
   set_fact:
-    mirrors: {}
     base_version: "{{ version.split('.')[0] }}.{{ version.split('.')[1] }}"
     ocp_version_maj: "{{ version.split('.')[0] }}"
     ocp_version_min: "{{ version.split('.')[1] }}"
     manifests_dir: "redhat-operators-manifests"
+    opm_catalog_source_name: "{{ opm_catalog_source_name }}"
+    opm_catalog_source_namespace: "{{ opm_catalog_source_namespace }}"
+
+- name: Set facts for newer ocp versions
+  set_fact:
+    opm_local_registry_path: "/redhat/redhat-operator-index"
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int >= 6

@@ -7,12 +7,12 @@
       {{ provision_cache_store }}/{{ version }}/opm index prune
       --from-index registry.redhat.io/redhat/redhat-operator-index:{{ opm_version }}
       --packages {{ opm_mirror_list | join(",") }}
-      --tag {{ local_registry }}/olm/redhat-operator-index:{{ opm_version }}
+      --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
 
 - name: "Push the new index image to the local registry"
   shell:
     cmd: >
-      podman push {{ local_registry }}/olm/redhat-operator-index:{{ opm_version }}
+      podman push {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
       --authfile {{ dci_pullsecret_file }}
 
 ...

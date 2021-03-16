@@ -33,8 +33,10 @@
       spec:
         name: performance-addon-operator
         source: "{{ redhat_catalog_source }}"
-        sourceNamespace: openshift-marketplace
-  when: ocp_version|float >= 4.6
+        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int >= 6
 
 - name: Create subscription for Performance Addon operator with channel (4.5 and older)
   k8s:
@@ -47,10 +49,11 @@
       spec:
         name: performance-addon-operator
         source: "{{ redhat_catalog_source }}"
-        sourceNamespace: openshift-marketplace
+        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
         channel: "{{ ocp_version|string }}"
-  when: ocp_version|float < 4.6
-
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int <= 5
 
 - name: Check if performance-addon-operator csv is installed
   k8s_info:

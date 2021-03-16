@@ -36,7 +36,7 @@
 
 - name: "Set manifests database path"
   set_fact:
-    manifests_database: "{{ catalog_manifests_output.stdout | regex_search('[^ ]+bundles.db') }}"
+    manifests_database: "{{ catalog_manifests_output.stdout | regex_search('/tmp/[^ ]+(bundles|index).db') }}"
 
 - name: "Extract dependencies for operators"
   shell:
@@ -58,8 +58,8 @@
 - name: Copy Containers using the dependency list
   shell:
     cmd: >
-      skopeo copy --authfile {{ dci_pullsecret_file }}
-      --dest-tls-verify=false --all docker://{{ item.split('=')[0] }}
+      skopeo copy --all --authfile {{ dci_pullsecret_file }}
+      --dest-tls-verify=false docker://{{ item.split('=')[0] }}
       docker://{{ item.split('=')[1] }}
   register: copy
   retries: 5
@@ -67,12 +67,13 @@
   until:
     - copy is not failed
   loop: "{{ lookup('file', dci_cluster_configs_dir + '/'+ manifests_dir + '/mapping.txt').splitlines() }}"
+  failed_when: false
   when:
     - item | regex_findall(opm_dep_list | join('|'))
 
 - name: Generate mirror entries
   set_fact:
-    mirrors: "{{ mirrors | combine({ item.split('=')[0].split('/')[0]
+    mirrors: "{{ mirrors | default({}) | combine({ item.split('=')[0].split('/')[0]
             + '/' + item.split('=')[0].split('/')[1] :
             item.split('=')[1].split('/')[0]
             + '/' + item.split('=')[1].split('/')[1]}) }}"
