@@ -7,20 +7,17 @@
   set_fact:
     filter_by_arg: "--filter-by-os"
   when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int <= 6
+    - version is version("4.6", "<=")
 
 - name: "Build Operator catalog image"
   include_tasks: build-catalog-image.yml
   when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int < 6
+    - version is version("4.6.16", "<=")
 
 - name: "Build Operator catalog index"
   include_tasks: build-catalog-index.yml
   when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int >= 6
+    - version is version("4.6.17", ">=")
 
 - name: Mirror catalog manifests
   shell:
