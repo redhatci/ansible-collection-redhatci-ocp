@@ -19,7 +19,7 @@
         targetNamespaces:
           - "{{ cnv_ns }}"
 
-- name: create Subscription
+- name: create Subscription with channel (4.5 and older)
   k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1
@@ -28,10 +28,27 @@
         name: hco-operatorhub
         namespace: "{{ cnv_ns }}"
       spec:
-        channel: "{{ cnv_version| string  }}"
-        source: "{{ opm_catalog_source_name | default('redhat-operators') }}"
-        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
+        channel: "{{ cnv_version | string  }}"
+        source: "mirrored-redhat-operators"
+        sourceNamespace: "openshift-marketplace"
         name: kubevirt-hyperconverged
+  when:
+    - version is version("4.6", "<")
+
+- name: create Subscription without channel
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: hco-operatorhub
+        namespace: "{{ cnv_ns }}"
+      spec:
+        source: "redhat-operators"
+        sourceNamespace: "openshift-marketplace"
+        name: kubevirt-hyperconverged
+  when:
+    - version is version("4.6", ">=")
 
 - name: Check if cnv csv is installed
   k8s_info:
