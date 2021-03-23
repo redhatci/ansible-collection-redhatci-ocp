@@ -77,13 +77,13 @@
     {{ dci_cluster_configs_dir }}/oc label mcp worker machineconfiguration.openshift.io/role=worker --overwrite
   delegate_to: localhost
 
-########## Add all the PerformanceProfile creations in this block #############
+########## PerformanceProfile creations in this block #############
 
-- name: Create basic PerformanceProfile
+- name: Create PerformanceProfile
   k8s:
     api: "performance.openshift.io/v1alpha1"
-    definition: "{{ lookup('file', 'performance-profile-basic.yml') }}"
-  when: performance_profile_basic|default(true)|bool
+    definition: "{{ lookup('file', performance_definition) }}"
+  when: enable_performance_profiling|default(true)|bool
   register: profile_state
 
 ###############################################################################
