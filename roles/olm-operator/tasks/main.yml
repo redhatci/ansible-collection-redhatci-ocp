@@ -1,0 +1,69 @@
+# Role to deploy an OLM-based operator
+#
+# Required arguments:
+#   operator: Name of the operator to install
+#   namespace: Namespace where the operator will be installed
+#
+# Optional arguments:
+#   source: CatalogSource where to pull operator from (default: redhat-operators)
+#   source_ns: Namespace where the CatalogSource is (default: openshift-marketplace)
+#
+---
+- name: Assert all required fields are present
+  assert:
+    that:
+      - operator | string
+      - namespace | string
+      - source | string
+
+- name: Create Namespace for OLM operator
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ namespace }}"
+        labels: "{{ ns_labels | default(omit) }}"
+
+- name: Create OperatorGroup for OLM operator
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: "{{ operator }}"
+        namespace: "{{ namespace }}"
+      spec:
+        targetNamespaces:
+        - "{{ namespace }}"
+
+- name: Create subscription for OLM operator
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: "{{ operator }}"
+        namespace: "{{ namespace }}"
+      spec:
+        channel: "{{ channel | default(omit) }}"
+        config:
+          resources: {}
+        name: "{{ operator }}"
+        source: "{{ source }}"
+        sourceNamespace: "{{ source_ns }}"
+
+- name: Wait (up to 10m) for CSV to be ready
+  k8s_info:
+    api: operators.coreos.com/v1alpha1
+    namespace: "{{ namespace }}"
+    kind: ClusterServiceVersion
+  register: csv
+  retries: 20
+  delay: 30
+  until:
+    - "csv.resources|length == 1"
+    - "'status' in csv.resources[0]"
+    - "'phase' in csv.resources[0].status"
+    - ("csv.resources[0].status.phase == 'Succeeded'" or "csv.resources[0].status.phase == 'Present'")
+...
