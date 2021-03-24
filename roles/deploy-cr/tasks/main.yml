@@ -1,0 +1,51 @@
+# Deploy a custom resource
+#
+# Required arguments:
+#   api_version: The api version, including the namespace of the CR
+#   (e.g hco.kubevirt.io/v1beta1)
+#
+#   namespace: The namespace in which the CR should be created
+#
+#   kind: The kind of the CR
+#
+#   name: The name that will be used to identify the CR
+#
+#   spec: The spec field of the CR.
+---
+- name: Check for mandatory input
+  assert:
+    that:
+      - api_version | string
+      - kind | string
+      - namespace | string
+      - name | string
+      - spec is mapping
+
+- name: Deploy CR
+  k8s:
+    definition:
+      apiVersion: "{{ api_version }}"
+      kind: "{{ kind }}"
+      metadata:
+        name: "{{ name }}"
+        namespace: "{{ namespace }}"
+      spec: "{{ spec }}"
+  register: result
+  retries: 5
+  delay: 60
+  until: result is not failed
+
+- name: Check that the CR is ready
+  k8s_info:
+    api_version: "{{ api_version }}"
+    namespace: "{{ namespace }}"
+    kind: "{{ kind }}"
+    wait: true
+    wait_condition:
+      type: Available
+      status: "True"
+    wait_timeout: 10
+  register: result
+  retries: 180
+  delay: 10
+  until: result is not failed
