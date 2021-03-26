@@ -4,4 +4,11 @@
     path: "{{ manifests_database | dirname }}"
     state: absent
 
+- name: "Fix permissions and removing tmp files"
+  # The tmp dirs are create without write permissions and aren't automatically removed
+  shell:
+    cmd: >
+      find {{ tmp_prune.path }} -type d -not -perm -u=w -exec chmod u+w {} \; &&
+      rm -rf {{ tmp_prune.path }};
+
 ...

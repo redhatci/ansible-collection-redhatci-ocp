@@ -1,8 +1,13 @@
 ---
+- name: "Create a tmp directory for the prune image"
+  tempfile:
+    state: directory
+  register: tmp_prune
+
 - name: "Prune source index but opm list"
   shell:
     # opm requires write perms in the working directory
-    chdir: "/tmp"
+    chdir: "{{ tmp_prune.path }}"
     cmd: >
       set -x;
       REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
@@ -10,6 +15,8 @@
       --from-index registry.redhat.io/redhat/redhat-operator-index:{{ opm_version }}
       --packages {{ opm_mirror_list | join(",") }}
       --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
+  notify:
+    - "Fix permissions and removing tmp files"
 
 - name: "Push the new index image to the local registry"
   shell:
