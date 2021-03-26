@@ -9,8 +9,4 @@
   tags:
   - conformance
 
-- name: "redhat-tests : Upload test results"
-  include_tasks: upload.yml
-  tags:
-  - upload
 ...
