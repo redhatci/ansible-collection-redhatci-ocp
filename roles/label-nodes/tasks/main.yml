@@ -1,0 +1,8 @@
+---
+- name: Label nodes
+  k8s:
+    definition: "{{ lookup('template', 'node_label.yml') | from_yaml }}"
+  loop: "{{ label_loop }}"
+  when:
+    - label_item[item].labels is defined
+...
