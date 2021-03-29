@@ -1,0 +1,71 @@
+---
+- name: "reset ssh connection to allow user changes to affect {{ ansible_user_id }}"
+  meta: reset_connection
+
+- name: Enable EPEL
+  become: true
+  package:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  when: ansible_distribution_major_version == '7'
+
+- name: Install packages required for libvirt
+  become: true
+  package:
+    name:
+      - libvirt-daemon-kvm
+      - git
+      - genisoimage
+      - libvirt
+      - libvirt-daemon-kvm
+      - virt-install
+      - "libvirt-python{% if ansible_python.version.major == 3 %}3{% endif %}"
+      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-netaddr"
+      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-lxml"
+      - "python{{ ansible_python.version.major }}-pip"
+      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-virtualenv"
+
+- name: Get processor family
+  set_fact:
+    proc_family: >-
+      {{ ('AMD' in (ansible_processor | join()))|
+      ternary ('amd','intel') }}
+
+- name: Check on nested KVM status
+  command: |
+    cat /sys/module/kvm_{{ proc_family }}/parameters/nested
+  ignore_errors: true
+  register: nested_kvm
+
+- name: Enable nested Virt
+  become: true
+  copy:
+    content: |
+      options kvm-{{ proc_family }} nested=1
+      options kvm-{{ proc_family }} enable_shadow_vmcs=1
+      options kvm-{{ proc_family }} enable_apicv=1
+      options kvm-{{ proc_family }} ept=1
+    dest: /etc/modprobe.d/kvm_nested.conf
+  when: nested_kvm.stdout != 'Y'
+
+- name: Reload KVM module
+  become: true
+  shell: |
+    modprobe -r kvm_{{ proc_family }}
+    modprobe -a kvm_{{ proc_family }}
+  when: nested_kvm.stdout != 'Y'
+
+- name: Enable and Start libvirtd
+  become: true
+  service:
+    name: libvirtd
+    enabled: yes
+    state: started
+
+- name: "Add {{ ansible_user_id }} user to libvirt and qemu groups"
+  become: true
+  user:
+    name: "{{ ansible_user_id }}"
+    append: yes
+    groups:
+      - libvirt
+      - qemu

@@ -1,0 +1,95 @@
+---
+- name: Stop and remove existing Virtual BMCs
+  shell: |
+      {{ vbmc_bin }} stop {{ item }}
+      {{ vbmc_bin }} delete {{ item }}
+  ignore_errors: true
+  with_items: "{{ vbmc_nodes }}"
+
+- name: Get current count of used vbmc ports
+  shell: "{{ vbmc_bin | quote }} list | grep 62 | wc -l"
+  register: vbmc_used_ports
+
+- name: Define vbmc_port for each VM
+  set_fact:
+      vbmc_ports: "{{ vbmc_ports|default({})|combine({ item.1: vbmc_start_port + vbmc_used_ports.stdout|int + item.0 }) }}"
+  with_indexed_items: "{{ vbmc_nodes }}"
+  vars:
+      vbmc_start_port: 6230
+
+- name: Set ipv4 management bmc address
+  set_fact:
+      vbmc_management_address: "{{ hostvars[vbmc_host]['ansible_'+ipmi_net].ipv4.address }}"
+  when: not baremetal_net_ipv6|bool
+
+- name: Set ipv6 management bmc address
+  set_fact:
+      vbmc_management_address: "{{ hostvars[vbmc_host]['ansible_'+ipmi_net].ipv6[0].address }}"
+  when: baremetal_net_ipv6|bool
+
+- include_tasks: firewalld.yml
+
+- name: Add nodes to vbmc
+  command: "{{ vbmc_bin }} add {{ item.key }} --port {{ item.value }} --username {{ vbmc_user }} --password {{ vbmc_pass }} --address {% if not baremetal_net_ipv6|bool %}::ffff:{% endif %}{{ vbmc_management_address }}"
+  with_dict: "{{ vbmc_ports }}"
+
+- name: Start nodes using vbmc
+  command: "{{ vbmc_bin }} start {{ item.key }}"
+  with_dict: "{{ vbmc_ports }}"
+
+- name: Setting nodes power status using ipmitool
+  command: "ipmitool -I lanplus -U {{ vbmc_user }} -P {{ vbmc_pass }} -H {{ vbmc_management_address }} -p {{ item.value }} chassis power on"
+  with_dict: "{{ vbmc_ports }}"
+  register: command_result
+  until: command_result.rc == 0
+  retries: 5
+  delay: 5
+
+- name: Get vbmc VMs power status using ipmitool
+  command: "ipmitool -I lanplus -U {{ vbmc_user }} -P {{ vbmc_pass }} -H {{ vbmc_management_address }} -p {{ item.value }} power status"
+  register: ipmitool_results
+  with_dict: "{{ vbmc_ports }}"
+  until: ipmitool_results.rc == 0
+  retries: 5
+  delay: 5
+
+- name: Validate that all VMs are powered on
+  fail:
+      msg: "Node is not powered on! (ipmitool stdout: '{{ item.stdout }}')"
+  when: "item.stdout != 'Chassis Power is on'"
+  with_items: "{{ ipmitool_results.results }}"
+
+- name: Power off nodes with ipmitool
+  command: "ipmitool -I lanplus -U {{ vbmc_user }} -P {{ vbmc_pass }} -H {{ vbmc_management_address }} -p {{ item.value }} chassis power off"
+  with_dict: "{{ vbmc_ports }}"
+  register: command_result
+  until: command_result.rc == 0
+  retries: 5
+  delay: 5
+
+- name: Get information about vm from hypervisor
+  delegate_to: "{{ vbmc_host }}"
+  shell: |
+      NODE_XML=`virsh dumpxml {{ item }}`
+      disks_list="["
+      for dsk in $(virsh domblklist {{ item }} | tail -n +3 | awk '{print $1}'); do
+          disks_list="${disks_list}\"${dsk}\","
+      done
+      disks_list="${disks_list}]"
+      disks_list="$(echo ${disks_list} | sed 's/,]/]/g')"
+      echo "{
+          'name': '{{ item }}',
+          'arch': '`echo "$NODE_XML" | grep arch | cut -d\' -f2`',
+          'memory_kibs': '`echo "$NODE_XML" | grep currentMemory | cut -d\< -f2 | cut -d\> -f2`',
+          'mac': '`echo "$NODE_XML" | grep provisioning -B 1 | grep mac | cut -d\' -f2`',
+          'cpu': '`echo "$NODE_XML" | grep vcpu | cut -d\< -f2 | cut -d\> -f2`',
+          'disk_bytes': '`virsh domblkinfo {{ item }} vda | grep -e Capacity | cut -d\: -f2 | xargs`',
+          'disks': '${disks_list}',
+      }"
+  with_items: "{{ vbmc_nodes|sort }}"
+  register: nodes_info
+
+- name: Generate file containing install-scripts vbmc details
+  template:
+    src: nodes_dict.json.j2
+    dest: ipmi_nodes.json

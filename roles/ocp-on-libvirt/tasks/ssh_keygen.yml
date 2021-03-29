@@ -1,0 +1,24 @@
+---
+- name: "Set_ssh_key_name"
+  set_fact:
+    ssh_key_path: "{{ default_ssh_key_path | default('~/.ssh') }}/{{ ssh_key }}"
+
+- name: "Does ssh key already exists ?"
+  stat:
+    path: "{{ ssh_key_path }}"
+  register: ssh_key_stat_local
+
+- name: "Generate ssh keys when they don't exist"
+  shell: "ssh-keygen -t rsa -f {{ ssh_key_path }} -N '';cat {{ ssh_key_path }}.pub >> ~/.ssh/authorized_keys"
+  args:
+    creates: "{{ ssh_key_path }}"
+  when: ssh_key_stat_local.stat.exists == false
+
+- name: "Ensure correct permissions on ~/.ssh/authorized_keys"
+  file:
+    path: "{{ '~' | expanduser }}/.ssh/authorized_keys"
+    mode: 0644
+
+- name: "Cat out contents of public key"
+  shell: "cat {{ ssh_key_path }}.pub"
+  register: pubkey
