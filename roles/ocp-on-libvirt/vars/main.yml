@@ -1,0 +1,6 @@
+---
+libvirt_image_path: /var/lib/libvirt/images
+ssh_key: id_rsa
+libvirt_become: yes
+net: baremetal
+...

@@ -1,0 +1,18 @@
+- name: "Does node exist"
+  ignore_errors: yes
+  virt:
+    name: "{{ host['name'] }}"
+    command: status
+  register: node_exists
+
+- name: "destroy node"
+  virt:
+    name: "{{ host['name'] }}"
+    command: destroy
+  when: node_exists['status'] is defined and node_exists['status'] == 'running'
+
+- name: "undefine node"
+  virt:
+    name: "{{ host['name'] }}"
+    command: undefine
+  when: not node_exists['failed']

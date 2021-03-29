@@ -1,0 +1,17 @@
+default libvirt {
+    type exec;
+    exec "/usr/local/bin/socat_retry.sh STDIN UNIX-CONNECT:/tmp/Q";
+    execsubst Q=hs;
+    timestamp 5mab;
+    logfile /var/consoles/{{ cluster }}/&;
+    master localhost;
+}
+
+{% for host in socket_hosts %}
+console {{ cluster }}-{{ host }} { include libvirt; host {{ host }}.console; }
+{% endfor %}
+
+access * {
+	allowed 10.0.0.0/8 192.168.0.0/16;
+	trusted 127.0.0.1;
+}

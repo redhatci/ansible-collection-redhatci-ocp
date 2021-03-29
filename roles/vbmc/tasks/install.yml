@@ -1,0 +1,120 @@
+---
+- block:
+  - name: Install packages required for virtualbmc pip package
+    package:
+        name:
+          - gcc
+          - libvirt
+          - libvirt-devel
+          - "python{% if ansible_python.version.major == 3 %}3{% endif %}-setuptools"
+          - "python{% if ansible_python.version.major == 3 %}3{% endif %}-pip"
+          - ipmitool
+          - psmisc
+        state: latest
+        disable_gpg_check: yes
+
+  - name: Get packages info
+    package_facts:
+      manager: auto
+
+  - name: Get libvirt installed version
+    set_fact:
+      libvirt_version: "{{ ansible_facts.packages['libvirt'][0].version }}"
+    when: "'libvirt' in ansible_facts.packages"
+
+  - name: "check if there's a virtualenv already installed (i.e.: a system-wide RPM package)"
+    command: virtualenv --version
+    changed_when: false
+    failed_when: false
+    register: virtualenv_installed_check
+
+  - name: install virtualenv pip module
+    pip:
+        name: virtualenv
+        extra_args: "--user"
+    when: virtualenv_installed_check.rc != 0
+  become: yes
+
+- name: gather info about PATH/env variables
+  setup:
+
+- name: Prepare venv for vbmc
+  pip:
+    virtualenv: "{{ vbmc_virtualenv }}"
+    virtualenv_command: "virtualenv-{{ ansible_python.version.major }}"
+    name:
+      - pip
+      - dateutils
+      - libvirt-python=={{ libvirt_version }}
+      - pyghmi==1.5.13
+    state: latest
+
+- name: Install python-virtualbmc with pip
+  pip:
+    virtualenv: "{{ vbmc_virtualenv }}"
+    virtualenv_command: "virtualenv-{{ ansible_python.version.major }}"
+    name: virtualbmc
+    version: "{{ vbmc_version }}"
+  environment:
+      PATH: "{{ vbmc_home }}/.local/bin:{{ ansible_env.PATH }}" # to find 'virtualenv' command if available in user's ~/.local/bin, otherwise will find a system-wide one
+
+- block:
+    - name: adds VirtualBMC as systemd service
+      copy:
+        mode: 0664
+        dest: "{{ vbmc_systemd_unit }}"
+        content: |
+          [Unit]
+          Description=Virtual Baseboard Management Controller Emulation service
+          After=syslog.target network.target
+
+          [Service]
+          Type=simple
+          User={{ vbmc_user }}
+          ExecStart={{ vbmc_virtualenv }}/bin/python {{ vbmcd_bin }} --foreground
+          Restart=always
+          RestartSec=1
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Create VirtualBMC directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0640
+        owner: root
+        group: root
+      with_items:
+        - "/etc/virtualbmc"
+        - "/var/log/virtualbmc"
+
+    - name: Create VirtualBMC configuration file
+      copy:
+        mode: 0640
+        dest: "/etc/virtualbmc/virtualbmc.conf"
+        content: |
+          [default]
+          config_dir= {{ vbmc_config_dir }}
+          [log]
+          logfile=/var/log/virtualbmc/virtualbmc.log
+          debug=True
+          [ipmi]
+          session_timout=20
+
+    - name: reload systemd
+      systemd:
+          daemon_reload: yes
+
+    - name: restart virtualbmc
+      service:
+          name: virtualbmc
+          state: restarted
+  become: true
+
+- name: Start the Virtual BMCs
+  become: true
+  systemd:
+    name: virtualbmc
+    state: started
+    enabled: yes

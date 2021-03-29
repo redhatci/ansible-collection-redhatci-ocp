@@ -1,0 +1,38 @@
+---
+- include_vars:
+    file: ipmi_nodes.json
+    name: ironic_nodes
+- name: Generating hosts inventory file
+  template:
+    src: hosts.j2
+    dest: hosts
+- name: Update running inventory of masters
+  add_host:
+    name: "{{ item.key }}"
+    groups:
+      - masters
+    ipmi_user: "{{ item.value.ipmi_user }}"
+    ipmi_password: "{{ item.value.ipmi_pass }}"
+    ipmi_address: "{{ item.value.ipmi_address }}"
+    ipmi_port: "{{ item.value.ipmi_port }}"
+    socket_console: "{{ enable_conserver }}"
+  when: '"master" in item.key'
+  loop: "{{ ironic_nodes | dict2items }}"
+- name: Update running inventory of workers
+  add_host:
+    name: "{{ item.key }}"
+    groups:
+      - workers
+    ipmi_user: "{{ item.value.ipmi_user }}"
+    ipmi_password: "{{ item.value.ipmi_pass }}"
+    ipmi_address: "{{ item.value.ipmi_address }}"
+    ipmi_port: "{{ item.value.ipmi_port }}"
+    socket_console: "{{ enable_conserver }}"
+  when: '"workers" in item.key'
+  loop: "{{ ironic_nodes | dict2items }}"
+- name: Startup provisionhost
+  virt:
+    name: "{{ item.key }}"
+    state: running
+  loop: "{{ lookup('dict', ironic_nodes) }}"
+  when: "'provision' in item.key"
