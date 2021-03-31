@@ -167,11 +167,13 @@
         msg: "rendered-worker is not updated with performance profile"
       when: worker_machine_id is undefined
 
-    - pause:
+    - name: "Wait for some time"
+      pause:
         seconds: 15
 
     - name: Check nodes
       include_role:
         name: prepare-cnf
         tasks_from: nodes-ok.yml
-...
+      vars:
+        call_from: "operator-performance-profile"
