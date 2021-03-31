@@ -159,4 +159,6 @@
   include_role:
     name: prepare-cnf
     tasks_from: nodes-ok.yml
+  vars:
+    call_from: "operator-sriov"
 ...
