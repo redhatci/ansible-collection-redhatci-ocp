@@ -1,17 +1,17 @@
 ---
-- name: "redhat-tests : Fetch ClusterRole definition"
+- name: "test_ redhat-tests : Fetch ClusterRole definition"
   get_url:
     url: "{{ dci_redhat_tests_base_url }}/master/rbac/osetests-{{ dci_openshift_agent_conformance }}.yaml"
     dest: "{{ dci_cluster_configs_dir }}/osetests-{{ dci_openshift_agent_conformance }}.yaml"
 
-- name: "redhat-tests: Create cluster role with minimum set of permissions needed for tests"
+- name: "test_ redhat-tests: Create cluster role with minimum set of permissions needed for tests"
   environment:
     KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
   shell: >
     {{ dci_cluster_configs_dir }}/oc auth reconcile
     -f {{ dci_cluster_configs_dir }}/osetests-{{ dci_openshift_agent_conformance }}.yaml
 
-- name: "redhat-tests : Wait for clusterrole to appear in openshift"
+- name: "test_ redhat-tests : Wait for clusterrole to appear in openshift"
   environment:
     KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
   shell: |
