@@ -1,4 +1,6 @@
+---
 kind: PerformanceProfile
+apiVersion: "performance.openshift.io/v2"
 metadata:
   name: cnf-basic-profile
   namespace: openshift-performance-addon
@@ -26,3 +28,4 @@ spec:
     topologyPolicy: "best-effort"
   nodeSelector:
     node-role.kubernetes.io/worker: ""
+...

@@ -40,9 +40,9 @@
 
 - name: Get OCP version
   set_fact:
-     ocp_version: "{{ '.'.join(item.split(':')[1].strip().split('.')[0:2]) }}"
-     ocp_version_maj: "{{ item.split(':')[1].strip().split('.')[0] }}"
-     ocp_version_min: "{{ item.split(':')[1].strip().split('.')[1] }}"
+    ocp_version: "{{ '.'.join(item.split(':')[1].strip().split('.')[0:2]) }}"
+    ocp_version_maj: "{{ item.split(':')[1].strip().split('.')[0] }}"
+    ocp_version_min: "{{ item.split(':')[1].strip().split('.')[1] }}"
   when: "'Server Version' in item"
   loop: "{{ oc_version_str.stdout_lines }}"
 
@@ -51,23 +51,8 @@
     msg: "OCP version is not set"
   when: not ocp_version
 
-- name: "Parsing OCP version - 4.5"
-  include_vars: ocp4_5.yaml
-  when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int == 5
-
-- name: "Parsing OCP version - 4.6"
-  include_vars: ocp4_6.yaml
-  when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int == 6
-
-- name: "Parsing OCP version - latest"
-  include_vars: ocp_latest.yaml
-  when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int >= 7
+- name: "Include catalog vars for {{ ocp_version }}"
+  include_vars: "ocp_{{ ocp_version }}.yml"
 
 - name: Disable default catalog sources for disconnected deployment
   environment:

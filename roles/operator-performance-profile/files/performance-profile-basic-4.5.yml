@@ -1,0 +1,31 @@
+---
+kind: PerformanceProfile
+apiVersion: "performance.openshift.io/v1alpha1"
+metadata:
+  name: cnf-basic-profile
+  namespace: openshift-performance-addon
+spec:
+  additionalKernelArgs:
+    - "nmi_watchdog=0"
+    - "audit=0"
+    - "mce=off"
+    - "processor.max_cstate=1"
+    - "idle=poll"
+    - "intel_idle.max_cstate=0"
+  cpu:
+    isolated: "2-19,22-39,42-59,62-79"
+    reserved: "0,1,40,41,20,21,60,61"
+  hugepages:
+    defaultHugepagesSize: "1G"
+    pages:
+      - size: "1G"
+        count: 32
+        node: 0
+      - size: "1G"
+        count: 32
+        node: 1
+  numa:
+    topologyPolicy: "best-effort"
+  nodeSelector:
+    node-role.kubernetes.io/worker: ""
+...

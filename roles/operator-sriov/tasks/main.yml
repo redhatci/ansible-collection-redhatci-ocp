@@ -19,7 +19,7 @@
         namespace: openshift-sriov-network-operator
       spec:
         targetNamespaces:
-        - openshift-sriov-network-operator
+          - openshift-sriov-network-operator
 
 - name: Create subscription for SR-IOV operator with channel (4.5 and older)
   k8s:
@@ -27,7 +27,7 @@
       apiVersion: operators.coreos.com/v1alpha1
       kind: Subscription
       metadata:
-        name: sriov-network-operator-subsription
+        name: sriov-network-operator-subscription
         namespace: openshift-sriov-network-operator
       spec:
         name: sriov-network-operator
@@ -54,15 +54,33 @@
     - ocp_version_maj|int == 4
     - ocp_version_min|int >= 6
 
-- name: get sriov-network-operator csv
+- name: "Get SRIOV InstallPlan details"
+  k8s_info:
+    api: operators.coreos.com/v1alpha1
+    kind: InstallPlan
+    namespace: openshift-sriov-network-operator
+  register: sriov_ip
+  retries: 30
+  delay: 5
+  until:
+    - "sriov_ip.resources|length  == 1"
+    - "'spec' in sriov_ip.resources[0]"
+    - "'clusterServiceVersionNames' in sriov_ip.resources[0].spec"
+
+- name: "Set SRIOV CSV name from IP"
+  set_fact:
+    sriov_csv_name: "{{ sriov_ip.resources[0].spec.clusterServiceVersionNames[0] }}"
+
+- name: get CSVs in sriov-network-operator ns
   k8s_info:
     api: operators.coreos.com/v1alpha1
     namespace: openshift-sriov-network-operator
     kind: ClusterServiceVersion
+    name: "{{ sriov_csv_name }}"
   register: csv
   retries: 30
   delay: 5
-  no_log: true
+  #no_log: true
   until:
     - "csv.resources|length == 1"
     - "'status' in csv.resources[0]"
@@ -90,7 +108,7 @@
     definition: "{{ lookup('template', 'sriov-policy.yaml.j2') }}"
   vars:
     name: intel-numa0-policy1
-    resource_name:  intel_numa0_res1
+    resource_name: intel_numa0_res1
     num_vfs: 32
     interfaces: ["ens2f1#0-15"]
 
@@ -99,7 +117,7 @@
     definition: "{{ lookup('template', 'sriov-policy.yaml.j2') }}"
   vars:
     name: intel-numa0-policy2
-    resource_name:  intel_numa0_res2
+    resource_name: intel_numa0_res2
     num_vfs: 32
     interfaces: ["ens2f1#16-31"]
 
@@ -130,14 +148,14 @@
   k8s_info:
     kind: Node
   register: nodes
-  no_log: true
+  #no_log: true
 
 - name: Get one worker node
   set_fact:
     worker_node: "{{ item.metadata.name }}"
   when: "'node-role.kubernetes.io/worker' in item.metadata.labels"
   loop: "{{ nodes.resources }}"
-  no_log: true
+  #no_log: true
 
 - name: Get SriovNetworkNodeState for one of the worker node
   k8s_info:
