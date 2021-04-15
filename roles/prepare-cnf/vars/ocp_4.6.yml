@@ -3,3 +3,4 @@ redhat_catalog_source: redhat-operators-jump
 catalog_repo_name: redhat
 catalog_image_name: redhat-operator-index
 catalog_image_version: "v{{ ocp_version }}"
+...
