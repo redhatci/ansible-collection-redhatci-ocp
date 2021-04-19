@@ -51,15 +51,20 @@
     msg: "OCP version is not set"
   when: not ocp_version
 
-- include_vars: ocp4_5.yaml
+- name: "Parsing OCP version - 4.5"
+  include_vars: ocp4_5.yaml
   when:
     - ocp_version_maj|int == 4
     - ocp_version_min|int == 5
-- include_vars: ocp4_6.yaml
+
+- name: "Parsing OCP version - 4.6"
+  include_vars: ocp4_6.yaml
   when:
     - ocp_version_maj|int == 4
     - ocp_version_min|int == 6
-- include_vars: ocp_latest.yaml
+
+- name: "Parsing OCP version - latest"
+  include_vars: ocp_latest.yaml
   when:
     - ocp_version_maj|int == 4
     - ocp_version_min|int >= 7

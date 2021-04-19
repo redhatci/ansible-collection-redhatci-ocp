@@ -108,8 +108,9 @@
 - name: PerformanceProfile validation block
   when: profile_name is defined and profile_state is changed
   block:
-    # TODO: Remove this delay once valid events are catpured
-    - pause:
+    # TODO: Remove this delay once valid events are captured
+    - name: "Delay for capturing valid events"
+      pause:
         seconds: 10
 
     - name: Check for KubeletConfig creation
