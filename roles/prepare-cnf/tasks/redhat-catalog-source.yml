@@ -10,19 +10,28 @@
 - name: Deploy CatalogSource if not already deployed
   when: pkg_manifest_sriov.resources|length == 0
   block:
-  - set_fact:
+  - name: "Define hostname for the catalog registry server"
+    set_fact:
       catalog_registry: "jumphost.{{ cluster }}.dfwt5g.lab"
     when: catalog_registry is undefined
-  - set_fact:
+
+  - name: "Define port for the catalog registry server"
+    set_fact:
       catalog_registry_port: "5000"
     when: catalog_registry_port is undefined
-  - set_fact:
+
+  - name: "Define catalog repository name"
+    set_fact:
       catalog_repo_name: "olm"
     when: catalog_repo_name is undefined
-  - set_fact:
+
+  - name: "Define catalog image name"
+    set_fact:
       catalog_image_name: "redhat-operators"
     when: catalog_image_name is undefined
-  - set_fact:
+
+  - name: "Define catalog image version"
+    set_fact:
       catalog_image_version: "v1"
     when: catalog_image_version is undefined
 
