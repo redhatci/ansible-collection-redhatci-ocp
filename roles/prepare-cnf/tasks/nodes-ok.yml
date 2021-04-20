@@ -1,5 +1,5 @@
 ---
-- name: "Check the master nodes managed by MCP are updated and ready ({{ call_from | default('') }})"
+- name: "Check the master nodes managed by MCP are updated and ready"
   k8s_info:
     kind: MachineConfigPool
     name: master
@@ -13,7 +13,7 @@
     - "mcp_master.resources[0].status.readyMachineCount == groups['masters']|length"
     - "mcp_master.resources[0].status.updatedMachineCount == mcp_master.resources[0].status.machineCount"
 
-- name: "Check the worker nodes managed by MCP are updated and ready ({{ call_from | default('') }})"
+- name: "Check the worker nodes managed by MCP are updated and ready"
   k8s_info:
     kind: MachineConfigPool
     name: worker
