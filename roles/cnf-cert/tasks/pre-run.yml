@@ -1,0 +1,56 @@
+---
+
+- name: Install the Go toolchain
+  become: yes
+  dnf:
+    name: go-toolset
+    state: latest
+
+- name: Clone test-network-function
+  git:
+    repo: "{{ test_network_function_repo }}"
+    version: "{{ test_network_function_version }}"
+    dest: "{{ tnf_git_dir }}/test_network_function"
+    force: yes
+  # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
+  # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
+  # multiple times.
+  register: test_network_function_gitref
+  retries: 3
+  delay: 10
+  until: not test_network_function_gitref.failed
+
+- name: Clone cnf-certification-test-partner
+  git:
+    repo: "{{ cnf_certification_test_partner_repo }}"
+    version: "{{ cnf_certification_test_partner_version }}"
+    dest: "{{ tnf_git_dir }}/cnf_certification_test_partner"
+    force: yes
+  # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
+  # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
+  # multiple times.
+  register: cnf_certification_test_partner_gitref
+  retries: 3
+  delay: 10
+  until: not cnf_certification_test_partner_gitref.failed
+
+- name: Build the partner pod
+  shell: |
+    set -ex
+    cd {{ tnf_git_dir }}/cnf_certification_test_partner/test-partner
+    if [ -n "{{ tnf_registry }}" -a -n "{{ tnf_registry_creds }}" ]; then
+      podman build -t testnetworkfunction/cnf-test-partner .
+      podman tag testnetworkfunction/cnf-test-partner {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
+      podman push --creds {{ tnf_registry_creds }} {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
+      sed -i -e 's@quay.io/testnetworkfunction/cnf-test-partner:latest@{{ tnf_registry }}/testnetworkfunction/cnf-test-partner@' partner.yaml
+    fi
+    oc get ns|grep ^tnf || oc create -f ./namespace.yaml
+    oc get pod -n tnf partner || oc create -f ./partner.yaml
+
+- name: Build the CNF Test Suite
+  shell: |
+    set -ex
+    cd {{ tnf_git_dir }}/test_network_function
+    make build-cnf-tests
+
+...

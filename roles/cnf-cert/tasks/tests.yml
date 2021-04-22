@@ -1,0 +1,52 @@
+---
+
+- name: Create temporary build directory
+  tempfile:
+    state: directory
+  register: tnf_tempdir
+  when: tnf_tempdir is not defined
+
+- name: Get a list of pods
+  k8s_info:
+    api_version: v1
+    kind: pod
+    namespace: "{{ tnf_ns }}"
+  register: tnf_pod_list
+
+- name: Get a list of csv
+  k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: "{{ tnf_ns }}"
+  register: tnf_csv_list
+
+- name: Template generic_test_configuration.yml
+  template:
+    src: templates/generic_test_configuration.yml.j2
+    dest: "{{ tnf_tempdir.path }}/generic_test_configuration.yml"
+
+- name: Template cnf_test_configuration.yml
+  template:
+    src: templates/cnf_test_configuration.yml.j2
+    dest: "{{ tnf_tempdir.path }}/cnf_test_configuration.yml"
+
+# - name: Run the CNF Test Suite (container)
+#   shell: |
+#     set -x
+#     sed -i -e 's@:latest@:{{ 'latest' if test_network_function_version == 'HEAD' else test_network_function_version }}@' -e 's@\(.*-v .*\) \\@\1:z \\@' run-container.sh
+#     ./run-container.sh -t {{ tnf_tempdir.path }} -o {{ job_logs.path }} {{ tnf_suites }}
+#     :
+#   args:
+#     chdir: "{{ tnf_git_dir }}/test_network_function"
+
+- name: Run the CNF Test Suite
+  shell: |
+    set -x
+    rm -f test_network_function/*.xml test-network-function/generic_test_configuration.yml test-network-function/cnf_test_configuration.yml
+    cp {{ tnf_tempdir.path }}/generic_test_configuration.yml {{ tnf_tempdir.path }}/cnf_test_configuration.yml test-network-function/
+    ./run-cnf-suites.sh {{ tnf_suites }}
+    cp test-network-function/*.xml {{ tnf_tempdir.path }}
+  args:
+    chdir: "{{ tnf_git_dir }}/test_network_function"
+
+...

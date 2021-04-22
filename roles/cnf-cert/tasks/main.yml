@@ -1,0 +1,11 @@
+---
+- block:
+
+    - name: pre-run
+      include_tasks: pre-run.yml
+
+    - name: tests
+      include_tasks: tests.yml
+
+  when: do_cnf_cert|bool
+...

@@ -1,0 +1,29 @@
+---
+operators:
+{% for csv in tnf_csv_list.resources %}
+{% if ( csv.metadata.name | regex_search(tnf_operators_regexp) ) %}
+  - name: {{ csv.metadata.name }}
+    namespace: {{ tnf_ns }}
+    status: Succeeded
+    autogenerate: false
+    tests:
+      - OPERATOR_STATUS
+    certifiedoperatorrequestinfo:
+{% else %}
+# {{ csv.metadata.name }}
+{% endif %}
+{% endfor %}
+cnfs:
+{% for pod in tnf_pod_list.resources %}
+{% if ( pod.metadata.name | regex_search(tnf_cnfs_regexp) ) %}
+  - name: {{ pod.metadata.name }}
+    namespace: {{ tnf_ns }}
+    status: Running
+    tests:
+      - PRIVILEGED_POD
+      - PRIVILEGED_ROLE
+    certifiedcontainerrequestinfo:
+{% else %}
+# {{ pod.metadata.name }}
+{% endif %}
+{% endfor %}
