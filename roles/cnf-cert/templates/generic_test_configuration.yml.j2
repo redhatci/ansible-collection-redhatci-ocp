@@ -1,0 +1,34 @@
+---
+containersUnderTest:
+{% for pod in tnf_pod_list.resources %}
+{% if ( pod.metadata.name | regex_search(tnf_cnfs_regexp) ) %}
+{% for container in pod.spec.containers %}
+  ? namespace: {{ tnf_ns }}
+    podName: {{ pod.metadata.name }}
+    containerName: {{ container.name }}
+  : defaultNetworkDevice: {{ tnf_if }}
+{% endfor %}
+{% else %}
+# {{ pod.metadata.name }}
+{% endif %}
+{% endfor %}
+partnerContainers:
+  ? namespace: tnf
+    podName: partner
+    containerName: partner
+  : defaultNetworkDevice: {{ tnf_if }}
+testOrchestrator:
+  namespace: tnf
+  podName: partner
+  containerName: partner
+excludeContainersFromConnectivityTests:
+{% for pod in tnf_pod_list.resources %}
+{% if not tnf_exclude_connectivity_regexp or ( pod.metadata.name | regex_search(tnf_exclude_connectivity_regexp) ) %}
+{% for container in pod.spec.containers %}
+  - namespace: {{ tnf_ns }}
+    podName: {{ pod.metadata.name }}
+    containerName: {{ container.name }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+...
