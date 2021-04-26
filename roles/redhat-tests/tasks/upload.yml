@@ -1,17 +1,4 @@
 ---
-- name: "redhat-tests: find junit from tmpdir"
-  find:
-    paths: "{{ lookup('env','JUNIT_OUTPUT_DIR') }}"
-    recurse: true
-    patterns: "*.xml"
-  register: junit_from_tmp
-
-- name: "redhat-tests: copy junit report to {{ dci_cluster_configs_dir }}"
-  copy:
-    dest: "{{ dci_cluster_configs_dir }}/junit_{{ item.path | basename | regex_replace('^(.*).xml$','\\1') }}"
-    src: "{{ item.path }}"
-  with_items: "{{ junit_from_tmp.files }}"
-
 - name: "redhat-tests : Find test files"
   find:
     paths: "{{ dci_cluster_configs_dir }}"

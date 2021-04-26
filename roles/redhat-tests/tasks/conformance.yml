@@ -1,5 +1,5 @@
 ---
-- name: "redhat-tests : Run the openshift conformance test suite"
+- name: "test_ redhat-tests : Run the openshift conformance test suite"
   shell: >
     podman run --pull=always --rm
     -e TESTS={{ dci_openshift_agent_conformance }}
