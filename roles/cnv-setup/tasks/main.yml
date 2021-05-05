@@ -14,9 +14,9 @@
     - install
 
 - name: "cnv-setup : deploy vm"
-  include_tasks: deploy-vm.yml
+  include_tasks: test-deploy-vm.yml
   when:
-    - cnv_deploy_vm| bool
+    - test_deploy_vm| bool
   tags:
     - install
 ...

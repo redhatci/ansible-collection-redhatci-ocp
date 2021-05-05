@@ -1,0 +1,70 @@
+---
+### tasks in disconnected environment
+- block:
+  - name: "Mirror Cirros-VM image for test"
+    delegate_to: localhost
+    shell:
+      cmd: >
+         skopeo copy --authfile {{ hostvars.localhost.provision_cache_store }}/{{ cluster }}-pull-secret.txt
+         --dest-tls-verify=false docker://quay.io/{{ cirros_vm_image }}
+         docker://{{ local_registry_host }}:{{ local_registry_port }}/{{ cirros_vm_image }}
+    register: copy
+    retries: 5
+    delay: 5
+    until:
+      - copy is not failed
+
+  - name: "Cirros VM image definition (disconnected mode)"
+    set_fact:
+      cirros_vm_image: "{{ local_registry_host }}:{{ local_registry_port }}/{{ cirros_vm_image }}"
+  when: hostvars.localhost.local_registry is defined
+###
+
+- name: "Create the test VirtualMachine"
+  k8s:
+    definition: "{{ lookup('template', cnv_vm_yaml) }}"
+
+- name: "test_ Create the test VirtualMachineInstance"
+  k8s:
+    state: present
+    definition:
+      apiVersion: kubevirt.io/v1alpha3
+      kind: VirtualMachine
+      metadata:
+        name: vm-cirros
+        namespace: default
+      spec:
+        running: true
+
+- name: "test_ Get VMI status"
+  k8s_info:
+    api: kubevirt.io/v1alpha3
+    kind: VirtualMachineInstance
+    name: vm-cirros
+    namespace: default
+  register: vmi_test
+  retries: 10
+  delay: 5
+  until: vmi_test.resources[0].status.phase == "Running"
+
+- name: "Stopping the test VMI"
+  k8s:
+    definition:
+      kind: VirtualMachine
+      apiVersion: kubevirt.io/v1alpha3
+      metadata:
+        name: vm-cirros
+        namespace: default
+      spec:
+        running: false
+
+- name: "Deleting the Cirros VMI"
+  k8s:
+    state: absent
+    definition:
+      apiVersion: kubevirt.io/v1alpha3
+      kind: VirtualMachine
+      metadata:
+        name: vm-cirros
+        namespace: default
+...

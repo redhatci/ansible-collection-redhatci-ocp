@@ -5,6 +5,7 @@ metadata:
     kubevirt.io/vm: vm-cirros
     cnv: demo
   name: vm-cirros
+  namespace: default
 spec:
   running: false
   template:
@@ -29,7 +30,7 @@ spec:
       terminationGracePeriodSeconds: 0
       volumes:
       - containerDisk:
-          image: {{ cnv_catalog_registry }}:{{ cnv_catalog_registry_port }}{{ cnv_vm_image }}
+          image: {{ cirros_vm_image }}
         name: containerdisk
       - cloudInitNoCloud:
           userData: |
