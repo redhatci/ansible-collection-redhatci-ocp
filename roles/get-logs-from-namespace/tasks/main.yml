@@ -3,6 +3,7 @@
   file:
     path: "{{ get_logs_folder }}"
     state: directory
+    mode: 0700
 
 - name: "Get a list of all pods from {{ get_logs_ns }}"
   k8s_info:
