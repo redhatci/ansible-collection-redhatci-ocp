@@ -12,7 +12,7 @@
   loop: "{{ nodes.resources }}"
   no_log: true
 
-- name: Check enough worker nodes availability
+- name: test_ Check enough worker nodes availability
   fail:
     msg: "Not enough worker nodes ({{ worker_node_count }}) to perform required tasks"
   when: worker_node_count|int <= 1

@@ -1,5 +1,5 @@
 ---
-- name: Check for sriov-network-operator packagemanifests
+- name: test_ Check for sriov-network-operator packagemanifests
   k8s_info:
     api_version: packages.operators.coreos.com/v1
     kind: PackageManifest
