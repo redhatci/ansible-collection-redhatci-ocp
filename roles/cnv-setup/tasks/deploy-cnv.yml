@@ -50,7 +50,7 @@
   when:
     - version is version("4.6", ">=")
 
-- name: Check if cnv csv is installed
+- name: test_ Check if cnv csv is installed
   k8s_info:
     api: operators.coreos.com/v1alpha1
     namespace: "{{ cnv_ns }}"

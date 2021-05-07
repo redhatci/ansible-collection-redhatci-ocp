@@ -12,7 +12,7 @@
 #
 #   spec: The spec field of the CR.
 ---
-- name: Check for mandatory input
+- name: test_ Check for mandatory input
   assert:
     that:
       - api_version | string
@@ -35,7 +35,7 @@
   delay: 60
   until: result is not failed
 
-- name: Check that the CR is ready
+- name: test_ Check that the CR is ready
   community.kubernetes.k8s_info:
     api_version: "{{ api_version }}"
     name: "{{ name }}"

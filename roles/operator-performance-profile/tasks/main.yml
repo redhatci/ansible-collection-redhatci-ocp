@@ -55,7 +55,7 @@
     - ocp_version_maj|int == 4
     - ocp_version_min|int <= 5
 
-- name: Check if performance-addon-operator csv is installed
+- name: test_ Check if performance-addon-operator csv is installed
   k8s_info:
     api: operators.coreos.com/v1alpha1
     namespace: openshift-performance-addon
@@ -100,7 +100,7 @@
     profile_name: "{{ profiles.resources[0].metadata.name }}"
   when: profiles.resources|length == 1
 
-- name: Check if one (only one) PerformanceProfile is present
+- name: test_ Check if one (only one) PerformanceProfile is present
   fail:
     msg: "One PerformanceProfile (profiles.resources|length) is required"
   when: profiles.resources|length != 1
@@ -113,7 +113,7 @@
       pause:
         seconds: 10
 
-    - name: Check for KubeletConfig creation
+    - name: test_ Check for KubeletConfig creation
       k8s_info:
         api: machineconfiguration.openshift.io/v1
         kind: KubeletConfig
@@ -125,7 +125,7 @@
       until: "kubelet.resources|length == 1"
       failed_when: "kubelet.resources|length != 1"
 
-    - name: Check for MachineConfig creation
+    - name: test_ Check for MachineConfig creation
       k8s_info:
         api: machineconfiguration.openshift.io/v1
         kind: MachineConfig
