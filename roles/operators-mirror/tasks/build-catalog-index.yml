@@ -12,16 +12,16 @@
       set -x;
       REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
       {{ provision_cache_store }}/{{ version }}/opm index prune
-      --from-index registry.redhat.io/redhat/redhat-operator-index:{{ opm_version }}
+      --from-index registry.redhat.io/redhat/redhat-operator-index:{{ dci_opm_version }}
       --packages {{ opm_mirror_list | join(",") }}
-      --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
+      --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }}
   notify:
     - "Fix permissions and removing tmp files"
 
 - name: "Push the new index image to the local registry"
   shell:
     cmd: >
-      podman push {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
+      podman push {{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }}
       --authfile {{ dci_pullsecret_file }}
 
 ...
