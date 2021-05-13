@@ -1,6 +1,6 @@
 - name: set OPM version
   set_fact:
-    opm_version: "v{{ base_version }}"
+    dci_opm_version: "v{{ base_version }}"
     filter_by_arg: "--index-filter-by-os"
 
 - name: change filter according to the version
@@ -25,7 +25,7 @@
     cmd: >
       set -x;
       {{ provision_cache_store }}/{{ version }}/oc adm catalog mirror
-      {{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }}
+      {{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
       {{ filter_by_arg }}="linux/amd64" --manifests-only
       --to-manifests={{ manifests_dir }} 2>&1
