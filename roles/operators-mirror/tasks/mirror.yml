@@ -1,3 +1,4 @@
+---
 - name: set OPM version
   set_fact:
     dci_opm_version: "v{{ base_version }}"
@@ -55,7 +56,7 @@
 - name: Copy Containers using the dependency list
   shell:
     cmd: >
-      skopeo copy --all --authfile {{ dci_pullsecret_file }}
+      skopeo copy --remove-signatures --all --authfile {{ dci_pullsecret_file }}
       --dest-tls-verify=false docker://{{ item.split('=')[0] }}
       docker://{{ item.split('=')[1] }}
   register: copy
@@ -98,3 +99,5 @@
     disconnected_registry_mirrors_file: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
   delegate_facts: true
   delegate_to: "{{ groups['registry_host'][0] }}"
+
+...
