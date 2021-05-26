@@ -9,7 +9,7 @@
     kubeconfig: "{{ dci_cluster_configs_dir }}/kubeconfig"
     api_version: v1
     kind: node
-    name: "{{ hostvars[item].name }}"
+    name: "{{ hostvars[item].inventory_hostname }}"
   register: node
   with_items: "{{ groups['masters'] + groups['workers'] }}"
   failed_when: "'resources' not in node or node.resources == []"
