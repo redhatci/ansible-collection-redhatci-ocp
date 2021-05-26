@@ -150,6 +150,12 @@
   register: nodes
   #no_log: true
 
+- name: Add sriov label to worker nodes
+  shell: |
+    oc label node {{ item.metadata.name }} feature.node.kubernetes.io/network-sriov.capable="true"
+  when: "'node-role.kubernetes.io/worker' in item.metadata.labels"
+  loop: "{{ nodes.resources }}"
+
 - name: Get one worker node
   set_fact:
     worker_node: "{{ item.metadata.name }}"
