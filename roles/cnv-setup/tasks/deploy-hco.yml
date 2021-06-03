@@ -39,6 +39,8 @@
       type: Available
       status: "True"
     wait_timeout: 3600
+  retries: 5
+  delay: 60
 
 - name: test_ Check for hyperconverged operator
   k8s_info:
