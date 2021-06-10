@@ -19,7 +19,7 @@
 
 - name: Set the cache location
   set_fact:
-    provision_cache_store: "{{ hostvars[groups['registry_host'][0]].provision_cache_store | default('/opt/cache')}}"
+    provision_cache_store: "{{ hostvars[groups['registry_host'][0]].provision_cache_store | default('/opt/cache') }}"
   when:
     - "'registry_host' in groups"
     - "groups['registry_host']|length >= 1"
