@@ -11,8 +11,10 @@
     kind: node
     name: "{{ hostvars[item].name }}"
   register: node
+  until: "'resources' in node or node.resources != []"
+  retries: 10
+  delay: 30
   with_items: "{{ groups['masters'] + groups['workers'] }}"
-  failed_when: "'resources' not in node or node.resources == []"
   tags:
     - check
 
