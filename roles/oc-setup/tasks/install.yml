@@ -11,9 +11,7 @@
 
 - name: "oc-setup : Install packages needed for login"
   package:
-    name: "{{ item }}"
+    name: httpd-tools
     state: present
   become: true
-  with_items:
-  - httpd-tools
 ...
