@@ -59,7 +59,7 @@
   retries: 30
   delay: 5
   until:
-    - "cnv_ip.resources|length  == 1"
+    - "cnv_ip.resources|length  >= 1"
     - "'spec' in cnv_ip.resources[0]"
     - "'clusterServiceVersionNames' in cnv_ip.resources[0].spec"
 
