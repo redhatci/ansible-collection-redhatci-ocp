@@ -1,0 +1,9 @@
+---
+cache_dir: /var/lib/dci-openshift-agent
+build: ga
+installer_extract_cmds:
+  - openshift-baremetal-install
+force_mirroring: false
+git_ref: HEAD
+git_repo: https://github.com/openshift-kni/baremetal-deploy
+...

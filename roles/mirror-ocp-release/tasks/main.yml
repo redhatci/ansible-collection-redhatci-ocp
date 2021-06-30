@@ -1,0 +1,53 @@
+---
+# This role will mirror a given OpenShift release version to a given cache
+# directory.  The directory is supposed to be served behind an HTTP server
+# (e.g. apache) so the cluster to be installed can reach it.
+# The module will also require an extra container registry to mirror the OCP
+# container images.
+#
+# Parameters:
+#   * cache_dir: Base directory that will hold the OCP version binaries and OS
+#     images
+#   * version: An OpenShift version number e.g. 4.5.21
+#   * build: What type of release this is, must be one of: ga, dev, candidate
+#   * registry_url: Full docker:// URL pointing to the registry that will
+#     hold the mirrored container images e.g. docker://localhost:4000/ns/img
+#   * auths: A dictionary holding the combined and well-formed
+#     registry authorization credentials for all registries you're pulling
+#     images *and* registries you're pushing to
+#   * webserver_url: The HTTP server holding/caching the mirrored VM images
+#   * force_mirroring (optional): If passed as a true value, the role will
+#     re-download all the OCP release resources
+#
+- name: "Validate required input"
+  assert:
+    that:
+      - cache_dir | string
+      - version | string
+      - build | string
+      - build in ['ga', 'dev', 'candidate']
+      - registry_url | string
+      - (registry_url | urlsplit('scheme')) == 'docker'
+      - auths is defined
+      - auths.auths is defined
+      - webserver_url is defined
+
+- name: "Mirroring OCP"
+  debug:
+    var: version
+
+- name: "Create directory structure"
+  include_tasks: dirs.yml
+
+- name: "Fetch release resources"
+  include_tasks: fetch.yml
+
+- name: "Create mirror files"
+  include_tasks: files.yml
+
+- name: "Setup installer"
+  include_tasks: installer.yml
+
+- name: "Mirror images"
+  include_tasks: images.yml
+...
