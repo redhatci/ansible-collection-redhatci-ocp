@@ -1,0 +1,31 @@
+---
+- name: "Check if commands were extracted"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/{{ my_item }}"
+    get_checksum: false
+  loop: "{{ installer_extract_cmds }}"
+  loop_control:
+    loop_var: my_item  # change the name of the variable to avoid clashes
+  register: extracted_cmds  # we register this loop object to re-use
+
+- name: "Extract installer commands"
+  command: >
+    {{ cache_dir }}/{{ version }}/oc adm release extract
+    --registry-config={{ cache_dir }}/{{ version }}/registry-auths.json
+    --command={{ item.my_item }}
+    --to={{ cache_dir }}/{{ version }}
+    {{ release_image.stdout }}
+  when:
+    - not item.stat.exists
+  loop: "{{ extracted_cmds.results }}"  # loop over the results registered previously
+  loop_control:
+    label: "{{ item.my_item }}"  # my_item already exists in this loop object
+
+- name: "Set executable permission on commands"
+  file:
+    path: "{{ cache_dir }}/{{ version }}/{{ item.my_item }}"
+    mode: "0755"
+  loop: "{{ extracted_cmds.results }}"  # loop over the results registered previously
+  loop_control:
+    label: "{{ item.my_item }}"  # my_item already exists in this loop object
+...

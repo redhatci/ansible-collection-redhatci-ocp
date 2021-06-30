@@ -1,0 +1,178 @@
+---
+- name: "Check if release.txt exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/release.txt"
+    get_checksum: false
+  register: release_txt
+
+- name: "Check if signature.bin exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/signature.bin"
+    get_checksum: false
+  register: signature_bin
+
+- name: "Check if release.dig exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/release.dig"
+    get_checksum: false
+  register: release_dig
+
+- name: "Check if clients exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    get_checksum: false
+  register: client_tools_done
+
+- name: "Fetch release.txt"
+  get_url:
+    url: "{{ (build == 'dev') | ternary(release_url_dev, release_url_ga) }}/{{ version }}/release.txt"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    timeout: 300
+  become: true
+  retries: 3
+  delay: 10
+  when:
+    - not release_txt.stat.exists or force_mirroring
+
+- name: "Read release_version from release.txt"
+  shell: "sed -n 's/Version:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
+  register: release_version
+  changed_when: false
+  no_log: true
+
+- name: "Read release_image from release.txt"
+  shell: "sed -n 's/Pull From:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
+  register: release_image
+  changed_when: false
+  no_log: true
+
+- name: "Get digest for release"
+  shell: >
+    grep '^Digest:' {{ cache_dir }}/{{ version }}/release.txt
+    | tr -s ' '
+    | cut -d ' ' -f 2
+  register: release_digest
+  changed_when: false
+
+- name: "Fetch release signature"
+  get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/{{ release_digest.stdout | replace(':', '=') }}/signature-1"
+    dest: "{{ cache_dir }}/{{ version }}/signature.bin"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    timeout: 300
+  become: true
+  retries: 3
+  delay: 10
+  when:
+    - not signature_bin.stat.exists or force_mirroring
+
+- name: "Base64 encode binary signature"
+  slurp:
+    src: "{{ cache_dir }}/{{ version }}/signature.bin"
+  register: signature_b64
+  changed_when: false
+  no_log: true
+
+- name: "Fetch channel upgrade graph"
+  get_url:
+    url: "https://api.openshift.com/api/upgrades_info/v1/graph?channel=fast-{{ major_version }}&arch=amd64"
+    headers:
+      Accept: "application/json"
+    dest: "{{ cache_dir }}/graph-{{ major_version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    timeout: 300
+  become: true
+  retries: 3
+  delay: 10
+
+- name: "Fetch client tools tarballs"
+  get_url:
+    url: "{{ (build == 'dev') | ternary(release_url_dev, release_url_ga) }}/{{ version }}/{{ item }}-linux-{{ release_version.stdout }}.tar.gz"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    timeout: 300
+  become: true
+  retries: 3
+  delay: 10
+  loop: "{{ client_tools }}"
+  when:
+    - version is version('4.6.17', ">=")
+    - not client_tools_done.stat.exists or force_mirroring
+
+- name: "Untar client tools"
+  unarchive:
+    src: "{{ cache_dir }}/{{ version }}/{{ item }}-linux-{{ release_version.stdout }}.tar.gz"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    remote_src: true
+  become: true
+  loop: "{{ client_tools }}"
+  when:
+    - version is version('4.6.17', ">=")
+    - not client_tools_done.stat.exists or force_mirroring
+
+- name: "Fetch client tools tarballs (pre 4.6.17)"
+  get_url:
+    url: "{{ (build == 'dev') | ternary(release_url_dev, release_url_ga) }}/{{ version }}/{{ item }}-linux-{{ release_version.stdout }}.tar.gz"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    timeout: 300
+  become: true
+  retries: 3
+  delay: 10
+  loop: "{{ client_tools_old }}"
+  when:
+    - version is version('4.6.17', "<")
+    - not client_tools_done.stat.exists or force_mirroring
+
+- name: "Untar client tools (pre 4.6.17)"
+  unarchive:
+    src: "{{ cache_dir }}/{{ version }}/{{ item }}-linux-{{ release_version.stdout }}.tar.gz"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    remote_src: true
+  become: true
+  loop: "{{ client_tools_old }}"
+  when:
+    - version is version('4.6.17', "<")
+    - not client_tools_done.stat.exists or force_mirroring
+
+- name: "Marker for client tools downloaded"
+  file:
+    dest: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    state: touch
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+  when:
+    - not client_tools_done.stat.exists or force_mirroring
+
+# TODO: Do we really need this?
+- name: "Clone/update baremetal-deploy repo"
+  git:
+    version: "{{ git_ref }}"
+    repo: "{{ git_repo }}"
+    dest: "{{ cache_dir }}/baremetal-deploy"
+    force: true
+  # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
+  # SSL_ERROR_SYSCALL, errno 104.
+  register: git_clone
+  retries: 3
+  delay: 10
+  until: not git_clone.failed
+...

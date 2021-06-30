@@ -1,0 +1,67 @@
+---
+# this file is used in the upgrade flow
+- name: "Write release digest"
+  copy:
+    dest: "{{ cache_dir }}/{{ version }}/release.dig"
+    content: "{{ release_digest.stdout }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    setype: httpd_sys_content_t
+  become: true
+
+- name: "Write pull secret file to cache"
+  copy:
+    content: "{{ auths | to_nice_json }}"
+    dest: "{{ cache_dir }}/{{ version }}/registry-auths.json"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    setype: httpd_sys_content_t
+    force: true
+  become: true
+
+- name: "Write mirrored image content source policy"
+  copy:
+    dest: "{{ cache_dir }}/{{ version }}/imagecontentsourcepolicy.yaml"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    setype: httpd_sys_content_t
+    content: |
+      apiVersion: operator.openshift.io/v1alpha1
+      kind: ImageContentSourcePolicy
+      metadata:
+        name: release-{{ version }}
+      spec:
+        repositoryDigestMirrors:
+        - mirrors:
+          - {{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}
+          source: quay.io/openshift-release-dev/ocp-release
+        - mirrors:
+          - {{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}
+          source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+        - mirrors:
+          - {{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}
+          source: registry.svc.ci.openshift.org/ocp/release
+  become: true
+
+- name: "Write signature config map"
+  copy:
+    dest: "{{ cache_dir }}/{{ version }}/signature.yaml"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    setype: httpd_sys_content_t
+    content: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: signature-{{ version }}
+        namespace: openshift-config-managed
+        labels:
+          release.openshift.io/verification-signatures: ""
+      binaryData:
+        {{ release_digest.stdout | replace(':', '-') }}-1 : {{ signature_b64.content }}
+  become: true
+...
