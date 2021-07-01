@@ -1,10 +1,17 @@
 ---
 
-- name: Install the Go toolchain
+- name: Install the Go toolchain and make
   become: yes
   dnf:
-    name: go-toolset
+    name: 
+        - go-toolset
+        - make
     state: latest
+
+- name: Install ginkgo package
+  shell: |
+    set -ex
+    go get -u github.com/onsi/ginkgo/ginkgo
 
 - name: Clone test-network-function
   git:
@@ -41,11 +48,11 @@
     if [ -n "{{ tnf_registry }}" -a -n "{{ tnf_registry_creds }}" ]; then
       podman build -t testnetworkfunction/cnf-test-partner .
       podman tag testnetworkfunction/cnf-test-partner {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
-      podman push --creds {{ tnf_registry_creds }} {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
+      podman push --authfile {{ tnf_registry_creds }} {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
       sed -i -e 's@quay.io/testnetworkfunction/cnf-test-partner:latest@{{ tnf_registry }}/testnetworkfunction/cnf-test-partner@' partner.yaml
     fi
     oc get ns|grep ^tnf || oc create -f ./namespace.yaml
-    oc get pod -n tnf partner || oc create -f ./partner.yaml
+    oc get pod -n tnf|grep ^partner || oc create -f ./partner.yaml
 
 - name: Build the CNF Test Suite
   shell: |
