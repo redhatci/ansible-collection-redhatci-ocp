@@ -6,8 +6,8 @@ cnf_certification_test_partner_repo: https://github.com/test-network-function/cn
 cnf_certification_test_partner_version: HEAD
 tnf_if: eth0
 tnf_git_dir: /var/tmp
-tnf_registry: null
-tnf_registry_creds: null
+tnf_registry: ""
+tnf_registry_creds: ""
 tnf_operators_regexp: ""
 tnf_cnfs_regexp: ""
 tnf_exclude_connectivity_regexp: null

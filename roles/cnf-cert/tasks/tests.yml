@@ -20,15 +20,30 @@
     namespace: "{{ tnf_ns }}"
   register: tnf_csv_list
 
-- name: Template generic_test_configuration.yml
+- name: Get a list of pods from the tnf namespace to retrieve partner pod's metadata
+  k8s_info:
+    api_version: v1
+    kind: pod
+    namespace: tnf
+  register: tnf_ns_partner_pod_list
+
+- name: Template generic_test_configuration.yml (version different than v2.0.0)
   template:
     src: templates/generic_test_configuration.yml.j2
     dest: "{{ tnf_tempdir.path }}/generic_test_configuration.yml"
+  when: test_network_function_version != "v2.0.0"
 
-- name: Template cnf_test_configuration.yml
+- name: Template cnf_test_configuration.yml (version different than v2.0.0)
   template:
     src: templates/cnf_test_configuration.yml.j2
     dest: "{{ tnf_tempdir.path }}/cnf_test_configuration.yml"
+  when: test_network_function_version != "v2.0.0"
+
+- name: Template tnf_config.yml (version v2.0.0)
+  template:
+    src: templates/tnf_config.yml.j2
+    dest: "{{ tnf_tempdir.path }}/tnf_config.yml"
+  when: test_network_function_version == "v2.0.0"
 
 # - name: Run the CNF Test Suite (container)
 #   shell: |
@@ -39,7 +54,7 @@
 #   args:
 #     chdir: "{{ tnf_git_dir }}/test_network_function"
 
-- name: Run the CNF Test Suite
+- name: Run the CNF Test Suite (version different than v2.0.0)
   shell: |
     set -x
     rm -f test_network_function/*.xml test-network-function/generic_test_configuration.yml test-network-function/cnf_test_configuration.yml
@@ -48,5 +63,17 @@
     cp test-network-function/*.xml {{ tnf_tempdir.path }}
   args:
     chdir: "{{ tnf_git_dir }}/test_network_function"
+  when: test_network_function_version != "v2.0.0"
+
+- name: Run the CNF Test Suite (version v2.0.0)
+  shell: |
+    set -x
+    rm -f test_network_function/*.xml test-network-function/tnf_config.yml
+    cp {{ tnf_tempdir.path }}/tnf_config.yml test-network-function/
+    ./run-cnf-suites.sh {{ tnf_suites }}
+    cp test-network-function/*.xml {{ tnf_tempdir.path }}
+  args:
+    chdir: "{{ tnf_git_dir }}/test_network_function"
+  when: test_network_function_version == "v2.0.0"
 
 ...
