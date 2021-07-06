@@ -1,10 +1,10 @@
 ---
 cnv_deploy_cnv: true
 cnv_deploy_hco: true
-cnv_deploy_vm: false
+test_deploy_vm: false
 cnv_ns: openshift-cnv
 cnv_vm_yaml: vm.yaml.j2
-cnv_vm_image: kubevirt/cirros-container-disk-demo:devel
+cirros_vm_image: kubevirt/cirros-container-disk-demo:v0.40.0
 cnv_hco_api_check_count: 60
 cnv_test_ns1: cnv-test-1
 cnv_test_ns2: cnv-test-2
