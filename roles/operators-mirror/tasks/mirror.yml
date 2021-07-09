@@ -1,8 +1,15 @@
 ---
-- name: set OPM version
+- name: set OPM version (non GA)
+  set_fact:
+    dci_opm_version: "{{ opm_version | default('v' + base_version|string) }}"
+    filter_by_arg: "--index-filter-by-os"
+  when: build != 'ga'
+
+- name: set OPM version (GA)
   set_fact:
     dci_opm_version: "v{{ base_version }}"
     filter_by_arg: "--index-filter-by-os"
+  when: build == 'ga'
 
 - name: change filter according to the version
   set_fact:
