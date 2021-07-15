@@ -1,7 +1,7 @@
 ---
 do_cnf_cert: false
 test_network_function_repo: https://github.com/test-network-function/test-network-function
-test_network_function_version: HEAD
+test_network_function_version: "v2.0.0"
 cnf_certification_test_partner_repo: https://github.com/test-network-function/cnf-certification-test-partner
 cnf_certification_test_partner_version: HEAD
 tnf_if: eth0
@@ -12,3 +12,5 @@ tnf_operators_regexp: ""
 tnf_cnfs_regexp: ""
 tnf_exclude_connectivity_regexp: null
 tnf_suites: "diagnostic generic"
+tnf_targetpodlabels_name: null
+tnf_targetpodlabels_value: null
