@@ -1,4 +1,11 @@
 ---
+{% if tnf_ns and tnf_targetpodlabels_name and tnf_targetpodlabels_value %}
+targetPodLabels:
+  - namespace: {{ tnf_ns }}
+    name: {{ tnf_targetpodlabels_name }}
+    value: {{ tnf_targetpodlabels_value }}
+{% endif %}
+
 generic:
   containersUnderTest:
 {% for pod in tnf_pod_list.resources %}
