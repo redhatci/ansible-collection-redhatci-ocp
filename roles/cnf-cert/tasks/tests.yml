@@ -27,10 +27,21 @@
     namespace: tnf
   register: tnf_ns_partner_pod_list
 
-- name: Get stats of the test-network-function/tnf_config.yml file
+- name: Check if test-network-function/tnf_config.yml file exists to decide the config file to be created
   ansible.builtin.stat:
     path: "{{ tnf_git_dir }}/test_network_function/test-network-function/tnf_config.yml"
   register: tnf_config_file
+
+- name: Check if autodiscovering can be defined
+  shell: |
+    set -x
+    grep -c targetPodLabels {{ tnf_git_dir }}/test_network_function/test-network-function/tnf_config.yml || :
+  register: autodiscovering_enabled_output
+  when: tnf_config_file.stat.exists
+
+- name: Set autodiscovering_enabled variable
+  set_fact:
+    autodiscovering_enabled: "{% if tnf_config_file.stat.exists %}{{ autodiscovering_enabled_output.stdout }}{% else %}0{% endif %}"
 
 - name: Template generic_test_configuration.yml
   template:
@@ -50,15 +61,6 @@
     dest: "{{ tnf_tempdir.path }}/tnf_config.yml"
   when: tnf_config_file.stat.exists
 
-# - name: Run the CNF Test Suite (container)
-#   shell: |
-#     set -x
-#     sed -i -e 's@:latest@:{{ 'latest' if test_network_function_version == 'HEAD' else test_network_function_version }}@' -e 's@\(.*-v .*\) \\@\1:z \\@' run-container.sh
-#     ./run-container.sh -t {{ tnf_tempdir.path }} -o {{ job_logs.path }} {{ tnf_suites }}
-#     :
-#   args:
-#     chdir: "{{ tnf_git_dir }}/test_network_function"
-
 - name: Run the CNF Test Suite
   shell: |
     set -x
@@ -69,8 +71,16 @@
       rm -f test-network-function/*.xml test-network-function/generic_test_configuration.yml test-network-function/cnf_test_configuration.yml
       cp {{ tnf_tempdir.path }}/generic_test_configuration.yml {{ tnf_tempdir.path }}/cnf_test_configuration.yml test-network-function/
     fi
-    ./run-cnf-suites.sh {{ tnf_suites }}
+
+    if [ "{{ autodiscovering_enabled }}" != "0" ]; then
+      export TNF_NON_INTRUSIVE_ONLY={{ tnf_non_intrusive_only }}
+      export VERIFY_CNF_FEATURES={{ verify_cnf_features }}
+      ./run-cnf-suites.sh -f {{ tnf_suites }} &> test-network-function/execution.log
+    else
+      ./run-cnf-suites.sh {{ tnf_suites }} &> test-network-function/execution.log
+    fi
     cp test-network-function/*.xml {{ tnf_tempdir.path }}
+    cp test-network-function/execution.log {{ tnf_tempdir.path }}
   args:
     chdir: "{{ tnf_git_dir }}/test_network_function"
 
