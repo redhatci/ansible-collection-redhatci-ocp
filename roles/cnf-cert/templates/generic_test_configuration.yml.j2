@@ -39,7 +39,7 @@ testOrchestrator:
 {% endfor %}
 excludeContainersFromConnectivityTests:
 {% for pod in tnf_pod_list.resources %}
-{% if not tnf_exclude_connectivity_regexp or ( pod.metadata.name | regex_search(tnf_exclude_connectivity_regexp) ) %}
+{% if tnf_exclude_connectivity_regexp|length and ( pod.metadata.name | regex_search(tnf_exclude_connectivity_regexp) ) %}
 {% for container in pod.spec.containers %}
   - namespace: {{ tnf_ns }}
     podName: {{ pod.metadata.name }}

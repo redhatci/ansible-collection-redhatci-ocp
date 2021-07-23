@@ -1,16 +1,19 @@
 ---
 do_cnf_cert: false
 test_network_function_repo: https://github.com/test-network-function/test-network-function
-test_network_function_version: "v2.0.0"
+test_network_function_version: "v3.0.0"
 cnf_certification_test_partner_repo: https://github.com/test-network-function/cnf-certification-test-partner
-cnf_certification_test_partner_version: HEAD
+cnf_certification_test_partner_version: "v3.0.0"
+dci_openshift_app_image: "quay.io/testnetworkfunction/cnf-test-partner:latest" 
 tnf_if: eth0
 tnf_git_dir: /var/tmp
 tnf_registry: ""
 tnf_registry_creds: ""
 tnf_operators_regexp: ""
 tnf_cnfs_regexp: ""
-tnf_exclude_connectivity_regexp: null
-tnf_suites: "diagnostic generic"
-tnf_targetpodlabels_name: null
-tnf_targetpodlabels_value: null
+tnf_exclude_connectivity_regexp: ""
+tnf_suites: "diagnostic"
+tnf_targetpodlabels_name: ""
+tnf_targetpodlabels_value: ""
+tnf_non_intrusive_only: true
+verify_cnf_features: false

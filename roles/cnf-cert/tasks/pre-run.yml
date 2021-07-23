@@ -41,18 +41,58 @@
   delay: 10
   until: not cnf_certification_test_partner_gitref.failed
 
+# Following these examples: 
+# https://github.com/test-network-function/cnf-certification-test-partner/blob/v3.0.0/deploy-partner-pods.sh
+# https://github.com/test-network-function/cnf-certification-test-partner/blob/v3.0.0/deploy-test-pods.sh
+- name: Build the partner pod image
+  shell: |
+    set -ex
+    cd {{ tnf_git_dir }}/cnf_certification_test_partner
+    mkdir -p ./temp
+
+    if [ -n "{{ tnf_registry }}" -a -n "{{ tnf_registry_creds }}" ]; then
+      export BUILDAH_FORMAT=docker
+      podman build -f ./test-partner/Dockerfile -t testnetworkfunction/cnf-test-partner
+      podman tag testnetworkfunction/cnf-test-partner {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
+      podman push --authfile {{ tnf_registry_creds }} {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
+      sed -i -e 's@quay.io/testnetworkfunction/cnf-test-partner:latest@{{ tnf_registry }}/testnetworkfunction/cnf-test-partner@' ./local-test-infra/local-partner-deployment.yaml
+    fi
+
+- name: Check if tnf namespace exists
+  k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: tnf
+  register: tnf_namespace
+
+- name: Create tnf namespace
+  shell: |
+    set -ex
+    cd {{ tnf_git_dir }}/cnf_certification_test_partner
+    export NAMESPACE_TO_GENERATE="tnf"
+    cat ./local-test-infra/namespace.yaml | ./script/mo > ./temp/rendered-namespace.yaml
+    oc apply -f ./temp/rendered-namespace.yaml
+    rm ./temp/rendered-namespace.yaml
+  when: tnf_namespace.resources|length == 0
+
+- name: Check if partner pod exists
+  k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: tnf
+    label_selectors:
+      - test-network-function.com/generic = orchestrator
+  register: partner_pods
+
 - name: Build the partner pod
   shell: |
     set -ex
-    cd {{ tnf_git_dir }}/cnf_certification_test_partner/test-partner
-    if [ -n "{{ tnf_registry }}" -a -n "{{ tnf_registry_creds }}" ]; then
-      podman build -t testnetworkfunction/cnf-test-partner .
-      podman tag testnetworkfunction/cnf-test-partner {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
-      podman push --authfile {{ tnf_registry_creds }} {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
-      sed -i -e 's@quay.io/testnetworkfunction/cnf-test-partner:latest@{{ tnf_registry }}/testnetworkfunction/cnf-test-partner@' partner.yaml
-    fi
-    oc get ns|grep ^tnf || oc create -f ./namespace.yaml
-    oc get pod -n tnf|grep ^partner || oc create -f ./partner.yaml
+    cd {{ tnf_git_dir }}/cnf_certification_test_partner
+    export NAMESPACE_TO_GENERATE="tnf"
+    cat ./local-test-infra/local-partner-deployment.yaml | ./script/mo > ./temp/rendered-partner-template.yaml
+    oc apply -f ./temp/rendered-partner-template.yaml
+    rm ./temp/rendered-partner-template.yaml
+  when: partner_pods.resources|length == 0
 
 - name: Build the CNF Test Suite
   shell: |
