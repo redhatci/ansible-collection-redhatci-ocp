@@ -1,0 +1,17 @@
+---
+- name: Set facts
+  include_tasks: facts.yml
+
+- name: Disable default catalog sources for disconnected deployment
+  environment:
+    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+  shell: |
+    {{ dci_cluster_configs_dir }}/oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+  when:
+    - ocp_version_maj|int == 4
+    - ocp_version_min|int >= 6
+  delegate_to: localhost
+
+- name: Deploy Red Hat Catalog Source
+  include_tasks: redhat-catalog-source.yml
+...

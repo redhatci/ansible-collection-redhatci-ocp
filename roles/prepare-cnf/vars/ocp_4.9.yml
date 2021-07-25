@@ -1,6 +1,0 @@
----
-redhat_catalog_source: redhat-operators-jump
-catalog_repo_name: redhat
-catalog_image_name: redhat-operator-index
-catalog_image_version: "{% if build == 'ga' %}v{{ ocp_version }}{% else %}{{ opm_version | default('v' + ocp_version|string) }}{% endif %}"
-...
