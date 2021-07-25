@@ -1,0 +1,15 @@
+---
+- name: Create CatalogSource for Red Hat operators
+  k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: CatalogSource
+      metadata:
+        name: "{{ opm_catalog_source_name }}"
+        namespace: "{{ opm_catalog_source_namespace }}"
+      spec:
+        sourceType: grpc
+        image: "{{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }}"
+        displayName: "{{ opm_catalog_source_displayname }}"
+        publisher: grpc
+...

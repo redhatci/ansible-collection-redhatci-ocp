@@ -29,7 +29,7 @@
         namespace: openshift-performance-addon
       spec:
         name: performance-addon-operator
-        source: "{{ redhat_catalog_source }}"
+        source: "{{ opm_catalog_source_name }}"
         sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
   when:
     - ocp_version_maj|int == 4
@@ -45,7 +45,7 @@
         namespace: openshift-performance-addon
       spec:
         name: performance-addon-operator
-        source: "{{ redhat_catalog_source }}"
+        source: "{{ opm_catalog_source_name }}"
         sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
         channel: "{{ ocp_version|string }}"
   when:

@@ -1,0 +1,8 @@
+- name: Basic facts
+  set_fact:
+    opm_catalog_source_name: "{{ hostvars.localhost.opm_catalog_source_name }}"
+    opm_catalog_source_displayname: "{{ hostvars.localhost.opm_catalog_source_displayname }}"
+    opm_catalog_source_namespace: "{{ hostvars.localhost.opm_catalog_source_namespace }}"
+    opm_local_registry_path: "{{ hostvars.localhost.opm_local_registry_path }}"
+    dci_opm_version: "{{ hostvars.localhost.dci_opm_version }}"
+    local_registry: "{{ hostvars[groups['registry_host'][0]].local_registry }}"

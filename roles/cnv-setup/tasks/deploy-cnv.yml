@@ -29,8 +29,8 @@
         namespace: "{{ cnv_ns }}"
       spec:
         channel: "{{ cnv_version | string  }}"
-        source: "mirrored-redhat-operators"
-        sourceNamespace: "openshift-marketplace"
+        source: "{{ opm_catalog_source_name }}"
+        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
         name: kubevirt-hyperconverged
   when:
     - version is version("4.6", "<")
@@ -44,8 +44,8 @@
         name: hco-operatorhub
         namespace: "{{ cnv_ns }}"
       spec:
-        source: "{{ redhat_catalog_source }}"
-        sourceNamespace: "openshift-marketplace"
+        source: "{{ opm_catalog_source_name }}"
+        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
         name: kubevirt-hyperconverged
   when:
     - version is version("4.6", ">=")
