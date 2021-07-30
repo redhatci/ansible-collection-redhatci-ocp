@@ -103,7 +103,7 @@
   k8s_info:
     api: machineconfiguration.openshift.io/v1
     kind: MachineConfig
-    name: "performance-{{ profile_state.result.metadata.name }}"
+    name: "{{ ( version is version('4.8', '>=')) | ternary('50-','') }}performance-{{ profile_state.result.metadata.name }}"
     namespace: default
   register: machine
   retries: 30
