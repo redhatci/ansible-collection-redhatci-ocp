@@ -44,7 +44,7 @@
         name: hco-operatorhub
         namespace: "{{ cnv_ns }}"
       spec:
-        source: "redhat-operators"
+        source: "{{ redhat_catalog_source }}"
         sourceNamespace: "openshift-marketplace"
         name: kubevirt-hyperconverged
   when:
