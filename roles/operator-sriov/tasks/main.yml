@@ -63,7 +63,7 @@
   retries: 30
   delay: 5
   until:
-    - "sriov_ip.resources|length  == 1"
+    - "sriov_ip.resources|length  >= 1"
     - "'spec' in sriov_ip.resources[0]"
     - "'clusterServiceVersionNames' in sriov_ip.resources[0].spec"
 
