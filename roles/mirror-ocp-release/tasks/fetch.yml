@@ -161,18 +161,4 @@
     mode: "0644"
   when:
     - not client_tools_done.stat.exists or force_mirroring
-
-# TODO: Do we really need this?
-- name: "Clone/update baremetal-deploy repo"
-  git:
-    version: "{{ git_ref }}"
-    repo: "{{ git_repo }}"
-    dest: "{{ cache_dir }}/baremetal-deploy"
-    force: true
-  # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
-  # SSL_ERROR_SYSCALL, errno 104.
-  register: git_clone
-  retries: 3
-  delay: 10
-  until: not git_clone.failed
 ...
