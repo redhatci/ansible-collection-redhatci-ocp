@@ -15,6 +15,10 @@
       --from-index registry.redhat.io/redhat/redhat-operator-index:{{ dci_opm_version }}
       --packages {{ opm_mirror_list | join(",") }}
       --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }}
+  register: prune_result
+  until: prune_result.rc == 0
+  retries: 3
+  delay: 10
   notify:
     - "Fix permissions and removing tmp files"
 
