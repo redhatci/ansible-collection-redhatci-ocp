@@ -1,0 +1,35 @@
+---
+- name: Add Kubeconfig to Ansible User .bashrc
+  lineinfile:
+    path: "{{ ansible_user_dir }}/.bashrc"
+    line: "export KUBECONFIG={{ dir }}/auth/kubeconfig"
+  tags: install
+
+- name: Show How to monitor for installation status
+  debug:
+    msg:
+      - "Next step will provision SNO server. It might take a few minutes for the API to respond"
+      - "Once the api gets available you can run the following in another shell session"
+      - "to monitor the installation progress:  export KUBECONFIG={{ dir }}/auth/kubeconfig"
+      - "watch -n5 -d 'oc get nodes ; oc get co ; oc get clusterversion'"
+  tags: install
+
+- name: Installing Single Node OpenShift VM
+  shell: |
+    virt-install \
+    --connect qemu:///system \
+    -n "{{ vm_name }}" \
+    -r "{{ vm_ram_mb }}" \
+    --vcpus "{{ vm_vcpu }}" \
+    --os-variant "rhel8.4" \
+    --import \
+    --network network={{ vm_net_name }},mac={{ vm_nic_mac }} \
+    --graphics none \
+    --events on_reboot=restart \
+    --cdrom "{{ embeddediso }}" \
+    --disk pool={{ vm_pool_name }},size={{ vm_disk_gb }} \
+    --boot hd,cdrom \
+    --noautoconsole \
+    --wait -1
+  become: true
+  tags: install

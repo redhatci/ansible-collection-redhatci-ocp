@@ -1,0 +1,28 @@
+---
+# rhcos_json_vars fact already set in 23_rhcos_image_paths.yaml
+
+- name: "Check if LIVE image exists"
+  stat:
+    path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    get_checksum: false
+  register: live_img
+  tags: rhcos_live
+
+- name: "Download LIVE image"
+  get_url:
+    url: "{{ rhcos_path }}{{ rhcos_live_iso_name }}"
+    dest: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    setype: virt_content_t
+    checksum: "sha256:{{ rhcos_live_iso_sha256 }}"
+    timeout: 1200
+  register: live_img_file
+  retries: 3
+  delay: 10
+  until: live_img_file is not failed
+  when:
+    - not live_img.stat.exists or force_mirroring
+  tags: rhcos_live
+...

@@ -1,0 +1,7 @@
+---
+- name: Clean up /etc/hosts entries (Fedora)
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ extcidrnet | ipaddr('10') | ipaddr('address') }} api.{{ cluster }}.{{ domain }}"
+  become: yes
+  tags: dnsredirect

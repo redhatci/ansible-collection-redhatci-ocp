@@ -1,0 +1,132 @@
+---
+- name: "Find any existing {{ ocp_binary_path }} OpenShift binaries"
+  find:
+    paths: "{{ ocp_binary_path }}"
+    patterns: 'oc,openshift-install,kubectl'
+  register: binary_results
+  tags:
+  - cleanup
+  - getoc
+
+- name: "Remove any existing {{ ocp_binary_path }} OpenShift binaries"
+  file:
+    path: "{{ item['path'] }}"
+    state: absent
+  loop: "{{ binary_results['files'] }}"
+  become: yes
+  tags:
+  - cleanup
+  - getoc
+
+- name: "Create master cache directory"
+  file:
+    path: "{{ cache_dir }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0775"
+  become: true
+  tags: getoc
+
+- name: "Create cache directory for release"
+  file:
+    path: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0775"
+    state: directory
+  become: true
+  tags: getoc
+
+- name: "Check if release.txt exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/release.txt"
+    get_checksum: false
+  register: release_txt
+  tags: getoc
+
+- name: "Fetch release.txt"
+  get_url:
+    url: "{{ release_url }}/{{ version }}/release.txt"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    timeout: 120
+  retries: 5
+  delay: 10
+  register: release_txt
+  until: release_txt is not failed
+  when:
+    - not release_txt.stat.exists or force_mirroring
+  tags: getoc
+
+- name: "Read release_version from release.txt"
+  shell: "set -o pipefail && sed -n 's/Version:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
+  register: release_version
+  changed_when: false
+  no_log: true
+  tags: getoc
+
+- name: "Read release_image from release.txt"
+  shell: "set -o pipefail && sed -n 's/Pull From:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
+  register: release_image
+  changed_when: false
+  no_log: true
+  tags: getoc
+
+- name: "Print the release version"
+  debug:
+    msg: "release version {{ release_version }}"
+    verbosity: 2
+  tags: getoc
+
+- name: "Check if clients exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    get_checksum: false
+  register: client_tools_done
+  tags: getoc
+
+- name: "Fetch and Untar client tools"
+  unarchive:
+    src: "{{ release_url }}/{{ version }}/{{ item }}-linux.tar.gz"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    remote_src: true
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
+  loop: "{{ client_tools }}"
+  when:
+    - not client_tools_done.stat.exists or force_mirroring
+  tags: getoc
+
+- name: "Copy oc and kubectl binaries to {{ ocp_binary_path }}"
+  copy:
+    src: "{{ cache_dir }}/{{ version }}/{{ item }}"
+    dest: "{{ ocp_binary_path }}/{{ item }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    remote_src: true
+  become: true
+  loop:
+    - kubectl
+    - oc
+  tags: getoc
+
+- name: "Marker for client tools downloaded"
+  file:
+    dest: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    state: touch
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+  when:
+    - not client_tools_done.stat.exists or force_mirroring
+  tags: getoc
+...

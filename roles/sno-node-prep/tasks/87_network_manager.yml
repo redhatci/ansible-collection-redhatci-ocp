@@ -1,0 +1,32 @@
+---
+- name: Define DNS entries for dnsmasq
+  copy:
+    content: |
+      address=/api.{{ cluster }}.{{ domain }}/{{ extcidrnet | ipaddr('10') | ipaddr('address') }}
+      address=/.apps.{{ cluster }}.{{ domain }}/{{ extcidrnet | ipaddr('10') | ipaddr('address') }}
+      address=/master-0.{{ cluster }}.{{ domain }}/{{ extcidrnet | ipaddr('10') | ipaddr('address') }}
+    dest: /etc/NetworkManager/dnsmasq.d/{{ vm_net_name }}.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  become: yes
+  tags: dnsredirect
+
+- name: Include dnsmasq in the DNS configuration of NetworkManager
+  ini_file:
+    path: /etc/NetworkManager/conf.d/dnsmasq.conf
+    section: main
+    option: dns
+    value: dnsmasq
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  become: yes
+  tags: dnsredirect
+
+- name: Reload Network Manager
+  service:
+    name: NetworkManager
+    state: reloaded
+  become: yes
+  tags: dnsredirect

@@ -1,0 +1,9 @@
+---
+# defaults file for sno-installer
+vm_net_name: "sno-{{ cluster }}"
+vm_pool_name: default
+vm_nic_mac: "52:54:00:ee:42:e1"
+vm_name: "sno-{{ cluster }}"
+vm_ram_mb: 16384
+vm_disk_gb: 30
+vm_vcpu: 8

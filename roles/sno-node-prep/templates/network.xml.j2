@@ -1,0 +1,25 @@
+<network>
+  <name>{{ vm_net_name }}</name>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <domain name='{{ cluster }}.{{ domain }}'/>
+  <dns enable='yes'>
+    <host ip='{{ extcidrnet | ipaddr('10') | ipaddr('address') }}'>
+      <hostname>api.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>api-int.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>console-openshift-console.apps.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>oauth-openshift.apps.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>canary-openshift-ingress-canary.apps.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>master-0.{{ cluster }}.{{ domain }}</hostname>
+    </host>
+  </dns>
+  <ip address='{{ extcidrnet | ipaddr('first_usable') }}' prefix='{{ extcidrnet | ipaddr('prefix') }}'>
+    <dhcp>
+      <range start='{{ extcidrnet | ipaddr('11') | ipaddr('address') }}' end='{{ extcidrnet | ipaddr('last_usable') }}'/>
+      <host mac='{{ vm_nic_mac }}' name='master-0' ip='{{ extcidrnet | ipaddr('10') | ipaddr('address') }}'/>
+    </dhcp>
+  </ip>
+</network>

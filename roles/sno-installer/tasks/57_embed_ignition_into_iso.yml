@@ -1,0 +1,35 @@
+---
+- name: Generate Embedded RHCOS LIVE ISO
+  shell:
+    cmd: >
+      podman run
+      --pull=always
+      --privileged
+      --rm
+      -v /dev:/dev
+      -v /run/udev:/run/udev
+      -v "{{ cache_dir }}:/iso_input"
+      -v "{{ dir }}:/data"
+      --workdir /data
+      quay.io/coreos/coreos-installer:release
+      iso ignition embed /iso_input/{{ rhcos_live_iso_name }} \
+        --force \
+        --ignition-file /data/bootstrap-in-place-for-live-iso.ign \
+        --output /data/embedded.iso
+  register: rhcos_iso_live_info
+  tags: embedded
+
+- name: Set embedded iso in path fact
+  set_fact:
+    embeddediso: "{{ dir }}/embedded.iso"
+  tags: embedded
+
+- name: Set qemu permissions on the embedded ISO file
+  file:
+    path: "{{ embeddediso }}"
+    owner: qemu
+    group: qemu
+    mode: '0644'
+    setype: virt_content_t
+  become: true
+  tags: embedded

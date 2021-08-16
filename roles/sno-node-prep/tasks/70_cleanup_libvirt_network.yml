@@ -1,0 +1,28 @@
+---
+- name: Get list of all Networks
+  virt_net:
+    command: list_nets
+  register: all_nets
+  become: yes
+  tags: cleanup
+
+- name: Stop SNO network
+  virt_net:
+    command: destroy
+    name: "{{ vm_net_name }}"
+  become: yes
+  with_items:
+    - "{{ all_nets.list_nets }}"
+  when: item is search(vm_net_name)
+  tags: cleanup
+
+- name: Undefine SNO network
+  virt_net:
+    command: undefine
+    name: "{{ vm_net_name }}"
+  become: yes
+  with_items:
+    - "{{ all_nets.list_nets }}"
+  when: item is search(vm_net_name)
+  tags: cleanup
+...
