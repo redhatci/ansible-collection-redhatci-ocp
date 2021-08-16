@@ -1,0 +1,16 @@
+[all:vars]
+dir="{{ ansible_user_dir }}/clusterconfigs"
+domain="example.com"
+cluster="dcisno"
+extcidrnet="192.168.126.0/24"
+install_type=sno
+
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+[provisioner]
+localhost ansible_user=dci-openshift-agent
+
+[masters]
+master-0.dcisno.example.com name=master-0 role=master ansible_user=core
+
+[workers]

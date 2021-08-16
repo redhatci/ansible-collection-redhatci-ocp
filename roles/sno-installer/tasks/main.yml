@@ -1,0 +1,41 @@
+---
+# tasks file for sno-installer
+- include_tasks: 10_get_oc.yml
+  tags:
+  - cleanup
+  - getoc
+
+- include_tasks: 20_extract_installer.yml
+  tags:
+  - pullsecret
+  - extract
+
+- include_tasks: 23_rhcos_image_paths.yml
+  tags: rhcospath
+
+- include_tasks: 24_rhcos_image_live.yml
+  tags: rhcos_live
+
+- include_tasks: 25_create_install_config.yml
+  tags: installconfig
+
+- include_tasks: 40_create_manifest.yml
+  tags: manifests
+
+- include_tasks: 50_extramanifests.yml
+  tags: extramanifests
+
+- include_tasks: 55_create_ignition.yml
+  tags: ignition
+
+- include_tasks: 57_embed_ignition_into_iso.yml
+  tags: embedded
+
+- include_tasks: 59_cleanup_sno_vm.yml
+  tags: cleanup
+
+- include_tasks: 60_deploy_sno_vm.yml
+  tags: install
+
+- include_tasks: 70_wait_deployment.yml
+  tags: waitdeploy

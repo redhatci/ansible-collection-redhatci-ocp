@@ -1,0 +1,40 @@
+---
+- name: Clean up NetworkManager Dnsmasq entries (RedHat)
+  block:
+  - name: Undefine DNS entries to be redirected in SNO
+    file:
+      path: /etc/NetworkManager/dnsmasq.d/{{ vm_net_name }}.conf
+      state: absent
+    become: yes
+
+  - name: Verify if there are more config files in NM dnsmasq.d
+    shell: >
+      ls /etc/NetworkManager/dnsmasq.d/ | wc -l
+    register: dnsmasqconf
+
+  - name: Remove dnsmasq from the DNS configuration of NetworkManager
+    file:
+      path: /etc/NetworkManager/conf.d/dnsmasq.conf
+      state: absent
+    become: yes
+    when: dnsmasqconf.stdout == "0"
+
+  - name: Reload Network Manager
+    service:
+      name: NetworkManager
+      state: reloaded
+    become: yes
+  when:
+    - ansible_facts['distribution'] == "RedHat"
+  tags: cleanup
+
+- name: Clean up /etc/hosts entries (Fedora)
+  lineinfile:
+    path: /etc/hosts
+    state: absent
+    regex: "^{{ extcidrnet | ipaddr('10') | ipaddr('address') }} api.{{ cluster }}.{{ domain }}"
+  become: yes
+  when:
+    - ansible_facts['distribution'] == "Fedora"
+  tags: cleanup
+...

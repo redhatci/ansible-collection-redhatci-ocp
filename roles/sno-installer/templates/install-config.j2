@@ -1,0 +1,54 @@
+apiVersion: v1
+baseDomain: {{ domain }}
+{%if (http_proxy|length or https_proxy|length) %}
+proxy:
+  httpProxy: {{ http_proxy }}
+  httpsProxy: {{ https_proxy }}
+  noProxy: {{ (no_proxy_list|length) | ternary(no_proxy_list, cluster + '.' + domain + ',' + extcidrnet) }}
+{% endif %}
+metadata:
+  name: {{ cluster }}
+networking:
+{% if not dualstack_baremetal|bool  %}
+  machineCIDR: {{ extcidrnet }}
+{% endif %}
+  networkType: {{ network_type }}
+{% if ipv6_enabled|bool and not (ipv4_baremetal|bool or dualstack_baremetal|bool) %}
+  clusterNetwork:
+  - cidr: fd01::/48
+    hostPrefix: 64
+  serviceNetwork:
+  - fd02::/112
+{% endif %}
+{% if ipv6_enabled|bool and dualstack_baremetal|bool %}
+  machineNetwork:
+  - cidr: {{ extcidrnet }}
+  - cidr: {{ extcidrnet6 }}
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  - cidr: fd02::/48
+    hostPrefix: 64
+  serviceNetwork:
+  - 172.30.0.0/16
+  - fd03::/112
+{% endif %}
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 0
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: 1
+platform:
+  none: {}
+BootstrapInPlace:
+  InstallationDisk: {{ installation_disk | default('/dev/vda') }}
+publish: External
+pullSecret: '{{ pullsecret }}'
+sshKey: '{{ key }}'

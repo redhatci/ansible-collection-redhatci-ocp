@@ -1,0 +1,51 @@
+---
+- name: Get list of all VMs
+  virt:
+    command: list_vms
+  register: all_vms
+  become: yes
+  tags: cleanup
+
+- name: Get list of all running VMs
+  virt:
+    command: list_vms
+    state: running
+  register: running_vms
+  become: yes
+  tags: cleanup
+
+- name: Get list of all paused VMs
+  virt:
+    command: list_vms
+    state: paused
+  register: paused_vms
+  become: yes
+  tags: cleanup
+
+- name: Destroy old SNO VMs, if any
+  virt:
+    name: "{{ item }}"
+    command: destroy
+  with_items:
+    - "{{ running_vms.list_vms }}"
+    - "{{ paused_vms.list_vms }}"
+  when: item is search(vm_name)
+  become: yes
+  tags: cleanup
+
+- name: Undefine old SNO VMs, if any
+  virt:
+    name: "{{ item }}"
+    command: undefine
+  with_items: "{{ all_vms.list_vms }}"
+  when: item is search(vm_name)
+  become: yes
+  tags: cleanup
+
+- name: Delete old SNO VMs Storage
+  file:
+    path: "{{ default_libvirt_pool_dir }}/{{ vm_name }}.qcow2"
+    state: absent
+  become: yes
+  tags: cleanup
+...

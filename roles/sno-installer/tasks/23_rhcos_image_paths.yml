@@ -1,0 +1,53 @@
+---
+- name: "Check if rhcos.json exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/rhcos.json"
+    get_checksum: false
+  register: rhcos_json
+  tags: rhcospath
+
+- name: "Get git SHA from installer"
+  shell: >
+    set -o pipefail && \
+    {{ cache_dir }}/{{ version }}/openshift-install version |
+    grep "^built from" |
+    awk '{ print $NF }'
+  register: commit_id
+  changed_when: false
+  when:
+    - not rhcos_json.stat.exists or force_mirroring
+  tags: rhcospath
+
+- name: "Fetch rhcos.json File"
+  get_url:
+    url: "https://raw.githubusercontent.com/openshift/installer/{{ commit_id.stdout }}/data/data/rhcos.json"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    setype: httpd_sys_content_t
+    timeout: 300
+  register: rhcos_json_file
+  retries: 3
+  delay: 10
+  until: rhcos_json_file is not failed
+  when:
+    - not rhcos_json.stat.exists or force_mirroring
+  tags: rhcospath
+
+- name: "Load variables from rhcos.json"
+  include_vars:
+    file: "{{ cache_dir }}/{{ version }}/rhcos.json"
+    name: rhcos_json_vars
+  tags: rhcospath
+
+- name: "Set Facts for RHCOS LIVE"
+  set_fact:
+    rhcos_live_iso_name: "{{ rhcos_json_vars | json_query(iso_name) }}"
+    rhcos_live_iso_sha256: "{{ rhcos_json_vars | json_query(iso_sha) }}"
+    rhcos_path: "{{ rhcos_json_vars | json_query('baseURI') }}"
+  vars:
+    iso_name: 'images."live-iso".path'
+    iso_sha: 'images."live-iso".sha256'
+  tags: rhcospath
+...

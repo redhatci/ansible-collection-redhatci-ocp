@@ -1,0 +1,31 @@
+---
+- name: Regather Network Facts
+  setup:
+    gather_subset:
+      - network
+  tags:
+  - network_facts
+
+- name: Set External Subnet with IPv4
+  set_fact:
+    extcidrnet: "{{ ip | ipaddr('network') }}/{{ ip | ipaddr('prefix') }}"
+  vars:
+    ip: "{{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }}"
+  when:
+    - (extcidrnet is not defined or extcidrnet|length < 1)
+    - not ipv6_enabled|bool or
+      ipv4_baremetal|bool
+  tags:
+  - network_facts
+
+- name: Set External Subnet with IPv6
+  set_fact:
+    extcidrnet: "{{ ip | ipaddr('network') }}/{{ ip | ipaddr('prefix') }}"
+  vars:
+    ip: "{{ ansible_default_ipv6.address }}/64"
+  when:
+    - (extcidrnet is not defined or extcidrnet|length < 1)
+    - ipv6_enabled|bool
+    - not ipv4_baremetal|bool
+  tags:
+  - network_facts

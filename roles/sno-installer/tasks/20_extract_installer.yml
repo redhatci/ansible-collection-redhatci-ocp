@@ -1,0 +1,60 @@
+---
+- name: Copy PullSecret into {{ pullsecret_file }}
+  copy:
+    content: "{{ pullsecret }}"
+    dest: "{{ pullsecret_file }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+    force: yes
+  tags:
+  - pullsecret
+  - extract
+
+- name: Create config dir
+  file:
+    path: "{{ dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  tags: extract
+
+- name: "Check if commands were extracted"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/{{ installer_binary }}"
+    get_checksum: false
+  loop: "{{ installer_extract_cmds }}"
+  loop_control:
+    loop_var: installer_binary
+  register: extracted_cmds  # we register this loop object to re-use
+  tags: extract
+
+- name: "Extract installer commands"
+  command: >
+    {{ cache_dir }}/{{ version }}/oc adm release extract
+    --registry-config={{ pullsecret_file | quote }}
+    --command={{ item.installer_binary }}
+    --to={{ cache_dir }}/{{ version }}
+    {{ release_image.stdout }}
+  when:
+    - not item.stat.exists
+  loop: "{{ extracted_cmds.results }}"  # loop over the results registered previously
+  loop_control:
+    label: "{{ item.installer_binary }}"  # installer_binary already exists in this loop object
+  tags: extract
+
+- name: "Copy openshift-install binary to {{ ocp_binary_path }}"
+  copy:
+    src: "{{ cache_dir }}/{{ version }}/{{ item.installer_binary }}"
+    dest: "{{ ocp_binary_path }}/{{ item.installer_binary }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+    remote_src: yes
+  loop: "{{ extracted_cmds.results }}"  # loop over the results registered previously
+  loop_control:
+    label: "{{ item.installer_binary }}"  # installer_binary already exists in this loop object
+  become: yes
+  tags: extract
+...

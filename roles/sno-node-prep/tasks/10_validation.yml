@@ -1,0 +1,140 @@
+---
+- name: Check ansible version
+  fail:
+    msg: Use Ansible version 2.9 or greater to run this playbook
+  when: ansible_version.full is version('2.9.0', '<')
+  delegate_to: localhost
+  tags:
+  - always
+  - validation
+  - fully_disconnected
+
+- name: Ensure Python libraries are installed
+  python_requirements_info:
+    dependencies:
+    - netaddr
+  register: _py_facts
+  delegate_to: localhost
+  tags:
+  - always
+  - validation
+
+- name: Fail if version is undefined, empty, or not valid.
+  assert:
+    fail_msg: "The version is undefined or not valid. Use a value such as 'latest-4.8' or an explicit version i.e.: '4.8.2'."
+    that:
+      - ver is defined
+      - ver is version("4.8", ">=")
+  vars:
+    ver: "{{ version.split('latest-')[1]|default(version) }}"
+  tags:
+  - always
+  - validation
+
+- name: Fail if build is undefined, empty or not valid.
+  assert:
+    fail_msg: "The build is undefined, empty or not valid. Use a value such as 'dev' or 'ga'."
+    that: 
+      - build is defined
+      - (build == "dev") or (build == "ga")
+  tags:
+  - always
+  - validation
+
+- name: Fail if a required install-config variable is undefined or empty.
+  assert:
+    fail_msg: "A variable regarding install-config.yml is undefined or empty."
+    that:
+      - domain is defined
+      - domain|length != 0
+      - cluster is defined
+      - cluster|length != 0
+      - extcidrnet is defined
+      - extcidrnet|length != 0
+      - pullsecret is defined
+      - pullsecret|length != 0
+  tags:
+  - always
+  - validation
+
+- name: Set release_url for development envs
+  set_fact:
+    release_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview"
+  when: build == 'dev'
+  tags:
+  - always
+  - validation
+
+- name: Set release_url for GA envs
+  set_fact:
+    release_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
+  when: build == 'ga'
+  tags:
+  - always
+  - validation
+
+- name: Confirm whether or not internet connectivity on provisioner host
+  uri:
+    url: https://www.redhat.com
+    status_code: [-1,200]
+    timeout: 1
+  register: check_url
+  tags:
+  - validation
+
+- name: Fail when provision host no online access (can't assume access)
+  fail:
+    msg: |
+         A host with online access is required. Support for disconnected install is not added yet.
+  when:
+    - check_url.status == -1
+  tags:
+  - validation
+
+- name: Fail if dualstack_baremetal and ipv4_baremetal are both true
+  fail:
+    msg: Only one of ipv4_baremetal and dualstack_baremetal variables can be true
+  when: ipv4_baremetal and dualstack_baremetal
+  tags:
+  - always
+  - validation
+
+- name: Check for valid extcidrnet (IPv4)
+  fail:
+    msg: extcidrnet should be a valid IPv4 CIDR
+  when: not ipv6_enabled|bool and not extcidrnet|ipv4
+  tags:
+  - always
+  - validation
+
+- name: Check for valid extcidrnet (IPv6)
+  fail:
+    msg: extcidrnet6 should be a valid IPv6 address
+  when: ipv6_enabled|bool and not (ipv4_baremetal or dualstack_baremetal) and not extcidrnet6|ipv6
+  tags:
+  - always
+  - validation
+
+- name: Check for valid extcidrnet and extcidrnet6 (Dual-Stack)
+  fail:
+    msg: extcidrnet should be a valid IPv4 address and extcidrnet6 should be a valid IPv6 address
+  when: ipv6_enabled|bool and dualstack_baremetal|bool and not (extcidrnet|ipv4 and extcidrnet6|ipv6)
+  tags:
+  - always
+  - validation
+
+- name:  Gather the rpm package facts
+  package_facts:
+    manager: auto
+  tags:
+  - always
+  - validation
+  when: (ansible_facts.packages is undefined) or (ansible_facts.packages | length == 0)
+
+- name: Set Fact for firewall variable
+  set_fact:
+    firewall: "iptables"
+  when: "'iptables-services' in ansible_facts.packages"
+  tags:
+  - always
+  - validation

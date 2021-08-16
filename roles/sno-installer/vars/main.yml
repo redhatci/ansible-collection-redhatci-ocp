@@ -1,0 +1,11 @@
+---
+# vars file for sno-installer
+pullsecret_file: "{{ dir }}/pull-secret.txt"
+default_libvirt_pool_dir: "/var/lib/libvirt/images"
+cache_dir: "/opt/cache"
+client_tools:
+  - openshift-client
+installer_extract_cmds:
+  - openshift-install
+force_mirroring: false
+ocp_binary_path: "/usr/local/bin"

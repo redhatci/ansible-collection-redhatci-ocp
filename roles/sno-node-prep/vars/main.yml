@@ -1,0 +1,18 @@
+---
+# vars file for sno-node-prep
+package_list:
+  - "{{ firewall }}"
+  - tar
+  - libvirt
+  - qemu-kvm
+  - virt-install
+  - python3-devel
+  - jq
+  - python3-libvirt
+  - python3-lxml
+  - python3-yaml
+  - python3-netaddr
+  - python3-jmespath
+  - libsemanage-python3
+  - policycoreutils-python3
+  - podman
