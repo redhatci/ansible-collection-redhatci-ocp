@@ -24,7 +24,7 @@
     that:
       - cache_dir | string
       - version | string
-      - url | string
+      - url is defined
       - build | string
       - build in ['ga', 'dev', 'candidate']
       - registry_url | string

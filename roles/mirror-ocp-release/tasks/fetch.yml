@@ -27,7 +27,7 @@
   get_url:
     # TODO: this overly complicated construction can go out in a few weeks and be replaced with:
     # url: "{{ url }}release.txt"
-    url: "{% if url|len %}{{ url }}release.txt{% else %}{{ (build == 'dev') | ternary(release_url_dev, release_url_ga) }}/{{ version }}/release.txt{% endif %}"
+    url: "{% if url|length %}{{ url }}release.txt{% else %}{{ (build == 'dev') | ternary(release_url_dev, release_url_ga) }}/{{ version }}/release.txt{% endif %}"
     dest: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
