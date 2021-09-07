@@ -124,9 +124,11 @@
     - version is version('4.6.17', ">=")
     - not client_tools_done.stat.exists or force_mirroring
 
+# For versions older than 4.6.17, forcing download of a newer clients
+# This can be removed once we stop using 4.5
 - name: "Fetch client tools tarballs (pre 4.6.17)"
   get_url:
-    url: "{{ (build == 'dev') | ternary(release_url_dev, release_url_ga) }}/{{ version }}/{{ item }}-linux-{{ release_version.stdout }}.tar.gz"
+    url: "{{ (build == 'dev') | ternary(release_url_dev, release_url_ga) }}/4.6.17/{{ item }}-linux.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
@@ -135,21 +137,21 @@
   become: true
   retries: 3
   delay: 10
-  loop: "{{ client_tools_old }}"
+  loop: "{{ client_tools }}"
   when:
     - version is version('4.6.17', "<")
     - not client_tools_done.stat.exists or force_mirroring
 
 - name: "Untar client tools (pre 4.6.17)"
   unarchive:
-    src: "{{ cache_dir }}/{{ version }}/{{ item }}-linux-{{ release_version.stdout }}.tar.gz"
+    src: "{{ cache_dir }}/{{ version }}/{{ item }}-linux.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0755"
     remote_src: true
   become: true
-  loop: "{{ client_tools_old }}"
+  loop: "{{ client_tools }}"
   when:
     - version is version('4.6.17', "<")
     - not client_tools_done.stat.exists or force_mirroring
