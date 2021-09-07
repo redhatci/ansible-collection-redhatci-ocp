@@ -6,6 +6,4 @@ major_version: "{{ version.split('.')[:2] | join('.') }}"
 client_tools:
   - openshift-client
   - opm
-client_tools_old:
-  - openshift-client
 ...

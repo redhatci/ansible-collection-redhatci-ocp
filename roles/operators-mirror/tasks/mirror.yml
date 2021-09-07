@@ -11,70 +11,30 @@
     filter_by_arg: "--index-filter-by-os"
   when: build == 'ga'
 
-- name: change filter according to the version
-  set_fact:
-    filter_by_arg: "--filter-by-os"
-  when:
-    - version is version("4.6", "<=")
-
-- name: "Build Operator catalog image"
-  include_tasks: build-catalog-image.yml
-  when:
-    - version is version("4.6.16", "<=")
-
 - name: "Build Operator catalog index"
   include_tasks: build-catalog-index.yml
-  when:
-    - version is version("4.6.17", ">=")
 
+- name: "Get index SHA256"
+  shell:
+    cmd: >
+      skopeo inspect --authfile {{ dci_pullsecret_file }} docker://{{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }} | jq -r '.Digest'
+  register: index_sha
+  retries: 5
+  delay: 5
+  until:
+    - index_sha is not failed
+ 
 - name: Mirror catalog manifests
   shell:
     chdir: "{{ dci_cluster_configs_dir }}"
     cmd: >
       set -x;
       {{ provision_cache_store }}/{{ version }}/oc adm catalog mirror
-      {{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }}
+      {{ local_registry }}{{ opm_local_registry_path }}@{{ index_sha.stdout }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
-      {{ filter_by_arg }}="linux/amd64" --manifests-only
-      --to-manifests={{ manifests_dir }} 2>&1
+      {{ filter_by_arg }}="linux/amd64"
+      --to-manifests={{ dci_cluster_configs_dir }}/{{ manifests_dir }}  2>&1
   register: catalog_manifests_output
-
-- name: "Set manifests database path"
-  set_fact:
-    manifests_database: "{{ catalog_manifests_output.stdout | regex_search('/tmp/[^ ]+(bundles|index).db') }}"
-
-- name: "Extract dependencies for operators"
-  shell:
-    chdir: "{{ dci_cluster_configs_dir }}"
-    cmd: >
-      set -x;
-      echo "select image from related_image where operatorbundle_name like '%{{ item }}%';"
-      | sqlite3 {{ manifests_database }}
-  loop: "{{ opm_mirror_list }}"
-  register: opm_deps
-  notify:
-    - "Clean up temporary manifest files"
-
-- name: "Create opm dependency list"
-  set_fact:
-    opm_dep_list: "{{ opm_dep_list | default([]) }} + {{ item.stdout_lines }}"
-  loop: "{{ opm_deps.results }}"
-
-- name: Copy Containers using the dependency list
-  shell:
-    cmd: >
-      skopeo copy --remove-signatures --all --authfile {{ dci_pullsecret_file }}
-      --dest-tls-verify=false docker://{{ item.split('=')[0] }}
-      docker://{{ item.split('=')[1] }}
-  register: copy
-  retries: 5
-  delay: 5
-  until:
-    - copy is not failed
-  loop: "{{ lookup('file', dci_cluster_configs_dir + '/'+ manifests_dir + '/mapping.txt').splitlines() }}"
-  failed_when: false
-  when:
-    - item | regex_findall(opm_dep_list | join('|'))
 
 - name: Generate mirror entries
   set_fact:
@@ -83,8 +43,6 @@
             item.split('=')[1].split('/')[0]
             + '/' + item.split('=')[1].split('/')[1]}) }}"
   loop: "{{ lookup('file', dci_cluster_configs_dir + '/' + manifests_dir + '/mapping.txt').splitlines() }}"
-  when:
-    - item | regex_findall(opm_dep_list | join('|'))
 
 - name: Generate mirror bundle
   template:

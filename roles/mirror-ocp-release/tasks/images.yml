@@ -90,13 +90,17 @@
     get_checksum: false
   register: container_images_done
 
-- name: "Mirror container images to registry"
+- name: "Mirror release images to local registry"
   command: >
     {{ cache_dir }}/{{ version }}/oc adm release mirror
     --registry-config={{ cache_dir }}/{{ version }}/registry-auths.json
     --from={{ release_image.stdout | quote }}
     --to-release-image={{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}:{{ release_version.stdout }}
     --to={{ registry_url | urlsplit('netloc') | quote }}{{ registry_url | urlsplit('path') | quote }}
+  retries: 3
+  delay: 10
+  register: result
+  until: result.rc == 0
   when:
     - not container_images_done.stat.exists or force_mirroring
 
