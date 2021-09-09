@@ -32,10 +32,12 @@
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0644"
-    timeout: 300
+    timeout: 120
   become: true
-  retries: 3
+  retries: 5
   delay: 10
+  register: release_txt
+  until: release_txt is not failed
   when:
     - not release_txt.stat.exists or force_mirroring
 
