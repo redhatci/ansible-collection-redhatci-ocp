@@ -69,9 +69,11 @@
     group: "{{ ansible_user_gid }}"
     mode: "0644"
     timeout: 300
+  register: result
   become: true
   retries: 3
   delay: 10
+  until: result is not failed
   when:
     - not signature_bin.stat.exists or force_mirroring
 
@@ -92,9 +94,11 @@
     group: "{{ ansible_user_gid }}"
     mode: "0644"
     timeout: 300
+  register: result
   become: true
   retries: 3
   delay: 10
+  until: result is not failed
 
 - name: "Fetch client tools tarballs"
   get_url:
@@ -104,9 +108,11 @@
     group: "{{ ansible_user_gid }}"
     mode: "0644"
     timeout: 300
+  register: result
   become: true
   retries: 3
   delay: 10
+  until: result is not failed
   loop: "{{ client_tools }}"
   when:
     - version is version('4.6.17', ">=")
@@ -136,9 +142,11 @@
     group: "{{ ansible_user_gid }}"
     mode: "0644"
     timeout: 300
+  register: result
   become: true
   retries: 3
   delay: 10
+  until: result is not failed
   loop: "{{ client_tools }}"
   when:
     - version is version('4.6.17', "<")
