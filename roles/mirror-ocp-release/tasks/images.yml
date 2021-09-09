@@ -25,8 +25,10 @@
     setype: httpd_sys_content_t
     timeout: 300
   become: true
+  register: rhcos_json_file
   retries: 3
   delay: 10
+  until: rhcos_json_file is not failed
   when:
     - not rhcos_json.stat.exists or force_mirroring
 
@@ -51,9 +53,11 @@
     setype: httpd_sys_content_t
     checksum: "sha256:{{ rhcos_json_vars | json_query('images.qemu.sha256') }}"
     timeout: 3600
+  register: qemu_img_file
   become: true
   retries: 3
   delay: 10
+  until: qemu_img_file is not failed
   when:
     - not qemu_img.stat.exists or force_mirroring
 
@@ -74,8 +78,10 @@
     checksum: "sha256:{{ rhcos_json_vars | json_query('images.openstack.sha256') }}"
     timeout: 3600
   become: true
+  register: openstack_img_file
   retries: 3
   delay: 10
+  until: openstack_img_file is not failed
   when:
     - not openstack_img.stat.exists or force_mirroring
 
