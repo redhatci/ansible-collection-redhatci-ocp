@@ -1,15 +1,14 @@
 ---
 test_network_function_repo: https://github.com/test-network-function/test-network-function
-test_network_function_version: "v3.0.0"
-cnf_certification_test_partner_repo: https://github.com/test-network-function/cnf-certification-test-partner
-cnf_certification_test_partner_version: "v3.0.0"
+test_network_function_version: "HEAD"
 dci_openshift_app_image: "quay.io/testnetworkfunction/cnf-test-partner:latest"
 tnf_if: eth0
 tnf_operators_regexp: ""
 tnf_cnfs_regexp: ""
 tnf_exclude_connectivity_regexp: ""
-tnf_suites: "diagnostic"
+tnf_suites: "diagnostic access-control networking lifecycle observability platform-alteration operator"
 tnf_targetpodlabels_name: ""
 tnf_targetpodlabels_value: ""
 tnf_non_intrusive_only: true
-verify_cnf_features: false
+tnf_run_cfd_test: false
+tnf_debug_image: "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:0f5ce898fbad3671fecd6f797130f950fb1abdbaf0d8154c22e2b59c74e3a918" # v4.7.20

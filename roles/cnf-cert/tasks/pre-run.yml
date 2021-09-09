@@ -1,18 +1,5 @@
 ---
 
-- name: Install the Go toolchain and make
-  become: yes
-  dnf:
-    name:
-        - go-toolset
-        - make
-    state: present
-
-- name: Install ginkgo package
-  shell: |
-    set -ex
-    go get -u github.com/onsi/ginkgo/ginkgo
-
 - name: Create temporary directory for git repos
   tempfile:
     state: directory
@@ -32,81 +19,14 @@
   delay: 10
   until: not test_network_function_gitref.failed
 
-- name: Clone cnf-certification-test-partner
-  git:
-    repo: "{{ cnf_certification_test_partner_repo }}"
-    version: "{{ cnf_certification_test_partner_version }}"
-    dest: "{{ tnf_git_dir.path }}/cnf_certification_test_partner"
-    force: yes
-  # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
-  # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
-  # multiple times.
-  register: cnf_certification_test_partner_gitref
-  retries: 3
-  delay: 10
-  until: not cnf_certification_test_partner_gitref.failed
+- name: "cnf-cert : Save images in local registry"
+  include_tasks: save-images.yml
+  when:
+    - provisionhost_registry|length
+    - provisionhost_registry_creds|length
 
-# Following these examples:
-# https://github.com/test-network-function/cnf-certification-test-partner/blob/v3.0.0/deploy-partner-pods.sh
-# https://github.com/test-network-function/cnf-certification-test-partner/blob/v3.0.0/deploy-test-pods.sh
-- name: Build the partner pod image
-  shell: |
-    set -ex
-    mkdir -p ./temp
-
-    if [ -n "{{ provisionhost_registry }}" -a -n "{{ provisionhost_registry_creds }}" ]; then
-      export BUILDAH_FORMAT=docker
-      podman build -f ./test-partner/Dockerfile -t testnetworkfunction/cnf-test-partner
-      podman tag testnetworkfunction/cnf-test-partner {{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner
-      podman push --authfile {{ provisionhost_registry_creds }} {{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner
-      sed -i -e 's@quay.io/testnetworkfunction/cnf-test-partner:latest@{{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner@' ./local-test-infra/local-partner-deployment.yaml
-    fi
-  args:
-    chdir: "{{ tnf_git_dir.path }}/cnf_certification_test_partner"
-
-- name: Check if tnf namespace exists
-  k8s_info:
-    api_version: v1
-    kind: Namespace
-    name: tnf
-  register: tnf_namespace
-
-- name: Create tnf namespace
-  shell: |
-    set -ex
-    export NAMESPACE_TO_GENERATE="tnf"
-    cat ./local-test-infra/namespace.yaml | ./script/mo > ./temp/rendered-namespace.yaml
-    oc apply -f ./temp/rendered-namespace.yaml
-    rm ./temp/rendered-namespace.yaml
-  args:
-    chdir: "{{ tnf_git_dir.path }}/cnf_certification_test_partner"
-  when: tnf_namespace.resources|length == 0
-
-- name: Check if partner pod exists
-  k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: tnf
-    label_selectors:
-      - test-network-function.com/generic = orchestrator
-  register: partner_pods
-
-- name: Build the partner pod
-  shell: |
-    set -ex
-    export NAMESPACE_TO_GENERATE="tnf"
-    cat ./local-test-infra/local-partner-deployment.yaml | ./script/mo > ./temp/rendered-partner-template.yaml
-    oc apply -f ./temp/rendered-partner-template.yaml
-    rm ./temp/rendered-partner-template.yaml
-  args:
-    chdir: "{{ tnf_git_dir.path }}/cnf_certification_test_partner"
-  when: partner_pods.resources|length == 0
-
-- name: Build the CNF Test Suite
-  shell: |
-    set -ex
-    make build-cnf-tests
-  args:
-    chdir: "{{ tnf_git_dir.path }}/test_network_function"
+- name: Create variable with test-network-function version name
+  set_fact:
+    tnf_version_image: "{{ ( test_network_function_version | regex_search('v[0-9].[0-9].[0-9]') ) | ternary(test_network_function_version, 'unstable') }}"
 
 ...

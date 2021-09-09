@@ -1,11 +1,10 @@
 ---
 
-- name: Delete tnf namespace
-  k8s:
-    api_version: v1
-    kind: Namespace
-    name: tnf
-    state: absent
+# Namespace not deleted here, even if being the same used for cnf-cert. To be deleted in partner hooks
+- name: Delete the partner deployment
+  shell: |
+    set -ex
+    oc delete deployment partner -n {{ dci_openshift_app_ns }}
 
 - name: Delete temporary directory for git repos
   file:
