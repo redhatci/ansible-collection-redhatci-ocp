@@ -75,6 +75,7 @@
     if [ "{{ autodiscovering_enabled }}" != "0" ]; then
       export TNF_NON_INTRUSIVE_ONLY={{ tnf_non_intrusive_only }}
       export VERIFY_CNF_FEATURES={{ verify_cnf_features }}
+      export LOG_LEVEL=debug
       ./run-cnf-suites.sh -f {{ tnf_suites }} &> test-network-function/execution.log
     else
       ./run-cnf-suites.sh {{ tnf_suites }} &> test-network-function/execution.log
