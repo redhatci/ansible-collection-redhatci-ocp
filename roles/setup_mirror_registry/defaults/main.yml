@@ -2,7 +2,6 @@
 # defaults file for disconnected_registry
 force: "no" # force downloads for oc and opm
 pull_secret_file_name: pull-secret.txt
-localhost_pull_secret_file: "./{{ pull_secret_file_name }}"
 registry_container_image: docker.io/library/registry:2
 
 # Paths
