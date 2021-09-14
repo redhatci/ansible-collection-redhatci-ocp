@@ -1,0 +1,6 @@
+- name: Check repo_root_path is defined
+  assert:
+    that:
+      - repo_root_path is defined
+    fail_msg: repo_root_path is required for all playbooks to function correctly
+  changed_when: False
