@@ -6,7 +6,7 @@ create: True
 debug: False
 disconnected: False
 manifests: True
-fetched_dest: ./fetched
+fetched_dest: "{{ repo_root_path }}/fetched"
 
 mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['registry_host']['registry_port'] }}"
 

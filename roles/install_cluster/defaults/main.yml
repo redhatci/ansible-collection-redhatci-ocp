@@ -14,4 +14,4 @@ URL_ASSISTED_INSTALLER_CLUSTER: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ C
 HTTP_AUTH_USERNAME: "none"
 HTTP_AUTH_PASSWORD: "none"
 
-fetched_dest: ./fetched
+fetched_dest: "{{ repo_root_path }}/fetched"

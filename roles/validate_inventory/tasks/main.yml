@@ -2,6 +2,12 @@
 - name: Validate Inventory
   block:
     - include_tasks:
+        file: required_vars.yml
+        apply:
+          tags: validate_required_vars
+      tags: validate_required_vars
+
+    - include_tasks:
         file: cluster.yml
         apply:
           tags: validate_cluster
