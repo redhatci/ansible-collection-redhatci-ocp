@@ -1,0 +1,101 @@
+---
+- name: Setup tmp preflight folders
+  block:
+    - name: Create temporary preflight_tmp_dir directory
+      tempfile:
+        state: directory
+        prefix: preflight_tmp_dir.
+      register: preflight_tmp_dir
+
+    - name: Set directories for artifacts and operator bundle extract
+      set_fact:
+        preflight_artifacts: "{{ preflight_tmp_dir.path }}/artifacts"
+        preflight_kubeconfig: "{{ preflight_tmp_dir.path }}/kubeconfig"
+
+    - name: Create directories to mount artifacts volume and kubeconfig volume
+      file:
+        path: "{{ preflight_dir_to_create }}"
+        state: directory
+        mode: 0744
+      loop:
+        - "{{ preflight_artifacts }}"
+        - "{{ preflight_kubeconfig }}"
+      loop_control:
+        loop_var: preflight_dir_to_create
+
+    - name: Copy kubeconfig file into kubeconfig folder
+      copy:
+        src: "{{ kubeconfig_path }}"
+        dest: "{{ preflight_kubeconfig }}"
+
+- name: Set operator index image by default
+  set_fact:
+    OO_INDEX: "{{ operator.index_image }}"
+
+- name: Manage operator in the disconnected environment
+  include_tasks: disconnected_env.yml
+  when: dci_disconnected | default(false) | bool
+
+- name: Create preflight namespace
+  k8s:
+    name: "{{ preflight_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Run preflight check operator tests
+  environment:
+    - OPENSHIFT_AUTH: "{{ provisionhost_registry_creds }}"
+    - OO_BUNDLE: "{{ operator.image }}"
+    - OO_INDEX: "{{ OO_INDEX }}"
+  shell: |
+    podman run \
+    -it \
+    --rm \
+    --pull=always \
+    --name preflight \
+    --privileged \
+    -e PFLT_JUNIT=true \
+    -e PFLT_ARTIFACTS=/artifacts \
+    -e PFLT_LOGFILE=/artifacts/preflight.log \
+    -e PFLT_LOGLEVEL=trace \
+    -e KUBECONFIG=/kubeconfig \
+    -e PFLT_INDEXIMAGE={{ OO_INDEX }} \
+    -e PFLT_NAMESPACE={{ preflight_namespace }} \
+    -e PFLT_SERVICEACCOUNT=default \
+    -e PFLT_SCORECARD_IMAGE={{ config_images[0] }} \
+    -v {{ preflight_kubeconfig }}/kubeconfig:/kubeconfig \
+    -v {{ preflight_artifacts }}:/artifacts \
+    {{ preflight_version }} \
+    check operator \
+    {{ operator.image }}
+  register: preflight_exec
+  ignore_errors: true
+
+- name: Delete preflight namespace
+  k8s:
+    name: "{{ preflight_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: absent
+
+- name: Upload passed and failed tests
+  block:
+    - name: Set prefix for preflight check operator output files
+      set_fact:
+        preflight_prefix: "preflight_{{ operator.image.split('@')[0].split('/')[-1] }}_{{ operator.index_image.split(':')[-1] }}"
+
+    - name: Upload logs for preflight check operator into DCI
+      copy:
+        src: "{{ item }}"
+        dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item.split('/')[-1] }}"
+      with_fileglob:
+        - "{{ preflight_artifacts }}/*"
+      ignore_errors: true
+
+- name: Remove tmp dir
+  file:
+    path: "{{ preflight_tmp_dir.path }}"
+    state: absent
+
+...

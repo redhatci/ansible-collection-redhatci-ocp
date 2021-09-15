@@ -1,0 +1,58 @@
+---
+- name: Manage operator index image in the disconnected environment
+  block:
+    - name: Replace global registry with local one to create tag for the index image in disconnected env
+      set_fact:
+        OO_INDEX: "{{ '/'.join([ provisionhost_registry ] + operator.index_image.split('/')[1:]) }}"
+
+    - name: Build index image in temporary preflight directory
+      shell:
+        cmd: |
+          opm index add --pull-tool podman \
+          --bundles {{ operator.image }} \
+          --tag {{ OO_INDEX }}
+        chdir: "{{ preflight_tmp_dir.path }}"
+
+    - name: Push index image into local registry
+      shell: |
+        podman push \
+        --authfile {{ provisionhost_registry_creds }} \
+        {{ OO_INDEX }}
+
+- name: Manage operator mirroring and imageContentSourcePolicy
+  block:
+    - name: Mirror operator image
+      shell: |
+        skopeo copy \
+        --all \
+        --remove-signatures \
+        --authfile {{ provisionhost_registry_creds }} \
+        --dest-tls-verify=false \
+        docker://{{ operator.image }} \
+        docker://{{ provisionhost_registry }}/{{ '/'.join(operator.image.split('@')[0].split('/')[1:]) }}
+
+    - name: Save catalog mirror to temporary scorecard directory
+      shell: |
+        oc adm catalog mirror -a {{ provisionhost_registry_creds }} \
+        {{ OO_INDEX }} {{ provisionhost_registry }} --to-manifests={{ preflight_tmp_dir.path }}/tmp_oc
+
+    - name: Append to imageContentSourcePolicy
+      blockinfile:
+        block: |
+          # Scorecard container
+            - mirrors:
+              - {{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+              source: {{ item.split('@')[0] }}
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
+        path: "{{ preflight_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
+      loop: "{{ scorecard_images + [ operator.image ] }}"
+
+    - name: Apply Image Content Source Policy
+      k8s:
+        definition: "{{ lookup('file', preflight_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
+
+    - name: Delay for policy to apply, there is no nodes to reboot anymore since ocp-4.7
+      pause:
+        minutes: 1
+
+...
