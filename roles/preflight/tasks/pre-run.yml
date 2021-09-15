@@ -1,0 +1,41 @@
+---
+- name: Run preflight runtime-assets to get scorecard-test image
+  block:
+    - name: Run preflight runtime-assets
+      shell: |
+        podman run \
+        -it \
+        --rm \
+        --pull=always \
+        --name preflight \
+        {{ preflight_version }} \
+        runtime-assets
+      register: preflight_assets
+
+    - name: Get scorecard config images
+      set_fact:
+        config_images: "{{ preflight_assets.stdout | from_json | json_query('images') | list | unique }}"
+
+- name: Manage scorecard images mirroring
+  block:
+    - name: Get busybox and ubi images from static file
+      set_fact:
+        busybox_images: "{{ lookup('file', 'files/scorecard-busybox-ubi.yaml') | from_yaml | json_query('images') | list | unique }}"
+
+    - name: Merge all scorecard images in one list
+      set_fact:
+        scorecard_images: "{{ config_images + busybox_images }}"
+
+    - name: Mirror scorecard images
+      shell: |
+        skopeo copy \
+        --all \
+        --remove-signatures \
+        --authfile {{ provisionhost_registry_creds }} \
+        --dest-tls-verify=false \
+        docker://{{ item }} \
+        docker://{{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+      loop: "{{ scorecard_images }}"
+  when: dci_disconnected | default(false) | bool
+
+...
