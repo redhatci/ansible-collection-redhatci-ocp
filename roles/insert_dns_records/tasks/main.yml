@@ -1,0 +1,41 @@
+---
+- name: Get node_records for masters and workers
+  set_fact:
+    node_dns_records: "{{ node_dns_records | default({}) | combine(
+      {
+        item: {
+          'name': item,
+          'address': item + '.' + cluster_name + '.' + base_dns_domain,
+          'ip': hostvars[item][host_ip_keyword],
+          'mac': hostvars[item]['mac'] | default(False),
+          'use_dhcp': hostvars[item]['ip'] | default('dhcp') == 'dhcp',
+        }
+      }
+    )
+    }}"
+  loop: "{{ groups['masters'] + groups['workers'] | default([]) }}"
+  when: hostvars[item][host_ip_keyword] is defined
+
+- name: Configure firewall
+  become: true
+  import_tasks: configure_firewall.yml
+
+- name: Configure dnsmasq via NetworkManager
+  become: true
+  import_tasks:
+    file: network-manager.yml
+  when: dns_service_name == "NetworkManager"
+
+- name: Configure dnsmasq via dnsmasq
+  become: true
+  import_tasks:
+    file: dnsmasq.yml
+  when: dns_service_name == "dnsmasq"
+
+- name: "Restart {{ dns_service_name }}"
+  become: true
+  ansible.builtin.service:
+    name: "{{ dns_service_name }}"
+    state: restarted
+  async: 45
+  poll: 5

@@ -1,0 +1,45 @@
+---
+- name: Make key dir
+  file:
+    path: "{{ key_pair_dir }}"
+    mode: 0775
+    state: directory
+
+- name: Generate an OpenSSH rsa keypair
+  community.crypto.openssh_keypair:
+    path: "{{ key_pair_dir }}/{{ private_key_name }}"
+  args: "{{ openssh_keypair_args | default({}) }}"
+
+- name: Fetch SSH Key
+  fetch:
+    src: "{{ item }}"
+    dest: "{{ fetched_dest }}/ssh_keys/"
+    flat: yes
+  loop:
+    - "{{ key_pair_dir }}/{{ private_key_name }}"
+    - "{{ key_pair_dir }}/{{ public_key_name }}"
+
+- name: Copy SSH Key to bastion
+  block:
+    - name: Make SSH Key folder
+      file:
+        path: "{{ ssh_key_dest_dir }}"
+        mode: 0775
+        state: directory
+
+    - name: Copy SSH Key files to bastion
+      copy:
+        src: "{{ fetched_dest }}/ssh_keys/{{ item }}"
+        dest: "{{ ssh_key_dest_dir }}/{{ item }}"
+      loop:
+        - "{{ private_key_name }}"
+        - "{{ public_key_name }}"
+
+  delegate_to: bastion
+
+- name: Distribute public key to all hosts
+  set_fact:
+    ssh_public_key: "{{ lookup('file', fetched_dest + '/ssh_keys/' + public_key_name) }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['all'] }}"

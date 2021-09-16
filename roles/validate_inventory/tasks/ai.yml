@@ -1,0 +1,30 @@
+---
+- name: Assert ai_version is valid
+  assert:
+    that:
+      - ai_version_number is version('1.0.18.0', '>=')
+    fail_msg: "ai_version  must be >= v1.0.18.1 and must be of the form 'v\\d+.\\d+.\\d+.\\d+'"
+
+- name: Assert that Openshift version is supported
+  assert:
+    that:
+      - openshift_full_version is version('4.6', '>=')
+    fail_msg: "openshift_full_version  must be >= 4.6."
+
+- name: Assert VIPs are within the machine network
+  assert:
+    that:
+      - hostvars['assisted_installer'][item] | ipaddr(hostvars['assisted_installer']['machine_network_cidr']) | ipaddr('bool')
+    fail_msg: "{{ item }} is not within the machine network!"
+  when: vip_dhcp_allocation == false
+  loop:
+    - api_vip
+    - ingress_vip
+
+- name: Assert nodes are within the machine network
+  assert:
+    that:
+      - hostvars[item]['ansible_host'] | ipaddr(hostvars['assisted_installer']['machine_network_cidr']) | ipaddr('bool')
+    fail_msg: "{{ item }} is not within the machine network!"
+  when: vip_dhcp_allocation == false
+  loop: "{{ groups['nodes'] }}"

@@ -1,0 +1,3 @@
+http_store_dir : "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
+http_host: "{{ discovery_iso_server | default('http://' + hostvars['http_store']['ansible_host']) }}"
+test_file_name: http_test

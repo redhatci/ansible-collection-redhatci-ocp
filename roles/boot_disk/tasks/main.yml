@@ -1,0 +1,27 @@
+---
+# tasks file for boot_disk
+
+- name: Join list for workers and masters
+  set_fact:
+    hosts: "{{ groups['masters'] + groups['workers'] | default([]) }}"
+  when: hosts is not defined
+
+- name: Reboot dell
+  include_tasks: dell.yml
+  loop: "{{ hosts }}"
+  when: hostvars[item]['vendor'] == 'Dell'
+
+- name: Reboot lenovo
+  include_tasks: lenovo.yml
+  loop: "{{ hosts }}"
+  when: hostvars[item]['vendor'] == 'Lenovo'
+
+- name: Reboot kvm
+  include_tasks: kvm.yml
+  loop: "{{ hosts }}"
+  when: hostvars[item]['vendor'] == 'KVM'
+
+- name: Reboot SuperMicro
+  include_tasks: supermicro.yml
+  loop: "{{ hosts }}"
+  when: hostvars[item]['vendor'] == 'SuperMicro'

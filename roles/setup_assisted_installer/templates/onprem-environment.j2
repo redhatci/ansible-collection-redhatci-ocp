@@ -1,0 +1,31 @@
+POSTGRESQL_DATABASE=installer
+POSTGRESQL_PASSWORD=admin
+POSTGRESQL_USER=admin
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_USER=admin
+DB_PASS=admin
+DB_NAME=installer
+SERVICE_BASE_URL=http://{{ host | default("ansible_fqdn") }}:8090
+DEPLOY_TARGET=onprem
+STORAGE=filesystem
+DUMMY_IGNITION=false
+
+OPENSHIFT_VERSIONS={{ assisted_service_openshift_versions | to_json }}
+ENABLE_SINGLE_NODE_DNSMASQ=true
+PUBLIC_CONTAINER_REGISTRIES=quay.io
+NTP_DEFAULT_SERVER=
+IPV6_SUPPORT=true
+AUTH_TYPE=none
+
+SKIP_CERT_VERIFICATION=true
+
+SELF_VERSION={{ assisted_service_image }}
+INSTALLER_IMAGE={{ assisted_installer_image }}
+CONTROLLER_IMAGE={{ assisted_installer_controller_image }}
+AGENT_DOCKER_IMAGE={{ assisted_installer_agent_image }}
+
+HW_VALIDATOR_MIN_DISK_SIZE_GIB=20
+
+# Format has changed and likely will continue to change for HW validation (Link: https://github.com/openshift/assisted-service/blob/master/onprem-environment#L19)
+HW_VALIDATOR_REQUIREMENTS={{ assisted_installer_hardware_validation | to_json }}

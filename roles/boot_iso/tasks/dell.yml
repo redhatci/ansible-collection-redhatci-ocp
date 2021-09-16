@@ -1,0 +1,30 @@
+---
+- name: Discovery iDRAC versions for Dell hardware
+  containers.podman.podman_container:
+    name: "{{ hostvars[inventory_hostname]['bmc_address'] }}-rac-version"
+    network: host
+    image: quay.io/dphillip/racadm-image
+    state: started
+    detach: false
+    rm: true
+    command:
+      [
+        "-v",
+        "-r",
+        "{{ hostvars[inventory_hostname]['bmc_address'] }}",
+        "-u",
+        "{{ hostvars[inventory_hostname]['bmc_user'] }}",
+        "-p",
+        "{{ hostvars[inventory_hostname]['bmc_password'] }}",
+        "-i",
+        "{{ boot_iso_url }}",
+      ]
+  register: drac_version
+
+- name: Using iDRAC ISO method for 13G and below
+  include_tasks: dell_idrac.yml
+  when: drac_version.stdout | int <= 13
+
+- name: Using iDRAC ISO method for 13G and below
+  include_tasks: dell_redfish.yml
+  when: drac_version.stdout | int > 13

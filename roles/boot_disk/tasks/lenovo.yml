@@ -1,0 +1,53 @@
+---
+- name: Mount Live ISO, Boot into Live ISO (Lenovo servers)
+  block:
+
+    - name: Lenovo Eject Virtual Media {{ item }}
+      uri:
+        url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
+        user: "{{ hostvars[item]['bmc_user'] }}"
+        password: "{{ hostvars[item]['bmc_password'] }}"
+        method: PATCH
+        body_format: json
+        body: {"Image": null, "Inserted": false}
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - name: Lenovo Set Boot from Hard Disk {{ item }}
+      uri:
+        url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1"
+        user: "{{ hostvars[item]['bmc_user'] }}"
+        password: "{{ hostvars[item]['bmc_password'] }}"
+        method: PATCH
+        body_format: json
+        body: {
+        "Boot": {
+            "BootSourceOverrideEnabled": "Disabled",
+            "BootSourceOverrideMode": "UEFI",
+            "BootSourceOverrideTarget": "Hdd",
+            "UefiTargetBootSourceOverride": null
+            }
+        }
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - name: Lenovo Restart the System {{ item }}
+      uri:
+        url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+        user: "{{ hostvars[item]['bmc_user'] }}"
+        password: "{{ hostvars[item]['bmc_password'] }}"
+        method: POST
+        body_format: json
+        body: {"ResetType": "ForceRestart"}
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+

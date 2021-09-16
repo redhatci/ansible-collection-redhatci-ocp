@@ -1,0 +1,43 @@
+---
+
+- name: Set kvm_nodes
+  set_fact:
+    kvm_nodes: "{{ kvm_nodes | default([]) + [{
+        'name': item,
+        'mac':  hostvars[item]['mac'],
+        'ip': hostvars[item][vm_host_ip_keyword],
+        'memory': hostvars[item]['vm_spec']['ram_mib'] | default(vm_params[hostvars[item]['role']]['memory']),
+        'vcpu': hostvars[item]['vm_spec']['cpu_cores'] | default(vm_params[hostvars[item]['role']]['vcpu']),
+        'disk_size': hostvars[item]['vm_spec']['disk_size_gb'] | default(vm_params[hostvars[item]['role']]['disk_size']),
+    }] }}"
+  loop: "{{ groups['masters'] + groups['workers'] | default([])}}"
+  when: hostvars[item]['vendor'] | lower == 'kvm'
+
+- name: Setup host environment
+  become: true
+  block:
+    - name: "Install virt-manager"
+      package:
+        name: "{{ virt_packages }}"
+        state: present
+
+    - name: Start libvirtd
+      service:
+        name: libvirtd
+        state: started
+
+- name: Prepare Bridges
+  import_tasks: prepare_bridges.yml
+  when: (SETUP_VM_BRIDGE | default(true)) | bool == true
+
+- name: Prepare Network
+  import_tasks: prepare_network.yml
+
+- name: Prepare firewall
+  import_tasks: prepare_firewall.yml
+
+- name: Prepare Storage Pool
+  import_tasks: prepare_storage_pool.yml
+
+- name: Prepare VMS
+  import_tasks: provision_vms.yml

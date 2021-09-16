@@ -1,0 +1,30 @@
+- name: Set test file contents
+  set_fact:
+    contents: "{{ lookup('template', 'test_file.j2') }}"
+
+- name: Copy file to http_store
+  copy:
+    content: "{{ contents }}"
+    dest: "{{ http_store_dir }}/{{ test_file_name }}"
+  become: true
+  delegate_to: http_store
+
+- name: Retrieve file from http_store
+  uri:
+    url: "{{ http_host }}/{{ test_file_name }}"
+    return_content: true
+  register: response
+  delegate_to: bastion
+
+- name: Check content matches
+  assert:
+    that:
+      response.content == contents
+    quiet: true
+
+- name: Remove file on http_store
+  file:
+    path: "{{ http_store_dir }}/{{ test_file_name }}"
+    state: absent
+  become: true
+  delegate_to: http_store

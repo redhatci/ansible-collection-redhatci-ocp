@@ -1,0 +1,6 @@
+required_domains:
+  - "{{ 'api.' + domain }}"
+  - "{{ 'api-int.' + domain }}"
+  - "{{ '*.apps.' + domain }}"
+required_binary: dig
+required_binary_provided_in_package: bind-utils

@@ -1,0 +1,125 @@
+---
+- name: Mount Live ISO, Boot into Live ISO (Lenovo servers)
+  block:
+
+    - name: Lenovo Power On the System {{ inventory_hostname }}
+      uri:
+        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        method: POST
+        body_format: json
+        body: {"ResetType": "On"}
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - debug:
+        var: redfish_reply
+      when: debug | bool == True
+
+    - name: Lenovo Eject Virtual Media {{ inventory_hostname }}
+      uri:
+        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
+        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        method: PATCH
+        body_format: json
+        body: {"Image": null, "Inserted": false}
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - debug:
+        var: redfish_reply
+      when: debug | bool == True
+
+    - name: Lenovo Insert Virtual Media {{ inventory_hostname }}
+      uri:
+        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
+        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        method: PATCH
+        body_format: json
+        body: {"Image":"{{ boot_iso_url }}", "Inserted": true}
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - debug:
+        var: redfish_reply
+      when: debug | bool == True
+
+    - name: Lenovo Set Boot from Hard Disk {{ inventory_hostname }}
+      uri:
+        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
+        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        method: PATCH
+        body_format: json
+        body: {
+        "Boot": {
+            "BootSourceOverrideEnabled": "Disabled",
+            "BootSourceOverrideMode": "UEFI",
+            "BootSourceOverrideTarget": "Hdd",
+            "UefiTargetBootSourceOverride": null
+            }
+        }
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - debug:
+        var: redfish_reply
+      when: debug | bool == True
+
+    - name: Lenovo Set Boot Once from Virtual Media {{ inventory_hostname }}
+      uri:
+        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
+        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        method: PATCH
+        body_format: json
+        body: {
+        "Boot": {
+            "BootSourceOverrideEnabled": "Once",
+            "BootSourceOverrideMode": "UEFI",
+            "BootSourceOverrideTarget": "UefiTarget",
+            "UefiTargetBootSourceOverride": "EXT1"
+            }
+        }
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - debug:
+        var: redfish_reply
+      when: debug | bool == True
+
+    - name: Lenovo Restart the System {{ inventory_hostname }}
+      uri:
+        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        method: POST
+        body_format: json
+        body: {"ResetType": "ForceRestart"}
+        status_code: [200, 204]
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+      register: redfish_reply
+
+    - debug:
+        var: redfish_reply
+      when: debug | bool == True

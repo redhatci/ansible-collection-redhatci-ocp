@@ -1,0 +1,32 @@
+- name: Find vm creation scripts
+  find:
+    path: "{{ vm_create_scripts }}"
+  register: creation_to_remove
+
+- name: Remove file in {{vm_create_scripts }} dir
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ creation_to_remove.files |  map(attribute='path') | list }}"
+
+- name: List vms
+  community.libvirt.virt:
+    command: list_vms
+  register: vms_list
+
+- name: Get filtered vm list
+  set_fact:
+    vms_to_remove: "{{ [item] + vms_to_remove | default([]) }}"
+  loop: "{{ vms_list.list_vms }}"
+  when: item in hostvars and hostvars[item]['vendor'] | lower == 'kvm'
+
+- name: Destroy VM
+  community.libvirt.virt:
+    name: "{{ item }}"
+    state: destroyed
+  loop: "{{ vms_to_remove | default([]) }}"
+
+- name: Undefine VM
+  shell:
+    cmd: "virsh undefine --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
+  loop: "{{ vms_to_remove | default([]) }}"

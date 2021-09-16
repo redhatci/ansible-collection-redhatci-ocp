@@ -1,0 +1,21 @@
+write_dnsmasq_config: true
+domain: "{{ cluster_name + '.' + base_dns_domain }}"
+host_ip_keyword: "ansible_host"
+dns_entries_file_name: "{{ 'dnsmasq.' + cluster_name + '.conf' }}"
+dns_service_name: NetworkManager
+dns_records:
+  apps:
+    address: "*.apps.{{ domain }}"
+    ip: "{{ ingress_vip }}"
+  api:
+    address: "api.{{ domain }}"
+    ip: "{{ api_vip }}"
+  api_int:
+    address: "api-int.{{ domain }}"
+    ip: "{{ api_vip }}"
+
+node_dns_records: {}
+extra_dns_records: {}
+
+use_dhcp: false
+dhcp_lease_time: 24h

@@ -1,0 +1,7 @@
+- name: "Get {{ item.key }} image hash"
+  shell: "skopeo --authfile {{ local_pull_secret_path }} inspect docker://{{ item.value.image }}:{{ item.value.tag }}"
+  register: result
+
+- name: Update hashes
+  set_fact:
+    image_hashes: "{{ image_hashes | default({}) | combine({item.key:  (result.stdout | from_json | json_query('Digest'))}) }}"

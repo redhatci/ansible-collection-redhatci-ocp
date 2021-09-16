@@ -1,0 +1,17 @@
+---
+# defaults file for create_day2_cluster
+
+secure: false
+debug: False
+
+ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] }}"
+ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] }}"
+ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"
+
+HTTP_PROXY: ""
+HTTPS_PROXY: ""
+NO_PROXY: ""
+
+# HTTP Basic Authentication
+HTTP_AUTH_USERNAME: "none"
+HTTP_AUTH_PASSWORD: "none"

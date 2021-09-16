@@ -1,0 +1,26 @@
+---
+# defaults file for create_cluster
+
+secure: False
+create: True
+debug: False
+disconnected: False
+manifests: True
+fetched_dest: ./fetched
+
+mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['registry_host']['registry_port'] }}"
+
+ASSISTED_INSTALLER_HOST: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+ASSISTED_INSTALLER_PORT: 8090
+ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"
+URL_ASSISTED_INSTALLER_CLUSTERS: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters"
+
+HTTP_PROXY: ""
+HTTPS_PROXY: ""
+NO_PROXY: ""
+
+manifest_templates:
+  - 50-worker-nm-fix-ipv6.yml
+  - 50-worker-remove-ipi-leftovers.yml
+  - 02-fix-ingress-config.yml
+  - 01-master-node-scheduler.yml

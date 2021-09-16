@@ -1,0 +1,20 @@
+node_required_vars:
+  - bmc_address
+  - bmc_password
+  - bmc_user
+  - vendor
+  - role
+  - mac
+
+supported_role_values:
+  - worker
+  - master
+
+supported_vendor_values:
+  - Dell
+  - Lenovo
+  - KVM
+  - SuperMicro
+
+ai_version: "{{ hostvars.assisted_installer.ai_version | default('v1.0.24.2') }}"
+ai_version_number: "{{ ai_version | regex_replace('v(\\d+\\.\\d+.\\d+\\.\\d+)', '\\1') }}"

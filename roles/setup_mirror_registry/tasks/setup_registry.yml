@@ -1,0 +1,129 @@
+---
+- name: Open registry port, zone internal and public, for firewalld
+  firewalld:
+    port: "{{ registry_port }}/tcp"
+    permanent: yes
+    immediate: yes
+    state: enabled
+    zone: "{{ item }}"
+  become: yes
+  with_items:
+  - internal
+  - public
+
+- name: Create directory to hold the registry files
+  file:
+    path: "{{ item }}"
+    owner:  "{{ file_owner }}"
+    group:  "{{ file_group }}"
+    mode: 0775
+    state: directory
+
+    recurse: yes
+  loop:
+    - "{{ registry_dir_auth }}"
+    - "{{ registry_dir_cert }}"
+    - "{{ registry_dir_data }}"
+  become: true
+
+- name: Generate htpasswd entry
+  command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
+  register: htpass_entry
+
+- name: Write htpasswd file
+  copy:
+    content: '{{ htpass_entry.stdout }}'
+    dest: "{{ registry_dir_auth }}/htpasswd"
+    owner:  "{{ file_owner }}"
+    group:  "{{ file_group }}"
+    mode: 0660
+    backup: yes
+    force: yes
+  become: True
+
+- name: Set disconnected_auth
+  set_fact:
+    disconnected_registry_up: "{{ disconnected_registry_user }}:{{ disconnected_registry_password }}"
+
+- name: Update pull_secret variable
+  set_fact:
+    pull_secret: "{{ pull_secret | combine(
+      {'auths': pull_secret['auths'] | combine(
+        {
+          local_registry: {
+            'auth': disconnected_registry_up | b64encode,
+            'email': registry_email
+          }
+        }
+      )}
+    ) }}"
+
+- name: Write updated pull_secret
+  copy:
+    content: "{{ pull_secret | to_json }}"
+    dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+
+
+- name: Create container to serve the registry
+  containers.podman.podman_container:
+    name: "{{ image_name_registry }}"
+    image: "{{ registry_container_image }}"
+    state: stopped
+    expose: "{{ registry_port }}"
+    network: host
+    volumes:
+      - "{{ registry_dir_data }}:/var/lib/registry:z"
+      - "{{ registry_dir_auth }}:/auth:z"
+      - "{{ registry_dir_cert }}:/certs:z"
+    env:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry
+      REGISTRY_HTTP_SECRET: "{{ REGISTRY_HTTP_SECRET }} "
+      REGISTRY_AUTH_HTPASSWD_PATH: auth/htpasswd
+      REGISTRY_HTTP_TLS_CERTIFICATE: certs/domain.crt
+      REGISTRY_HTTP_TLS_KEY: certs/domain.key
+  become: True
+  register: registry_container_info
+
+
+- name: Setting facts about container
+  set_fact:
+    container_registry_name: "{{ registry_container_info.container.Name }}"
+    container_registry_pidfile: "{{ registry_container_info.container.ConmonPidFile }}"
+
+- name: Setup registry service
+  block:
+    - name: Copy the systemd service file
+      copy:
+        content: |
+          [Unit]
+          Description=Podman container-registry.service
+          [Service]
+          Restart=on-failure
+          ExecStart=/usr/bin/podman start {{ container_registry_name }}
+          ExecStop=/usr/bin/podman stop -t 10 {{ container_registry_name }}
+          KillMode=none
+          Type=forking
+          PIDFile={{ container_registry_pidfile }}
+          [Install]
+          WantedBy=default.target
+        dest: "/etc/systemd/system/container-registry.service"
+
+
+    - name: Reload demon to pick up changes in container-registry.service
+      ansible.builtin.systemd:
+        name: container-registry
+        daemon_reload: yes
+        scope: system
+
+    - name: Start container-registry.service
+      systemd:
+        name: container-registry
+        enabled: yes
+        scope: system
+
+    - name: Start container-registry.service
+      systemd:
+        name: container-registry
+        state: started
+  become: true

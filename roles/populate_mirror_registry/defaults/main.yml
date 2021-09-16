@@ -1,0 +1,54 @@
+---
+# defaults file for disconnected_registry
+force: "no" # force downloads for oc and opm
+
+openshift_version: "{{ openshift_full_version.split('.')[:2] | join('.') }}"
+downloads_path: "{{ ansible_env.HOME }}"
+
+# Name of the pod running as the registry.
+image_name_registry: ocpdiscon-registry
+
+# oc and opm install
+release_url: "https://mirror.openshift.com/pub/openshift-v{{ openshift_version_parts[0] }}/clients/ocp"
+oc_tar: openshift-client-linux.tar.gz
+opm_tar: opm-linux.tar.gz
+
+# The information for the locally created registry
+registry_fqdn: "{{ ansible_fqdn }}"
+local_registry: "{{ registry_fqdn }}:{{ registry_port }}"
+local_repo: ocp4/openshift4
+local_registry_index_tag: "olm-index/redhat-operator-index:v{{ openshift_version_parts[:2] | join('.') }}"
+local_registry_image_tag: olm
+remote_registry: registry.redhat.io
+remote_registry_index: "{{ remote_registry }}/redhat/redhat-operator-index:v{{ openshift_version_parts[:2] | join('.') }}"
+registry_port: 5000
+
+installer_agent_image:
+  remote: "quay.io/ocpmetal/assisted-installer-agent@{{ image_hashes.installer_agent }}"
+  local: "{{ local_registry }}/ocpmetal/assisted-installer-agent"
+
+installer_image:
+  remote: "quay.io/ocpmetal/assisted-installer@{{ image_hashes.installer }}"
+  local: "{{ local_registry }}/ocpmetal/assisted-installer"
+
+installer_controller_image:
+  remote: "quay.io/ocpmetal/assisted-installer-controller@{{ image_hashes.controller }}"
+  local: "{{ local_registry }}/ocpmetal/assisted-installer-controller"
+
+ocpmetal_images:
+  - "{{ installer_agent_image }}"
+  - "{{ installer_image }}"
+  - "{{ installer_controller_image }}"
+
+mirror_packages:
+  - advanced-cluster-management
+  - cluster-logging
+  - kubevirt-hyperconverged
+  - local-storage-operator
+  - ocs-operator
+  - performance-addon-operator
+  - ptp-operator
+  - sriov-network-operator
+
+file_owner: "{{ ansible_env.USER }}"
+file_group: "{{ file_owner }}"

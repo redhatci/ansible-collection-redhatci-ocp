@@ -1,0 +1,127 @@
+---
+- name: Make sure needed packages are installed
+  package:
+    name: tar
+    state: present
+  become: true
+
+- name: Create download dir
+  ansible.builtin.file:
+    path: "{{ downloads_path }}"
+    owner: "{{ file_owner }}"
+    group: "{{ file_group }}"
+    mode: 0755
+    state: directory
+
+- name: Setup Version/Image facts
+  block:
+    - name: Get Release.txt File
+      uri:
+        url: "{{ release_url }}/{{ openshift_full_version }}/release.txt"
+        return_content: yes
+      register: result
+      until: result.status == 200
+      retries: 6 # 1 minute (10 * 6)
+      delay: 10 # Every 10 seconds
+      failed_when: result.content|length == 0 or result.status >= 400
+    - name: Set Fact for Release Image
+      set_fact:
+        release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
+        release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
+
+- name: Install oc
+  block:
+    - name: Download oc tarball
+      get_url:
+        url: "{{ release_url }}/{{ release_version }}/{{ oc_tar }}"
+        dest: "{{ downloads_path }}/"
+        force: "{{force}}"
+        backup: yes
+
+    - name: Make directory to extract oc binary
+      file:
+        path: "{{ downloads_path }}/openshift-client-linux"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        state: directory
+
+    - name: Extract oc binary
+      unarchive:
+        src: "{{ downloads_path }}/{{ oc_tar }}"
+        dest: "{{ downloads_path }}/openshift-client-linux"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        remote_src: yes
+      become: true
+
+    - name: Move oc to /usr/bin
+      copy:
+        src: "{{ downloads_path }}/openshift-client-linux/oc"
+        dest: /usr/bin/oc
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        remote_src: yes
+      become: true
+
+    - name: Move kubectl to /usr/bin
+      copy:
+        src: "{{ downloads_path }}/openshift-client-linux/kubectl"
+        dest: /usr/bin/kubectl
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        remote_src: yes
+      become: true
+
+    - name: Check kubectl installed
+      command: /usr/bin/kubectl version
+
+    - name: Check oc installed
+      command: /usr/bin/oc version
+
+  tags:
+    - create_registry
+    - fetch_oc
+
+- name: Install opm
+  block:
+    - name: Download opm tarball
+      get_url:
+        url: "{{ release_url }}/stable-{{ openshift_version }}/{{ opm_tar }}"
+        dest: "{{ downloads_path }}/"
+        force: "{{force}}"
+        backup: yes
+
+    - name: Make directory to extract binaries
+      file:
+        path: "{{ downloads_path }}/opm-linux"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        state: directory
+
+    - name: Extract binary
+      unarchive:
+        src: "{{ downloads_path }}/{{ opm_tar }}"
+        dest: "{{ downloads_path }}/opm-linux"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        remote_src: yes
+
+    - name: Move opm to /usr/bin
+      copy:
+        src: "{{ downloads_path }}/opm-linux/opm"
+        dest: /usr/bin/opm
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        remote_src: yes
+      become: true
+
+    - name: Check opm installed
+      command: opm version
+  tags:
+    - create_registry
+    - fetch_opm

@@ -1,0 +1,13 @@
+[Unit]
+Description=Sushy Tools (Redfish Emulator for Libvirt)
+After=network.target syslog.target
+
+[Service]
+Type=simple
+TimeoutStartSec=5m
+WorkingDirectory=/opt/sushy-tools
+ExecStart=/usr/local/bin/sushy-emulator --config /opt/sushy-tools/sushy-emulator.conf
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

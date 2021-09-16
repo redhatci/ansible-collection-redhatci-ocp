@@ -1,0 +1,86 @@
+ai_version: v1.0.24.2
+assisted_service_tag: "{{ ai_version }}"
+assisted_service_gui_tag: "{{ ai_version }}"
+
+coreos_installer_tag: v0.7.0
+
+coreos_installer_image: "quay.io/coreos/coreos-installer:{{ coreos_installer_tag  }}"
+assisted_service_image: "quay.io/ocpmetal/assisted-service:{{ assisted_service_tag }}"
+assisted_service_gui_image: "quay.io/ocpmetal/ocp-metal-ui:{{ assisted_service_gui_tag }}"
+assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
+
+assisted_service_openshift_versions:
+  "4.6":
+    display_name: 4.6.16
+    release_image: quay.io/openshift-release-dev/ocp-release:4.6.16-x86_64
+    release_version: 4.6.16
+    rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso
+    rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-live-rootfs.x86_64.img
+    rhcos_version: 46.82.202012051820-0
+    support_level: production
+  "4.7":
+    display_name: 4.7.28
+    release_image: quay.io/openshift-release-dev/ocp-release:4.7.28-x86_64
+    release_version: 4.7.28
+    rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.13/rhcos-4.7.13-x86_64-live.x86_64.iso
+    rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.13/rhcos-live-rootfs.x86_64.img
+    rhcos_version: 47.83.202105220305-0
+    support_level: production
+  "4.8":
+    default: true
+    display_name: 4.8.10
+    release_image: quay.io/openshift-release-dev/ocp-release:4.8.10-x86_64
+    release_version: 4.8.10
+    rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.2/rhcos-4.8.2-x86_64-live.x86_64.iso
+    rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.2/rhcos-live-rootfs.x86_64.img
+    rhcos_version: 48.84.202107202156-0
+    support_level: production
+  "4.9":
+    display_name: 4.9.0-rc.0
+    release_image: quay.io/openshift-release-dev/ocp-release:4.9.0-rc.0-x86_64
+    release_version: 4.9.0-rc.0
+    rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.9.0-rc.0/rhcos-4.9.0-rc.0-x86_64-live.x86_64.iso
+    rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.9.0-rc.0/rhcos-live-rootfs.x86_64.img
+    rhcos_version: 49.84.202109041651-0
+    support_level: beta
+
+assisted_installer_images:
+  release:
+    image: "quay.io/openshift-release-dev/ocp-release@{{ image_hashes.release }}"
+  controller:
+    image: "quay.io/ocpmetal/assisted-installer-controller@{{ image_hashes.controller }}"
+  installer_agent:
+    image: "quay.io/ocpmetal/assisted-installer-agent@{{ image_hashes.installer_agent }}"
+  installer:
+    image: "quay.io/ocpmetal/assisted-installer@{{ image_hashes.installer }}"
+
+rhcos_image: "{{ assisted_service_openshift_versions[openshift_version]['rhcos_image'] }}"
+assisted_installer_image: "{{ assisted_installer_images.installer.image }}"
+assisted_installer_agent_image: "{{ assisted_installer_images.installer_agent.image }}"
+assisted_installer_controller_image: "{{ assisted_installer_images.controller.image }}"
+
+assisted_installer_dir: /opt/assisted-installer
+
+ai_ports:
+  - 8000:8000
+  - 8090:8090
+  - 8080:8080
+
+# Format has changed and likely will continue to change for HW validation (Link: https://github.com/openshift/assisted-service/blob/master/onprem-environment#L19)
+assisted_installer_hardware_validation:
+  - version: default
+    master:
+      cpu_cores: 4
+      ram_mib: 6144
+      disk_size_gb: 20
+      installation_disk_speed_threshold_ms: 10
+    worker:
+      cpu_cores: 4
+      ram_mib: 4096
+      disk_size_gb: 20
+      installation_disk_speed_threshold_ms: 10
+    sno:
+      cpu_cores: 8
+      ram_mib: 32768
+      disk_size_gb: 120
+      installation_disk_speed_threshold_ms: 10

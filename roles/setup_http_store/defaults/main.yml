@@ -1,0 +1,8 @@
+http_store_container_name: http_store
+http_store_pod_name: http_store_pod
+http_dir: /opt/http_store
+http_data_dir: "{{ http_dir }}/data"
+# Note if you change this you might have to change the env vars and volumes for podman task
+container_image: registry.centos.org/centos/httpd-24-centos7:latest
+file_owner: "{{ ansible_env.USER }}"
+file_group: "{{ file_owner }}"

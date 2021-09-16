@@ -1,0 +1,35 @@
+- name: "Set network config for {{ item }}"
+  set_fact:
+    network_config: "{{ hostvars[item].network_config }}"
+
+- name: "Set default value of mac_interface_map for {{ item }}"
+  set_fact:
+    mac_interface_map: "{{ hostvars[item].mac_interface_map | default([]) }}"
+
+- name: "Set mac_interface_map for {{ item }} using query"
+  set_fact:
+    mac_interface_map: "{{ network_config | json_query( network_config.mapping_query | default(mac_interface_default_mapping) ) }}"
+  when: hostvars[item].mac_interface_map is not defined
+
+- name: "Set default value of network_yaml for {{ item }}"
+  set_fact:
+    network_yaml: "{{ network_config.raw | default({}) }}"
+
+- name: "Set network_yaml for {{ item }}"
+  set_fact:
+    network_yaml: "{{ lookup('template', network_config.template | default('nmstate.yml.j2')) }}"
+  when: network_config.raw is not defined
+
+- debug:
+    msg: "{{ network_yaml }}"
+  when: debug | bool == true
+
+- name: "Set static network config for {{ item }}"
+  set_fact:
+    static_network_config_entry:
+      network_yaml: "{{ network_yaml }}"
+      mac_interface_map: "{{ mac_interface_map }}"
+
+- name: Update static_network_config_items
+  set_fact:
+    static_network_config_items: "{{ static_network_config_items | default([]) + [static_network_config_entry] }}"
