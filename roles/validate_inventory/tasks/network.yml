@@ -12,7 +12,7 @@
   shell: # noqa 305
     cmd: "ping -c 1 -W 2 {{ hostvars[item]['ansible_host'] }}"
   changed_when: False
-  loop: "{{ groups['services'] + groups['bastions'] }}"
+  loop: "{{ groups['services'] }}"
 
 - name: Ensure NTP server is available if not being set up
   shell: # noqa 305

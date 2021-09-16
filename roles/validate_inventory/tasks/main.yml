@@ -38,6 +38,7 @@
       tags: validate_day2
 
   when: not (inventory_validated | default(False) | bool)
+  delegate_to: "{{ validation_host | default('bastion') }}"
 
 - name: Record successful validation on all hosts
   set_fact:
