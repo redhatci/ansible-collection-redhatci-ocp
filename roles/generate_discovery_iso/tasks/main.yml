@@ -1,0 +1,77 @@
+---
+# tasks file for generate_discovery_iso
+
+- name: Set discovery iso body
+  set_fact:
+    request_body:
+      ssh_public_key: "{{ ssh_public_key }}"
+      image_type: "full-iso"
+
+- name: static IP addresses
+  include_tasks: static.yml
+  when: hostvars[item].network_config is defined
+  loop: "{{ groups['masters'] + ( groups['workers'] | default([]) ) }}"
+
+- name: IP config
+  set_fact:
+    request_body: "{{ request_body | combine({'static_network_config': static_network_config_items}) }}"
+  when: static_network_config_items | default([]) | length > 0
+
+- name: Iso body
+  debug:
+    msg: "{{ request_body | to_json }}"
+  when: debug | bool == True
+
+- name: Generate a new discovery ISO
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE }}"
+    method: POST
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: "{{ request_body }}"
+  when: generate | bool == True
+  register: http_reply
+
+- debug:
+    var: http_reply.json
+  when: debug and generate | bool == True
+
+- name: Put discovery iso in http store
+  block:
+    - name: Create discovery directory
+      file:
+        path: "{{ DOWNLOAD_DEST_PATH + '/' + DOWNLOAD_DEST_FILE | dirname }}"
+        recurse: yes
+        state: directory
+      become: true
+
+    - name: Download discovery ISO
+      get_url:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE }}"
+        dest: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
+      when: download | bool == True
+      register: http_reply
+      become: true
+
+    - debug:
+        var: http_reply.status_code
+      when: debug and download | bool == True
+
+    - name: Upload discovery ISO
+      uri:
+        url: "{{ URL_HTTP_STORE_UPLOAD_IMAGE }}/{{ CLUSTER_ID }}.iso"
+        method: PUT
+        url_username: "{{ HTTP_STORE_AUTH_USERNAME }}"
+        url_password: "{{ HTTP_STORE_AUTH_PASSWORD }}"
+        src: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
+        status_code: [200]
+      when: upload | bool == True
+      register: http_reply
+
+    - debug:
+        var: http_reply.status_code
+      when: debug and upload | bool == True
+  delegate_to: http_store

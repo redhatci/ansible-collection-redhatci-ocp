@@ -1,0 +1,18 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: 50-worker-nm-fix-duid
+  labels:
+    machineconfiguration.openshift.io/role: worker
+spec:
+  config:
+    ignition:
+      version: 3.1.0
+    storage:
+      files:
+        - contents:
+            source: data:text/plain;charset=utf-8;base64,W21haW5dCnJjLW1hbmFnZXI9ZmlsZQpbY29ubmVjdGlvbl0KaXB2Ni5kaGNwLWR1aWQ9bGwKaXB2Ni5kaGNwLWlhaWQ9bWFjCg==
+            verification: {}
+          filesystem: root
+          mode: 420
+          path: /etc/NetworkManager/conf.d/99-upi-duid.conf

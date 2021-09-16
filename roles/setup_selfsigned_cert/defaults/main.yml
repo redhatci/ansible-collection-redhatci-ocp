@@ -1,0 +1,17 @@
+host_var_key: "registry_host"
+fetched_dest: ./fetched
+
+# Directory to be created
+registry_dir: /opt/registry
+cert_dir: "{{ registry_dir }}/certs"
+
+# Cert vars
+registry_fqdn: "{{ ansible_fqdn }}"
+cert_common_name: "{{ registry_fqdn }}"
+cert_country: "{{ hostvars[host_var_key]['cert_country'] }}"
+cert_state: "{{ hostvars[host_var_key]['cert_state'] }}"
+cert_locality: "{{ hostvars[host_var_key]['cert_locality'] }}"
+cert_organization: "{{ hostvars[host_var_key]['cert_organization'] }}"
+
+file_owner: "{{ ansible_env.USER }}"
+file_group: "{{ file_owner }}"

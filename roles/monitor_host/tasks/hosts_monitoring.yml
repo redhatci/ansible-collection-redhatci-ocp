@@ -1,0 +1,23 @@
+---
+# tasks file for hosts_monitoring
+
+- name: "Wait for up to 60 minutes for node {{ host_name }} to reboot"
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ host_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: host
+  until: (host.json.progress.current_stage == 'Rebooting' and host.json.status == 'installing-pending-user-action')
+         or
+         host.json.progress.current_stage in ['Configuring', 'Done']
+  retries: 60
+  delay: 60
+
+- name: Force rebooting on disk
+  include_role:
+    name: boot_disk
+  vars:
+    hosts:
+      - "{{ host.json.requested_hostname }}"
+  when: host.json.progress.current_stage == 'Rebooting' and host.json.status == 'installing-pending-user-action'

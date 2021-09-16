@@ -1,0 +1,18 @@
+---
+- name: Install dnsmasq
+  become: true
+  ansible.builtin.package:
+    name: dnsmasq
+    state: present
+
+- name: Create dns file
+  ansible.builtin.template:
+    src: openshift-cluster.conf.j2
+    dest: "/etc/dnsmasq.d/{{ dns_entries_file_name }}"
+  notify: restart_service
+
+- name: Start dnsmasq
+  ansible.builtin.service:
+    name: dnsmasq
+    state: started
+    enabled: true

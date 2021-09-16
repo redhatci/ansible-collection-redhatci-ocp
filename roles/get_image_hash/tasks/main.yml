@@ -1,0 +1,17 @@
+- name: check skopeo is installed
+  shell: /usr/bin/skopeo --version
+
+- name: Find hash for images
+  include_tasks:
+    file: get_image_hash.yml
+    apply:
+      tags:
+        - install
+  loop: "{{ images_to_get_hash_for | dict2items }}"
+
+- name: "Set image hashes in {{ item }}"
+  set_fact:
+    image_hashes: "{{ image_hashes }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ destination_hosts }}"

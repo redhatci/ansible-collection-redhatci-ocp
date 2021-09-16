@@ -1,0 +1,35 @@
+### SUSHY-TOOLS
+- name: Install sushy-tools
+  become: true
+  block:
+    - name: Install sushy-tools via pip3
+      pip:
+        name: "sushy-tools"
+
+    - name: Create sushy-tools conf directory
+      file:
+        path: /opt/sushy-tools
+        state: directory
+        mode: 0755
+
+    - name: Create sushy-tools conf
+      template:
+        src: sushy-emulator.conf.j2
+        dest: /opt/sushy-tools/sushy-emulator.conf
+        mode: 0664
+
+    - name: Create sushy-tools service
+      template:
+        src: sushy-tools.service.j2
+        dest: /etc/systemd/system/sushy-tools.service
+        mode: 0664
+
+    - name: Reload systemd service
+      systemd:
+        daemon_reexec: yes
+
+    - name: Start sushy-tools service
+      service:
+        name: sushy-tools
+        state: restarted
+        enabled: yes

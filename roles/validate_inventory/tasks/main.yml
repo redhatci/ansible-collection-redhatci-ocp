@@ -1,0 +1,41 @@
+---
+- name: Validate Inventory
+  block:
+    - include_tasks:
+        file: cluster.yml
+        apply:
+          tags: validate_cluster
+      tags: validate_cluster
+
+    - include_tasks:
+        file: secrets.yml
+        apply:
+          tags: validate_secrets
+      tags: validate_secrets
+
+    - include_tasks:
+        file: prereqs.yml
+        apply:
+          tags: validate_prereqs
+      tags: validate_prereqs
+
+    - include_tasks:
+        file: network.yml
+        apply:
+          tags: validate_network
+      tags: validate_network
+
+    - include_tasks:
+        file: day2.yml
+        apply:
+          tags: validate_day2
+      tags: validate_day2
+
+  when: not (inventory_validated | default(False) | bool)
+
+- name: Record successful validation on all hosts
+  set_fact:
+    inventory_validated: True
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  loop: "{{ groups['all'] + ['localhost'] }}"

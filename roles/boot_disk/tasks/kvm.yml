@@ -1,0 +1,90 @@
+---
+#
+# Virtual Redfish BMC
+# https://docs.openstack.org/sushy-tools/latest/user/dynamic-emulator.html#uefi-boot
+#
+# Mount Live ISO, Boot into Live ISO (KVM only)
+- name: set base url
+  set_fact:
+    base_bmc_address: "http://{{ hostvars[item]['bmc_address'] }}"
+
+- name: Identify System Manager
+  uri:
+    url: "{{ base_bmc_address }}/redfish/v1/Systems/{{ hostvars[item]['inventory_hostname'] }}"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: GET
+    status_code: [200, 201]
+    validate_certs: no
+    return_content: yes
+  register: redfish_reply
+
+- name: KVM Set System UUID
+  set_fact:
+    system_uuid: "{{ redfish_reply.json['@odata.id'] }}"
+    system_manager: "{{ redfish_reply.json.Links.ManagedBy[0]['@odata.id'] }}"
+
+- name: KVM Force Power Off System {{ item }}
+  uri:
+    url: "{{ base_bmc_address }}{{ system_uuid }}/Actions/ComputerSystem.Reset"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: POST
+    body_format: json
+    body: { "ResetType": "ForceOff" }
+    status_code: [200, 204]
+    force_basic_auth: no
+    validate_certs: no
+    return_content: yes
+  register: redfish_poweroff
+  ignore_errors: yes
+
+- name: KVM Eject Virtual Media (if any) {{ item }}
+  uri:
+    url: "{{ base_bmc_address }}{{ system_manager }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: POST
+    body_format: json
+    body: {}
+    status_code: [200, 204]
+    validate_certs: no
+    return_content: yes
+  register: redfish_reply
+  ignore_errors: yes
+
+- name: KVM Set Next Boot from HDD {{ item }}
+  uri:
+    url: "{{ base_bmc_address }}{{ system_uuid }}"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: PATCH
+    body_format: json
+    body:
+      {
+        "Boot":
+          {
+            "BootSourceOverrideTarget": "Hdd",
+            "BootSourceOverrideMode": "UEFI",
+            "BootSourceOverrideEnabled": "Continuous",
+          },
+      }
+    status_code: [200, 204]
+    force_basic_auth: no
+    validate_certs: no
+    return_content: yes
+  register: redfish_reply
+
+- name: KVM Force Power On System {{ item }}
+  uri:
+    url: "{{ base_bmc_address }}{{ system_uuid }}/Actions/ComputerSystem.Reset"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: POST
+    body_format: json
+    body: { "ResetType": "ForceOn" }
+    status_code: [200, 204]
+    force_basic_auth: no
+    validate_certs: no
+    return_content: yes
+  register: redfish_poweron

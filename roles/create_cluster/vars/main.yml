@@ -1,0 +1,5 @@
+---
+# vars file for create_cluster
+
+ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] }}"
+ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] }}"

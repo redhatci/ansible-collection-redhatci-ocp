@@ -1,0 +1,30 @@
+---
+- name: Check REGISTRY_HTTP_SECRET is set
+  fail:
+    msg: REGISTRY_HTTP_SECRET must be set and not empty
+  when: (REGISTRY_HTTP_SECRET is not defined) or (REGISTRY_HTTP_SECRET == "")
+
+- name: Check disconnected_registry_user is set
+  fail:
+    msg: disconnected_registry_user must be set and not empty
+  when: (disconnected_registry_user is not defined) or (disconnected_registry_user == "")
+
+- name: Check disconnected_registry_password is set
+  fail:
+    msg: disconnected_registry_password must be set and not empty
+  when: (disconnected_registry_password is not defined) or (disconnected_registry_password == "")
+
+- name: Check openshift_full_version is set
+  fail:
+    msg: openshift_full_version must be set and not empty
+  when: (openshift_full_version is not defined) or (openshift_full_version == "")
+
+- name: Check openshift_full_version is has at last two parts
+  block:
+    - name: Split openshift_full_version
+      set_fact:
+        openshift_version_parts: "{{ openshift_full_version.split('.') }}"
+    - name:
+      fail:
+        msg: openshift_full_version does not have at least two parts
+      when: openshift_version_parts | length < 2

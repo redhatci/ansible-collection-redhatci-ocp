@@ -1,0 +1,53 @@
+---
+- name: Populate Mirror
+  block:
+    - name: Create podman auth dir
+      file:
+        path: "{{ config_file_path }}/containers/"
+        state: directory
+
+    - name: Copy pull_secrets file.
+      copy:
+        src: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+        dest: "{{ config_file_path }}/containers/auth.json"
+        remote_src: yes
+
+    - name: Podman login to remote registry
+      containers.podman.podman_login_info:
+        registry: "{{ remote_registry }}"
+      register: login
+      environment:
+        XDG_RUNTIME_DIR:  "{{ config_file_path }}"
+
+    - name: Mirror remote ocpmetal image registry to local
+      command: >
+        /usr/bin/oc image mirror
+        -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
+        {{ item.remote }}
+        {{ item.local }}:latest
+      loop: "{{ ocpmetal_images }}"
+
+    - name: Mirror remote registry to local
+      command: >
+        /usr/bin/oc adm release mirror
+          -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
+          --from="{{ release_image | quote }}"
+          --to-release-image="{{ local_registry | quote }}/{{ local_repo | quote }}:{{ openshift_full_version }}-x86_64"
+          --to="{{ local_registry | quote }}/{{ local_repo | quote }}"
+
+    - name: Build pruned OLM index
+      command: >
+        opm index prune --from-index "{{ remote_registry_index }}"
+          --packages "{{ mirror_packages | join(',') }}"
+          --tag "{{ local_registry }}/{{ local_registry_index_tag }}"
+      environment:
+        XDG_RUNTIME_DIR: "{{ config_file_path }}"
+
+    - name: Push pruned index to local registry
+      command: >
+        podman push --tls-verify=false
+        {{ local_registry }}/{{ local_registry_index_tag }}
+        --authfile "{{ config_file_path }}/{{ pull_secret_file_name }}"
+  become: true
+  tags:
+    - mirror_images

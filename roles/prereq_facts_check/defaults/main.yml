@@ -1,0 +1,3 @@
+pull_secret_check: true
+ssh_public_check: true
+mirror_certificate_check: true

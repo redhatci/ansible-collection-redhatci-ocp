@@ -1,0 +1,95 @@
+---
+# tasks file for install_cluster/hosts_discovery
+
+- name: "Wait for up to 10 minutes for node discovery - {{ discovered_host.id }}"
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ discovered_host.id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: host
+  until: host.json.inventory is defined
+  retries: 10
+  delay: 60
+  when: discovered_host.inventory is not defined
+
+- name: Identify the discovered host {{ discovered_host.id }}
+  set_fact:
+    host: "{{ host.json }}"
+  when: discovered_host.inventory is not defined
+
+- name: Identify the discovered host {{ discovered_host.id }}
+  set_fact:
+    host: "{{ discovered_host }}"
+  when: discovered_host.inventory is defined
+
+- name: Identify the host {{ host.id }} properties
+  set_fact:
+    host_inventory: "{{ host.inventory }}"
+    host_id: "{{ host.id }}"
+    host_name: "{{ host.requested_hostname | default('node' + lookup('password', '/dev/null chars=ascii_lowercase,digits length=8')) }}"
+    host_role: "auto-assign"
+
+- name: Identify the host {{ host.id }} interfaces
+  set_fact:
+   host_interfaces: "{{ host_inventory.interfaces }}"
+
+- name : Set host name and role for {{ host.id }}
+  set_fact:
+    host_name: "{{ item.0 }}"
+    host_role: "{{ hostvars[item.0]['role'] }}"
+  when: hostvars[item.0]['mac'] is defined and ( hostvars[item.0]['mac'] | upper ) == ( item.1.mac_address | upper )
+  loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
+  no_log: True
+
+- name : Prepare hosts name and role for {{ host_name }}
+  set_fact:
+    host:
+      id: "{{ host_id }}"
+      hostname: "{{ host_name }}"
+      role: "{{ host_role }}"
+  when: host_name is defined or host_role is defined
+
+- name: Set host name and role for {{ host_name }}
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: PATCH
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: {
+        "hosts_names": [ "{{ host }}" ],
+        "hosts_roles": [ "{{ host }}" ]
+    }
+  register: http_reply
+
+- name: Set the installation disk path
+  when: hostvars[host_name]['installation_disk_path'] is defined
+  block:
+    - name: Fetch the installation disk path from host vars
+      set_fact:
+        installation_disk_path: "{{ hostvars[host_name]['installation_disk_path'] }}"
+
+    - name: "Set the installation disk to {{ installation_disk_path }} for {{ host_name }}"
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+        method: PATCH
+        status_code: [201]
+        return_content: true
+        body_format: json
+        body: {
+          "disks_selected_config": [
+            {
+              "id": "{{ host_id }}",
+              "disks_config": [
+                {
+                  "id": "{{ installation_disk_path }}",
+                  "role": "install"
+                }
+              ]
+            }
+          ]
+        }
+      register: http_reply

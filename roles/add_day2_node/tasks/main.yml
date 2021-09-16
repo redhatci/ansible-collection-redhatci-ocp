@@ -1,0 +1,53 @@
+- name: "Boot ISO for {{inventory_hostname }}"
+  import_role:
+    name: boot_iso
+  vars:
+    - debug: "{{ debug }}"
+    - discovery_iso_name: "{{ day2_discovery_iso_name }}"
+    - boot_iso_url: "{{ discovery_iso_server }}/{{ day2_discovery_iso_name }}"
+
+- name: "Install node: {{inventory_hostname }}"
+  delegate_to: bastion
+  block:
+    - name: "Wait for 20 min until {{inventory_hostname }} discovered"
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+        method: GET
+        status_code: [200, 201]
+        return_content: True
+      register: cluster
+      until: inventory_hostname in (cluster.json.hosts |  map(attribute='requested_hostname'))
+      retries: 20
+      delay: 60
+
+    - name: "Wait for 20 min until {{inventory_hostname }} to be ready"
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+        method: GET
+        status_code: [200, 201]
+        return_content: True
+      register: cluster
+      until: "'known' in (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list )"
+      retries: 20
+      delay: 60
+
+    - name: Install cluster
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/actions/install_hosts"
+        method: POST
+        status_code: [202]
+        return_content: True
+        body_format: json
+        body: {}
+      register: http_reply
+
+    - name: Wait for 20 min until installation is complete
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+        method: GET
+        status_code: [200, 201]
+        return_content: True
+      register: cluster
+      until: ( cluster.json.hosts | map(attribute='status') | list | unique == ['added-to-existing-cluster'] )
+      retries: 60
+      delay: 60

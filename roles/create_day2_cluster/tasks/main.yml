@@ -1,0 +1,50 @@
+- name: Create day 2 cluster
+  uri:
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/add_hosts_clusters"
+    method: POST
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: >-
+      {
+        "id": "{{ lookup('password', '/dev/null') | to_uuid }}",
+        "name": "{{ cluster_name + '-day2' }}",
+        "api_vip_dnsname": "{{ 'api.' + cluster_name + '.' + base_dns_domain }}",
+        "openshift_version": "{{ openshift_full_version }}"
+      }
+  register: http_reply
+
+- debug:
+    var: http_reply.json.id
+  when: debug
+
+- set_fact:
+    BASE_CLUSTER_ID: "{{ cluster_id }}"
+    CLUSTER_ID: "{{ http_reply.json.id }}"
+    ADD_HOST_CLUSTER_ID: "{{ http_reply.json.id }}"
+
+- debug:
+    msg: "{{ pull_secret | to_json }}"
+  when: debug
+
+- name: Patch day 2 install config
+  uri:
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ ADD_HOST_CLUSTER_ID }}"
+    method: PATCH
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body:
+      {
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "ssh_public_key": "{{ ssh_public_key }}",
+      }
+
+- name: Distribute ADD_HOST_CLUSTER_ID value to day2_worker hosts
+  set_fact:
+    ADD_HOST_CLUSTER_ID: "{{ ADD_HOST_CLUSTER_ID }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: yes
+  loop: "{{ groups['day2_workers'] }}"

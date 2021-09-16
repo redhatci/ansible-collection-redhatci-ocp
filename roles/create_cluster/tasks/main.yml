@@ -1,0 +1,161 @@
+---
+# tasks file for create_cluster
+
+# TODO: use the variable for cluster_network_host_prefix
+- name: Create cluster
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}"
+    method: POST
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body:
+      {
+        "name": "{{ CLUSTER_NAME }}",
+        "openshift_version": "{{ OPENSHIFT_VERSION }}",
+        "base_dns_domain": "{{ BASE_DNS_DOMAIN }}",
+        "cluster_network_cidr": "{{ CLUSTER_NETWORK_CIDR }}",
+        "cluster_network_host_prefix": 23,
+        "service_network_cidr": "{{ SERVICE_NETWORK_CIDR }}",
+        "ingress_vip": "{{ INGRESS_VIP }}",
+        "pull_secret": "{{ PULL_SECRET | to_json }}",
+        "ssh_public_key": "{{ SSH_PUBLIC_KEY }}",
+        "vip_dhcp_allocation": "{{ VIP_DHCP_ALLOCATION | lower | bool }}",
+        "api_vip": "{{ API_VIP }}",
+        "http_proxy": "{{ HTTP_PROXY }}",
+        "https_proxy": "{{ HTTPS_PROXY }}",
+        "no_proxy": "{{ NO_PROXY }}",
+        "additional_ntp_source": "{{ NTP_SERVER }}",
+      }
+  when: create | bool == True
+  register: http_reply
+
+- debug:
+    var: http_reply.json
+  when: debug and create  | bool == True
+
+- name: Set the cluster ID
+  set_fact:
+    cluster_id: "{{ http_reply.json.id }}"
+  when: create | bool == True
+
+- name: "Save cluster_id"
+  copy:
+    content: "{{ cluster_id }}"
+    dest: "{{ fetched_dest }}/cluster.txt"
+  delegate_to: localhost
+  become: no
+  when: create | bool == True
+
+#### patch discovery ignition on restricted network environments ###
+
+- name: Load patch for search registries
+  set_fact:
+    search_registries: "{{ lookup('template', 'patch-search-registries.j2') }}"
+  when: disconnected | bool == True
+
+- debug:
+    var: search_registries
+  when: debug and disconnected  | bool == True
+
+- name: Load patch for discovery ignition
+  set_fact:
+    patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition.j2') }}"
+  when: disconnected | bool == True
+
+- debug:
+    var: patch_discovery_ignition
+  when: debug and disconnected  | bool == True
+
+- name: Patch discovery ignition
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/discovery-ignition"
+    method: PATCH
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body:
+      {
+        "config": "{{ patch_discovery_ignition | to_json(ensure_ascii=False) | string }}",
+      }
+  when: disconnected | bool == True
+  register: http_reply
+
+- debug:
+    var: http_reply
+  when: debug and disconnected  | bool == True
+
+#### patch cluster install config on restricted network environments ###
+
+- name: Get install-config file
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/install-config"
+    method: GET
+    status_code: [200]
+    return_content: True
+  register: install_config
+
+- debug:
+    var: install_config.json
+  when: debug | bool == True
+
+- name: "Copy install_config"
+  copy:
+    content: "{{ install_config.json }}"
+    dest: "{{ fetched_dest }}/install-config.txt"
+  delegate_to: localhost
+  become: no
+
+- name: Load patch for install config
+  set_fact:
+    patch_install_config: "{{ lookup('template', 'patch-install-config.j2') | from_yaml }}"
+  when: disconnected | bool == True
+
+- name: Add network_type to patch_install_config
+  set_fact:
+    patch_install_config: "{{ lookup('template', 'patch-network-type.j2') | from_yaml | combine(patch_install_config | default({}))  }}"
+  when: network_type is defined
+
+- debug:
+    var: patch_install_config
+  when: debug and patch_install_config is defined
+
+- name: Patch install config
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/install-config"
+    method: PATCH
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body: "{{ patch_install_config | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
+  when: patch_install_config is defined
+  register: http_reply
+
+- debug:
+    var: http_reply
+  when: debug and patch_install_config is defined
+- name: Get install-config file
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/install-config"
+    method: GET
+    status_code: [200]
+    return_content: True
+  register: install_config
+
+- debug:
+    var: install_config.json
+  when: debug | bool == True
+
+- name: "Copy install_config-json to patched-config.txt"
+  copy:
+    content: "{{ install_config.json }}"
+    dest: "{{ fetched_dest }}/patched-config.txt"
+  delegate_to: localhost
+  become: no
+
+- name: Apply manifests before cluster installation
+  include_tasks: manifest.yml
+  loop: "{{ manifest_templates }}"
+  when: manifests | bool == True

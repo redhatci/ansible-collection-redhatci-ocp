@@ -1,0 +1,31 @@
+---
+# tasks file for manifests
+
+- name: Load manifest
+  set_fact:
+    manifest: "{{ lookup('template', '{{ item }}.j2' ) }}"
+  when: manifests | bool == True
+
+- debug:
+    var: manifest
+  when: debug and manifests | bool == True
+
+- name: Apply manifest
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/manifests"
+    method: POST
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body:
+      {
+        "folder": "manifests",
+        "file_name": "{{ item }}",
+        "content": "{{ manifest | string | b64encode }}",
+      }
+  when: manifests | bool == True
+  register: http_reply
+
+- debug:
+    var: http_reply
+  when: debug and manifests | bool == True

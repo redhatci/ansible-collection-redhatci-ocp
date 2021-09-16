@@ -1,0 +1,31 @@
+---
+- name: Make sure needed packages are installed
+  package:
+    name: "{{ required_packages }}"
+    state: present
+  become: true
+  tags:
+    - create_registry
+
+- name: Check cert exists
+  block:
+    - name: Get cert stat
+      stat:
+        path: "{{ registry_dir_cert}}/domain.crt"
+      register: cert_file
+    - fail:
+        msg: "Cert file {{ registry_dir_cert }}/domain.crt missing"
+      when: cert_file.stat.exists | bool == False
+
+- name: Create config_file_path dir
+  file:
+    path: "{{ config_file_path }}"
+    owner: "{{ file_owner }}"
+    group: "{{ file_group }}"
+    mode: 0775
+    state: directory
+
+- name: Copy pull_secret
+  copy:
+    src: "{{ localhost_pull_secret_file }}"
+    dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"

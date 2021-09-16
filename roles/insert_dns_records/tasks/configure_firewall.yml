@@ -1,0 +1,22 @@
+- name: Open port in firewall for DNS
+  ansible.posix.firewalld:
+    port: "53/udp"
+    permanent: yes
+    immediate: yes
+    state: enabled
+    zone: "{{ item }}"
+  loop:
+    - internal
+    - public
+
+- name: Open port in firewall for DHCP
+  ansible.posix.firewalld:
+    port: "67/udp"
+    permanent: yes
+    immediate: yes
+    state: enabled
+    zone: "{{ item }}"
+  loop:
+    - internal
+    - public
+  when: use_dhcp == true

@@ -1,0 +1,65 @@
+---
+- name: Assert valid master configuration
+  assert:
+    that:
+      - groups['masters'] | length >= 3
+    fail_msg: "There must be at least three masters defined."
+
+- name: Assert valid worker configuration
+  assert:
+    that:
+      - (groups['workers'] | length == 0) or (groups['workers'] | length >= 2)
+    fail_msg: "There must be either zero, or more than one, workers defined."
+  when: groups['workers'] is defined
+
+- name: Assert all nodes have all required vars
+  assert:
+    that:
+      - hostvars[item.0][item.1] is defined
+      - hostvars[item.0][item.1] | trim != ''
+    quiet: true
+    fail_msg: "Node {{ item.0 }} is missing required var {{ item.1 }}"
+  loop: "{{ groups['nodes'] | product(node_required_vars) | list }}"
+
+- name: Assert required vars are correctly typed
+  assert:
+    that:
+      - hostvars[item]['bmc_address'] is string
+      - (hostvars[item]['mac'] | hwaddr('bool') ) == true
+      - hostvars[item]['bmc_password'] is string
+      - hostvars[item]['bmc_user'] is string
+      - hostvars[item]['vendor'] is string
+    quiet: true
+    fail_msg: "Node {{ item }} has an incorrectly formatted var"
+  loop: "{{ groups['nodes'] }}"
+
+- name: Assert that all values of 'vendor' are supported
+  assert:
+    that:
+      - hostvars[item]['vendor'] is in supported_vendor_values
+    quiet: true
+    fail_msg: "Node {{ item }} does not have a supported value for 'vendor'"
+  loop: "{{ groups['nodes'] }}"
+
+- name: Assert that all values of 'role' are supported
+  assert:
+    that:
+      - hostvars[item]['role'] is in supported_role_values
+    quiet: true
+    fail_msg: "Node {{ item }} does not have a supported value for 'role'"
+  loop: "{{ groups['nodes'] }}"
+
+- name: Get all KVM Nodes
+  vars:
+    kvm_node_names: []
+  set_fact:
+    kvm_node_names: "{{ kvm_node_names }} + {{ [item] }}"
+  when: hostvars[item]['vendor'] == 'KVM'
+  loop: "{{ groups['nodes'] }}"
+
+- name: Assert that a 'vm_host' is defined if needed
+  assert:
+    that:
+      - hostvars['vm_host'] is defined
+    quiet: true
+  when: (kvm_node_names is defined) and (kvm_node_names | length > 0)

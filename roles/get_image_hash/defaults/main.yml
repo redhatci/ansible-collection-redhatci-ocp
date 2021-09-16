@@ -1,0 +1,22 @@
+ai_version: v1.0.24.2
+controller_tag: "{{ ai_version }}"
+installer_agent_tag: "{{ ai_version }}"
+installer_tag: "{{ ai_version }}"
+
+images_to_get_hash_for:
+  release:
+    image: quay.io/openshift-release-dev/ocp-release
+    tag: "{{ release_tag | default(openshift_full_version + '-x86_64') }}"
+  controller:
+    image: quay.io/ocpmetal/assisted-installer-controller
+    tag: "{{ controller_tag }}"
+  installer_agent:
+    image: quay.io/ocpmetal/assisted-installer-agent
+    tag: "{{ installer_agent_tag }}"
+  installer:
+    image: quay.io/ocpmetal/assisted-installer
+    tag: "{{ installer_tag }}"
+
+destination_hosts:
+  - registry_host
+  - assisted_installer

@@ -1,0 +1,30 @@
+---
+- name: Check for pull_secret
+  assert:
+    that:
+      - pull_secret is defined
+      - pull_secret.auths is defined
+      - pull_secret | trim != ''
+    quiet: true
+    msg: "The required 'pull_secret' is not defined or is not valid"
+  when: pull_secret_check | bool == True
+
+- name: Check for ssh_public_key
+  assert:
+    that:
+      - ssh_public_key is defined
+      - ssh_public_key is string
+      - ssh_public_key | trim != ''
+    quiet: true
+    msg: "The required 'ssh_public_key' is not defined or is not valid"
+  when: ssh_public_check | bool == True
+
+- name: Check for mirror_certificate
+  assert:
+    that:
+      - mirror_certificate is defined
+      - mirror_certificate is string
+      - mirror_certificate | trim != ''
+    quiet: true
+    msg: "The required 'mirror_certificate' is not defined or is not valid"
+  when: mirror_certificate_check | bool == True

@@ -1,0 +1,28 @@
+---
+# tasks file for monitor_cluster
+
+- name : Get cluster status during installation
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: cluster
+  delegate_to: bastion
+
+- name: Identify the host
+  set_fact:
+    current_host: "{{ item }}"
+  loop: "{{ cluster.json.hosts }}"
+  when: item.requested_hostname == inventory_hostname
+  no_log: True
+
+- name: Start host monitoring
+  include_tasks: hosts_monitoring.yml
+  args:
+    apply:
+      delegate_to: bastion
+  vars:
+    host_id: "{{ current_host.id }}"
+    host_name: "{{ current_host.requested_hostname }}"
+  no_log: True

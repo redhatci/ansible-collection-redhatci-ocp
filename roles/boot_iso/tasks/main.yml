@@ -1,0 +1,38 @@
+---
+# tasks file for boot_iso
+
+- name: "Fail playbook without boot_iso_url"
+  fail:
+    msg="Missing argument: this playbook requires 'boot_iso' to be defined with the URL of the ISO to boot the systems"
+  when: boot_iso_url is not defined
+  delegate_to: bastion
+
+- include_tasks: dell.yml
+  when: hostvars[inventory_hostname]['vendor'] == 'Dell'
+  args:
+    apply:
+      delegate_to: bastion
+
+- include_tasks: hpe.yml
+  when: hostvars[inventory_hostname]['vendor'] == 'HPE'
+  args:
+    apply:
+      delegate_to: bastion
+
+- include_tasks: supermicro.yml
+  when: hostvars[inventory_hostname]['vendor'] == 'SuperMicro'
+  args:
+    apply:
+      delegate_to: bastion
+
+- include_tasks: lenovo.yml
+  when: hostvars[inventory_hostname]['vendor'] == 'Lenovo'
+  args:
+    apply:
+      delegate_to: bastion
+
+- include_tasks: kvm.yml
+  when: hostvars[inventory_hostname]['vendor'] == 'KVM'
+  args:
+    apply:
+      delegate_to: bastion
