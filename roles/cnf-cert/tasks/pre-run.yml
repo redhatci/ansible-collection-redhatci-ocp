@@ -41,7 +41,7 @@
   delay: 10
   until: not cnf_certification_test_partner_gitref.failed
 
-# Following these examples: 
+# Following these examples:
 # https://github.com/test-network-function/cnf-certification-test-partner/blob/v3.0.0/deploy-partner-pods.sh
 # https://github.com/test-network-function/cnf-certification-test-partner/blob/v3.0.0/deploy-test-pods.sh
 - name: Build the partner pod image
@@ -50,12 +50,12 @@
     cd {{ tnf_git_dir }}/cnf_certification_test_partner
     mkdir -p ./temp
 
-    if [ -n "{{ tnf_registry }}" -a -n "{{ tnf_registry_creds }}" ]; then
+    if [ -n "{{ provisionhost_registry }}" -a -n "{{ provisionhost_registry_creds }}" ]; then
       export BUILDAH_FORMAT=docker
       podman build -f ./test-partner/Dockerfile -t testnetworkfunction/cnf-test-partner
-      podman tag testnetworkfunction/cnf-test-partner {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
-      podman push --authfile {{ tnf_registry_creds }} {{ tnf_registry }}/testnetworkfunction/cnf-test-partner
-      sed -i -e 's@quay.io/testnetworkfunction/cnf-test-partner:latest@{{ tnf_registry }}/testnetworkfunction/cnf-test-partner@' ./local-test-infra/local-partner-deployment.yaml
+      podman tag testnetworkfunction/cnf-test-partner {{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner
+      podman push --authfile {{ provisionhost_registry_creds }} {{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner
+      sed -i -e 's@quay.io/testnetworkfunction/cnf-test-partner:latest@{{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner@' ./local-test-infra/local-partner-deployment.yaml
     fi
 
 - name: Check if tnf namespace exists
