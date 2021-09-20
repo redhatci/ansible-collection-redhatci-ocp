@@ -20,6 +20,7 @@
         # virt-install. The reason we use a script is to aid with debugging on the host
         src: create_vm.sh.j2
         dest: "{{ vm_create_scripts }}/{{ item.name }}_setup_vm.sh"
+        lstrip_blocks: true
         mode: 0774
       loop: "{{ kvm_nodes }}"
 
