@@ -3,6 +3,9 @@
 virt-install \
     --virt-type=kvm \
     --name "{{ item.name }}" \
+    {% if item.uuid | trim | length > 0 %}
+    --uuid="{{ item.uuid }}" \
+    {% endif %}
     --memory {{ item.memory }} \
     --vcpus={{ item.vcpu }} \
     --os-variant=rhel8.3 \
