@@ -11,8 +11,7 @@ virt-install \
     --os-variant=rhel8.3 \
     --os-type linux \
     --network=bridge:{{ bridge_name }},mac="{{ item.mac }}" \
-    --controller type=scsi,model=virtio-scsi \
-    --disk path={{ images_dir }}/{{ cluster_name }}-{{ item.name }}.qcow2,size={{ item.disk_size }},bus=scsi,format=qcow2 \
+    --disk path={{ images_dir }}/{{ cluster_name }}-{{ item.name }}.qcow2,size={{ item.disk_size }},format=qcow2 \
     --graphics vnc \
     --noautoconsole \
     --wait=-1 \
