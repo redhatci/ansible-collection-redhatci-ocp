@@ -23,7 +23,6 @@ vm_bridge_ip: "{{ machine_network_cidr | ipaddr('next_usable') }}"
 vm_bridge_prefix: "{{ machine_network_cidr | ipaddr('prefix') }}"
 bridge_name: "{{ cluster_name }}-br"
 network_name: "net-{{ cluster_name }}"
-vm_host_ip_keyword: "{{  host_ip_keyword | default('ansible_host') }}"
 vm_create_scripts: /home/redhat/vm_create_scripts/
 
 virt_packages:
