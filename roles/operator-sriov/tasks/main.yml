@@ -87,62 +87,41 @@
     - "'phase' in csv.resources[0].status"
     - "csv.resources[0].status.phase == 'Succeeded'"
 
-# TODO: Convert this in to a loop for applying multiple configurations
+# Expecting variables in an array on this form
 # sriov_network:
-#   - name: sriov-network-intel-numa0
-#     vlan: 500
-#     resource: intelnuma0
-#     numvfs: 16
-#     namespace: example-cnf
-#     devices:
-#       - ens2f1
-#   - name: sriov-network-intel-numa1
-#     vlan: 501
-#     resource: intelnuma1
-#     numvfs: 16
-#     namespace: example-cnf
-#     devices:
-#       - ens3f1
-- name: create SriovNetworkNodePolicy for intel nic ens2f1 - 1
-  k8s:
-    definition: "{{ lookup('template', 'sriov-policy.yaml.j2') }}"
-  vars:
-    name: intel-numa0-policy1
-    resource_name: intel_numa0_res1
-    num_vfs: 32
-    interfaces: ["ens2f1#0-15"]
+#  - name: intel-numa0-net1
+#    vlan: 460
+#    policy: intel-numa0-policy1
+#    resource: intel_numa0_res1
+#    numvfs: 16
+#    mtu: 9000
+#    device_type: vfio-pci
+#    devices:
+#      - ens2f1#0-15
+#    target_namespace: example-cnf
+# or
+#  - policy: intel-dpdk-node-policy
+#    resource: intelnics
+#    numvfs: 4
+#    vendor: 8086
+#    deviceid: 1592
+#    devices:
+#      - ens4f0
+#    rootdevices:
+#      - "0000:d8:00.0"
+#    nodeselector: '"node.openshift.io/nic_type": "intel810"'
+- name: "Load SRIOV parameters from inventory file"
+  set_fact:
+    sriov_network: "{{ lookup('file', sriov_network_file) | from_json }}"
+  when: sriov_network_file is defined
+  delegate_to: localhost
 
-- name: create SriovNetworkNodePolicy for intel nic ens2f1 - 2
-  k8s:
-    definition: "{{ lookup('template', 'sriov-policy.yaml.j2') }}"
-  vars:
-    name: intel-numa0-policy2
-    resource_name: intel_numa0_res2
-    num_vfs: 32
-    interfaces: ["ens2f1#16-31"]
-
-# Ensure namespace for the provided variable 'sriov_network_target_namespace' is present
-- name: "create namespace"
-  k8s:
-    api: v1
-    kind: Namespace
-    name: "{{ sriov_network_target_namespace }}"
-
-- name: create SriovNetwork for Intel nic ens2f1 - 1
-  k8s:
-    definition: "{{ lookup('template', 'sriov-network.yaml.j2') }}"
-  vars:
-    sriov_network_name: intel-numa0-net1
-    sriov_network_resource: intel_numa0_res1
-    sriov_network_vlan: "{{ sriov_network_vlan_intel_numa0 }}"
-
-- name: create SriovNetwork for Intel nic ens2f1 - 2
-  k8s:
-    definition: "{{ lookup('template', 'sriov-network.yaml.j2') }}"
-  vars:
-    sriov_network_name: intel-numa0-net2
-    sriov_network_resource: intel_numa0_res2
-    sriov_network_vlan: "{{ sriov_network_vlan_intel_numa0 }}"
+- name: "Setup SRIOV policies, target namespaces, and networks"
+  include_tasks: sriov-setup.yml
+  loop: "{{ sriov_network }}"
+  loop_control:
+    loop_var: sriov
+  when: sriov_network is defined
 
 - name: Get all nodes
   k8s_info:
