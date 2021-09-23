@@ -13,8 +13,8 @@ ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSIS
 URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ CLUSTER_ID }}/downloads/image"
 
 # HTTP Basic Authentication
-HTTP_AUTH_USERNAME: "test"
-HTTP_AUTH_PASSWORD: "test"
+HTTP_AUTH_USERNAME: "none"
+HTTP_AUTH_PASSWORD: "none"
 
 SSH_PUBLIC_KEY: ""
 DOWNLOAD_DEST_PATH: "/tmp"
