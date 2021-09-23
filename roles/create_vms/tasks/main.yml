@@ -33,9 +33,6 @@
 - name: Prepare Network
   import_tasks: prepare_network.yml
 
-- name: Prepare firewall
-  import_tasks: prepare_firewall.yml
-
 - name: Prepare Storage Pool
   import_tasks: prepare_storage_pool.yml
 
