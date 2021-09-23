@@ -6,6 +6,15 @@
       pip:
         name: "sushy-tools"
 
+    - name: Add TCP firewall rules for BM bridge
+      firewalld:
+        port: "{{ item.0 }}/tcp"
+        state: enabled
+        zone: "{{ item.1 }}"
+        permanent: yes
+        immediate: yes
+      loop: "{{ [sushy_tools_port] | product(['internal', 'public']) | list }}"
+
     - name: Create sushy-tools conf directory
       file:
         path: /opt/sushy-tools
