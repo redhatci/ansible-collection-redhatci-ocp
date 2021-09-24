@@ -1,15 +1,15 @@
 ---
 - name: "redhat-tests : Fetch ClusterRole definition"
   get_url:
-    url: "{{ dci_redhat_tests_base_url }}/master/rbac/osetests-{{ dci_openshift_agent_conformance }}.yaml"
-    dest: "{{ dci_cluster_configs_dir }}/osetests-{{ dci_openshift_agent_conformance }}.yaml"
+    url: "{{ dci_redhat_tests_base_url }}/master/rbac/osetests-openshift-conformance.yaml"
+    dest: "{{ dci_cluster_configs_dir }}/osetests-openshift-conformance.yaml"
 
 - name: "redhat-tests: Create cluster role with minimum set of permissions needed for tests"
   environment:
     KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
   shell: >
     {{ dci_cluster_configs_dir }}/oc auth reconcile
-    -f {{ dci_cluster_configs_dir }}/osetests-{{ dci_openshift_agent_conformance }}.yaml
+    -f {{ dci_cluster_configs_dir }}/osetests-openshift-conformance.yaml
 
 - name: "redhat-tests : Wait for clusterrole to appear in openshift"
   environment:
@@ -17,7 +17,7 @@
   shell: |
     # probe for up to 2 minutes (t*sleep time)
     for t in {1..60}; do
-      {{ dci_cluster_configs_dir }}/oc get clusterrole/osetests-{{ dci_openshift_agent_conformance }} && exit 0
+      {{ dci_cluster_configs_dir }}/oc get clusterrole/osetests-openshift-conformance && exit 0
       echo "waiting..."
       sleep 2;
     done
