@@ -87,42 +87,6 @@
     - "'phase' in csv.resources[0].status"
     - "csv.resources[0].status.phase == 'Succeeded'"
 
-# Expecting variables in an array on this form
-# sriov_network:
-#  - name: intel-numa0-net1
-#    vlan: 460
-#    policy: intel-numa0-policy1
-#    resource: intel_numa0_res1
-#    numvfs: 16
-#    mtu: 9000
-#    device_type: vfio-pci
-#    devices:
-#      - ens2f1#0-15
-#    target_namespace: example-cnf
-# or
-#  - policy: intel-dpdk-node-policy
-#    resource: intelnics
-#    numvfs: 4
-#    vendor: 8086
-#    deviceid: 1592
-#    devices:
-#      - ens4f0
-#    rootdevices:
-#      - "0000:d8:00.0"
-#    nodeselector: '"node.openshift.io/nic_type": "intel810"'
-- name: "Load SRIOV parameters from inventory file"
-  set_fact:
-    sriov_network: "{{ lookup('file', sriov_network_file) | from_json }}"
-  when: sriov_network_file is defined
-  delegate_to: localhost
-
-- name: "Setup SRIOV policies, target namespaces, and networks"
-  include_tasks: sriov-setup.yml
-  loop: "{{ sriov_network }}"
-  loop_control:
-    loop_var: sriov
-  when: sriov_network is defined
-
 - name: Get all nodes
   k8s_info:
     kind: Node
@@ -132,7 +96,9 @@
 - name: Add sriov label to worker nodes
   shell: |
     oc label node {{ item.metadata.name }} feature.node.kubernetes.io/network-sriov.capable="true"
-  when: "'node-role.kubernetes.io/worker' in item.metadata.labels"
+  when:
+    - "'node-role.kubernetes.io/worker' in item.metadata.labels"
+    - "'feature.node.kubernetes.io/network-sriov.capable' not in item.metadata.labels"
   loop: "{{ nodes.resources }}"
 
 - name: Get one worker node
@@ -153,8 +119,7 @@
   delay: 10
   until:
     - "state.resources|length == 1"
-    - "'interfaces' in state.resources[0].spec"
-    - "state.resources[0].spec.interfaces|length > 0"
+    - state.resources[0].status is defined
     - "'syncStatus' in state.resources[0].status"
     - "state.resources[0].status.syncStatus == 'Succeeded'"
 
