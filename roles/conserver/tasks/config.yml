@@ -12,7 +12,7 @@
       ipmitool -H {{ hostvars[item].ipmi_address }}
                -U {{ hostvars[item].ipmi_user }}
                -P {{ hostvars[item].ipmi_password }}
-               -p {{ hostvars[item].ipmi_port }}
+               -p {{ hostvars[item].ipmi_port | default(623) }}
                -I lanplus
                sol info
   register: ipmi_sol
