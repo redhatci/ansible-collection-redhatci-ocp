@@ -23,7 +23,12 @@
   delay: 5
   until:
     - index_sha is not failed
- 
+
+- name: "Create a tmp directory Index DB"
+  tempfile:
+    state: directory
+  register: tmp_index
+
 - name: Mirror catalog manifests
   shell:
     chdir: "{{ dci_cluster_configs_dir }}"
@@ -33,8 +38,16 @@
       {{ local_registry }}{{ opm_local_registry_path }}@{{ index_sha.stdout }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
       {{ filter_by_arg }}="linux/amd64"
-      --to-manifests={{ dci_cluster_configs_dir }}/{{ manifests_dir }}  2>&1
+      --to-manifests={{ dci_cluster_configs_dir }}/{{ manifests_dir }}
+      --path=/database/index.db:{{ tmp_index.path }} 2>&1
   register: catalog_manifests_output
+
+- name: "Delete tmp Index directory"
+  file:
+    path: "{{ tmp_index.path }}"
+    state: absent
+  when:
+    - tmp_index is defined
 
 - name: Generate mirror entries
   set_fact:
