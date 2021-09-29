@@ -1,6 +1,4 @@
 ---
-- import_tasks: 
-      file: ai.yml
+- import_tasks: ai.yml
 
-- import_tasks: 
-      file: dns.yml
+- import_tasks: dns.yml
