@@ -31,6 +31,7 @@
       copy:
         src: "{{ fetched_dest }}/ssh_keys/{{ item }}"
         dest: "{{ ssh_key_dest_dir }}/{{ item }}"
+        mode: 0640
       loop:
         - "{{ private_key_name }}"
         - "{{ public_key_name }}"

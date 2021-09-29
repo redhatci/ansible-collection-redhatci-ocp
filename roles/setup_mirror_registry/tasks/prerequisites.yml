@@ -29,3 +29,4 @@
   copy:
     src: "{{ localhost_pull_secret_file }}"
     dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+    mode: 0644

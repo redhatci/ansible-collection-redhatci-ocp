@@ -57,6 +57,7 @@
       template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
+        mode: 0644
       with_items:
         - src: onprem-environment.j2
           dest: "{{ assisted_installer_dir }}/onprem-environment"
@@ -123,6 +124,7 @@
           [Install]
           WantedBy=default.target
         dest: "/etc/systemd/system/assisted_installer.service"
+        mode: 0644
 
     - name: Reload systemd service
       systemd:
