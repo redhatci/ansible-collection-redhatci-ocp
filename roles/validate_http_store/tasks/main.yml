@@ -6,6 +6,7 @@
   copy:
     content: "{{ contents }}"
     dest: "{{ http_store_dir }}/{{ test_file_name }}"
+    mode: 0644
   become: true
   delegate_to: http_store
 

@@ -62,7 +62,7 @@
   copy:
     content: "{{ pull_secret | to_json }}"
     dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
-
+    mode: 0644
 
 - name: Create container to serve the registry
   containers.podman.podman_container:
@@ -108,7 +108,7 @@
           [Install]
           WantedBy=default.target
         dest: "/etc/systemd/system/container-registry.service"
-
+        mode: 0644
 
     - name: Reload demon to pick up changes in container-registry.service
       ansible.builtin.systemd:

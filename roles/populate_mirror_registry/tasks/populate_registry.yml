@@ -5,11 +5,13 @@
       file:
         path: "{{ config_file_path }}/containers/"
         state: directory
+        mode: 0755
 
     - name: Copy pull_secrets file.
       copy:
         src: "{{ config_file_path }}/{{ pull_secret_file_name }}"
         dest: "{{ config_file_path }}/containers/auth.json"
+        mode: 0644
         remote_src: yes
 
     - name: Podman login to remote registry

@@ -45,6 +45,7 @@
   copy:
     content: "{{ cluster_id }}"
     dest: "{{ fetched_dest }}/cluster.txt"
+    mode: 0644
   delegate_to: localhost
   become: no
   when: create | bool == True
@@ -105,6 +106,7 @@
   copy:
     content: "{{ install_config.json }}"
     dest: "{{ fetched_dest }}/install-config.txt"
+    mode: 0644
   delegate_to: localhost
   become: no
 
@@ -152,6 +154,7 @@
   copy:
     content: "{{ install_config.json }}"
     dest: "{{ fetched_dest }}/patched-config.txt"
+    mode: 0644
   delegate_to: localhost
   become: no
 

@@ -17,6 +17,7 @@
   copy:
     content: "{{ discovery_ignition.json }}"
     dest: "{{ fetched_dest }}/discovery-ignition.txt"
+    mode: 0644
   delegate_to: localhost
   become: no
 

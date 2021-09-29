@@ -69,6 +69,7 @@
           [Install]
           WantedBy=default.target
         dest: "/etc/systemd/system/http_store.service"
+        mode: 0644
 
     - name: Reload systemd service
       systemd:
