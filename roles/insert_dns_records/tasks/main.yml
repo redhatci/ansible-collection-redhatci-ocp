@@ -22,14 +22,12 @@
 
 - name: Configure dnsmasq via NetworkManager
   become: true
-  import_tasks:
-    file: network-manager.yml
+  import_tasks: network-manager.yml
   when: dns_service_name == "NetworkManager"
 
 - name: Configure dnsmasq via dnsmasq
   become: true
-  import_tasks:
-    file: dnsmasq.yml
+  import_tasks: dnsmasq.yml
   when: dns_service_name == "dnsmasq"
 
 - name: "Restart {{ dns_service_name }}"
