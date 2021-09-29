@@ -1,9 +1,4 @@
 ---
-- name: "Clean up temporary manifest files"
-  file:
-    path: "{{ manifests_database | dirname }}"
-    state: absent
-
 - name: "Fix permissions and removing tmp files"
   # The tmp dirs are create without write permissions and aren't automatically removed
   shell:
