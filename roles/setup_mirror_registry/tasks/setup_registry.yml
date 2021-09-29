@@ -29,6 +29,7 @@
 - name: Generate htpasswd entry
   command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
   register: htpass_entry
+  changed_when: false
 
 - name: Write htpasswd file
   copy:

@@ -1,4 +1,4 @@
-- name: check skopeo is installed
+- name: check skopeo is installed # noqa no-changed-when
   shell: /usr/bin/skopeo --version
 
 - name: Find hash for images
