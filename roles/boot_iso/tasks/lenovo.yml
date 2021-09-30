@@ -16,7 +16,7 @@
         return_content: yes
       register: redfish_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: redfish_reply
       when: debug | bool == True
 
@@ -34,7 +34,7 @@
         return_content: yes
       register: redfish_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: redfish_reply
       when: debug | bool == True
 
@@ -52,7 +52,7 @@
         return_content: yes
       register: redfish_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: redfish_reply
       when: debug | bool == True
 
@@ -77,7 +77,7 @@
         return_content: yes
       register: redfish_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: redfish_reply
       when: debug | bool == True
 
@@ -102,7 +102,7 @@
         return_content: yes
       register: redfish_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: redfish_reply
       when: debug | bool == True
 
@@ -120,6 +120,6 @@
         return_content: yes
       register: redfish_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: redfish_reply
       when: debug | bool == True

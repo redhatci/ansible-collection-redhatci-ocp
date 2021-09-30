@@ -20,7 +20,7 @@
     network_yaml: "{{ lookup('template', network_config.template | default('nmstate.yml.j2')) }}"
   when: network_config.raw is not defined
 
-- debug:
+- debug: # noqa unnamed-task
     msg: "{{ network_yaml }}"
   when: debug | bool == true
 

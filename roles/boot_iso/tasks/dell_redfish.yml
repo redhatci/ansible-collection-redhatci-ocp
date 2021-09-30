@@ -64,7 +64,7 @@
           ) | from_yaml
         }}"
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: blocking_virtual_media
       when: debug | bool == True
 

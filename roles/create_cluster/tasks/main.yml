@@ -32,7 +32,7 @@
   when: create | bool == True
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply.json
   when: debug and create  | bool == True
 
@@ -57,7 +57,7 @@
     search_registries: "{{ lookup('template', 'patch-search-registries.j2') }}"
   when: disconnected | bool == True
 
-- debug:
+- debug: # noqa unnamed-task
     var: search_registries
   when: debug and disconnected  | bool == True
 
@@ -66,7 +66,7 @@
     patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition.j2') }}"
   when: disconnected | bool == True
 
-- debug:
+- debug: # noqa unnamed-task
     var: patch_discovery_ignition
   when: debug and disconnected  | bool == True
 
@@ -84,7 +84,7 @@
   when: disconnected | bool == True
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply
   when: debug and disconnected  | bool == True
 
@@ -98,7 +98,7 @@
     return_content: True
   register: install_config
 
-- debug:
+- debug: # noqa unnamed-task
     var: install_config.json
   when: debug | bool == True
 
@@ -120,7 +120,7 @@
     patch_install_config: "{{ lookup('template', 'patch-network-type.j2') | from_yaml | combine(patch_install_config | default({}))  }}"
   when: network_type is defined
 
-- debug:
+- debug: # noqa unnamed-task
     var: patch_install_config
   when: debug and patch_install_config is defined
 
@@ -135,7 +135,7 @@
   when: patch_install_config is defined
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply
   when: debug and patch_install_config is defined
 - name: Get install-config file
@@ -146,7 +146,7 @@
     return_content: True
   register: install_config
 
-- debug:
+- debug: # noqa unnamed-task
     var: install_config.json
   when: debug | bool == True
 

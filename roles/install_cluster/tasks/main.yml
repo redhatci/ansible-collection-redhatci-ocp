@@ -9,7 +9,7 @@
     return_content: True
   register: discovery_ignition
 
-- debug:
+- debug: # noqa unnamed-task
     var: discovery_ignition.json
   when: debug | bool == True
 
@@ -68,7 +68,7 @@
   when: install | bool == True
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply.json
   when: debug | bool == True
 

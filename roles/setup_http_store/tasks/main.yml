@@ -33,7 +33,7 @@
           - 80:8080
       register: pod_info
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: pod_info
 
     - name: Create httpd container
