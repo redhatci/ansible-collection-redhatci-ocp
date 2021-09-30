@@ -35,7 +35,7 @@
   when: generate | bool == True
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply.json
   when: debug and generate | bool == True
 
@@ -56,7 +56,7 @@
       register: http_reply
       become: true
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: http_reply.status_code
       when: debug and download | bool == True
 
@@ -71,7 +71,7 @@
       when: upload | bool == True
       register: http_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: http_reply.status_code
       when: debug and upload | bool == True
   delegate_to: http_store

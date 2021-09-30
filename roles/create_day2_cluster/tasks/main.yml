@@ -16,7 +16,7 @@
       }
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply.json.id
   when: debug
 
@@ -26,7 +26,7 @@
     CLUSTER_ID: "{{ http_reply.json.id }}"
     ADD_HOST_CLUSTER_ID: "{{ http_reply.json.id }}"
 
-- debug:
+- debug: # noqa unnamed-task
     msg: "{{ pull_secret | to_json }}"
   when: debug
 

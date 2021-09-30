@@ -18,11 +18,11 @@
     return_content: yes
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     msg: "{{ base_bmc_address }}/redfish/v1/Systems/{{ inventory_hostname }}"
   when: debug | bool == true
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply
   when: debug | bool == True
 
@@ -60,7 +60,7 @@
   register: redfish_reply
   ignore_errors: yes
 
-- debug:
+- debug: # noqa unnamed-task
     var: redfish_reply
   when: debug | bool == True
 
@@ -81,7 +81,7 @@
   retries: 20
   delay: 30
 
-- debug:
+- debug: # noqa unnamed-task
     var: redfish_reply
   when: debug | bool == True
 
@@ -97,7 +97,7 @@
   register: redfish_reply
   when: debug | bool == True
 
-- debug:
+- debug: # noqa unnamed-task
     var: redfish_reply
   when: debug | bool == True
 
@@ -123,7 +123,7 @@
     return_content: yes
   register: redfish_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: redfish_reply
   when: debug | bool == True
 
@@ -138,7 +138,7 @@
     return_content: yes
   register: redfish_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: redfish_reply
   when: debug | bool == True
 

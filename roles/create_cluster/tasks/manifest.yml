@@ -6,7 +6,7 @@
     manifest: "{{ lookup('template', '{{ item }}.j2' ) }}"
   when: manifests | bool == True
 
-- debug:
+- debug: # noqa unnamed-task
     var: manifest
   when: debug and manifests | bool == True
 
@@ -26,6 +26,6 @@
   when: manifests | bool == True
   register: http_reply
 
-- debug:
+- debug: # noqa unnamed-task
     var: http_reply
   when: debug and manifests | bool == True
