@@ -4,7 +4,7 @@
     - name: Install Chrony
       ansible.builtin.package:
         name: chrony
-        state: latest
+        state: present
 
     - name: Configure chrony
       ansible.builtin.template:
