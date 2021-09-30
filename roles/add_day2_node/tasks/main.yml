@@ -1,4 +1,4 @@
-- name: "Boot ISO for {{inventory_hostname }}"
+- name: "Boot ISO for {{ inventory_hostname }}"
   import_role:
     name: boot_iso
   vars:
@@ -9,7 +9,7 @@
 - name: "Install node: {{inventory_hostname }}"
   delegate_to: bastion
   block:
-    - name: "Wait for 20 min until {{inventory_hostname }} discovered"
+    - name: "Wait for 20 min until {{ inventory_hostname }} discovered"
       uri:
         url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
         method: GET
@@ -20,7 +20,7 @@
       retries: 20
       delay: 60
 
-    - name: "Wait for 20 min until {{inventory_hostname }} to be ready"
+    - name: "Wait for 20 min until {{ inventory_hostname }} to be ready"
       uri:
         url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
         method: GET

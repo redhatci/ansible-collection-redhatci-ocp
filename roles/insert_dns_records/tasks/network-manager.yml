@@ -8,7 +8,7 @@
 - name: Create dnsmasq openshift-cluster config file
   ansible.builtin.template:
     src: openshift-cluster.conf.j2
-    dest: "/etc/NetworkManager/dnsmasq.d/{{dns_entries_file_name}}"
+    dest: "/etc/NetworkManager/dnsmasq.d/{{ dns_entries_file_name }}"
     mode: 0644
   notify: restart_service
 

@@ -3,7 +3,7 @@
     path: "{{ vm_create_scripts }}"
   register: creation_to_remove
 
-- name: Remove file in {{vm_create_scripts }} dir
+- name: Remove file in {{ vm_create_scripts }} dir
   file:
     path: "{{ item }}"
     state: absent

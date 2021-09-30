@@ -10,7 +10,7 @@
         'vcpu': hostvars[item]['vm_spec']['cpu_cores'] | default(vm_params[hostvars[item]['role']]['vcpu']),
         'disk_size': hostvars[item]['vm_spec']['disk_size_gb'] | default(vm_params[hostvars[item]['role']]['disk_size']),
     }] }}"
-  loop: "{{ groups['masters'] + groups['workers'] | default([])}}"
+  loop: "{{ groups['masters'] + groups['workers'] | default([]) }}"
   when: hostvars[item]['vendor'] | lower == 'kvm'
 
 - name: Setup host environment

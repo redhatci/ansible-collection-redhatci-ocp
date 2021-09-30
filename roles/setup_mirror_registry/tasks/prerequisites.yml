@@ -11,7 +11,7 @@
   block:
     - name: Get cert stat
       stat:
-        path: "{{ registry_dir_cert}}/domain.crt"
+        path: "{{ registry_dir_cert }}/domain.crt"
       register: cert_file
     - name: "Fail: Certificate not found"
       fail:
