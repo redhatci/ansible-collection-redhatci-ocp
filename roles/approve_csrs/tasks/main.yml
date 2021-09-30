@@ -1,7 +1,9 @@
 - name: Wait up to an 60 mins for CSRs to be approved # The 'loop' default will prevent action when none is needed. # noqa no-changed-when
   shell:
-    cmd: "export KUBECONFIG={{ kubeconfig_path }} && oc get csr | grep -i pending | cut -f 1 -d ' ' | xargs -n 1 oc adm certificate approve &> /dev/null ; oc get nodes -o json"
+    cmd: "oc get csr | grep -i pending | cut -f 1 -d ' ' | xargs -n 1 oc adm certificate approve &> /dev/null; oc get nodes -o json"
   register: oc_nodes
-  until: "(groups['day2_workers'] | difference(oc_nodes.stdout | default('{}') | from_json | json_query('items[].metadata.name') | list )) | length == 0"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  until: (groups['day2_workers'] | difference(oc_nodes.stdout | default('{}') | from_json | json_query('items[].metadata.name') | list )) | length == 0
   retries: 60
   delay: 60
