@@ -2,7 +2,6 @@
   import_role:
     name: boot_iso
   vars:
-    - debug: "{{ debug }}"
     - discovery_iso_name: "{{ day2_discovery_iso_name }}"
     - boot_iso_url: "{{ discovery_iso_server }}/{{ day2_discovery_iso_name }}"
 
@@ -27,7 +26,7 @@
         status_code: [200, 201]
         return_content: True
       register: cluster
-      until: "'known' in (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list )"
+      until: (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list)[0] in day2_states
       retries: 20
       delay: 60
 
@@ -40,6 +39,16 @@
         body_format: json
         body: {}
       register: http_reply
+      when: (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list)[0] == day2_host_found
+
+    - import_role:
+        name: monitor_host
+      vars:
+        ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v1"
+        CLUSTER_ID: "{{ ADD_HOST_CLUSTER_ID }}"
+        waiting_termination_states:
+          - "added-to-existing-cluster"
+          - "installing-pending-user-action"
 
     - name: Wait for 20 min until installation is complete
       uri:
@@ -48,6 +57,6 @@
         status_code: [200, 201]
         return_content: True
       register: cluster
-      until: ( cluster.json.hosts | map(attribute='status') | list | unique == ['added-to-existing-cluster'] )
+      until: (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list)[0] == day2_completed_installation_state
       retries: 60
       delay: 60

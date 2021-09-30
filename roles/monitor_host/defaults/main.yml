@@ -13,3 +13,6 @@ URL_ASSISTED_INSTALLER_CLUSTER: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ C
 # HTTP Basic Authentication
 HTTP_AUTH_USERNAME: "none"
 HTTP_AUTH_PASSWORD: "none"
+
+waiting_termination_states:
+  - "installing-pending-user-action"
