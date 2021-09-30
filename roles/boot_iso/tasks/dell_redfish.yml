@@ -79,6 +79,7 @@
           image_url: "{{ item.Image }}"
         resource_id: iDRAC.Embedded.1
       loop: "{{ blocking_virtual_media }}"
+      no_log: True
 
 - name: DELL Insert Virtual Media
   community.general.redfish_command:
