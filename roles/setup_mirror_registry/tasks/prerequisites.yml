@@ -13,7 +13,8 @@
       stat:
         path: "{{ registry_dir_cert}}/domain.crt"
       register: cert_file
-    - fail:
+    - name: "Fail: Certificate not found"
+      fail:
         msg: "Cert file {{ registry_dir_cert }}/domain.crt missing"
       when: cert_file.stat.exists | bool == False
 
