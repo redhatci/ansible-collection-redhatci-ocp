@@ -23,7 +23,7 @@
 - name: Set cluster ID info
   set_fact:
     CLUSTER_ID: "{{ http_reply.json.id }}"
-    ADD_HOST_CLUSTER_ID: "{{ http_reply.json.id }}"
+    add_host_cluster_id: "{{ http_reply.json.id }}"
 
 - debug: # noqa unnamed-task
     msg: "{{ pull_secret | to_json }}"
@@ -31,7 +31,7 @@
 
 - name: Patch day 2 install config
   uri:
-    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ ADD_HOST_CLUSTER_ID }}"
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}"
     method: PATCH
     status_code: [201]
     return_content: True
@@ -42,9 +42,9 @@
         "ssh_public_key": "{{ ssh_public_key }}",
       }
 
-- name: Distribute ADD_HOST_CLUSTER_ID value to day2_worker hosts
+- name: Distribute add_host_cluster_id value to day2_worker hosts
   set_fact:
-    ADD_HOST_CLUSTER_ID: "{{ ADD_HOST_CLUSTER_ID }}"
+    add_host_cluster_id: "{{ add_host_cluster_id }}"
   delegate_to: "{{ item }}"
   delegate_facts: yes
   loop: "{{ groups['day2_workers'] }}"

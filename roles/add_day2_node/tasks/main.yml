@@ -1,10 +1,3 @@
-- name: "Boot ISO for {{ inventory_hostname }}"
-  import_role:
-    name: boot_iso
-  vars:
-    - discovery_iso_name: "{{ day2_discovery_iso_name }}"
-    - boot_iso_url: "{{ discovery_iso_server }}/{{ day2_discovery_iso_name }}"
-
 - name: "Install node: {{inventory_hostname }}"
   delegate_to: bastion
   block:
@@ -45,18 +38,7 @@
         name: monitor_host
       vars:
         ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v1"
-        CLUSTER_ID: "{{ ADD_HOST_CLUSTER_ID }}"
+        CLUSTER_ID: "{{ add_host_cluster_id }}"
         waiting_termination_states:
           - "added-to-existing-cluster"
           - "installing-pending-user-action"
-
-    - name: Wait for 20 min until installation is complete
-      uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
-        method: GET
-        status_code: [200, 201]
-        return_content: True
-      register: cluster
-      until: (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list)[0] == day2_completed_installation_state
-      retries: 60
-      delay: 60
