@@ -22,7 +22,6 @@
 
 - name: Set cluster ID info
   set_fact:
-    BASE_CLUSTER_ID: "{{ cluster_id }}"
     CLUSTER_ID: "{{ http_reply.json.id }}"
     ADD_HOST_CLUSTER_ID: "{{ http_reply.json.id }}"
 
