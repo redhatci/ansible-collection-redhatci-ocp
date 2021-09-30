@@ -9,7 +9,7 @@
     - name: Split openshift_full_version
       set_fact:
         openshift_version_parts: "{{ openshift_full_version.split('.') }}"
-    - name:
+    - name: Incorrect format for openshift_full_version
       fail:
         msg: openshift_full_version does not have at least two parts
       when: openshift_version_parts | length < 2
