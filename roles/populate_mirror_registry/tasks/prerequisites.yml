@@ -35,7 +35,7 @@
       get_url:
         url: "{{ release_url }}/{{ release_version }}/{{ oc_tar }}"
         dest: "{{ downloads_path }}/"
-        force: "{{force}}"
+        force: "{{ force }}"
         backup: yes
 
     - name: Make directory to extract oc binary
@@ -91,7 +91,7 @@
       get_url:
         url: "{{ release_url }}/stable-{{ openshift_version }}/{{ opm_tar }}"
         dest: "{{ downloads_path }}/"
-        force: "{{force}}"
+        force: "{{ force }}"
         backup: yes
 
     - name: Make directory to extract binaries
