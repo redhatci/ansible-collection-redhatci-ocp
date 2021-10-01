@@ -1,0 +1,25 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: {{ cnf_test_sriov_policy }}
+  namespace: openshift-sriov-network-operator
+spec:
+  nodeSelector:
+    {{ cnf_test_sriov_node_selector | default('"node-role.kubernetes.io/worker": ""') }}
+  resourceName: {{ cnf_test_sriov_resource }}
+  priority: {{ cnf_test_sriov_priority | default(99) }}
+{% if cnf_test_sriov_mtu is defined %}
+  mtu: {{ cnf_test_sriov_mtu }}
+{% endif %}
+  numVfs: {{ cnf_test_sriov_numvfs }}
+  nicSelector:
+{% if cnf_test_sriov_vendor is defined %}
+    vendor: {{ cnf_test_sriov_vendor }}
+{% endif %}
+{% if cnf_test_sriov_devid is defined %}
+    deviceID: {{ cnf_test_sriov_devid }}
+{% endif %}
+    pfNames:
+      - {{ cnf_test_sriov_dev }}
+  deviceType: {{ cnf_test_sriov_devtype | default('vfio-pci') }}
+  isRdma: {{ cnf_test_sriov_isrdma|default(false)|bool }}

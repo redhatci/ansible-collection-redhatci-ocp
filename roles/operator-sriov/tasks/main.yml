@@ -123,6 +123,18 @@
     - "'syncStatus' in state.resources[0].status"
     - "state.resources[0].status.syncStatus == 'Succeeded'"
 
+- name: "Create SriovNetworkNodePolicy {{ cnf_test_sriov_policy }} for CNF tests"
+  k8s:
+    definition: "{{ lookup('template', 'templates/sriov-policy.yml.j2') }}"
+  when:
+    - cnf_test_suites is defined
+    - "'sriov' in cnf_test_suites"
+    - cnf_test_sriov_dev is defined
+    - cnf_test_sriov_policy is defined
+    - cnf_test_sriov_resource is defined
+    - cnf_test_sriov_numvfs is defined
+    - cnf_test_sriov_mtu is defined
+
 - name: Check nodes
   include_role:
     name: prepare-cnf
