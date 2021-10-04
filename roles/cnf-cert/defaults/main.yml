@@ -5,7 +5,6 @@ cnf_certification_test_partner_repo: https://github.com/test-network-function/cn
 cnf_certification_test_partner_version: "v3.0.0"
 dci_openshift_app_image: "quay.io/testnetworkfunction/cnf-test-partner:latest"
 tnf_if: eth0
-tnf_git_dir: /var/tmp
 tnf_operators_regexp: ""
 tnf_cnfs_regexp: ""
 tnf_exclude_connectivity_regexp: ""
