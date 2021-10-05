@@ -12,6 +12,8 @@
     (host.json.progress.current_stage == 'Rebooting' and host.json.status in waiting_termination_states)
     or
     host.json.progress.current_stage in ['Configuring', 'Done']
+    or
+    host.json.status == 'error'
   retries: 60
   delay: 60
 
@@ -22,3 +24,8 @@
     hosts:
       - "{{ host.json.requested_hostname }}"
   when: host.json.progress.current_stage == 'Rebooting' and host.json.status == 'installing-pending-user-action'
+
+- name: Fail if host is in error condition
+  fail:
+    msg: "{{ host_name }} is in error condition can not continue"
+  when: host.json.status == 'error'
