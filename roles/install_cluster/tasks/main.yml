@@ -13,6 +13,14 @@
     var: discovery_ignition.json
   when: debug | bool == True
 
+- name: "Make {{ fetched_dest }}"
+  file:
+    path: "{{ fetched_dest }}"
+    state: directory
+    recurse: yes
+  delegate_to: localhost
+  become: no
+
 - name: "Copy discovery_ignition.json"
   copy:
     content: "{{ discovery_ignition.json }}"
@@ -60,11 +68,12 @@
     status_code: [201]
     return_content: True
     body_format: json
-    body: {
+    body:
+      {
         "vip_dhcp_allocation": "{{ VIP_DHCP_ALLOCATION | lower | bool }}",
         "ingress_vip": "{{ INGRESS_VIP }}",
-        "api_vip": "{{ API_VIP }}"
-    }
+        "api_vip": "{{ API_VIP }}",
+      }
   when: install | bool == True
   register: http_reply
 
@@ -93,7 +102,7 @@
     status_code: [202]
     return_content: True
     body_format: json
-    body: { }
+    body: {}
   when: install | bool == True
   register: http_reply
 
@@ -101,5 +110,3 @@
   debug:
     var: http_reply.json
   when: debug | bool == True and install | bool == True
-
-
