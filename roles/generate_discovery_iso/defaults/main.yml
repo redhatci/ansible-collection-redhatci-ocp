@@ -1,5 +1,5 @@
 ---
-# defaults file for generate_iso
+# defaults file for generate_discovery_iso
 
 secure: False
 generate: True
@@ -7,8 +7,8 @@ download: True
 upload: False
 debug: False
 
-ASSISTED_INSTALLER_HOST: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
-ASSISTED_INSTALLER_PORT: 8090
+ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] | default(ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}"
+ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] | default(8090) }}"
 ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"
 URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ CLUSTER_ID }}/downloads/image"
 

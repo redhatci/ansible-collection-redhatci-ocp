@@ -1,5 +1,2 @@
 ---
-# vars file for generate_iso
-
-ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] }}"
-ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] }}"
+# vars file for generate_discovery_iso
