@@ -1,7 +1,7 @@
 # Performance profile
 
 The `operator-performance-profile` role configures and deploys the [performance-addon-operator](https://github.com/openshift-kni/performance-addon-operators/blob/master/docs/performance_profile.md) via the [Operator Lifecycle Manager (OLM)](https://olm.operatorframework.io/).
-The performance addon operator is installed under the namespace: `openshift-performance-addon`.
+The performance addon operator is installed under the namespace: `openshift-performance-addon-operator`.
 
 ## Configuration
 
