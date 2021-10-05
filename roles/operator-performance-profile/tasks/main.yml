@@ -7,7 +7,7 @@
       metadata:
         labels:
           openshift.io/cluster-monitoring: "true"
-        name: openshift-performance-addon
+        name: openshift-performance-addon-operator
       spec: {}
 
 - name: Create operatorgroup for Performance Addon operator
@@ -17,7 +17,7 @@
       kind: OperatorGroup
       metadata:
         name: openshift-performance-addon-operatorgroup
-        namespace: openshift-performance-addon
+        namespace: openshift-performance-addon-operator
 
 - name: Create subscription for Performance Addon operator without channel
   k8s:
@@ -26,7 +26,7 @@
       kind: Subscription
       metadata:
         name: performance-addon-operator-subscription
-        namespace: openshift-performance-addon
+        namespace: openshift-performance-addon-operator
       spec:
         name: performance-addon-operator
         source: "{{ opm_catalog_source_name }}"
@@ -42,7 +42,7 @@
       kind: Subscription
       metadata:
         name: performance-addon-operator-subscription
-        namespace: openshift-performance-addon
+        namespace: openshift-performance-addon-operator
       spec:
         name: performance-addon-operator
         source: "{{ opm_catalog_source_name }}"
@@ -55,7 +55,7 @@
 - name: test_ Check if performance-addon-operator csv is installed
   k8s_info:
     api: operators.coreos.com/v1alpha1
-    namespace: openshift-performance-addon
+    namespace: openshift-performance-addon-operator
     kind: ClusterServiceVersion
   register: csv
   retries: 30

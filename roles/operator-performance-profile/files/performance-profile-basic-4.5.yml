@@ -3,7 +3,7 @@ kind: PerformanceProfile
 apiVersion: "performance.openshift.io/v1alpha1"
 metadata:
   name: cnf-basic-profile
-  namespace: openshift-performance-addon
+  namespace: openshift-performance-addon-operator
 spec:
   additionalKernelArgs:
     - "nmi_watchdog=0"
