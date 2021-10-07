@@ -34,7 +34,8 @@
 
 - debug: # noqa unnamed-task
     var: http_reply.json
-  when: debug and create  | bool == True
+    verbosity: 1
+  when: create | bool == True
 
 - name: Set the cluster ID
   set_fact:
@@ -59,7 +60,8 @@
 
 - debug: # noqa unnamed-task
     var: search_registries
-  when: debug and disconnected  | bool == True
+    verbosity: 1
+  when: disconnected | bool == True
 
 - name: Load patch for discovery ignition
   set_fact:
@@ -68,7 +70,8 @@
 
 - debug: # noqa unnamed-task
     var: patch_discovery_ignition
-  when: debug and disconnected  | bool == True
+    verbosity: 1
+  when: disconnected | bool == True
 
 - name: Patch discovery ignition
   uri:
@@ -86,7 +89,8 @@
 
 - debug: # noqa unnamed-task
     var: http_reply
-  when: debug and disconnected  | bool == True
+    verbosity: 1
+  when: disconnected | bool == True
 
 #### patch cluster install config on restricted network environments ###
 
@@ -100,7 +104,7 @@
 
 - debug: # noqa unnamed-task
     var: install_config.json
-  when: debug | bool == True
+    verbosity: 1
 
 - name: "Copy install_config"
   copy:
@@ -122,7 +126,8 @@
 
 - debug: # noqa unnamed-task
     var: patch_install_config
-  when: debug and patch_install_config is defined
+    verbosity: 1
+  when: patch_install_config is defined
 
 - name: Patch install config
   uri:
@@ -137,7 +142,9 @@
 
 - debug: # noqa unnamed-task
     var: http_reply
-  when: debug and patch_install_config is defined
+    verbosity: 1
+  when: patch_install_config is defined
+
 - name: Get install-config file
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/install-config"
@@ -148,7 +155,7 @@
 
 - debug: # noqa unnamed-task
     var: install_config.json
-  when: debug | bool == True
+    verbosity: 1
 
 - name: "Copy install_config-json to patched-config.txt"
   copy:

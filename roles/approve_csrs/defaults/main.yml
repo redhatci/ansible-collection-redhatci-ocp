@@ -1,4 +1,3 @@
 kube_filename: "{{ kubeconfig_dest_filename | default('kubeconfig') }}"
 dest_dir: "{{ kubeconfig_dest_dir | default(ansible_env.HOME) }}"
 kubeconfig_path: "{{ dest_dir }}/{{ kube_filename }}"
-debug: false

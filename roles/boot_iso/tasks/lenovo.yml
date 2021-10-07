@@ -18,7 +18,7 @@
 
     - debug: # noqa unnamed-task
         var: redfish_reply
-      when: debug | bool == True
+        verbosity: 1
 
     - name: Lenovo Eject Virtual Media {{ inventory_hostname }}
       uri:
@@ -36,7 +36,7 @@
 
     - debug: # noqa unnamed-task
         var: redfish_reply
-      when: debug | bool == True
+        verbosity: 1
 
     - name: Lenovo Insert Virtual Media {{ inventory_hostname }}
       uri:
@@ -54,7 +54,7 @@
 
     - debug: # noqa unnamed-task
         var: redfish_reply
-      when: debug | bool == True
+        verbosity: 1
 
     - name: Lenovo Set Boot from Hard Disk {{ inventory_hostname }}
       uri:
@@ -79,7 +79,7 @@
 
     - debug: # noqa unnamed-task
         var: redfish_reply
-      when: debug | bool == True
+        verbosity: 1
 
     - name: Lenovo Set Boot Once from Virtual Media {{ inventory_hostname }}
       uri:
@@ -104,7 +104,7 @@
 
     - debug: # noqa unnamed-task
         var: redfish_reply
-      when: debug | bool == True
+        verbosity: 1
 
     - name: Lenovo Restart the System {{ inventory_hostname }}
       uri:
@@ -122,4 +122,4 @@
 
     - debug: # noqa unnamed-task
         var: redfish_reply
-      when: debug | bool == True
+        verbosity: 1

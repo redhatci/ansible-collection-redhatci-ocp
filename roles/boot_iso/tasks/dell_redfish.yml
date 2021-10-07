@@ -66,7 +66,7 @@
 
     - debug: # noqa unnamed-task
         var: blocking_virtual_media
-      when: debug | bool == True
+        verbosity: 1
 
     - name: Attempting to eject blocking media
       community.general.redfish_command:

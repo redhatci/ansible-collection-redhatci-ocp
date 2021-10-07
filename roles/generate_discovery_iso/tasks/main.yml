@@ -20,7 +20,7 @@
 - name: Iso body
   debug:
     msg: "{{ request_body | to_json }}"
-  when: debug | bool == True
+    verbosity: 1
 
 - name: Generate a new discovery ISO
   uri:
@@ -37,7 +37,8 @@
 
 - debug: # noqa unnamed-task
     var: http_reply.json
-  when: debug and generate | bool == True
+    verbosity: 1
+  when: generate | bool == True
 
 - name: Put discovery iso in http store
   block:
@@ -58,7 +59,8 @@
 
     - debug: # noqa unnamed-task
         var: http_reply.status_code
-      when: debug and download | bool == True
+        verbosity: 1
+      when: download | bool == True
 
     - name: Upload discovery ISO
       uri:
@@ -73,5 +75,6 @@
 
     - debug: # noqa unnamed-task
         var: http_reply.status_code
-      when: debug and upload | bool == True
+        verbosity: 1
+      when: upload | bool == True
   delegate_to: http_store

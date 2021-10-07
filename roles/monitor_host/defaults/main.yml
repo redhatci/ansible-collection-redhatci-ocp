@@ -3,7 +3,6 @@
 
 monitor: True
 secure: False
-debug: False
 
 ASSISTED_INSTALLER_HOST: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
 ASSISTED_INSTALLER_PORT: 8090

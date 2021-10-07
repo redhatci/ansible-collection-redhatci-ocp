@@ -3,8 +3,6 @@
 
 monitor: True
 secure: False
-debug: False
-
 ASSISTED_INSTALLER_HOST: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
 ASSISTED_INSTALLER_PORT: 8090
 ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"

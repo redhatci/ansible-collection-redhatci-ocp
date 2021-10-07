@@ -22,7 +22,7 @@
 
 - debug: # noqa unnamed-task
     msg: "{{ network_yaml }}"
-  when: debug | bool == true
+    verbosity: 1
 
 - name: "Set static network config for {{ item }}"
   set_fact:

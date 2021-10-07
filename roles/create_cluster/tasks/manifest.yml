@@ -8,7 +8,8 @@
 
 - debug: # noqa unnamed-task
     var: manifest
-  when: debug and manifests | bool == True
+    verbosity: 1
+  when: manifests | bool == True
 
 - name: Apply manifest
   uri:
@@ -28,4 +29,5 @@
 
 - debug: # noqa unnamed-task
     var: http_reply
-  when: debug and manifests | bool == True
+    verbosity: 1
+  when: manifests | bool == True
