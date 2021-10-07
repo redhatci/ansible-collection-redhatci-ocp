@@ -18,7 +18,7 @@
 
 - debug: # noqa unnamed-task
     var: http_reply.json.id
-  when: debug
+    verbosity: 1
 
 - name: Set cluster ID info
   set_fact:
@@ -27,7 +27,7 @@
 
 - debug: # noqa unnamed-task
     msg: "{{ pull_secret | to_json }}"
-  when: debug
+    verbosity: 1
 
 - name: Patch day 2 install config
   uri:

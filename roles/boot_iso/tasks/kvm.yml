@@ -20,11 +20,11 @@
 
 - debug: # noqa unnamed-task
     msg: "{{ base_bmc_address }}/redfish/v1/Systems/{{ inventory_hostname }}"
-  when: debug | bool == true
+    verbosity: 1
 
 - debug: # noqa unnamed-task
     var: http_reply
-  when: debug | bool == True
+    verbosity: 1
 
 - name: KVM Set System UUID
   set_fact:
@@ -62,7 +62,7 @@
 
 - debug: # noqa unnamed-task
     var: redfish_reply
-  when: debug | bool == True
+    verbosity: 1
 
 - name: KVM Insert Virtual Media {{ inventory_hostname }}
   uri:
@@ -83,7 +83,7 @@
 
 - debug: # noqa unnamed-task
     var: redfish_reply
-  when: debug | bool == True
+    verbosity: 1
 
 - name: KVM Verify Virtual Media {{ inventory_hostname }}
   uri:
@@ -95,11 +95,11 @@
     validate_certs: no
     return_content: yes
   register: redfish_reply
-  when: debug | bool == True
+  when: ansible_verbosity >= 1
 
 - debug: # noqa unnamed-task
     var: redfish_reply
-  when: debug | bool == True
+    verbosity: 1
 
 - name: KVM Set OneTimeBoot Virtual Media {{ inventory_hostname }}
   uri:
@@ -125,7 +125,7 @@
 
 - debug: # noqa unnamed-task
     var: redfish_reply
-  when: debug | bool == True
+    verbosity: 1
 
 - name: KVM Verify System Power State {{ inventory_hostname }}
   uri:
@@ -140,7 +140,7 @@
 
 - debug: # noqa unnamed-task
     var: redfish_reply
-  when: debug | bool == True
+    verbosity: 1
 
 - name: KVM Force Restart System {{ inventory_hostname }}
   uri:

@@ -11,7 +11,7 @@
 
 - debug: # noqa unnamed-task
     var: discovery_ignition.json
-  when: debug | bool == True
+    verbosity: 1
 
 - name: "Make {{ fetched_dest }}"
   file:
@@ -79,7 +79,7 @@
 
 - debug: # noqa unnamed-task
     var: http_reply.json
-  when: debug | bool == True
+    verbosity: 1
 
 # Monitor cluster discovery
 - name: Wait up to 20 minutes for the cluster to report as ready
@@ -109,4 +109,5 @@
 - name: Debug http_reply
   debug:
     var: http_reply.json
-  when: debug | bool == True and install | bool == True
+    verbosity: 1
+  when: install | bool == True

@@ -3,7 +3,6 @@
 
 secure: False
 create: True
-debug: False
 disconnected: False
 manifests: True
 fetched_dest: "{{ repo_root_path }}/fetched"

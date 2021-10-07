@@ -35,6 +35,7 @@
 
     - debug: # noqa unnamed-task
         var: pod_info
+        verbosity: 1
 
     - name: Create httpd container
       containers.podman.podman_container:

@@ -5,7 +5,6 @@ secure: False
 generate: True
 download: True
 upload: False
-debug: False
 
 ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] | default(ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}"
 ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] | default(8090) }}"
