@@ -17,15 +17,18 @@
     msg: "pod_list: {{ pod_list | json_query('resources[*].metadata.name') }}"
 
 - name: "Get logs from each pods"
-  shell: |
-    {{ oc_tool_path }} logs --namespace={{ get_logs_ns }} --all-containers=true {{ item }} > {{ get_logs_folder }}/{{ item }}.log || rm -f {{ get_logs_folder }}/{{ item }}.log
+  shell: >
+    {{ oc_tool_path }} logs --namespace={{ get_logs_ns }} --all-containers=true {{ item }} > {{ get_logs_folder }}/{{ item }}.log ;
+    [ -s {{ get_logs_folder }}/{{ item }}.log ] || rm -f {{ get_logs_folder }}/{{ item }}.log
   loop: "{{ pod_list | json_query('resources[*].metadata.name') }}"
 
 - name: "Get pods status from namespace"
-  shell: |
-    {{ oc_tool_path }} get pods --namespace={{ get_logs_ns }} --show-labels -o wide > {{ get_logs_folder }}/{{ get_logs_ns }}_status.log || rm -f {{ get_logs_folder }}/{{ get_logs_ns }}_status.log
+  shell: >
+    {{ oc_tool_path }} get pods --namespace={{ get_logs_ns }} --show-labels -o wide > {{ get_logs_folder }}/{{ get_logs_ns }}_status.log ;
+    [ -s {{ get_logs_folder }}/{{ get_logs_ns }}_status.log ] || rm -f {{ get_logs_folder }}/{{ get_logs_ns }}_status.log
 
 - name: "Get events from from namespace"
-  shell: |
-    {{ oc_tool_path }} get events --namespace={{ get_logs_ns }} > {{ get_logs_folder }}/{{ get_logs_ns }}_events.log || rm -f {{ get_logs_folder }}/{{ get_logs_ns }}_events.log
+  shell: >
+    {{ oc_tool_path }} get events --namespace={{ get_logs_ns }} > {{ get_logs_folder }}/{{ get_logs_ns }}_events.log ;
+    [ -s {{ get_logs_folder }}/{{ get_logs_ns }}_events.log ] || rm -f {{ get_logs_folder }}/{{ get_logs_ns }}_events.log
 ...
