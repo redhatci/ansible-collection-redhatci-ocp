@@ -6,7 +6,7 @@
     name:
         - go-toolset
         - make
-    state: latest
+    state: present
 
 - name: Install ginkgo package
   shell: |
