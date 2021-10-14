@@ -25,6 +25,15 @@
     - provisionhost_registry|length
     - provisionhost_registry_creds|length
 
+# In https://quay.io/repository/testnetworkfunction/test-network-function?tab=tags,
+# there are two main tags to take into account:
+# -latest: linked to the latest tnf release (currently, v3.0.0). So, v3.0.0 and latest
+# tags refer to the same container image.
+# -unstable: related to the HEAD version of the main branch in the tnf repository
+# (https://github.com/test-network-function/test-network-function).
+# So, if a version is provided in test_network_function_version, that version will be
+# used (but note that versions prior to v3.0.1 are no longer supported in the current
+# d-o-a-a code), and if not, unstable tag is used.
 - name: Create variable with test-network-function version name
   set_fact:
     tnf_version_image: "{{ ( test_network_function_version | regex_search('v[0-9].[0-9].[0-9]') ) | ternary(test_network_function_version, 'unstable') }}"
