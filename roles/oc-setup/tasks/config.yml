@@ -1,10 +1,24 @@
 ---
+- name: "Generate Random password for admin user"
+  set_fact:
+    admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+
+- name: "Generate random password for nonadmin user"
+  set_fact:
+    nonadmin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+
+- name: "Save passwords to the cluster configs directory"
+  copy:
+    content: "OCP automatically generated credentials for the API/GUI\nadmin:{{ admin_pass }} \nnonadmin:{{ nonadmin_pass }}\n"
+    dest: "{{ dci_cluster_configs_dir }}/ocp_creds.txt"
+    mode: '0640'
+
 - name: "oc-setup : Create users.htpasswd file"
   shell: |
     # create admin user
-    htpasswd -cbB {{ dci_cluster_configs_dir }}/users.htpasswd admin admin
+    htpasswd -cbB {{ dci_cluster_configs_dir }}/users.htpasswd admin {{ admin_pass }}
     # append nonadmin user
-    htpasswd -bB {{ dci_cluster_configs_dir }}/users.htpasswd nonadmin nonadmin
+    htpasswd -bB {{ dci_cluster_configs_dir }}/users.htpasswd nonadmin {{ nonadmin_pass }}
     ls -lh {{ dci_cluster_configs_dir }}/
 
 - name: "oc-setup : Set htpasswd config secret in openshift"
@@ -21,7 +35,8 @@
   copy:
     src: httpasswd-config.yml
     dest: "{{ dci_cluster_configs_dir }}/"
-
+    mode: "0640"
+    
 - name: "oc-setup : Setup htpasswd auth IDP backend in openshift"
   environment:
     KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
