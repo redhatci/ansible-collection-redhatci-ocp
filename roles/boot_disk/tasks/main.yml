@@ -11,6 +11,11 @@
   loop: "{{ hosts }}"
   when: hostvars[item]['vendor'] == 'Dell'
 
+- name: Reboot hpe
+  include_tasks: hpe.yml
+  loop: "{{ hosts }}"
+  when: hostvars[item]['vendor'] == 'HPE'
+
 - name: Reboot lenovo
   include_tasks: lenovo.yml
   loop: "{{ hosts }}"

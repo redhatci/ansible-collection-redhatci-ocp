@@ -12,6 +12,7 @@ supported_role_values:
 
 supported_vendor_values:
   - Dell
+  - HPE
   - Lenovo
   - KVM
   - SuperMicro
