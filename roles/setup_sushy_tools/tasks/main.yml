@@ -28,6 +28,7 @@
       loop:
         - "{{ sushy_dir }}"
         - "{{ sushy_auth_dir }}"
+        - "{{ sushy_cert_dir }}"
 
     - name: Get KVM BMC username password combinations
       vars:
@@ -55,6 +56,16 @@
         backup: yes
         force: yes
       become: True
+
+    - include_role:
+        name: setup_selfsigned_cert
+      vars:
+        cert_dir: "{{ sushy_cert_dir }}"
+        host_var_key: "{{ cert_vars_host_var_key }}"
+        cert_file_prefix: sushy_tools
+        cert_path: "{{ sushy_cert_dir }}/sushy_tools.crt"
+        privatekey_path: "{{ sushy_cert_dir }}/sushy_tools.key"
+        cert_common_name: "{{ ansible_fqdn }}"
 
     - name: Create sushy-tools conf
       template:
