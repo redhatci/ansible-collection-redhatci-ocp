@@ -1,24 +1,98 @@
 ---
-- name: Mount Live ISO, Boot into Live ISO (HPE servers)
-  block:
-    - name: HPE poweroff system
-      hpilo_boot:
-        host: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
-        login: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
-        state: "poweroff"
+- name: HPE Power off servers
+  community.general.redfish_command:
+    category: Systems
+    command: PowerForceOff
+    baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
 
-    - name: HPE disconnect existing Virtual Media
-      hpilo_boot:
-        host: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
-        login: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+- block:
+    - name: HPE Eject Virtual Media (if any)
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaEject
+        baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+        username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
         password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
-        state: "disconnect"
+        virtual_media:
+          image_url: "{{ boot_iso_url }}"
+        resource_id: 1
+  rescue:
+    - name: Get Virtual Media information
+      community.general.redfish_info:
+        category: Manager
+        command: GetVirtualMedia
+        baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+        username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+      register: result
 
-    - name: HPE task to boot a system using an ISO
-      hpilo_boot:
-        host: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
-        login: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+    - name: Get blocking virtual_media
+      set_fact:
+        blocking_virtual_media:  "{{ result.redfish_facts.virtual_media.entries
+          | flatten(levels=2)
+          | selectattr('ConnectedVia', 'defined') | list
+          | json_query('[?(
+              ConnectedVia == `URI`
+              && Image != null
+              && (
+                contains(MediaTypes, `CD`)
+                || contains(MediaTypes, `Floppy`)
+                || contains(MediaTypes, `USBStick`)
+                || contains(MediaTypes, `DVD`)
+              )
+            )]'
+          ) | from_yaml
+        }}"
+
+    - name: Attempting to eject blocking media
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaEject
+        baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+        username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
         password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
-        image: "{{ boot_iso_url }}"
-        media: cdrom
+        virtual_media:
+          image_url: "{{ item.Image }}"
+        resource_id: 1
+      loop: "{{ blocking_virtual_media }}"
+      no_log: True
+
+- block:
+    - name: HPE Insert Virtual Media
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaInsert
+        baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+        username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        virtual_media:
+          image_url: "{{ boot_iso_url }}"
+          media_types:
+            - CD
+        resource_id: 1
+
+    # Redfish module doesn't appear to support setting both options at once which ILO requires
+    - name: Set Boot for the HPE
+      uri:
+        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
+        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        method: PATCH
+        headers:
+          content-type: application/json
+          Accept: application/json
+        body: '{"Boot":{"BootSourceOverrideEnabled":"Once","BootSourceOverrideTarget":"Cd"}}'
+        body_format: json
+        force_basic_auth: yes
+        validate_certs: no
+        return_content: yes
+
+    - name: HPE Power On the System {{ inventory_hostname }}
+      community.general.redfish_command:
+        category: Systems
+        command: PowerOn
+        baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+        username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
