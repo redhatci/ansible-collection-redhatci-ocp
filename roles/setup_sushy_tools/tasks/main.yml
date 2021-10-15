@@ -6,6 +6,11 @@
       pip:
         name: "sushy-tools"
 
+    - name: Install httpd-tools for htpasswd
+      package:
+        name: httpd-tools
+        state: present
+
     - name: Add TCP firewall rules for BM bridge
       firewalld:
         port: "{{ item.0 }}/tcp"
@@ -15,16 +20,46 @@
         immediate: yes
       loop: "{{ [sushy_tools_port] | product(['internal', 'public']) | list }}"
 
-    - name: Create sushy-tools conf directory
+    - name: "Create sushy-tools conf directory {{ item }}"
       file:
-        path: /opt/sushy-tools
+        path: "{{ item }}"
         state: directory
         mode: 0755
+      loop:
+        - "{{ sushy_dir }}"
+        - "{{ sushy_auth_dir }}"
+
+    - name: Get KVM BMC username password combinations
+      vars:
+        user_password_combinations: {}
+      set_fact:
+        user_password_combinations: "{{
+          user_password_combinations | combine({hostvars[item]['bmc_user']: hostvars[item]['bmc_password']})
+        }}"
+      when: hostvars[item]['vendor'] == 'KVM'
+      loop: "{{ groups['nodes'] }}"
+
+    - name: Generate htpasswd entry
+      command: htpasswd -bBn {{ item.user }} {{ item.password }}
+      register: htpass_entries
+      changed_when: false
+      loop: "{{ user_password_combinations | dict2items(key_name='user', value_name='password') }}"
+
+    - name: Write htpasswd file
+      copy:
+        content: "{{ htpass_entries.results | map(attribute='stdout') | join('\n') }}"
+        dest: "{{ sushy_auth_file }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0660
+        backup: yes
+        force: yes
+      become: True
 
     - name: Create sushy-tools conf
       template:
         src: sushy-emulator.conf.j2
-        dest: /opt/sushy-tools/sushy-emulator.conf
+        dest: "{{ sushy_dir }}/sushy-emulator.conf"
         mode: 0664
 
     - name: Create sushy-tools service
