@@ -1,1 +1,8 @@
+cert_vars_host_var_key: vm_host
 sushy_tools_port: 8082
+sushy_dir: "/opt/sushy-tools"
+sushy_auth_dir: "{{ sushy_dir }}/auth"
+sushy_auth_file: "{{ sushy_auth_dir }}/htpasswd"
+
+file_owner: "{{ ansible_env.USER }}"
+file_group: "{{ file_owner }}"
