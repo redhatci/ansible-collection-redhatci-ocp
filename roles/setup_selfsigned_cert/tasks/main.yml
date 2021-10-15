@@ -22,7 +22,7 @@
 
 - name: Create directory to hold the cert files
   file:
-    path: "{{ registry_dir_cert }}"
+    path: "{{ cert_dir }}"
     owner: "{{ file_owner }}"
     group: "{{ file_group }}"
     mode: 0770
@@ -32,12 +32,12 @@
 
 - name: Generate an OpenSSL private key
   openssl_privatekey:
-    path: "{{ registry_dir_cert }}/domain.key"
+    path: "{{ privatekey_path }}"
 
 - name: Generate an OpenSSL CSR
   openssl_csr:
-    path: "{{ registry_dir_cert }}/domain.csr"
-    privatekey_path: "{{ registry_dir_cert }}/domain.key"
+    path: "{{ csr_path }}"
+    privatekey_path: "{{ privatekey_path }}"
     common_name: "{{ cert_common_name }}"
     country_name: "{{ cert_country }}"
     state_or_province_name: "{{ cert_state }}"
@@ -50,17 +50,17 @@
 
 - name: Generate a selfsigned OpenSSL CA Certificate
   openssl_certificate:
-    path: "{{ registry_dir_cert }}/domainCA.crt"
-    privatekey_path: "{{ registry_dir_cert }}/domain.key"
-    csr_path: "{{ registry_dir_cert }}/domain.csr"
+    path: "{{ ownca_path }}"
+    privatekey_path: "{{ privatekey_path }}"
+    csr_path: "{{ csr_path }}"
     provider: selfsigned
 
 - name: Generate an ownca OpenSSL Certificate
   openssl_certificate:
-    path: "{{ registry_dir_cert }}/domain.crt"
-    ownca_privatekey_path: "{{ registry_dir_cert }}/domain.key"
-    csr_path: "{{ registry_dir_cert }}/domain.csr"
-    ownca_path: "{{ registry_dir_cert }}/domainCA.crt"
+    path: "{{ cert_path }}"
+    ownca_privatekey_path: "{{ privatekey_path }}"
+    csr_path: "{{ csr_path }}"
+    ownca_path: "{{ ownca_path }}"
     ownca_create_authority_key_identifier: yes
     provider: ownca
 
@@ -68,8 +68,8 @@
   block:
     - name: Copy cert to pki directory
       copy:
-        src: "{{ registry_dir_cert }}/domain.crt"
-        dest: /etc/pki/ca-trust/source/anchors/domain.crt
+        src: "{{ cert_path }}"
+        dest: /etc/pki/ca-trust/source/anchors/{{ cert_file_prefix }}.crt
         remote_src: yes
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
@@ -83,15 +83,15 @@
 
 - name: Fetch the domain cert from the registry host
   fetch:
-    src: "{{ registry_dir_cert }}/domain.crt"
-    dest: "{{ fetched_dest }}/domain.crt"
+    src: "{{ cert_path }}"
+    dest: "{{ fetched_dest }}/{{ cert_file_prefix }}.crt"
     flat: yes
   tags:
     - copy_config
 
 - name: Get cert contents
   set_fact:
-    mirror_certificate: "{{ lookup('file', fetched_dest + '/domain.crt') }}"
+    mirror_certificate: "{{ lookup('file', fetched_dest + '/' + cert_file_prefix + '.crt') }}"
 
 - name: Populate mirror_certificate in bastion
   set_fact:

@@ -12,6 +12,13 @@ cert_country: "{{ hostvars[host_var_key]['cert_country'] }}"
 cert_state: "{{ hostvars[host_var_key]['cert_state'] }}"
 cert_locality: "{{ hostvars[host_var_key]['cert_locality'] }}"
 cert_organization: "{{ hostvars[host_var_key]['cert_organization'] }}"
+cert_organizational_unit: "{{  hostvars[host_var_key]['cert_organizational_unit'] }}"
 
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
+
+cert_file_prefix: registry
+ownca_path: "{{ cert_dir }}/{{cert_file_prefix}}CA.crt"
+privatekey_path: "{{ cert_dir }}/{{cert_file_prefix}}.key"
+csr_path: "{{ cert_dir }}/{{cert_file_prefix}}.csr"
+cert_path: "{{ cert_dir }}/{{cert_file_prefix}}.crt"
