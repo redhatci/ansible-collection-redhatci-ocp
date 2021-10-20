@@ -9,7 +9,7 @@
         namespace: "{{ opm_catalog_source_namespace }}"
       spec:
         sourceType: grpc
-        image: "{{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }}"
+        image: "{{ local_registry_host }}:{{ local_registry_port }}{{ opm_local_registry_path }}:{{ dci_opm_version }}"
         displayName: "{{ opm_catalog_source_displayname }}"
         publisher: grpc
 ...

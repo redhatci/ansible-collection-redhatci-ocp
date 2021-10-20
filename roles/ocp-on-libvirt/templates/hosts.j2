@@ -7,6 +7,9 @@ dnsvip=192.168.123.6
 masters_prov_nic={{ masters_prov_nic }}
 prov_ip=172.22.0.3
 dir="{{ '{{' }} ansible_user_dir {{ '}}' }}/clusterconfigs"
+#local_registry_host={{ ansible_fqdn }}
+#local_registry_port=5000
+#provision_cache_store="/opt/cache"
 
 #webserver_url="http://{{ ansible_fqdn }}:8080"
 
@@ -54,9 +57,7 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 #   an existing disconnected registry.
 #disconnected_registry_auths_file=/opt/cache/{{ ansible_fqdn }}-auths.json
 #disconnected_registry_mirrors_file=/opt/cache/{{ ansible_fqdn }}-trust-bundle.yml
-#provision_cache_store="/opt/cache"
 #registry_dir="/opt/registry"
-#local_registry={{ ansible_fqdn }}:5000
 #local_repo=ocp4/openshift4
 # The following mirror entries are the default ones. If you want to add more mirror
 #   you can uncomment this parameter and add it here.
