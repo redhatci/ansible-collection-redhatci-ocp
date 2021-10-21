@@ -1,9 +1,11 @@
 #jinja2:trim_blocks: True, lstrip_blocks: True
-{% if network_config.dns_server_ip is defined %}
+{% if network_config.dns_server_ips is defined %}
 dns-resolver:
   config:
     server:
-    - {{ network_config.dns_server_ip  }}
+    {% for ip in network_config.dns_server_ips  %}
+    - {{ ip }}
+    {% endfor %}
 {% endif %}
 interfaces:
 {% for interface in network_config.interfaces %}
