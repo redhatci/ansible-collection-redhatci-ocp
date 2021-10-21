@@ -38,8 +38,8 @@
 
 - name: HPE Restart system power gracefully
   community.general.redfish_command:
-    category: Manager
-    command: PowerGracefulRestart
+    category: Systems
+    command: ForceRestart
     baseuri: "{{ hostvars[item]['bmc_address'] }}"
     username: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
