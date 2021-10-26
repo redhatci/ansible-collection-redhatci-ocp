@@ -14,3 +14,4 @@ tnf_run_cfd_test: false
 # This is the tools image from the 4.7.20 release
 # https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.7.20/release.txt
 tnf_debug_image: "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:0f5ce898fbad3671fecd6f797130f950fb1abdbaf0d8154c22e2b59c74e3a918" # v4.7.20
+postrun_delete_partner: true
