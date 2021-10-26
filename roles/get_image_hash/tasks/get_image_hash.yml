@@ -1,5 +1,5 @@
 - name: "Get {{ item.key }} image hash"
-  shell: "skopeo --authfile {{ local_pull_secret_path }} inspect docker://{{ item.value.image }}:{{ item.value.tag }}"
+  shell: "skopeo inspect --authfile {{ local_pull_secret_path }} docker://{{ item.value.image }}:{{ item.value.tag }}"
   register: result
   changed_when: false
 
