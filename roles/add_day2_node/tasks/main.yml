@@ -8,20 +8,52 @@
         status_code: [200, 201]
         return_content: True
       register: cluster
-      until: inventory_hostname in (cluster.json.hosts |  map(attribute='requested_hostname'))
+      until: (hostvars[inventory_hostname]['mac'] | upper) in (cluster.json.hosts | map(attribute='inventory') | map('from_json') | map(attribute='interfaces') | flatten | map(attribute='mac_address') | map('upper') | list)
       retries: 20
       delay: 60
 
+    - name: Find host
+      set_fact:
+        discovered_host: "{{ item }}"
+      when: (mac | upper) in ((item.inventory | from_json).interfaces | flatten | map(attribute='mac_address') | map('upper') | list )
+      loop: "{{ cluster.json.hosts }}"
+      no_log: True
+
+    - debug:
+        var: discovered_host
+        verbosity: 1
+
     - name: "Wait for 20 min until {{ inventory_hostname }} to be ready"
       uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ discovered_host.id }}"
         method: GET
         status_code: [200, 201]
         return_content: True
-      register: cluster
-      until: (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list)[0] in day2_states
+      register: discovered_host_reply
+      until: discovered_host_reply.json.status in day2_states
       retries: 20
       delay: 60
+
+    - name: Patch host
+      import_role:
+        name: patch_host_config
+      vars:
+        cluster_id: "{{ add_host_cluster_id }}"
+        discovered_host: "{{ discovered_host_reply.json }}"
+        inventory_nodes:
+          - "{{ inventory_hostname }}"
+
+    - name: "Refresh {{ inventory_hostname }} values"
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ discovered_host.id }}"
+        method: GET
+        status_code: [200, 201]
+        return_content: True
+      register: discovered_host_reply
+
+    - debug:
+        var: discovered_host_reply.json
+        verbosity: 1
 
     - name: Install cluster
       uri:
@@ -32,7 +64,7 @@
         body_format: json
         body: {}
       register: http_reply
-      when: (cluster.json.hosts | selectattr('requested_hostname', 'equalto', inventory_hostname) | map(attribute='status') | list)[0] == day2_host_found
+      when: discovered_host_reply.json.status in day2_host_found
 
     - import_role:
         name: monitor_host
