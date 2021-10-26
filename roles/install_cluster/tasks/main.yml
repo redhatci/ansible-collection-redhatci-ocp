@@ -30,9 +30,6 @@
   become: no
 
 # TODO: Validate cluster settings
-- name: Count the hosts to be discovered
-  set_fact:
-    inventory_hosts: "{{ groups['masters'] | length + groups['workers'] | default([]) | length }}"
 
 - name: Join list for workers and masters
   set_fact:
@@ -53,7 +50,8 @@
   when: install | bool == True
 
 - name: Patch discovered hosts
-  include_tasks: hosts_discovery.yml
+  include_role:
+    name: patch_host_config
   with_items:
     - "{{ cluster.json.hosts }}"
   loop_control:
