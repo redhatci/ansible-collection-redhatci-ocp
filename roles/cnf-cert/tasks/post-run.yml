@@ -1,17 +1,25 @@
 ---
 
+# Deleting resources created by the CNF Cert Suite to support the execution
 # Namespace not deleted here, even if being the same used for cnf-cert. To be deleted in partner hooks
-- name: Delete the partner deployment
-  shell: |
-    set -ex
-    oc delete deployment partner -n {{ dci_openshift_app_ns }}
-  when: postrun_delete_partner|bool
+- name: Clean CNF Cert Suite resources
+  block:
+  - name: Delete the partner deployment
+    shell: |
+      set -ex
+      {{ oc_tool_path }} delete deployment partner -n {{ dci_openshift_app_ns }}
+
+  - name: Delete the debug daemonSet
+    shell: |
+      set -ex
+      {{ oc_tool_path }} delete daemonset debug
+  when: tnf_postrun_delete_resources|bool
 
 - name: Delete temporary directory for git repos
   file:
     path: "{{ tnf_git_dir.path }}"
     state: absent
-  when: 
+  when:
     - tnf_git_dir is defined
     - tnf_git_dir.path is defined
 

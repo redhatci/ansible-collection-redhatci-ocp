@@ -2,11 +2,18 @@
 targetNameSpaces:
   - name: {{ tnf_ns }}
 targetPodLabels:
-{% if tnf_targetpodlabels_name|length and tnf_targetpodlabels_value|length %}
-  - prefix: test-network-function.com
-    name: {{ tnf_targetpodlabels_name }}
-    value: {{ tnf_targetpodlabels_value }}
+{% for label in tnf_targetpodlabels %}
+{% if not (label|regex_search('.+?/')) %}
+## Matches "<name>=<value>", where prefix: , name: <name>
+  - prefix:
+    name: {{ label|regex_search('.+?=')|regex_replace('=', '') }}
+{% else %}
+## Matches "<prefix>/<name>=<value>", where prefix: <prefix>, name: <name>
+  - prefix: {{ label|regex_search('.+?/')|regex_replace('/', '') }}
+    name: {{ label|regex_search('/.+?=')|regex_replace('/', '')|regex_replace('=', '') }}
 {% endif %}
+    value: {{ label|regex_search('=.*')|regex_replace('=', '') }}
+{% endfor %}
 
 certifiedcontainerinfo:
 

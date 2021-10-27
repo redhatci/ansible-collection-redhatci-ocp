@@ -38,4 +38,9 @@
   set_fact:
     tnf_version_image: "{{ ( test_network_function_version | regex_search('v[0-9].[0-9].[0-9]') ) | ternary(test_network_function_version, 'unstable') }}"
 
+- name: Pull tnf container to bring the latest changes in the selected version
+  shell: |
+    set -ex
+    podman pull quay.io/testnetworkfunction/test-network-function:{{ tnf_version_image }}
+
 ...
