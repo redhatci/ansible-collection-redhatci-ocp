@@ -7,3 +7,5 @@ sushy_auth_file: "{{ sushy_auth_dir }}/htpasswd"
 
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
+
+secure_sushy_tools: "{{ secure | default(true) }}"

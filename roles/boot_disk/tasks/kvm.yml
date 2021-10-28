@@ -6,7 +6,7 @@
 # Mount Live ISO, Boot into Live ISO (KVM only)
 - name: set base url
   set_fact:
-    base_bmc_address: "https://{{ hostvars[item]['bmc_address'] }}"
+    base_bmc_address: "{{ secure_sushy_tools | bool | ternary('https', 'http')}}://{{ hostvars[item]['bmc_address'] }}"
 
 - name: Identify System Manager
   uri:
