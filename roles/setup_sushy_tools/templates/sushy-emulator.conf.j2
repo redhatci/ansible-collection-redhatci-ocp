@@ -9,13 +9,26 @@ SUSHY_EMULATOR_LISTEN_IP = u'0.0.0.0'
 SUSHY_EMULATOR_LISTEN_PORT = {{ sushy_tools_port | default('8082', true) }}
 
 # Serve this SSL certificate to the clients
+# secure_sushy_tools: {{ secure_sushy_tools | bool }}
+{% if secure_sushy_tools | bool %}
 SUSHY_EMULATOR_SSL_CERT = '{{ sushy_cert_dir }}/sushy_tools.crt'
+{% else %}
+SUSHY_EMULATOR_SSL_CERT = None
+{% endif %}
 
 # If SSL certificate is being served, this is its RSA private key
+{% if secure_sushy_tools | bool %}
 SUSHY_EMULATOR_SSL_KEY =  '{{ sushy_cert_dir }}/sushy_tools.key'
+{% else %}
+SUSHY_EMULATOR_SSL_KEY = None
+{% endif %}
 
 # If authentication is desired, set this to an htpasswd file.
+{% if secure_sushy_tools | bool %}
 SUSHY_EMULATOR_AUTH_FILE = '{{ sushy_auth_file }}'
+{% else %}
+SUSHY_EMULATOR_AUTH_FILE = None
+{% endif %}
 
 # The OpenStack cloud ID to use. This option enables OpenStack driver.
 SUSHY_EMULATOR_OS_CLOUD = None

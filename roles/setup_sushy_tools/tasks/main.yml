@@ -30,42 +30,45 @@
         - "{{ sushy_auth_dir }}"
         - "{{ sushy_cert_dir }}"
 
-    - name: Get KVM BMC username password combinations
-      vars:
-        user_password_combinations: {}
-      set_fact:
-        user_password_combinations: "{{
-          user_password_combinations | combine({hostvars[item]['bmc_user']: hostvars[item]['bmc_password']})
-        }}"
-      when: hostvars[item]['vendor'] == 'KVM'
-      loop: "{{ groups['nodes'] }}"
+    - name: Secure sushy tools
+      when: secure_sushy_tools | bool
+      block:
+        - name: Get KVM BMC username password combinations
+          vars:
+            user_password_combinations: {}
+          set_fact:
+            user_password_combinations: "{{
+              user_password_combinations | combine({hostvars[item]['bmc_user']: hostvars[item]['bmc_password']})
+              }}"
+          when: hostvars[item]['vendor'] == 'KVM'
+          loop: "{{ groups['nodes'] }}"
 
-    - name: Generate htpasswd entry
-      command: htpasswd -bBn {{ item.user }} {{ item.password }}
-      register: htpass_entries
-      changed_when: false
-      loop: "{{ user_password_combinations | dict2items(key_name='user', value_name='password') }}"
+        - name: Generate htpasswd entry
+          command: htpasswd -bBn {{ item.user }} {{ item.password }}
+          register: htpass_entries
+          changed_when: false
+          loop: "{{ user_password_combinations | dict2items(key_name='user', value_name='password') }}"
 
-    - name: Write htpasswd file
-      copy:
-        content: "{{ htpass_entries.results | map(attribute='stdout') | join('\n') }}"
-        dest: "{{ sushy_auth_file }}"
-        owner: "{{ file_owner }}"
-        group: "{{ file_group }}"
-        mode: 0660
-        backup: yes
-        force: yes
-      become: True
+        - name: Write htpasswd file
+          copy:
+            content: "{{ htpass_entries.results | map(attribute='stdout') | join('\n') }}"
+            dest: "{{ sushy_auth_file }}"
+            owner: "{{ file_owner }}"
+            group: "{{ file_group }}"
+            mode: 0660
+            backup: yes
+            force: yes
+          become: True
 
-    - include_role:
-        name: setup_selfsigned_cert
-      vars:
-        cert_dir: "{{ sushy_cert_dir }}"
-        host_var_key: "{{ cert_vars_host_var_key }}"
-        cert_file_prefix: sushy_tools
-        cert_path: "{{ sushy_cert_dir }}/sushy_tools.crt"
-        privatekey_path: "{{ sushy_cert_dir }}/sushy_tools.key"
-        cert_common_name: "{{ ansible_fqdn }}"
+        - include_role:
+            name: setup_selfsigned_cert
+          vars:
+            cert_dir: "{{ sushy_cert_dir }}"
+            host_var_key: "{{ cert_vars_host_var_key }}"
+            cert_file_prefix: sushy_tools
+            cert_path: "{{ sushy_cert_dir }}/sushy_tools.crt"
+            privatekey_path: "{{ sushy_cert_dir }}/sushy_tools.key"
+            cert_common_name: "{{ ansible_fqdn }}"
 
     - name: Create sushy-tools conf
       template:
