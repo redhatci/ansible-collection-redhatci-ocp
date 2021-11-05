@@ -27,8 +27,8 @@ registry_dir_cert: "{{ registry_dir }}/certs"
 registry_dir_data: "{{ registry_dir }}/data"
 
 # The information for the locally created registry
-registry_host: "{{ ansible_fqdn }}"
-local_registry: "{{ registry_host }}:{{ registry_port }}"
+registry_fqdn: "{{ ansible_fqdn }}"
+local_registry: "{{ registry_fqdn }}:{{ registry_port }}"
 registry_port: 5000
 
 install_config_appends_file: install-config-appends.yml
