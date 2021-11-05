@@ -5,7 +5,7 @@ dns_entries_file_name: "{{ 'dnsmasq.' + cluster_name + '.conf' }}"
 dns_service_name: NetworkManager
 dns_records:
   apps:
-    address: "*.apps.{{ domain }}"
+    address: ".apps.{{ domain }}"
     ip: "{{ ingress_vip }}"
   api:
     address: "api.{{ domain }}"
@@ -19,3 +19,5 @@ extra_dns_records: {}
 
 use_dhcp: false
 dhcp_lease_time: 24h
+
+listen_address: "{{ ansible_default_ipv4.address }}"
