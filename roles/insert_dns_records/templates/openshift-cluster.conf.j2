@@ -2,7 +2,7 @@ domain={{ domain }}
 {% if write_dnsmasq_config %}
 domain-needed
 bogus-priv
-listen-address=127.0.0.1,{{ ansible_default_ipv4.address }}
+listen-address=127.0.0.1,{{ listen_address }}
 expand-hosts
 {% if upstream_dns | default(False) %}
 server={{ upstream_dns }}
@@ -13,7 +13,7 @@ server={{ upstream_dns }}
 dhcp-range= tag:{{ cluster_name }},{{ dhcp_range_first }},{{ dhcp_range_last }}
 dhcp-option= tag:{{ cluster_name }},option:netmask,{{ (gateway + '/' + prefix | string) | ipaddr('netmask') }}
 dhcp-option= tag:{{ cluster_name }},option:router,{{ gateway }}
-dhcp-option= tag:{{ cluster_name }},option:dns-server,{{ ansible_default_ipv4.address }}
+dhcp-option= tag:{{ cluster_name }},option:dns-server,{{ listen_address }}
 dhcp-option= tag:{{ cluster_name }},option:domain-search,{{ domain }}
 dhcp-option= tag:{{ cluster_name }},option:ntp-server,{{ ntp_server }}
 {% endif %}
