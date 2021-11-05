@@ -7,14 +7,14 @@
   tags:
     - copy_config
 
-- name: Read in the contents of domain.crt
+- name: "Read in the contents of {{ cert_file_prefix }}.crt"
   slurp:
-    src: "{{ registry_dir_cert }}/domain.crt"
+    src: "{{ registry_dir_cert }}/{{ cert_file_prefix }}.crt"
   register: domain_cert_b64
   tags:
     - copy_config
 
-- name: Set trustbundle fact to contents of domain.crt
+- name: "Set trustbundle fact to contents of {{ cert_file_prefix }}.crt"
   set_fact:
     trustbundle: "{{ domain_cert_b64.content | string | b64decode }}"
   tags:

@@ -39,3 +39,6 @@ registry_email: "{{ registry_email_user }}@{{ registry_fqdn }}"
 
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
+
+
+cert_file_prefix: registry

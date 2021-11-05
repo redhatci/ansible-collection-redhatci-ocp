@@ -48,16 +48,14 @@
 
 - name: Update pull_secret variable
   set_fact:
-    pull_secret: "{{ pull_secret | combine(
-      {'auths': pull_secret['auths'] | combine(
-        {
-          local_registry: {
-            'auth': disconnected_registry_up | b64encode,
-            'email': registry_email
-          }
+    pull_secret: "{{ pull_secret | combine({
+      'auths': pull_secret['auths'] | combine({
+        local_registry: {
+          'auth': disconnected_registry_up | b64encode,
+          'email': registry_email
         }
-      )}
-    ) }}"
+      })}
+      ) }}"
 
 - name: Write updated pull_secret
   copy:
@@ -81,8 +79,8 @@
       REGISTRY_AUTH_HTPASSWD_REALM: Registry
       REGISTRY_HTTP_SECRET: "{{ REGISTRY_HTTP_SECRET }} "
       REGISTRY_AUTH_HTPASSWD_PATH: auth/htpasswd
-      REGISTRY_HTTP_TLS_CERTIFICATE: certs/domain.crt
-      REGISTRY_HTTP_TLS_KEY: certs/domain.key
+      REGISTRY_HTTP_TLS_CERTIFICATE: "certs/{{ cert_file_prefix }}.crt"
+      REGISTRY_HTTP_TLS_KEY: "certs/{{ cert_file_prefix }}.key"
   become: True
   register: registry_container_info
 
