@@ -27,7 +27,7 @@
      /bin/bash -c "openshift-tests images --to-repository {{ conformance_local_registry }}/conformance-test
      | oc image mirror -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
      && openshift-tests run {{ dci_openshift_agent_conformance }} --from-repository {{ conformance_local_registry }}/conformance-test
-     --provider='{\"type\":\"skeleton\",\"disconnected\":true}' --junit-dir /tests" > {{ dci_cluster_configs_dir }}/conformance-run.txt
+     --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /tests" > {{ dci_cluster_configs_dir }}/conformance-run.txt
   ignore_errors: yes
   when:
     - dci_disconnected | default(false) | bool
