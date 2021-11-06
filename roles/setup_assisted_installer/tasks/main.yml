@@ -70,6 +70,7 @@
         state: started
         network: "{{ podman_network | default(omit) }}"
         ports: "{{ ai_ports }}"
+        dns: "{{dns | default(omit) }}"
 
     - name: Create database container in assisted-service pod
       containers.podman.podman_container:
