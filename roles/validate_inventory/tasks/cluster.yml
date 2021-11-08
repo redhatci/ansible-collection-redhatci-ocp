@@ -66,7 +66,7 @@
 
 - name: Check KVM BMC username password combinations
   block:
-    - name: Get KVM BMC username password combinations
+    - name: Get KVM BMC username password combinations  # noqa no-log-password
       vars:
         kvm_user_password_combinations: {}
       set_fact:
@@ -79,7 +79,8 @@
         }}"
       loop: "{{ kvm_node_names }}"
 
-    - fail:
+    - name: Fail on non-unique BMC user+pass
+      fail:
         msg: "bmc_user ({{ item.key }}) and bmc_password combinations must be unique"
       when: item.value | length > 1
       loop: "{{ kvm_user_password_combinations | dict2items }}"

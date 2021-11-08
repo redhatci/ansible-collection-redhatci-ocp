@@ -20,7 +20,7 @@
   ignore_errors: yes
 
 # Redfish module doesn't appear to support setting both options at once which ILO requires
-- name: Set HPE OneTimeBoot Hdd
+- name: Set HPE OneTimeBoot Hdd # noqa var-spacing
   uri:
     url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1"
     user: "{{ hostvars[item]['bmc_user'] }}"
