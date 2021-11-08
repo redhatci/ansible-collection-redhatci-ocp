@@ -9,32 +9,49 @@
         username: "{{ hostvars[item]['bmc_user'] }}"
         password: "{{ hostvars[item]['bmc_password'] }}"
 
-    - name: Check if there is a ISO mounted on the SuperMicro
-      uri:
-        url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/CD1"
-        user: "{{ hostvars[item]['bmc_user'] }}"
-        password: "{{ hostvars[item]['bmc_password'] }}"
-        method: GET
-        validate_certs: no
-        force_basic_auth: yes
-        return_content: yes
-      register: cd1_contents
+    - name: Eject ISO
+      block:
+      - name: Check if there is a ISO mounted on the SuperMicro
+        uri:
+          url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/CD1"
+          user: "{{ hostvars[item]['bmc_user'] }}"
+          password: "{{ hostvars[item]['bmc_password'] }}"
+          method: GET
+          validate_certs: no
+          force_basic_auth: yes
+          return_content: yes
+        register: cd1_contents
 
-    - name: Unmount SuperMicro ISO
-      uri:
-        url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.EjectMedia"
-        user: "{{ hostvars[item]['bmc_user'] }}"
-        password: "{{ hostvars[item]['bmc_password'] }}"
-        method: POST
-        headers:
-          content-type: application/json
-          Accept: application/json
-        body: {}
-        body_format: json
-        validate_certs: no
-        force_basic_auth: yes
-        return_content: yes
-      when: cd1_contents.json.Inserted | bool == True
+      - name: Unmount SuperMicro ISO (VirtualMedia)
+        uri:
+          url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.EjectMedia"
+          user: "{{ hostvars[item]['bmc_user'] }}"
+          password: "{{ hostvars[item]['bmc_password'] }}"
+          method: POST
+          headers:
+            content-type: application/json
+            Accept: application/json
+          body: {}
+          body_format: json
+          validate_certs: no
+          force_basic_auth: yes
+          return_content: yes
+        when: cd1_contents.json.Inserted | bool == True
+      rescue:
+        - name: Unmount SuperMicro ISO (ISO Config)
+          uri:
+            url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.UnMount"
+            user: "{{ hostvars[item]['bmc_user'] }}"
+            password: "{{ hostvars[item]['bmc_password'] }}"
+            method: POST
+            headers:
+              content-type: application/json
+              Accept: application/json
+            body: {}
+            body_format: json
+            validate_certs: no
+            force_basic_auth: yes
+            return_content: yes
 
     - name: Set Boot for the SuperMicro # noqa var-spacing # linter wrongly detects a var
       uri:
