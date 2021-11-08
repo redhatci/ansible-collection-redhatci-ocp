@@ -19,7 +19,7 @@
     apply:
       delegate_to: bastion
 
-- include_tasks: supermicro.yml
+- include_tasks: supermicro/main.yml
   when: hostvars[inventory_hostname]['vendor'] == 'SuperMicro'
   args:
     apply:
