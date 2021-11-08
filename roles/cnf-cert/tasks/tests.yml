@@ -8,7 +8,7 @@
 - name: Template tnf_config.yml
   template:
     src: templates/tnf_config.yml.j2
-    dest: "{{ tnf_git_dir.path }}/test_network_function/test-network-function/tnf_config.yml"
+    dest: "{{ tnf_git_dir.path }}/test-network-function/test-network-function/tnf_config.yml"
 
 - name: Set tnf_partner_registry variable
   set_fact:
@@ -27,18 +27,19 @@
     export LOG_LEVEL={{ tnf_log_level }}
     export TNF_PARTNER_NAMESPACE={{ dci_openshift_app_ns }}
     export TNF_PARTNER_REPO={{ tnf_partner_registry }}/testnetworkfunction
-    export TNF_IMAGE=quay.io/testnetworkfunction/test-network-function:{{ tnf_version_image }}
+    export TNF_IMAGE={{ tnf_image }}
     export REDHAT_RHEL_REGISTRY={{ tnf_daemonset_registry }}/rhel8
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
-    -t {{ tnf_git_dir.path }}/test_network_function/test-network-function \
-    -o {{ tnf_git_dir.path }}/test_network_function/test-network-function \
+    -i $TNF_IMAGE \
+    -t {{ tnf_git_dir.path }}/test-network-function/test-network-function \
+    -o {{ tnf_git_dir.path }}/test-network-function/test-network-function \
     -f {{ tnf_suites }} &> test-network-function/execution.log
 
     cp test-network-function/*.xml {{ tnf_tempdir.path }}
     cp test-network-function/execution.log {{ tnf_tempdir.path }}
     cp test-network-function/tnf_config.yml {{ tnf_tempdir.path }}
   args:
-    chdir: "{{ tnf_git_dir.path }}/test_network_function"
+    chdir: "{{ tnf_git_dir.path }}/test-network-function"
 
 ...
