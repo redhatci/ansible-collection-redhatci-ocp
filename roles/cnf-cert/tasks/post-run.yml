@@ -4,17 +4,40 @@
 # Namespace not deleted here, even if being the same used for cnf-cert. To be deleted in partner hooks
 - name: Clean CNF Cert Suite resources
   block:
+
+  - name: Check if partner deployment exists
+    k8s_info:
+      api_version: v1
+      kind: Deployment
+      name: partner
+      namespace: "{{ app_ns }}"
+    register: partner_deployment
+
   - name: Delete the partner deployment
     shell: |
       set -ex
       {{ oc_tool_path }} delete deployment partner -n {{ dci_openshift_app_ns }}
+    when: partner_deployment.resources|length > 0
+
+  - name: Check if debug daemonset exists
+    k8s_info:
+      api_version: v1
+      kind: DaemonSet
+      name: debug
+      namespace: default
+    register: debug_daemonset
 
   - name: Delete the debug daemonSet
     shell: |
       set -ex
-      {{ oc_tool_path }} delete daemonset debug
+      {{ oc_tool_path }} delete daemonset debug -n default
+    when: debug_daemonset.resources|length > 0
+
   when: tnf_postrun_delete_resources|bool
 
+# When tnf_git_dir contains a folder from the PR, it is not a problem to
+# remove the content from there because it is also present under the PR
+# directory, which is removed after finishing the job thanks to test-runner
 - name: Delete temporary directory for git repos
   file:
     path: "{{ tnf_git_dir.path }}"
