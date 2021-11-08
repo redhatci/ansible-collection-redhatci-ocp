@@ -74,7 +74,7 @@
         resource_id: 1
 
     # Redfish module doesn't appear to support setting both options at once which ILO requires
-    - name: Set Boot for the HPE
+    - name: Set Boot for the HPE # noqa var-spacing
       uri:
         url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
         user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"

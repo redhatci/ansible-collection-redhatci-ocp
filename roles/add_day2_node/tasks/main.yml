@@ -19,7 +19,7 @@
       loop: "{{ cluster.json.hosts }}"
       no_log: True
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: discovered_host
         verbosity: 1
 
@@ -51,7 +51,7 @@
         return_content: True
       register: discovered_host_reply
 
-    - debug:
+    - debug: # noqa unnamed-task
         var: discovered_host_reply.json
         verbosity: 1
 
@@ -66,7 +66,8 @@
       register: http_reply
       when: discovered_host_reply.json.status in day2_host_found
 
-    - import_role:
+    - name: Monitoring hosts installation
+      import_role:
         name: monitor_host
       vars:
         ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v1"
