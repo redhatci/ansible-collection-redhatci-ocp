@@ -1,20 +1,23 @@
 # {{ ansible_managed }}
-stratumweight 0
 driftfile /var/lib/chrony/drift
-rtcsync
-makestep 10 3
+bindcmdaddress {{ ntp_server }}
 bindcmdaddress 127.0.0.1
 bindcmdaddress ::1
 keyfile /etc/chrony.keys
-noclientlog
-logchange 0.5
-logdir /var/log/chrony
-manual
 local stratum 10
+rtcsync
+makestep 1.0 3
+manual
+{% if enable_logging %}
+logdir /var/log/chrony
+log measurements statistics tracking
+{% end if %}
+allow 127.0.0.1
 {% if ntp_server_allow %}
 allow {{ ntp_server_allow }}
 {% endif %}
+server 127.0.0.1
 {% for item in ntp_pool_servers %}
-Server {{ item }}
+server {{ item }}
 {% endfor %}
 
