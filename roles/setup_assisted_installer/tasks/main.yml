@@ -2,6 +2,11 @@
 - name: Setup AI
   become: True
   block:
+    - name: Install podman
+      package:
+        name: podman
+        state: present
+
     - name: Open ports zone internal and public, for firewalld
       firewalld:
         port: "{{ item.1 }}/tcp"

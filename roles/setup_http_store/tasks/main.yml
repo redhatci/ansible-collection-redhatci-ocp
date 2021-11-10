@@ -1,31 +1,35 @@
 ---
-- name: Open http port, zone internal and public, for firewalld
-  firewalld:
-    port: "80/tcp"
-    permanent: yes
-    immediate: yes
-    state: enabled
-    zone: "{{ item }}"
-  become: yes
-  with_items:
-    - internal
-    - public
-
-- name: Create directory to hold the registry files
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ file_owner }}"
-    group: "{{ file_group }}"
-    mode: 0775
-    recurse: yes
-  loop:
-    - "{{ http_dir }}"
-    - "{{ http_data_dir }}"
+- name: Setup HTTP Store
   become: true
-
-- name: Setup pod
   block:
+    - name: Install podman
+      package:
+        name: podman
+        state: present
+
+    - name: Open http port, zone internal and public, for firewalld
+      firewalld:
+        port: "80/tcp"
+        permanent: yes
+        immediate: yes
+        state: enabled
+        zone: "{{ item }}"
+      loop:
+        - internal
+        - public
+
+    - name: Create directory to hold the registry files
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        recurse: yes
+      loop:
+        - "{{ http_dir }}"
+        - "{{ http_data_dir }}"
+
     - name: Create httpd container
       containers.podman.podman_pod:
         name: "{{ http_store_pod_name }}"
@@ -46,15 +50,12 @@
         volumes:
           - "{{ http_data_dir }}:/var/www/html:z"
       register: container_info
-  become: true
 
-- name: Setting facts about container
-  set_fact:
-    http_store_name: "{{ container_info.container.Name }}"
-    http_store_pidfile: "{{ container_info.container.ConmonPidFile }}"
+    - name: Setting facts about container
+      set_fact:
+        http_store_name: "{{ container_info.container.Name }}"
+        http_store_pidfile: "{{ container_info.container.ConmonPidFile }}"
 
-- name: Setup http_store service
-  block:
     - name: Copy the systemd service file
       copy:
         content: |
@@ -88,4 +89,3 @@
         name: http_store
         state: started
         scope: system
-  become: true
