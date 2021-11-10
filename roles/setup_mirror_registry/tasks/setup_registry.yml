@@ -1,30 +1,35 @@
 ---
-- name: Open registry port, zone internal and public, for firewalld
-  firewalld:
-    port: "{{ registry_port }}/tcp"
-    permanent: yes
-    immediate: yes
-    state: enabled
-    zone: "{{ item }}"
-  become: yes
-  with_items:
-  - internal
-  - public
-
-- name: Create directory to hold the registry files
-  file:
-    path: "{{ item }}"
-    owner:  "{{ file_owner }}"
-    group:  "{{ file_group }}"
-    mode: 0775
-    state: directory
-
-    recurse: yes
-  loop:
-    - "{{ registry_dir_auth }}"
-    - "{{ registry_dir_cert }}"
-    - "{{ registry_dir_data }}"
+- name: Setup Podman, Required ports and directories
   become: true
+  block:
+    - name: Install podman
+      package:
+        name: podman
+        state: present
+
+    - name: Open registry port, zone internal and public, for firewalld
+      firewalld:
+        port: "{{ registry_port }}/tcp"
+        permanent: yes
+        immediate: yes
+        state: enabled
+        zone: "{{ item }}"
+      with_items:
+      - internal
+      - public
+
+    - name: Create directory to hold the registry files
+      file:
+        path: "{{ item }}"
+        owner:  "{{ file_owner }}"
+        group:  "{{ file_group }}"
+        mode: 0775
+        state: directory
+        recurse: yes
+      loop:
+        - "{{ registry_dir_auth }}"
+        - "{{ registry_dir_cert }}"
+        - "{{ registry_dir_data }}"
 
 - name: Generate htpasswd entry
   command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
