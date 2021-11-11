@@ -1,32 +1,44 @@
-- name: Remove network
+- name: Create inventory host to vm name mapper
+  set_fact:
+    cluster_vm_names: "{{ (cluster_vm_names | default([])) + [item.startswith(cluster_name) | ternary(item, (cluster_name + '_' + item))] }}"
+  loop: "{{ groups['masters'] + groups['workers'] | default([]) }}"
+  when: hostvars[item]['vendor'] | lower == 'kvm'
+
+- debug: # noqa unnamed-task
+    var: vm_to_inventory_mapper
+    verbosity: 1
+
+- name: Destroy vms
+  import_tasks: destroy_networks.yml
   become: true
-  ignore_errors: yes
+
+- name: Get VMs to Remove
   block:
-    - name: destroy network
-      community.libvirt.virt_net:
-        name: "{{ network_name }}"
-        command: destroy
+    - name: List vms
+      community.libvirt.virt:
+        command: list_vms
+      register: vms_list
+      become: true
 
-    - name: undefine network
-      community.libvirt.virt_net:
-        name: "{{ network_name }}"
-        command: undefine
+    - name: VM list
+      debug:
+        var: vms_list.list_vms
+        verbosity: 1
 
-- name: Delete existing bridges (if any)
-  community.general.nmcli:
-    conn_name: "{{ item }}"
-    type: bridge
-    state: absent
-  loop:
-    - "{{ bridge_name }}"
-    - "{{ vm_bridge_interface }}_{{ bridge_name }}"
-  ignore_errors: yes
-  become: true
-  when: (SETUP_VM_BRIDGE | default(true)) | bool == true
+    - name: Get filtered vm list
+      set_fact:
+        vms_to_remove: "{{ (vms_to_remove | default([])) + [item] }}"
+      loop: "{{ vms_list.list_vms }}"
+      when: item in cluster_vm_names
 
-- name: Destroy pool
-  import_tasks: destroy_pools.yml
-  ignore_errors: yes
+- name: VMS to remove
+  debug:
+    var: vms_to_remove
+    verbosity: 1
+
+- name: Clean VM images
+  import_tasks: clean_vm_images.yml
+  when: vms_to_remove is defined and vms_to_remove | length > 0
   become: true
 
 - name: Destroy vms

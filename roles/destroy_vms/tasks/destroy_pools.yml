@@ -15,10 +15,10 @@
   set_fact:
     pools_to_remove: "{{ pools_to_remove | default({}) | combine({item.name: item.data}) }}"
   loop: "{{
-    pool_info.results |
-    map(attribute='pools') | list | combine |
-    dict2items(key_name='name', value_name='data')
-  }}"
+      pool_info.results |
+      map(attribute='pools') | list | combine |
+      dict2items(key_name='name', value_name='data')
+    }}"
   when: item.data.path == images_dir
 
 - name: Find images

@@ -3,7 +3,7 @@
 - name: Set kvm_nodes
   set_fact:
     kvm_nodes: "{{ kvm_nodes | default([]) + [{
-        'name': item,
+        'name': item.startswith(cluster_name) | ternary(item, (cluster_name + '_' + item)),
         'uuid': hostvars[item]['uuid'] | default(''),
         'mac':  hostvars[item]['mac'],
         'memory': hostvars[item]['vm_spec']['ram_mib'] | default(vm_params[hostvars[item]['role']]['memory']),

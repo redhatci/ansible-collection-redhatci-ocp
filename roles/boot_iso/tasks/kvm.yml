@@ -3,13 +3,14 @@
 # Virtual Redfish BMC
 # https://docs.openstack.org/sushy-tools/latest/user/dynamic-emulator.html#uefi-boot
 #
-- name: set base url
+- name: set base url and vm_name
   set_fact:
     base_bmc_address: "{{ secure_sushy_tools | bool | ternary('https', 'http') }}://{{ hostvars[inventory_hostname]['bmc_address'] }}"
+    vm_name: "{{ inventory_hostname.startswith(cluster_name) | ternary(inventory_hostname, (cluster_name + '_' + inventory_hostname)) }}"
 
 - name: Identify System Manager
   uri:
-    url: "{{ base_bmc_address }}/redfish/v1/Systems/{{ inventory_hostname }}"
+    url: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
     user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
     password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
     method: GET
@@ -19,7 +20,7 @@
   register: http_reply
 
 - debug: # noqa unnamed-task
-    msg: "{{ base_bmc_address }}/redfish/v1/Systems/{{ inventory_hostname }}"
+    msg: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
     verbosity: 1
 
 - debug: # noqa unnamed-task

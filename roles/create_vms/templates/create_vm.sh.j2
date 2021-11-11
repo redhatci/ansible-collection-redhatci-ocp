@@ -11,14 +11,14 @@ virt-install \
     --os-variant=rhel8.3 \
     --os-type linux \
     --network=bridge:{{ bridge_name }},mac="{{ item.mac }}" \
-    --disk path={{ images_dir }}/{{ cluster_name }}-{{ item.name }}.qcow2,size={{ item.disk_size }},format=qcow2 \
+    --disk path={{ images_dir }}/{{ item.name }}.qcow2,size={{ item.disk_size }},format=qcow2 \
     --graphics vnc \
     --noautoconsole \
     --wait=-1 \
     --boot uefi \
     --events on_reboot=restart \
-    --print-xml > /tmp/{{ cluster_name }}-{{item.name}}.xml
+    --print-xml > /tmp/{{item.name}}.xml
 
-virsh define --file /tmp/{{ cluster_name }}-{{item.name}}.xml
+virsh define --file /tmp/{{item.name}}.xml
 
 virsh detach-device {{ item.name }} /tmp/{{ cluster_name }}_rng_device.xml --config

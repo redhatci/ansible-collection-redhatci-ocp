@@ -1,6 +1,6 @@
 <network>
   <name>{{ network_name }}</name>
-  <uuid>4414ebcb-8bdd-4cfc-a467-4376f3b709e9</uuid>
+  <uuid>{{ net_uuid | default(99999999 | random | to_uuid) }}</uuid>
   <forward mode='bridge'/>
   <bridge name='{{ bridge_name }}'/>
 </network>
