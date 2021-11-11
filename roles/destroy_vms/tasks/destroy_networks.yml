@@ -1,0 +1,25 @@
+- name: Remove network
+  become: true
+  ignore_errors: yes
+  block:
+    - name: destroy network
+      community.libvirt.virt_net:
+        name: "{{ network_name }}"
+        command: destroy
+
+    - name: undefine network
+      community.libvirt.virt_net:
+        name: "{{ network_name }}"
+        command: undefine
+
+- name: Delete existing bridges (if any)
+  community.general.nmcli:
+    conn_name: "{{ item }}"
+    type: bridge
+    state: absent
+  loop:
+    - "{{ bridge_name }}"
+    - "{{ vm_bridge_interface }}_{{ bridge_name }}"
+  ignore_errors: yes
+  become: true
+  when: (SETUP_VM_BRIDGE | default(true)) | bool == true

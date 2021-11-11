@@ -1,0 +1,18 @@
+- name: Set files_to_remove as empty
+  set_fact:
+    files_to_remove: []
+
+- include_tasks: get_vm_images.yml
+  loop: "{{ vms_to_remove }}"
+  loop_control:
+    loop_var: vm_name
+
+- debug: # noqa unnamed-task
+    var: files_to_remove
+    verbosity: 1
+
+- name: Remove files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ files_to_remove }}"

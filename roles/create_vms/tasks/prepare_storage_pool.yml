@@ -20,4 +20,3 @@
       community.libvirt.virt_pool:
         name: default
         state: active
-

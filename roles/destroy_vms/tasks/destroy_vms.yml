@@ -7,18 +7,9 @@
   file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ creation_to_remove.files |  map(attribute='path') | list }}"
-
-- name: List vms
-  community.libvirt.virt:
-    command: list_vms
-  register: vms_list
-
-- name: Get filtered vm list
-  set_fact:
-    vms_to_remove: "{{ [item] + vms_to_remove | default([]) }}"
-  loop: "{{ vms_list.list_vms }}"
-  when: item in hostvars and hostvars[item]['vendor'] | lower == 'kvm'
+  loop: "{{ creation_to_remove.files | map(attribute='path') | select('match', prefix_regex) | list }}"
+  vars:
+    prefix_regex: "^{{ vm_create_scripts }}/?({{ vms_to_remove | join('|') }})_setup_vm.sh$"
 
 - name: Destroy VM
   community.libvirt.virt:
