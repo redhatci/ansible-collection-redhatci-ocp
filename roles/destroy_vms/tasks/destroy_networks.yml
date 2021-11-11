@@ -23,3 +23,12 @@
   ignore_errors: yes
   become: true
   when: (SETUP_VM_BRIDGE | default(true)) | bool == true
+
+- name: Delete existing bridges (if any)
+  community.general.nmcli:
+    conn_name: "{{ bridge_name }}.{{ vlan_tag }}"
+    type: vlan
+    state: absent
+  ignore_errors: yes
+  become: true
+  when: (SETUP_VM_BRIDGE | default(true)) | bool == true and vlan_tag is defined
