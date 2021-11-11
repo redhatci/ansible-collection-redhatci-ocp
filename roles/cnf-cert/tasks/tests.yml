@@ -25,7 +25,6 @@
     export TNF_RUN_CFD_TEST={{ tnf_run_cfd_test }}
     export TNF_OC_DEBUG_IMAGE_ID={{ tnf_debug_image }}
     export LOG_LEVEL={{ tnf_log_level }}
-    export TNF_PARTNER_NAMESPACE={{ dci_openshift_app_ns }}
     export TNF_PARTNER_REPO={{ tnf_partner_registry }}/testnetworkfunction
     export TNF_IMAGE={{ tnf_image }}
     export REDHAT_RHEL_REGISTRY={{ tnf_daemonset_registry }}/rhel8
