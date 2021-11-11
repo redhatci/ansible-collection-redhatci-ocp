@@ -9,14 +9,14 @@
     k8s_info:
       api_version: v1
       kind: Deployment
-      name: partner
-      namespace: "{{ app_ns }}"
+      name: tnfpartner
+      namespace: default
     register: partner_deployment
 
   - name: Delete the partner deployment
     shell: |
       set -ex
-      {{ oc_tool_path }} delete deployment partner -n {{ dci_openshift_app_ns }}
+      {{ oc_tool_path }} delete deployment tnfpartner -n default
     when: partner_deployment.resources|length > 0
 
   - name: Check if debug daemonset exists
