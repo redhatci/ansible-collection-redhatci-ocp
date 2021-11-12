@@ -15,7 +15,7 @@
   when:
     - not rhcos_json.stat.exists or force_mirroring
 
-- name: "Fetch rhcos.json File"
+- name: "Fetch rhcos.json File [<= 4.7]"
   get_url:
     url: "https://raw.githubusercontent.com/openshift/installer/{{ commit_id.stdout }}/data/data/rhcos.json"
     dest: "{{ cache_dir }}/{{ version }}"
@@ -30,6 +30,19 @@
   delay: 10
   until: rhcos_json_file is not failed
   when:
+    - version is version("4.8", "<")
+    - not rhcos_json.stat.exists or force_mirroring
+
+- name: "Fetch rhcos.json File [>= 4.8]"
+  shell: >
+    {{ cache_dir }}/{{ version }}/openshift-baremetal-install coreos print-stream-json >>
+    {{ cache_dir }}/{{ version }}/rhcos.json
+  register: rhcos_json_file
+  retries: 3
+  delay: 10
+  until: rhcos_json_file is not failed
+  when:
+    - version is version("4.8", ">=")
     - not rhcos_json.stat.exists or force_mirroring
 
 - name: "Load variables from rhcos.json"
@@ -37,21 +50,43 @@
     file: "{{ cache_dir }}/{{ version }}/rhcos.json"
     name: rhcos_json_vars
 
+- name: Setting image facts [<= 4.7]
+  set_fact:
+    qemu_image: "{{ rhcos_json_vars | json_query('images.qemu.path') }}"
+    qemu_url: "{{ rhcos_json_vars | json_query('baseURI') }}{{ rhcos_json_vars | json_query('images.qemu.path') }}"
+    qemu_sha256: "{{ rhcos_json_vars | json_query('images.qemu.sha256') }}"
+    qemu_uncompressed_sha256: "{{ rhcos_json_vars | json_query('images.qemu.\"uncompressed-sha256\"') }}"
+    openstack_image: "{{ rhcos_json_vars | json_query('images.openstack.path') }}"
+    openstack_url: "{{ rhcos_json_vars | json_query('baseURI') }}{{ rhcos_json_vars | json_query('images.openstack.path') }}"
+    openstack_sha256: "{{ rhcos_json_vars | json_query('images.openstack.sha256') }}"
+  when: version is version("4.8", "<")
+
+- name: Setting image facts [>= 4.8]
+  set_fact:
+    qemu_image: "{{ rhcos_json_vars | json_query('architectures.x86_64.artifacts.qemu.formats.\"qcow2.gz\".disk.location') | basename }}"
+    qemu_url: "{{ rhcos_json_vars | json_query('architectures.x86_64.artifacts.qemu.formats.\"qcow2.gz\".disk.location') }}"
+    qemu_sha256: "{{ rhcos_json_vars | json_query('architectures.x86_64.artifacts.qemu.formats.\"qcow2.gz\".disk.sha256') }}"
+    qemu_uncompressed_sha256: "{{ rhcos_json_vars | json_query('architectures.x86_64.artifacts.qemu.formats.\"qcow2.gz\".disk.\"uncompressed-sha256\"') }}"
+    openstack_image: "{{ rhcos_json_vars | json_query('architectures.x86_64.artifacts.openstack.formats.\"qcow2.gz\".disk.location') | basename }}"
+    openstack_url: "{{ rhcos_json_vars | json_query('architectures.x86_64.artifacts.openstack.formats.\"qcow2.gz\".disk.location') }}"
+    openstack_sha256: "{{ rhcos_json_vars | json_query('architectures.x86_64.artifacts.openstack.formats.\"qcow2.gz\".disk.sha256') }}"
+  when: version is version("4.8", ">=")
+
 - name: "Check if QEMU image exists"
   stat:
-    path: "{{ cache_dir }}/{{ rhcos_json_vars | json_query('images.qemu.path') }}"
+    path: "{{ cache_dir }}/{{ qemu_image }}"
     get_checksum: false
   register: qemu_img
 
 - name: "Download QEMU image"
   get_url:
-    url: "{{ rhcos_json_vars | json_query('baseURI') }}{{ rhcos_json_vars | json_query('images.qemu.path') }}"
-    dest: "{{ cache_dir }}/{{ rhcos_json_vars | json_query('images.qemu.path') }}"
+    url: "{{ qemu_url }}"
+    dest: "{{ cache_dir }}/{{ qemu_image }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0644"
     setype: httpd_sys_content_t
-    checksum: "sha256:{{ rhcos_json_vars | json_query('images.qemu.sha256') }}"
+    checksum: "sha256:{{ qemu_sha256 }}"
     timeout: 3600
   register: qemu_img_file
   become: true
@@ -63,19 +98,19 @@
 
 - name: "Check if OpenStack image exists"
   stat:
-    path: "{{ cache_dir }}/{{ rhcos_json_vars | json_query('images.openstack.path') }}"
+    path: "{{ cache_dir }}/{{ openstack_image }}"
     get_checksum: false
   register: openstack_img
 
 - name: "Download OpenStack image"
   get_url:
-    url: "{{ rhcos_json_vars | json_query('baseURI') }}{{ rhcos_json_vars | json_query('images.openstack.path') }}"
-    dest: "{{ cache_dir }}/{{ rhcos_json_vars | json_query('images.openstack.path') }}"
+    url: "{{ openstack_url }}"
+    dest: "{{ cache_dir }}/{{ openstack_image }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0644"
     setype: httpd_sys_content_t
-    checksum: "sha256:{{ rhcos_json_vars | json_query('images.openstack.sha256') }}"
+    checksum: "sha256:{{ openstack_sha256 }}"
     timeout: 3600
   become: true
   register: openstack_img_file
@@ -85,10 +120,14 @@
   when:
     - not openstack_img.stat.exists or force_mirroring
 
+# NOTE: using uncompressed-sha256 for the bootstraposimage is not a mistake,
+# but needed on OCP versions prior to 4.8. The reason being, when the installer
+# retrieves the image, it will first uncompress it, and then verify the SHA,
+# and the SHA used for verification is the one in the URL.
 - name: "Set facts for *osimage URL overrides"
   set_fact:
-    bootstraposimage: "{{ webserver_url }}/{{ rhcos_json_vars | json_query('images.qemu.path') }}?sha256={{ rhcos_json_vars | json_query('images.qemu.\"uncompressed-sha256\"') }}"
-    clusterosimage: "{{ webserver_url }}/{{ rhcos_json_vars | json_query('images.openstack.path') }}?sha256={{ rhcos_json_vars | json_query('images.openstack.sha256') }}"
+    bootstraposimage: "{{ webserver_url }}/{{ qemu_image }}?sha256={{ qemu_uncompressed_sha256 }}"
+    clusterosimage: "{{ webserver_url }}/{{ openstack_image }}?sha256={{ openstack_sha256 }}"
 
 - name: "Check if container_images.done exists"
   stat:
