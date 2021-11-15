@@ -36,11 +36,6 @@
     var: vms_to_remove
     verbosity: 1
 
-- name: Clean VM images
-  import_tasks: clean_vm_images.yml
-  when: vms_to_remove is defined and vms_to_remove | length > 0
-  become: true
-
 - name: Destroy vms
   import_tasks: destroy_vms.yml
   ignore_errors: yes
