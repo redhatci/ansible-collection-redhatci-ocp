@@ -9,7 +9,7 @@ virt_packages:
   - python3-libvirt
 
 images_dir: /var/lib/libvirt/images/
-vm_create_scripts: /home/redhat/vm_create_scripts/
+vm_create_scripts_dir: /home/redhat/vm_create_scripts/
 
 bridge_name: "{{ cluster_name }}-br"
 network_name: "net-{{ cluster_name }}"
