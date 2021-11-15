@@ -7,6 +7,16 @@
         name: podman
         state: present
 
+    - name: "Build assisted_service_openshift_versions ({{ item }})"
+      vars:
+        assisted_service_openshift_versions: {}
+      set_fact:
+        assisted_service_openshift_versions: "{{ assisted_service_openshift_versions | combine({
+              item: assisted_service_openshift_versions_defaults[item]
+            })
+          }}"
+      loop: "{{ ocp_release_versions }}"
+
     - name: Open ports zone internal and public, for firewalld
       firewalld:
         port: "{{ item.1 }}/tcp"
