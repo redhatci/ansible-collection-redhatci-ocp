@@ -1,6 +1,20 @@
 - name: check skopeo is installed # noqa no-changed-when
   shell: /usr/bin/skopeo --version
 
+- name: Build release_images entries
+  set_fact:
+    release_images: "{{ release_images | combine(
+        {'release_' + item.short : {
+            'image': release_image_url,
+            'tag': item.long + '-x86_64',
+          }
+        })
+      }}"
+  vars:
+    release_images: {}
+  loop: "{{ ocp_release_versions_map | dict2items(key_name='short', value_name='long') }}"
+  when: get_release_images | bool
+
 - name: Find hash for images
   include_tasks:
     file: get_image_hash.yml
