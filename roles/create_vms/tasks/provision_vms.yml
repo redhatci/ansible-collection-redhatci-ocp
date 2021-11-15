@@ -10,7 +10,7 @@
 
     - name: Create vm create scripts dir
       file:
-        path: "{{ vm_create_scripts }}"
+        path: "{{ vm_create_scripts_dir }}"
         state: directory
         recurse: yes
 
@@ -19,11 +19,11 @@
         # community.libvirt.virt doesn't define the qcow image so it was chosen to use
         # virt-install. The reason we use a script is to aid with debugging on the host
         src: create_vm.sh.j2
-        dest: "{{ vm_create_scripts }}/{{ item.name }}_setup_vm.sh"
+        dest: "{{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
         lstrip_blocks: true
         mode: 0774
       loop: "{{ kvm_nodes }}"
 
     - name: Run vm creation_scripts
-      shell: "/bin/bash {{ vm_create_scripts }}/{{ item.name }}_setup_vm.sh"
+      shell: "/bin/bash {{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
       loop: "{{ kvm_nodes }}"
