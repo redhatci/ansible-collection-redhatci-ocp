@@ -29,3 +29,10 @@
   delegate_to: "{{ item }}"
   delegate_facts: true
   loop: "{{ destination_hosts }}"
+
+- name: "Set ocp_release_versions in assisted_installer host"
+  set_fact:
+    ocp_release_versions: "{{ ocp_release_versions_map.keys() | list }}"
+  when: get_release_images | bool
+  delegate_to: "assisted_installer"
+  delegate_facts: true
