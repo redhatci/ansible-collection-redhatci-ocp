@@ -1,24 +1,5 @@
 # number of extra VMs to create but not deploy, used as OSP computes
 
-vm_spec_master_memory: 16384
-vm_spec_master_vcpu: 6
-vm_spec_master_disk: 30
-
-vm_spec_worker_memory: 30000
-vm_spec_worker_vcpu: 8
-vm_spec_worker_disk: 50
-
-vm_params:
-  master:
-    memory: "{{ vm_spec_master_memory }}"
-    vcpu: "{{ vm_spec_master_vcpu }}"
-    disk_size: "{{ vm_spec_master_disk }}"
-  worker:
-    memory: "{{ vm_spec_worker_memory }}"
-    vcpu: "{{ vm_spec_worker_vcpu }}"
-    disk_size: "{{ vm_spec_worker_disk }}"
-
-sushy_tools_port: 8082
 vm_bridge_ip: "{{ machine_network_cidr | ipaddr('next_usable') }}"
 vm_bridge_prefix: "{{ machine_network_cidr | ipaddr('prefix') }}"
 bridge_name: "{{ cluster_name }}-br"

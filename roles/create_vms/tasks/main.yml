@@ -1,18 +1,4 @@
 ---
-
-- name: Set kvm_nodes
-  set_fact:
-    kvm_nodes: "{{ kvm_nodes | default([]) + [{
-        'name': item.startswith(cluster_name) | ternary(item, (cluster_name + '_' + item)),
-        'uuid': hostvars[item]['uuid'] | default(''),
-        'mac':  hostvars[item]['mac'],
-        'memory': hostvars[item]['vm_spec']['ram_mib'] | default(vm_params[hostvars[item]['role']]['memory']),
-        'vcpu': hostvars[item]['vm_spec']['cpu_cores'] | default(vm_params[hostvars[item]['role']]['vcpu']),
-        'disk_size': hostvars[item]['vm_spec']['disk_size_gb'] | default(vm_params[hostvars[item]['role']]['disk_size']),
-    }] }}"
-  loop: "{{ groups['masters'] + groups['workers'] | default([]) }}"
-  when: hostvars[item]['vendor'] | lower == 'kvm'
-
 - name: Setup host environment
   become: true
   block:

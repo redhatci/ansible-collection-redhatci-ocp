@@ -11,4 +11,3 @@
       community.libvirt.virt_net:
         name: "{{ network_name }}"
         command: start
-

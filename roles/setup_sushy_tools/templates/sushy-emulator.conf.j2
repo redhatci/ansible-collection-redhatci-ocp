@@ -11,7 +11,7 @@ SUSHY_EMULATOR_LISTEN_PORT = {{ sushy_tools_port | default('8082', true) }}
 # Serve this SSL certificate to the clients
 # secure_sushy_tools: {{ secure_sushy_tools | bool }}
 {% if secure_sushy_tools | bool %}
-SUSHY_EMULATOR_SSL_CERT = '{{ sushy_cert_dir }}/sushy_tools.crt'
+SUSHY_EMULATOR_SSL_CERT = '{{ sushy_cert_dir }}/sushy_tools_{{ inventory_hostname }}.crt'
 {% else %}
 SUSHY_EMULATOR_SSL_CERT = None
 {% endif %}

@@ -8,6 +8,19 @@
     var: vm_to_inventory_mapper
     verbosity: 1
 
+- name: Setup host environment
+  become: true
+  block:
+    - name: "Install virt-manager"
+      package:
+        name: "{{ virt_packages }}"
+        state: present
+
+    - name: Start libvirtd
+      service:
+        name: libvirtd
+        state: started
+
 - name: Destroy vms
   import_tasks: destroy_networks.yml
   become: true
