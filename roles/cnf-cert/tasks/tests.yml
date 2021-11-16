@@ -36,6 +36,7 @@
     -f {{ tnf_suites }} &> test-network-function/execution.log
 
     cp test-network-function/*.xml {{ tnf_tempdir.path }}
+    cp test-network-function/*.json {{ tnf_tempdir.path }}
     cp test-network-function/execution.log {{ tnf_tempdir.path }}
     cp test-network-function/tnf_config.yml {{ tnf_tempdir.path }}
   args:
