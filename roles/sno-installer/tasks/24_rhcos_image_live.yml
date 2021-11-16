@@ -10,7 +10,7 @@
 
 - name: "Download LIVE image"
   get_url:
-    url: "{{ rhcos_path }}{{ rhcos_live_iso_name }}"
+    url: "{{ rhcos_path }}"
     dest: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
