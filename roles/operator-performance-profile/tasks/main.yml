@@ -85,62 +85,9 @@
   delay: 60
   until: profile_state is not failed
 
-###############################################################################
-
-- name: test_ Check for KubeletConfig creation
-  k8s_info:
-    api: machineconfiguration.openshift.io/v1
-    kind: KubeletConfig
-    name: "performance-{{ profile_state.result.metadata.name }}"
-    namespace: default
-  register: kubelet
-  retries: 30
-  delay: 5
-  until: "kubelet.resources|length == 1"
-  failed_when: "kubelet.resources|length != 1"
-
-- name: test_ Check for MachineConfig creation
-  k8s_info:
-    api: machineconfiguration.openshift.io/v1
-    kind: MachineConfig
-    name: "{{ ( version is version('4.8', '>=')) | ternary('50-','') }}performance-{{ profile_state.result.metadata.name }}"
-    namespace: default
-  register: machine
-  retries: 30
-  delay: 5
-  until: "machine.resources|length == 1"
-  failed_when: "machine.resources|length != 1"
-
-- name: Set performance profile MachineConfig time
-  set_fact:
-    perf_machine_created: "{{ machine.resources[0].metadata.creationTimestamp }}"
-
-- name: Give a delay for the worker config to be rendered after performance MachineConfig is created
+- name: Pause for Machine Config to be created
   pause:
-    seconds: 10
-
-- name: Get all MachineConfigs
-  k8s_info:
-    api: machineconfiguration.openshift.io/v1
-    kind: MachineConfig
-    namespace: default
-  register: mc_list
-  no_log: true
-
-- name: Get rendered-worker name
-  set_fact:
-    worker_machine_id: "{{ item.metadata.name }}"
-    worker_machine_created: "{{ item.metadata.creationTimestamp }}"
-  when:
-    - "'rendered-worker' in item.metadata.name"
-    - "item.metadata.creationTimestamp > perf_machine_created"
-  loop: "{{ mc_list.resources }}"
-  no_log: true
-
-- name: Check if rendered-worker is created with performance profile configuration
-  fail:
-    msg: "rendered-worker is not updated with performance profile"
-  when: worker_machine_id is undefined
+    seconds: 30
 
 - name: Check nodes
   include_role:
