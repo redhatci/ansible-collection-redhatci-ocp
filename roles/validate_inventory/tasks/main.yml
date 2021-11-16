@@ -14,6 +14,12 @@
       tags: validate_cluster
 
     - include_tasks:
+        file: vms.yml
+        apply:
+          tags: validate_vms
+      tags: validate_vms
+
+    - include_tasks:
         file: secrets.yml
         apply:
           tags: validate_secrets

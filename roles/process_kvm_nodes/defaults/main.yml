@@ -1,0 +1,19 @@
+vm_spec_defaults:
+  master:
+    memory: 16384
+    vcpu: 6
+    disk_size: 30
+  worker:
+    memory: 30000
+    vcpu: 8
+    disk_size: 50
+
+vm_params:
+  master:
+    memory: "{{ vm_spec_master_memory | vm_spec_defaults.master.memory }}"
+    vcpu: "{{ vm_spec_master_vcpu | vm_spec_defaults.master.vcpu }}"
+    disk_size: "{{ vm_spec_master_disk_size | vm_spec_defaults.master.disk_size }}"
+  worker:
+    memory: "{{ vm_spec_worker_memory | vm_spec_defaults.worker.memory }}"
+    vcpu: "{{ vm_spec_worker_vcpu | vm_spec_defaults.worker.vcpu }}"
+    disk_size: "{{ vm_spec_worker_disk_size | vm_spec_defaults.worker.disk_size }}"

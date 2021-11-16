@@ -66,7 +66,7 @@
             cert_dir: "{{ sushy_cert_dir }}"
             host_var_key: "{{ cert_vars_host_var_key }}"
             cert_file_prefix: sushy_tools
-            cert_path: "{{ sushy_cert_dir }}/sushy_tools.crt"
+            cert_path: "{{ sushy_cert_dir }}/sushy_tools_{{ inventory_hostname }}.crt"
             privatekey_path: "{{ sushy_cert_dir }}/sushy_tools.key"
             cert_common_name: "{{ ansible_fqdn }}"
 

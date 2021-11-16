@@ -1,4 +1,3 @@
-
 - name: List vm storage pools
   community.libvirt.virt_pool:
     command: list_pools
