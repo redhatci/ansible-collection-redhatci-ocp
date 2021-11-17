@@ -11,7 +11,9 @@ virt-install \
     --os-variant=rhel8.3 \
     --os-type linux \
     --network=bridge:{{ vm_bridge_name }},mac="{{ item.mac }}" \
-    --disk path={{ images_dir }}/{{ item.name }}.qcow2,size={{ item.disk_size }},format=qcow2 \
+    {% for disk_name, disk_size in item.disks.items() %}
+    --disk path={{ images_dir }}/{{ item.name }}_{{ disk_name }}.qcow2,size={{ disk_size }},format=qcow2 \
+    {% endfor %}
     --graphics vnc \
     --noautoconsole \
     --wait=-1 \

@@ -9,10 +9,13 @@
               'name': item.startswith(cluster_name) | ternary(item, (cluster_name + '_' + item)),
               'uuid': hostvars[item]['uuid'] | default(''),
               'mac':  hostvars[item]['mac'],
+              'vm_host': hostvars[item]['vm_host'],
               'memory': hostvars[item]['vm_spec']['ram_mib'] | default(vm_params[hostvars[item]['role']]['memory']),
               'vcpu': hostvars[item]['vm_spec']['cpu_cores'] | default(vm_params[hostvars[item]['role']]['vcpu']),
-              'disk_size': hostvars[item]['vm_spec']['disk_size_gb'] | default(vm_params[hostvars[item]['role']]['disk_size']),
-              'vm_host': hostvars[item]['vm_host'],
+              'disks': (
+                {'main': hostvars[item]['vm_spec']['disk_size_gb'] | default(vm_params[hostvars[item]['role']]['disk_size'])}
+                | combine(hostvars[item]['vm_spec']['extra_disks'] | default({}))
+              ),
             }]
           )
         )
