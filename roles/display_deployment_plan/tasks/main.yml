@@ -2,52 +2,15 @@
 - name: Display deployment plan if interactive prompts are allowed
   when: not ((skip_interactive_prompts | default(false)) | bool)
   block:
+
     - name: Display inventory details and ask for user confirmation
       pause:
-        prompt: |-
-          An OpenShift cluster is about to be deployed. Please double check the provided inventory details.
-
-          * General configuration
-
-            {{ row_format_str | format('Cluster name', inventory.cluster_name) }}
-            {{ row_format_str | format('Base DNS domain', inventory.base_dns_domain) }}
-
-            {{ row_format_str | format('API Virtual IP', inventory.api_vip) }}
-            {{ row_format_str | format('Ingress Virtual IP', inventory.ingress_vip) }}
-
-            {{ row_format_str | format('OpenShift version', inventory.openshift_full_version) }}
-
-          * Prerequisite services configuration
-
-            {{ row_format_str | format('Setup NTP Service', inventory.setup_ntp_service) }}
-            {{ row_format_str | format('Setup DNS Service', inventory.setup_dns_service) }}
-            {{ row_format_str | format('Setup Registry Service', inventory.setup_registry_service) }}
-            {{ row_format_str | format('Setup HTTP Store Service', inventory.setup_http_store_service) }}
-
-          * Groups and hosts configuration
-
-          {% for group_name in inventory.groups_filtered %}
-            {{ group_name }}:
-            {% for host_name in groups[group_name] %}
-            {{ hosts_row_format_str | format(host_name, (hostvars[host_name]['ansible_host'] | default(messages.value_missing))) }}
-            {% else %}
-            {{ messages.hosts_missing }}
-            {% endfor %}
-
-          {% else %}
-            {{ messages.groups_missing }}
-
-          {% endfor -%}
-          ---
-
-          Are you sure you want to proceed with the deployment using this inventory configuration?
-
-          Enter a value [yes/NO]
+        prompt: "{{ lookup('template', 'plan.j2').strip('\n') }}"
       vars:
         # Every row consists of two columns. To ensure all items in the right column are aligned,
         # a minimum width of the left column is set in the following variable.
         left_column_width: 26
-        row_format_str: "%-{{ left_column_width }}s %s"
+        row_format_str: '%-{{ left_column_width }}s %s'
         # To improve readability, all hosts listed in the "Groups and hosts configuration" section
         # are nested under groups by the number of spaces defined in the variable below.
         # For padding set to 2, the displayed output is as follows:
@@ -55,7 +18,8 @@
         #   host_name_A
         #   host_name_B
         hosts_row_padding: 2
-        hosts_row_format_str: "%-{{ (left_column_width - hosts_row_padding) }}s %s"
+        hosts_row_format_str: '%-{{ (left_column_width - hosts_row_padding) }}s %s'
+        hosts_row_extended_format_str: '%-{{ (left_column_width - hosts_row_padding) }}s %s (%s)'
         # In the sample inventory, some host groups are nested under other groups.
         # To prevent the defined hosts from being displayed multiple times, selected top level
         # groups are omitted from the deployment plan.
