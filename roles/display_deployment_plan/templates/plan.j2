@@ -1,0 +1,42 @@
+An OpenShift cluster is about to be deployed. Please double check the provided inventory details.
+
+* General configuration
+
+    {{ row_format_str | format('Cluster name', inventory.cluster_name) }}
+    {{ row_format_str | format('Base DNS domain', inventory.base_dns_domain) }}
+
+    {{ row_format_str | format('API Virtual IP', inventory.api_vip) }}
+    {{ row_format_str | format('Ingress Virtual IP', inventory.ingress_vip) }}
+
+    {{ row_format_str | format('OpenShift version', inventory.openshift_full_version) }}
+
+* Prerequisite services configuration
+
+    {{ row_format_str | format('Setup NTP Service', inventory.setup_ntp_service) }}
+    {{ row_format_str | format('Setup DNS Service', inventory.setup_dns_service) }}
+    {{ row_format_str | format('Setup Registry Service', inventory.setup_registry_service) }}
+    {{ row_format_str | format('Setup HTTP Store Service', inventory.setup_http_store_service) }}
+
+* Groups and hosts configuration
+
+  {% for group_name in inventory.groups_filtered %}
+  {{ group_name }}:
+  {% for host_name in groups[group_name] %}
+  {%- set host_ansible_host = hostvars[host_name]['ansible_host'] | default(messages.value_missing) -%}
+  {% if hostvars[host_name]['vm_host'] is defined %}
+  {{ hosts_row_extended_format_str | format(host_name, host_ansible_host, hostvars[host_name]['vm_host']) }}
+  {% else %}
+  {{ hosts_row_format_str | format(host_name, host_ansible_host) }}
+  {% endif -%}
+  {% else %}
+  {{ messages.hosts_missing }}
+  {% endfor -%}
+  {% else %}
+  {{ messages.groups_missing }}
+  {% endfor -%}
+
+---
+
+Are you sure you want to proceed with the deployment using this inventory configuration?
+
+Enter a value [yes/NO]
