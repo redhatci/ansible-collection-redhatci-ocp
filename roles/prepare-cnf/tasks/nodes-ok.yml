@@ -1,29 +1,12 @@
 ---
-- name: "test_ Check the master nodes managed by MCP are updated and ready"
+- name: "Wait for ALL nodes to be in a Done state"
   k8s_info:
-    kind: MachineConfigPool
-    name: master
-  register: mcp_master
+    api: v1
+    kind: Node
+  register: cluster_nodes
+  until:
+    - '"Working" not in ((cluster_nodes.resources == None) | ternary([], cluster_nodes.resources)) | json_query("[].metadata.annotations.\"machineconfiguration.openshift.io/state\"")'
   retries: 240
   delay: 10
-  until:
-    - "'resources' in mcp_master"
-    - "mcp_master.resources|length == 1"
-    - "'status' in mcp_master.resources[0]"
-    - "mcp_master.resources[0].status.readyMachineCount == groups['masters']|length"
-    - "mcp_master.resources[0].status.updatedMachineCount == mcp_master.resources[0].status.machineCount"
-
-- name: "test_ Check the worker nodes managed by MCP are updated and ready"
-  k8s_info:
-    kind: MachineConfigPool
-    name: worker
-  register: mcp_worker
-  retries: 300
-  delay: 10
-  until:
-    - "'resources' in mcp_worker"
-    - "mcp_worker.resources|length == 1"
-    - "'status' in mcp_worker.resources[0]"
-    - "mcp_worker.resources[0].status.readyMachineCount == groups['workers']|length"
-    - "mcp_worker.resources[0].status.updatedMachineCount == mcp_worker.resources[0].status.machineCount"
-...
+  failed_when:
+    - '"Degraded" in ((cluster_nodes.resources == None) | ternary([], cluster_nodes.resources)) | json_query("[].metadata.annotations.\"machineconfiguration.openshift.io/state\"")'
