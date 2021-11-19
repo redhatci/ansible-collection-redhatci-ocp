@@ -9,24 +9,24 @@
 - name: Reboot dell
   include_tasks: dell.yml
   loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] == 'Dell'
+  when: hostvars[item]['vendor'] | lower == 'dell'
 
 - name: Reboot hpe
   include_tasks: hpe.yml
   loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] == 'HPE'
+  when: hostvars[item]['vendor'] | lower == 'hpe'
 
 - name: Reboot lenovo
   include_tasks: lenovo.yml
   loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] == 'Lenovo'
+  when: hostvars[item]['vendor'] | lower == 'lenovo'
 
 - name: Reboot kvm
   include_tasks: kvm.yml
   loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] == 'KVM'
+  when: hostvars[item]['vendor'] | lower == 'kvm'
 
 - name: Reboot SuperMicro
   include_tasks: supermicro.yml
   loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] == 'SuperMicro'
+  when: hostvars[item]['vendor'] | lower == 'supermicro'

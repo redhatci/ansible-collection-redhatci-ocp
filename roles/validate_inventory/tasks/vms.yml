@@ -3,7 +3,7 @@
     kvm_node_names: []
   set_fact:
     kvm_node_names: "{{ kvm_node_names + [item] }}"
-  when: hostvars[item]['vendor'] == 'KVM'
+  when: hostvars[item]['vendor'] | lower == 'kvm'
   loop: "{{ groups['nodes'] }}"
 
 - name: Check there is no vm_host in services

@@ -5,7 +5,7 @@
   shell: # noqa 305
     cmd: "ping -c 1 -W 2 {{ hostvars[item]['bmc_address'] }}"
   changed_when: False
-  when: hostvars[item]['vendor'] != 'KVM'
+  when: hostvars[item]['vendor'] | lower != 'kvm'
   loop: "{{ groups['nodes'] }}"
 
 - name: Ensure service hosts are reachable

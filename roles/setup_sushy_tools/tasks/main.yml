@@ -40,7 +40,7 @@
             user_password_combinations: "{{
               user_password_combinations | combine({hostvars[item]['bmc_user']: hostvars[item]['bmc_password']})
               }}"
-          when: hostvars[item]['vendor'] == 'KVM'
+          when: hostvars[item]['vendor'] | lower == 'kvm'
           loop: "{{ groups['nodes'] }}"
 
         - name: Generate htpasswd entry
