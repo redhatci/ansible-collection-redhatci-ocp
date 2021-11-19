@@ -8,31 +8,31 @@
   delegate_to: bastion
 
 - include_tasks: dell.yml
-  when: hostvars[inventory_hostname]['vendor'] == 'Dell'
+  when: hostvars[inventory_hostname]['vendor'] | lower == 'dell'
   args:
     apply:
       delegate_to: bastion
 
 - include_tasks: hpe.yml
-  when: hostvars[inventory_hostname]['vendor'] == 'HPE'
+  when: hostvars[inventory_hostname]['vendor'] | lower == 'hpe'
   args:
     apply:
       delegate_to: bastion
 
 - include_tasks: supermicro/main.yml
-  when: hostvars[inventory_hostname]['vendor'] == 'SuperMicro'
+  when: hostvars[inventory_hostname]['vendor'] | lower == 'supermicro'
   args:
     apply:
       delegate_to: bastion
 
 - include_tasks: lenovo.yml
-  when: hostvars[inventory_hostname]['vendor'] == 'Lenovo'
+  when: hostvars[inventory_hostname]['vendor'] | lower == 'lenovo'
   args:
     apply:
       delegate_to: bastion
 
 - include_tasks: kvm.yml
-  when: hostvars[inventory_hostname]['vendor'] == 'KVM'
+  when: hostvars[inventory_hostname]['vendor'] | lower == 'kvm'
   args:
     apply:
       delegate_to: bastion

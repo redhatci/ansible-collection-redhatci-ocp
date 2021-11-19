@@ -11,11 +11,11 @@ supported_role_values:
   - master
 
 supported_vendor_values:
-  - Dell
-  - HPE
-  - Lenovo
-  - KVM
-  - SuperMicro
+  - dell
+  - hpe
+  - lenovo
+  - kvm
+  - supermicro
 
 ai_version: "{{ hostvars.assisted_installer.ai_version | default('v1.0.24.2') }}"
 ai_version_number: "{{ ai_version | regex_replace('v(\\d+\\.\\d+.\\d+\\.\\d+)', '\\1') }}"
