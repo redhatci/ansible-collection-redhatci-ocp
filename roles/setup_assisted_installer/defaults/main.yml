@@ -12,7 +12,7 @@ assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
 assisted_service_openshift_versions_defaults:
   "4.6":
     display_name: 4.6.16
-    release_image: "quay.io/openshift-release-dev/ocp-release{{ 'release_4.6' in image_hashes | ternary('@' + image_hashes['release_4.6'], ':4.6.16-x86_64') }}"
+    release_image: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.6' in image_hashes %}@{{ image_hashes['release_4.6'] }}{% else %}:4.6.17-x86_64{% endif %}"
     release_version: 4.6.16
     rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso
     rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-live-rootfs.x86_64.img
@@ -20,7 +20,7 @@ assisted_service_openshift_versions_defaults:
     support_level: production
   "4.7":
     display_name: 4.7.33
-    release_image: "quay.io/openshift-release-dev/ocp-release{{ 'release_4.7' in image_hashes | ternary('@' + image_hashes['release_4.7'], ':4.7.33-x86_64') }}"
+    release_image: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.7' in image_hashes %}@{{ image_hashes['release_4.7'] }}{% else %}:4.7.33-x86_64{% endif %}"
     release_version: 4.7.33
     rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.33/rhcos-4.7.33-x86_64-live.x86_64.iso
     rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.33/rhcos-live-rootfs.x86_64.img
@@ -29,7 +29,7 @@ assisted_service_openshift_versions_defaults:
   "4.8":
     default: true
     display_name: 4.8.14
-    release_image: "quay.io/openshift-release-dev/ocp-release{{'release_4.8' in image_hashes | ternary('@' + image_hashes['release_4.8'], ':4.8.14-x86_64') }}"
+    release_image: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.8' in image_hashes %}@{{ image_hashes['release_4.8'] }}{% else %}:4.8.14-x86_64{% endif %}"
     release_version: 4.8.14
     rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.14/rhcos-4.8.14-x86_64-live.x86_64.iso
     rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.14/rhcos-live-rootfs.x86_64.img
@@ -37,7 +37,7 @@ assisted_service_openshift_versions_defaults:
     support_level: production
   "4.9":
     display_name: 4.9.0
-    release_image: "quay.io/openshift-release-dev/ocp-release{{ 'release_4.9' in image_hashes | ternary('@' + image_hashes['release_4.9'], ':4.9.0-x86_64') }}"
+    release_image: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.9' in image_hashes %}@{{ image_hashes['release_4.9'] }}{% else %}:4.9.0-x86_64{% endif %}"
     release_version: 4.9.0
     rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.9/4.9.0/rhcos-4.9.0-x86_64-live.x86_64.iso
     rhcos_rootfs: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.9/4.9.0/rhcos-live-rootfs.x86_64.img
