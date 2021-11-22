@@ -64,10 +64,10 @@
 
 - name: Check UUIDs are unique
   when: (kvm_node_names is defined) and (kvm_node_names | length > 0)
+  vars:
+    kvm_node_uuids: []
   block:
     - name: Get node UUIDs
-      vars:
-        kvm_node_uuids: []
       set_fact:
         kvm_node_uuids: "{{ kvm_node_uuids + [hostvars[item]['uuid']] }}"
       when: "'uuid' in hostvars[item]"
