@@ -11,5 +11,4 @@ vbmc_systemd_unit: "/etc/systemd/system/virtualbmc.service"
 vbmc_version: '1.4.0'
 vbmc_bin: "{{ vbmc_virtualenv }}/bin/vbmc"
 vbmcd_bin: "{{ vbmc_virtualenv }}/bin/vbmcd"
-ipmi_net: "baremetal"
 zone: "libvirt"
