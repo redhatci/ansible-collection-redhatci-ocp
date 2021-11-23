@@ -14,6 +14,12 @@
       tags: validate_cluster
 
     - include_tasks:
+        file: ntp.yml
+        apply:
+          tags: validate_ntp
+      tags: validate_ntp
+
+    - include_tasks:
         file: vms.yml
         apply:
           tags: validate_vms
