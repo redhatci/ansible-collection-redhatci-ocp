@@ -19,12 +19,12 @@
 
 - name: Set ipv4 management bmc address
   set_fact:
-      vbmc_management_address: "{{ hostvars[vbmc_host]['ansible_'+ipmi_net].ipv4.address }}"
+      vbmc_management_address: "{{ hostvars[vbmc_host].ansible_default_ipv4.address }}"
   when: not baremetal_net_ipv6|bool
 
 - name: Set ipv6 management bmc address
   set_fact:
-      vbmc_management_address: "{{ hostvars[vbmc_host]['ansible_'+ipmi_net].ipv6[0].address }}"
+      vbmc_management_address: "{{ hostvars[vbmc_host].ansible_default_ipv6.address }}"
   when: baremetal_net_ipv6|bool
 
 - include_tasks: firewalld.yml
