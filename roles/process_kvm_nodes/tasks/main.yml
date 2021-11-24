@@ -26,4 +26,4 @@
     kvm_nodes: "{{ all_kvm_nodes[item] | default([]) }}"
   delegate_to: "{{ item }}"
   delegate_facts: true
-  loop: "{{ groups['vm_hosts'] }}"
+  loop: "{{ groups['vm_hosts'] | default([]) }}"
