@@ -11,6 +11,6 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 localhost ansible_user=dci-openshift-agent
 
 [masters]
-master-0.dcisno.example.com name=master-0 role=master ansible_user=core
+sno.dcisno.example.com name=sno role=master ansible_user=core
 
 [workers]

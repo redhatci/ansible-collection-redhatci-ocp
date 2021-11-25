@@ -7,9 +7,9 @@ galaxy_info:
   platforms:
   - name: Red Hat
     versions:
-    - 8.4
+    - "=> 8.4"
   - name: Openshift Cluster Platform
     versions:
-    - 4.8
+    - "=> 4.8"
   galaxy_tags: []
 dependencies: []

@@ -1,0 +1,41 @@
+[all:vars]
+dir="{{ ansible_user_dir }}/clusterconfigs"
+domain="example.com"
+cluster="dcisno"
+extcidrnet="192.168.126.0/24"
+install_type=sno
+sno_install_type == baremetal
+
+extcidrrouter=192.168.126.250 # By default takes the first IP of the extcidrnet network.
+extcidrdns=192.168.126.5
+
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+[provisioner]
+localhost ansible_user=dci-openshift-agent
+
+[masters]
+sno.dcisno.example.com name=sno ansible_user=core
+
+[masters:vars]
+role=master
+ipmi_user=username
+ipmi_password=password
+ipmi_address=<BMC_IP_Address>
+ipmi_port=<623>
+baremetal_mac=<MAC-Address-Baremetal-NIC>
+installation_disk="/dev/sdX"
+
+# (Required) declaration of the workers group empty 
+# Mostly to ignore certain DCI validations
+[workers]
+
+# (Optional) to specify server hosting dnsmasq server
+# If not defined provisioner node will be chosen
+[tftp_host]
+localhost ansible_user=dci-openshift-agent
+
+# (Optional) to specify server hosting cache service
+# If not defined provisioner node will be chosen
+[registry_host]
+localhost ansible_user=dci-openshift-agent

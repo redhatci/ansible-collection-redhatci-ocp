@@ -5,16 +5,40 @@
   - cleanup
   - getoc
 
+- include_tasks: 15_disconnected_registry_existing.yml
+  when:
+    - disconnected_registry is defined
+    - disconnected_registry == "existing"
+  tags: disconnected
+
 - include_tasks: 20_extract_installer.yml
   tags:
-  - pullsecret
-  - extract
+    - pullsecret
+    - extract
 
-- include_tasks: 23_rhcos_image_paths.yml
+- include_tasks: 21_rhcos_image_paths.yml
   tags: rhcospath
+
+- block:
+    - include_tasks: 22_rhcos_image_cache.yml
+      tags: cache
+  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  when:
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
+    - cache_enabled | bool
+
+- include_tasks: 23_rhcos_image_pxetftp.yml
+  tags: rhcospxe
+  when:
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
 
 - include_tasks: 24_rhcos_image_live.yml
   tags: rhcos_live
+  when: |
+    - (sno_install_type is undefined) or
+      (sno_install_type == "virtual")
 
 - include_tasks: 25_create_install_config.yml
   tags: installconfig
@@ -28,14 +52,34 @@
 - include_tasks: 55_create_ignition.yml
   tags: ignition
 
+- include_tasks: 56_create_grubpxe.yml
+  tags: rhcos_grub
+  when:
+    - dnsmasq_enabled | bool
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
+
 - include_tasks: 57_embed_ignition_into_iso.yml
+  when: |
+    - (sno_install_type is undefined) or
+      (sno_install_type == "virtual")
   tags: embedded
 
-- include_tasks: 59_cleanup_sno_vm.yml
-  tags: cleanup
+- block:
+    - include_tasks: 59_cleanup_sno_vm.yml
+      tags: cleanup
 
-- include_tasks: 60_deploy_sno_vm.yml
-  tags: install
+    - include_tasks: 60_deploy_sno_vm.yml
+      tags: install
+  when: |
+    - (sno_install_type is undefined) or
+      (sno_install_type == "virtual")
+
+- include_tasks: 60_deploy_sno_bm.yml
+  tags: install_bm
+  when:
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
 
 - include_tasks: 70_wait_deployment.yml
   tags: waitdeploy

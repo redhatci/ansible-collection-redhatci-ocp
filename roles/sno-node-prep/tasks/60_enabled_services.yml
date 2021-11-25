@@ -1,5 +1,5 @@
 ---
-- name: Enable and restart Services
+- name: "Enable and restart Services"
   service:
     name: "{{ item }}"
     state: restarted
@@ -7,9 +7,12 @@
   become: yes
   with_items:
   - libvirtd
+  when: |
+    - (sno_install_type is undefined) or
+      (sno_install_type == "virtual")
   tags: services
 
-- name: Enable Services (iptables)
+- name: "Enable Services (iptables)"
   service:
     name: "{{ item }}"
     state: restarted
@@ -17,10 +20,10 @@
   become: yes
   with_items:
   - "{{ firewall }}"
-  tags: services
   when: firewall == "iptables"
+  tags: services
 
-- name: Enable Services (firewalld)
+- name: "Enable Services (firewalld)"
   service:
     name: "{{ item }}"
     state: started
@@ -28,5 +31,6 @@
   become: yes
   with_items:
   - "{{ firewall }}"
-  tags: services
   when: firewall != "iptables"
+  tags: services
+...

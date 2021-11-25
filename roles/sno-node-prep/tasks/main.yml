@@ -1,8 +1,16 @@
 ---
 - include_tasks: 10_validation.yml
   tags:
-  - validation
-  - create_registry
+    - validation
+    - use_registry
+
+- include_tasks: 15_validation_disconnected_registry.yml
+  when:
+    - "'registry_host' in groups"
+    - "groups['registry_host']"
+  tags:
+    - disconnected
+    - use_registry
 
 - include_tasks: 30_req_packages.yml
   tags: packages
@@ -11,35 +19,50 @@
   tags: network_facts
 
 - include_tasks: 50_modify_sudo_user.yml
+  when: |
+    - (sno_install_type is undefined) or
+      (sno_install_type == "virtual")
   tags: user
 
 - include_tasks: 60_enabled_services.yml
   tags: services
 
-- include_tasks: 70_cleanup_libvirt_network.yml
-  tags: cleanup
-
-- include_tasks: 71_cleanup_dns_entries.yml
-  tags: cleanup
-
-- include_tasks: 72_cleanup_files.yml
-  tags: cleanup
-
-- include_tasks: 80_libvirt_storage.yml
-  tags: storagepool
-
-- include_tasks: 85_libvirt_network.yml
-  tags: virtnetwork
-
-- include_tasks: 87_network_manager.yml
+- include_tasks: 65_dnsmasq_tftp.yml
   when:
-    - ansible_facts['distribution'] == "RedHat"
-  tags: dnsredirect
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
+    - dnsmasq_enabled | bool
+  tags: dnsmasq_tftp
 
-- include_tasks: 88_etc_hosts.yml
-  when:
-    - ansible_facts['distribution'] == "Fedora"
-  tags: dnsredirect
+- name: "Network and Storage for Virtual SNO"
+  block:
+    - include_tasks: 70_cleanup_libvirt_network.yml
+      tags: cleanup
+
+    - include_tasks: 71_cleanup_dns_entries.yml
+      tags: cleanup
+
+    - include_tasks: 72_cleanup_files.yml
+      tags: cleanup
+
+    - include_tasks: 80_libvirt_storage.yml
+      tags: storagepool
+
+    - include_tasks: 85_libvirt_network.yml
+      tags: virtnetwork
+
+    - include_tasks: 87_network_manager.yml
+      when:
+        - ansible_facts['distribution'] == "RedHat"
+      tags: dnsredirect
+
+    - include_tasks: 88_etc_hosts.yml
+      when:
+        - ansible_facts['distribution'] == "Fedora"
+      tags: dnsredirect
+  when: |
+    - (sno_install_type is undefined) or
+      (sno_install_type == "virtual")
 
 - include_tasks: 90_create_config_install_dirs.yml
   tags:

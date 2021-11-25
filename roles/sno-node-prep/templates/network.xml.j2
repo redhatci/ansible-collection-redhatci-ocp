@@ -7,19 +7,18 @@
   </forward>
   <domain name='{{ cluster }}.{{ domain }}'/>
   <dns enable='yes'>
-    <host ip='{{ extcidrnet | ipaddr('10') | ipaddr('address') }}'>
+    <host ip='{{ sno_extnet_ip }}'>
       <hostname>api.{{ cluster }}.{{ domain }}</hostname>
       <hostname>api-int.{{ cluster }}.{{ domain }}</hostname>
       <hostname>console-openshift-console.apps.{{ cluster }}.{{ domain }}</hostname>
       <hostname>oauth-openshift.apps.{{ cluster }}.{{ domain }}</hostname>
       <hostname>canary-openshift-ingress-canary.apps.{{ cluster }}.{{ domain }}</hostname>
-      <hostname>master-0.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>{{ hostvars[groups['masters'][0]]['name'] }}.{{ cluster }}.{{ domain }}</hostname>
     </host>
   </dns>
   <ip address='{{ extcidrnet | ipaddr('first_usable') }}' prefix='{{ extcidrnet | ipaddr('prefix') }}'>
     <dhcp>
-      <range start='{{ extcidrnet | ipaddr('11') | ipaddr('address') }}' end='{{ extcidrnet | ipaddr('last_usable') }}'/>
-      <host mac='{{ vm_nic_mac }}' name='master-0' ip='{{ extcidrnet | ipaddr('10') | ipaddr('address') }}'/>
+      <host mac='{{ vm_nic_mac }}' name='{{ hostvars[groups['masters'][0]]['name'] }}' ip='{{ sno_extnet_ip }}'/>
     </dhcp>
   </ip>
 </network>

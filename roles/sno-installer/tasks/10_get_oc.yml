@@ -5,18 +5,37 @@
     patterns: 'oc,openshift-install,kubectl'
   register: binary_results
   tags:
-  - cleanup
-  - getoc
+    - cleanup
+    - getoc
 
 - name: "Remove any existing {{ ocp_binary_path }} OpenShift binaries"
   file:
     path: "{{ item['path'] }}"
     state: absent
   loop: "{{ binary_results['files'] }}"
-  become: yes
+  loop_control:
+    label: "{{ item['path'] }}"
+  become: true
   tags:
-  - cleanup
-  - getoc
+    - cleanup
+    - getoc
+
+- name: "Set fact with the host providing the webserver"
+  set_fact:
+    cache_server: "{{ cache_provisioner | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Validate that master cache directory exists"
+  stat:
+    path: "{{ cache_dir }}"
+    get_checksum: false
+  register: cachedir
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
 
 - name: "Create master cache directory"
   file:
@@ -26,7 +45,22 @@
     group: "{{ ansible_user_gid }}"
     mode: "0775"
   become: true
-  tags: getoc
+  delegate_to: "{{ cache_server }}"
+  when:
+    - not cachedir.stat.exists | bool
+  tags:
+    - getoc
+    - cache
+
+- name: "Validate if cache dir for release exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}"
+    get_checksum: false
+  register: cachedir_rel
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
 
 - name: "Create cache directory for release"
   file:
@@ -36,64 +70,84 @@
     mode: "0775"
     state: directory
   become: true
-  tags: getoc
+  delegate_to: "{{ cache_server }}"
+  when:
+    - not cachedir_rel.stat.exists | bool
+  tags:
+    - getoc
+    - cache
 
 - name: "Check if release.txt exists"
   stat:
     path: "{{ cache_dir }}/{{ version }}/release.txt"
     get_checksum: false
   register: release_txt
-  tags: getoc
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
 
 - name: "Fetch release.txt"
   get_url:
     url: "{{ release_url }}/{{ version }}/release.txt"
     dest: "{{ cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
     timeout: 120
   retries: 5
   delay: 10
   register: release_txt
   until: release_txt is not failed
+  delegate_to: "{{ cache_server }}"
   when:
     - not release_txt.stat.exists or force_mirroring
-  tags: getoc
+  tags:
+    - getoc
+    - cache
 
 - name: "Read release_version from release.txt"
   shell: "set -o pipefail && sed -n 's/Version:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
   register: release_version
   changed_when: false
   no_log: true
-  tags: getoc
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
 
 - name: "Read release_image from release.txt"
   shell: "set -o pipefail && sed -n 's/Pull From:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
   register: release_image
   changed_when: false
   no_log: true
-  tags: getoc
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
 
 - name: "Print the release version"
   debug:
     msg: "release version {{ release_version }}"
     verbosity: 2
-  tags: getoc
+  tags:
+    - getoc
+    - cache
 
 - name: "Check if clients exists"
   stat:
     path: "{{ cache_dir }}/{{ version }}/client_tools.done"
     get_checksum: false
   register: client_tools_done
-  tags: getoc
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
 
 - name: "Fetch and Untar client tools"
   unarchive:
     src: "{{ release_url }}/{{ version }}/{{ item }}-linux.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
     mode: "0755"
     remote_src: true
   register: result
@@ -101,32 +155,98 @@
   delay: 10
   until: result is not failed
   loop: "{{ client_tools }}"
+  delegate_to: "{{ cache_server }}"
   when:
     - not client_tools_done.stat.exists or force_mirroring
-  tags: getoc
+  tags:
+    - getoc
+    - cache
 
-- name: "Copy oc and kubectl binaries to {{ ocp_binary_path }}"
+# If the registry host got the oc tools, lets just copy it to the prov host
+- name: "Copy the openshift client tools from control machine to the provisioner host"
+  block:
+    - name: "Get the openshift client tools from registry host into temp file on control machine"
+      fetch:
+        dest: /tmp/
+        flat: true
+        src: "{{ cache_dir }}/{{ version }}/{{ item }}"
+      loop:
+        - kubectl
+        - oc
+      delegate_to: "{{ groups['registry_host'][0] }}"
+
+    - name: "Copy the openshift client tools from control machine to the provisioner host"
+      copy:
+        src: "/tmp/{{ item }}"
+        dest: "{{ dir }}/{{ item }}"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: 0755
+      loop:
+        - kubectl
+        - oc
+      become: true
+
+    - name: "Remove the temporary copy of the openshift clients on control machine"
+      file:
+        path: "/tmp/{{ item }}"
+        state: absent
+      loop:
+        - kubectl
+        - oc
+      delegate_to: localhost
+
+    - name: "Copy oc and kubectl binaries to {{ ocp_binary_path }} provisioner"
+      copy:
+        src: "{{ dir }}/{{ item }}"
+        dest: "{{ ocp_binary_path }}/{{ item }}"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: "0755"
+        remote_src: true
+      become: true
+      loop:
+        - kubectl
+        - oc
+  when:
+    - not cache_provisioner | bool
+  tags:
+    - getoc
+    - cache
+
+# if provisioner node hosts the cache directory then copy locally
+- name: "Copy oc and kubectl binaries to {{ ocp_binary_path }} and {{ config }}"
+  vars:
+    files:
+      - kubectl
+      - oc
+    dest:
+      - "{{ ocp_binary_path }}"
+      - "{{ dir }}"
   copy:
-    src: "{{ cache_dir }}/{{ version }}/{{ item }}"
-    dest: "{{ ocp_binary_path }}/{{ item }}"
+    src: "{{ cache_dir }}/{{ version }}/{{ item[0] }}"
+    dest: "{{ item[1] }}/{{ item[0] }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0755"
     remote_src: true
   become: true
-  loop:
-    - kubectl
-    - oc
-  tags: getoc
+  loop: "{{ files|product(dest)|list }}"
+  when:
+    - cache_provisioner | bool
+  tags:
+    - getoc
+    - cache
 
 - name: "Marker for client tools downloaded"
   file:
     dest: "{{ cache_dir }}/{{ version }}/client_tools.done"
     state: touch
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
     mode: "0644"
+  delegate_to: "{{ cache_server }}"
   when:
     - not client_tools_done.stat.exists or force_mirroring
-  tags: getoc
+  tags:
+    - getoc
+    - cache
 ...

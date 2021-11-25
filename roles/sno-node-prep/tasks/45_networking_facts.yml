@@ -29,3 +29,13 @@
     - not ipv4_baremetal|bool
   tags:
   - network_facts
+
+- name: Define the IPv4 address from External subnet for SNO
+  set_fact:
+    sno_extnet_ip: "{{ extcidrnet | ipaddr('10') | ipaddr('address') }}"
+  when:
+    - (sno_extnet_ip is not defined or sno_extnet_ip|length < 1)
+    - not ipv6_baremetal|bool
+    - ipv4_enabled|bool
+  tags:
+  - network_facts

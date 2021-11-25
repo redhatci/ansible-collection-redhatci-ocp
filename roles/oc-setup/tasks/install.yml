@@ -6,8 +6,8 @@
     dest: "{{ dci_cluster_configs_dir }}/"
     flat: true
   loop:
-  - /usr/local/bin/oc
-  - ~/clusterconfigs/auth/kubeconfig
+  - "/usr/local/bin/oc"
+  - "{{ dir }}/auth/kubeconfig"
 
 - name: "Upload kubeconfig to DCI Control Server"
   environment:

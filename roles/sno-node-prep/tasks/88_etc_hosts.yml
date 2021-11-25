@@ -1,7 +1,7 @@
 ---
-- name: Clean up /etc/hosts entries (Fedora)
+- name: Add DNS /etc/hosts entries (Fedora)
   lineinfile:
     path: /etc/hosts
-    line: "{{ extcidrnet | ipaddr('10') | ipaddr('address') }} api.{{ cluster }}.{{ domain }}"
+    line: "{{ sno_extnet_ip }} api.{{ cluster }}.{{ domain }}"
   become: yes
   tags: dnsredirect
