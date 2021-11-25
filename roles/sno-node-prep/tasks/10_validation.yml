@@ -59,7 +59,7 @@
 
 - name: Set release_url for development envs
   set_fact:
-    release_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview"
+    release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview') }}"
   when: build == 'dev'
   tags:
   - always
@@ -67,7 +67,7 @@
 
 - name: Set release_url for GA envs
   set_fact:
-    release_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
+    release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp') }}"
   when: build == 'ga'
   tags:
   - always
@@ -82,14 +82,30 @@
   tags:
   - validation
 
-- name: Fail when provision host no online access (can't assume access)
-  fail:
-    msg: |
-         A host with online access is required. Support for disconnected install is not added yet.
+- name: Take actions when no internet access
+  block:
+  - name: Notify when provision host has no online access (can't assume access)
+    debug:
+      msg: |
+           A host with online access is required. For disconnected mode include registry_host group in the inventory
+
+  - name: Set fact when url status is different than 200
+    set_fact:
+      cache_provisioner: false
   when:
     - check_url.status == -1
   tags:
-  - validation
+    - validation
+    - cache
+
+- name: Check if url status is 200 is true
+  set_fact:
+    cache_provisioner: true
+  when:
+    - check_url.status == 200
+  tags:
+    - validation
+    - cache
 
 - name: Fail if dualstack_baremetal and ipv4_baremetal are both true
   fail:
@@ -138,3 +154,4 @@
   tags:
   - always
   - validation
+...

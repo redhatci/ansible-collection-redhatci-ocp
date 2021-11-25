@@ -32,7 +32,7 @@
   lineinfile:
     path: /etc/hosts
     state: absent
-    regex: "^{{ extcidrnet | ipaddr('10') | ipaddr('address') }} api.{{ cluster }}.{{ domain }}"
+    regex: "^{{ sno_extnet_ip }} api.{{ cluster }}.{{ domain }}"
   become: yes
   when:
     - ansible_facts['distribution'] == "Fedora"

@@ -1,16 +1,21 @@
 ---
 # defaults file for sno-node-prep
-activation_key: ""
-org_id: ""
 network_type: "OVNKubernetes"
 firewall: "firewalld"
+ipv4_enabled: true
 ipv6_enabled: false
 no_proxy_list: ""
 http_proxy: ""
 https_proxy: ""
 ipv4_baremetal: false
 ipv4_provisioning: false
+ipv6_baremetal: false
 dualstack_baremetal: false
 vm_net_name: "sno-{{ cluster }}"
 vm_pool_name: default
 vm_nic_mac: "52:54:00:ee:42:e1"
+sno_extnet_ip: ""
+tftp_dir: "/var/lib/tftpboot"
+dnsmasq_enabled: true
+webserver_url: ""
+registry_host_exists: false

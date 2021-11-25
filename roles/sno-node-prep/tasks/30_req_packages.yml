@@ -1,9 +1,21 @@
 ---
-- name: Install required packages
+- name: "Install required packages"
   yum:
-    name: "{{ package_list }}"
+    name: "{{ default_pkg_list }}"
     state: present
     update_cache: true
     disable_gpg_check: yes
   become: yes
   tags: packages
+
+- name: "Install specific packages for SNO virtual"
+  yum:
+    name: "{{ snovm_pkg_list }}"
+    state: present
+    disable_gpg_check: yes
+  become: yes
+  when: |
+    - (sno_install_type is undefined) or
+      (sno_install_type == "virtual")
+  tags: packages
+...

@@ -32,6 +32,16 @@
       - auths is defined
       - auths.auths is defined
       - webserver_url is defined
+      - install_type | string
+      - install_type in ['ipi', 'sno']
+
+- name: "Validate required type of SNO deployment"
+  assert:
+    that:
+      - sno_install_type | string
+      - sno_install_type in ['virtual', 'baremetal']
+  when:
+    - install_type == 'sno'
 
 - name: "Mirroring OCP"
   debug:
