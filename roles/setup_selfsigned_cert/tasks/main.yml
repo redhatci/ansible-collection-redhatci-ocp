@@ -88,13 +88,3 @@
     flat: yes
   tags:
     - copy_config
-
-- name: Get cert contents
-  set_fact:
-    mirror_certificate: "{{ lookup('file', fetched_dest + '/' + cert_file_prefix + '.crt') }}"
-
-- name: Populate mirror_certificate in bastion
-  set_fact:
-    mirror_certificate: "{{ mirror_certificate }}"
-  delegate_to: bastion
-  delegate_facts: true

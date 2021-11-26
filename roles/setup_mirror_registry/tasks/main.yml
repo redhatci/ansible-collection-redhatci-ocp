@@ -7,6 +7,8 @@
   tags:
     - create_registry
 
+- import_tasks: set_mirror_cert.yml
+
 - import_tasks: setup_registry.yml
   tags: create_registry
 
