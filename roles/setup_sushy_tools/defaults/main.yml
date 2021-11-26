@@ -1,4 +1,4 @@
-cert_vars_host_var_key: vm_host
+cert_vars_host_var_key: "{{ inventory_hostname }}"
 sushy_tools_port: 8082
 sushy_dir: "/opt/sushy-tools"
 sushy_auth_dir: "{{ sushy_dir }}/auth"
