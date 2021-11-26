@@ -3,7 +3,7 @@
 - name: Copy cnf-test-partner image
   shell: |
     set -ex
-    skopeo copy --authfile {{ provisionhost_registry_creds }} \
+    skopeo copy --authfile {{ provisionhost_registry_creds }} --remove-signatures \
     docker://quay.io/testnetworkfunction/cnf-test-partner:latest \
     docker://{{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner:latest
 
@@ -11,7 +11,7 @@
 - name: Copy image to be used with oc debug
   shell: |
     set -ex
-    skopeo copy --authfile {{ provisionhost_registry_creds }} \
+    skopeo copy --authfile {{ provisionhost_registry_creds }} --remove-signatures \
     docker://quay.io{{ tnf_debug_image | regex_search('/.*') }} \
     docker://{{ provisionhost_registry }}{{ tnf_debug_image | regex_search('/.*') }}
 
