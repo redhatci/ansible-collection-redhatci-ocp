@@ -1,28 +1,13 @@
-- name: Set kvm_nodes
-  vars:
-    all_kvm_nodes: {}
+- name: Set defualt for kvm_nodes
   set_fact:
-    all_kvm_nodes: "{{ all_kvm_nodes | combine({
-        hostvars[item]['vm_host']: (
-          (all_kvm_nodes[hostvars[item]['vm_host']] | default([])) + (
-            [{
-              'name': item.startswith(cluster_name) | ternary(item, (cluster_name + '_' + item)),
-              'uuid': hostvars[item]['uuid'] | default(''),
-              'mac':  hostvars[item]['mac'],
-              'vm_host': hostvars[item]['vm_host'],
-              'memory': hostvars[item]['vm_spec']['ram_mib'] | default(vm_params[hostvars[item]['role']]['memory']),
-              'vcpu': hostvars[item]['vm_spec']['cpu_cores'] | default(vm_params[hostvars[item]['role']]['vcpu']),
-              'disks': (
-                {'main': hostvars[item]['vm_spec']['disk_size_gb'] | default(vm_params[hostvars[item]['role']]['disk_size'])}
-                | combine(hostvars[item]['vm_spec']['extra_disks'] | default({}))
-              ),
-            }]
-          )
-        )
-      })
-     }}"
-  loop: "{{ (groups['masters'] + groups['workers'] | default([])) | unique }}"
-  when: hostvars[item]['vendor'] | lower == 'kvm'
+    all_kvm_nodes: {}
+
+- name: Set kvm_nodes
+  include_tasks: create_node.yml
+  loop: "{{ groups['nodes'] }}"
+  loop_control:
+    loop_var: kvm_node_hostname
+  when: hostvars[kvm_node_hostname]['vendor'] | lower == 'kvm'
 
 - name: Distribute kvm_nodes for vm_host to that host
   set_fact:

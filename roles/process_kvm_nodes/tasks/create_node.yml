@@ -1,0 +1,34 @@
+- name: Set hostvars alias
+  set_fact:
+    kvm_node_hvars: "{{ hostvars[kvm_node_hostname] }}"
+
+- name: Set spec and role
+  set_fact:
+    kvm_node_spec:  "{{ kvm_node_hvars['vm_spec'] | default({}) }}"
+    kvm_node_defaults: "{{ vm_group_params[kvm_node_hvars['role']] }}"
+
+- name: Set default main disk
+  set_fact:
+    kvm_node_disks:
+      main: "{{ kvm_node_spec['disk_size_gb'] | default(kvm_node_defaults['disk_size']) }}"
+
+- name: Add extra disks
+  set_fact:
+    kvm_node_disks: "{{ kvm_node_disks | combine(kvm_node_spec['extra_disks']) }}"
+  when: "'extra_disks' in kvm_node_spec"
+
+- name: Build node
+  set_fact:
+    kvm_node:
+      name: "{{ kvm_node_hostname.startswith(cluster_name) | ternary(kvm_node_hostname, (cluster_name + '_' + kvm_node_hostname)) }}"
+      uuid: "{{ kvm_node_hvars['uuid'] | default('') }}"
+      mac:  "{{ kvm_node_hvars['mac'] }}"
+      vm_host: "{{ kvm_node_hvars['vm_host'] }}"
+      memory: "{{ kvm_node_spec['ram_mib'] | default(kvm_node_defaults['memory']) }}"
+      vcpu: "{{ kvm_node_spec['cpu_cores'] | default(kvm_node_defaults['vcpu']) }}"
+      disks: "{{ kvm_node_disks }}"
+
+- name: Update all_kvm_nodes
+  set_fact:
+    all_kvm_nodes: "{{ all_kvm_nodes | combine({kvm_node.vm_host: ((all_kvm_nodes[kvm_node.vm_host] | default([])) +  [kvm_node])}) }}"
+
