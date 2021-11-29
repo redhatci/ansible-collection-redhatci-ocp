@@ -1,14 +1,19 @@
 ---
 - name: Run preflight runtime-assets to get scorecard-test image
   block:
-    - name: Run preflight runtime-assets
+    - name: Ensure the absence of preflight container
       shell: |
-        podman run \
-        -it \
-        --rm \
-        --pull=always \
-        --name preflight \
-        {{ preflight_version }} \
+        podman rm preflight
+      ignore_errors: true
+
+    - name: Run preflight runtime-assets
+      shell: >
+        podman run
+        -it
+        --rm
+        --pull=always
+        --name preflight
+        {{ preflight_version }}
         runtime-assets
       register: preflight_assets
 
@@ -27,13 +32,13 @@
         scorecard_images: "{{ config_images + busybox_images }}"
 
     - name: Mirror scorecard images
-      shell: |
-        skopeo copy \
-        --all \
-        --remove-signatures \
-        --authfile {{ provisionhost_registry_creds }} \
-        --dest-tls-verify=false \
-        docker://{{ item }} \
+      shell: >
+        skopeo copy
+        --all
+        --remove-signatures
+        --authfile {{ provisionhost_registry_creds }}
+        --dest-tls-verify=false
+        docker://{{ item }}
         docker://{{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
       loop: "{{ scorecard_images }}"
   when: dci_disconnected | default(false) | bool
