@@ -8,7 +8,7 @@ vm_spec_defaults:
     vcpu: 8
     disk_size: 50
 
-vm_params:
+vm_group_params:
   master:
     memory: "{{ vm_spec_master_memory | default(vm_spec_defaults.master.memory) }}"
     vcpu: "{{ vm_spec_master_vcpu | default(vm_spec_defaults.master.vcpu) }}"
