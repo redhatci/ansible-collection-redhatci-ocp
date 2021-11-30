@@ -68,7 +68,7 @@
             cert_file_prefix: sushy_tools
             cert_path: "{{ sushy_cert_dir }}/sushy_tools_{{ inventory_hostname }}.crt"
             privatekey_path: "{{ sushy_cert_dir }}/sushy_tools.key"
-            cert_common_name: "{{ ansible_fqdn }}"
+            cert_common_name: "{{ sushy_fqdn }}"
 
     - name: Create sushy-tools conf
       template:
