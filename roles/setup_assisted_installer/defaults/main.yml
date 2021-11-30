@@ -9,6 +9,7 @@ assisted_service_image: "quay.io/ocpmetal/assisted-service:{{ assisted_service_t
 assisted_service_gui_image: "quay.io/ocpmetal/ocp-metal-ui:{{ assisted_service_gui_tag }}"
 assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
 
+# Don't forget to update the sample inventory
 assisted_service_openshift_versions_defaults:
   "4.6":
     display_name: 4.6.16
