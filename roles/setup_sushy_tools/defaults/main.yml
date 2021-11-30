@@ -9,3 +9,4 @@ file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
 
 secure_sushy_tools: "{{ secure | default(true) }}"
+sushy_fqdn: "{{ ansible_fqdn }}"
