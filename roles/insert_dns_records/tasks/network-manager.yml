@@ -17,3 +17,8 @@
     name: NetworkManager
     state: started
     enabled: true
+
+- name: Reload NetworkManager
+  ansible.builtin.service:
+    name: NetworkManager
+    state: reloaded
