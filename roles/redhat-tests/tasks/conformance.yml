@@ -3,34 +3,33 @@
   shell:
    cmd: >
     podman run --pull=always --rm
-    -v {{ dci_cluster_configs_dir }}:/tests:Z
-    -e TESTS={{ dci_openshift_agent_conformance }}
+    -v {{ ts_configs_dir }}:/tests:Z
+    -e TESTS={{ ts_conformance_tests }}
     -e KUBECONFIG=/tests/kubeconfig
-    quay.io/openshift/origin-tests:{{ ocp_version_maj }}.{{ ocp_version_min }}
-    /bin/bash -c "openshift-tests run {{ dci_openshift_agent_conformance }} --junit-dir /tests" > {{ dci_cluster_configs_dir }}/conformance-run.txt
+    {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
+    /bin/bash -c "openshift-tests run {{ ts_conformance_tests }} --junit-dir /tests" > {{ ts_configs_dir }}/conformance-run.txt
   ignore_errors: yes
   when:
-   - not (dci_disconnected | default(false) | bool)
-   - ocp_version_maj|int == 4
-   - ocp_version_min|int >= 7
+    - not (dci_disconnected | default(false) | bool)
+    - ts_ocp_version_maj|int == 4
+    - ts_ocp_version_min|int >= 7
 
 - name: "test_ redhat-tests: Run the openshift conformance test suite (disconnected)"
   shell:
     cmd: >
      podman run --pull=always --rm
-     -v {{ dci_cluster_configs_dir }}:/tests:Z
-     -v {{ conformance_registry_certificate }}:/etc/ssl/certs/domain.crt:z
-     -v {{ conformance_registry_auth }}:/auths.json:z
-     -e TESTS={{ dci_openshift_agent_conformance }}
+     -v {{ ts_configs_dir }}:/tests:Z
+     -v {{ ts_registry_auth }}:/auths.json:z
+     -v {{ ts_registry_certificate }}:/etc/ssl/certs/domain.crt:z
      -e KUBECONFIG=/tests/kubeconfig
-     quay.io/openshift/origin-tests:{{ ocp_version_maj }}.{{ ocp_version_min }}
-     /bin/bash -c "openshift-tests images --to-repository {{ conformance_local_registry }}/conformance-test
+     {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
+     /bin/bash -c "openshift-tests images --to-repository {{ ts_registry }}/conformance-test
      | oc image mirror -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
-     && openshift-tests run {{ dci_openshift_agent_conformance }} --from-repository {{ conformance_local_registry }}/conformance-test
-     --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /tests" > {{ dci_cluster_configs_dir }}/conformance-run.txt
+     && openshift-tests run {{ ts_conformance_tests }} --from-repository {{ ts_registry }}/conformance-test
+     --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /tests" > {{ ts_configs_dir }}/conformance-run.txt
   ignore_errors: yes
   when:
     - dci_disconnected | default(false) | bool
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int >= 8
+    - ts_ocp_version_maj|int == 4
+    - ts_ocp_version_min|int >= 8
 ...

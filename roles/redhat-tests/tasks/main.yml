@@ -3,5 +3,14 @@
   include_tasks: conformance.yml
   tags:
   - conformance
+  when:
+    - ts_conformance_tests | string | length > 0
+    - ts_registry_certificate is defined
 
+- name: "redhat-tests : Run openshift CSI driver tests"
+  include_tasks: csi-tests.yml
+  tags:
+  - csi-tests
+  when:
+    - ts_csi_test_manifest | string | length > 0
 ...
