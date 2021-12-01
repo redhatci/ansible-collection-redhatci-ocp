@@ -47,9 +47,9 @@
       <controller type='scsi' model='virtio-scsi' />
     {% endif %}
 {% for network in host['networks'] %}
-    <interface type='network'>
+    <interface type='bridge'>
       <model type='virtio'/>
-      <source network='{{ network['name'] }}'/>
+      <source bridge='{{ network['name'] }}'/>
       <guest dev='eth{{ loop.index0 }}'/>
   {% if network['mac'] is defined %}
     <mac address='{{ network['mac'] }}'/>
