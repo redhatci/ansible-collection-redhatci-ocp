@@ -2,22 +2,16 @@
 # this may happen at 2.4.
 - name: set API version for <= 2.4
   when:
+    - cnv_version is defined
     - cnv_version is version('2.4', '<=')
   set_fact:
       api_version: v1alpha1
   changed_when: false
 
-- name: set API version for > 2.4
-  when:
-    - cnv_version is version('2.4', '>')
-  set_fact:
-    api_version: v1beta1
-  changed_when: false
-
 - name: install hco
   k8s:
     definition:
-      apiVersion: "hco.kubevirt.io/{{ api_version }}"
+      apiVersion: "hco.kubevirt.io/{{ api_version | default('v1beta1') }}"
       kind: HyperConverged
       metadata:
         name: kubevirt-hyperconverged
@@ -31,7 +25,7 @@
 
 - name: test_ Check for hyperconverged
   community.kubernetes.k8s_info:
-    api_version: "hco.kubevirt.io/{{ api_version }}"
+    api_version: "hco.kubevirt.io/{{ api_version | default('v1beta1') }}"
     namespace: "{{ cnv_ns }}"
     kind: HyperConverged
     wait: true
