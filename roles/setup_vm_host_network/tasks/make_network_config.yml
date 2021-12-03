@@ -26,7 +26,7 @@
             - ip: "{{ vm_bridge_ip }}"
               prefix: "{{ vm_bridge_prefix }}"
         bridge:
-          stp: false
+          stp: True
         port:
           name: "{{ vm_bridge_port_name }}"
 
