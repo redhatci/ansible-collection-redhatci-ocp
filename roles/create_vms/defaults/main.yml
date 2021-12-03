@@ -1,8 +1,3 @@
-# number of extra VMs to create but not deploy, used as OSP computes
-
-vm_bridge_ip: "{{ machine_network_cidr | ipaddr('next_usable') }}"
-vm_bridge_prefix: "{{ machine_network_cidr | ipaddr('prefix') }}"
-bridge_name: "{{ cluster_name }}-br"
 network_name: "net-{{ cluster_name }}"
 vm_create_scripts_dir: /home/redhat/vm_create_scripts/
 

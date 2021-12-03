@@ -41,6 +41,25 @@ interfaces:
         - {{ slave }}
         {% endfor %}
     {% endif %}
+    {% if (interface.type | default('ethernet')) == 'vlan' %}
+    vlan:
+      base-iface: {{ interface.vlan.interface }}
+      id: {{ interface.vlan.tag }}
+    {% endif %}
+    {% if (interface.type | default('ethernet')) == 'linux-bridge' %}
+    bridge:
+      options:
+        group-forward-mask: {{ interface.bridge.group_forward_mask | default(0) }}
+        mac-ageing-time: {{ interface.bridge.mac_ageing_time | default(20) }}
+        multicast-snooping: {{ interface.bridge.snooping | default(true) }}
+        stp:
+          enabled: {{ interface.bridge.stp | default(true) }}
+      port:
+        - name: {{ interface.port.name }}
+          stp-hairpin-mode: {{ interface.bridge.port.hairpin | default(false) }}
+          stp-path-cost: {{ interface.bridge.port.cost | default(100) }}
+          stp-priority: {{ interface.bridge.port.priority | default(32) }}
+  {% endif %}
 {% endfor %}
 {% if network_config.routes is defined %}
 routes:

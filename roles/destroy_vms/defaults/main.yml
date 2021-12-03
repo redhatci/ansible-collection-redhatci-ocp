@@ -11,5 +11,5 @@ virt_packages:
 images_dir: /var/lib/libvirt/images/
 vm_create_scripts_dir: /home/redhat/vm_create_scripts/
 
-bridge_name: "{{ cluster_name }}-br"
+vm_bridge_name: "{{ cluster_name }}-br"
 network_name: "net-{{ cluster_name }}"

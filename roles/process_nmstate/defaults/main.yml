@@ -1,0 +1,5 @@
+# target_name is the hostname for which the template will be rendered. The reason for this variable is
+# becuase this role is used in two roles (setup_vm_host_network & generate_discovery_iso).
+# This default will be used in setup_vm_host_network, while generate_discovery_iso will set target_name
+# with the host which the nmstate is being rendered for.
+target_name: "{{ inventory_hostname }}"

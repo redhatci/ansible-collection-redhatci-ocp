@@ -10,7 +10,7 @@ virt-install \
     --vcpus={{ item.vcpu }} \
     --os-variant=rhel8.3 \
     --os-type linux \
-    --network=bridge:{{ bridge_name }},mac="{{ item.mac }}" \
+    --network=bridge:{{ vm_bridge_name }},mac="{{ item.mac }}" \
     --disk path={{ images_dir }}/{{ item.name }}.qcow2,size={{ item.disk_size }},format=qcow2 \
     --graphics vnc \
     --noautoconsole \

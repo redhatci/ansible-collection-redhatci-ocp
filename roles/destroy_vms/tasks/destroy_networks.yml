@@ -18,17 +18,17 @@
     type: bridge
     state: absent
   loop:
-    - "{{ bridge_name }}"
-    - "{{ vm_bridge_interface }}_{{ bridge_name }}"
+    - "{{ vm_bridge_name }}"
+    - "{{ vm_bridge_interface }}_{{ vm_bridge_name }}"
   ignore_errors: yes
   become: true
   when: (SETUP_VM_BRIDGE | default(true)) | bool == true
 
 - name: Delete existing bridges (if any)
   community.general.nmcli:
-    conn_name: "{{ bridge_name }}.{{ vlan_tag }}"
+    conn_name: "{{ vm_bridge_name }}.{{ vm_vlan_tag }}"
     type: vlan
     state: absent
   ignore_errors: yes
   become: true
-  when: (SETUP_VM_BRIDGE | default(true)) | bool == true and vlan_tag is defined
+  when: (SETUP_VM_BRIDGE | default(true)) | bool == true and vm_vlan_tag is defined
