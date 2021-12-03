@@ -12,10 +12,6 @@
         name: libvirtd
         state: started
 
-- name: Prepare Bridges
-  import_tasks: prepare_bridges.yml
-  when: (SETUP_VM_BRIDGE | default(true)) | bool == true
-
 - name: Prepare Network
   import_tasks: prepare_network.yml
 
