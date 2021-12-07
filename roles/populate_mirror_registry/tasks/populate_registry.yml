@@ -16,8 +16,7 @@
 
     - name: Podman login to remote registry
       containers.podman.podman_login_info:
-        registry: "{{ remote_registry }}"
-      register: login
+        registry: "registry.redhat.io"
       environment:
         XDG_RUNTIME_DIR:  "{{ config_file_path }}"
 
@@ -26,29 +25,29 @@
         /usr/bin/oc image mirror
         -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
         {{ item.remote }}
-        {{ item.local }}:latest
+        {{ item.local }}:{{ item.local_tag }}
       loop: "{{ ocpmetal_images }}"
 
     - name: Mirror remote registry to local
       command: >
         /usr/bin/oc adm release mirror
           -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
-          --from="{{ release_image | quote }}"
-          --to-release-image="{{ local_registry | quote }}/{{ local_repo | quote }}:{{ openshift_full_version }}-x86_64"
-          --to="{{ local_registry | quote }}/{{ local_repo | quote }}"
+          --from="{{ release_image_item.remote | quote }}"
+          --to-release-image="{{ release_image_item.local | quote }}:{{ release_image_item.local_tag | quote }}"
+          --to="{{ release_image_item.local | quote }}"
 
     - name: Build pruned OLM index
       command: >
-        opm index prune --from-index "{{ remote_registry_index }}"
+        opm index prune --from-index "{{ olm_index_item.remote }}"
           --packages "{{ mirror_packages | join(',') }}"
-          --tag "{{ local_registry }}/{{ local_registry_index_tag }}"
+          --tag "{{ olm_index_item.local }}:{{ olm_index_item.local_tag }}"
       environment:
         XDG_RUNTIME_DIR: "{{ config_file_path }}"
 
     - name: Push pruned index to local registry
       command: >
         podman push --tls-verify=false
-        {{ local_registry }}/{{ local_registry_index_tag }}
+        {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
         --authfile "{{ config_file_path }}/{{ pull_secret_file_name }}"
   become: true
   tags:

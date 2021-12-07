@@ -16,24 +16,32 @@ opm_tar: opm-linux.tar.gz
 # The information for the locally created registry
 registry_fqdn: "{{ ansible_fqdn }}"
 local_registry: "{{ registry_fqdn }}:{{ registry_port }}"
-local_repo: ocp4/openshift4
-local_registry_index_tag: "olm-index/redhat-operator-index:v{{ openshift_version_parts[:2] | join('.') }}"
-local_registry_image_tag: olm
-remote_registry: registry.redhat.io
-remote_registry_index: "{{ remote_registry }}/redhat/redhat-operator-index:v{{ openshift_version_parts[:2] | join('.') }}"
 registry_port: 5000
 
 installer_agent_image:
   remote: "quay.io/ocpmetal/assisted-installer-agent@{{ image_hashes.installer_agent }}"
   local: "{{ local_registry }}/ocpmetal/assisted-installer-agent"
+  local_tag: "latest"
 
 installer_image:
   remote: "quay.io/ocpmetal/assisted-installer@{{ image_hashes.installer }}"
   local: "{{ local_registry }}/ocpmetal/assisted-installer"
+  local_tag: "latest"
 
 installer_controller_image:
   remote: "quay.io/ocpmetal/assisted-installer-controller@{{ image_hashes.controller }}"
   local: "{{ local_registry }}/ocpmetal/assisted-installer-controller"
+  local_tag: "latest"
+
+release_image_item:
+  remote: "quay.io/openshift-release-dev/ocp-release@{{ image_hashes['release_' + openshift_version] }}"
+  local: "{{ local_registry }}/ocp4/openshift4"
+  local_tag: "{{ openshift_full_version }}-x86_64"
+
+olm_index_item:
+  remote: "registry.redhat.io/redhat/redhat-operator-index:v{{ openshift_version_parts[:2] | join('.') }}"
+  local: "{{ local_registry }}/olm-index/redhat-operator-index"
+  local_tag: "v{{ openshift_version_parts[:2] | join('.') }}"
 
 ocpmetal_images:
   - "{{ installer_agent_image }}"
