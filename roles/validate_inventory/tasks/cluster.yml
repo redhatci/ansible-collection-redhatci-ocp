@@ -1,4 +1,10 @@
 ---
+- name: Assert Openshift version is supported
+  assert:
+    that:
+      - openshift_full_version in supported_ocp_versions
+    fail_msg: "We do not support that version of openshift"
+
 - name: Assert valid master configuration
   assert:
     that:
