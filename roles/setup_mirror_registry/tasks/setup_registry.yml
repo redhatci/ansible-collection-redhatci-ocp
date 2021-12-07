@@ -68,6 +68,12 @@
     dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
     mode: 0644
 
+- name: Update bastion
+  set_fact:
+    pull_secret: "{{ pull_secret }}"
+  delegate_to: bastion
+  delegate_facts: True
+
 - name: Create container to serve the registry
   containers.podman.podman_container:
     name: "{{ image_name_registry }}"
