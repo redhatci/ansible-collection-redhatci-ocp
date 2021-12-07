@@ -1,18 +1,12 @@
 ---
 - name: Run preflight runtime-assets to get scorecard-test image
   block:
-    - name: Ensure the absence of preflight container
-      shell: |
-        podman rm preflight
-      ignore_errors: true
-
     - name: Run preflight runtime-assets
       shell: >
         podman run
         -it
         --rm
         --pull=always
-        --name preflight
         {{ preflight_version }}
         runtime-assets
       register: preflight_assets
