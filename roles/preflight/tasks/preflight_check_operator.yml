@@ -48,25 +48,25 @@
     - OPENSHIFT_AUTH: "{{ provisionhost_registry_creds }}"
     - OO_BUNDLE: "{{ operator.image }}"
     - OO_INDEX: "{{ OO_INDEX }}"
-  shell: |
-    podman run \
-    -it \
-    --rm \
-    --pull=always \
-    --privileged \
-    -e PFLT_JUNIT=true \
-    -e PFLT_ARTIFACTS=/artifacts \
-    -e PFLT_LOGFILE=/artifacts/preflight.log \
-    -e PFLT_LOGLEVEL=trace \
-    -e KUBECONFIG=/kubeconfig \
-    -e PFLT_INDEXIMAGE={{ OO_INDEX }} \
-    -e PFLT_NAMESPACE={{ preflight_namespace }} \
-    -e PFLT_SERVICEACCOUNT=default \
-    -e PFLT_SCORECARD_IMAGE={{ config_images[0] }} \
-    -v {{ preflight_kubeconfig }}/kubeconfig:/kubeconfig \
-    -v {{ preflight_artifacts }}:/artifacts \
-    {{ preflight_version }} \
-    check operator \
+  shell: >
+    podman run
+    -it
+    --rm
+    --pull=always
+    --privileged
+    -e PFLT_JUNIT=true
+    -e PFLT_ARTIFACTS=/artifacts
+    -e PFLT_LOGFILE=/artifacts/preflight.log
+    -e PFLT_LOGLEVEL=trace
+    -e KUBECONFIG=/kubeconfig
+    -e PFLT_INDEXIMAGE={{ OO_INDEX }}
+    -e PFLT_NAMESPACE={{ preflight_namespace }}
+    -e PFLT_SERVICEACCOUNT=default
+    -e PFLT_SCORECARD_IMAGE={{ config_images[0] }}
+    -v {{ preflight_kubeconfig }}/kubeconfig:/kubeconfig
+    -v {{ preflight_artifacts }}:/artifacts
+    {{ preflight_version }}
+    check operator
     {{ operator.image }}
   register: preflight_exec
   ignore_errors: true
@@ -78,19 +78,14 @@
     kind: Namespace
     state: absent
 
-- name: Upload passed and failed tests
-  block:
-    - name: Set prefix for preflight check operator output files
-      set_fact:
-        preflight_prefix: "preflight_{{ operator.image.split('@')[0].split('/')[-1] }}_{{ operator.index_image.split(':')[-1] }}"
-
-    - name: Upload logs for preflight check operator into DCI
-      copy:
-        src: "{{ item }}"
-        dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item.split('/')[-1] }}"
-      with_fileglob:
-        - "{{ preflight_artifacts }}/*"
-      ignore_errors: true
+- name: Upload logs for preflight check operator into DCI
+  vars:
+    preflight_prefix: "preflight_{{ operator.name }}_{{ operator.version }}"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
+  with_fileglob:
+    - "{{ preflight_artifacts }}/*"
 
 - name: Remove tmp dir
   file:

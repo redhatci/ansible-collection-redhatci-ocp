@@ -1,5 +1,5 @@
 ---
-preflight_version: quay.io/opdev/preflight:1.0.5
+preflight_version: quay.io/opdev/preflight:1.0.6
 preflight_namespace: preflight-testing
 
 ...

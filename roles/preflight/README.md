@@ -5,7 +5,7 @@
 Name                               | Default                                              | Description
 ---------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
 do\_preflight\_tests               | false                                                | Launch the [Preflight Cert Suite](https://github.com/redhat-openshift-ecosystem/openshift-preflight)
-preflight\_version                 | quay.io/opdev/preflight:1.0.4                        | [Version of Preflight Cert Suite to run](https://quay.io/repository/opdev/preflight?tab=tags)
+preflight\_version                 | quay.io/opdev/preflight:1.0.6                        | [Version of Preflight Cert Suite to run](https://quay.io/repository/opdev/preflight?tab=tags)
 preflight\_operators\_to\_check    | undefined                                            | List of operators to be checked with Preflight Cert Suite. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-check) for the example.
 operator\_sdk\_tool\_path          | undefined                                            | Path to operator-sdk binary, optional. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-check) for the example.
 preflight\_namespace               | preflight-testing                                    | Namespace to use for preflight tests
