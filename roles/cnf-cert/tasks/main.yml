@@ -1,14 +1,10 @@
 ---
-- block:
+- name: pre-run
+  include_tasks: pre-run.yml
 
-    - name: pre-run
-      include_tasks: pre-run.yml
+- name: tests
+  include_tasks: tests.yml
 
-    - name: tests
-      include_tasks: tests.yml
-
-    - name: post-run
-      include_tasks: post-run.yml
-
-  when: do_cnf_cert|bool
+- name: post-run
+  include_tasks: post-run.yml
 ...
