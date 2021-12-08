@@ -1,0 +1,18 @@
+
+---
+
+- name: Validate we have all the pieces
+  assert:
+    that:
+      - kubeconfig_path is defined
+      - ocp_version_full is defined
+    fail_msg: "Missing required parameters/variables"
+    success_msg: "All required parameters/variables are defined"
+
+- name: "Set Logs path"
+  set_fact:
+    logs_dir: "{{ job_logs.path | default ('/tmp')}}"
+
+- name: Run tests
+  include_tasks: tests.yml
+...
