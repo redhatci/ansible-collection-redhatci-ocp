@@ -48,3 +48,59 @@
   delegate_to: "{{ item }}"
   delegate_facts: yes
   loop: "{{ groups['day2_workers'] }}"
+
+#### patch discovery ignition on restricted network environments ###
+
+- name: Load patch for search registries
+  set_fact:
+    search_registries: "{{ lookup('template', 'patch-search-registries.j2') }}"
+  when: disconnected | bool == True
+
+- name: Load patch for discovery ignition
+  set_fact:
+    patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition.j2') }}"
+  when: disconnected | bool == True
+
+- name: Patch discovery ignition
+  uri:
+    #url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/discovery-ignition"
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}/discovery-ignition"
+    method: PATCH
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body:
+      {
+        "config": "{{ patch_discovery_ignition | to_json(ensure_ascii=False) | string }}",
+      }
+  when: disconnected | bool == True
+  register: http_reply
+
+#### patch cluster install config on restricted network environments ###
+
+- name: Load patch for install config
+  set_fact:
+    patch_install_config: "{{ lookup('template', 'patch-install-config.j2') | from_yaml }}"
+  when: disconnected | bool == True
+
+- name: Add network_type to patch_install_config
+  set_fact:
+    patch_install_config: "{{ lookup('template', 'patch-network-type.j2') | from_yaml | combine(patch_install_config | default({}))  }}"
+  when: network_type is defined
+
+- name: Patch install config
+  uri:
+    #url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/install-config"
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}/install-config"
+    method: PATCH
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body: "{{ patch_install_config | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
+  when: patch_install_config is defined
+  register: http_reply
+
+- name: Apply manifests before cluster installation
+  include_tasks: manifest.yml
+  loop: "{{ manifest_templates }}"
+  when: manifests | bool == True
