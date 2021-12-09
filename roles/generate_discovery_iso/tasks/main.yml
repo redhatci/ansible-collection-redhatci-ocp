@@ -10,7 +10,7 @@
 - name: static IP addresses
   include_tasks: static.yml
   when: hostvars[item].network_config is defined
-  loop: "{{ groups['masters'] + ( groups['workers'] | default([]) ) }}"
+  loop: "{{ groups['nodes'] | default([])}}"
 
 - name: IP config
   set_fact:
