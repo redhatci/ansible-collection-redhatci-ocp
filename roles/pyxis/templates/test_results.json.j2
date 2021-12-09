@@ -1,0 +1,23 @@
+{
+  "_links": {
+    "cert_project": {
+      "href": "{{ operator.pyxis_identifier }}"
+    },
+    "container_image": {
+      "href": "{{ operator.image }}"
+    }
+  },
+  "cert_project": "{{ operator.pyxis_identifier }}",
+  "certification_hash": "{{ preflight_output.certification_hash }}",
+  "image": "{{ operator.image }}",
+  "operator_package_name": "{{ operator.name }}",
+  "org_id": 0,
+  "passed": {{ preflight_output.passed }},
+  "results": {{ preflight_output.results }},
+  "test_library": {{ preflight_output.test_library }},
+  "tested_on": {
+    "name": "OCP",
+    "version": "{{ ocp_version }}"
+  },
+  "version": "{{ operator.version }}"
+}
