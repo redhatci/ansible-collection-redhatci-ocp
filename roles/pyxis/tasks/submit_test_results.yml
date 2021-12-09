@@ -1,0 +1,42 @@
+---
+- name: Verify that pyxis identifier is provided
+  fail:
+    msg: Impossible to submit preflight results to pyxis. Please provide pyxis_identifier.
+  when: operator.pyxis_identifier is undefined
+
+- name: Retrieve results of the preflight tests
+  vars:
+    preflight_prefix: "preflight_{{ operator.name }}_{{ operator.version }}"
+    preflight_results_file: "{{ job_logs.path }}/{{ preflight_prefix }}_results.json"
+  set_fact:
+    preflight_output: "{{ lookup('file', preflight_results_file) | from_json }}"
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+  no_log: true
+
+- name: Get oc version
+  block:
+    - name: Display oc version
+      shell: |
+        {{ oc_tool_path }} version
+      register: ocp_output
+
+    - name: Extract oc version
+      set_fact:
+        ocp_version: "{{ ocp_output.stdout | regex_search('Server Version: [0-9]+.[0-9]+.[0-9]+') | regex_search('[0-9]+.[0-9]+.[0-9]+')}}"
+
+- name: Print JSON to be submitted
+  debug:
+    msg: "{{ lookup('template', 'templates/test_results.json.j2') }}"
+
+- name: Submit to Pyxis
+  uri:
+    url: "{{ pyxis_url }}/{{ operator.pyxis_identifier }}/test-results"
+    method: POST
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    body: "{{ lookup('template', 'templates/test_results.json.j2') }}"
+    status_code: 201
+    timeout: 120
+  no_log: true
+...
