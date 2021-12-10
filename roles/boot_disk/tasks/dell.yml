@@ -21,11 +21,11 @@
       ]
   register: drac_version
 
-- name: Using iDRAC ISO method for 13G and below
+- name: "Found iDrac {{ drac_version.stdout }} | Using iDrac ISO method" 
   fail:
     msg: "Not implemented"
   when: drac_version.stdout | int <= 13
 
-- name: Using iDRAC ISO method for 13G and below
+- name: "Found iDrac {{ drac_version.stdout }} | Using RedFish ISO method" 
   include_tasks: dell_redfish.yml
   when: drac_version.stdout | int > 13
