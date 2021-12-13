@@ -36,11 +36,15 @@
           base_dns_domain: "{{ base_dns_domain | default(messages.value_missing) }}"
           api_vip: "{{ api_vip | default(messages.value_missing) }}"
           ingress_vip: "{{ ingress_vip | default(messages.value_missing) }}"
+          vip_dhcp_allocation: "{{ vip_dhcp_allocation | default(messages.value_missing) }}"
           openshift_full_version: "{{ openshift_full_version | default(messages.value_missing) }}"
           setup_ntp_service: "{{ setup_ntp_service | default(messages.value_missing) }}"
           setup_dns_service: "{{ setup_dns_service | default(messages.value_missing) }}"
           setup_registry_service: "{{ setup_registry_service | default(messages.value_missing) }}"
           setup_http_store_service: "{{ setup_http_store_service | default(messages.value_missing) }}"
+          setup_assisted_installer: "{{ setup_assisted_installer | default(messages.value_missing) }}"
+          discovery_iso_name: "{{ discovery_iso_name | default(messages.value_missing) }}"
+          discovery_iso_download_path: "{{ iso_download_dest_path | default(messages.value_missing) }}"
           groups_filtered: "{{ groups | difference(groups_to_exclude) }}"
       register: display_deployment_plan__confirmation
 
