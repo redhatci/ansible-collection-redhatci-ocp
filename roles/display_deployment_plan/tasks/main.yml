@@ -45,6 +45,7 @@
           setup_assisted_installer: "{{ setup_assisted_installer | default(messages.value_missing) }}"
           discovery_iso_name: "{{ discovery_iso_name | default(messages.value_missing) }}"
           discovery_iso_download_path: "{{ iso_download_dest_path | default(messages.value_missing) }}"
+          is_valid_single_node_openshift_config: "{{ is_valid_single_node_openshift_config | default(messages.value_missing) }}"
           groups_filtered: "{{ groups | difference(groups_to_exclude) }}"
       register: display_deployment_plan__confirmation
 

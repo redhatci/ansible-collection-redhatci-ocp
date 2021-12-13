@@ -1,7 +1,7 @@
 ---
 # tasks file for manifests
 
-- name: Load manifest
+- name: "Load manifest ({{ item }})"
   set_fact:
     manifest: "{{ lookup('template', '{{ item }}.j2' ) }}"
   when: manifests | bool == True
@@ -11,7 +11,7 @@
     verbosity: 1
   when: manifests | bool == True
 
-- name: Apply manifest
+- name: "Apply manifest ({{ item }})"
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/manifests"
     method: POST

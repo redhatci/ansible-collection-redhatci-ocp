@@ -25,3 +25,5 @@ supported_ocp_versions:
   - 4.7.33
   - 4.8.14
   - 4.9.0
+
+single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"

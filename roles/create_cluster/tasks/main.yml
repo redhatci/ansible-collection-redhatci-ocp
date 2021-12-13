@@ -1,7 +1,6 @@
 ---
 # tasks file for create_cluster
 
-# TODO: use the variable for cluster_network_host_prefix
 - name: Create cluster
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}"
@@ -11,24 +10,32 @@
     body_format: json
     status_code: [201]
     return_content: True
-    body:
-      {
-        "name": "{{ CLUSTER_NAME }}",
-        "openshift_version": "{{ OPENSHIFT_VERSION }}",
-        "base_dns_domain": "{{ BASE_DNS_DOMAIN }}",
-        "cluster_network_cidr": "{{ CLUSTER_NETWORK_CIDR }}",
+    # - `ingress_vip` is not provided in the request body because the value
+    #   can't be set for SNO with user-managed networking enabled.
+    #   HA clusters will be patched with the `ingress_vip` setting during
+    #   the execution of the `install_cluster` role.
+    # - the request body is wrapped in a jinja2 expression with the `to_json`
+    #   filter to prevent the `cluster_network_host_prefix` value from being
+    #   type casted to a string. The Assisted Installer API requires this
+    #   input field to be an integer.
+    body: >-
+      {{ {
+        "name": CLUSTER_NAME,
+        "high_availability_mode": (high_availability_mode | title),
+        "openshift_version": OPENSHIFT_VERSION,
+        "base_dns_domain": BASE_DNS_DOMAIN,
+        "cluster_network_cidr": CLUSTER_NETWORK_CIDR,
         "cluster_network_host_prefix": 23,
-        "service_network_cidr": "{{ SERVICE_NETWORK_CIDR }}",
-        "ingress_vip": "{{ INGRESS_VIP }}",
-        "pull_secret": "{{ PULL_SECRET | to_json }}",
-        "ssh_public_key": "{{ SSH_PUBLIC_KEY }}",
-        "vip_dhcp_allocation": "{{ VIP_DHCP_ALLOCATION | lower | bool }}",
-        "api_vip": "{{ API_VIP }}",
-        "http_proxy": "{{ HTTP_PROXY }}",
-        "https_proxy": "{{ HTTPS_PROXY }}",
-        "no_proxy": "{{ NO_PROXY }}",
-        "additional_ntp_source": "{{ NTP_SERVER }}",
-      }
+        "service_network_cidr": SERVICE_NETWORK_CIDR,
+        "pull_secret": (PULL_SECRET | to_json),
+        "ssh_public_key": SSH_PUBLIC_KEY,
+        "vip_dhcp_allocation": (VIP_DHCP_ALLOCATION | lower | bool),
+        "api_vip": API_VIP,
+        "http_proxy": HTTP_PROXY,
+        "https_proxy": HTTPS_PROXY,
+        "no_proxy": NO_PROXY,
+        "additional_ntp_source": NTP_SERVER,
+      } | to_json }}
   when: create | bool == True
   register: http_reply
 

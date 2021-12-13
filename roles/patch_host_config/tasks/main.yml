@@ -63,6 +63,8 @@
         "hosts_names": [ "{{ host }}" ],
         "hosts_roles": [ "{{ host }}" ]
     }
+  # Role can't be changed for SNO hosts
+  when: not single_node_openshift_enabled
   register: http_reply
 
 - name: Set the installation disk path
