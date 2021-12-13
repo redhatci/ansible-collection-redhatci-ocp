@@ -9,7 +9,7 @@
       vars:
         # Every row consists of two columns. To ensure all items in the right column are aligned,
         # a minimum width of the left column is set in the following variable.
-        left_column_width: 26
+        left_column_width: 36
         row_format_str: '%-{{ left_column_width }}s %s'
         # To improve readability, all hosts listed in the "Groups and hosts configuration" section
         # are nested under groups by the number of spaces defined in the variable below.
