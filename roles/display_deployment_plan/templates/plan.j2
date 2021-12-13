@@ -27,6 +27,8 @@ An OpenShift cluster is about to be deployed. Please double check the provided i
 
 * Groups and hosts configuration
 
+  {{ row_format_str | format('Single Node OpenShift (SNO) Mode', inventory.is_valid_single_node_openshift_config) }}
+
 {% for group_name in inventory.groups_filtered %}
   {{ group_name }}:
 {% for host_name in groups[group_name] %}

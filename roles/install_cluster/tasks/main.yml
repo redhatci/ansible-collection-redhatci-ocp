@@ -58,22 +58,38 @@
     loop_var: discovered_host
   no_log: True
 
-# Patch the cluster with the API Virtual IP
-- name: Patch cluster with API Virtual IP
-  uri:
-    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
-    method: PATCH
-    status_code: [201]
-    return_content: True
-    body_format: json
-    body:
-      {
+- name: Patch cluster with config vars relevant to the selected HA mode
+  when: (install | bool == True)
+  block:
+  - name: Set config vars for patching the cluster (SNO)
+    set_fact:
+      cluster_config_patch_request_body: {
+        "machine_network_cidr": "{{ machine_network_cidr }}",
+      }
+    when: single_node_openshift_enabled
+
+  - name: Set config vars for patching the cluster (HA)
+    set_fact:
+      cluster_config_patch_request_body: {
         "vip_dhcp_allocation": "{{ VIP_DHCP_ALLOCATION | lower | bool }}",
         "ingress_vip": "{{ INGRESS_VIP }}",
         "api_vip": "{{ API_VIP }}",
       }
-  when: install | bool == True
-  register: http_reply
+    when: not single_node_openshift_enabled
+
+  - debug: # noqa unnamed-task
+      var: cluster_config_patch_request_body
+      verbosity: 1
+
+  - name: "Patch cluster"
+    uri:
+      url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+      method: PATCH
+      status_code: [201]
+      return_content: True
+      body_format: json
+      body: "{{ cluster_config_patch_request_body }}"
+    register: http_reply
 
 - debug: # noqa unnamed-task
     var: http_reply.json

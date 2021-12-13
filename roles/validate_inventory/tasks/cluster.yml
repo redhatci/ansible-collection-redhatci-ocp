@@ -5,11 +5,22 @@
       - openshift_full_version in supported_ocp_versions
     fail_msg: "We do not support that version of openshift"
 
-- name: Assert valid master configuration
+- name: Assert valid master configuration (HA)
   assert:
     that:
       - groups['masters'] | length >= 3
-    fail_msg: "There must be at least three masters defined."
+    fail_msg: "There must be at least three masters defined. To deploy SNO, define one master and no workers."
+  when: not single_node_openshift_enabled
+
+- name: Assert API and Ingress VIPs are set correctly (SNO)
+  assert:
+    that:
+      - api_vip == hostvars[sno_hostname]['ansible_host']
+      - ingress_vip == hostvars[sno_hostname]['ansible_host']
+    fail_msg: "For SNO deployments, API and Ingress VIPs need to match the IP address (ansible_host) of the master node."
+  vars:
+    sno_hostname: "{{ groups['masters'][0] }}"
+  when: single_node_openshift_enabled
 
 - name: Assert valid worker configuration
   assert:
