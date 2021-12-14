@@ -1,6 +1,6 @@
 ---
 test_network_function_repo: https://github.com/test-network-function/test-network-function
-test_network_function_version: "v3.1.0"
+test_network_function_version: "v3.2.0"
 dci_openshift_app_image: "quay.io/testnetworkfunction/cnf-test-partner:latest"
 tnf_if: eth0
 tnf_suites: "diagnostic access-control networking lifecycle observability platform-alteration operator"
@@ -13,8 +13,5 @@ tnf_config:
     exclude_connectivity_regexp: ""
 tnf_non_intrusive_only: true
 tnf_run_cfd_test: false
-# This is the tools image from the 4.7.20 release
-# https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.7.20/release.txt
-tnf_debug_image: "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:0f5ce898fbad3671fecd6f797130f950fb1abdbaf0d8154c22e2b59c74e3a918" # v4.7.20
 tnf_log_level: "debug"
 tnf_postrun_delete_resources: true
