@@ -7,19 +7,11 @@
     docker://quay.io/testnetworkfunction/cnf-test-partner:latest \
     docker://{{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner:latest
 
-# The result of the regexp applied to tnf_debug_image starts with '/'
-- name: Copy image to be used with oc debug
-  shell: |
-    set -ex
-    skopeo copy --authfile {{ provisionhost_registry_creds }} --remove-signatures \
-    docker://quay.io{{ tnf_debug_image | regex_search('/.*') }} \
-    docker://{{ provisionhost_registry }}{{ tnf_debug_image | regex_search('/.*') }}
-
 - name: Copy image to be used with debug daemonset
   shell: |
     set -ex
     skopeo copy --authfile {{ provisionhost_registry_creds }} --remove-signatures \
-    docker://registry.redhat.io/rhel8/support-tools:latest \
-    docker://{{ provisionhost_registry }}/rhel8/support-tools:latest
+    docker://quay.io/testnetworkfunction/debug-partner:latest \
+    docker://{{ provisionhost_registry }}/testnetworkfunction/debug-partner:latest
 
 ...
