@@ -22,7 +22,7 @@
 
 - name: Set cluster ID info
   set_fact:
-    CLUSTER_ID: "{{ http_reply.json.id }}"
+    cluster_id: "{{ http_reply.json.id }}"
     add_host_cluster_id: "{{ http_reply.json.id }}"
 
 - name: "Save add_host_cluster_id"

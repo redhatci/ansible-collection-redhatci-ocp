@@ -156,7 +156,7 @@
         name: installer
         image: "{{ assisted_service_image }}"
         env:
-          PULL_SECRET: "{{ PULL_SECRET }}"
+          PULL_SECRET: "{{ pull_secret }}"
           DUMMY_IGNITION: False
         state: started
       register: assisted_service_container_info

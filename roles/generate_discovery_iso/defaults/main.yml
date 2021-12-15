@@ -9,15 +9,16 @@ upload: False
 ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] | default(ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}"
 ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] | default(8090) }}"
 ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"
-URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ CLUSTER_ID }}/downloads/image"
+URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ cluster_id }}/downloads/image"
 
 # HTTP Basic Authentication
 HTTP_AUTH_USERNAME: "none"
 HTTP_AUTH_PASSWORD: "none"
 
-SSH_PUBLIC_KEY: ""
-DOWNLOAD_DEST_PATH: "/tmp"
-DOWNLOAD_DEST_FILE: "discovery.iso"
+ssh_public_key: ""
+DOWNLOAD_DEST_FILE: "{{ discovery_iso_name }}"
+DOWNLOAD_DEST_PATH: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
+
 
 mac_interface_default_mapping: "interfaces[?(name != null && mac != null)].{logical_nic_name: name, mac_address: mac}"
 ai_version: "{{ hostvars.assisted_installer.ai_version | default('v1.0.24.2') }}"
