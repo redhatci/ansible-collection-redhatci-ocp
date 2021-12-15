@@ -74,7 +74,7 @@
         name: monitor_host
       vars:
         ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v1"
-        CLUSTER_ID: "{{ add_host_cluster_id }}"
+        cluster_id: "{{ add_host_cluster_id }}"
         waiting_termination_states:
           - "added-to-existing-cluster"
           - "installing-pending-user-action"

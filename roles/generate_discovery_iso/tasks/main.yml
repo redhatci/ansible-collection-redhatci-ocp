@@ -64,7 +64,7 @@
 
     - name: Upload discovery ISO
       uri:
-        url: "{{ URL_HTTP_STORE_UPLOAD_IMAGE }}/{{ CLUSTER_ID }}.iso"
+        url: "{{ URL_HTTP_STORE_UPLOAD_IMAGE }}/{{ cluster_id }}.iso"
         method: PUT
         url_username: "{{ HTTP_STORE_AUTH_USERNAME }}"
         url_password: "{{ HTTP_STORE_AUTH_PASSWORD }}"

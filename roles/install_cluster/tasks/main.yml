@@ -63,9 +63,9 @@
   - name: Set config vars for patching the cluster (HA)
     set_fact:
       cluster_config_patch_request_body: {
-        "vip_dhcp_allocation": "{{ VIP_DHCP_ALLOCATION | lower | bool }}",
-        "ingress_vip": "{{ INGRESS_VIP }}",
-        "api_vip": "{{ API_VIP }}",
+        "vip_dhcp_allocation": "{{ vip_dhcp_allocation | lower | bool }}",
+        "ingress_vip": "{{ ingress_vip }}",
+        "api_vip": "{{ api_vip }}",
       }
     when: not single_node_openshift_enabled
 
