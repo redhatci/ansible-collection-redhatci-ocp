@@ -45,7 +45,7 @@
 
 - name: Run preflight check operator tests
   environment:
-    - OPENSHIFT_AUTH: "{{ provisionhost_registry_creds }}"
+    - OPENSHIFT_AUTH: "{{ all_registries_creds }}"
     - OO_BUNDLE: "{{ operator.image }}"
     - OO_INDEX: "{{ OO_INDEX }}"
   shell: >
