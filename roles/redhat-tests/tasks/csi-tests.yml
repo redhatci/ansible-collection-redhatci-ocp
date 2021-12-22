@@ -1,0 +1,13 @@
+---
+- name: "test_ redhat-tests: Run the openshift CSI tests"
+  shell:
+    cmd: >
+     podman run --pull=always --rm
+     -v {{ ts_configs_dir }}:/tests:Z
+     -v {{ ts_csi_tests_dir }}/{{ ts_csi_test_manifest }}:/manifest.yaml:z
+     -e TEST_CSI_DRIVER_FILES=/manifest.yaml
+     -e KUBECONFIG=/tests/kubeconfig
+     {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
+     /bin/bash -c "openshift-tests run openshift/csi --junit-dir /tests" > {{ ts_configs_dir }}/csi-report.txt
+  ignore_errors: true
+...
