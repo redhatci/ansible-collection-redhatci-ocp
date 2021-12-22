@@ -36,7 +36,7 @@
     src: httpasswd-config.yml
     dest: "{{ dci_cluster_configs_dir }}/"
     mode: "0640"
-    
+
 - name: "oc-setup : Setup htpasswd auth IDP backend in openshift"
   environment:
     KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
