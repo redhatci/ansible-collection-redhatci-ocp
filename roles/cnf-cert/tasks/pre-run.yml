@@ -4,7 +4,7 @@
   include_tasks: save-images.yml
   when:
     - provisionhost_registry|length
-    - provisionhost_registry_creds|length
+    - all_registries_creds|length
 
 - name: Create temporary directory for git repos
   tempfile:
