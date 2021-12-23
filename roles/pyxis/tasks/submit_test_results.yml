@@ -13,17 +13,6 @@
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
   no_log: true
 
-- name: Get oc version
-  block:
-    - name: Display oc version
-      shell: |
-        {{ oc_tool_path }} version
-      register: ocp_output
-
-    - name: Extract oc version
-      set_fact:
-        ocp_version: "{{ ocp_output.stdout | regex_search('Server Version: [0-9]+.[0-9]+.[0-9]+') | regex_search('[0-9]+.[0-9]+.[0-9]+')}}"
-
 - name: Print JSON to be submitted
   debug:
     msg: "{{ lookup('template', 'templates/test_results.json.j2') }}"
