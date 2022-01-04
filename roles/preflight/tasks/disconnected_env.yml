@@ -7,33 +7,33 @@
 
     - name: Build index image in temporary preflight directory
       shell:
-        cmd: |
-          opm index add --pull-tool podman \
-          --bundles {{ operator.image }} \
+        cmd: >
+          opm index add --pull-tool podman
+          --bundles {{ operator.image }}
           --tag {{ OO_INDEX }}
         chdir: "{{ preflight_tmp_dir.path }}"
 
     - name: Push index image into local registry
-      shell: |
-        podman push \
-        --authfile {{ all_registries_creds }} \
+      shell: >
+        podman push
+        --authfile {{ all_registries_creds }}
         {{ OO_INDEX }}
 
 - name: Manage operator mirroring and imageContentSourcePolicy
   block:
     - name: Mirror operator image
-      shell: |
-        skopeo copy \
-        --all \
-        --remove-signatures \
-        --authfile {{ all_registries_creds }} \
-        --dest-tls-verify=false \
-        docker://{{ operator.image }} \
+      shell: >
+        skopeo copy
+        --all
+        --remove-signatures
+        --authfile {{ all_registries_creds }}
+        --dest-tls-verify=false
+        docker://{{ operator.image }}
         docker://{{ provisionhost_registry }}/{{ '/'.join(operator.image.split('@')[0].split('/')[1:]) }}
 
     - name: Save catalog mirror to temporary scorecard directory
-      shell: |
-        oc adm catalog mirror -a {{ all_registries_creds }} \
+      shell: >
+        oc adm catalog mirror -a {{ all_registries_creds }}
         {{ OO_INDEX }} {{ provisionhost_registry }} --to-manifests={{ preflight_tmp_dir.path }}/tmp_oc
 
     - name: Append to imageContentSourcePolicy
