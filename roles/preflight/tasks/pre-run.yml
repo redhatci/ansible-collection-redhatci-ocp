@@ -35,6 +35,10 @@
         docker://{{ item }}
         docker://{{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
       loop: "{{ scorecard_images }}"
+      register: preflight_mirroring
+      until: not preflight_mirroring.failed
+      retries: 3
+      delay: 10
   when: dci_disconnected | default(false) | bool
 
 ...
