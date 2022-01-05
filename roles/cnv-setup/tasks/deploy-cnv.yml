@@ -19,36 +19,10 @@
         targetNamespaces:
           - "{{ cnv_ns }}"
 
-- name: create Subscription with channel (4.5 and older)
+- name: create CNV Subscription
   k8s:
-    definition:
-      apiVersion: operators.coreos.com/v1alpha1
-      kind: Subscription
-      metadata:
-        name: hco-operatorhub
-        namespace: "{{ cnv_ns }}"
-      spec:
-        channel: "{{ cnv_version | string  }}"
-        source: "{{ opm_catalog_source_name }}"
-        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
-        name: kubevirt-hyperconverged
-  when:
-    - version is version("4.6", "<")
-
-- name: create Subscription without channel
-  k8s:
-    definition:
-      apiVersion: operators.coreos.com/v1alpha1
-      kind: Subscription
-      metadata:
-        name: hco-operatorhub
-        namespace: "{{ cnv_ns }}"
-      spec:
-        source: "{{ opm_catalog_source_name }}"
-        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
-        name: kubevirt-hyperconverged
-  when:
-    - version is version("4.6", ">=")
+    definition: "{{ lookup('template', 'sub.yaml.j2') }}"
+    state: present
 
 - name: "Get CNV InstallPlan details"
   k8s_info:
@@ -66,6 +40,14 @@
 - name: "Set CNV CSV name from IP"
   set_fact:
     cnv_csv_name: "{{ cnv_ip.resources[0].spec.clusterServiceVersionNames[0] }}"
+    ip_name:  "{{ cnv_ip.resources[0].metadata.name }}"
+
+- name: "Approving InstallPlan of CNV"
+  shell: >
+    oc patch installplan {{ ip_name }} \
+    --namespace {{ cnv_ns }} \
+    --type merge \
+    --patch '{"spec":{"approved":true}}'
 
 - name: test_ Check if cnv csv is installed
   k8s_info:
