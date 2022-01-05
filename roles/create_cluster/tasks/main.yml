@@ -180,7 +180,7 @@
   delegate_to: localhost
   become: no
 
-- name: Apply manifests before cluster installation
+roles/setup_assisted_installer/tasks/main.yml- name: Apply manifests before cluster installation
   include_tasks: manifest.yml
   loop: "{{ manifest_templates }}"
   when: manifests | bool == True
