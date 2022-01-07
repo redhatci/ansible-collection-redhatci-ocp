@@ -1,0 +1,25 @@
+---
+- name: "Running Chart Verifier"
+  shell:
+    cmd: >
+      podman run --rm
+      -e KUBECONFIG=/kubeconfig
+      -v {{ kubeconfig_path }}:/kubeconfig:Z
+      {{ chart_verifier_image }}
+      verify {% if chart.values_file is defined %} -F {{ chart.values_file }} {% endif %}
+      {% if chart.install is defined and chart.install is sameas false %}
+      --disable chart-testing
+      {% endif %}
+      {% if chart.flags is defined %}{{ chart.flags }}{% endif %}
+      --openshift-version {{ ocp_version_full }}
+      {{ chart.chart_file }}
+      -o json
+      &> {{ chart.name }}_cv_report.json
+  args:
+    chdir: "{{ logs_dir }}"
+  ignore_errors: true
+  loop: "{{ dci_charts }}"
+  loop_control:
+    loop_var: chart
+    label: "{{ chart.name }}"
+...
