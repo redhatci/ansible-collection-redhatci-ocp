@@ -66,7 +66,7 @@ type: cnf
     dci_cache_dir: /var/lib/dci-pipeline
     dci_config_dir: /var/lib/dci-openshift-app-agent/samples/my_hooks_dir
     provisionhost_registry: "registry:port"
-    provisionhost_registry_creds: "/opt/pull-secret.txt"
+    all_registries_creds: "/opt/pull-secret.txt"
     do_chart_verifier: true
     chart_verifier_image: quay.io/redhat-certification/chart-verifier:1.3.0
     dci_charts:
