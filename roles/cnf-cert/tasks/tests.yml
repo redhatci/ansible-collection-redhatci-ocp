@@ -12,7 +12,7 @@
 
 - name: Set tnf_partner_registry variable
   set_fact:
-    tnf_partner_registry: "{{ ( provisionhost_registry|length and all_registries_creds|length ) | ternary(provisionhost_registry, 'quay.io') }}"
+    tnf_partner_registry: "{{ ( - dci_disconnected | default(false) | bool and provisionhost_registry|length and all_registries_creds|length ) | ternary(provisionhost_registry, 'quay.io') }}"
 
 - name: Run the CNF Test Suite
   shell: |

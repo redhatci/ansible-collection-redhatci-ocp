@@ -3,6 +3,7 @@
 - name: "cnf-cert : Save images in local registry"
   include_tasks: save-images.yml
   when:
+    - dci_disconnected | default(false) | bool
     - provisionhost_registry|length
     - all_registries_creds|length
 
