@@ -1,0 +1,37 @@
+---
+- name: Retrieve installed Subscription
+  k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: Subscription
+    namespace: "{{ operator.name }}"
+  register: preflight_subs
+
+- name: Check CSV with k8s_info
+  k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: "{{ operator.name }}"
+  register: preflight_csv
+
+- name: Get events
+  k8s_info:
+    kind: Event
+    namespace: "{{ operator.name }}"
+  register: preflight_events
+
+- name: Get pods
+  k8s_info:
+    kind: Pod
+    namespace: "{{ operator.name }}"
+  register: preflight_pods
+
+- name: Upload logs into DCI
+  template:
+    src: "templates/cluster_logs.j2"
+    dest: "{{ job_logs.path }}/preflight_operator_async_{{ operator.name }}_{{ item }}.log"
+
+- name: Wait 50 seconds
+  pause:
+    seconds: 50
+
+...
