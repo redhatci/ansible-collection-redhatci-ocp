@@ -64,7 +64,21 @@
     {{ preflight_image }}
     check operator
     {{ operator.bundle_image }}
+  async: 600
+  poll: 0
   register: preflight_exec
+
+- name: "Retrieve async logs for {{ operator.name }}"
+  include_tasks: test_async_logs_check_operator.yml
+  ignore_errors: true
+
+- name: Check on preflight execution
+  async_status:
+    jid: "{{ preflight_exec.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 20
+  delay: 30
   ignore_errors: true
 
 - name: Upload logs for preflight check operator into DCI

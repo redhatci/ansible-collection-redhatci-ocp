@@ -1,7 +1,7 @@
 ---
-# - registry.access.redhat.com/ubi8/ubi:8.4
-# - docker.io/busybox:1.33.0
-# - https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.7.20/release.txt
+# 1/ registry.access.redhat.com/ubi8/ubi:8.4
+# 2/ docker.io/busybox:1.33.0
+# 3/ required by preflight dependencies https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.7.20/release.txt
 images:
   - registry.access.redhat.com/ubi8@sha256:910f6bc0b5ae9b555eb91b88d28d568099b060088616eba2867b07ab6ea457c7
   - docker.io/library/busybox@sha256:c71cb4f7e8ececaffb34037c2637dc86820e4185100e18b4d02d613a9bd772af
