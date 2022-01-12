@@ -101,10 +101,4 @@
     - update_status == ['True']
   retries: 60
   delay: 60
-
-- name: Check nodes
-  include_role:
-    name: prepare-cnf
-    tasks_from: nodes-ok.yml
-
 ...
