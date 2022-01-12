@@ -55,4 +55,16 @@
       pause:
         minutes: 1
 
+    - name: Wait for updated machine configs to be applied on the nodes
+      k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+      register: reg_mcpool_status
+      vars:
+        status_query: "resources[*].status.conditions[?type=='Updated'].status"
+        update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
+      until:
+        - update_status == ['True']
+      retries: 60
+      delay: 60
 ...
