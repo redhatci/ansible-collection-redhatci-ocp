@@ -87,6 +87,19 @@
     - name: Delay for policy to apply, there is no nodes to reboot anymore since ocp-4.7
       pause:
         minutes: 1
+
+    - name: Wait for updated machine configs to be applied on the nodes
+      k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+      register: reg_mcpool_status
+      vars:
+        status_query: "resources[*].status.conditions[?type=='Updated'].status"
+        update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
+      until:
+        - update_status == ['True']
+      retries: 60
+      delay: 60
   when: dci_disconnected | default(false) | bool
 
 - name: Template scorecard config
