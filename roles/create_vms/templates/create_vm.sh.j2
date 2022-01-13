@@ -19,6 +19,7 @@ virt-install \
     --wait=-1 \
     --boot uefi \
     --events on_reboot=restart \
+    --autostart \
     --print-xml > /tmp/{{item.name}}.xml
 
 virsh define --file /tmp/{{item.name}}.xml
