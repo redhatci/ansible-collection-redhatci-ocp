@@ -17,7 +17,7 @@ If installation is enabled for a chart, all the images and other required files 
 
 The chart report will show timeout errors if any of the images or files are not reachable.
 
-In DCI, the namespaces defined and created by {{ dci_openshift_app_ns }} variable can be used to deploy chart. The chart will removed after the test verification is complete. 
+In DCI, the namespaces defined and created by {{ dci_openshift_app_ns }} variable can be used to deploy chart. The chart will removed after the test verification is complete.
 
 ### Results
 Once the test is completed, the results will be stored the job_logs directory. If the tests are executed by DCI, the results will be stored in the DCI job files section.
