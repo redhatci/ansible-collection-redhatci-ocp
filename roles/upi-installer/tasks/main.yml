@@ -1,0 +1,36 @@
+---
+# tasks file for upi-installer
+- include_tasks: 05_create_config_install_dirs.yml
+  tags: clusterconfig
+
+- include_tasks: 10_get_oc.yml
+  tags:
+  - cleanup
+  - getoc
+
+- include_tasks: 20_extract_installer.yml
+  tags:
+  - pullsecret
+  - extract
+
+- include_tasks: 23_rhcos_image_paths.yml
+  tags: rhcospath
+
+- include_tasks: 25_read_ssh_key.yml
+  tags: ssh_key
+
+- include_tasks: '{{ hookdir }}/hooks/upi-install.yml'
+  loop: "{{ dci_config_dirs }}"
+  loop_control:
+    loop_var: hookdir
+
+- include_tasks: 50_wait_for_bootstrap.yml
+  tags: bootstrap
+
+- include_tasks: '{{ hookdir }}/hooks/upi-workers.yml'
+  loop: "{{ dci_config_dirs }}"
+  loop_control:
+    loop_var: hookdir
+
+- include_tasks: 60_wait_for_install.yml
+  tags: install
