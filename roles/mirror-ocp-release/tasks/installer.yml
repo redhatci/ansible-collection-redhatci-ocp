@@ -11,7 +11,7 @@
 - name: "Extract installer commands"
   command: >
     {{ cache_dir }}/{{ version }}/oc adm release extract
-    --registry-config={{ cache_dir }}/{{ version }}/registry-auths.json
+    --registry-config={{ dci_pullsecret_file }}
     --command={{ item.my_item }}
     --to={{ cache_dir }}/{{ version }}
     {{ release_image.stdout }}
