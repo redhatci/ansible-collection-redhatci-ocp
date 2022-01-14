@@ -25,7 +25,7 @@
   block:
 
   - name: Copy the downloaded repo in tnf_git_dir path
-    copy: 
+    copy:
       src: "{{ test_network_function_repo }}/test-network-function"
       dest: "{{ tnf_git_dir.path }}"
 
@@ -97,11 +97,11 @@
       job_id: "{{ job_id }}"
     tags: [dci]
 
-  when: 
+  when:
     - tnf_is_file_path.stat.exists|bool
     - tnf_is_file_path.stat.isdir|bool
 
-- name: Tasks when test_network_function_repo points to a Github repository 
+- name: Tasks when test_network_function_repo points to a Github repository
   block:
 
   # In https://quay.io/repository/testnetworkfunction/test-network-function?tab=tags,
