@@ -17,7 +17,7 @@
   - name: "Cirros VM image definition (disconnected mode)"
     set_fact:
       cirros_vm_image: "{{ local_registry_host }}:{{ local_registry_port }}/{{ cirros_vm_image }}"
-  when: 
+  when:
     - local_registry_host is defined
     - local_registry_port is defined
 ###
