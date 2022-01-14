@@ -34,7 +34,7 @@
 - name: Fail if build is undefined, empty or not valid.
   assert:
     fail_msg: "The build is undefined, empty or not valid. Use a value such as 'dev' or 'ga'."
-    that: 
+    that:
       - build is defined
       - (build == "dev") or (build == "ga")
   tags:
