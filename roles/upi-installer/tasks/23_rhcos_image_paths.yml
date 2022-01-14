@@ -1,0 +1,29 @@
+---
+- name: "Fetch rhcos.json File"
+  shell: >
+    set -o pipefail &&
+    {{ cache_dir }}/{{ version }}/openshift-install coreos print-stream-json |
+    tee {{ cache_dir }}/{{ version }}/rhcos.json
+  register: rhcos_json_file
+  retries: 3
+  delay: 10
+  until: rhcos_json_file is not failed
+  tags: rhcospath
+
+- name: "Set Facts for RHCOS PXE"
+  set_fact:
+    rhcos_pxe_kernel_path: "{{ rhcos_json_file.stdout | from_json | json_query(kernel_location) }}"
+    rhcos_pxe_kernel_sha256: "{{ rhcos_json_file.stdout | from_json  | json_query(kernel_sha) }}"
+    rhcos_pxe_initramfs_path: "{{ rhcos_json_file.stdout | from_json | json_query(initramfs_location) }}"
+    rhcos_pxe_initramfs_sha256: "{{ rhcos_json_file.stdout | from_json  | json_query(initramfs_sha) }}"
+    rhcos_pxe_rootfs_path: "{{ rhcos_json_file.stdout | from_json | json_query(rootfs_location) }}"
+    rhcos_pxe_rootfs_sha256: "{{ rhcos_json_file.stdout | from_json  | json_query(rootfs_sha) }}"
+  vars:
+    kernel_location: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.location'
+    kernel_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.sha256'
+    initramfs_location: 'architectures.x86_64.artifacts.metal.formats.pxe.initramfs.location'
+    initramfs_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.initramfs.sha256'
+    rootfs_location: 'architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location'
+    rootfs_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.rootfs.sha256'
+  tags: rhcospath
+...
