@@ -10,17 +10,6 @@
     setype: httpd_sys_content_t
   become: true
 
-- name: "Write pull secret file to cache"
-  copy:
-    content: "{{ auths | to_nice_json }}"
-    dest: "{{ cache_dir }}/{{ version }}/registry-auths.json"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
-    mode: "0644"
-    setype: httpd_sys_content_t
-    force: true
-  become: true
-
 - name: "Write mirrored image content source policy"
   copy:
     dest: "{{ cache_dir }}/{{ version }}/imagecontentsourcepolicy.yaml"

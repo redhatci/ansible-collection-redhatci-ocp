@@ -29,8 +29,7 @@
       - build in ['ga', 'dev', 'candidate']
       - registry_url | string
       - (registry_url | urlsplit('scheme')) == 'docker'
-      - auths is defined
-      - auths.auths is defined
+      - dci_pullsecret_file is defined
       - webserver_url is defined
       - install_type | string
       - install_type in ['ipi', 'sno']

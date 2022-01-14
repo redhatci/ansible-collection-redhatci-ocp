@@ -5,7 +5,7 @@
     delegate_to: localhost
     shell:
       cmd: >
-         skopeo copy --authfile {{ provision_cache_store }}/{{ cluster }}-pull-secret.txt
+         skopeo copy --authfile {{ dci_pullsecret_file }}
          --dest-tls-verify=false docker://quay.io/{{ cirros_vm_image }}
          docker://{{ local_registry_host }}:{{ local_registry_port }}/{{ cirros_vm_image }}
     register: copy
