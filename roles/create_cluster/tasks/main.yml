@@ -39,6 +39,11 @@
   when: create | bool == True
   register: http_reply
 
+##TODO: Add 
+# "network_type":
+# "schedulable_masters":
+# "disk_encryption":
+
 - debug: # noqa unnamed-task
     var: http_reply.json
     verbosity: 1
@@ -65,47 +70,6 @@
   delegate_to: localhost
   become: no
   when: create | bool == True
-
-#### patch discovery ignition on restricted network environments ###
-
-- name: Load patch for search registries
-  set_fact:
-    search_registries: "{{ lookup('template', 'patch-search-registries.j2') }}"
-  when: disconnected | bool == True
-
-- debug: # noqa unnamed-task
-    var: search_registries
-    verbosity: 1
-  when: disconnected | bool == True
-
-- name: Load patch for discovery ignition
-  set_fact:
-    patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition.j2') }}"
-  when: disconnected | bool == True
-
-- debug: # noqa unnamed-task
-    var: patch_discovery_ignition
-    verbosity: 1
-  when: disconnected | bool == True
-
-- name: Patch discovery ignition
-  uri:
-    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/discovery-ignition"
-    method: PATCH
-    status_code: [201]
-    return_content: True
-    body_format: json
-    body:
-      {
-        "config": "{{ patch_discovery_ignition | to_json(ensure_ascii=False) | string }}",
-      }
-  when: disconnected | bool == True
-  register: http_reply
-
-- debug: # noqa unnamed-task
-    var: http_reply
-    verbosity: 1
-  when: disconnected | bool == True
 
 #### patch cluster install config on restricted network environments ###
 

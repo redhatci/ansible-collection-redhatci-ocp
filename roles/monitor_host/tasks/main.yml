@@ -10,12 +10,21 @@
   register: cluster
   delegate_to: bastion
 
+- debug: # noqa unnamed-task
+    msg: "{{ cluster.json.hosts }}"
+    verbosity: 1
+
 - name: Identify the host
   set_fact:
     current_host: "{{ item }}"
   loop: "{{ cluster.json.hosts }}"
   when: item.requested_hostname == inventory_hostname
   no_log: True
+
+
+- debug: # noqa unnamed-task
+    msg: "{{ current_host }}"
+    verbosity: 1
 
 - name: Start host monitoring
   include_tasks: hosts_monitoring.yml

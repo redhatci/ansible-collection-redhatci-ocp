@@ -11,7 +11,7 @@ mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['
 
 ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] | default(ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}"
 ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] | default(8090) }}"
-ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"
+ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v2"
 URL_ASSISTED_INSTALLER_CLUSTERS: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters"
 
 http_auth_username: "none"

@@ -3,7 +3,7 @@
 
 - name: "Wait for up to 10 minutes for node discovery - {{ discovered_host.id }}"
   uri:
-    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ discovered_host.id }}"
+    url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host.id }}"
     method: GET
     status_code: [200, 201]
     return_content: True
@@ -32,9 +32,9 @@
 
 - name: Identify the host {{ host.id }} interfaces
   set_fact:
-   host_interfaces: "{{ host_inventory.interfaces }}"
+    host_interfaces: "{{ host_inventory.interfaces }}"
 
-- name : Set host name and role for {{ host.id }}
+- name: Set host name and role for {{ host.id }}
   set_fact:
     host_name: "{{ item.0 }}"
     host_role: "{{ hostvars[item.0]['role'] }}"
@@ -42,7 +42,7 @@
   loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
   no_log: True
 
-- name : Prepare hosts name and role for {{ host_name }}
+- name: Prepare hosts name and role for {{ host_name }}
   set_fact:
     host:
       id: "{{ host_id }}"
@@ -50,28 +50,16 @@
       role: "{{ host_role }}"
   when: host_name is defined or host_role is defined
 
-- name: "Create patch body with hostname for {{ host_name }}"
-  set_fact:
-    patch_body: {
-        "hosts_names": [ "{{ host }}" ] 
-      }
-  
-- name: "Add host role to patch body for {{ host_name }}"
-  set_fact:
-    patch_body: "{{ patch_body | combine({ 'hosts_roles': [ host ] }) }}"
-  when: not single_node_openshift_enabled
 
-- name: Set host name and role for {{ host_name }}
-  uri:
-    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
-    method: PATCH
-    url_username: "{{ HTTP_AUTH_USERNAME }}"
-    url_password: "{{ HTTP_AUTH_PASSWORD }}"
-    body_format: json
-    status_code: [201]
-    return_content: True
-    body: "{{ patch_body }}"
-  register: http_reply
+- name: Set patch body with hostname
+  set_fact:
+    patch_host_body:
+      host_name: "{{ host.hostname }}"
+
+- name: Set role in patch body
+  set_fact:
+    patch_host_body: "{{ patch_host_body | combine({'host_role': host.role }) }}"
+  when: not single_node_openshift_enabled
 
 - name: Set the installation disk path
   when: hostvars[host_name]['installation_disk_path'] is defined
@@ -80,27 +68,29 @@
       set_fact:
         installation_disk_path: "{{ hostvars[host_name]['installation_disk_path'] }}"
 
-    - name: "Set the installation disk to {{ installation_disk_path }} for {{ host_name }}"
-      uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
-        method: PATCH
-        status_code: [201]
-        return_content: true
-        body_format: json
-        body: {
-          "disks_selected_config": [
-            {
-              "id": "{{ host_id }}",
-              "disks_config": [
+    - name: "Add installation disk of {{ installation_disk_path }} patch body for {{ host_name }}"
+      set_fact:
+        patch_host_body: "{{ patch_host_body | combine({
+              'disks_selected_config': [
                 {
-                  "id": "{{ installation_disk_path }}",
-                  "role": "install"
+                  'id': installation_disk_path,
+                  'role': 'install'
                 }
               ]
-            }
-          ]
-        }
-      register: http_reply
+            })
+          }}"
+
+- name: "Patch host {{ host_name }}"
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host.id }}"
+    method: PATCH
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: "{{ patch_host_body | to_json(ensure_ascii=False) | string }}"
+  register: http_reply
 
 - name: Load patch for worker partition
   when: hostvars[host_name]['disks'] is defined
@@ -115,18 +105,14 @@
         var: worker_partition
         verbosity: 1
   
-  
     - name: Patch worker partition
       uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ host_id }}/ignition"
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host_id }}/ignition"
         method: PATCH
         status_code: [201]
         return_content: True
         body_format: json
-        body:
-          {
-        "config": "{{ worker_partition | to_json(ensure_ascii=False) | string }}",
-          }
+        body: { "config": "{{ worker_partition | to_json(ensure_ascii=False) | string }}" }
       register: http_reply
    
     - debug: # noqa unnamed-task

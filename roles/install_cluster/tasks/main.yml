@@ -1,28 +1,6 @@
 ---
 # tasks file for install_cluster
 
-- name: Get discovery ignition file
-  uri:
-    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/discovery-ignition"
-    method: GET
-    status_code: [200]
-    return_content: True
-  register: discovery_ignition
-
-- debug: # noqa unnamed-task
-    var: discovery_ignition.json
-    verbosity: 1
-
-- name: "Copy discovery_ignition.json"
-  copy:
-    content: "{{ discovery_ignition.json }}"
-    dest: "{{ fetched_dest }}/discovery-ignition.txt"
-    mode: 0644
-  delegate_to: localhost
-  become: no
-
-# TODO: Validate cluster settings
-
 - name: Join list for workers and masters
   set_fact:
     nodes: "{{ groups['masters'] + groups['workers'] | default([]) }}"
@@ -117,3 +95,17 @@
     var: http_reply.json
     verbosity: 1
   when: install | bool == True
+
+
+- name: Wait for cluster to being installing
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+    body_format: json
+    body: {}
+  when: install | bool == True
+  register: http_reply
+  until: 
+    http_reply.json.status in ["preparing-for-installation", "installing", "installing-pending-user-action"]
