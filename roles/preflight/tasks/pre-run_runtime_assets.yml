@@ -1,0 +1,15 @@
+---
+- name: Run preflight runtime-assets
+  shell: >
+    podman run
+    -it
+    --rm
+    --pull=always
+    {{ preflight_version }}
+    runtime-assets
+  register: preflight_assets
+
+- name: Get scorecard config images
+  set_fact:
+    preflight_assets_images: "{{ preflight_assets.stdout | from_json | json_query('images') | list | unique }}"
+...
