@@ -1,6 +1,6 @@
 - name: Create day 2 cluster
   uri:
-    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/add_hosts_clusters"
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/import"
     method: POST
     url_username: "{{ HTTP_AUTH_USERNAME }}"
     url_password: "{{ HTTP_AUTH_PASSWORD }}"
@@ -9,9 +9,9 @@
     return_content: True
     body: >-
       {
-        "id": "{{ lookup('password', '/dev/null') | to_uuid }}",
         "name": "{{ cluster_name + '-day2' }}",
         "api_vip_dnsname": "{{ 'api.' + cluster_name + '.' + base_dns_domain }}",
+        "openshift_cluster_id": "{{ cluster_id }}",
         "openshift_version": "{{ openshift_full_version }}"
       }
   register: http_reply
@@ -57,56 +57,8 @@
   delegate_facts: yes
   loop: "{{ groups['day2_workers'] }}"
 
-#### patch discovery ignition on restricted network environments ###
-
-- name: Load patch for search registries
-  set_fact:
-    search_registries: "{{ lookup('template', 'patch-search-registries.j2') }}"
-  when: disconnected | bool == True
-
-- name: Load patch for discovery ignition
-  set_fact:
-    patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition.j2') }}"
-  when: disconnected | bool == True
-
-- name: Patch discovery ignition
-  uri:
-    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}/discovery-ignition"
-    method: PATCH
-    status_code: [201]
-    return_content: True
-    body_format: json
-    body:
-      {
-        "config": "{{ patch_discovery_ignition | to_json(ensure_ascii=False) | string }}",
-      }
-  when: disconnected | bool == True
-  register: http_reply
-
-#### patch cluster install config on restricted network environments ###
-
-- name: Load patch for install config
-  set_fact:
-    patch_install_config: "{{ lookup('template', 'patch-install-config.j2') | from_yaml }}"
-  when: disconnected | bool == True
-
-- name: Add network_type to patch_install_config
-  set_fact:
-    patch_install_config: "{{ lookup('template', 'patch-network-type.j2') | from_yaml | combine(patch_install_config | default({}))  }}"
-  when: network_type is defined
-
-- name: Patch install config
-  uri:
-    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}/install-config"
-    method: PATCH
-    status_code: [201]
-    return_content: True
-    body_format: json
-    body: "{{ patch_install_config | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
-  when: patch_install_config is defined
-  register: http_reply
-
-- name: Apply manifests before cluster installation
-  include_tasks: manifest.yml
-  loop: "{{ manifest_templates }}"
-  when: manifests | bool == True
+- name: Patch day2 cluster
+  import_role: patch_cluster
+  vars:
+    patch_set_prefix: "day2_"
+    patch_cluster_id: "{{ add_host_cluster_id }}"

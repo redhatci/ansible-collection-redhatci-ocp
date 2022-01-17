@@ -25,12 +25,12 @@
 
     - name: "Wait for up to 20 minutes for requirement checks on {{ inventory_hostname }} "
       uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ discovered_host.id }}"
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
         method: GET
         status_code: [200, 201]
         return_content: True
       register: discovered_host_reply
-      until: discovered_host_reply.json.status in day2_states
+      until: "'status' in discovered_host_reply.json and discovered_host_reply.json.status in day2_states"
       retries: 20
       delay: 60
 
@@ -45,12 +45,12 @@
 
     - name: "Wait for up to 20 minutes for {{ inventory_hostname }} to be ready"
       uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ discovered_host.id }}"
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
         method: GET
         status_code: [200, 201]
         return_content: True
       register: discovered_host_reply
-      until: discovered_host_reply.json.status in day2_states[1:] 
+      until: "'status' in discovered_host_reply.json and discovered_host_reply.json.status in day2_states[1:]"
       retries: 20
       delay: 60
 
@@ -60,21 +60,21 @@
 
     - name: Install cluster
       uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/actions/install_hosts"
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}/actions/install"
         method: POST
         status_code: [202]
         return_content: True
         body_format: json
         body: {}
       register: http_reply
-      when: discovered_host_reply.json.status in day2_host_found
 
     - name: Monitoring hosts installation
       import_role:
         name: monitor_host
       vars:
-        ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v1"
+        ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v2"
         cluster_id: "{{ add_host_cluster_id }}"
+        current_host: "{{ discovered_host_reply.json }}"
         waiting_termination_states:
           - "added-to-existing-cluster"
           - "installing-pending-user-action"

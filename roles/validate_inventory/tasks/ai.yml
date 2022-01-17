@@ -2,8 +2,8 @@
 - name: Assert ai_version is valid
   assert:
     that:
-      - ai_version_number is version('1.0.18.0', '>=')
-    fail_msg: "ai_version  must be >= v1.0.18.1 and must be of the form 'v\\d+.\\d+.\\d+.\\d+'"
+      - ai_version_number is version('2.1.0', '>=')
+    fail_msg: "ai_version  must be >= v2.1.0 and must be of the form 'v\\d+.\\d+.\\d+'"
 
 - name: Assert that Openshift version is supported
   assert:

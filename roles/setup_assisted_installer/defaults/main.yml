@@ -1,4 +1,4 @@
-ai_version: v1.0.24.2
+ai_version: v2.1.1
 assisted_service_tag: "{{ ai_version }}"
 assisted_service_gui_tag: "{{ ai_version }}"
 assisted_service_image_service_tag: "{{ ai_version }}"

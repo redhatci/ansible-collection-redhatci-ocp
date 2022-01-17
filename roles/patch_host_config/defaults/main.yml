@@ -1,6 +1,9 @@
-ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v1"
+ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v2"
 URL_ASSISTED_INSTALLER_CLUSTER: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ patch_cluster_id }}"
+URL_ASSISTED_INSTALLER_INFRA_ENV: "{{ ASSISTED_INSTALLER_BASE_URL }}/infra-envs/{{ patch_infra_env_id }}"
+
 patch_cluster_id: "{{ cluster_id }}"
+patch_infra_env_id: "{{ infra_env_id }}"
 single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"
 disks_rhcos_root: # Required rhcos_partion
   label: root

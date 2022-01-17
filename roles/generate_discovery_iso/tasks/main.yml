@@ -7,38 +7,81 @@
       ssh_public_key: "{{ ssh_public_key }}"
       image_type: "full-iso"
 
+#### patch discovery ignition on restricted network environments ###
+
+- name: Load patch for search registries
+  set_fact:
+    search_registries: "{{ lookup('template', 'patch-search-registries.j2') }}"
+  when: disconnected | bool == True
+
+- debug: # noqa unnamed-task
+    var: search_registries
+    verbosity: 1
+  when: disconnected | bool == True
+
+- name: Load patch for discovery ignition
+  set_fact:
+    patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition.j2') }}"
+  when: disconnected | bool == True
+
+- debug: # noqa unnamed-task
+    var: patch_discovery_ignition
+    verbosity: 1
+  when: disconnected | bool == True
+
 - name: static IP addresses
   include_tasks: static.yml
   when: hostvars[item].network_config is defined
   loop: "{{ groups['nodes'] | default([])}}"
 
+- name: Create infra_env_body
+  set_fact:
+    infra_env_body:
+      name: "{{ cluster_name }}"
+      openshift_version: "{{ openshift_version | string }}"
+      additional_ntp_sources: "{{ ntp_server }}"
+      ssh_authorized_key: "{{ ssh_public_key }}"
+      pull_secret: "{{ pull_secret | to_json }}"
+      image_type: "full-iso"
+      cluster_id: "{{ iso_cluster_id }}"
+
+- name: Create infra_env_body
+  set_fact:
+    infra_env_body: "{{ infra_env_body | combine({'ignition_config_override': patch_discovery_ignition | to_json}) }}"
+  when: disconnected | bool == True
+
 - name: IP config
   set_fact:
-    request_body: "{{ request_body | combine({'static_network_config': static_network_config_items}) }}"
+    infra_env_body: "{{ infra_env_body | combine({'static_network_config': static_network_config_items}) }}"
   when: static_network_config_items | default([]) | length > 0
 
 - name: Iso body
   debug:
-    msg: "{{ request_body | to_json }}"
+    msg: "{{ infra_env_body | to_nice_json }}"
     verbosity: 1
 
-- name: Generate a new discovery ISO
+- name: Create Infra env
   uri:
-    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE }}"
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/infra-envs"
     method: POST
     url_username: "{{ HTTP_AUTH_USERNAME }}"
     url_password: "{{ HTTP_AUTH_PASSWORD }}"
     body_format: json
     status_code: [201]
     return_content: True
-    body: "{{ request_body }}"
-  when: generate | bool == True
-  register: http_reply
+    body: "{{ infra_env_body }} "
+  register: infra_env_reply
 
 - debug: # noqa unnamed-task
-    var: http_reply.json
+    var: infra_env_reply.json
     verbosity: 1
-  when: generate | bool == True
+
+- name: Set infra-env id on all hosts 
+  set_fact:
+    infra_env_id: "{{ infra_env_reply.json.id }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop:  "{{ groups['all'] }}"
 
 - name: Put discovery iso in http store
   block:
@@ -51,7 +94,7 @@
 
     - name: Download discovery ISO
       get_url:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE }}"
+        url: "{{ infra_env_reply.json.download_url }}"
         dest: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
       when: download | bool == True
       register: http_reply
@@ -61,20 +104,4 @@
         var: http_reply.status_code
         verbosity: 1
       when: download | bool == True
-
-    - name: Upload discovery ISO
-      uri:
-        url: "{{ URL_HTTP_STORE_UPLOAD_IMAGE }}/{{ cluster_id }}.iso"
-        method: PUT
-        url_username: "{{ HTTP_STORE_AUTH_USERNAME }}"
-        url_password: "{{ HTTP_STORE_AUTH_PASSWORD }}"
-        src: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
-        status_code: [200]
-      when: upload | bool == True
-      register: http_reply
-
-    - debug: # noqa unnamed-task
-        var: http_reply.status_code
-        verbosity: 1
-      when: upload | bool == True
   delegate_to: http_store
