@@ -4,12 +4,12 @@
       "href": "{{ operator.pyxis_identifier }}"
     },
     "container_image": {
-      "href": "{{ operator.image }}"
+      "href": "{{ operator.bundle_image }}"
     }
   },
   "cert_project": "{{ operator.pyxis_identifier }}",
   "certification_hash": "{{ preflight_output.certification_hash }}",
-  "image": "{{ operator.image }}",
+  "image": "{{ operator.bundle_image }}",
   "operator_package_name": "{{ operator.name }}",
   "org_id": 0,
   "passed": {{ preflight_output.passed }},

@@ -1,44 +1,10 @@
 ---
+# This task is used both in connected and disconnected env
+# to retrieve scorecard-test image to run independent scorecard tests later on
 - name: Run preflight runtime-assets to get scorecard-test image
-  block:
-    - name: Run preflight runtime-assets
-      shell: >
-        podman run
-        -it
-        --rm
-        --pull=always
-        {{ preflight_version }}
-        runtime-assets
-      register: preflight_assets
+  include_tasks: pre-run_runtime_assets.yml
 
-    - name: Get scorecard config images
-      set_fact:
-        config_images: "{{ preflight_assets.stdout | from_json | json_query('images') | list | unique }}"
-
-- name: Manage scorecard images mirroring
-  block:
-    - name: Get busybox and ubi images from static file
-      set_fact:
-        busybox_images: "{{ lookup('file', 'files/scorecard-busybox-ubi.yaml') | from_yaml | json_query('images') | list | unique }}"
-
-    - name: Merge all scorecard images in one list
-      set_fact:
-        scorecard_images: "{{ config_images + busybox_images }}"
-
-    - name: Mirror scorecard images
-      shell: >
-        skopeo copy
-        --all
-        --remove-signatures
-        --authfile {{ all_registries_creds }}
-        --dest-tls-verify=false
-        docker://{{ item }}
-        docker://{{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
-      loop: "{{ scorecard_images }}"
-      register: preflight_mirroring
-      until: not preflight_mirroring.failed
-      retries: 3
-      delay: 10
+- name: Manage images mirroring for Preflight cert suite
+  include_tasks: pre-run_mirroring.yml
   when: dci_disconnected | default(false) | bool
-
 ...
