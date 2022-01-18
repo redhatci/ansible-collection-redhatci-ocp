@@ -1,4 +1,9 @@
 ---
+
+- name: "Set Logs path"
+  set_fact:
+    ts_log_dir: "{{ job_logs.path | default ('/tmp')}}"
+
 - name: "redhat-tests : Run openshift conformance tests"
   include_tasks: conformance.yml
   tags:
