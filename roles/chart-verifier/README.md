@@ -28,7 +28,6 @@ An example of how to run the Helm chart verifier tests:
 
 ```console
 $ dci-openshift-app-agent-ctl -s -- -v \
--e do_preflight_tests=true \
 -e kubeconfig_path=path/to/kubeconfig \
 -e ocp_version_full=4.7 \
 -e logs_dir=results/ \

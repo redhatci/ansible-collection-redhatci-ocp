@@ -9,42 +9,42 @@ stages:
   - entrypoint:
     - scorecard-test
     - basic-check-spec
-    image: {{ config_images[0] }}
+    image: {{ preflight_assets_images[0] }}
     labels:
       suite: basic
       test: basic-check-spec-test
   - entrypoint:
     - scorecard-test
     - olm-bundle-validation
-    image: {{ config_images[0] }}
+    image: {{ preflight_assets_images[0] }}
     labels:
       suite: olm
       test: olm-bundle-validation-test
   - entrypoint:
     - scorecard-test
     - olm-crds-have-validation
-    image: {{ config_images[0] }}
+    image: {{ preflight_assets_images[0] }}
     labels:
       suite: olm
       test: olm-crds-have-validation-test
   - entrypoint:
     - scorecard-test
     - olm-crds-have-resources
-    image: {{ config_images[0] }}
+    image: {{ preflight_assets_images[0] }}
     labels:
       suite: olm
       test: olm-crds-have-resources-test
   - entrypoint:
     - scorecard-test
     - olm-spec-descriptors
-    image: {{ config_images[0] }}
+    image: {{ preflight_assets_images[0] }}
     labels:
       suite: olm
       test: olm-spec-descriptors-test
   - entrypoint:
     - scorecard-test
     - olm-status-descriptors
-    image: {{ config_images[0] }}
+    image: {{ preflight_assets_images[0] }}
     labels:
       suite: olm
       test: olm-status-descriptors-test
