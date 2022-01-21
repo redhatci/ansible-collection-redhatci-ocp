@@ -43,7 +43,7 @@
     kind: Namespace
     state: present
 
-- name: Run preflight check operator tests
+- name: "Run preflight check operator tests for {{ operator.name }}"
   environment:
     - OPENSHIFT_AUTH: "{{ all_registries_creds }}"
     - OO_BUNDLE: "{{ operator.bundle_image }}"
@@ -73,7 +73,7 @@
 
 - name: Upload logs for preflight check operator into DCI
   vars:
-    preflight_prefix: "preflight_{{ operator.name }}_{{ operator.version }}"
+    preflight_prefix: "preflight_operator_{{ operator.name }}_{{ operator.version }}"
   copy:
     src: "{{ item }}"
     dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
