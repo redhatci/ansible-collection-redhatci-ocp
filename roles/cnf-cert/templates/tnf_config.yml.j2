@@ -29,4 +29,11 @@ certifiedcontainerinfo:
 
 certifiedoperatorinfo:
 
+acceptedKernelTaints:
+{% for item in accepted_kernel_taints %}
+{% if item.module is defined and item.module|length %}
+  - module: {{ item.module }}
+{% endif %}
+{% endfor %}
+
 ...
