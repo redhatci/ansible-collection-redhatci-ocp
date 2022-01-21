@@ -2,20 +2,11 @@
 # If you want to run preflight tests,
 # preflight_operators_to_check variable should be provided
 # in the config file -e @path/to/preflight_config.yaml
-- name: Display fail message if the list of operators to check is not provided
-  fail:
-    msg: Impossible to run preflight tests. Please provide preflight_operators_to_check variable in config file.
-  when:
-    - preflight_operators_to_check is undefined
-    - preflight_operators_to_check | type_debug != "list"
-  ignore_errors: true
-
 - name: Preflight check operators one by one
-  include_tasks: preflight_check_operator.yml
+  include_tasks: tests_preflight_check_operator.yml
   loop: "{{ preflight_operators_to_check }}"
   loop_control:
     loop_var: operator
-  when: preflight_operators_to_check is defined
 
 # If you want to run operator-sdk scorecard tests,
 # operator_sdk_tool_path variable should be provided
@@ -23,8 +14,7 @@
 - name: Display fail message if the path to operator-sdk binary is not provided
   fail:
     msg: Impossible to run operator-sdk tests. Please provide operator_sdk_tool_path variable in config file.
-  when:
-    - operator_sdk_tool_path is undefined
+  when: operator_sdk_tool_path is undefined
   ignore_errors: true
 
 # These tests are here to retrieve the logs,
@@ -32,12 +22,9 @@
 # TODO: remove them once the issue is fixed
 # https://github.com/redhat-openshift-ecosystem/openshift-preflight/issues/169
 - name: Scorecard tests
-  include_tasks: scorecard_check_operator.yml
+  include_tasks: tests_scorecard_check_operator.yml
   loop: "{{ preflight_operators_to_check }}"
   loop_control:
     loop_var: operator
-  when:
-    - preflight_operators_to_check is defined
-    - operator_sdk_tool_path is defined
-
+  when: operator_sdk_tool_path is defined
 ...

@@ -1,0 +1,95 @@
+---
+- name: Retrieve all images to mirror
+  vars:
+    busybox_images: "{{ (lookup('file', 'files/scorecard-busybox-ubi.yaml') | from_yaml)['images'] }}"
+    preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
+  set_fact:
+    preflight_images: "{{ (preflight_assets_images + busybox_images + preflight_bundle_images) | unique }}"
+
+- name: Mirror preflight images
+  shell: >
+    skopeo copy
+    --all
+    --remove-signatures
+    --authfile {{ all_registries_creds }}
+    --dest-tls-verify=false
+    docker://{{ item }}
+    docker://{{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+  loop: "{{ preflight_images }}"
+  register: preflight_mirroring
+  until: not preflight_mirroring.failed
+  retries: 3
+  delay: 10
+
+- name: Create a common catalog image for all bundles to be tested in disconnected environment
+  block:
+    - name: Generate catalog image name
+      set_fact:
+        OO_INDEX: "{{ '/'.join([ provisionhost_registry ] + [ 'preflight', 'disconnected-catalog:v0.0.0' ]) }}"
+
+    - name: Create temporary directory
+      tempfile:
+        state: directory
+        prefix: preflight_prerun_tmp_dir.
+      register: preflight_prerun_tmp_dir
+
+    - name: Build index image in temporary preflight directory
+      vars:
+        preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list | unique }}"
+      shell:
+        cmd: >
+          opm index add --pull-tool podman
+          --bundles {{ ','.join(preflight_bundle_images) }}
+          --tag {{ OO_INDEX }}
+        chdir: "{{ preflight_prerun_tmp_dir.path }}"
+
+    - name: Push index image into local registry
+      shell: >
+        podman push
+        --authfile {{ all_registries_creds }}
+        {{ OO_INDEX }}
+
+- name: Manage imageContentSourcePolicy update
+  block:
+    - name: Save catalog mirror to temporary scorecard directory
+      shell: >
+        oc adm catalog mirror -a {{ all_registries_creds }}
+        {{ OO_INDEX }} {{ provisionhost_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
+
+    - name: Append to imageContentSourcePolicy
+      blockinfile:
+        block: |
+          # Scorecard container
+            - mirrors:
+              - {{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+              source: {{ item.split('@')[0] }}
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
+        path: "{{ preflight_prerun_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
+      loop: "{{ preflight_images }}"
+
+    - name: Apply Image Content Source Policy
+      k8s:
+        definition: "{{ lookup('file', preflight_prerun_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
+
+    - name: Delay for policy to apply, there is no nodes to reboot anymore since ocp-4.7
+      pause:
+        minutes: 1
+
+    - name: Wait for updated machine configs to be applied on the nodes
+      k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+      register: reg_mcpool_status
+      vars:
+        status_query: "resources[*].status.conditions[?type=='Updated'].status"
+        update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
+      until:
+        - update_status == ['True']
+      retries: 60
+      delay: 60
+
+- name: Remove tmp dir
+  file:
+    path: "{{ preflight_prerun_tmp_dir.path }}"
+    state: absent
+...
