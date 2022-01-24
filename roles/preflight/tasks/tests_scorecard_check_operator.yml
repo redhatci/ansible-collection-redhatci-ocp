@@ -40,7 +40,7 @@
 - name: Retrieve operator index image in the connected environment
   set_fact:
     OO_INDEX: "{{ operator.index_image }}"
-  when: not dci_disconnected
+  when: not dci_disconnected | default(false) | bool
 
 - name: Template scorecard config
   template:
