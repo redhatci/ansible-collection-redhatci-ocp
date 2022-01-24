@@ -11,6 +11,7 @@ tnf_config:
     targetpodlabels: []
     operators_regexp: ""
     exclude_connectivity_regexp: ""
+accepted_kernel_taints: []
 tnf_non_intrusive_only: true
 tnf_run_cfd_test: false
 tnf_log_level: "debug"
