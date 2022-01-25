@@ -2,6 +2,12 @@
 # If you want to run preflight tests,
 # preflight_operators_to_check variable should be provided
 # in the config file -e @path/to/preflight_config.yaml
+- name: Preflight check operator bundle images one by one
+  include_tasks: test_preflight_check_container.yml
+  loop: "{{ preflight_operators_to_check }}"
+  loop_control:
+    loop_var: operator
+
 - name: Preflight check operators one by one
   include_tasks: tests_preflight_check_operator.yml
   loop: "{{ preflight_operators_to_check }}"
