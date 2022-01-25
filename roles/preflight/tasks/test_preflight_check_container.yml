@@ -1,0 +1,51 @@
+---
+- name: Setup tmp preflight folders
+  block:
+    - name: Create temporary preflight_tmp_dir directory
+      tempfile:
+        state: directory
+        prefix: preflight_container_tmp_dir.
+      register: preflight_container_tmp_dir
+
+    - name: Set directory for artifacts
+      set_fact:
+        preflight_artifacts: "{{ preflight_container_tmp_dir.path }}/artifacts"
+
+    - name: Create directories to mount artifacts volume
+      file:
+        path: "{{ preflight_artifacts }}"
+        state: directory
+        mode: 0744
+
+- name: "Run preflight check bundle container for {{ operator.name }}"
+  shell: >
+    podman run
+    -it
+    --rm
+    --pull=always
+    --name preflight
+    --privileged
+    -e PFLT_JUNIT=true
+    -e PFLT_ARTIFACTS=/artifacts
+    -e PFLT_LOGFILE=/artifacts/preflight.log
+    -e PFLT_LOGLEVEL=trace
+    -v {{ preflight_artifacts }}:/artifacts
+    {{ preflight_version }}
+    check container
+    {{ operator.bundle_image }}
+
+- name: Upload logs for preflight check container into DCI
+  vars:
+    preflight_prefix: "preflight_container_{{ operator.name }}_{{ operator.version }}"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
+  with_fileglob:
+    - "{{ preflight_artifacts }}/*"
+
+- name: Remove tmp dir
+  file:
+    path: "{{ preflight_container_tmp_dir.path }}"
+    state: absent
+
+...
