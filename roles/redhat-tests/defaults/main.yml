@@ -1,7 +1,7 @@
 ---
 # These variables have the lowest priority of any variables available, and can be easily overridden by any other variable, including inventory variables.
 ts_e2e_image: "quay.io/openshift/origin-tests"
-ts_registry: "registry.dfwt5g.lab:5000"
+ts_registry: "registry.dfwt5g.lab:4443"
 ts_registry_auth: auths.json
 ts_ocp_version_maj: 4
 ts_ocp_version_min: 7
