@@ -1,8 +1,8 @@
 ---
 kind: PerformanceProfile
-apiVersion: "performance.openshift.io/v1alpha1"
+apiVersion: "performance.openshift.io/v2"
 metadata:
-  name: cnf-basic-profile
+  name: cnf-sno-profile
   namespace: openshift-performance-addon-operator
 spec:
   additionalKernelArgs:
@@ -16,7 +16,6 @@ spec:
     isolated: "2-19,22-39,42-59,62-79"
     reserved: "0,1,40,41,20,21,60,61"
   hugepages:
-    defaultHugepagesSize: "1G"
     pages:
       - size: "1G"
         count: 32
@@ -24,8 +23,14 @@ spec:
       - size: "1G"
         count: 32
         node: 1
+      - size: "2M"
+        count: 12000
+        node: 0
+      - size: "2M"
+        count: 12000
+        node: 1
   numa:
-    topologyPolicy: "best-effort"
+    topologyPolicy: "single-numa-node"
   nodeSelector:
-    node-role.kubernetes.io/worker: ""
+    node-role.kubernetes.io/master: ""
 ...
