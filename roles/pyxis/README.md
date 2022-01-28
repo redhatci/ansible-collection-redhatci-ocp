@@ -29,7 +29,7 @@ preflight_operators_to_check:
   - name: "testpmd-operator"
     version: "v0.2.9"
     bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
-    index_image: "quay.io/tkrishtop/index-testpmd-operator-bundle:v0.2.9"
+    index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
     pyxis_identifier: "project-identifier-for-testpmd-operator"
 # pyxis token
 pyxis_apikey_path: "/path/to/partner/file/with/token"
