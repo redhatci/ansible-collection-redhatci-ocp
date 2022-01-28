@@ -22,3 +22,4 @@ ts\_conformance\_tests             | ''                                         
 ts\_configs\_dir                   | /home/user/clusterconfigs/                 | Directory that hosts the kubeconfig files and other cluster files that may need to be passed mounted in the test container. This directory will be also used to store the test results.
 ts\_csi\_tests\_dir                | /home/user/clusterconfigs/                 | Directory that hosts additional files required during the testing
 ts\_csi\_test\_manifest            | ''                                         | Test manifest to be used for the CSI driver tests
+ts_log_dir                         | /tmp                                       | Directory where the logs and results will be stored

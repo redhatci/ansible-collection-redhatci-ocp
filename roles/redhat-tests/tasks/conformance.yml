@@ -4,10 +4,11 @@
    cmd: >
     podman run --pull=always --rm
     -v {{ ts_configs_dir }}:/tests:Z
+    -v {{ ts_log_dir }}:/logs:Z
     -e TESTS={{ ts_conformance_tests }}
     -e KUBECONFIG=/tests/kubeconfig
     {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
-    /bin/bash -c "openshift-tests run {{ ts_conformance_tests }} --junit-dir /tests" > {{ ts_configs_dir }}/conformance-run.txt
+    /bin/bash -c "openshift-tests run {{ ts_conformance_tests }} --junit-dir /logs" > {{ ts_log_dir }}/conformance-run.log
   ignore_errors: yes
   when:
     - not (dci_disconnected | default(false) | bool)
@@ -19,6 +20,7 @@
     cmd: >
      podman run --pull=always --rm
      -v {{ ts_configs_dir }}:/tests:Z
+     -v {{ ts_log_dir }}:/logs:Z
      -v {{ ts_registry_auth }}:/auths.json:z
      -v {{ ts_registry_certificate }}:/etc/ssl/certs/domain.crt:z
      -e KUBECONFIG=/tests/kubeconfig
@@ -26,7 +28,7 @@
      /bin/bash -c "openshift-tests images --to-repository {{ ts_registry }}/conformance-test
      | oc image mirror -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
      && openshift-tests run {{ ts_conformance_tests }} --from-repository {{ ts_registry }}/conformance-test
-     --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /tests" > {{ ts_configs_dir }}/conformance-run.txt
+     --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /logs" > {{ ts_log_dir }}/conformance-run.log
   ignore_errors: yes
   when:
     - dci_disconnected | default(false) | bool
