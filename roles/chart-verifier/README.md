@@ -54,6 +54,8 @@ dci_charts:
 
 See below for an example of how to use the chart-verifier in a DCI pipeline.
 
+* https://github.com/redhat-certification/chart-verifier/raw/main/pkg/chartverifier/checks/chart-0.1.0-v3.valid.tgz is a example of a valid chart that can be used for testing purposes.
+
 ```yaml
 type: cnf
   prev_stages: [ocp-upgrade, ocp]
@@ -67,11 +69,11 @@ type: cnf
     provisionhost_registry: "registry:port"
     all_registries_creds: "/opt/pull-secret.txt"
     do_chart_verifier: true
-    chart_verifier_image: quay.io/redhat-certification/chart-verifier:1.3.0
+    chart_verifier_image: quay.io/redhat-certification/chart-verifier:main
     dci_charts:
       -
         name: mychart1
-        chart_file: http://xyz/charts/chart-0.1.0-v3.valid.tgz
+        chart_file: https://github.com/redhat-certification/chart-verifier/raw/main/pkg/chartverifier/checks/chart-0.1.0-v3.valid.tgz
         flags: -S image.repository=registry:port/nginx-unprivileged --set chart-testing.namespace=myns
         install: true
       -
