@@ -2,7 +2,7 @@
 # defaults file for disconnected_registry
 force: "no" # force downloads for oc and opm
 pull_secret_file_name: pull-secret.txt
-registry_container_image: docker.io/library/registry:2
+registry_container_image: quay.io/redhat-partner-solutions/registry:2
 
 # Paths
 config_file_path: "{{ ansible_env.HOME }}" # Where config and secret files should be stored
@@ -39,6 +39,5 @@ registry_email: "{{ registry_email_user }}@{{ registry_fqdn }}"
 
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
-
 
 cert_file_prefix: registry
