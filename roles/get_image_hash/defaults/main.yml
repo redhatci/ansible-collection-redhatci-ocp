@@ -7,7 +7,8 @@ ocp_release_versions_map_all:
   '4.6': 4.6.16
   '4.7': 4.7.33
   '4.8': 4.8.14
-  '4.9': 4.9.0
+  '4.9': 4.9.11
+  '4.10': 4.10.10
 
 get_release_images: true
 get_all_release_versions: false

@@ -42,11 +42,11 @@
     - name: "Build assisted_service_openshift_versions ({{ item }})"
       vars:
         assisted_service_openshift_versions: {}
+        assisted_installer_os_images: []
+        assisted_installer_release_images: []
       set_fact:
-        assisted_service_openshift_versions: "{{ assisted_service_openshift_versions | combine({
-              item: assisted_service_openshift_versions_defaults[item]
-            })
-          }}"
+        assisted_installer_os_images: "{{ assisted_installer_os_images + assisted_installer_os_images_defualts[item] }}"
+        assisted_installer_release_images: "{{ assisted_installer_release_images + assisted_installer_release_images_defaults[item] }}"
       loop: "{{ ocp_release_versions }}"
 
     - name: Open ports zone internal and public, for firewalld
@@ -56,7 +56,7 @@
         immediate: yes
         state: enabled
         zone: "{{ item.0 }}"
-      loop: "{{ ['internal', 'public'] | product(['8000', '8090', '8080']) | list }}"
+      loop: "{{ ['internal', 'public'] | product(['8000', '8090', '8080', '8888']) | list }}"
 
     - name: Create directories for assisted-installer
       file:
@@ -66,7 +66,6 @@
       with_items:
         - "{{ assisted_installer_dir }}"
         - "{{ assisted_installer_dir }}/data"
-        - "{{ assisted_installer_dir }}/coreos_installer_data"
 
     - name: Create directory for assisted-installer database
       file:
@@ -74,92 +73,49 @@
         mode: 0775
         state: directory
         recurse: true
-
-    - name: Download the rhcos image
-      get_url:
-        url: "{{ rhcos_image }}"
-        dest: "{{ assisted_installer_dir }}/{{ rhcos_image | basename }}"
-
-    - name: Get coreos-installer via podman
-      containers.podman.podman_container:
-        name: coreos-installer
-        rm: true
-        detach: false
-        volume:
-          - "{{ assisted_installer_dir }}/coreos_installer_data/:/data:z"
-        workdir: /data
-        entrypoint: /bin/bash
-        image: "{{ coreos_installer_image }}"
-        command: ["-c", "cp /usr/sbin/coreos-installer /data/coreos-installer"]
-        state: started
-      environment:
-        XDG_RUNTIME_DIR: "{{ config_file_path }}"     
-
-    - name: Move coreos-installer
-      copy:
-        src: "{{ assisted_installer_dir }}/coreos_installer_data/coreos-installer"
-        dest: "{{ assisted_installer_dir }}/coreos-installer"
-        mode: 0555
-        remote_src: true
+    
+    - name: Create directory for assisted-installer images 
+      file:
+        path: "{{ assisted_installer_dir }}/data/image_service"
+        mode: 0775
+        state: directory
+        recurse: true
 
     - name: Template out assisted-installer files
       template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: 0644
-      with_items:
-        - src: onprem-environment.j2
-          dest: "{{ assisted_installer_dir }}/onprem-environment"
-        - src: nginx-ui.conf
-          dest: "{{ assisted_installer_dir }}/nginx-ui.conf"
+        trim_blocks: true
+        lstrip_blocks: true
+      loop:
+        - src: configmap.yml.j2
+          dest: "{{ assisted_installer_dir }}/configmap.yml"
+        - src: pod.yml.j2
+          dest: "{{ assisted_installer_dir }}/pod.yml"
 
 - name: Setup AI pod
   become: True
   environment:
     XDG_RUNTIME_DIR: "{{ config_file_path }}"
   block:
-    - name: Create assisted-service pod
+    - name: Gather info about specific pods
+      containers.podman.podman_pod_info:
+        name: assisted-installer
+      register: ai_pod_details
+
+    - name: Remove Assisted Installer Pod
       containers.podman.podman_pod:
-        name: assisted-service
-        state: started
-        network: "{{ podman_network | default(omit) }}"
-        ports: "{{ ai_ports }}"
-        dns: "{{ dns | default(omit) }}"
+        name: assisted-installer
+        state: absent
+      when: (ai_pod_details.pods | length) > 0
 
-    - name: Create database container in assisted-service pod
-      containers.podman.podman_container:
-        pod: assisted-service
-        env_file: "{{ assisted_installer_dir }}/onprem-environment"
-        volume:
-          - "{{ assisted_installer_dir }}/data/postgresql:/var/lib/pgsql:z"
-        name: db
-        image: "{{ assisted_postgres_image }}"
-        state: started
-
-    - name: Create assisted installer GUI container in assisted-service pod
-      containers.podman.podman_container:
-        pod: assisted-service
-        env_file: "{{ assisted_installer_dir }}/onprem-environment"
-        volume:
-          - "{{ assisted_installer_dir }}/nginx-ui.conf:/opt/bitnami/nginx/conf/server_blocks/nginx.conf:z"
-        name: gui
-        image: "{{ assisted_service_gui_image }}"
-        state: started
-
-    - name: Create assisted installer service container in assisted-service pod
-      containers.podman.podman_container:
-        pod: assisted-service
-        env_file: "{{ assisted_installer_dir }}/onprem-environment"
-        volume:
-          - "{{ assisted_installer_dir }}/{{ rhcos_image | basename }}:/data/livecd.iso:z"
-          - "{{ assisted_installer_dir }}/coreos-installer:/data/coreos-installer:z"
-        name: installer
-        image: "{{ assisted_service_image }}"
-        env:
-          PULL_SECRET: "{{ pull_secret }}"
-          DUMMY_IGNITION: False
-        state: started
-      register: assisted_service_container_info
+    - name: Play kube file
+      containers.podman.podman_play:
+        kube_file: "{{ assisted_installer_dir }}/pod.yml"
+        configmap: "{{ assisted_installer_dir }}/configmap.yml"
+        recreate: true
+        state: created
 
 - name: Setup assisted_installer service
   become: true
@@ -170,12 +126,11 @@
           [Unit]
           Description=Podman assisted_installer.service
           [Service]
-          Restart=on-failure
-          ExecStart=/usr/bin/podman pod start assisted-service
-          ExecStop=/usr/bin/podman pod stop -t 10 assisted-service
+          Restart=no
+          ExecStart=/usr/bin/podman pod start assisted-installer
+          ExecStop=/usr/bin/podman pod stop -t 10 assisted-installer
           KillMode=none
           Type=forking
-          PIDFile={{ assisted_service_container_info.container.ConmonPidFile }}
           [Install]
           WantedBy=default.target
         dest: "/etc/systemd/system/assisted_installer.service"
