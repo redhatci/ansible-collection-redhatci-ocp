@@ -72,7 +72,7 @@ type: cnf
       -
         name: mychart1
         chart_file: http://xyz/charts/chart-0.1.0-v3.valid.tgz
-        flags: -S image.repository=registry.dfwt5g.lab:5000/nginx-unprivileged --set chart-testing.namespace=myns
+        flags: -S image.repository=registry:port/nginx-unprivileged --set chart-testing.namespace=myns
         install: true
       -
         name: mychart2
