@@ -23,14 +23,3 @@
   loop: "{{ dci_config_dirs }}"
   loop_control:
     loop_var: hookdir
-
-- include_tasks: 50_wait_for_bootstrap.yml
-  tags: bootstrap
-
-- include_tasks: '{{ hookdir }}/hooks/upi-workers.yml'
-  loop: "{{ dci_config_dirs }}"
-  loop_control:
-    loop_var: hookdir
-
-- include_tasks: 60_wait_for_install.yml
-  tags: install

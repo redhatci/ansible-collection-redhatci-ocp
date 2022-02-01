@@ -5,19 +5,13 @@
       - firewalld
     state: installed
 
-- name: Start firewalld service
-  become: true
-  service:
-    name: firewalld
-    state: started
-    enabled: yes
-
 - name: Set firewall zone to public
   set_fact:
     zone: public
   when: ansible_distribution_version|int < 8
 
 - name: allow access to port vbmc from baremetal network
+  ignore_errors: true
   become: true
   firewalld:
     zone: "{{ zone }}"

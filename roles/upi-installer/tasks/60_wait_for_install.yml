@@ -1,9 +1,0 @@
----
-- name: Wait for Install to Complete
-  shell: |
-    {{ ocp_binary_path }}/openshift-install --dir {{ dir }} --log-level debug wait-for install-complete
-  register: wait_for_install_result
-  until: wait_for_install_result is succeeded
-  retries: "{{ increase_install_timeout| default(1)| int }}"
-  delay: 1
-...

@@ -18,6 +18,8 @@
     rhcos_pxe_initramfs_sha256: "{{ rhcos_json_file.stdout | from_json  | json_query(initramfs_sha) }}"
     rhcos_pxe_rootfs_path: "{{ rhcos_json_file.stdout | from_json | json_query(rootfs_location) }}"
     rhcos_pxe_rootfs_sha256: "{{ rhcos_json_file.stdout | from_json  | json_query(rootfs_sha) }}"
+    rhcos_live_iso_path: "{{ rhcos_json_file.stdout | from_json  | json_query(live_iso_location) }}"
+    rhcos_live_iso_sha256: "{{ rhcos_json_file.stdout | from_json  | json_query(live_iso_sha) }}"
   vars:
     kernel_location: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.location'
     kernel_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.sha256'
@@ -25,5 +27,7 @@
     initramfs_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.initramfs.sha256'
     rootfs_location: 'architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location'
     rootfs_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.rootfs.sha256'
+    live_iso_location: 'architectures.x86_64.artifacts.metal.formats.iso.disk.location'
+    live_iso_sha: 'architectures.x86_64.artifacts.metal.formats.iso.disk.sha256'
   tags: rhcospath
 ...
