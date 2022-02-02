@@ -6,6 +6,10 @@
     skopeo copy --authfile {{ all_registries_creds }} --remove-signatures \
     docker://quay.io/testnetworkfunction/cnf-test-partner:latest \
     docker://{{ provisionhost_registry }}/testnetworkfunction/cnf-test-partner:latest
+  register: partner_image_copy
+  retries: 5
+  delay: 10
+  until: partner_image_copy is not failed
 
 - name: Copy image to be used with debug daemonset
   shell: |
@@ -13,5 +17,9 @@
     skopeo copy --authfile {{ all_registries_creds }} --remove-signatures \
     docker://quay.io/testnetworkfunction/debug-partner:latest \
     docker://{{ provisionhost_registry }}/testnetworkfunction/debug-partner:latest
+  register: daemonset_image_copy
+  retries: 5
+  delay: 10
+  until: daemonset_image_copy is not failed
 
 ...
