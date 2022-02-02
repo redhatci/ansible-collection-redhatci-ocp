@@ -25,7 +25,7 @@
         "openshift_version": OPENSHIFT_VERSION,
         "base_dns_domain": BASE_DNS_DOMAIN,
         "cluster_network_cidr": CLUSTER_NETWORK_CIDR,
-        "cluster_network_host_prefix": 23,
+        "cluster_network_host_prefix": (CLUSTER_NETWORK_HOST_PREFIX | int),
         "service_network_cidr": SERVICE_NETWORK_CIDR,
         "pull_secret": (PULL_SECRET | to_json),
         "ssh_public_key": SSH_PUBLIC_KEY,
