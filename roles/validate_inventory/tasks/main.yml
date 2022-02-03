@@ -49,6 +49,13 @@
           tags: validate_day2
       tags: validate_day2
 
+    - include_tasks:
+        file: partitions.yml
+        apply:
+          tags: validate_partitions
+      tags: validate_partitions
+
+
   when: not (inventory_validated | default(False) | bool)
   delegate_to: "{{ validation_host | default('bastion') }}"
 
