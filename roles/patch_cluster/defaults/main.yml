@@ -1,8 +1,7 @@
----
-# defaults file for create_cluster
+patch_cluster_id: "{{ cluster_id }}"
+patch_set_prefix: ""
 
 secure: False
-create: True
 manifests: True
 fetched_dest: "{{ repo_root_path }}/fetched"
 
@@ -14,11 +13,11 @@ ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] | default(80
 ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v2"
 URL_ASSISTED_INSTALLER_CLUSTERS: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters"
 
-http_auth_username: "none"
-http_auth_password: "none"
-http_proxy: ""
-https_proxy: ""
-no_proxy: ""
+HTTP_AUTH_USERNAME: "none"
+HTTP_AUTH_PASSWORD: "none"
+HTTP_PROXY: ""
+HTTPS_PROXY: ""
+NO_PROXY: ""
 
 single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"
 
@@ -29,3 +28,17 @@ single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | defau
 # 2. 'Full' (otherwise)
 #     Requires at least three master nodes for High Availability.
 high_availability_mode: "{{ single_node_openshift_enabled | ternary('none', 'full') }}"
+
+manifest_templates_for_mode:
+  none:
+    - 50-worker-nm-fix-ipv6.yml
+    - 50-worker-remove-ipi-leftovers.yml
+    # - 02-fix-ingress-config.yml     # Applying this fix breaks the ingress controller on SNO.
+    # - 01-master-node-scheduler.yml  # The master node on SNO is automatically marked as schedulable.
+  full:
+    - 50-worker-nm-fix-ipv6.yml
+    - 50-worker-remove-ipi-leftovers.yml
+    - 02-fix-ingress-config.yml
+    - 01-master-node-scheduler.yml
+
+manifest_templates: "{{ manifest_templates_for_mode[high_availability_mode] }}"
