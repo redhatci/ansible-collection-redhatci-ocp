@@ -1,0 +1,7 @@
+- name: Assert that partitions can be create on supported Openshift version
+  assert:
+    that:
+       - openshift_full_version is version('4.8', '>=')
+    fail_msg: "openshift_full_version  must be >= 4.8."
+  when: hostvars[item]['disks'] is defined
+  loop: "{{ groups['nodes'] | default([]) }}"

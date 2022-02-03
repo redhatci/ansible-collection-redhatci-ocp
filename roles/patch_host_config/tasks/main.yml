@@ -95,3 +95,34 @@
           ]
         }
       register: http_reply
+
+- name: Load patch for worker partition
+  when: hostvars[host_name]['disks'] is defined
+  vars:
+    disks: "{{ hostvars[host_name]['disks'] }}"
+  block:
+    - name: Template patch partition
+      set_fact:
+        worker_partition: "{{ lookup('template', 'patch-worker-partition.j2') }}"
+
+    - debug: # noqa unnamed-task
+        var: worker_partition
+        verbosity: 1
+  
+  
+    - name: Patch worker partition
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/hosts/{{ host_id }}/ignition"
+        method: PATCH
+        status_code: [201]
+        return_content: True
+        body_format: json
+        body:
+          {
+        "config": "{{ worker_partition | to_json(ensure_ascii=False) | string }}",
+          }
+      register: http_reply
+   
+    - debug: # noqa unnamed-task
+        var: http_reply
+        verbosity: 1
