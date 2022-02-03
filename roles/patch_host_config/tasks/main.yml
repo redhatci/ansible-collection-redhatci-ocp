@@ -3,7 +3,7 @@
 
 - name: "Wait for up to 10 minutes for node discovery - {{ discovered_host.id }}"
   uri:
-    url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host.id }}"
+    url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
     method: GET
     status_code: [200, 201]
     return_content: True
@@ -15,7 +15,7 @@
 
 - name: Identify the discovered host {{ discovered_host.id }}
   set_fact:
-    host: "{{ host.json }}"
+    host: "{{ discovered_host.json }}"
   when: discovered_host.inventory is not defined
 
 - name: Identify the discovered host {{ discovered_host.id }}

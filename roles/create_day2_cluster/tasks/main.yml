@@ -58,7 +58,8 @@
   loop: "{{ groups['day2_workers'] }}"
 
 - name: Patch day2 cluster
-  import_role: patch_cluster
+  import_role: 
+    name: patch_cluster
   vars:
     patch_set_prefix: "day2_"
     patch_cluster_id: "{{ add_host_cluster_id }}"
