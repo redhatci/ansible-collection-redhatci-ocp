@@ -2,6 +2,6 @@
   package:
     name:
       - skopeo
-      - sqlite
     state: present
   become: true
+...
