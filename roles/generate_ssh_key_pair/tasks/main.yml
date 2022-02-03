@@ -1,4 +1,9 @@
 ---
+- name: "Remove temporary ssh_keys folder {{ key_pair_dir }}"
+  file:
+    path: "{{ key_pair_dir }}"
+    state: absent
+
 - name: Make key dir
   file:
     path: "{{ key_pair_dir }}"
