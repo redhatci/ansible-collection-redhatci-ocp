@@ -27,8 +27,8 @@
               prefix: "{{ vm_bridge_prefix }}"
         bridge:
           stp: True
-        port:
-          name: "{{ vm_bridge_port_name }}"
+          port:
+            name: "{{ vm_bridge_port_name }}"
 
 - name: Append vlan to network_config_interfaces
   set_fact:

@@ -55,7 +55,7 @@ interfaces:
         stp:
           enabled: {{ interface.bridge.stp | default(true) }}
       port:
-        - name: {{ interface.port.name }}
+        - name: {{ interface.bridge.port.name }}
           stp-hairpin-mode: {{ interface.bridge.port.hairpin | default(false) }}
           stp-path-cost: {{ interface.bridge.port.cost | default(100) }}
           stp-priority: {{ interface.bridge.port.priority | default(32) }}
