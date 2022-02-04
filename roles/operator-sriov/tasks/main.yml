@@ -123,28 +123,4 @@
     - "'syncStatus' in state.resources[0].status"
     - "state.resources[0].status.syncStatus == 'Succeeded'"
 
-- name: "Create SriovNetworkNodePolicy {{ cnf_test_sriov_policy }} for CNF tests"
-  k8s:
-    definition: "{{ lookup('template', 'templates/sriov-policy.yml.j2') }}"
-  when:
-    - cnf_test_suites is defined
-    - "'sriov' in cnf_test_suites"
-    - cnf_test_sriov_dev is defined
-    - cnf_test_sriov_policy is defined
-    - cnf_test_sriov_resource is defined
-    - cnf_test_sriov_numvfs is defined
-    - cnf_test_sriov_mtu is defined
-
-- name: "Checking if all nodes in MCP are updated and ready"
-  k8s_info:
-    api_version: machineconfiguration.openshift.io/v1
-    kind: MachineConfigPool
-  register: reg_mcpool_status
-  vars:
-    status_query: "resources[*].status.conditions[?type=='Updated'].status"
-    update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
-  until:
-    - update_status == ['True']
-  retries: 10
-  delay: 10
 ...
