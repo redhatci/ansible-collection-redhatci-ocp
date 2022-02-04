@@ -13,7 +13,7 @@ The tests executed are defined by the the variable values provided to the role.
 Name                               | Default                                    | Description
 ---------------------------------- | ------------------------------------------ | -------------------------------------------------------------
 ts\_e2e\_image                     | quay.io/openshift/origin-tests"            | Image used to execute the tests
-ts\_registry                       | registry.dfwt5g.lab:5000                   | Registry used to pull/push images the required images
+ts\_registry                       | registry.dfwt5g.lab:4443                   | Registry used to pull/push images the required images
 ts\_registry\_auth                 | auths.json                                 | File with pull secrets for the registries
 ts\_ocp\_version\_maj              | 4                                          | OCP version major number, it is recommended to match with the target cluster version
 ts\_ocp\_version\_min              | 7                                          | OCP version minor number, it is recommended to match with the target cluster version
