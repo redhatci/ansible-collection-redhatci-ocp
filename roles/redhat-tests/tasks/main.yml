@@ -15,7 +15,7 @@
     update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
   until:
     - update_status == ['True']
-  retries: 10
+  retries: 30
   delay: 10
 
 - name: "redhat-tests : Run openshift conformance tests"
