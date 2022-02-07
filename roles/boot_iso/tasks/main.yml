@@ -36,3 +36,9 @@
   args:
     apply:
       delegate_to: bastion
+
+- include_tasks: pxe.yml
+  when: hostvars[inventory_hostname]['vendor'] | lower == 'pxe'
+  args:
+    apply:
+      delegate_to: bastion

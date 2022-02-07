@@ -23,6 +23,7 @@ An OpenShift cluster is about to be deployed. Please double check the provided i
   {{ row_format_str | format('Setup Registry Service', inventory.setup_registry_service) }}
   {{ row_format_str | format('Setup HTTP Store Service', inventory.setup_http_store_service) }}
   {{ row_format_str | format('Setup Assisted Installer', inventory.setup_assisted_installer) }}
+  {{ row_format_str | format('Setup PXE Service', inventory.setup_pxe_service) }}
 
   {{ row_format_str | format('Discovery ISO Name', inventory.discovery_iso_name) }}
   {{ row_format_str | format('Discovery ISO Download Path', inventory.discovery_iso_download_path) }}

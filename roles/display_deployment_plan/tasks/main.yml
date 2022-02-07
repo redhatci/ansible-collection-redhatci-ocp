@@ -44,6 +44,7 @@
           setup_registry_service: "{{ setup_registry_service | default(messages.value_missing) }}"
           setup_http_store_service: "{{ setup_http_store_service | default(messages.value_missing) }}"
           setup_assisted_installer: "{{ setup_assisted_installer | default(messages.value_missing) }}"
+          setup_pxe_service: "{{ setup_pxe_service | default(messages.value_missing) }}"
           discovery_iso_name: "{{ discovery_iso_name | default(messages.value_missing) }}"
           discovery_iso_download_path: "{{ iso_download_dest_path | default(messages.value_missing) }}"
           is_valid_single_node_openshift_config: "{{ is_valid_single_node_openshift_config | default(messages.value_missing) }}"

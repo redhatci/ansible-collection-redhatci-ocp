@@ -43,3 +43,11 @@ address=/{{ item.address }}/{{ item.ip }}
 ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
 
 {% endfor %}
+
+{% if use_pxe %}
+enable-tftp
+tftp-root={{ TFTP_ROOT }}
+dhcp-vendorclass=BIOS,PXEClient:Arch:00000
+dhcp-boot=tag:BIOS,lpxelinux.0
+dhcp-boot=tag:!BIOS,shimx64.efi
+{% endif %}

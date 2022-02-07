@@ -17,7 +17,10 @@ dns_records:
 node_dns_records: {}
 extra_dns_records: {}
 
+use_pxe: false
 use_dhcp: false
 dhcp_lease_time: 24h
 
 listen_address: "{{ ansible_default_ipv4.address }}"
+
+TFTP_ROOT: "{{ hostvars['tftp_host']['tftp_directory'] | default('/var/lib/tftpboot/') }}"
