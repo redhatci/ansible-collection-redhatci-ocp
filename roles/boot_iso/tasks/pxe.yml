@@ -1,0 +1,25 @@
+---
+- name: PXE server Power off servers
+  ipmi_power:
+    name: "{{ base_bmc_address }}"
+    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    state: off
+
+- name: Set server to boot from network
+  ipmi_boot:
+    name: "{{ base_bmc_address }}"
+    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    bootdev: network
+    persistent: no
+    uefiboot: yes
+
+- name: PXE server Power on
+  ipmi_power:
+    name: "{{ base_bmc_address }}"
+    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    state: boot
+
+

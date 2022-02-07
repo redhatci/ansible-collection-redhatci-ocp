@@ -1,0 +1,42 @@
+---
+# defaults file for generate_discovery_iso
+tftp_root: "{{ hostvars['tftp_host']['tftp_directory'] | default('/var/lib/tftpboot/') }}"
+mount_images_directory: "/mnt/iso/images"
+mount_efiboot_directory: "/mnt/efiboot"
+pxe_directory: "pxe"
+rootfs_directory: "/opt/http_store/data/{{pxe_directory}}"
+mounted_iso_files:
+  - "{{ mount_images_directory }}/ignition.img"
+  - "{{ mount_images_directory }}/efiboot.img"
+  - "{{ mount_images_directory }}/pxeboot/vmlinuz"
+  - "{{ mount_images_directory }}/pxeboot/initrd.img"
+  - "{{ mount_efiboot_directory }}/EFI/redhat/grubx64.efi"
+  - "{{ mount_efiboot_directory }}/EFI/redhat/shimx64.efi"
+
+mounted_tftp_files: "http://{{ HTTPD_PXE_HOST }}/{{ pxe_directory }}"
+tftp_files_to_download:
+  - "{{ mounted_tftp_files }}/ignition.img"
+  - "{{ mounted_tftp_files }}/efiboot.img"
+  - "{{ mounted_tftp_files }}/vmlinuz"
+  - "{{ mounted_tftp_files }}/initrd.img"
+  - "{{ mounted_tftp_files }}/grubx64.efi"
+  - "{{ mounted_tftp_files }}/shimx64.efi"
+
+system_files_to_download:
+  - "{{ mounted_tftp_files }}/lpxelinux.0" 
+  - "{{ mounted_tftp_files }}/ldlinux.c32"  
+  - "{{ mounted_tftp_files }}/menu.c32"
+
+system_files_directory: "/usr/share/syslinux"
+system_files:
+  - "{{ system_files_directory }}/lpxelinux.0"
+  - "{{ system_files_directory }}/ldlinux.c32"
+  - "{{ system_files_directory }}/menu.c32"
+
+ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"
+URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ CLUSTER_ID }}/downloads/image"
+
+DOWNLOAD_DEST_FILE: "{{ discovery_iso_name }}"
+DOWNLOAD_DEST_PATH: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
+HTTPD_PXE_HOST: "{{ hostvars['http_store']['ansible_host'] }}"
+HTTPD_PORT_FOR_PXE: "{{ hostvars['httpd_pxe_host']['httpd_port_for_pxe'] }}"
