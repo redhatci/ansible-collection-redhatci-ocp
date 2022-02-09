@@ -13,7 +13,7 @@ ocp_release_versions_map_all:
 get_release_images: true
 get_all_release_versions: false
 
-ocp_release_versions_map: "{{ get_all_release_versions | ternary(ocp_release_versions_map_all, {openshift_version: ocp_release_versions_map_all[openshift_version]}) }}"
+ocp_release_versions_map: "{{ get_all_release_versions | ternary(ocp_release_versions_map_all, {(openshift_version | string): ocp_release_versions_map_all[openshift_version | string]}) }}"
 
 release_image_url: "quay.io/openshift-release-dev/ocp-release"
 
