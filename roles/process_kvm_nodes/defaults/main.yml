@@ -2,11 +2,11 @@ vm_spec_defaults:
   master:
     memory: 16384
     vcpu: 6
-    disk_size: 30
+    disk_size: 120
   worker:
     memory: 30000
     vcpu: 8
-    disk_size: 50
+    disk_size: 120
 
 vm_group_params:
   master:
