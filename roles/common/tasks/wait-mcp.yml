@@ -1,0 +1,69 @@
+---
+- name: Wait for updated machine configs to be applied / uncordon nodes
+  block:
+    - name: "Pause for Machine Config to be created"
+      pause:
+        seconds: 60
+
+    - name: Get Machine config pools status
+      k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        kubeconfig: "{{ dci_cluster_configs_dir }}/kubeconfig"
+      register: reg_mcpool_status
+      vars:
+        status_query: "resources[*].status.conditions[?type=='Updated'].status"
+        update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
+      until:
+        - update_status == ['True']
+      retries: "{{ mcp_wait_retries }}"
+      delay: "{{ mcp_wait_delay }}"
+      delegate_to: localhost
+
+  rescue:
+    # If the k8s_info module fails, we will try using OC to get the mcp status
+    - name: MachineConfigPool check failed, using oc mcp get check
+      shell: >
+        {{ dci_cluster_configs_dir }}/oc get mcp
+      register: reg_mcpool_status
+      vars:
+        master_query: "master[\\s]+rendered-master-[a-z0-9]+[\\s]+True[\\s]+False"
+        worker_query: "worker[\\s]+rendered-worker-[a-z0-9]+[\\s]+True[\\s]+False"
+        masters_updated: "{{ reg_mcpool_status.stdout | regex_search(master_query) != None }}"
+        workers_updated: "{{ reg_mcpool_status.stdout | regex_search(worker_query) != None }}"
+      until:
+        - masters_updated
+        - workers_updated
+      retries: "{{ mcp_wait_retries }}"
+      delay: "{{ mcp_wait_delay }}"
+      ignore_errors: true
+      delegate_to: localhost
+
+    # Bugzilla report: https://bugzilla.redhat.com/show_bug.cgi?id=2053445
+    # Sometimes after applying MCPs some nodes remain unschedulable.
+    - name: Check for workers with Scheduling disabled
+      shell: >
+        {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true |
+        grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+      register: reg_disabled_nodes
+
+    - name: Uncordon workers if needed
+      block:
+        - name: Workaround - uncordon all ready workers with disabled scheduling
+          shell: >
+            {{ dci_cluster_configs_dir }}/oc adm uncordon {{ item }}
+          loop: "{{ reg_disabled_nodes.stdout.split('\n') }}"
+          delegate_to: localhost
+
+        - name: Wait for workers to be ready
+          shell: >
+            {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true | grep worker
+          register: nodes
+          until:
+            - '"SchedulingDisabled" not in nodes.stdout'
+          retries: 30
+          delay: 10
+          delegate_to: localhost
+      when: reg_disabled_nodes.stdout | length > 0
+
+...
