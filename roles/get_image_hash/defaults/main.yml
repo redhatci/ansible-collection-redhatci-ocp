@@ -19,13 +19,13 @@ release_image_url: "quay.io/openshift-release-dev/ocp-release"
 
 assisted_installer_images:
   controller:
-    image: quay.io/ocpmetal/assisted-installer-controller
+    image: quay.io/edge-infrastructure/assisted-installer-controller
     tag: "{{ controller_tag }}"
   installer_agent:
-    image: quay.io/ocpmetal/assisted-installer-agent
+    image: quay.io/edge-infrastructure/assisted-installer-agent
     tag: "{{ installer_agent_tag }}"
   installer:
-    image: quay.io/ocpmetal/assisted-installer
+    image: quay.io/edge-infrastructure/assisted-installer
     tag: "{{ installer_tag }}"
 
 images_to_get_hash_for: "{{ assisted_installer_images | combine(release_images | default({})) }}"
