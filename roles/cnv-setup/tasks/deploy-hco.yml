@@ -55,16 +55,4 @@
     - "hco_pods.resources[0].status.containerStatuses|length == 1"
     - "'ready' in hco_pods.resources[0].status.containerStatuses[0]"
     - "hco_pods.resources[0].status.containerStatuses[0].ready|bool"
-
-- name: "Checking if all nodes in MCP are updated and ready"
-  k8s_info:
-    api_version: machineconfiguration.openshift.io/v1
-    kind: MachineConfigPool
-  register: reg_mcpool_status
-  vars:
-    status_query: "resources[*].status.conditions[?type=='Updated'].status"
-    update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
-  until:
-    - update_status == ['True']
-  retries: 10
-  delay: 10
+...
