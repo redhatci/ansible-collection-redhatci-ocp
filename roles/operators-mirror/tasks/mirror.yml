@@ -1,7 +1,4 @@
 ---
-- name: force OPM version
-  set_fact:
-    dci_opm_version: "{{ opm_version | default('v' + base_version|string) }}"
 
 - name: "Build Operator catalog index"
   include_tasks: build-catalog-index.yml
@@ -9,7 +6,7 @@
 - name: "Get index SHA256"
   shell:
     cmd: >
-      skopeo inspect --authfile {{ dci_pullsecret_file }} docker://{{ local_registry }}{{ opm_local_registry_path }}:{{ dci_opm_version }} | jq -r '.Digest'
+      skopeo inspect --authfile {{ dci_pullsecret_file }} docker://{{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }} | jq -r '.Digest'
   register: index_sha
   retries: 5
   delay: 5

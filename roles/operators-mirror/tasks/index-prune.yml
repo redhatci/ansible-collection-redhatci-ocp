@@ -1,0 +1,107 @@
+---
+
+- name: "Loop control for index prunning"
+  set_fact:
+    index_fallback: "{{ index_fallback | int + 1 }}"
+
+- name: "Prune SQLite based catalog index"
+  block:
+    - name: "Prune source index but opm_mirror_list"
+      shell:
+        # opm requires write perms in the working directory
+        chdir: "{{ tmp_prune.path }}"
+        cmd: |
+          set -x;
+          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }} \
+          {{ provision_cache_store }}/{{ version }}/opm index prune \
+          --from-index registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }} \
+          --packages {{ opm_mirror_list | join(",") }} \
+          --tag {{ local_registry }}{{ opm_local_registry_path }}:v{{ ocp_major }}.{{ ocp_minor }}
+      register: prune_result
+      until: prune_result.rc == 0
+      retries: 3
+      delay: 10
+      notify:
+        - "Fix permissions and removing tmp files"
+  when:
+  - version is version("4.10", "<")
+
+# This should be a workaround until the opm prune supports FBC format
+# https://github.com/redhat-openshift-ecosystem/community-operators-prod/discussions/512
+# opm render reads auths only from docker configs
+- name: "Prune File Based Catalog index"
+  block:
+    - name: "Extract the operator's channel and packages from the catalog index"
+      shell:
+        chdir: "{{ tmp_prune.path }}"
+        cmd: |
+          set -x;
+          mkdir "{{ tmp_prune.path }}/configs"
+          mkdir -p ~/.docker
+          ln -sf {{ dci_pullsecret_file }} ~/.docker/config.json
+          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }} \
+          {{ provision_cache_store }}/{{ version }}/opm render \
+          registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }} | \
+          jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'  >> {{ tmp_prune.path }}/configs/index.json
+      register: prune_result
+      until: prune_result.rc == 0
+      retries: 3
+      delay: 10
+      with_items: "{{ opm_mirror_list }}"
+      loop_control:
+        loop_var: operator_name
+
+    - name: "Build the catalog index"
+      shell:
+        chdir: "{{ tmp_prune.path }}"
+        cmd: |
+          set -x;
+          {{ provision_cache_store }}/{{ version }}/opm alpha generate dockerfile {{ tmp_prune.path }}/configs/
+          podman build -t {{ local_registry }}{{ opm_local_registry_path }}:v{{ ocp_major }}.{{ ocp_minor }} \
+          -f {{ tmp_prune.path }}/configs.Dockerfile .
+      notify:
+        - "Fix permissions and removing tmp files"
+  when:
+  - version is version("4.10", ">=")
+
+- name: "Push the new index image to the local registry"
+  shell:
+    cmd: |
+      podman push {{ local_registry }}{{ opm_local_registry_path }}:v{{ ocp_major }}.{{ ocp_minor }} \
+      --authfile {{ dci_pullsecret_file }}
+
+- name: "Use the grpc API to explore the pruned catalog index"
+  shell:
+    cmd: |
+      podman run --rm -d -p50051 \
+      {{ local_registry }}{{ opm_local_registry_path }}:v{{ ocp_major }}.{{ ocp_minor }}
+  register: grpc_container_id
+
+- name: "Get dynamic port assigned to grpc"
+  shell:
+    cmd: |
+      podman inspect {{ grpc_container_id.stdout }} | jq '.[].NetworkSettings.Ports."50051/tcp"[].HostPort'
+  register: grpc_port
+
+- name: "Get the number of operators in the pruned catalog"
+  shell:
+    cmd: |
+      grpcurl -plaintext localhost:{{ grpc_port.stdout  }} api.Registry/ListPackages | jq -s length
+  register: prune_count
+
+- name: "Remove grpc-api container"
+  shell:
+    cmd: >
+      podman stop --ignore {{ grpc_container_id.stdout }}
+
+- name: "Set new minor version when operators are missing"
+  set_fact:
+    ocp_minor: "{{ ocp_minor | int -1 }}"
+  when: prune_count.stdout | int != opm_mirror_list | length
+
+- name: "Fallback to previous OCP version"
+  include_tasks: index-prune.yml
+  when:
+    - index_fallback | int <= 3
+    - prune_count.stdout | int != opm_mirror_list | length
+...
