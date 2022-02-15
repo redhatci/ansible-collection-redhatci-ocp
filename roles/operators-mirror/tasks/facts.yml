@@ -6,10 +6,7 @@
     opm_catalog_source_name: "{{ opm_catalog_source_name }}"
     opm_catalog_source_namespace: "{{ opm_catalog_source_namespace }}"
     opm_catalog_source_displayname: "{{ opm_catalog_source_displayname }}"
-    opm_local_registry_path: "{{ opm_local_registry_path }}"
-
-- name: Set facts for newer ocp versions
-  set_fact:
     opm_local_registry_path: "/redhat/redhat-operator-index"
-  when:
-    - version is version("4.6.17", ">=")
+    ocp_major: "{{ version.split('.')[0] }}"
+    ocp_minor: "{{ version.split('.')[1] }}"
+...
