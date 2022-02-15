@@ -20,6 +20,12 @@
   become: true
   import_tasks: configure_firewall.yml
 
+- name: Install dnsmasq
+  become: true
+  ansible.builtin.package:
+    name: dnsmasq
+    state: present
+
 - name: Configure dnsmasq via NetworkManager
   become: true
   import_tasks: network-manager.yml
