@@ -1,15 +1,7 @@
 ---
-- name: set OPM version (non GA)
+- name: force OPM version
   set_fact:
     dci_opm_version: "{{ opm_version | default('v' + base_version|string) }}"
-    filter_by_arg: "--index-filter-by-os"
-  when: build != 'ga'
-
-- name: set OPM version (GA)
-  set_fact:
-    dci_opm_version: "v{{ base_version }}"
-    filter_by_arg: "--index-filter-by-os"
-  when: build == 'ga'
 
 - name: "Build Operator catalog index"
   include_tasks: build-catalog-index.yml
@@ -37,7 +29,7 @@
       {{ provision_cache_store }}/{{ version }}/oc adm catalog mirror
       {{ local_registry }}{{ opm_local_registry_path }}@{{ index_sha.stdout }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
-      {{ filter_by_arg }}="linux/amd64"
+      --index-filter-by-os="linux/amd64"
       --to-manifests={{ dci_cluster_configs_dir }}/{{ manifests_dir }}
       --path=/database/index.db:{{ tmp_index.path }} 2>&1
   register: catalog_manifests_output
