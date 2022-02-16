@@ -1,5 +1,6 @@
 ---
-- name: Wait for updated machine configs to be applied / uncordon nodes
+
+- name: Wait for updated machine configs to be applied on the nodes
   block:
     - name: "Pause for Machine Config to be created"
       pause:
@@ -21,7 +22,10 @@
       delegate_to: localhost
 
   rescue:
-    # If the k8s_info module fails, we will try using OC to get the mcp status
+    # If the k8s_info module fails, we will try using OC to get the mcp status, because
+    # the output may be different
+    # We are doing this with ignore_errors: true just to retrieve logs in order to
+    # compare the output with k8s_info output, in order to open a bugzilla
     - name: MachineConfigPool check failed, using oc mcp get check
       environment:
         KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
@@ -41,38 +45,48 @@
       ignore_errors: true
       delegate_to: localhost
 
+    - name: Wait for updated machine configs to be applied on the nodes failed - no workaround applied
+      fail:
+        msg: "No workaround is defined, so the job has to fail at this point"
+      when: '"bz2053445" not in dci_workarounds|default([])'
+
     # Bugzilla report: https://bugzilla.redhat.com/show_bug.cgi?id=2053445
     # Sometimes after applying MCPs some nodes remain unschedulable.
-    - name: Check for workers with Scheduling disabled
-      environment:
-        KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
-      shell: >
-        {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true |
-        grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
-      register: reg_disabled_nodes
-      delegate_to: localhost
-
-    - name: Uncordon workers if needed
+    - name: Workaround for BZ-2053445 - force workers uncordon
       block:
-        - name: Workaround - uncordon all ready workers with disabled scheduling
+        - name: Check for workers with Scheduling disabled
           environment:
             KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
           shell: >
-            {{ dci_cluster_configs_dir }}/oc adm uncordon {{ item }}
-          loop: "{{ reg_disabled_nodes.stdout.split('\n') }}"
+            {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true |
+            grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+          register: reg_disabled_nodes
           delegate_to: localhost
 
-        - name: Wait for workers to be ready
-          environment:
-            KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
-          shell: >
-            {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true | grep worker
-          register: nodes
-          until:
-            - '"SchedulingDisabled" not in nodes.stdout'
-          retries: 30
-          delay: 10
-          delegate_to: localhost
-      when: reg_disabled_nodes.stdout | length > 0
+        - name: Uncordon workers if needed
+          block:
+            - name: Workaround - uncordon all ready workers with disabled scheduling
+              environment:
+                KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+              shell: >
+                {{ dci_cluster_configs_dir }}/oc adm uncordon {{ item }}
+              loop: "{{ reg_disabled_nodes.stdout.split('\n') }}"
+              delegate_to: localhost
+
+            - name: Wait for workers to be ready
+              environment:
+                KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+              shell: >
+                {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true | grep worker
+              register: nodes
+              until:
+                - '"SchedulingDisabled" not in nodes.stdout'
+              retries: 30
+              delay: 10
+              delegate_to: localhost
+          when: reg_disabled_nodes.stdout | length > 0
+      when:
+        - dci_workarounds is defined
+        - '"bz2053445" in dci_workarounds'
 
 ...
