@@ -5,18 +5,12 @@
     ts_log_dir: "{{ job_logs.path | default ('/tmp')}}"
 
 - name: "Checking if all nodes in MCP are updated and ready before running RedHat tests"
-  k8s_info:
-    api_version: machineconfiguration.openshift.io/v1
-    kind: MachineConfigPool
-    kubeconfig: "{{ dci_cluster_configs_dir }}/kubeconfig"
-  register: reg_mcpool_status
+  include_role:
+    name: common
+    tasks_from: wait-mcp
   vars:
-    status_query: "resources[*].status.conditions[?type=='Updated'].status"
-    update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
-  until:
-    - update_status == ['True']
-  retries: 30
-  delay: 10
+    mcp_wait_retries: 30
+    mcp_wait_delay: 10
 
 - name: "redhat-tests : Run openshift conformance tests"
   include_tasks: conformance.yml
