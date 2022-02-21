@@ -46,6 +46,7 @@
         {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true |
         grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
       register: reg_disabled_nodes
+      delegate_to: localhost
 
     - name: Uncordon workers if needed
       block:
