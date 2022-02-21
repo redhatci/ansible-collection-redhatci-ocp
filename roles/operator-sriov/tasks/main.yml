@@ -87,6 +87,20 @@
     - "'phase' in csv.resources[0].status"
     - "csv.resources[0].status.phase == 'Succeeded'"
 
+- name: "Disable SR-IOV Draining in SNO"
+  k8s:
+    definition:
+      apiVersion: sriovnetwork.openshift.io/v1
+      kind: SriovOperatorConfig
+      metadata:
+        name: default
+        namespace: openshift-sriov-network-operator
+      spec:
+        disableDrain: true
+  when:
+    - install_type is defined
+    - install_type == "sno"
+
 - name: Get all nodes
   k8s_info:
     kind: Node
