@@ -32,7 +32,7 @@
       - dci_pullsecret_file is defined
       - webserver_url is defined
       - install_type | string
-      - install_type in ['ipi', 'sno']
+      - install_type in ['ipi', 'sno', 'upi']
 
 - name: "Validate required type of SNO deployment"
   assert:
