@@ -1,7 +1,7 @@
 ---
 # vars file for sno-installer
-pullsecret_file: "{{ dir }}/pull-secret.txt"
 cache_dir: "/opt/cache"
+pullsecret_file: "{{ cache_dir }}/pull-secret.txt"
 client_tools:
   - openshift-client
 installer_extract_cmds:

@@ -1,23 +1,31 @@
 ---
 # tasks file for upi-installer
+- include_tasks: 00_validation.yml
+  tags:
+    - validation
+    - use_registry
+
 - include_tasks: 05_create_config_install_dirs.yml
-  tags: clusterconfig
+  tags:
+    - clusterconfig
 
 - include_tasks: 10_get_oc.yml
   tags:
-  - cleanup
-  - getoc
+    - cleanup
+    - getoc
 
 - include_tasks: 20_extract_installer.yml
   tags:
-  - pullsecret
-  - extract
+    - pullsecret
+    - extract
 
 - include_tasks: 23_rhcos_image_paths.yml
-  tags: rhcospath
+  tags:
+    - rhcospath
 
 - include_tasks: 25_read_ssh_key.yml
-  tags: ssh_key
+  tags:
+    - ssh_key
 
 - include_tasks: '{{ hookdir }}/hooks/upi-install.yml'
   loop: "{{ dci_config_dirs }}"
