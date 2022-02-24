@@ -29,9 +29,13 @@ pyxis\_identifier                  | undefined                                  
 operator_sdk_tool_path: "/usr/local/bin/operator-sdk-flag"
 
 preflight_operators_to_check:
-  - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
+  - name: Testpmd operator
+    version: "v0.2.9"
+    bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
     index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
-  - bundle_image: "quay.io/opdev/simple-demo-operator-bundle@sha256:eff7f86a54ef2a340dbf739ef955ab50397bef70f26147ed999e989cfc116b79"
+  - name: Simple demo
+    version: "v0.0.3"
+    bundle_image: "quay.io/opdev/simple-demo-operator-bundle@sha256:eff7f86a54ef2a340dbf739ef955ab50397bef70f26147ed999e989cfc116b79"
     index_image: "quay.io/opdev/simple-demo-operator-catalog:v0.0.3"
 ...
 ```
