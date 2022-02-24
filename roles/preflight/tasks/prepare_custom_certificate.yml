@@ -1,0 +1,33 @@
+---
+- name: Create temporary custom ca directory
+  tempfile:
+    state: directory
+    prefix: preflight_ca_tmp_dir.
+  register: preflight_ca_tmp_dir
+
+- name: Get ca-bundle.trust from preflight image
+  shell: >
+    podman run
+    -it
+    --entrypoint cat
+    {{ preflight_version }}
+    /etc/pki/tls/certs/ca-bundle.trust.crt
+  register: cabundle
+  no_log: true
+
+- name: Copy ca in repoconfig
+  copy:
+    src: "{{ preflight_custom_ca }}"
+    dest: "{{ preflight_ca_tmp_dir.path }}/ca.crt"
+
+- name: Merge the ca trust with the custom ca
+  blockinfile:
+    insertbefore: BOF
+    path: "{{ preflight_ca_tmp_dir.path }}/ca.crt"
+    block: "{{ cabundle.stdout }}"
+
+- name: Update preflight_custom_ca for podman
+  set_fact:
+    preflight_podman_ca:
+      "-v {{ preflight_ca_tmp_dir.path }}/ca.crt:/etc/pki/tls/certs/ca-bundle.trust.crt"
+...

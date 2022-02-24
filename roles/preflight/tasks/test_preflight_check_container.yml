@@ -43,6 +43,7 @@
     -e PFLT_LOGLEVEL=trace
     -v {{ preflight_artifacts }}:/artifacts
     -v {{ preflight_repoconfig }}/config.json:/repoconfig/config.json
+    {{ preflight_podman_ca }}
     {{ preflight_version }}
     check container
     {{ operator.bundle_image }}

@@ -74,6 +74,7 @@
     -v {{ preflight_kubeconfig }}/kubeconfig:/kubeconfig
     -v {{ preflight_artifacts }}:/artifacts
     -v {{ preflight_repoconfig }}/config.json:/repoconfig/config.json
+    {{ preflight_podman_ca }}
     {{ preflight_version }}
     check operator
     {{ operator.bundle_image }}
