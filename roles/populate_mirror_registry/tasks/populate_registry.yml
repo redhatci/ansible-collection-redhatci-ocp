@@ -1,5 +1,9 @@
 ---
-- name: Populate Mirror
+- name: Populate Mirror with images required for installation
+  become: true
+  tags:
+    - mirror_images
+    - mirror_installation_images
   block:
     - name: Create podman auth dir
       file:
@@ -23,9 +27,9 @@
     - name: Mirror remote ocpmetal image registry to local
       command: >
         /usr/local/bin/oc image mirror
-        -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
-        {{ item.remote }}
-        {{ item.local }}:{{ item.local_tag }}
+          -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
+          {{ item.remote }}
+          {{ item.local }}:{{ item.local_tag }}
       loop: "{{ ocpmetal_images }}"
 
     - name: Mirror remote registry to local
@@ -36,9 +40,17 @@
           --to-release-image="{{ release_image_item.local | quote }}:{{ release_image_item.local_tag | quote }}"
           --to="{{ release_image_item.local | quote }}"
 
+- name: Populate Mirror  with operators
+  become: true
+  tags:
+    - mirror_images
+    - mirror_operators 
+  when: populate_operator_catalog | bool
+  block:
     - name: Build pruned OLM index
       command: >
-        opm index prune --from-index "{{ olm_index_item.remote }}"
+        opm index prune 
+          --from-index "{{ olm_index_item.remote }}"
           --packages "{{ mirror_packages | join(',') }}"
           --tag "{{ olm_index_item.local }}:{{ olm_index_item.local_tag }}"
       environment:
@@ -46,9 +58,14 @@
 
     - name: Push pruned index to local registry
       command: >
-        podman push --tls-verify=false
-        {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
-        --authfile "{{ config_file_path }}/{{ pull_secret_file_name }}"
-  become: true
-  tags:
-    - mirror_images
+        podman push 
+          --tls-verify=false
+          {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
+          --authfile "{{ config_file_path }}/{{ pull_secret_file_name }}"
+
+    - name: Mirror Catalog to local registry 
+      command: >
+        oc adm catalog mirror 
+          {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
+          {{ olm_item.local }}:{{ olm_item.local_tag }}
+          --registry-config="{{ config_file_path }}/{{ pull_secret_file_name }}"

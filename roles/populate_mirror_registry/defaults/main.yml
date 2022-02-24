@@ -1,4 +1,12 @@
 ---
+
+# Paths
+config_file_path: "{{ ansible_env.HOME }}" # Where config and secret files should be stored
+fetched_dest: "{{ repo_root_path }}/fetched"
+
+# defaults file for disconnected_registry
+pull_secret_file_name: pull-secret.txt
+
 # defaults file for disconnected_registry
 force: "no" # force downloads for oc and opm
 
@@ -45,11 +53,16 @@ olm_index_item:
   local: "{{ local_registry }}/olm-index/redhat-operator-index"
   local_tag: "v{{ openshift_version_parts[:2] | join('.') }}"
 
+olm_item:
+  local: "{{ local_registry }}/olm"
+  local_tag: "v{{ openshift_version_parts[:2] | join('.') }}"
+
 ocpmetal_images:
   - "{{ installer_agent_image }}"
   - "{{ installer_image }}"
   - "{{ installer_controller_image }}"
 
+populate_operator_catalog: false
 mirror_packages:
   - advanced-cluster-management
   - cluster-logging
