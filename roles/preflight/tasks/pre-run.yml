@@ -7,4 +7,9 @@
 - name: Manage images mirroring for Preflight cert suite
   include_tasks: pre-run_mirroring.yml
   when: dci_disconnected | default(false) | bool
+
+# Use custom certificat for self sign registry
+- name: Get custom ca certificate for preflight
+  include_tasks: prepare_custom_certificate.yml
+  when: preflight_custom_ca | length != 0
 ...
