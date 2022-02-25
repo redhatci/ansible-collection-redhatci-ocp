@@ -8,7 +8,7 @@
 - name: Check kubeadmin_vault_password_file_path is defined and the file exists
   assert:
     that:
-      - kubeadmin_vault_password_file_path is defined
       - kubeadmin_vault_password_file_path is file
     fail_msg: "Kubeadmin Vault password must be stored in the location specified by the required variable 'kubeadmin_vault_password_file_path'."
   changed_when: False
+  when:  kubeadmin_vault_password_file_path is defined

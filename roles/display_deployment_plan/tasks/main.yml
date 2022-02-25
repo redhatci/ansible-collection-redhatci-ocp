@@ -28,6 +28,7 @@
           value_missing: "<not set>"
           hosts_missing: "<no hosts set>"
           groups_missing: "<no groups set>"
+          kubeadmin_vault_password_file_path_missing: "UNDEFINED (This means the kubeadmin credentals will be stored in plain text)"
         # A default error message is assigned to each variable referenced in the deployment plan.
         # This prevents the prompt from not being displayed due to templating errors if a valid
         # inventory file is not provided.
@@ -47,6 +48,7 @@
           discovery_iso_download_path: "{{ iso_download_dest_path | default(messages.value_missing) }}"
           is_valid_single_node_openshift_config: "{{ is_valid_single_node_openshift_config | default(messages.value_missing) }}"
           groups_filtered: "{{ groups | difference(groups_to_exclude) }}"
+          kubeadmin_vault_password_file_path: "{{ kubeadmin_vault_password_file_path | default(messages.kubeadmin_vault_password_file_path_missing) }}"
       register: display_deployment_plan__confirmation
 
     - name: Assert the deployment plan is confirmed
