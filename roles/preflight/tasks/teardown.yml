@@ -1,0 +1,8 @@
+---
+- name: Remove tmp directory
+  file:
+    path: "{{ preflight_tmp_dir.path }}"
+    state: absent
+  when:
+    - preflight_tmp_dir is defined
+...

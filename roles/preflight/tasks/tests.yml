@@ -33,11 +33,4 @@
   loop_control:
     loop_var: operator
   when: operator_sdk_tool_path is defined
-
-- name: Remove tmp directory
-  file:
-    path: "{{ preflight_ca_tmp_dir.path }}"
-    state: absent
-  when:
-    - preflight_ca_tmp_dir is defined
 ...
