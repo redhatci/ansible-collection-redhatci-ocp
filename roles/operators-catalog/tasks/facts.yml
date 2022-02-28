@@ -4,5 +4,5 @@
     opm_catalog_source_displayname: "{{ hostvars.localhost.opm_catalog_source_displayname }}"
     opm_catalog_source_namespace: "{{ hostvars.localhost.opm_catalog_source_namespace }}"
     opm_local_registry_path: "{{ hostvars.localhost.opm_local_registry_path }}"
-    dci_opm_version: "{{ hostvars.localhost.dci_opm_version }}"
+    opm_version: "{{ hostvars.localhost.opm_version }}"
     local_registry: "{{ hostvars.localhost.local_registry_host }}:{{ hostvars.localhost.local_registry_port }}"
