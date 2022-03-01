@@ -1,4 +1,16 @@
 ---
+- name: Create tmp directory for custom configurations and preflight binary
+  tempfile:
+    state: directory
+    prefix: preflight_tmp_dir.
+  register: preflight_tmp_dir
+
+- name: Download preflight binary if necessary
+  vars:
+    preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight/{{ preflight_version.split(':')[-1] }}"
+  include_tasks: pre-run_get_preflight_binary.yml
+  when: preflight_use_binary | bool
+
 # This task is used both in connected and disconnected env
 # to retrieve scorecard-test image to run independent scorecard tests later on
 - name: Run preflight runtime-assets to get scorecard-test image
@@ -7,13 +19,6 @@
 - name: Manage images mirroring for Preflight cert suite
   include_tasks: pre-run_mirroring.yml
   when: dci_disconnected | default(false) | bool
-
-# Create tmp directory
-- name: Create temporary directory for custom configurations
-  tempfile:
-    state: directory
-    prefix: preflight_tmp_dir.
-  register: preflight_tmp_dir
 
 - name: Copy kubeconfig file into tmp config directory
   copy:

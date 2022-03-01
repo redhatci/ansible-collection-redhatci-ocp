@@ -29,19 +29,28 @@ preflight\_custom\_ca              | undefined                                  
 # preflight-config.yaml
 operator_sdk_tool_path: "/usr/local/bin/operator-sdk-flag"
 
+pyxis_apikey_path: APIKEY_PATH
+
 preflight_operators_to_check:
   - name: Testpmd operator
     version: "v0.2.9"
+    operator_image: "quay.io/rh-nfv-int/testpmd-operator:v0.2.9"
     bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
     index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
+    pyxis_identifier: PROJECTID
   - name: Simple demo
     version: "v0.0.3"
+    operator_image: "quay.io/opdev/simple-demo-operator:v0.0.3"
     bundle_image: "quay.io/opdev/simple-demo-operator-bundle@sha256:eff7f86a54ef2a340dbf739ef955ab50397bef70f26147ed999e989cfc116b79"
     index_image: "quay.io/opdev/simple-demo-operator-catalog:v0.0.3"
+    pyxis_identifier: PROJECTID
+
 ...
 ```
 
-**Mandatory** `preflight_operators_to_check` should be provided to run preflight or operator-sdk tests.
+**Mandatory**
+- `preflight_operators_to_check` should be provided to run preflight or operator-sdk tests.
+- `pyxis_apikey_path` and `pyxis_identifier` can be found on connect.redhat.com 
 
 **Optional** `operator_sdk_tool_path` should be provided to run operator-sdk scorecard tests.
 Here is the invocation:

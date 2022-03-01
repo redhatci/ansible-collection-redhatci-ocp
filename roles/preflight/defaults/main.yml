@@ -1,4 +1,10 @@
 ---
+# This variable defines if we're going to use binary or podman run
+# for Preflight check container.
+# Preflight 1.0.8 requires to use podman run.
+# Preflight 1.1.0-alpha2 requires to use binary because some container tests fail.
+# The next Preflight release will require to use podman run again.
+preflight_use_binary: false
 preflight_version: quay.io/opdev/preflight:1.0.8
 preflight_namespace: preflight-testing
 preflight_custom_ca: ""
