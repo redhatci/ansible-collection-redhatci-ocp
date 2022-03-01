@@ -31,26 +31,6 @@
         name: performance-addon-operator
         source: "{{ opm_catalog_source_name }}"
         sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
-  when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int >= 6
-
-- name: Create subscription for Performance Addon operator with channel (4.5 and older)
-  k8s:
-    definition:
-      apiVersion: operators.coreos.com/v1alpha1
-      kind: Subscription
-      metadata:
-        name: performance-addon-operator-subscription
-        namespace: openshift-performance-addon-operator
-      spec:
-        name: performance-addon-operator
-        source: "{{ opm_catalog_source_name }}"
-        sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
-        channel: "{{ ocp_version|string }}"
-  when:
-    - ocp_version_maj|int == 4
-    - ocp_version_min|int <= 5
 
 - name: test_ Check if performance-addon-operator csv is installed
   k8s_info:
@@ -58,7 +38,7 @@
     namespace: openshift-performance-addon-operator
     kind: ClusterServiceVersion
   register: csv
-  retries: 30
+  retries: 50
   delay: 5
   until:
     - "csv.resources|length == 1"

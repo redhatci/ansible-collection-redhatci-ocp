@@ -10,12 +10,12 @@
       shell:
         # opm requires write perms in the working directory
         chdir: "{{ tmp_prune.path }}"
-        cmd: |
+        cmd: >
           set -x;
-          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }} \
-          {{ provision_cache_store }}/{{ version }}/opm index prune \
-          --from-index registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }} \
-          --packages {{ opm_mirror_list | join(",") }} \
+          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
+          {{ provision_cache_store }}/{{ version }}/opm index prune
+          --from-index registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }}
+          --packages {{ opm_mirror_list | join(",") }}
           --tag {{ local_registry }}{{ opm_local_registry_path }}:v{{ ocp_major }}.{{ ocp_minor }}
       register: prune_result
       until: prune_result.rc == 0
@@ -23,8 +23,30 @@
       delay: 10
       notify:
         - "Fix permissions and removing tmp files"
+      when: version is version("4.9", "<=")
+
+    - name: "Prune source index but opm_mirror_list"
+      shell:
+        # opm requires write perms in the working directory
+        chdir: "{{ tmp_prune.path }}"
+        cmd: >
+          set -x;
+          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
+          {{ provision_cache_store }}/4.9.23/opm index prune
+          --from-index registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }}
+          --packages {{ opm_mirror_list | join(",") }}
+          --tag {{ local_registry }}{{ opm_local_registry_path }}:v{{ ocp_major }}.{{ ocp_minor }}
+      register: prune_result
+      until: prune_result.rc == 0
+      retries: 3
+      delay: 10
+      notify:
+        - "Fix permissions and removing tmp files"
+      when: version is version("4.10", ">=")
+
   when:
-  - version is version("4.10", "<")
+    - ocp_minor | int <= 10
+
 
 # This should be a workaround until the opm prune supports FBC format
 # https://github.com/redhat-openshift-ecosystem/community-operators-prod/discussions/512
@@ -34,14 +56,14 @@
     - name: "Extract the operator's channel and packages from the catalog index"
       shell:
         chdir: "{{ tmp_prune.path }}"
-        cmd: |
+        cmd: >
           set -x;
-          mkdir "{{ tmp_prune.path }}/configs"
-          mkdir -p ~/.docker
-          ln -sf {{ dci_pullsecret_file }} ~/.docker/config.json
-          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }} \
-          {{ provision_cache_store }}/{{ version }}/opm render \
-          registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }} | \
+          mkdir "{{ tmp_prune.path }}/configs";
+          mkdir -p ~/.docker;
+          ln -sf {{ dci_pullsecret_file }} ~/.docker/config.json;
+          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
+          {{ provision_cache_store }}/{{ version }}/opm render
+          registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }} |
           jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'  >> {{ tmp_prune.path }}/configs/index.json
       register: prune_result
       until: prune_result.rc == 0
@@ -55,14 +77,14 @@
       shell:
         chdir: "{{ tmp_prune.path }}"
         cmd: |
-          set -x;
+          set -x
           {{ provision_cache_store }}/{{ version }}/opm alpha generate dockerfile {{ tmp_prune.path }}/configs/
           podman build -t {{ local_registry }}{{ opm_local_registry_path }}:v{{ ocp_major }}.{{ ocp_minor }} \
           -f {{ tmp_prune.path }}/configs.Dockerfile .
       notify:
         - "Fix permissions and removing tmp files"
   when:
-  - version is version("4.10", ">=")
+    - ocp_minor | int >= 11
 
 - name: "Push the new index image to the local registry"
   shell:
