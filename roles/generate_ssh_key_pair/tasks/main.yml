@@ -4,6 +4,14 @@
     path: "{{ key_pair_dir }}"
     state: absent
 
+- name: "Make sure {{ fetched_dest }} exists"
+  file:
+    path: "{{ fetched_dest }}"
+    state: directory
+    recurse: yes
+  delegate_to: localhost
+  become: no
+
 - name: Make key dir
   file:
     path: "{{ key_pair_dir }}"

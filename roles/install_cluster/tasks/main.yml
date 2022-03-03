@@ -13,14 +13,6 @@
     var: discovery_ignition.json
     verbosity: 1
 
-- name: "Make {{ fetched_dest }}"
-  file:
-    path: "{{ fetched_dest }}"
-    state: directory
-    recurse: yes
-  delegate_to: localhost
-  become: no
-
 - name: "Copy discovery_ignition.json"
   copy:
     content: "{{ discovery_ignition.json }}"
