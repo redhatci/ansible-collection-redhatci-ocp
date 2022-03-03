@@ -49,7 +49,7 @@
   # commit id when creating the new branch based on the PR, but the original id
   # is saved in .git/ORIG_HEAD file.
   - name: Retrieve commit SHA from the downloaded repo
-    shell: cat .git/ORIG_HEAD
+    shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
     register: tnf_repo_info
     args:
       chdir: "{{ tnf_git_dir.path }}/test-network-function"

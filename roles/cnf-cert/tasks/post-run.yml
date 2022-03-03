@@ -33,6 +33,13 @@
       {{ oc_tool_path }} delete daemonset debug -n default
     when: debug_daemonset.resources|length > 0
 
+  - name: Delete tnf namespace
+    k8s:
+      api_version: v1
+      kind: Namespace
+      name: tnf
+      state: absent
+
   when: tnf_postrun_delete_resources|bool
 
 # When tnf_git_dir contains a folder from the PR, it is not a problem to
