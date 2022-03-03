@@ -44,6 +44,14 @@
     verbosity: 1
   when: create | bool == True
 
+- name: "Make sure {{ fetched_dest }} exists"
+  file:
+    path: "{{ fetched_dest }}"
+    state: directory
+    recurse: yes
+  delegate_to: localhost
+  become: no
+
 - name: Set the cluster ID
   set_fact:
     cluster_id: "{{ http_reply.json.id }}"
