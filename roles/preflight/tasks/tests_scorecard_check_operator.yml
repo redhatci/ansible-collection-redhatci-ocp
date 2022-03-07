@@ -28,7 +28,7 @@
     - name: Extract bundle and add read permissions
       shell:
         cmd: |
-          {{ oc_tool_path }} image extract {{ operator.bundle_image }} --confirm -a {{ all_registries_creds }}
+          {{ oc_tool_path }} image extract {{ operator.bundle_image }} --confirm -a {{ partner_creds }}
           chmod -R go+r ./
         chdir: "{{ scorecard_operator_dir }}"
 
