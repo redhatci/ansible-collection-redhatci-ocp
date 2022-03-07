@@ -23,3 +23,5 @@ HTTP_AUTH_PASSWORD: "none"
 manifest_templates:
   - 50-worker-nm-fix-ipv6.yml
   - 50-worker-remove-ipi-leftovers.yml
+
+fetched_dest: "{{ repo_root_path }}/fetched"

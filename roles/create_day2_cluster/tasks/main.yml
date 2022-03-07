@@ -25,6 +25,14 @@
     CLUSTER_ID: "{{ http_reply.json.id }}"
     add_host_cluster_id: "{{ http_reply.json.id }}"
 
+- name: "Save add_host_cluster_id"
+  copy:
+    content: "{{ add_host_cluster_id }}"
+    dest: "{{ fetched_dest }}/day2_cluster.txt"
+    mode: 0644
+  delegate_to: localhost
+  become: no
+
 - debug: # noqa unnamed-task
     msg: "{{ pull_secret | to_json }}"
     verbosity: 1
