@@ -1,32 +1,9 @@
 ---
-- name: Setup tmp preflight folders
-  block:
-    - name: Create temporary preflight_tmp_dir directory
-      tempfile:
-        state: directory
-        prefix: preflight_container_tmp_dir.
-      register: preflight_container_tmp_dir
-
-    - name: Set directory for artifacts
-      set_fact:
-        preflight_artifacts: "{{ preflight_container_tmp_dir.path }}/artifacts"
-        preflight_repoconfig: "{{ preflight_container_tmp_dir.path }}/repoconfig"
-
-    - name: Create directories to mount artifacts and private repository config
-      file:
-        path: "{{ preflight_dir_to_create }}"
-        state: directory
-        mode: 0744
-      loop:
-        - "{{ preflight_artifacts }}"
-        - "{{ preflight_repoconfig }}"
-      loop_control:
-        loop_var: preflight_dir_to_create
-
-    - name: Copy repository config file into repoconfig volume
-      copy:
-        src: "{{ partner_creds }}"
-        dest: "{{ preflight_repoconfig }}/config.json"
+- name: Create temporary (container) preflight artifacts directory
+  tempfile:
+    state: directory
+    prefix: preflight_container_artifacts.
+  register: preflight_container_artifacts
 
 - name: "Run preflight check bundle container for {{ operator.name }}"
   shell: >
@@ -37,12 +14,12 @@
     --name preflight
     --privileged
     -e PFLT_JUNIT=true
-    -e DOCKER_CONFIG=/repoconfig
+    -e DOCKER_CONFIG=/opt
     -e PFLT_ARTIFACTS=/artifacts
     -e PFLT_LOGFILE=/artifacts/preflight.log
     -e PFLT_LOGLEVEL=trace
-    -v {{ preflight_artifacts }}:/artifacts
-    -v {{ preflight_repoconfig }}/config.json:/repoconfig/config.json
+    -v {{ preflight_container_artifacts.path }}:/artifacts
+    {{ preflight_podman_auth}}
     {{ preflight_podman_ca }}
     {{ preflight_version }}
     check container
@@ -55,11 +32,11 @@
     src: "{{ item }}"
     dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
   with_fileglob:
-    - "{{ preflight_artifacts }}/*"
+    - "{{ preflight_container_artifacts.path }}/*"
 
 - name: Remove tmp dir
   file:
-    path: "{{ preflight_container_tmp_dir.path }}"
+    path: "{{ preflight_container_artifacts.path }}"
     state: absent
 
 ...

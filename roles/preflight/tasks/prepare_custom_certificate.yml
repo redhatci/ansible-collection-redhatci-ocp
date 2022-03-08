@@ -15,7 +15,7 @@
   register: cabundle
   no_log: true
 
-- name: Copy ca in repoconfig
+- name: Copy ca in directory with dockerconfig
   copy:
     src: "{{ preflight_custom_ca }}"
     dest: "{{ preflight_ca_tmp_dir.path }}/ca.crt"
