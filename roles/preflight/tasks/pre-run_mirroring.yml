@@ -74,8 +74,12 @@
       k8s:
         definition: "{{ lookup('file', preflight_prerun_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
 
-    - name: Wait for updated MC to be applied on the nodes and retrieve logs
-      include_tasks: pre-run_mcp_wait_and_logs.yml
+    - name: Wait for MCP status
+      include_role: 
+        name: wait-mcp
+      vars:
+        mcp_wait_retries: 60
+        mcp_wait_delay: 60
 
 - name: Remove tmp dir
   file:
