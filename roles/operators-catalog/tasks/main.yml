@@ -4,9 +4,9 @@
 
 - name: Disable default catalog sources for disconnected deployment
   environment:
-    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+    KUBECONFIG: "{{ kubeconfig_path }}"
   shell: |
-    {{ dci_cluster_configs_dir }}/oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+    {{ oc_tool_path }} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
   delegate_to: localhost
 
 - name: Deploy Red Hat Catalog Source

@@ -6,7 +6,7 @@
 
 - name: "test_ oc-setup : Check inventory to match ocp cluster config"
   k8s_info:
-    kubeconfig: "{{ dci_cluster_configs_dir }}/kubeconfig"
+    kubeconfig: "{{ kubeconfig_path }}"
     api_version: v1
     kind: node
     name: "{{ hostvars[item].name }}"

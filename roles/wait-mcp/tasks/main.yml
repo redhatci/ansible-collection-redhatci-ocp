@@ -10,7 +10,7 @@
       k8s_info:
         api_version: machineconfiguration.openshift.io/v1
         kind: MachineConfigPool
-        kubeconfig: "{{ dci_cluster_configs_dir }}/kubeconfig"
+        kubeconfig: "{{ kubeconfig_path }}"
       register: reg_mcpool_status
       vars:
         status_query: "resources[*].status.conditions[?type=='Updated'].status"
@@ -28,9 +28,9 @@
     # compare the output with k8s_info output, in order to open a bugzilla
     - name: MachineConfigPool check failed, using oc mcp get check
       environment:
-        KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+        KUBECONFIG: "{{ kubeconfig_path }}"
       shell: >
-        {{ dci_cluster_configs_dir }}/oc get mcp
+        {{ oc_tool_path }} get mcp
       register: reg_mcpool_status
       vars:
         master_query: "master[\\s]+rendered-master-[a-z0-9]+[\\s]+True[\\s]+False"
@@ -56,9 +56,9 @@
       block:
         - name: Check for workers with Scheduling disabled
           environment:
-            KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+            KUBECONFIG: "{{ kubeconfig_path }}"
           shell: >
-            {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true |
+            {{ oc_tool_path }} get nodes --no-headers=true |
             grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
           register: reg_disabled_nodes
           delegate_to: localhost
@@ -67,17 +67,17 @@
           block:
             - name: Workaround - uncordon all ready workers with disabled scheduling
               environment:
-                KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+                KUBECONFIG: "{{ kubeconfig_path }}"
               shell: >
-                {{ dci_cluster_configs_dir }}/oc adm uncordon {{ item }}
+                {{ oc_tool_path }} adm uncordon {{ item }}
               loop: "{{ reg_disabled_nodes.stdout.split('\n') }}"
               delegate_to: localhost
 
             - name: Wait for workers to be ready
               environment:
-                KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+                KUBECONFIG: "{{ kubeconfig_path }}"
               shell: >
-                {{ dci_cluster_configs_dir }}/oc get nodes --no-headers=true | grep worker
+                {{ oc_tool_path }} get nodes --no-headers=true | grep worker
               register: nodes
               until:
                 - '"SchedulingDisabled" not in nodes.stdout'

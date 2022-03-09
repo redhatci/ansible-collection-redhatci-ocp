@@ -15,7 +15,7 @@
     - DCI_API_SECRET: "{{ hostvars.localhost.dci_api_secret }}"
     - DCI_CS_URL: "{{ hostvars.localhost.dci_cs_url }}"
   dci_file:
-    path: "{{ dci_cluster_configs_dir }}/kubeconfig"
+    path: "{{ kubeconfig_path }}"
     name: "kubeconfig"
     job_id: "{{ hostvars.localhost.job_id }}"
     mime: "text/plain"
