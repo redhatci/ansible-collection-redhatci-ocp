@@ -6,8 +6,7 @@
 
 - name: "Checking if all nodes in MCP are updated and ready before running RedHat tests"
   include_role:
-    name: common
-    tasks_from: wait-mcp
+    name: wait-mcp
   vars:
     mcp_wait_retries: 30
     mcp_wait_delay: 10

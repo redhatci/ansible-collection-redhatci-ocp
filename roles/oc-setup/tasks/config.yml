@@ -23,13 +23,13 @@
 
 - name: "oc-setup : Set htpasswd config secret in openshift"
   environment:
-    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+    KUBECONFIG: "{{ kubeconfig_path }}"
   shell: >
     set -o pipefail;
-    {{ dci_cluster_configs_dir }}/oc create secret generic htpass-secret
+    {{ oc_tool_path }} create secret generic htpass-secret
     --from-file=htpasswd={{ dci_cluster_configs_dir }}/users.htpasswd
     --namespace openshift-config
-    --dry-run --output yaml | {{ dci_cluster_configs_dir }}/oc apply -f -
+    --dry-run --output yaml | {{ oc_tool_path }} apply -f -
 
 - name: "oc-setup : Upload the IDP config to the jumphost"
   copy:
@@ -39,13 +39,13 @@
 
 - name: "oc-setup : Setup htpasswd auth IDP backend in openshift"
   environment:
-    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+    KUBECONFIG: "{{ kubeconfig_path }}"
   shell: |
-    {{ dci_cluster_configs_dir }}/oc apply -f {{ dci_cluster_configs_dir }}/httpasswd-config.yml
+    {{ oc_tool_path }} apply -f {{ dci_cluster_configs_dir }}/httpasswd-config.yml
 
 - name: "oc-setup : Give cluster-admin to the admin user"
   environment:
-    KUBECONFIG: "{{ dci_cluster_configs_dir }}/kubeconfig"
+    KUBECONFIG: "{{ kubeconfig_path }}"
   shell: |
-    {{ dci_cluster_configs_dir }}/oc adm policy add-cluster-role-to-user cluster-admin admin
+    {{ oc_tool_path }} adm policy add-cluster-role-to-user cluster-admin admin
 ...

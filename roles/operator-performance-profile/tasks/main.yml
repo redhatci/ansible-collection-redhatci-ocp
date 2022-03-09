@@ -116,8 +116,7 @@
 
 - name: Wait for MCP status
   include_role:
-    name: common
-    tasks_from: wait-mcp
+    name: wait-mcp
   vars:
     mcp_wait_retries: 60
     mcp_wait_delay: 60
