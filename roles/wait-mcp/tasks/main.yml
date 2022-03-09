@@ -20,31 +20,7 @@
       retries: "{{ mcp_wait_retries }}"
       delay: "{{ mcp_wait_delay }}"
       delegate_to: localhost
-
   rescue:
-    # If the k8s_info module fails, we will try using OC to get the mcp status, because
-    # the output may be different
-    # We are doing this with ignore_errors: true just to retrieve logs in order to
-    # compare the output with k8s_info output, in order to open a bugzilla
-    - name: MachineConfigPool check failed, using oc mcp get check
-      environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
-      shell: >
-        {{ oc_tool_path }} get mcp
-      register: reg_mcpool_status
-      vars:
-        master_query: "master[\\s]+rendered-master-[a-z0-9]+[\\s]+True[\\s]+False"
-        worker_query: "worker[\\s]+rendered-worker-[a-z0-9]+[\\s]+True[\\s]+False"
-        masters_updated: "{{ reg_mcpool_status.stdout | regex_search(master_query) != None }}"
-        workers_updated: "{{ reg_mcpool_status.stdout | regex_search(worker_query) != None }}"
-      until:
-        - masters_updated
-        - workers_updated
-      retries: "{{ mcp_wait_retries }}"
-      delay: "{{ mcp_wait_delay }}"
-      ignore_errors: true
-      delegate_to: localhost
-
     - name: Wait for updated machine configs to be applied on the nodes failed - no workaround applied
       fail:
         msg: "No workaround is defined, so the job has to fail at this point"
@@ -63,7 +39,23 @@
           register: reg_disabled_nodes
           delegate_to: localhost
 
-        - name: Uncordon workers if needed
+        # The workaround should not be applied if we're dealing with a network problem here.
+        # To verify that network is doing fine, we check that all ovnkube-node-XXXX pods are running.
+        - name: Check the state of ovnkube-node-XXX pods
+          environment:
+            KUBECONFIG: "{{ kubeconfig_path }}"
+          shell: >
+            {{ oc_tool_path }} get pods -n openshift-ovn-kubernetes --no-headers=true |
+            awk '! /Running/ && /ovnkube-node/'
+          register: bad_ovnkube_pods
+          delegate_to: localhost
+
+        - name: Fail when network is in a bad state
+          fail:
+            msg: "Failing because some of ovnkube-node-XXX pods are not in a running state"
+          when: bad_ovnkube_pods.stdout | length > 0
+
+        - name: Uncordon workers if all pods ovnkube-node-XXX are Running
           block:
             - name: Workaround - uncordon all ready workers with disabled scheduling
               environment:
@@ -84,9 +76,10 @@
               retries: 30
               delay: 10
               delegate_to: localhost
-          when: reg_disabled_nodes.stdout | length > 0
+          when:
+            - reg_disabled_nodes.stdout | length > 0
+            - bad_ovnkube_pods.stdout | length == 0
       when:
         - dci_workarounds is defined
         - '"bz2053445" in dci_workarounds'
-
 ...
