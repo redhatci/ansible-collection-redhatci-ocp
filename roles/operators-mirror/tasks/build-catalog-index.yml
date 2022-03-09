@@ -17,18 +17,14 @@
       msg: "All required operators not found"
     when: prune_count.stdout | int != opm_mirror_list | length
 
-  - name: "Operator index version that will be used"
-    debug:
-      msg: "{{ ocp_major }}.{{ ocp_minor }}"
-
-  - name: "Set new OPM version base on pruned index"
+  - name: "Set the index version of pruned index"
     set_fact:
-      opm_version: "v{{ ocp_major }}.{{ ocp_minor }}"
+      index_minor: "{{ ocp_minor }}"
 
   - name: "Create DCI component for pruned Index"
     dci_component:
-      name: "{{ opm_version }}"
-      canonical_project_name: "{{ opm_local_registry_path | basename }}:{{ opm_version }}"
+      name: "v{{ ocp_major }}.{{ ocp_minor }}"
+      canonical_project_name: "{{ opm_local_registry_path | basename }}:v{{ ocp_major }}.{{ ocp_minor }}"
       team_id: "{{ job_info['job']['team_id'] }}"
       topic_id: "{{ job_info['job']['topic_id'] }}"
       type: "{{ opm_local_registry_path | basename }}"
