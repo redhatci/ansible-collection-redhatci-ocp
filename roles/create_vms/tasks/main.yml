@@ -1,4 +1,8 @@
 ---
+- name: Set qemu user
+  set_fact: 
+    qemu_user: "{{ ansible_user | default(ansible_env.USER) }}"
+
 - name: Setup host environment
   become: true
   block:
@@ -6,6 +10,15 @@
       package:
         name: "{{ virt_packages }}"
         state: present
+
+    - name: Insert lines for non-root user
+      blockinfile:
+        state: present
+        dest: /etc/libvirt/qemu.conf
+        block: |
+          user= "{{ qemu_user }}"
+          group= "{{ qemu_user }}"
+      when: qemu_user != "root"
 
     - name: Start libvirtd
       service:
