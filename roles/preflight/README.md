@@ -8,6 +8,7 @@ This role implements the preflight test suite as part of DCI Application Agent.
 
 Name                               | Default                                              | Description
 ---------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
+do\_preflight\_tests               | false                                                | Trigger to activate the preflight tests
 preflight\_version                 | quay.io/opdev/preflight:1.0.8                        | [Version of Preflight Cert Suite to run](https://quay.io/repository/opdev/preflight?tab=tags)
 preflight\_operators\_to\_check    | undefined                                            | List of operators to be checked with Preflight Cert Suite. This variable is mandatory to run Preflight cert suite. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-check) for the example.
 operator\_sdk\_tool\_path          | undefined                                            | Path to operator-sdk binary, optional. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-check) for the example.
@@ -15,7 +16,7 @@ preflight\_namespace               | preflight-testing                          
 submit\_preflight\_to\_pyxis       | false                                                | Should be set to true to submit Preflight results to Pyxis. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client) and pyxis\_identifier (each operator should have its own certification project with the unique identifier).
 pyxis\_apikey\_path                | undefined                                            | This is a path to file that contains partner's token. Parner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
 pyxis\_identifier                  | undefined                                            | Each operator should have its own certification project with the unique identifier. If the partner has to certify two operators, he has to create two certification projects. Once a new cert project is created, the identifier could be extracted from the project url: https://connect.redhat.com/projects/pyxis_identifier/overview
-preflight\_custom\_ca              | undefined                                            | Path of custom ca.crt. Used for test operator stored in a self signed registry
+preflight\_custom\_ca              | undefined                                            | Path of custom ca.crt. Used to test operator stored in a self signed registry
 
 
 ## Role structure
@@ -27,6 +28,9 @@ preflight\_custom\_ca              | undefined                                  
 ```yaml
 ---
 # preflight-config.yaml
+
+do_preflight_tests: true
+
 operator_sdk_tool_path: "/usr/local/bin/operator-sdk-flag"
 
 pyxis_apikey_path: APIKEY_PATH
