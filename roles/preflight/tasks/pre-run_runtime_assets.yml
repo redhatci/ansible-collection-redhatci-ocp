@@ -7,7 +7,7 @@
       --rm
       --pull=always
       -e PFLT_LOGLEVEL=error
-      {{ preflight_version }}
+      {{ preflight_image }}
       runtime-assets
     chdir: "{{ preflight_tmp_dir.path }}"
   register: preflight_assets

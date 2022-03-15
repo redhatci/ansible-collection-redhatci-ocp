@@ -12,7 +12,7 @@
 
 - name: Download preflight if not exists
   get_url:
-    url: "https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/{{ preflight_version.split(':')[-1] }}/preflight-linux-amd64"
+    url: "{{ preflight_binary }}"
     dest: "{{ preflight_binary_dir }}/preflight"
     mode: "0755"
   when: not preflight_dir.stat.exists

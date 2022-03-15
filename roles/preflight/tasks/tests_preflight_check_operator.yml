@@ -45,7 +45,7 @@
     -v {{ preflight_operator_artifacts.path }}:/artifacts
     {{ preflight_podman_auth }}
     {{ preflight_podman_ca }}
-    {{ preflight_version }}
+    {{ preflight_image }}
     check operator
     {{ operator.bundle_image }}
   register: preflight_exec

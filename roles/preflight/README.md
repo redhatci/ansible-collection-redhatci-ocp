@@ -31,8 +31,15 @@ preflight\_custom\_ca              | undefined                                  
 
 do_preflight_tests: true
 
-operator_sdk_tool_path: "/usr/local/bin/operator-sdk-flag"
+# optional
+# operator_sdk_tool_path: "/usr/local/bin/operator-sdk-flag"
 
+# Uncomment the next two lines if you need to use the latest Preflight pre-release:
+# preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.1.0-beta4/preflight-linux-amd64
+# preflight_image: quay.io/opdev/preflight:1.1.0-beta4
+
+# all certification projects for one partner
+# share one access token
 pyxis_apikey_path: APIKEY_PATH
 
 preflight_operators_to_check:
@@ -48,15 +55,20 @@ preflight_operators_to_check:
     bundle_image: "quay.io/opdev/simple-demo-operator-bundle@sha256:eff7f86a54ef2a340dbf739ef955ab50397bef70f26147ed999e989cfc116b79"
     index_image: "quay.io/opdev/simple-demo-operator-catalog:v0.0.3"
     pyxis_identifier: PROJECTID
-
 ...
 ```
 
 **Mandatory**
 - `preflight_operators_to_check` should be provided to run preflight or operator-sdk tests.
-- `pyxis_apikey_path` and `pyxis_identifier` can be found on connect.redhat.com 
 
-**Optional** `operator_sdk_tool_path` should be provided to run operator-sdk scorecard tests.
+**Optional**
+
+- `preflight_image: quay.io/opdev/preflight:1.1.0-beta4` should be provided if you intend to test againts the latest Preflight pre-release, it's used for `check operator` tests
+- `preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.1.0-beta4/preflight-linux-amd64` should be provided if you intend to test againts the latest Preflight pre-release, it's used for `check container` tests
+`operator_sdk_tool_path` should be provided to run operator-sdk scorecard tests.
+- `pyxis_apikey_path` and `pyxis_identifier` can be found on connect.redhat.com, they are optional for current Preflight GA 1.0.8, and will be mandatory starting from Preflight release 1.1.0
+
+**Invocation**
 Here is the invocation:
 
 ```console
