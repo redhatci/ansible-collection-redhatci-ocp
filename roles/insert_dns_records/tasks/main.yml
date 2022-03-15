@@ -13,7 +13,7 @@
       }
     )
     }}"
-  loop: "{{ groups['masters'] + groups['workers'] | default([]) }}"
+  loop: "{{ groups['nodes'] }}"
   when: hostvars[item][host_ip_keyword] is defined
 
 - name: Configure firewall
