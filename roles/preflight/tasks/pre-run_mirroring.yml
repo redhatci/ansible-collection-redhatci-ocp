@@ -16,7 +16,7 @@
     skopeo copy
     --all
     --remove-signatures
-    --authfile {{ partner_creds }}
+    --authfile {{ pullsecret_tmp_file }}
     --dest-tls-verify=false
     docker://{{ item }}
     docker://{{ provisionhost_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
@@ -38,7 +38,7 @@
       vars:
         preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list | unique }}"
       environment:
-        - REGISTRY_AUTH_FILE: "{{ partner_creds }}"
+        - REGISTRY_AUTH_FILE: "{{ pullsecret_tmp_file }}"
       shell:
         cmd: >
           {{ opm_tool_path }} index add --pull-tool podman
@@ -49,14 +49,14 @@
     - name: Push index image into local registry
       shell: >
         podman push
-        --authfile {{ partner_creds }}
+        --authfile {{ pullsecret_tmp_file }}
         {{ OO_INDEX }}
 
 - name: Manage imageContentSourcePolicy update
   block:
     - name: Save catalog mirror to temporary scorecard directory
       shell: >
-        {{ oc_tool_path }} adm catalog mirror -a {{ partner_creds }}
+        {{ oc_tool_path }} adm catalog mirror -a {{ pullsecret_tmp_file }}
         {{ OO_INDEX }} {{ provisionhost_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
 
     - name: Append to imageContentSourcePolicy

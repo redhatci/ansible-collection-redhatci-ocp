@@ -1,7 +1,7 @@
 ---
 - name: Copy authentication config
   copy:
-    src: "{{ partner_creds }}"
+    src: "{{ pullsecret_tmp_file }}"
     dest: "{{ preflight_tmp_dir.path }}/config.json"
 
 - name: Update preflight_podman_auth variable for preflight command
