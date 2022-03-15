@@ -9,7 +9,7 @@
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
   set_fact:
-    pyxis_auth: >
+    pyxis_auth: >-
       --certification-project-id {{ operator.pyxis_identifier }}
       --pyxis-api-token {{ pyxis_apikey }}
   when:
