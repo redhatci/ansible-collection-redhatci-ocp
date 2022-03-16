@@ -28,7 +28,7 @@
     - name: Extract bundle and add read permissions
       shell:
         cmd: |
-          {{ oc_tool_path }} image extract {{ operator.bundle_image }} --confirm -a {{ pullsecret_tmp_file }}
+          {{ oc_tool_path }} image extract {{ operator.bundle_image }} --confirm -a {{ partner_creds }}
           chmod -R go+r ./
         chdir: "{{ scorecard_operator_dir }}"
 
@@ -60,7 +60,7 @@
 
 - name: Run operator-sdk scorecard --selector=test=basic-check-spec-test
   environment:
-    - OPENSHIFT_AUTH: "{{ pullsecret_tmp_file }}"
+    - OPENSHIFT_AUTH: "{{ partner_creds }}"
     - OO_BUNDLE: "{{ operator.bundle_image }}"
     - OO_INDEX: "{{ OO_INDEX }}"
     - ARTIFACT_DIR: "{{ scorecard_artifacts }}"
@@ -89,7 +89,7 @@
 
 - name: Run operator-sdk scorecard --selector=suite=olm
   environment:
-    - OPENSHIFT_AUTH: "{{ pullsecret_tmp_file }}"
+    - OPENSHIFT_AUTH: "{{ partner_creds }}"
     - OO_BUNDLE: "{{ operator.bundle_image }}"
     - OO_INDEX: "{{ OO_INDEX }}"
     - ARTIFACT_DIR: "{{ scorecard_artifacts }}"
