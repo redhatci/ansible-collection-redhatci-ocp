@@ -22,7 +22,7 @@
 
 - name: "Run preflight check operator tests for {{ operator.name }}"
   environment:
-    - OPENSHIFT_AUTH: "{{ pullsecret_tmp_file }}"
+    - OPENSHIFT_AUTH: "{{ partner_creds }}"
     - OO_BUNDLE: "{{ operator.bundle_image }}"
     - OO_INDEX: "{{ OO_INDEX }}"
   shell: >
