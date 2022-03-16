@@ -26,7 +26,7 @@
      -e KUBECONFIG=/tests/kubeconfig
      {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
      /bin/bash -c "openshift-tests images --to-repository {{ ts_registry }}/conformance-test
-     | oc image mirror -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
+     | {{ oc_tool_path }} image mirror -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
      && openshift-tests run {{ ts_conformance_tests }} --from-repository {{ ts_registry }}/conformance-test
      --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /logs" > {{ ts_log_dir }}/conformance-run.log
   ignore_errors: yes
