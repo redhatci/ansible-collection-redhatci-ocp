@@ -6,19 +6,26 @@
 - name: "Get index SHA256"
   shell:
     cmd: >
-      skopeo inspect --authfile {{ dci_pullsecret_file }} docker://{{ local_registry }}{{ opm_local_registry_path }}:{{ opm_version }} | jq -r '.Digest'
+      skopeo inspect
+      --authfile {{ dci_pullsecret_file }}
+      docker://{{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }} | jq -r '.Digest'
   register: index_sha
   retries: 5
   delay: 5
   until:
     - index_sha is not failed
 
-- name: "Create a tmp directory Index DB"
+- name: "Create a tmp directory for the index mapping"
   tempfile:
     state: directory
   register: tmp_index
 
-- name: Mirror catalog manifests
+# Starting 4.11, Indices use File Base Catalogs, the backend changes from /database/index.db to /configs/
+- name: "Set index mapping type"
+  set_fact:
+      index_mapping: "{{ ( index_minor | int <= 10 ) | ternary('/database/index.db','/configs/') }}"
+
+- name: "Mirror catalog manifests"
   shell:
     chdir: "{{ dci_cluster_configs_dir }}"
     cmd: >
@@ -28,7 +35,7 @@
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
       --index-filter-by-os="linux/amd64"
       --to-manifests={{ dci_cluster_configs_dir }}/{{ manifests_dir }}
-      --path=/database/index.db:{{ tmp_index.path }} 2>&1
+      --path={{ index_mapping }}:{{ tmp_index.path }} 2>&1
   register: catalog_manifests_output
 
 - name: "Delete tmp Index directory"
