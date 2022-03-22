@@ -34,7 +34,7 @@
       containers.podman.podman_pod:
         name: "{{ http_store_pod_name }}"
         publish:
-          - 80:8080
+          - "80:8080"
       register: pod_info
 
     - debug: # noqa unnamed-task
