@@ -24,7 +24,9 @@
     - name: Wait for updated machine configs to be applied on the nodes failed - no workaround applied
       fail:
         msg: "No workaround is defined, so the job has to fail at this point"
-      when: '"bz2053445" not in dci_workarounds|default([])'
+      when:
+        - '"bz2062038" not in dci_workarounds|default([])'
+        - '"bz2050394" not in dci_workarounds|default([])'
 
     # Bugzilla report: https://bugzilla.redhat.com/show_bug.cgi?id=2053445
     # Sometimes after applying MCPs some nodes remain unschedulable.
@@ -81,5 +83,6 @@
             - bad_ovnkube_pods.stdout | length == 0
       when:
         - dci_workarounds is defined
-        - '"bz2053445" in dci_workarounds'
+        - '"bz2062038" in dci_workarounds or "bz2050394" in dci_workarounds'
+
 ...
