@@ -10,8 +10,8 @@ Name                               | Default                                    
 ---------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
 do\_preflight\_tests               | false                                                | Trigger to activate the preflight tests
 preflight\_version                 | quay.io/opdev/preflight:1.0.8                        | [Version of Preflight Cert Suite to run](https://quay.io/repository/opdev/preflight?tab=tags)
-preflight\_operators\_to\_check    | undefined                                            | List of operators to be checked with Preflight Cert Suite. This variable is mandatory to run Preflight cert suite. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-check) for the example.
-operator\_sdk\_tool\_path          | undefined                                            | Path to operator-sdk binary, optional. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-check) for the example.
+preflight\_operators\_to\_certify  | undefined                                            | List of operators to be checked for certification with Preflight Cert Suite. This variable is mandatory to run Preflight cert suite. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-certify) for the example.
+operator\_sdk\_tool\_path          | undefined                                            | Path to operator-sdk binary, optional. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-certify) for the example.
 preflight\_namespace               | preflight-testing                                    | Namespace to use for preflight tests
 submit\_preflight\_to\_pyxis       | false                                                | Should be set to true to submit Preflight results to Pyxis. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client) and pyxis\_identifier (each operator should have its own certification project with the unique identifier).
 pyxis\_apikey\_path                | undefined                                            | This is a path to file that contains partner's token. Parner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
@@ -19,11 +19,7 @@ pyxis\_identifier                  | undefined                                  
 preflight\_custom\_ca              | undefined                                            | Path of custom ca.crt. Used to test operator stored in a self signed registry
 
 
-## Role structure
-
-![](files/preflight_role_structure.png)
-
-## Example of config file to define a list of operators to check
+## Example of config file to define a list of operators to certify
 
 ```yaml
 ---
@@ -42,24 +38,18 @@ do_preflight_tests: true
 # share one access token
 pyxis_apikey_path: APIKEY_PATH
 
-preflight_operators_to_check:
-  - name: Testpmd operator
-    version: "v0.2.9"
-    operator_image: "quay.io/rh-nfv-int/testpmd-operator:v0.2.9"
-    bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
-    index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
+preflight_operators_to_certify:
+  - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
     pyxis_identifier: PROJECTID
-  - name: Simple demo
-    version: "v0.0.3"
-    operator_image: "quay.io/opdev/simple-demo-operator:v0.0.3"
-    bundle_image: "quay.io/opdev/simple-demo-operator-bundle@sha256:eff7f86a54ef2a340dbf739ef955ab50397bef70f26147ed999e989cfc116b79"
-    index_image: "quay.io/opdev/simple-demo-operator-catalog:v0.0.3"
+  - bundle_image: "quay.io/opdev/simple-demo-operator-bundle:v0.0.3"
     pyxis_identifier: PROJECTID
 ...
 ```
 
 **Mandatory**
-- `preflight_operators_to_check` should be provided to run preflight or operator-sdk tests.
+- `preflight_operators_to_certify` should be provided to run preflight or operator-sdk tests.
+- `pyxis_apikey_path` and `pyxis_identifier` can be found on connect.redhat.com
+
 
 **Optional**
 
