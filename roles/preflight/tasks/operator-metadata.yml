@@ -1,0 +1,56 @@
+---
+- name: "Render bundle operator image"
+  shell: >
+    {{ preflight_docker_config_env | default('') }}
+    {{ opm_tool_path }} render {{ operator.bundle_image }}
+  register: rendered_bundle
+
+- name: "Get inspected data"
+  set_fact:
+    bundle_data: "{{ rendered_bundle.stdout | from_json }}"
+
+- name: "Get operator name, version and image data blob"
+  vars:
+    name_query: "properties[? type==`olm.package`].value.packageName"
+    version_query: "properties[? type==`olm.package`].value.version"
+    data_query: "properties[? type==`olm.bundle.object`].value.data"
+  set_fact:
+    operator_name: "{{ bundle_data | json_query('name') | join('') }}"
+    short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
+    operator_version: "{{ bundle_data | json_query(version_query) | join('') }}"
+    data_blobs: "{{ bundle_data | json_query(data_query) }}"
+
+- name: "Get operator image(s)"
+  vars:
+    image_query: "spec.install.spec.deployments[].spec.template.spec.containers[].image"
+    image_name: "{{ blob | b64decode | from_json | json_query(image_query) }}"
+  set_fact:
+    operator_images: "{{ image_name }}"
+  when: image_name | length
+  loop: "{{ data_blobs | reverse | list }}"
+  loop_control:
+    loop_var: blob
+    label: ""
+
+- name: "Fail when cluster is disconnected and operator images are not using a digest"
+  fail:
+    msg: "Operator images are not using a digest: {{ operator_images }}"
+  when:
+    - image | regex_search('.*@sha256:.*') == none
+    - dci_disconnected | default(false) | bool
+  loop: "{{ operator_images }}"
+  loop_control:
+    loop_var: image
+
+- name: "Append data to the list of operators to check"
+  vars:
+    operator_to_check:
+      name: "{{ short_name }}"
+      operator_name: "{{ operator_name }}"
+      version: "{{ operator_version }}"
+      operator_images: "{{ operator_images }}"
+      bundle_image: "{{ operator.bundle_image }}"
+      pyxis_identifier: "{{ operator.pyxis_identifier }}"
+      index_image: "{{ operator.index_image | default(omit) }}"
+  set_fact:
+    preflight_operators_to_check: "{{ preflight_operators_to_check + [ operator_to_check ] }}"

@@ -1,0 +1,40 @@
+---
+- name: Create temporary (container) preflight artifacts directory
+  tempfile:
+    state: directory
+    prefix: preflight_container_artifacts.
+  register: preflight_container_artifacts
+
+- name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
+  shell: >
+    cd {{ preflight_container_artifacts.path }};
+    {{ preflight_docker_config_env | default('') }}
+    PFLT_JUNIT=true
+    PFLT_ARTIFACTS={{ preflight_container_artifacts.path }}
+    PFLT_LOGFILE={{ preflight_container_artifacts.path }}/preflight.log
+    PFLT_LOGLEVEL=trace
+    {{ preflight_binary_dir }}/preflight
+    check container
+    {{ current_operator_image }}
+    {{ pyxis_auth | default() }}
+    {{ preflight_podman_auth_for_binary | default('') }}
+  register: preflight_container_output
+  no_log: true
+  # Compared to GA, a non-0 exit code is only returned on preflight issues and not check failures
+  ignore_errors: true
+
+- name: Upload logs for preflight check container into DCI
+  vars:
+    image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
+    preflight_prefix: "preflight_container_{{ operator.name }}_{{ operator.version }}_{{ image_name }}"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
+  with_fileglob:
+    - "{{ preflight_container_artifacts.path }}/*"
+
+- name: Remove tmp dir
+  file:
+    path: "{{ preflight_container_artifacts.path }}"
+    state: absent
+...
