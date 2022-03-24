@@ -22,7 +22,7 @@
 
     - name: Mirror remote ocpmetal image registry to local
       command: >
-        /usr/bin/oc image mirror
+        /usr/local/bin/oc image mirror
         -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
         {{ item.remote }}
         {{ item.local }}:{{ item.local_tag }}
@@ -30,7 +30,7 @@
 
     - name: Mirror remote registry to local
       command: >
-        /usr/bin/oc adm release mirror
+        /usr/local/bin/oc adm release mirror
           -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
           --from="{{ release_image_item.remote | quote }}"
           --to-release-image="{{ release_image_item.local | quote }}:{{ release_image_item.local_tag | quote }}"
