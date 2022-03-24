@@ -4,6 +4,8 @@
 secure: False
 create: True
 manifests: True
+schedulable_masters: True
+
 fetched_dest: "{{ repo_root_path }}/fetched"
 
 disconnected: "{{ use_local_mirror_registry | default(setup_registry_service | default(true)) }}"
@@ -29,3 +31,5 @@ single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | defau
 # 2. 'Full' (otherwise)
 #     Requires at least three master nodes for High Availability.
 high_availability_mode: "{{ single_node_openshift_enabled | ternary('none', 'full') }}"
+
+create_body_extras: {}

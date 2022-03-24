@@ -1,6 +1,46 @@
 ---
 # tasks file for create_cluster
 
+- name: Set body for create cluster
+  set_fact:
+    # - `ingress_vip` is not provided in the request body because the value
+    #   can't be set for SNO with user-managed networking enabled.
+    #   HA clusters will be patched with the `ingress_vip` setting during
+    #   the execution of the `install_cluster` role.
+    # - the request body is wrapped in a jinja2 expression with the `to_json`
+    #   filter to prevent the `cluster_network_host_prefix` value from being
+    #   type casted to a string. The Assisted Installer API requires this
+    #   input field to be an integer.
+    create_body: '{{
+        {
+          "name": cluster_name,
+          "high_availability_mode": (high_availability_mode | title),
+          "openshift_version": (openshift_version | string),
+          "base_dns_domain": base_dns_domain,
+          "cluster_network_cidr": cluster_network_cidr,
+          "cluster_network_host_prefix": (cluster_network_host_prefix | int),
+          "service_network_cidr": service_network_cidr,
+          "pull_secret": (pull_secret | to_json),
+          "ssh_public_key": ssh_public_key,
+          "vip_dhcp_allocation": (vip_dhcp_allocation | lower | bool),
+          "api_vip": api_vip,
+          "http_proxy": http_proxy,
+          "https_proxy": https_proxy,
+          "no_proxy": no_proxy,
+          "additional_ntp_source": ntp_server,
+          "schedulable_masters": schedulable_masters, 
+        } | to_json
+      }}'
+
+- name: Add network_type to extras for create_body
+  set_fact:
+    create_body_extras: "{{ create_body_extras | combine({'network_type': network_type }) }}"
+  when: network_type is defined
+
+- debug: # noqa unnamed-task
+    msg: "{{ create_body | from_json | combine(create_body_extras) | to_nice_json }}"
+    verbosity: 1
+
 - name: Create cluster
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}"
@@ -10,39 +50,9 @@
     body_format: json
     status_code: [201]
     return_content: True
-    # - `ingress_vip` is not provided in the request body because the value
-    #   can't be set for SNO with user-managed networking enabled.
-    #   HA clusters will be patched with the `ingress_vip` setting during
-    #   the execution of the `install_cluster` role.
-    # - the request body is wrapped in a jinja2 expression with the `to_json`
-    #   filter to prevent the `cluster_network_host_prefix` value from being
-    #   type casted to a string. The Assisted Installer API requires this
-    #   input field to be an integer.
-    body: >-
-      {{ {
-        "name": cluster_name,
-        "high_availability_mode": (high_availability_mode | title),
-        "openshift_version": (openshift_version | string),
-        "base_dns_domain": base_dns_domain,
-        "cluster_network_cidr": cluster_network_cidr,
-        "cluster_network_host_prefix": (cluster_network_host_prefix | int),
-        "service_network_cidr": service_network_cidr,
-        "pull_secret": (pull_secret | to_json),
-        "ssh_public_key": ssh_public_key,
-        "vip_dhcp_allocation": (vip_dhcp_allocation | lower | bool),
-        "api_vip": api_vip,
-        "http_proxy": http_proxy,
-        "https_proxy": https_proxy,
-        "no_proxy": no_proxy,
-        "additional_ntp_source": ntp_server,
-      } | to_json }}
+    body: "{{ create_body | from_json | combine(create_body_extras) | to_json }}"
   when: create | bool == True
   register: http_reply
-
-##TODO: Add 
-# "network_type":
-# "schedulable_masters":
-# "disk_encryption":
 
 - debug: # noqa unnamed-task
     var: http_reply.json
