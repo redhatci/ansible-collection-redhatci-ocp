@@ -61,6 +61,25 @@
     enabled: yes
     state: started
 
+- name: Create the consoles directory
+  become: true
+  file:
+    path: /var/lib/libvirt/consoles
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Set SELinux context under the consoles directory
+  sefcontext:
+    target: '/var/lib/libvirt/consoles(/.*)?'
+    setype: svirt_home_t
+  become: yes
+
+- name: Restore the contexts under the consoles directory
+  shell: /usr/sbin/restorecon -irv /var/lib/libvirt/consoles
+  become: yes
+
 - name: "Add {{ ansible_user_id }} user to libvirt and qemu groups"
   become: true
   user:
