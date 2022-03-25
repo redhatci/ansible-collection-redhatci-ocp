@@ -1,5 +1,5 @@
 ---
-- name: Setup AI
+- name: Setup AI Host
   become: True
   block:
     - name: Install podman
@@ -7,6 +7,37 @@
         name: podman
         state: present
 
+    - name: Configure registry cert and pull_secret
+      block:
+        - name: Copy cert to pki directory
+          copy:
+            content: "{{ mirror_certificate }}"
+            dest: /etc/pki/ca-trust/source/anchors/ai_registry.crt
+            mode: 0660
+            force: yes
+            backup: yes
+
+        - name: Update the CA trust files
+          command: update-ca-trust extract
+
+        - name: Create podman auth dir
+          file:
+            path: "{{ config_file_path }}/containers/"
+            state: directory
+            mode: 0755
+
+        - name: Copy pull_secrets file.
+          copy:
+            content: "{{ pull_secret }}"
+            dest: "{{ config_file_path }}/containers/auth.json"
+            mode: 0644
+            remote_src: yes
+  
+      when: use_local_mirror_registry  | bool
+
+- name: Preconfigure AI requriements
+  become: True
+  block:
     - name: "Build assisted_service_openshift_versions ({{ item }})"
       vars:
         assisted_service_openshift_versions: {}
@@ -60,6 +91,8 @@
         image: "{{ coreos_installer_image }}"
         command: ["-c", "cp /usr/sbin/coreos-installer /data/coreos-installer"]
         state: started
+      environment:
+        XDG_RUNTIME_DIR: "{{ config_file_path }}"     
 
     - name: Move coreos-installer
       copy:
@@ -79,6 +112,11 @@
         - src: nginx-ui.conf
           dest: "{{ assisted_installer_dir }}/nginx-ui.conf"
 
+- name: Setup AI pod
+  become: True
+  environment:
+    XDG_RUNTIME_DIR: "{{ config_file_path }}"
+  block:
     - name: Create assisted-service pod
       containers.podman.podman_pod:
         name: assisted-service

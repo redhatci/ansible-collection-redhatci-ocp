@@ -85,3 +85,7 @@ assisted_installer_hardware_validation:
       ram_mib: 32768
       disk_size_gb: 120
       installation_disk_speed_threshold_ms: 10
+
+use_local_mirror_registry: "{{ setup_registry_service | default(False) }}"
+
+config_file_path: /tmp/wip/config
