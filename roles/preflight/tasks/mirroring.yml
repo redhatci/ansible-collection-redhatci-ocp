@@ -120,6 +120,8 @@
       shell: >
         {{ oc_tool_path }} adm catalog mirror -a {{ partner_creds }}
         {{ OO_INDEX }} {{ provisionhost_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
+      register: catalog_mirror
+      failed_when: catalog_mirror.stderr.find('error:') != -1
 
     - name: Append to imageContentSourcePolicy
       blockinfile:
