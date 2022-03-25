@@ -5,4 +5,16 @@
     state: absent
   when:
     - preflight_tmp_dir is defined
+
+- name: Remove certificate used by preflight from the CA-Trust database
+  block:
+    - name: Remove the anchor CA file
+      file:
+        state: absent
+        path: "/etc/pki/ca-trust/source/anchors/preflight_ca.crt"
+
+    - name: Update trusted CA
+      command: /bin/update-ca-trust
+  when: preflight_custom_ca | length
+  become: true
 ...

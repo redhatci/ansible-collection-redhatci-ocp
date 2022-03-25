@@ -20,6 +20,16 @@
     src: "{{ preflight_custom_ca }}"
     dest: "{{ preflight_ca_tmp_dir.path }}/ca.crt"
 
+- name: Copy ca in trusted directory
+  copy:
+    src: "{{ preflight_custom_ca }}"
+    dest: "/etc/pki/ca-trust/source/anchors/preflight_ca.crt"
+  become: true
+
+- name: Update trusted ca
+  command: /bin/update-ca-trust
+  become: true
+
 - name: Merge the ca trust with the custom ca
   blockinfile:
     insertbefore: BOF
