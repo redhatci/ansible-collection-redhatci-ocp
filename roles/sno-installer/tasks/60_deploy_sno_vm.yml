@@ -3,6 +3,7 @@
   lineinfile:
     path: "{{ ansible_user_dir }}/.bashrc"
     line: "export KUBECONFIG={{ dir }}/auth/kubeconfig"
+    create: yes
   tags: install
 
 - name: Show How to monitor for installation status
