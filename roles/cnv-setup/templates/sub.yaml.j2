@@ -8,6 +8,6 @@ spec:
   channel: "{{ cnv_version | string  }}"
 {% endif %}
   source: "{{ opm_catalog_source_name }}"
-  installPlanApproval: "Manual"
+  installPlanApproval: "Automatic"
   sourceNamespace: "{{ opm_catalog_source_namespace | default('openshift-marketplace') }}"
   name: kubevirt-hyperconverged
