@@ -9,6 +9,11 @@
   - "/usr/local/bin/oc"
   - "{{ dir }}/auth/kubeconfig"
 
+- name: "oc-setup : Give execution permissions to oc binary"
+  file:
+    path: '{{ dci_cluster_configs_dir }}/oc'
+    mode: 0755
+
 - name: "Upload kubeconfig to DCI Control Server"
   environment:
     - DCI_CLIENT_ID: "{{ hostvars.localhost.dci_client_id }}"
