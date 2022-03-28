@@ -30,6 +30,17 @@
   when:
     - ocp_minor | int <= 10
 
+- name: "Create index working directory"
+  file:
+    path: "{{ tmp_prune.path }}/configs"
+    state: directory
+    mode: 0755
+
+- name: "Copy configs.Dockerfile to Temp directory"
+  copy:
+    src: configs.Dockerfile
+    dest: "{{ tmp_prune.path }}/configs.Dockerfile"
+    mode: 0644
 
 # This should be a workaround until the opm prune supports FBC format
 # https://github.com/redhat-openshift-ecosystem/community-operators-prod/discussions/512
@@ -41,7 +52,6 @@
         chdir: "{{ tmp_prune.path }}"
         cmd: >
           set -x;
-          mkdir configs;
           REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
           {{ provision_cache_store }}/{{ version }}/opm render
           registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }} |
@@ -59,7 +69,6 @@
         chdir: "{{ tmp_prune.path }}"
         cmd: |
           set -x
-          {{ provision_cache_store }}/{{ version }}/opm alpha generate dockerfile {{ tmp_prune.path }}/configs/
           podman build -t {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }} \
           -f {{ tmp_prune.path }}/configs.Dockerfile .
       notify:
