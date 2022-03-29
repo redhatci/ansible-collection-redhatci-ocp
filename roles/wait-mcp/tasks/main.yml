@@ -20,11 +20,12 @@
       retries: "{{ mcp_wait_retries }}"
       delay: "{{ mcp_wait_delay }}"
       delegate_to: localhost
-  rescue:
+  always:
     - name: Wait for updated machine configs to be applied on the nodes failed - no workaround applied
       fail:
         msg: "No workaround is defined, so the job has to fail at this point"
       when:
+        - reg_mcpool_status.failed
         - '"bz2062038" not in dci_workarounds|default([])'
         - '"bz2050394" not in dci_workarounds|default([])'
 
