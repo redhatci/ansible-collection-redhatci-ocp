@@ -46,11 +46,7 @@ SUSHY_EMULATOR_IGNORE_BOOT_DEVICE = True
 # system architecture
 SUSHY_EMULATOR_BOOT_LOADER_MAP = {
     u'UEFI': {
-{% if ansible_distribution_version|float >= 8.3 %}
-        u'x86_64': u'/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd',
-{% else %}
-        u'x86_64': u'/usr/share/OVMF/OVMF_CODE.secboot.fd',
-{% endif %}
+        u'x86_64': u'{{ sushy_x86_64_ovmf_code_path }}',
         u'aarch64': u'/usr/share/AAVMF/AAVMF_CODE.fd'
     },
     u'Legacy': {
