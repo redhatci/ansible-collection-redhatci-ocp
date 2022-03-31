@@ -50,6 +50,17 @@
       role: "{{ host_role }}"
   when: host_name is defined or host_role is defined
 
+- name: "Create patch body with hostname for {{ host_name }}"
+  set_fact:
+    patch_body: {
+        "hosts_names": [ "{{ host }}" ] 
+      }
+  
+- name: "Add host role to patch body for {{ host_name }}"
+  set_fact:
+    patch_body: "{{ patch_body | combine({ 'hosts_roles': [ host ] }) }}"
+  when: not single_node_openshift_enabled
+
 - name: Set host name and role for {{ host_name }}
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
@@ -59,12 +70,7 @@
     body_format: json
     status_code: [201]
     return_content: True
-    body: {
-        "hosts_names": [ "{{ host }}" ],
-        "hosts_roles": [ "{{ host }}" ]
-    }
-  # Role can't be changed for SNO hosts
-  when: not single_node_openshift_enabled
+    body: "{{ patch_body }}"
   register: http_reply
 
 - name: Set the installation disk path
