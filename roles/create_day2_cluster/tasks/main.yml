@@ -71,7 +71,6 @@
 
 - name: Patch discovery ignition
   uri:
-    #url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/discovery-ignition"
     url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}/discovery-ignition"
     method: PATCH
     status_code: [201]
@@ -98,7 +97,6 @@
 
 - name: Patch install config
   uri:
-    #url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/install-config"
     url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}/install-config"
     method: PATCH
     status_code: [201]

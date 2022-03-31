@@ -5,6 +5,7 @@ ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSIS
 URL_ASSISTED_INSTALLER_CLUSTER: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}"
 
 day2_states:
+  -  insufficient
   - "{{ day2_host_found }}"
   - installing
   - installing-in-progress
