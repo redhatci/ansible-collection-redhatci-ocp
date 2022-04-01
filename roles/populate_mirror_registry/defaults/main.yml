@@ -49,13 +49,13 @@ release_image_item:
   local_tag: "{{ openshift_full_version }}-x86_64"
 
 olm_index_item:
-  remote: "registry.redhat.io/redhat/redhat-operator-index:v{{ openshift_version_parts[:2] | join('.') }}"
+  remote: "registry.redhat.io/redhat/redhat-operator-index:v{{ openshift_version }}"
   local: "{{ local_registry }}/olm-index/redhat-operator-index"
-  local_tag: "v{{ openshift_version_parts[:2] | join('.') }}"
+  local_tag: "v{{ openshift_version }}"
 
 olm_item:
   local: "{{ local_registry }}/olm"
-  local_tag: "v{{ openshift_version_parts[:2] | join('.') }}"
+  local_tag: "v{{ openshift_version }}"
 
 ocpmetal_images:
   - "{{ installer_agent_image }}"
