@@ -1,44 +1,41 @@
 ---
-
 - name: "Get default bundle channel"
   shell:
     cmd: >
-      podman inspect
-      {{ operator.bundle_image }} |
-      jq '.[].Labels."operators.operatorframework.io.bundle.channel.default.v1"'
+      skopeo inspect
+      docker://{{ operator.bundle_image }} |
+      jq -r '.Labels."operators.operatorframework.io.bundle.channel.default.v1"'
   register: default_channel
   retries: 5
   delay: 5
-  until:
-    - default_channel is not failed
+  until: default_channel is not failed
 
 - name: "Initialize operators index {{ operator.name }}"
-  environment:
-    - REGISTRY_AUTH_FILE: "{{ partner_creds }}"
-  shell: |
-    {{ opm_tool_path }} init {{ operator.name }} \
-    --default-channel={{ default_channel.stdout }} \
+  shell: >
+    {{ opm_tool_path }} init {{ operator.name }}
+    --default-channel={{ default_channel.stdout }}
     --output=yaml >> disconnected-catalog/index.yml
   args:
     chdir: "{{ preflight_prerun_tmp_dir.path }}"
 
 # At this time env var REGISTRY_AUTH_FILE is ignored by opm, only $HOME/.docker/config.json is supported
+# https://github.com/operator-framework/operator-registry/issues/919
 - name: "Render bundle for {{ operator.name }}"
-  environment:
-    - REGISTRY_AUTH_FILE: "{{ partner_creds }}"
-  shell: |
-    {{ opm_tool_path }} render {{ operator.bundle_image }} \
+  shell: >
+    {{ preflight_docker_config_env }}
+    {{ opm_tool_path }} render {{ operator.bundle_image }}
     --output=yaml >> {{ preflight_prerun_tmp_dir.path }}/disconnected-catalog/index.yml
 
 - name: "Add {{ operator.name }} channel"
   blockinfile:
     dest: "{{ preflight_prerun_tmp_dir.path }}/disconnected-catalog/index.yml"
     content: |
-        ---
-        schema: olm.channel
-        package: {{ operator.name }}
-        name: {{ default_channel.stdout }}
-        entries:
-          - name: {{ operator.name }}.{{ operator.version }}
+      ---
+      schema: olm.channel
+      package: {{ operator.name }}
+      name: {{ default_channel.stdout }}
+      entries:
+        - name: {{ operator.operator_name }}
     marker: "# {{ operator.name }}-channel"
+
 ...

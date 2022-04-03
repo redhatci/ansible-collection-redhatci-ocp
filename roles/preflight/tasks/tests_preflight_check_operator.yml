@@ -43,7 +43,7 @@
     -e PFLT_SCORECARD_IMAGE={{ preflight_assets_images[0] }}
     -v {{ preflight_tmp_dir.path }}/kubeconfig:/kubeconfig
     -v {{ preflight_operator_artifacts.path }}:/artifacts
-    {{ preflight_podman_auth }}
+    {{ preflight_podman_auth | default('') }}
     {{ preflight_podman_ca }}
     {{ preflight_image }}
     check operator
