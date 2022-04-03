@@ -1,10 +1,5 @@
 ---
-- name: Create temporary (container) preflight artifacts directory
-  tempfile:
-    state: directory
-    prefix: preflight_container_artifacts.
-  register: preflight_container_artifacts
-
+# TODO: move to test_preflight_check_container_binary.yml?
 - name: Set pyxis auth variable
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
@@ -12,39 +7,18 @@
     pyxis_auth: >-
       --certification-project-id {{ operator.pyxis_identifier }}
       --pyxis-api-token {{ pyxis_apikey }}
-  when:
-    - preflight_image.split(':')[-1] != "1.0.8"
+  # Pyxis credentials are required for _tests_
+  # starting from 1.1.0-* pre-releases (require preflight_binary variable).
+  # TODO: fix the condition when release 1.1.0 would become GA if needed.
+  when: preflight_binary | length > 0
   no_log: true
 
-- name: "Run preflight check container on operator image for {{ operator.name }} with podman"
-  block:
-    - name: "Run preflight check container on operator image for {{ operator.name }} with podman"
-      shell: >
-        podman run
-        -it
-        --rm
-        --pull=always
-        --name preflight
-        --privileged
-        -e PFLT_JUNIT=true
-        -e DOCKER_CONFIG=/opt
-        -e PFLT_ARTIFACTS=/artifacts
-        -e PFLT_LOGFILE=/artifacts/preflight.log
-        -e PFLT_LOGLEVEL=trace
-        -v {{ preflight_container_artifacts.path }}:/artifacts
-        {{ preflight_podman_auth }}
-        {{ preflight_podman_ca }}
-        {{ preflight_image }}
-        check container
-        {{ operator.operator_image }}
-        {{ pyxis_auth | default() }}
-      register: preflight_container_output
-      no_log: true
-      when: preflight_binary | length == 0
-  rescue:
-    - name: Print stderr of the previous command
-      debug:
-        msg: "{{ preflight_container_output.stderr }}"
+- name: "Run preflight check container on operator images for {{ operator.name }} with podman"
+  include_tasks: test_preflight_check_container_podman.yml
+  loop: "{{ operator.operator_images }}"
+  loop_control:
+    loop_var: current_operator_image
+  when: preflight_binary | length == 0
 
 # Preflight 1.0.8 requires to use podman run.
 # Preflight 1.1.0-alpha2 requires to use binary because some container tests fail.
@@ -55,40 +29,10 @@
     preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight/{{ preflight_binary.split('/')[-2] }}"
   # --submit option could not be used because of broken Pyxis APIs
   # The release to fix that is expected on 08/03/2022
-  block:
-    - name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
-      shell: >
-        cd {{ preflight_container_artifacts.path }};
-        {{ preflight_docker_config_env }}
-        PFLT_JUNIT=true
-        PFLT_ARTIFACTS={{ preflight_container_artifacts.path }}
-        PFLT_LOGFILE={{ preflight_container_artifacts.path }}/preflight.log
-        PFLT_LOGLEVEL=trace
-        {{ preflight_binary_dir }}/preflight
-        check container
-        {{ operator.operator_image }}
-        {{ pyxis_auth | default() }}
-        {{ preflight_podman_auth_for_binary }}
-      register: preflight_container_output
-      no_log: true
-      when: preflight_binary | length > 0
-  rescue:
-    - name: Print stderr of the previous command
-      debug:
-        msg: "{{ preflight_container_output.stderr }}"
-
-- name: Upload logs for preflight check container into DCI
-  vars:
-    preflight_prefix: "preflight_container_{{ operator.name }}_{{ operator.version }}"
-  copy:
-    src: "{{ item }}"
-    dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
-  with_fileglob:
-    - "{{ preflight_container_artifacts.path }}/*"
-
-- name: Remove tmp dir
-  file:
-    path: "{{ preflight_container_artifacts.path }}"
-    state: absent
+  include_tasks: test_preflight_check_container_binary.yml
+  loop: "{{ operator.operator_images }}"
+  loop_control:
+    loop_var: current_operator_image
+  when: preflight_binary | length > 0
 
 ...

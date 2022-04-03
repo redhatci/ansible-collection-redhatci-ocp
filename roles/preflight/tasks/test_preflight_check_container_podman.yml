@@ -1,0 +1,45 @@
+---
+- name: Create temporary (container) preflight artifacts directory
+  tempfile:
+    state: directory
+    prefix: preflight_container_artifacts.
+  register: preflight_container_artifacts
+
+- name: "Run preflight check container on operator image for {{ operator.name }} with podman"
+  block:
+    - name: "Run preflight check container on operator image for {{ operator.name }} with podman"
+      shell: >
+        podman run
+        --rm
+        --pull=always
+        --name preflight
+        --privileged
+        -e PFLT_JUNIT=true
+        -e DOCKER_CONFIG=/opt
+        -e PFLT_ARTIFACTS=/artifacts
+        -e PFLT_LOGFILE=/artifacts/preflight.log
+        -e PFLT_LOGLEVEL=trace
+        -v {{ preflight_container_artifacts.path }}:/artifacts
+        {{ preflight_podman_auth }}
+        {{ preflight_podman_ca }}
+        {{ preflight_image }}
+        check container
+        {{ current_operator_image }}
+        {{ pyxis_auth | default() }}
+      register: preflight_container_output
+  always:
+    - name: Upload logs for preflight check container into DCI
+      vars:
+        image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
+        preflight_prefix: "preflight_container_{{ operator.name }}_{{ operator.version }}_{{ image_name }}"
+      copy:
+        src: "{{ item }}"
+        dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
+      with_fileglob:
+        - "{{ preflight_container_artifacts.path }}/*"
+
+    - name: Remove tmp dir
+      file:
+        path: "{{ preflight_container_artifacts.path }}"
+        state: absent
+...
