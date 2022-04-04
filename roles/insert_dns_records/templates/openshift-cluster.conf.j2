@@ -2,7 +2,13 @@ domain={{ domain }}
 {% if write_dnsmasq_config %}
 domain-needed
 bogus-priv
-listen-address=127.0.0.1,{{ listen_address }}
+listen-address="{{ listen_addresses | join(',') }}"
+{% for  listening_intf in (listening_interfaces | default([])) %}
+interface={{ listening_intf }}
+{% endfor%}
+{% for  no_dhcp_intf in (no_dhcp_interfaces | default([])) %}
+no-dhcp-interface={{ no_dhcp_intf }}
+{% endfor%}
 expand-hosts
 {% if upstream_dns | default(False) %}
 server={{ upstream_dns }}
