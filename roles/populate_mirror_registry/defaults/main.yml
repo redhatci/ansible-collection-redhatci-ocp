@@ -33,8 +33,10 @@ installer_controller_image:
   local: "{{ local_registry }}/ocpmetal/assisted-installer-controller"
   local_tag: "latest"
 
+release_image_remote: "quay.io/openshift-release-dev/ocp-release"
+
 release_image_item:
-  remote: "quay.io/openshift-release-dev/ocp-release@{{ image_hashes['release_' + openshift_version] }}"
+  remote: "{{ release_image_remote }}@{{ image_hashes['release_' + openshift_version] }}"
   local: "{{ local_registry }}/ocp4/openshift4"
   local_tag: "{{ openshift_full_version }}-x86_64"
 

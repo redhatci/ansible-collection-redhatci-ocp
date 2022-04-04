@@ -18,7 +18,7 @@
       containers.podman.podman_login_info:
         registry: "registry.redhat.io"
       environment:
-        XDG_RUNTIME_DIR:  "{{ config_file_path }}"
+        XDG_RUNTIME_DIR: "{{ config_file_path }}"
 
     - name: Mirror remote ocpmetal image registry to local
       command: >
