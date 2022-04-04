@@ -3,7 +3,7 @@
   assert:
     that:
       - openshift_full_version in supported_ocp_versions
-    fail_msg: "We do not support that version of openshift"
+    fail_msg: "We do not support openshift version {{ openshift_full_version }}"
 
 - name: Assert valid master configuration (HA)
   assert:
