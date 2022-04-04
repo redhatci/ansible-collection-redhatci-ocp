@@ -5,14 +5,15 @@
   set_fact:
     release_images: "{{ release_images | combine(
         {'release_' + item.short : {
-            'image': release_image_url,
-            'tag': item.long + '-x86_64',
+            'image': item.data.url | default(release_image_url),
+            'tag': item.data.long | default(item.short) + '-x86_64',
+            'hash': item.data.hash | default(''),
           }
         })
       }}"
   vars:
     release_images: {}
-  loop: "{{ ocp_release_versions_map | dict2items(key_name='short', value_name='long') }}"
+  loop: "{{ ocp_release_versions_map | dict2items(key_name='short', value_name='data') }}"
   when: get_release_images | bool
 
 - name: Find hash for images
