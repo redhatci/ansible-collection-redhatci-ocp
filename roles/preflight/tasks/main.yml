@@ -34,9 +34,11 @@
       set_fact:
         preflight_operators_to_check: []
 
+    # preflight_operators_from_cnf_cert is generated in sync-cnf-cert-and-preflight role if that feature
+    # is enabled.
     - name: Get preflight operators metadata
       include_tasks: prepare_operator_metadata.yml
-      loop: "{{ preflight_operators_to_certify }}"
+      loop: "{{ preflight_operators_to_certify + preflight_operators_from_cnf_cert|default([]) }}"
       loop_control:
         loop_var: operator
     
