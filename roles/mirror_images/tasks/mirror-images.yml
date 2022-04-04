@@ -1,0 +1,28 @@
+- name: "Mirror image"
+  vars:
+    image_name: "{{ image | regex_replace('^[^/]*/', '') }}"
+    local_image_location: "{{ local_registry }}/{{ image_name }}"
+  block:
+    - name: "mirror_images : Mirror image {{ image_name }}"
+      command:
+        cmd: >
+          skopeo copy
+          --remove-signatures
+          --authfile {{ authfile }}
+          --dest-tls-verify=false
+          docker://{{ image }}
+          docker://{{ local_image_location }}
+      register: skopeo_copy
+      retries: 5
+      delay: 5
+      until: skopeo_copy is not failed
+
+  rescue:
+    - name: "mirror_images : {{ image_name }} already mirrored"
+      command: >
+        skopeo inspect
+        --tls-verify=false
+        docker://{{ local_image_location }}
+      register: mg_inspect
+      failed_when: mg_inspect.rc != 0
+...
