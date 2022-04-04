@@ -1,0 +1,31 @@
+---
+
+# We may have the case in which we do not defined preflight_operators_to_certify because
+# we want to create the operators based on this role. In that case, we need to define
+# it as an empty list to avoid problems in future tasks.
+- name: Define preflight_operators_to_certify if not present
+  set_fact:
+    preflight_operators_to_certify: []
+  when: preflight_operators_to_certify is not defined
+
+- name: Parse claim.json
+  vars:
+    cnf_operators_file: "{{ lookup('file', job_logs.path + '/claim.json') | from_json }}"
+  set_fact:
+    cnf_operators: "{{ cnf_operators_file | json_query('claim.configurations.testTarget.operators') }}"
+
+# Doing this in order to avoid problems with loop-when conditions.
+# We need the bundles that are already defined in preflight_operators_to_certify
+# in order not to append the operators from CNF Cert Suite that are already defined
+# there in the new preflight_operators_from_cnf_cert variable.
+- name: Update preflight_operators_from_cnf_cert variable in a separated task
+  vars:
+    operator_bundles: "{{ preflight_operators_to_certify | map(attribute='bundle_image') | list | unique }}"
+  include_tasks: update_preflight_variable.yml
+  loop: "{{ cnf_operators }}"
+
+- name: Print final preflight_operators_from_cnf_cert variable
+  debug:
+    msg: "{{ preflight_operators_from_cnf_cert }}"
+
+...
