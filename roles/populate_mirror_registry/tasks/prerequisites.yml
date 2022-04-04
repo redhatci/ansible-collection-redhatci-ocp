@@ -33,7 +33,7 @@
   block:
     - name: Download oc tarball
       get_url:
-        url: "{{ release_url }}/{{ release_version }}/{{ oc_tar }}"
+        url: "{{ release_url }}/{{ openshift_full_version }}/{{ oc_tar }}"
         dest: "{{ downloads_path }}/"
         force: "{{ force }}"
         backup: yes
@@ -82,7 +82,7 @@
   block:
     - name: Download opm tarball
       get_url:
-        url: "{{ release_url }}/stable-{{ openshift_version }}/{{ opm_tar }}"
+        url: "{{ release_url }}/{{ openshift_full_version }}/{{ opm_tar }}"
         dest: "{{ downloads_path }}/"
         force: "{{ force }}"
         backup: yes
