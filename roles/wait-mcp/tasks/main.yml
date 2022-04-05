@@ -16,6 +16,7 @@
         status_query: "resources[*].status.conditions[?type=='Updated'].status"
         update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
       until:
+        - reg_mcpool_status.resources is defined
         - update_status == ['True']
       retries: "{{ mcp_wait_retries }}"
       delay: "{{ mcp_wait_delay }}"
