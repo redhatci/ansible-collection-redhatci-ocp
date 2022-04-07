@@ -6,7 +6,7 @@
     release_images: "{{ release_images | combine(
         {'release_' + item.short : {
             'image': item.data.url | default(release_image_url),
-            'tag': item.data.long | default(item.short) + '-x86_64',
+            'tag': item.data is mapping | ternary(item.data.long | default(''), item.data | default('')) + '-x86_64',
             'hash': item.data.hash | default(''),
           }
         })
