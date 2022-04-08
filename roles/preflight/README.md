@@ -41,7 +41,7 @@ pyxis_apikey_path: APIKEY_PATH
 preflight_operators_to_certify:
   - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
     pyxis_identifier: PROJECTID
-  - bundle_image: "quay.io/opdev/simple-demo-operator-bundle:v0.0.3"
+  - bundle_image: "quay.io/opdev/simple-demo-operator-bundle:v0.0.5"
     pyxis_identifier: PROJECTID
 ...
 ```

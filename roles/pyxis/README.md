@@ -23,7 +23,7 @@ pyxis\_identifier                  | undefined                                  
 preflight_operators_to_certify:
   - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
     pyxis_identifier: "project-identifier-for-testpmd-operator"
-  - bundle_image: "quay.io/opdev/simple-demo-operator-bundle:v0.0.3"
+  - bundle_image: "quay.io/opdev/simple-demo-operator-bundle:v0.0.5"
     pyxis_identifier: "project-identifier-for-simple-demo-operator"
 # pyxis token
 pyxis_apikey_path: "/path/to/partner/file/with/token"
