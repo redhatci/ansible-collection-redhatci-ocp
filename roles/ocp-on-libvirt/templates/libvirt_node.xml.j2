@@ -60,14 +60,14 @@
     <controller type='pci' index='0' model='pci-root'/>
 {% if enable_conserver %}
     <serial type='unix'>
-      <source mode='bind' path='/tmp/{{ host['name'] }}.console'/>
+      <source mode='bind' path='/var/lib/libvirt/consoles/{{ host['name'] }}.console'/>
       <target type='isa-serial' port='0'>
         <model name='isa-serial'/>
       </target>
       <alias name='serial0'/>
     </serial>
     <console type='unix'>
-      <source mode='bind' path='/tmp/{{ host['name'] }}.console'/>
+      <source mode='bind' path='/var/lib/libvirt/consoles/{{ host['name'] }}.console'/>
       <target type='serial' port='0'/>
       <alias name='serial0'/>
     </console>
