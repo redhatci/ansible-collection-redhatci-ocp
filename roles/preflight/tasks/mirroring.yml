@@ -58,7 +58,7 @@
         mode: 0755
 
     - name: Build index image in temporary preflight directory
-      include_tasks: add-operator.yml
+      include_tasks: mirroring_add_operator.yml
       loop: "{{ preflight_operators_to_check }}"
       loop_control:
         loop_var: operator

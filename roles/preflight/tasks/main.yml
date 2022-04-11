@@ -8,9 +8,7 @@
       register: preflight_tmp_dir
 
     - name: Download preflight binary if necessary
-      vars:
-        preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight/{{ preflight_binary.split('/')[-2] }}"
-      include_tasks: get_preflight_binary.yml
+      include_tasks: prepare_download_preflight_binary.yml
       when: preflight_binary | length > 0
 
     - name: Copy kubeconfig file into tmp config directory
@@ -31,21 +29,32 @@
 
     # If you want to run preflight tests,
     # preflight_operators_to_certify variable should be provided
-    # in the config file -e @path/to/preflight_config.yaml
+    # in the config file /etc/dci-openshift-app-agent/settings.yml
     - name: Create empty list of operators to check
       set_fact:
         preflight_operators_to_check: []
 
     - name: Get preflight operators metadata
-      include_tasks: operator-metadata.yml
+      include_tasks: prepare_operator_metadata.yml
       loop: "{{ preflight_operators_to_certify }}"
       loop_control:
         loop_var: operator
+    
+    # Optional: build preflight image and binary. That could be used 
+    # to test a certain branch in Preflight repository when a ready image
+    # and a ready binary are not available.
+    - name: Build preflight_image and preflight_binary
+      include_tasks: prepare_build_image_and_binary.yml
+      # this variable is set in test-runner
+      when: preflight_source_dir is defined
 
-    # This task is used both in connected and disconnected env
-    # to retrieve scorecard-test image to run independent scorecard tests later on
+    # This task is used both in connected and disconnected env.
+    # In disconnected environment, it helps to mirror scorecard-test image
+    # in advance, to allow the execution of Preflight tests in the disconnected cluster.
+    # In connected environment, that's to retrieve scorecard-test image to run
+    # independent scorecard tests later on.
     - name: Run preflight runtime-assets to get scorecard-test image
-      include_tasks: runtime_assets.yml
+      include_tasks: prepare_runtime_assets.yml
 
     - name: Manage images mirroring for Preflight cert suite
       include_tasks: mirroring.yml

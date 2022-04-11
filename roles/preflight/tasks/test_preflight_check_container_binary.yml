@@ -16,10 +16,8 @@
     {{ preflight_binary_dir }}/preflight
     check container
     {{ current_operator_image }}
-    {{ pyxis_auth | default() }}
     {{ preflight_podman_auth_for_binary | default('') }}
   register: preflight_container_output
-  no_log: true
   # Compared to GA, a non-0 exit code is only returned on preflight issues and not check failures
   ignore_errors: true
 

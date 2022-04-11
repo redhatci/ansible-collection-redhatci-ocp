@@ -12,7 +12,6 @@
         podman run
         --rm
         --pull=always
-        --name preflight
         --privileged
         -e PFLT_JUNIT=true
         -e DOCKER_CONFIG=/opt
