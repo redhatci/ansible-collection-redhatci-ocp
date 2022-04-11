@@ -1,0 +1,4 @@
+FROM docker.io/golang:1.17 AS builder
+COPY . /go/src/preflight
+WORKDIR /go/src/preflight
+RUN make build RELEASE_TAG={{ preflight_branch }}

@@ -7,8 +7,7 @@
     pyxis_auth: >-
       --certification-project-id {{ operator.pyxis_identifier }}
       --pyxis-api-token {{ pyxis_apikey }}
-  # Pyxis credentials are required for _tests_
-  # starting from 1.1.0-* pre-releases (require preflight_binary variable).
+  # Pyxis credentials are required only when running with --submit option.
   # TODO: fix the condition when release 1.1.0 would become GA if needed.
   when: preflight_binary | length > 0
   no_log: true
@@ -21,14 +20,12 @@
   when: preflight_binary | length == 0
 
 # Preflight 1.0.8 requires to use podman run.
-# Preflight 1.1.0-alpha2 requires to use binary because some container tests fail.
+# Preflight 1.1.0-beta7 requires to use binary because some container tests fail.
 # The next Preflight release will require to use podman run again.
 - name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-    preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight/{{ preflight_binary.split('/')[-2] }}"
-  # --submit option could not be used because of broken Pyxis APIs
-  # The release to fix that is expected on 08/03/2022
+  # TODO: to fix the usage of Preflight with --submit option
   include_tasks: test_preflight_check_container_binary.yml
   loop: "{{ operator.operator_images }}"
   loop_control:

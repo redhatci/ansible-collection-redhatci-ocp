@@ -17,6 +17,8 @@ submit\_preflight\_to\_pyxis       | false                                      
 pyxis\_apikey\_path                | undefined                                            | This is a path to file that contains partner's token. Parner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
 pyxis\_identifier                  | undefined                                            | Each operator should have its own certification project with the unique identifier. If the partner has to certify two operators, he has to create two certification projects. Once a new cert project is created, the identifier could be extracted from the project url: https://connect.redhat.com/projects/pyxis_identifier/overview
 preflight\_custom\_ca              | undefined                                            | Path of custom ca.crt. Used to test operator stored in a self signed registry
+preflight\_source\_dir             | undefined                                            | If this variable is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and preflight_binary (if any).
+
 
 
 ## Example of config file to define a list of operators to certify
@@ -66,3 +68,9 @@ dci-openshift-app-agent-ctl -s -- -v \
 -e kubeconfig_path=path/to/kubeconfig \
 -e @preflight_config.yaml
 ```
+
+## Preflight CI
+
+If the variable `preflight_source_dir` is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and preflight_binary (if any).
+
+Currently, Preflight CI stores the generated preflight image into a `provisionhost_registry` and hence would only work in disconnected environments with a registry attached. The plan is to remove this limitation in the next releases.

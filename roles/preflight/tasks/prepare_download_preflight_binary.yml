@@ -1,0 +1,12 @@
+---
+- name: Set location of preflight binary preflight_binary_dir
+  set_fact:
+    preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight/{{ preflight_binary.split('/')[-2] }}"
+
+- name: Download preflight if not exists
+  get_url:
+    url: "{{ preflight_binary }}"
+    dest: "{{ preflight_binary_dir }}/preflight"
+    mode: "0755"
+
+...
