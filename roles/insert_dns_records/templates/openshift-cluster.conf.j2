@@ -2,7 +2,7 @@ domain={{ domain }}
 {% if write_dnsmasq_config %}
 domain-needed
 bogus-priv
-listen-address="{{ listen_addresses | join(',') }}"
+listen-address={{ listen_addresses | join(',') }}
 {% for  listening_intf in (listening_interfaces | default([])) %}
 interface={{ listening_intf }}
 {% endfor%}
