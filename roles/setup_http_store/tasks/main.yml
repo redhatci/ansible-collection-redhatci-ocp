@@ -9,7 +9,7 @@
 
     - name: Open http port, zone internal and public, for firewalld
       firewalld:
-        port: "80/tcp"
+        port: "{{ http_port }}/tcp"
         permanent: yes
         immediate: yes
         state: enabled
@@ -34,7 +34,7 @@
       containers.podman.podman_pod:
         name: "{{ http_store_pod_name }}"
         publish:
-          - "80:8080"
+          - "{{ http_port }}:8080"
       register: pod_info
 
     - debug: # noqa unnamed-task
