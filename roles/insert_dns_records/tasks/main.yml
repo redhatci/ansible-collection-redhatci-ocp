@@ -26,6 +26,13 @@
     name: dnsmasq
     state: present
 
+- name: "Make sure {{ TFTP_ROOT }} exists"
+  file:
+    path: "{{ TFTP_ROOT }}"
+    state: directory
+    recurse: yes
+  when: use_pxe | bool
+
 - name: Configure dnsmasq via NetworkManager
   become: true
   import_tasks: network-manager.yml
