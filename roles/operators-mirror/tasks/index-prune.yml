@@ -109,7 +109,7 @@
 - name: "Remove local index image"
   shell:
     cmd: >
-      podman rmi {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }}
+      podman rmi -f {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }}
 
 - name: "Set new minor version when operators are missing"
   set_fact:
