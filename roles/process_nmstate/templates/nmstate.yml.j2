@@ -54,11 +54,13 @@ interfaces:
         multicast-snooping: {{ interface.bridge.snooping | default(true) }}
         stp:
           enabled: {{ interface.bridge.stp | default(true) }}
+      {% if interface.bridge.port is defined %}
       port:
         - name: {{ interface.bridge.port.name }}
           stp-hairpin-mode: {{ interface.bridge.port.hairpin | default(false) }}
           stp-path-cost: {{ interface.bridge.port.cost | default(100) }}
           stp-priority: {{ interface.bridge.port.priority | default(32) }}
+      {% endif %}
   {% endif %}
 {% endfor %}
 {% if network_config.routes is defined %}
