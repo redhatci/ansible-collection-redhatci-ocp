@@ -3,7 +3,13 @@
   set_fact:
     preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight/{{ preflight_binary.split('/')[-2] }}"
 
-- name: Download preflight if not exists
+- name: Create preflight directory
+  file:
+    path: "{{ preflight_binary_dir }}"
+    state: directory
+    recurse: yes
+
+- name: Download preflight
   get_url:
     url: "{{ preflight_binary }}"
     dest: "{{ preflight_binary_dir }}/preflight"
