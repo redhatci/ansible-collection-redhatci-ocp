@@ -5,13 +5,16 @@
     state: present
   become: true
 
-- name: Create download dir
+- name: Create download dirs
   ansible.builtin.file:
-    path: "{{ downloads_path }}"
+    path: "{{ item }}"
     owner: "{{ file_owner }}"
     group: "{{ file_group }}"
     mode: 0755
     state: directory
+  loop:
+    - "{{ downloads_path }}"
+    - "{{ downloads_path }}/{{ openshift_full_version }}"
 
 - name: Setup Version/Image facts
   block:
@@ -24,6 +27,7 @@
       retries: 6 # 1 minute (10 * 6)
       delay: 10 # Every 10 seconds
       failed_when: result.content|length == 0 or result.status >= 400
+
     - name: Set Fact for Release Image
       set_fact:
         release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
@@ -31,33 +35,39 @@
 
 - name: Install oc
   block:
+    - name: Check if oc tarball has been previously downloaded
+      stat:
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/{{ oc_tar }}"
+      register: downloaded_oc_tar
+
     - name: Download oc tarball
       get_url:
         url: "{{ release_url }}/{{ openshift_full_version }}/{{ oc_tar }}"
-        dest: "{{ downloads_path }}/"
+        dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
         force: "{{ force }}"
-        backup: yes
+        mode: 0664
+      when:
+        - not downloaded_oc_tar.stat.exists
 
-    - name: Make directory to extract oc binary
-      file:
-        path: "{{ downloads_path }}/openshift-client-linux"
-        owner: "{{ file_owner }}"
-        group: "{{ file_group }}"
-        mode: 0775
-        state: directory
+    - name: Check if oc binary has been extracted
+      stat:
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/oc"
+      register: extracted_oc
 
     - name: Extract oc binary
       unarchive:
-        src: "{{ downloads_path }}/{{ oc_tar }}"
-        dest: "{{ downloads_path }}/openshift-client-linux"
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ oc_tar }}"
+        dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
         remote_src: yes
       become: true
+      when:
+        - not extracted_oc.stat.exists
 
-    - name: Move binary to /usr/local/bin
+    - name: Copy binary to /usr/local/bin
       copy:
-        src: "{{ downloads_path }}/openshift-client-linux/{{ item }}"
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ item }}"
         dest: "/usr/local/bin/{{ item }}"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
@@ -80,32 +90,38 @@
 
 - name: Install opm
   block:
+    - name: Check if opm tarball has been previously downloaded
+      stat:
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/{{ opm_tar }}"
+      register: downloaded_opm_tar
+
     - name: Download opm tarball
       get_url:
         url: "{{ release_url }}/{{ openshift_full_version }}/{{ opm_tar }}"
-        dest: "{{ downloads_path }}/"
-        force: "{{ force }}"
-        backup: yes
+        dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
+        mode: 0664
+      when:
+        - not downloaded_opm_tar.stat.exists
 
-    - name: Make directory to extract binaries
-      file:
-        path: "{{ downloads_path }}/opm-linux"
-        owner: "{{ file_owner }}"
-        group: "{{ file_group }}"
-        mode: 0775
-        state: directory
+    - name: Check if opm binary has been extracted
+      stat:
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/opm"
+      register: extracted_opm
 
     - name: Extract binary
       unarchive:
-        src: "{{ downloads_path }}/{{ opm_tar }}"
-        dest: "{{ downloads_path }}/opm-linux"
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ opm_tar }}"
+        dest: "{{ downloads_path }}/{{ openshift_full_version }}"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
         remote_src: yes
+      become: true
+      when:
+        - not extracted_opm.stat.exists
 
-    - name: Move opm to /usr/local/bin
+    - name: Copy opm to /usr/local/bin
       copy:
-        src: "{{ downloads_path }}/opm-linux/opm"
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/opm"
         dest: /usr/local/bin/opm
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
