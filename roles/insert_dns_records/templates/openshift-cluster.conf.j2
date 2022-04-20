@@ -24,12 +24,12 @@ dhcp-option= tag:{{ cluster_name }},option:domain-search,{{ domain }}
 dhcp-option= tag:{{ cluster_name }},option:ntp-server,{{ ntp_server }}
 {% endif %}
 
-#Wildcard for apps and other api domains
+# Wildcard for apps and other api domains
 {% for item in dns_records.values() %}
 address=/{{ item.address }}/{{ item.ip }}
 {% endfor %}
 
-#additional IPs
+# Node addresses
 {% for item in node_dns_records.values() %}
 # {{ item.name }}
 {% if item.use_dhcp %}
@@ -40,6 +40,27 @@ ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.addr
 
 {% endfor %}
 
+{% if bmc_dns_records is defined %}
+# Node BMC addresses
+{% for item in bmc_dns_records.values() %}
+# {{ item.name }}
+address=/{{ item.address }}/{{ item.ip }}
+ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
+
+{% endfor %}
+
+{% endif %}
+{% if other_host_dns_records is defined %}
+# Bastions, services and vm_hosts
+{% for item in other_host_dns_records.values() %}
+# {{ item.name | join(', ') }}
+address=/{{ item.address }}/{{ item.ip }}
+ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
+
+{% endfor %}
+
+{% endif %}
+# User provided entries
 {% for item in extra_dns_records.values() %}
 # {{ item.name }}
 {% if item.use_dhcp %}
@@ -49,11 +70,13 @@ address=/{{ item.address }}/{{ item.ip }}
 ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
 
 {% endfor %}
-
 {% if use_pxe %}
+
+# PXE boot config
 enable-tftp
 tftp-root={{ TFTP_ROOT }}
 dhcp-vendorclass=BIOS,PXEClient:Arch:00000
 dhcp-boot=tag:BIOS,lpxelinux.0
 dhcp-boot=tag:!BIOS,shimx64.efi
+
 {% endif %}

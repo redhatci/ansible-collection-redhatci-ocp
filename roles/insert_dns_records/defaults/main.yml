@@ -2,6 +2,8 @@ write_dnsmasq_config: true
 domain: "{{ cluster_name + '.' + base_dns_domain }}"
 host_ip_keyword: "ansible_host"
 dns_entries_file_name: "{{ 'dnsmasq.' + cluster_name + '.conf' }}"
+dns_bmc_domain: "infra.{{ base_dns_domain }}"
+dns_bmc_address_suffix: "-bmc.{{ dns_bmc_domain }}"
 dns_service_name: NetworkManager
 dns_records:
   apps:
