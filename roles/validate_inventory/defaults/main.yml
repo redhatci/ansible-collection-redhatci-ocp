@@ -1,5 +1,4 @@
 node_required_vars:
-  - bmc_address
   - bmc_password
   - bmc_user
   - vendor

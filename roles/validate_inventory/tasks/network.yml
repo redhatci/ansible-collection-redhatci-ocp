@@ -3,7 +3,7 @@
 # KVM node BMCs are not checked, the vm_host will be pinged later.
 - name: Ensure baremetal node BMCs are reachable
   shell: # noqa 305
-    cmd: "ping -c 1 -W 2 {{ hostvars[item]['bmc_address'] }}"
+    cmd: "ping -c 1 -W 2 {{ hostvars[item]['bmc_ip'] | default(hostvars[item]['bmc_address']) }}"
   changed_when: False
   when: hostvars[item]['vendor'] | lower != 'kvm'
   loop: "{{ groups['nodes'] }}"

@@ -38,10 +38,35 @@
     fail_msg: "Node {{ item.0 }} is missing required var {{ item.1 }}"
   loop: "{{ groups['nodes'] | product(node_required_vars) | list }}"
 
-- name: Assert required vars are correctly typed
+- name: Assert all nodes have a BMC IP or address
+  assert:
+    that:
+      - (hostvars[item]['bmc_ip'] is defined and (setup_dns_service | default(false)) | bool) or (hostvars[item]['bmc_address'] is defined)
+    quiet: true
+    fail_msg: "Node {{ item }} must have either bmc_ip"
+  loop: "{{ groups['nodes'] }}"
+
+- name: Assert bmc_ip is correct type
+  assert:
+    that:
+      - hostvars[item]['bmc_ip'] | ipaddr('bool')
+    quiet: true
+    fail_msg: "Node {{ item }}'s bmc_ip must be a valid IP address'"
+  loop: "{{ groups['nodes'] }}"
+  when: hostvars[item]['bmc_ip'] is defined
+  
+- name: Assert bmc_address is correct type
   assert:
     that:
       - hostvars[item]['bmc_address'] is string
+    quiet: true
+    fail_msg: "Node {{ item }}'s bmc_address is string"
+  loop: "{{ groups['nodes'] }}"
+  when: hostvars[item]['bmc_address'] is defined
+
+- name: Assert required vars are correctly typed
+  assert:
+    that:
       - (hostvars[item]['mac'] | hwaddr('bool')) == true
       - hostvars[item]['bmc_password'] is string
       - hostvars[item]['bmc_user'] is string
