@@ -19,7 +19,7 @@
         -e PFLT_LOGFILE=/artifacts/preflight.log
         -e PFLT_LOGLEVEL=trace
         -v {{ preflight_container_artifacts.path }}:/artifacts
-        {{ preflight_podman_auth }}
+        {{ preflight_podman_auth | default('')}}
         {{ preflight_podman_ca }}
         {{ preflight_image }}
         check container
