@@ -139,11 +139,11 @@
         definition: "{{ lookup('file', preflight_prerun_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
 
     - name: Wait for MCP status
-      include_role: 
+      include_role:
         name: wait-mcp
       vars:
-        mcp_wait_retries: 60
-        mcp_wait_delay: 60
+        mcp_wait_retries: 30
+        mcp_wait_delay: 10
 
 - name: Remove tmp dir
   file:
