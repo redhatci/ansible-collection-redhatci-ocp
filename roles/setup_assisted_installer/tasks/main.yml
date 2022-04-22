@@ -18,7 +18,8 @@
             backup: yes
 
         - name: Update the CA trust files
-          command: update-ca-trust extract
+          command:
+            cmd: update-ca-trust extract
 
         - name: Create podman auth dir
           file:

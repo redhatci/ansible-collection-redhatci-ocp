@@ -79,7 +79,8 @@
         - oc
 
     - name: Check binary installed
-      command: "/usr/local/bin/{{ item }} version"
+      command: 
+        cmd: "/usr/local/bin/{{ item }} version"
       with_items:
         - kubectl
         - oc
@@ -130,7 +131,8 @@
       become: true
 
     - name: Check opm installed
-      command: /usr/local/bin/opm version
+      command:  
+        cmd: /usr/local/bin/opm version
   tags:
     - create_registry
     - fetch_opm

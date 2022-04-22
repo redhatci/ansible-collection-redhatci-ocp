@@ -51,6 +51,7 @@
             })
           }}"
       loop: "{{ kvm_node_names }}"
+      no_log: true
 
     - name: Check there are not mutliple bmc passwords for the same bmc user and vm host.
       assert:

@@ -15,11 +15,11 @@
       # No commit is done to revert the changes if they cause the host to be come unreachable
 
     - name: Apply nmstate
-      shell: # noqa: no-changed-when
+      shell:
         cmd: "nmstatectl apply --no-commit --timeout 120 {{ vm_nmstate_config_path }}"
       async: 60
       poll: 5
 
     - name: Commit changes
-      shell: # noqa: no-changed-when
+      shell:
         cmd: "nmstatectl commit"

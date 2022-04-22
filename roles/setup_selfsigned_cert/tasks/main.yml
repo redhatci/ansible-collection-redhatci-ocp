@@ -78,7 +78,8 @@
         backup: yes
 
     - name: Update the CA trust files
-      command: update-ca-trust extract
+      command:
+        cmd: update-ca-trust extract  
   become: true
 
 - name: Fetch the domain cert from the registry host
