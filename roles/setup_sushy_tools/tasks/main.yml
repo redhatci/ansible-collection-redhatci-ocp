@@ -42,6 +42,7 @@
               }}"
           when: hostvars[item]['vendor'] | lower == 'kvm'
           loop: "{{ groups['nodes'] }}"
+          no_log: true
 
         - name: Generate htpasswd entry
           command: htpasswd -bBn {{ item.user }} {{ item.password }}
@@ -60,7 +61,8 @@
             force: yes
           become: True
 
-        - include_role:
+        - name: Generate self signed cert for sushy tools.
+          include_role:
             name: setup_selfsigned_cert
           vars:
             cert_dir: "{{ sushy_cert_dir }}"

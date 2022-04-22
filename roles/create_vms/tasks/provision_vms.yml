@@ -25,5 +25,7 @@
       loop: "{{ kvm_nodes }}"
 
     - name: Run vm creation_scripts
-      shell: "/bin/bash {{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
+      shell: 
+        cmd: "/bin/bash {{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
+      
       loop: "{{ kvm_nodes }}"

@@ -1,4 +1,4 @@
-- name: check skopeo is installed # noqa no-changed-when
+- name: check skopeo is installed
   shell: /usr/bin/skopeo --version
 
 - name: Build release_images entries

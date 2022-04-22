@@ -22,7 +22,8 @@
         mode: '0755'
 
     - name: mount the efiboot image
-      shell: "mount -o loop,ro {{ mount_images_directory }}/efiboot.img {{ mount_efiboot_directory }}" # noqa command-instead-of-module
+      shell: 
+        cmd: "mount -o loop,ro {{ mount_images_directory }}/efiboot.img {{ mount_efiboot_directory }}" # noqa command-instead-of-module
  
     - name: Create grub Configuration File
       template:
