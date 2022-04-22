@@ -49,7 +49,7 @@
   block:
     - name: Build pruned OLM index
       command: >
-        opm index prune 
+        /usr/local/bin/opm index prune 
           --from-index "{{ olm_index_item.remote }}"
           --packages "{{ mirror_packages | join(',') }}"
           --tag "{{ olm_index_item.local }}:{{ olm_index_item.local_tag }}"
