@@ -27,7 +27,6 @@
     - OO_INDEX: "{{ OO_INDEX }}"
   shell: >
     podman run
-    -it
     --rm
     --pull=always
     --privileged
