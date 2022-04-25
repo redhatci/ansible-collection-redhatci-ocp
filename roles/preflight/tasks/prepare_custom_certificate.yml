@@ -8,7 +8,6 @@
 - name: Get ca-bundle.trust from preflight image
   shell: >
     podman run
-    -it
     --entrypoint cat
     {{ preflight_image }}
     /etc/pki/tls/certs/ca-bundle.trust.crt

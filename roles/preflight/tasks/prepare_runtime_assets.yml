@@ -3,7 +3,6 @@
   shell:
     cmd: >
       podman run
-      -it
       --rm
       --pull=always
       -e PFLT_LOGLEVEL=error

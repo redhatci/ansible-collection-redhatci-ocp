@@ -4,11 +4,11 @@
 # If empty, podman image preflight_image would be used for both
 # check container and check operator.
 # Preflight 1.0.8 requires to use podman image everywhere.
-# Preflight 1.1.0-* pre-releases require to use binary for check container
+# Preflight 1.1.0 requires to use binary for check container
 # because some container tests fail.
 # The next Preflight release will require to use podman run again.
-preflight_binary: ""
-preflight_image: quay.io/opdev/preflight:1.0.8
+preflight_binary: "https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.1.0/preflight-linux-amd64"
+preflight_image: "quay.io/opdev/preflight:1.1.0"
 preflight_namespace: preflight-testing
 preflight_custom_ca: ""
 preflight_podman_ca: ""
