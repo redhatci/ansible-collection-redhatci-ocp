@@ -1,3 +1,4 @@
 ---
 enable_conserver: false
+do_dns_config: true
 ...

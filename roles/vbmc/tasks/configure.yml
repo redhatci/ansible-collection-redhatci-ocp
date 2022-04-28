@@ -95,3 +95,4 @@
   template:
     src: nodes_dict.json.j2
     dest: ipmi_nodes.json
+  delegate_to: localhost

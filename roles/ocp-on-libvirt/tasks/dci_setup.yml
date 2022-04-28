@@ -6,6 +6,7 @@
   template:
     src: hosts.j2
     dest: hosts
+  delegate_to: localhost
 - name: Update running inventory of masters
   add_host:
     name: "{{ item.key }}"
