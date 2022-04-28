@@ -11,10 +11,11 @@
       loop_control:
         loop_var: host
     - include_tasks: dns_setup.yml
+      when: do_dns_config|bool
     - include_role:
         name: vbmc
       vars:
-        vbmc_host: localhost
+        vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
     - include_tasks: dci_setup.yml
     - include_role:
@@ -34,9 +35,10 @@
       loop_control:
         loop_var: network
     - include_tasks: dns_cleanup.yml
+      when: do_dns_config|bool
     - include_role:
         name: vbmc
       vars:
-        vbmc_host: localhost
+        vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
   when: hook_action == 'cleanup'
