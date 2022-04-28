@@ -34,8 +34,10 @@
   with_dict: "{{ vbmc_ports }}"
 
 - name: Start nodes using vbmc
-  command: "{{ vbmc_bin }} start {{ item.key }}"
-  with_dict: "{{ vbmc_ports }}"
+  include_tasks: start_node.yml
+  loop: "{{ vbmc_ports|dict2items }}"
+  loop_control:
+    loop_var: node
 
 - name: Setting nodes power status using ipmitool
   command: "ipmitool -I lanplus -U {{ vbmc_user }} -P {{ vbmc_pass }} -H {{ vbmc_management_address }} -p {{ item.value }} chassis power on"
