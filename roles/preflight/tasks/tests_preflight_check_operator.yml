@@ -35,6 +35,7 @@
     -e PFLT_LOGFILE=/artifacts/preflight.log
     -e PFLT_LOGLEVEL=trace
     -e DOCKER_CONFIG=/opt
+    {{ preflight_PFLT_dockerconfig | default('') }}
     -e KUBECONFIG=/kubeconfig
     -e PFLT_INDEXIMAGE={{ OO_INDEX }}
     -e PFLT_NAMESPACE={{ preflight_namespace }}
@@ -70,4 +71,18 @@
     api_version: v1
     kind: Namespace
     state: absent
+
+- name: Check the presence of junit file with test results
+  vars:
+    preflight_junit: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_{{ operator.version }}_results-junit.xml"
+  stat:
+    path: "{{ preflight_junit }}"
+  register: preflight_junit_exists
+
+- name: Fail if junit file is absent
+  vars:
+    preflight_junit: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_{{ operator.version }}_results-junit.xml"
+  fail:
+    msg: "results-junit file is absent, it seems like the tests failed: {{ preflight_junit }}"
+  when: not preflight_junit_exists.stat.exists
 ...
