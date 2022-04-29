@@ -19,18 +19,17 @@
 - name: Set location of preflight binary preflight_binary_dir and preflight_image
   set_fact:
     preflight_image: "{{ provisionhost_registry }}/preflight/preflight:{{ preflight_branch }}"
-    preflight_builder_image: "{{ provisionhost_registry }}/preflight/builder:builder"
     preflight_binary: "{{ preflight_tmp_dir.path }}/preflight-source/preflight"
     preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight-source"
 
 - name: Build Preflight image
   shell:
-    cmd: |
-      podman build . \
-      -t {{ preflight_image }} \
-      --build-arg=release_tag={{ preflight_branch }}
-      podman push \
-      --authfile {{ partner_creds }} \
+    cmd: >
+      podman build .
+      -t {{ preflight_image }}
+      --build-arg=release_tag={{ preflight_branch }} &&
+      podman push
+      --authfile {{ partner_creds }}
       {{ preflight_image }}
     chdir: "{{ preflight_tmp_dir.path }}/preflight-source"
 
@@ -38,24 +37,14 @@
   shell: >
     podman run --rm {{ preflight_image }} --version
 
-- name: Copy builder Dockerfile into preflight folder
-  template:
-    src: templates/Dockerfile_builder.j2
-    dest: "{{ preflight_tmp_dir.path }}/preflight-source/Dockerfile_builder"
-
-- name: Build Preflight binary
+- name: Extract Preflight binary
   shell:
-    cmd: |
-      podman build . \
-      -t {{ preflight_builder_image }} \
-      -f Dockerfile_builder
-      podman cp \
-      $(podman create --rm {{ preflight_builder_image }}):/go/src/preflight/preflight \
-      ./preflight
-      chmod +x preflight
-    chdir: "{{ preflight_tmp_dir.path }}/preflight-source"
+    cmd: >
+      podman cp
+      $(podman create --rm {{ preflight_image }}):/usr/local/bin/preflight
+      {{ preflight_binary }}
 
-- name: Display Preflight version to ensure that the binary build went fine
+- name: Display Preflight version to ensure that the binary extraction went fine
   shell: >
     {{ preflight_binary }} --version
 
