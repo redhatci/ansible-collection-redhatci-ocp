@@ -60,12 +60,11 @@
   register: csv
   retries: 30
   delay: 5
-  #no_log: true
   until:
-    - "csv.resources|length == 1"
+    - csv.resources | length == 1
     - "'status' in csv.resources[0]"
     - "'phase' in csv.resources[0].status"
-    - "csv.resources[0].status.phase == 'Succeeded'"
+    - csv.resources[0].status.phase == 'Succeeded'
 
 - name: "Disable SR-IOV Draining in SNO"
   k8s:
@@ -112,9 +111,9 @@
   retries: 300
   delay: 10
   until:
-    - "state.resources|length == 1"
+    - state.resources | length == 1
     - state.resources[0].status is defined
     - "'syncStatus' in state.resources[0].status"
-    - "state.resources[0].status.syncStatus == 'Succeeded'"
+    - state.resources[0].status.syncStatus == 'Succeeded'
 
 ...
