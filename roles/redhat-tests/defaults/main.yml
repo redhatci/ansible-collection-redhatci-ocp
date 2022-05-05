@@ -10,3 +10,18 @@ ts_configs_dir: /home/user/clusterconfigs/
 ts_csi_tests_dir: /home/user/clusterconfigs/
 ts_conformance_tests: ''
 ts_csi_test_manifest: ''
+ts_do_cni_tests: false
+ts_do_virt_tests: false
+ts_sonobuoy_version: v0.56.4
+ts_sonobuoy_image: docker.io/sonobuoy/sonobuoy:{{ ts_sonobuoy_version }}
+ts_kubevirt_conformance_version: v0.52.0
+ts_kubevirt_conformance_image: quay.io/kubevirt/conformance:{{ ts_kubevirt_conformance_version }}
+ts_kubevirt_conformance_manifest: https://github.com/kubevirt/kubevirt/releases/download/{{ ts_kubevirt_conformance_version }}/conformance.yaml
+# Images mirrored on disconnected clusters
+ts_kubevirt_images:
+  - "{{ ts_sonobuoy_image }}"
+  - "{{ ts_kubevirt_conformance_image }}"
+  - quay.io/kubevirt/alpine-container-disk-demo:{{ ts_kubevirt_conformance_version }}
+  - quay.io/kubevirt/cirros-container-disk-demo:{{ ts_kubevirt_conformance_version }}
+  - quay.io/kubevirt/vm-killer:{{ ts_kubevirt_conformance_version }}
+...
