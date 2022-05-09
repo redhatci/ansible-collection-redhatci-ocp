@@ -12,7 +12,7 @@
   when: node_exists['status'] is defined and node_exists['status'] == 'running'
 
 - name: "undefine node"
-  virt:
-    name: "{{ host['name'] }}"
-    command: undefine
+  become: true
+  shell:
+    cmd: "virsh undefine --remove-all-storage --nvram {{ host['name'] }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
   when: not node_exists['failed']
