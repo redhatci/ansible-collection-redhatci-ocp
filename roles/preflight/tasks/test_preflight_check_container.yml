@@ -8,7 +8,8 @@
       --certification-project-id {{ operator.pyxis_identifier }}
       --pyxis-api-token {{ pyxis_apikey }}
   # Pyxis credentials are required only when running with --submit option.
-  # TODO: fix the condition when release 1.1.0 would become GA if needed.
+  # TODO: fix the condition when Preflight would go with a release that does not require
+  # a binary to run check container tests.
   when: preflight_binary | length > 0
   no_log: true
 
@@ -20,7 +21,7 @@
   when: preflight_binary | length == 0
 
 # Preflight 1.0.8 requires to use podman run.
-# Preflight 1.1.0 requires to use binary because some container tests fail.
+# Preflight 1.2.0 requires to use binary because some container tests fail.
 # The next Preflight release will require to use podman run again.
 - name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
   vars:
