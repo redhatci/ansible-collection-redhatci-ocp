@@ -1,6 +1,7 @@
 ---
 - name: "Get release digest"
   shell: >
+    set -o pipefail &&
     grep '^Digest:' {{ dir }}/release.txt
     | tr -s ' '
     | cut -d ' ' -f 2
