@@ -3,16 +3,16 @@
   file:
     path: "{{ cache_dir }}"
     state: directory
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
     mode: "0775"
   become: true
 
 - name: "Create cache directory for release"
   file:
     path: "{{ cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
     mode: "0775"
     state: directory
   become: true

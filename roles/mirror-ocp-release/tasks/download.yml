@@ -1,0 +1,34 @@
+---
+- name: "Download release file"
+  include_tasks: fetch.yml
+  vars:
+    uri: "{{ release_url | regex_replace('\\/$', '') }}/release.txt"
+
+- name: "Get release digest"
+  shell: >
+    grep '^Digest:' {{ dir }}/release.txt
+    | tr -s ' '
+    | cut -d ' ' -f 2
+  register: release_digest
+  changed_when: false
+
+- name: "Download release signature"
+  include_tasks: fetch.yml
+  vars:
+    uri: "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/{{ release_digest.stdout | replace(':', '=') }}/signature-1"
+
+# We download the installer regardless to capture the release data facts in
+# facts.yml
+- name: "Download installer"
+  include_tasks: fetch.yml
+  vars:
+    uri: "{{ release_url | regex_replace('\\/$', '') }}/openshift-install-linux.tar.gz"
+
+- name: "Download extra release artifacts"
+  include_tasks: fetch.yml
+  vars:
+    uri: "{{ release_url | regex_replace('\\/$', '') }}/{{ item }}"
+  loop: "{{ artifacts }}"
+  when:
+    - mirror_artifacts | bool
+...

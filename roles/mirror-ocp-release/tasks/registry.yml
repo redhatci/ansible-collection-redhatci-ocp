@@ -1,0 +1,51 @@
+---
+- name: "Check if registry has already been mirrored"
+  stat:
+    path: "{{ dir }}/container_images.done"
+    get_checksum: false
+  register: container_images_done
+  when:
+    - not force  # we don't care to stat files if we're forcing
+
+- name: "Write pull secret file used for mirroring"
+  copy:
+    dest: "{{ dir }}/pull-secret.json"
+    content: "{{ pull_secrets | to_nice_json }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "0644"
+  become: true
+  when:
+    - force or not container_images_done.stat.exists
+
+- name: "Mirror release images to local registry"
+  command: >
+    {{ dir }}/oc adm release mirror
+    --registry-config={{ dir }}/pull-secret.json
+    --from={{ ocp_release_data['container_image'] | quote }}
+    --to-release-image={{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}:{{ version }}
+    --to={{ registry_url | urlsplit('netloc') | quote }}{{ registry_url | urlsplit('path') | quote }}
+  retries: 3
+  delay: 10
+  register: result
+  until: result.rc == 0
+  when:
+    - force or not container_images_done.stat.exists
+
+- name: "Delete pull secret file"
+  file:
+    path: "{{ dir }}/pull-secret.json"
+    state: absent
+  become: true
+
+- name: "Marker for container images mirrored"
+  file:
+    dest: "{{ cache_dir }}/{{ version }}/container_images.done"
+    state: touch
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "0644"
+  become: true
+  when:
+    - force or not container_images_done.stat.exists
+...

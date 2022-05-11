@@ -1,9 +1,0 @@
----
-# candidate is treated as GA because they go fetch from the same URL
-release_url_ga: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
-release_url_dev: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview"
-major_version: "{{ version.split('.')[:2] | join('.') }}"
-client_tools:
-  - openshift-client
-  - opm
-...
