@@ -1,20 +1,52 @@
 ---
+- name: "Get release digest"
+  shell: >
+    grep '^Digest:' {{ dir }}/release.txt
+    | tr -s ' '
+    | cut -d ' ' -f 2
+  register: release_digest
+  changed_when: false
+
+- name: "Base64 encode binary signature"
+  slurp:
+    src: "{{ dir }}/signature-1"
+  register: signature_b64
+  changed_when: false
+  no_log: true
+
 # this file is used in the upgrade flow
 - name: "Write release digest"
   copy:
-    dest: "{{ cache_dir }}/{{ version }}/release.dig"
+    dest: "{{ dir }}/release.dig"
     content: "{{ release_digest.stdout }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
     mode: "0644"
     setype: httpd_sys_content_t
   become: true
 
+- name: "Download and refresh channel upgrade graph"
+  get_url:
+    url: "https://api.openshift.com/api/upgrades_info/v1/graph?channel=fast-{{ major_version }}&arch=amd64"
+    dest: "{{ cache_dir }}/graph-{{ major_version }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "0644"
+    timeout: 1200
+    setype: "httpd_sys_content_t"
+    headers:
+      Accept: "application/json"
+  become: true
+  retries: 3
+  delay: 10
+  register: downloaded
+  until: downloaded is not failed
+
 - name: "Write mirrored image content source policy"
   copy:
-    dest: "{{ cache_dir }}/{{ version }}/imagecontentsourcepolicy.yaml"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    dest: "{{ dir }}/imagecontentsourcepolicy.yaml"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
     mode: "0644"
     setype: httpd_sys_content_t
     content: |
@@ -37,9 +69,9 @@
 
 - name: "Write signature config map"
   copy:
-    dest: "{{ cache_dir }}/{{ version }}/signature.yaml"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    dest: "{{ dir }}/signature.yaml"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
     mode: "0644"
     setype: httpd_sys_content_t
     content: |

@@ -1,0 +1,61 @@
+---
+- name: "Read release_image from release.txt"
+  shell:
+    cmd: >
+      sed -n 's/Pull From:\s*\(.*\)/\1/p'
+      {{ dir }}/release.txt | tr -d '[[:blank:]]'
+    warn: false  # runner complains about using sed
+  register: release_image
+  changed_when: false
+
+- name: "Read JSON stream from installer"
+  command: "{{ dir }}/openshift-install coreos print-stream-json"
+  register: json_stream
+
+- name: "Set image facts"
+  set_fact:
+    ocp_release_data:
+      container_image: "{{ release_image.stdout }}"
+      rhcos_version: "{{ json_stream.stdout | from_json | json_query('architectures.x86_64.artifacts.metal.release') }}"
+      rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (json_stream.stdout | from_json | json_query('architectures.x86_64.artifacts.' + item.path))}) }}"
+  with_items:
+    - {'key': 'aws_location', 'path': 'aws.formats."vmdk.gz".disk.location'}
+    - {'key': 'aws_sha256', 'path': 'aws.formats."vmdk.gz".disk.sha256'}
+    - {'key': 'azure_location', 'path': 'azure.formats."vhd.gz".disk.location'}
+    - {'key': 'azure_sha256', 'path': 'azure.formats."vhd.gz".disk.sha256'}
+    - {'key': 'azurestack_location', 'path': 'azurestack.formats."vhd.gz".disk.location'}
+    - {'key': 'azurestack_sha256', 'path': 'azurestack.formats."vhd.gz".disk.sha256'}
+    - {'key': 'gcp_location', 'path': 'gcp.formats."tar.gz".disk.location'}
+    - {'key': 'gcp_sha256', 'path': 'gcp.formats."tar.gz".disk.sha256'}
+    - {'key': 'ibmcloud_location', 'path': 'ibmcloud.formats."qcow2.gz".disk.location'}
+    - {'key': 'ibmcloud_sha256', 'path': 'ibmcloud.formats."qcow2.gz".disk.sha256'}
+    - {'key': 'metal_iso_location', 'path': 'metal.formats.iso.disk.location'}
+    - {'key': 'metal_iso_sha256', 'path': 'metal.formats.iso.disk.sha256'}
+    - {'key': 'metal_pxe_kernel_location', 'path': 'metal.formats.pxe.kernel.location'}
+    - {'key': 'metal_pxe_kernel_sha256', 'path': 'metal.formats.pxe.kernel.sha256'}
+    - {'key': 'metal_pxe_initramfs_location', 'path': 'metal.formats.pxe.initramfs.location'}
+    - {'key': 'metal_pxe_initramfs_sha256', 'path': 'metal.formats.pxe.initramfs.sha256'}
+    - {'key': 'metal_pxe_rootfs_location', 'path': 'metal.formats.pxe.rootfs.location'}
+    - {'key': 'metal_pxe_rootfs_sha256', 'path': 'metal.formats.pxe.rootfs.sha256'}
+    - {'key': 'metal_rawgz_location', 'path': 'metal.formats."raw.gz".disk.location'}
+    - {'key': 'metal_rawgz_sha256', 'path': 'metal.formats."raw.gz".disk.sha256'}
+    - {'key': 'openstack_location', 'path': 'openstack.formats."qcow2.gz".disk.location'}
+    - {'key': 'openstack_sha256', 'path': 'openstack.formats."qcow2.gz".disk.sha256'}
+    - {'key': 'qemu_location', 'path': 'qemu.formats."qcow2.gz".disk.location'}
+    - {'key': 'qemu_sha256', 'path': 'qemu.formats."qcow2.gz".disk.sha256'}
+    - {'key': 'qemu_uncompressed_sha256', 'path': 'qemu.formats."qcow2.gz".disk."uncompressed-sha256"'}  # only needed for bootstraposimage fact
+    - {'key': 'vmware_location', 'path': 'vmware.formats.ova.disk.location'}
+    - {'key': 'vmware_sha256', 'path': 'vmware.formats.ova.disk.sha256'}
+
+# NOTE: using uncompressed-sha256 for the bootstraposimage is not a mistake,
+# but needed on OCP versions prior to 4.8. The reason being, when the installer
+# retrieves the image, it will first uncompress it, and then verify the SHA,
+# and the SHA used for verification is the one in the URL.
+# TODO: remove for releases >= 4.8
+- name: "Set facts for *osimage URL overrides"
+  set_fact:
+    bootstraposimage: "{{ webserver_url }}/{{ ocp_release_data['rhcos_images']['qemu_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['qemu_uncompressed_sha256'] }}"
+    clusterosimage: "{{ webserver_url }}/{{ ocp_release_data['rhcos_images']['openstack_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['openstack_sha256'] }}"
+  when:
+    - write_custom_config | bool
+...

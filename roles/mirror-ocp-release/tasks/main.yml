@@ -6,41 +6,71 @@
 # container images.
 #
 # Parameters:
+#   * version: An OpenShift version number e.g. 4.5.21
 #   * cache_dir: Base directory that will hold the OCP version binaries and OS
 #     images
-#   * version: An OpenShift version number e.g. 4.5.21
-#   * build: What type of release this is, must be one of: ga, dev, candidate
-#   * registry_url: Full docker:// URL pointing to the registry that will
-#     hold the mirrored container images e.g. docker://localhost:4000/ns/img
-#   * auths: A dictionary holding the combined and well-formed
-#     registry authorization credentials for all registries you're pulling
-#     images *and* registries you're pushing to
-#   * webserver_url: The HTTP server holding/caching the mirrored VM images
-#   * force_mirroring (optional): If passed as a true value, the role will
-#     re-download all the OCP release resources
+#   * force (default False): If passed as true, the role will re-download all
+#     the OCP release resources
+#   * mirror_artifacts (default True): Download tarball artifacts from the OCP
+#     mirror
+#   * unpack_artifacts (default True): Unpack all downloaded tarball artifacts
+#   * artifacts (optional): List of all artifacts to download from the OCP
+#     mirror *besides the installer*
+#   * mirror_disk_images (default True): Download all disk images depending on
+#     which install_type and sno_install_type you provide
+#   * mirror_container_images (default True): Mirror all container images from
+#     upstream container registries to the provided registry
+#   * write_custom_config (default True): Writes the OCP configuration files and
+#     sets the custom URL facts
+#   * webserver_url (optional): If provided, configuration files pointing to
+#     the mirror webserver will be created, required if you set
+#     write_custom_config to true
+#   * registry_url (required if mirror_container_images is True): Target
+#     registry where to mirror the upstream container images to
+#   * install_type (default 'ipi'): What method will be used to install this
+#     cluster, this will define what type of disk images to mirror
+#   * sno_install_type (default 'baremetal'): What method will be used to
+#     install this cluster with SNO installer, this will define what type of
+#     disk images to mirror
 #
-- name: "Validate required input"
+- name: "Validate required variables"
   assert:
     that:
       - cache_dir | string
       - version | string
-      - url is defined
-      - build | string
-      - build in ['ga', 'dev', 'candidate']
-      - registry_url | string
-      - (registry_url | urlsplit('scheme')) == 'docker'
-      - dci_pullsecret_file is defined
-      - webserver_url is defined
-      - install_type | string
-      - install_type in ['ipi', 'sno', 'upi']
+      - release_url | string
 
-- name: "Validate required type of SNO deployment"
+- name: "Validate optional webserver_url variable"
+  assert:
+    that:
+      - webserver_url | string
+      - (webserver_url | urlsplit('scheme')) in ('http', 'https',)
+  when:
+    - write_custom_config | bool
+
+- name: "Validate install type"
+  assert:
+    that:
+      - install_type | string
+      - install_type in ('ipi', 'sno', 'upi',)
+
+- name: "Validate SNO install type"
   assert:
     that:
       - sno_install_type | string
-      - sno_install_type in ['virtual', 'baremetal']
+      - sno_install_type in ('baremetal', 'virtual',)
   when:
     - install_type == 'sno'
+
+- name: "Validate conditional registry variables"
+  assert:
+    that:
+      - registry_url is defined
+      - registry_url | string
+      - (registry_url | urlsplit('scheme')) == 'docker'
+      - pull_secrets is defined
+  when:
+    - mirror_container_images | bool
 
 - name: "Mirroring OCP"
   debug:
@@ -49,15 +79,39 @@
 - name: "Create directory structure"
   include_tasks: dirs.yml
 
-- name: "Fetch release resources"
-  include_tasks: fetch.yml
+- name: "Download release resources"
+  include_tasks: download.yml
+  vars:
+    dir: "{{ cache_dir }}/{{ version }}"
 
-- name: "Create mirror files"
+- name: "Unpack release artifacts"
+  include_tasks: unpack.yml
+  vars:
+    dir: "{{ cache_dir }}/{{ version }}"
+
+- name: "Write webserver configuration files"
   include_tasks: files.yml
+  vars:
+    dir: "{{ cache_dir }}/{{ version }}"
+  when:
+    - write_custom_config | bool
 
-- name: "Setup installer"
-  include_tasks: installer.yml
+- name: "Set OCP release facts"
+  include_tasks: facts.yml
+  vars:
+    dir: "{{ cache_dir }}/{{ version }}"
 
-- name: "Mirror images"
+- name: "Mirror disk images"
   include_tasks: images.yml
+  vars:
+    dir: "{{ cache_dir }}/{{ version }}"
+  when:
+    - mirror_disk_images | bool
+
+- name: "Mirror container images"
+  include_tasks: registry.yml
+  vars:
+    dir: "{{ cache_dir }}/{{ version }}"
+  when:
+    - mirror_container_images | bool
 ...

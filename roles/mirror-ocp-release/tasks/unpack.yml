@@ -1,0 +1,64 @@
+---
+# We unpack the installer regardless to capture the release data facts in
+# facts.yml
+- name: "Check if installer has been unpacked"
+  stat:
+    path: "{{ dir }}/openshift-install"
+    get_checksum: false
+  register: unpacked
+  when:
+    - not force  # we don't care to stat files if we're forcing
+
+- name: "Unarchive installer tarball"
+  unarchive:
+    src: "{{ dir }}/openshift-install-linux.tar.gz"
+    dest: "{{ dir }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "0755"
+    remote_src: true
+    exclude:
+      - README.md
+  become: true
+  when:
+    - force or not unpacked.stat.exists
+
+- name: "Process extra artifacts"
+  block:
+    - name: "Check if extra artifacts have already been unpacked"
+      stat:
+        path: "{{ dir }}/artifacts.done"
+        get_checksum: false
+      register: unpacked
+      when:
+        - not force  # we don't care to stat files if we're forcing
+
+    - name: "Unarchive extra artifact tarballs"
+      unarchive:
+        src: "{{ dir }}/{{ item }}"
+        dest: "{{ dir }}"
+        owner: "{{ owner }}"
+        group: "{{ group }}"
+        mode: "0755"
+        remote_src: true
+        exclude:
+          - README.md
+      become: true
+      loop: "{{ artifacts }}"
+      when:
+        - force or not unpacked.stat.exists
+
+    - name: "Touch marker for extra artifacts unpacked"
+      file:
+        dest: "{{ dir }}/artifacts.done"
+        state: touch
+        owner: "{{ owner }}"
+        group: "{{ group }}"
+        mode: "0644"
+      become: true
+      when:
+        - force or not unpacked.stat.exists
+  when:
+    - mirror_artifacts | bool
+    - unpack_artifacts | bool
+...
