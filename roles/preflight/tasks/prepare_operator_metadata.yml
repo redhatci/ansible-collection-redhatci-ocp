@@ -50,7 +50,8 @@
       version: "{{ operator_version }}"
       operator_images: "{{ operator_images }}"
       bundle_image: "{{ operator.bundle_image }}"
-      pyxis_identifier: "{{ operator.pyxis_identifier }}"
       index_image: "{{ operator.index_image | default(omit) }}"
+      pyxis_container_identifier: "{{ operator.pyxis_container_identifier | default(omit) }}"
+      pyxis_operator_identifier: "{{ operator.pyxis_operator_identifier | default(omit) }}"
   set_fact:
     preflight_operators_to_check: "{{ preflight_operators_to_check + [ operator_to_check ] }}"
