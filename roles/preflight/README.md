@@ -13,9 +13,9 @@ preflight\_version                 | quay.io/opdev/preflight:1.0.8              
 preflight\_operators\_to\_certify  | undefined                                            | List of operators to be checked for certification with Preflight Cert Suite. This variable is mandatory to run Preflight cert suite. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-certify) for the example.
 operator\_sdk\_tool\_path          | undefined                                            | Path to operator-sdk binary, optional. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-certify) for the example.
 preflight\_namespace               | preflight-testing                                    | Namespace to use for preflight tests
-submit\_preflight\_to\_pyxis       | false                                                | Should be set to true to submit Preflight results to Pyxis. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client) and pyxis\_identifier (each operator should have its own certification project with the unique identifier).
+pyxis\_container\_identifier       | false                                                | To get this identifier, please create a project of type "Container Image project" at connect.redhat.com. Set this project identifier to submit Preflight `check container` results to Pyxis and connect.redhat.com. This identifier is unique for each container. If you have to certify multiple containers please create multiple projects. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client).
+pyxis\_operator\_identifier        | false                                                | To get this identifier, please create a project of type "Operator Bundle Image project" at connect.redhat.com. Set this project identifier to submit Preflight `check operator` results to Pyxis and connect.redhat.com. This identifier is unique for each operator. If you have to certify multiple operators please create multiple projects. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client).
 pyxis\_apikey\_path                | undefined                                            | This is a path to file that contains partner's token. Parner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
-pyxis\_identifier                  | undefined                                            | Each operator should have its own certification project with the unique identifier. If the partner has to certify two operators, he has to create two certification projects. Once a new cert project is created, the identifier could be extracted from the project url: https://connect.redhat.com/projects/pyxis_identifier/overview
 preflight\_custom\_ca              | undefined                                            | Path of custom ca.crt. Used to test operator stored in a self signed registry
 preflight\_source\_dir             | undefined                                            | If this variable is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and preflight_binary (if any).
 
@@ -42,23 +42,24 @@ pyxis_apikey_path: APIKEY_PATH
 
 preflight_operators_to_certify:
   - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
-    pyxis_identifier: PROJECTID
+    index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
+    pyxis_container_identifier: CONTAINER_PROJECTID
+    pyxis_operator_identifier: OPERATOR_PROJECTID
   - bundle_image: "quay.io/opdev/simple-demo-operator-bundle:v0.0.5"
-    pyxis_identifier: PROJECTID
+    index_image: "quay.io/telcoci/simple-demo-operator-catalog:v0.0.5"
 ...
 ```
 
 **Mandatory**
 - `preflight_operators_to_certify` should be provided to run preflight or operator-sdk tests.
-- `pyxis_apikey_path` and `pyxis_identifier` can be found on connect.redhat.com
 
 
 **Optional**
 
 - `preflight_image: quay.io/opdev/preflight:1.2.0` should be provided if you intend to test againts the latest Preflight release, it's used for `check operator` tests
-- `preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.0/preflight-linux-amd64` should be provided if you intend to test againts the latest Preflight release 1.2.0, it's used for `check container` tests
+- `preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.0/preflight-linux-amd64` should be provided if you intend to test againts the latest Preflight release 1.2.0, it's used for `check container` tests.
 `operator_sdk_tool_path` should be provided to run operator-sdk scorecard tests.
-- `pyxis_apikey_path` and `pyxis_identifier` can be found on connect.redhat.com, they are optional for current Preflight GA 1.2.0 if you don't submit the results
+- `pyxis_apikey_path`, `pyxis_container_identifier`, and `pyxis_operator_identifier` can be found on connect.redhat.com, they are optional for current Preflight GA 1.2.0 if you don't submit the results.
 
 **Invocation**
 Here is the invocation:

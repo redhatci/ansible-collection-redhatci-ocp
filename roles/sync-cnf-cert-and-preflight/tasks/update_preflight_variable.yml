@@ -1,16 +1,12 @@
 ---
-
-# pyxis_identifier field will be set to the general pyxis_identifier
-# variable that is described in the pyxis role, or to '' if not
-# providing that variable, but note that, if you do not define
-# pyxis_identifier, preflight may fail in future releases where the
-# field is mandatory.
+# pyxis_container_identifier and pyxis_operator_identifier are not set
+# because CNF tests are currently not supporting Pyxis submission out-of-box.
 - name: Include new operators in preflight_operators_from_cnf_cert
   set_fact:
     preflight_operators_from_cnf_cert: "{{ preflight_operators_from_cnf_cert +
       [ { 'bundle_image'    : item.installPlans[0].bundleImage,
-          'index_image'     : item.installPlans[0].indexImage|default(''),
-          'pyxis_identifier': pyxis_identifier|default('') } ]
+          'index_image'     : item.installPlans[0].indexImage|default('')
+          } ]
     }}"
   when:
     - item.installPlans[0].bundleImage is defined

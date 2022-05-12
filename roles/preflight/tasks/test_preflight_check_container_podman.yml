@@ -1,4 +1,9 @@
 ---
+# TODO: Current Preflight GA 1.2.0 requires to use binary for check container tests.
+# Check container with podman is kept here because in the future Preflight team is
+# planning to be back to check container with podman. Pyxis submission is deactivated.
+# If you're moving to the "podman" release,
+# please do not forget to setup Pyxis auth and submission.
 - name: Create temporary (container) preflight artifacts directory
   tempfile:
     state: directory
@@ -24,7 +29,6 @@
         {{ preflight_image }}
         check container
         {{ current_operator_image }}
-        {{ pyxis_auth | default() }}
       register: preflight_container_output
   always:
     - name: Upload logs for preflight check container into DCI
