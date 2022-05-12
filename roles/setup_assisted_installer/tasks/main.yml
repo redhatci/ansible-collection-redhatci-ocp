@@ -36,19 +36,6 @@
   
       when: use_local_mirror_registry  | bool
 
-- name: Preconfigure AI requriements
-  become: True
-  block:
-    - name: "Build assisted_service_openshift_versions ({{ item }})"
-      vars:
-        assisted_service_openshift_versions: {}
-        assisted_installer_os_images: []
-        assisted_installer_release_images: []
-      set_fact:
-        assisted_installer_os_images: "{{ assisted_installer_os_images + assisted_installer_os_images_defualts[item] }}"
-        assisted_installer_release_images: "{{ assisted_installer_release_images + assisted_installer_release_images_defaults[item] }}"
-      loop: "{{ ocp_release_versions }}"
-
     - name: Open ports zone internal and public, for firewalld
       firewalld:
         port: "{{ item.1 }}/tcp"
@@ -65,18 +52,18 @@
         state: directory
       with_items:
         - "{{ assisted_installer_dir }}"
-        - "{{ assisted_installer_dir }}/data"
+        - "{{ assisted_installer_data_dir }}"
 
     - name: Create directory for assisted-installer database
       file:
-        path: "{{ assisted_installer_dir }}/data/postgresql"
+        path: "{{ assisted_installer_data_dir }}/postgresql"
         mode: 0775
         state: directory
         recurse: true
     
     - name: Create directory for assisted-installer images 
       file:
-        path: "{{ assisted_installer_dir }}/data/image_service"
+        path: "{{ assisted_installer_data_dir }}/image_service"
         mode: 0775
         state: directory
         recurse: true

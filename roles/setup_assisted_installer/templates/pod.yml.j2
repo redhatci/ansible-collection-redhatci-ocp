@@ -43,11 +43,11 @@ spec:
   volumes:
     - name: db-volume
       hostPath:
-        path:  "{{ assisted_installer_dir }}/data/postgresql"
+        path:  "{{ assisted_installer_data_dir }}/postgresql"
         type: Directory
     - name: image-data-volume
       hostPath:
-        path:  "{{ assisted_installer_dir }}/data/image_service"
+        path:  "{{ assisted_installer_data_dir }}/image_service"
         type: Directory
   restartPolicy: OnFailure
   {% if (dns_servers | length) > 0 %}

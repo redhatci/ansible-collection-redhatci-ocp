@@ -2,34 +2,95 @@ ai_version: v2.1.1
 controller_tag: "{{ ai_version }}"
 installer_agent_tag: "{{ ai_version }}"
 installer_tag: "{{ ai_version }}"
-
-ocp_release_versions_map_all:
-  '4.6': 4.6.16
-  '4.7': 4.7.33
-  '4.8': 4.8.14
-  '4.9': 4.9.11
-  '4.10': 4.10.10
+assisted_service_tag: "{{ ai_version }}"
+assisted_service_gui_tag: "{{ ai_version }}"
+assisted_service_image_service_tag: "{{ ai_version }}"
 
 get_release_images: true
 get_all_release_versions: false
 
-ocp_release_versions_map: "{{ get_all_release_versions | ternary(ocp_release_versions_map_all, {(openshift_version | string): ocp_release_versions_map_all[openshift_version | string]}) }}"
-
-release_image_url: "quay.io/openshift-release-dev/ocp-release"
-
-assisted_installer_images:
-  controller:
-    image: quay.io/edge-infrastructure/assisted-installer-controller
-    tag: "{{ controller_tag }}"
-  installer_agent:
-    image: quay.io/edge-infrastructure/assisted-installer-agent
-    tag: "{{ installer_agent_tag }}"
-  installer:
-    image: quay.io/edge-infrastructure/assisted-installer
-    tag: "{{ installer_tag }}"
-
-images_to_get_hash_for: "{{ assisted_installer_images | combine(release_images | default({})) }}"
+images_to_get_hash_for: "{{ assisted_installer_images | combine(processed_release_images | default({})) }}"
 
 destination_hosts:
   - registry_host
   - assisted_installer
+
+image_hashes_path: "{{ repo_root_path }}/image_hashes.yml"
+ignore_cached_image_hashes: false
+image_hashes: {}
+
+os_images:
+  - openshift_version: '4.6'
+    cpu_architecture: x86_64
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-live-rootfs.x86_64.img
+    version: 46.82.202012051820-0
+  - openshift_version: '4.7'
+    cpu_architecture: x86_64
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.33/rhcos-4.7.33-x86_64-live.x86_64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.33/rhcos-live-rootfs.x86_64.img
+    version: 47.84.202109241831-0
+  - openshift_version: '4.8'
+    cpu_architecture: x86_64
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.14/rhcos-4.8.14-x86_64-live.x86_64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.14/rhcos-live-rootfs.x86_64.img
+    version: 48.84.202109241901-0
+  - openshift_version: '4.9'
+    cpu_architecture: x86_64
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.9/4.9.0/rhcos-4.9.0-x86_64-live.x86_64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.9/4.9.0/rhcos-live-rootfs.x86_64.img
+    version: 49.84.202110081407-0
+  - openshift_version: '4.10'
+    cpu_architecture: x86_64
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/4.10.3/rhcos-4.10.3-x86_64-live.x86_64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/4.10.3/rhcos-4.10.3-x86_64-live-rootfs.x86_64.img
+    version: 410.84.202201251210-0
+  - openshift_version: '4.10'
+    cpu_architecture: arm64
+    url: https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/4.10/4.10.3/rhcos-4.10.3-aarch64-live.aarch64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/4.10/4.10.3/rhcos-4.10.3-aarch64-live-rootfs.aarch64.img
+    version: 410.84.202201251210-0
+
+release_images:
+  - openshift_version: '4.6'
+    cpu_architecture: x86_64
+    url: quay.io/openshift-release-dev/ocp-release:4.6.16-x86_64
+    version: 4.6.16
+  - openshift_version: '4.7'
+    cpu_architecture: x86_64
+    url: quay.io/openshift-release-dev/ocp-release:4.7.49-x86_64
+    version: 4.7.49
+  - openshift_version: '4.8'
+    cpu_architecture: x86_64
+    url: quay.io/openshift-release-dev/ocp-release:4.8.37-x86_64
+    version: 4.8.37
+  - openshift_version: '4.9'
+    cpu_architecture: x86_64
+    url: quay.io/openshift-release-dev/ocp-release:4.9.29-x86_64
+    version: 4.9.29
+  - openshift_version: '4.10'
+    cpu_architecture: x86_64
+    url: quay.io/openshift-release-dev/ocp-release:4.10.10-x86_64
+    version: 4.10.10
+    default: true
+  - openshift_version: '4.10'
+    cpu_architecture: arm64
+    url: quay.io/openshift-release-dev/ocp-release:4.10.10-aarch64
+    version: 4.10.10
+
+assisted_service_image_repo_url: quay.io/edge-infrastructure
+
+assisted_installer_images:
+  controller:
+    url: "{{ assisted_service_image_repo_url }}/assisted-installer-controller:{{ controller_tag }}"
+  installer_agent:
+    url: "{{ assisted_service_image_repo_url }}/assisted-installer-agent:{{ installer_agent_tag }}"
+  installer:
+    url: "{{ assisted_service_image_repo_url }}/assisted-installer:{{ installer_tag }}"
+  service:
+    url: "{{ assisted_service_image_repo_url }}/assisted-service:{{ assisted_service_tag }}"
+  gui:
+    url: "{{ assisted_service_image_repo_url }}/assisted-installer-ui:{{ assisted_service_gui_tag }}"
+  image_service:
+    url: "{{ assisted_service_image_repo_url }}/assisted-image-service:{{ assisted_service_image_service_tag }}"
+  
