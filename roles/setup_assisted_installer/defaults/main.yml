@@ -1,95 +1,16 @@
-ai_version: v2.1.1
-assisted_service_tag: "{{ ai_version }}"
-assisted_service_gui_tag: "{{ ai_version }}"
-assisted_service_image_service_tag: "{{ ai_version }}"
-
-# For older version you can use "ocpmetal"
 assisted_service_image_repo: "edge-infrastructure"
 assisted_service_image_repo_url: "quay.io/{{ assisted_service_image_repo }}"
 
-# Tagged images 
-assisted_service_image: "{{ assisted_service_image_repo_url }}/assisted-service:{{ assisted_service_tag }}"
-assisted_service_gui_image: "{{ assisted_service_image_repo_url }}/assisted-installer-ui:{{ assisted_service_gui_tag }}"
-assisted_service_image_service_image: "{{ assisted_service_image_repo_url }}/assisted-image-service:{{ assisted_service_image_service_tag }}"
+assisted_service_image: "{{ assisted_service_image_repo_url }}/assisted-service@{{ image_hashes.service }}"
+assisted_service_gui_image: "{{ assisted_service_image_repo_url }}/assisted-installer-ui@{{ image_hashes.gui }}"
+assisted_service_image_service_image: "{{ assisted_service_image_repo_url }}/assisted-image-service@{{ image_hashes.image_service }}"
 
-# Digest images
 assisted_service_controller_image: "{{ assisted_service_image_repo_url }}/assisted-installer-controller@{{ image_hashes.controller }}"
 assisted_service_installer_agent_image: "{{ assisted_service_image_repo_url }}/assisted-installer-agent@{{ image_hashes.installer_agent }}"
 assisted_service_installer_image: "{{ assisted_service_image_repo_url }}/assisted-installer@{{ image_hashes.installer }}"
 assisted_postgres_image: quay.io/centos7/postgresql-12-centos7:latest
-
 assisted_installer_dir: /opt/assisted-installer
-
-# Don't forget to update the sample inventory and supported versions
-assisted_installer_os_images_defualts:
-  "4.6":
-    - openshift_version: "4.6"
-      cpu_architecture: "x86_64"
-      url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso"
-      rootfs_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-live-rootfs.x86_64.img"
-      version: "46.82.202012051820-0"
-  "4.7":
-    - openshift_version: "4.7"
-      cpu_architecture: "x86_64"
-      url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.33/rhcos-4.7.33-x86_64-live.x86_64.iso"
-      rootfs_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.33/rhcos-live-rootfs.x86_64.img"
-      version: "47.84.202109241831-0"
-  "4.8":
-    - openshift_version: "4.8"
-      cpu_architecture: "x86_64"
-      url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.14/rhcos-4.8.14-x86_64-live.x86_64.iso"
-      rootfs_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.14/rhcos-live-rootfs.x86_64.img"
-      version: "48.84.202109241901-0"
-  "4.9":
-    - openshift_version: "4.9"
-      cpu_architecture: "x86_64"
-      url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.9/4.9.0/rhcos-4.9.0-x86_64-live.x86_64.iso"
-      rootfs_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.9/4.9.0/rhcos-live-rootfs.x86_64.img"
-      version: "49.84.202110081407-0"
-  # - openshift_version: "4.9"
-  #   cpu_architecture: "arm64"
-  #   url: "https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/4.9/4.9.0/rhcos-4.9.0-aarch64-live.aarch64.iso"
-  #   rootfs_url: "https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/4.9/4.9.0/rhcos-4.9.0-aarch64-live-rootfs.aarch64.img"
-  #   version: "49.84.202110080947-0"
-  "4.10":
-    - openshift_version: "4.10"
-      cpu_architecture: "x86_64"
-      url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/4.10.3/rhcos-4.10.3-x86_64-live.x86_64.iso"
-      rootfs_url: "https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/4.10.3/rhcos-4.10.3-x86_64-live-rootfs.x86_64.img"
-      version: "410.84.202201251210-0"
-
-# Don't forget to update the sample inventory and supported versions
-assisted_installer_release_images_defaults: 
-  "4.6":
-    - openshift_version: "4.6"
-      cpu_architecture: "x86_64"
-      url: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.6' in image_hashes %}@{{ image_hashes['release_4.6'] }}{% else %}:4.6.16-x86_64{% endif %}"
-      version: "4.6.16"
-  "4.7":
-    - openshift_version: "4.7"
-      cpu_architecture: "x86_64"
-      url: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.7' in image_hashes %}@{{ image_hashes['release_4.7'] }}{% else %}:4.7.33-x86_64{% endif %}"
-      version: "4.7.33"
-  "4.8":
-    - openshift_version: "4.8"
-      cpu_architecture: "x86_64"
-      url: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.8' in image_hashes %}@{{ image_hashes['release_4.8'] }}{% else %}:4.8.14-x86_64{% endif %}"
-      version: "4.8.14"
-  "4.9":
-    - openshift_version: "4.9"
-      cpu_architecture: "x86_64"
-      url: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.9' in image_hashes %}@{{ image_hashes['release_4.9'] }}{% else %}:4.9.11-x86_64{% endif %}"
-      version: "4.9.11"
-      default: true
-    # - openshift_version: "4.9"
-    #   cpu_architecture: "arm64"
-    #   url: "quay.io/openshift-release-dev/ocp-release:4.9.17-aarch64"
-    #   version: "4.9.17"
-  "4.10":
-    - openshift_version: "4.10"
-      cpu_architecture: "x86_64"
-      url: "quay.io/openshift-release-dev/ocp-release{% if 'release_4.10' in image_hashes %}@{{ image_hashes['release_4.10'] }}{% else %}:4.10.10-x86_64{% endif %}"
-      version: "4.10.10"
+assisted_installer_data_dir: "{{ assisted_installer_dir }}/data"
 
 assisted_installer_hardware_validation:
 - version: default

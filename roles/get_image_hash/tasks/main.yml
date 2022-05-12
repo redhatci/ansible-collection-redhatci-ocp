@@ -1,19 +1,50 @@
 - name: check skopeo is installed
   shell: /usr/bin/skopeo --version
 
+- name: Filter images 
+  when: get_release_images | bool
+  block: 
+    - name: Filter os images
+      set_fact:
+        os_images: "{{ os_images | json_query(os_filter) }}"
+      vars:
+        os_filter: "[?(openshift_version == '{{ openshift_version }}')]"
+      when: (not get_all_release_versions) | bool
+    
+    - debug: # noqa unnamed-task
+        var: os_images
+        verbosity: 1
+
+    - name: Filter release images
+      set_fact:
+        release_images: "{{ release_images | json_query(release_filter) }}"
+      vars:
+        release_filter: "[?(version == '{{ openshift_full_version }}')]"
+      when: (not get_all_release_versions) | bool
+   
+    - debug: # noqa unnamed-task
+        var: release_images
+        verbosity: 1
+        
+- name: Get cached images
+  include_vars:
+    file: "{{ image_hashes_path }}"
+    name: image_hashes
+  when: image_hashes_path is file and ignore_cached_image_hashes | bool
+  delegate_to: localhost
+
 - name: Build release_images entries
   set_fact:
-    release_images: "{{ release_images | combine(
-        {'release_' + item.short : {
-            'image': item.data.url | default(release_image_url),
-            'tag': item.data is mapping | ternary(item.data.long | default(''), item.data | default('')) + '-x86_64',
-            'hash': item.data.hash | default(''),
+    processed_release_images: "{{ processed_release_images | combine(
+        { ('release_' + item.version + '_' + item.cpu_architecture) : {
+            'url': item.url,
+            'hash': item.hash | default(''),
           }
         })
       }}"
   vars:
-    release_images: {}
-  loop: "{{ ocp_release_versions_map | dict2items(key_name='short', value_name='data') }}"
+    processed_release_images: {}
+  loop: "{{ release_images }}"
   when: get_release_images | bool
 
 - name: Find hash for images
@@ -22,7 +53,49 @@
     apply:
       tags:
         - install
+  when: item.key not in image_hashes
   loop: "{{ images_to_get_hash_for | dict2items }}"
+
+- name: Create image cache file
+  copy:
+    content: "{{ image_hashes | to_yaml }}"
+    dest: "{{ image_hashes_path }}"
+    mode: 0660
+  delegate_to: localhost
+  when: image_hashes_path is file
+
+- name: Update release_images with hashes
+  when: get_release_images | bool
+  block:
+    - name: Update released items
+      vars: 
+        updated_release_images: []
+      set_fact:
+        updated_release_images: "{{ updated_release_images + [item | combine({'url': item.url.split(':')[0] + '@' + image_hashes['release_' + item.version + '_' + item.cpu_architecture]  })] }}"
+      when: 
+        - (':' in item.url)
+        - ('release_' + item.version + '_' + item.cpu_architecture) in image_hashes
+      loop: "{{ release_images }}"
+
+    - name: Redefine release images to 
+      set_fact:
+        release_images: "{{ updated_release_images }}"
+      when: updated_release_images is defined
+   
+    - debug: # noqa unnamed-task
+        var: os_images
+        verbosity: 1
+    
+    - debug: # noqa unnamed-task
+        var: release_images
+        verbosity: 1
+
+    - name: Set values on assiste host
+      set_fact:
+        assisted_installer_os_images: "{{ os_images }}"
+        assisted_installer_release_images: "{{ release_images }}"
+      delegate_to: "assisted_installer"
+      delegate_facts: true
 
 - name: "Set image hashes in {{ item }}"
   set_fact:
@@ -30,10 +103,3 @@
   delegate_to: "{{ item }}"
   delegate_facts: true
   loop: "{{ destination_hosts }}"
-
-- name: "Set ocp_release_versions in assisted_installer host"
-  set_fact:
-    ocp_release_versions: "{{ ocp_release_versions_map.keys() | list }}"
-  when: get_release_images | bool
-  delegate_to: "assisted_installer"
-  delegate_facts: true
