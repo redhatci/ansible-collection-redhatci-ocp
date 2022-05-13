@@ -29,6 +29,7 @@
         - "{{ sushy_dir }}"
         - "{{ sushy_auth_dir }}"
         - "{{ sushy_cert_dir }}"
+        - "{{ sushy_data_dir }}"
 
     - name: Secure sushy tools
       when: secure_sushy_tools | bool
