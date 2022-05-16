@@ -28,7 +28,7 @@
         labels: "{{ ns_labels | default(omit) }}"
 
 - name: Create OperatorGroup for OLM operator
-  k8s:
+  community.kubernetes.k8s:
     definition:
       apiVersion: operators.coreos.com/v1
       kind: OperatorGroup
@@ -38,7 +38,7 @@
       spec: "{{ operator_group_spec | default(omit) }}"
 
 - name: Create subscription for OLM operator
-  k8s:
+  community.kubernetes.k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1
       kind: Subscription
@@ -53,11 +53,36 @@
         source: "{{ source }}"
         sourceNamespace: "{{ source_ns }}"
 
-- name: Wait (up to 10m) for CSV to be ready
-  k8s_info:
+- name: Get operator's package manifest
+  community.kubernetes.k8s_info:
+    api: packages.operators.coreos.com/v1
+    kind: PackageManifest
+    name: "{{ operator }}"
+    namespace:  default
+  register: packagemanifest
+  retries: 5
+  delay: 5
+  until:
+    - packagemanifest.resources | length == 1
+
+- name: "Get operator's default channel name"
+  vars:
+    channels: "resources[*].status.defaultChannel"
+  set_fact:
+    default_channel: "{{ packagemanifest | json_query(channels) | join('') | string }}"
+
+- name: "Get operator's CSV for desired channel"
+  vars:
+    current_csv: "resources[*].status.channels[? name=='{{ channel | default ( default_channel ) }}' ].currentCSV | [0]"
+  set_fact:
+    operator_csv: "{{ packagemanifest | json_query(current_csv) | first  }}"
+
+- name: Wait (up to 10m) for operator's CSV to be ready
+  community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
     namespace: "{{ namespace }}"
     kind: ClusterServiceVersion
+    name: "{{ operator_csv }}"
   register: csv
   retries: 20
   delay: 30
