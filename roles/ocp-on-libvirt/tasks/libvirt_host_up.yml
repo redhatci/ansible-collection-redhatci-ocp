@@ -11,30 +11,30 @@
 
 - name: "Copy image_src:"
   include: copy_image_src.yml
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: "Add additional storage"
   command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
   become: "{{ libvirt_become }}"
-  when: host['disk_size'] is defined and node_exists['failed'] is defined
+  when: host['disk_size'] is defined and node_exists.failed
 
 - name: "Create directories"
   file:
     path: "/tmp/vm-{{ host['name'] }}"
     state: "directory"
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: "Prepare cloud-config/user-data-local"
   template:
     src: "templates/cloud-config/user-data"
     dest: "/tmp/vm-{{ host['name'] }}/user-data"
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: "Prepare cloud-config/meta-data"
   template:
     src: "templates/cloud-config/meta-data"
     dest: "/tmp/vm-{{ host['name'] }}/meta-data"
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   command: |
@@ -42,14 +42,14 @@
             --quiet /tmp/vm-{{ host['name'] }}/user-data
             /tmp/vm-{{ host['name'] }}/meta-data
   become: "{{ libvirt_become }}"
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: "define node"
   virt:
     name: "{{ host['name'] }}"
     command: define
     xml: "{{ lookup('template', 'libvirt_node.xml.j2') }}"
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: sync memory data to disk
   command: sync
@@ -67,12 +67,12 @@
   until: vmstatus.status == 'shutdown'
   retries: 1500
   delay: 10
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: "Remove cdrom (cloud-init)"
   command: virsh change-media {{ host['name'] }} hda --eject --config
   become: "{{ libvirt_become }}"
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
 
 - name: sync memory data to disk
   command: sync
@@ -81,4 +81,4 @@
   virt:
     name: "{{ host['name'] }}"
     state: "running"
-  when: node_exists['failed'] is defined
+  when: node_exists.failed
