@@ -32,9 +32,9 @@ do_preflight_tests: true
 # optional
 # operator_sdk_tool_path: "/usr/local/bin/operator-sdk-flag"
 
-# Uncomment and change the next two lines if you need to use something different from the latest GA 1.2.0:
-# preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.0/preflight-linux-amd64
-# preflight_image: quay.io/opdev/preflight:1.2.0
+# Uncomment and change the next two lines if you need to use something different from the latest GA 1.2.1:
+# preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.1/preflight-linux-amd64
+# preflight_image: quay.io/opdev/preflight:1.2.1
 
 # all certification projects for one partner
 # share one access token
@@ -56,10 +56,10 @@ preflight_operators_to_certify:
 
 **Optional**
 
-- `preflight_image: quay.io/opdev/preflight:1.2.0` should be provided if you intend to test againts the latest Preflight release, it's used for `check operator` tests
-- `preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.0/preflight-linux-amd64` should be provided if you intend to test againts the latest Preflight release 1.2.0, it's used for `check container` tests.
+- `preflight_image: quay.io/opdev/preflight:1.2.1` should be provided if you intend to test againts the latest Preflight release, it's used for `check operator` tests
+- `preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.1/preflight-linux-amd64` should be provided if you intend to test againts the latest Preflight release 1.2.1, it's used for `check container` tests.
 `operator_sdk_tool_path` should be provided to run operator-sdk scorecard tests.
-- `pyxis_apikey_path`, `pyxis_container_identifier`, and `pyxis_operator_identifier` can be found on connect.redhat.com, they are optional for current Preflight GA 1.2.0 if you don't submit the results.
+- `pyxis_apikey_path`, `pyxis_container_identifier`, and `pyxis_operator_identifier` can be found on connect.redhat.com, they are optional for current Preflight GA 1.2.1 if you don't submit the results.
 
 **Invocation**
 Here is the invocation:
