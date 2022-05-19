@@ -24,12 +24,12 @@
 
   - name: Copy the downloaded repo in tnf_git_dir path
     copy:
-      src: "{{ test_network_function_repo }}/test-network-function"
+      src: "{{ test_network_function_repo }}/cnf-certification-test"
       dest: "{{ tnf_git_dir.path }}"
 
   - name: Find .sh scripts in tnf repo
     find:
-      paths: "{{ tnf_git_dir.path }}/test-network-function"
+      paths: "{{ tnf_git_dir.path }}/cnf-certification-test"
       patterns: '*.sh'
       recurse: yes
     register: list_sh_scripts
@@ -50,7 +50,7 @@
     shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
     register: tnf_repo_info
     args:
-      chdir: "{{ tnf_git_dir.path }}/test-network-function"
+      chdir: "{{ tnf_git_dir.path }}/cnf-certification-test"
 
   - name: Create variable with tnf version name
     set_fact:
@@ -58,17 +58,17 @@
 
   - name: Create variable with tnf image name
     set_fact:
-      tnf_image: "test-network-function:{{ tnf_version_image }}"
+      tnf_image: "cnf-certification-test:{{ tnf_version_image }}"
 
-  # Steps from https://github.com/test-network-function/test-network-function#building-the-container-image-locally
+  # Steps from https://github.com/test-network-function/cnf-certification-test#building-the-container-image-locally
   - name: Build the tnf container locally
     shell: |
       set -x
       podman build -t {{ tnf_image }} \
       --build-arg TNF_VERSION={{ tnf_version_image }} \
-      --build-arg TNF_SRC_URL=https://github.com/test-network-function/test-network-function .
+      --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test .
     args:
-      chdir: "{{ tnf_git_dir.path }}/test-network-function"
+      chdir: "{{ tnf_git_dir.path }}/cnf-certification-test"
 
   # This is needed because the DCI component is not automatically created, as
   # it is done in case the git repo is directly used, in whose case it is created.
@@ -80,11 +80,11 @@
   - name: Manually create the corresponding tnf component for DCI
     dci_component:
       name: "{{ tnf_version_image }}"
-      canonical_project_name: "test-network-function {{ tnf_version_image[:7] }}"
+      canonical_project_name: "cnf-certification-test {{ tnf_version_image[:7] }}"
       team_id: "{{ job_info['job']['team_id'] }}"
       topic_id: "{{ job_info['job']['topic_id'] }}"
-      type: "test-network-function"
-      url: "https://github.com/test-network-function/test-network-function/commit/{{ tnf_version_image }}"  # noqa 204
+      type: "cnf-certification-test"
+      url: "https://github.com/test-network-function/cnf-certification-test/commit/{{ tnf_version_image }}"  # noqa 204
       state: present
     register: tnf_git_component
     tags: [dci]
@@ -102,12 +102,12 @@
 - name: Tasks when test_network_function_repo points to a Github repository
   block:
 
-  # In https://quay.io/repository/testnetworkfunction/test-network-function?tab=tags,
+  # In https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
   # there are two main tags to take into account:
   # -latest: linked to the latest tnf release (currently, v3.0.0). So, v3.0.0 and latest
   # tags refer to the same container image.
   # -unstable: related to the HEAD version of the main branch in the tnf repository
-  # (https://github.com/test-network-function/test-network-function).
+  # (https://github.com/test-network-function/cnf-certification-test).
   # So, if a version is provided in test_network_function_version, that version will be
   # used (but note that versions prior to v3.0.1 are no longer supported in the current
   # d-o-a-a code). In case we are on the master branch (HEAD version), unstable tag is used.
@@ -117,13 +117,13 @@
 
   - name: Create variable with tnf image name
     set_fact:
-      tnf_image: "test-network-function:{{ tnf_version_image }}"
+      tnf_image: "cnf-certification-test:{{ tnf_version_image }}"
 
-  - name: Clone test-network-function
+  - name: Clone cnf-certification-test
     git:
       repo: "{{ test_network_function_repo }}"
       version: "{{ test_network_function_version }}"
-      dest: "{{ tnf_git_dir.path }}/test-network-function"
+      dest: "{{ tnf_git_dir.path }}/cnf-certification-test"
       force: yes
     # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
     # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
@@ -136,7 +136,7 @@
   - name: Pull tnf container to bring the latest changes in the selected version
     shell: |
       set -ex
-      podman pull quay.io/testnetworkfunction/test-network-function:{{ tnf_version_image }}
+      podman pull quay.io/testnetworkfunction/cnf-certification-test:{{ tnf_version_image }}
 
   when: not tnf_is_file_path.stat.exists|bool
 
@@ -149,7 +149,7 @@
 - name: Template tnf_config.yml
   template:
     src: templates/tnf_config.yml.j2
-    dest: "{{ tnf_git_dir.path }}/test-network-function/test-network-function/tnf_config.yml"
+    dest: "{{ tnf_git_dir.path }}/cnf-certification-test/cnf-certification-test/tnf_config.yml"
 
 - name: Set tnf_partner_registry variable
   set_fact:
@@ -159,7 +159,7 @@
   shell: |
     set -x
 
-    rm -f test-network-function/*.xml
+    rm -f cnf-certification-test/*.xml
 
     export TNF_NON_INTRUSIVE_ONLY={{ tnf_non_intrusive_only }}
     export TNF_RUN_CFD_TEST={{ tnf_run_cfd_test }}
@@ -169,15 +169,15 @@
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
     -i $TNF_IMAGE \
-    -t {{ tnf_git_dir.path }}/test-network-function/test-network-function \
-    -o {{ tnf_git_dir.path }}/test-network-function/test-network-function \
-    -f {{ tnf_suites }} &> test-network-function/execution.log
+    -t {{ tnf_git_dir.path }}/cnf-certification-test/cnf-certification-test \
+    -o {{ tnf_git_dir.path }}/cnf-certification-test/cnf-certification-test \
+    -f {{ tnf_suites }} &> cnf-certification-test/execution.log
 
-    cp test-network-function/*.xml {{ tnf_tempdir.path }}
-    cp test-network-function/*.json {{ tnf_tempdir.path }}
-    cp test-network-function/execution.log {{ tnf_tempdir.path }}
-    cp test-network-function/tnf_config.yml {{ tnf_tempdir.path }}
+    cp cnf-certification-test/*.xml {{ tnf_tempdir.path }}
+    cp cnf-certification-test/*.json {{ tnf_tempdir.path }}
+    cp cnf-certification-test/execution.log {{ tnf_tempdir.path }}
+    cp cnf-certification-test/tnf_config.yml {{ tnf_tempdir.path }}
   args:
-    chdir: "{{ tnf_git_dir.path }}/test-network-function"
+    chdir: "{{ tnf_git_dir.path }}/cnf-certification-test"
 
 ...
