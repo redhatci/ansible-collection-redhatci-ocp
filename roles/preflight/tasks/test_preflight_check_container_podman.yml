@@ -1,5 +1,5 @@
 ---
-# TODO: Current Preflight GA 1.2.0 requires to use binary for check container tests.
+# TODO: Current Preflight GA 1.2.1 requires to use binary for check container tests.
 # Check container with podman is kept here because in the future Preflight team is
 # planning to be back to check container with podman. Pyxis submission is deactivated.
 # If you're moving to the "podman" release,
