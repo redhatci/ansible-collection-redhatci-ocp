@@ -15,4 +15,4 @@
   become: true
   shell:
     cmd: "virsh undefine --remove-all-storage --nvram {{ host['name'] }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
-  when: not node_exists['failed']
+  when: not node_exists.failed

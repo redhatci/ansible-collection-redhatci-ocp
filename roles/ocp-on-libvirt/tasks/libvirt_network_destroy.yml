@@ -10,10 +10,10 @@
   virt_net:
     name: "{{ network['name'] }}"
     command: destroy
-  when: not node_exists['failed']
+  when: not node_exists.failed
 
 - name: "undefine network"
   virt_net:
     name: "{{ network['name'] }}"
     command: undefine
-  when: not node_exists['failed']
+  when: not node_exists.failed
