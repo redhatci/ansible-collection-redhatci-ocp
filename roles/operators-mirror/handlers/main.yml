@@ -3,7 +3,7 @@
   # The tmp dirs are create without write permissions and aren't automatically removed
   shell:
     cmd: >
+      [[ ! -d {{ tmp_prune.path }} ]] ||
       find {{ tmp_prune.path }} -type d -not -perm -u=w -exec chmod u+w {} \; &&
       rm -rf {{ tmp_prune.path }};
-
 ...
