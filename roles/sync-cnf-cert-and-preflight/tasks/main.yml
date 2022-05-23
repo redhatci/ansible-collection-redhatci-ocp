@@ -12,7 +12,7 @@
   vars:
     cnf_operators_file: "{{ lookup('file', job_logs.path + '/claim.json') | from_json }}"
   set_fact:
-    cnf_operators: "{{ cnf_operators_file | json_query('claim.configurations.testTarget.operators') }}"
+    cnf_operators: "{{ cnf_operators_file | json_query('claim.configurations.testOperators') }}"
 
 # Doing this in order to avoid problems with loop-when conditions.
 # We need the bundles that are already defined in preflight_operators_to_certify
