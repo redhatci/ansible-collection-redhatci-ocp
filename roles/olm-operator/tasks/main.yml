@@ -60,8 +60,8 @@
     name: "{{ operator }}"
     namespace:  default
   register: packagemanifest
-  retries: 5
-  delay: 5
+  retries: 9
+  delay: 10
   until:
     - packagemanifest.resources | length == 1
 
