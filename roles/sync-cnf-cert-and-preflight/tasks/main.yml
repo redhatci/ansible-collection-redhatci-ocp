@@ -1,5 +1,16 @@
 ---
 
+- name: Fail if tnf version is lower than v3.3.3
+  fail:
+    msg: sync-cnf-cert-and-preflight role cannot be executed with tnf versions lower than v3.3.3
+  when: test_network_function_version is version("v3.3.3", "<")
+
+- name: Redefine variables if we are using an old tnf version
+  set_fact:
+    cnf_operators_regex: "claim.configurations.testTarget.operators"
+  when:
+    - test_network_function_version is version("v3.3.3", "==")
+
 # We may have the case in which we do not defined preflight_operators_to_certify because
 # we want to create the operators based on this role. In that case, we need to define
 # it as an empty list to avoid problems in future tasks.
@@ -12,7 +23,7 @@
   vars:
     cnf_operators_file: "{{ lookup('file', job_logs.path + '/claim.json') | from_json }}"
   set_fact:
-    cnf_operators: "{{ cnf_operators_file | json_query('claim.configurations.testOperators') }}"
+    cnf_operators: "{{ cnf_operators_file | json_query(cnf_operators_regex) }}"
 
 # Doing this in order to avoid problems with loop-when conditions.
 # We need the bundles that are already defined in preflight_operators_to_certify

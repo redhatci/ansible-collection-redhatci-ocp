@@ -1,6 +1,7 @@
 ---
 test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
 test_network_function_version: "v4.0.0"
+test_network_function_project_name: cnf-certification-test
 dci_openshift_app_image: "quay.io/testnetworkfunction/cnf-test-partner:latest"
 tnf_if: eth0
 tnf_suites: "access-control networking lifecycle observability platform-alteration operator"

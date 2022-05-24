@@ -1,2 +1,3 @@
 ---
 preflight_operators_from_cnf_cert: []
+cnf_operators_regex: "claim.configurations.testOperators"
