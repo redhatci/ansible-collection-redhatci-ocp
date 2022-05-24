@@ -1,4 +1,10 @@
 ---
+- name: Redefine variables if we are using an old tnf version
+  set_fact:
+    test_network_function_repo: https://github.com/test-network-function/test-network-function
+    test_network_function_project_name: test-network-function
+  when: test_network_function_version is version("v3.3.3", "<=")
+
 - name: "cnf-cert : Save images in local registry"
   include_tasks: save-images.yml
   when:
@@ -24,12 +30,12 @@
 
   - name: Copy the downloaded repo in tnf_git_dir path
     copy:
-      src: "{{ test_network_function_repo }}/cnf-certification-test"
+      src: "{{ test_network_function_repo }}/{{ test_network_function_project_name }}"
       dest: "{{ tnf_git_dir.path }}"
 
   - name: Find .sh scripts in tnf repo
     find:
-      paths: "{{ tnf_git_dir.path }}/cnf-certification-test"
+      paths: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
       patterns: '*.sh'
       recurse: yes
     register: list_sh_scripts
@@ -50,7 +56,7 @@
     shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
     register: tnf_repo_info
     args:
-      chdir: "{{ tnf_git_dir.path }}/cnf-certification-test"
+      chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
   - name: Create variable with tnf version name
     set_fact:
@@ -58,7 +64,7 @@
 
   - name: Create variable with tnf image name
     set_fact:
-      tnf_image: "cnf-certification-test:{{ tnf_version_image }}"
+      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}"
 
   # Steps from https://github.com/test-network-function/cnf-certification-test#building-the-container-image-locally
   - name: Build the tnf container locally
@@ -66,13 +72,13 @@
       set -x
       podman build -t {{ tnf_image }} \
       --build-arg TNF_VERSION={{ tnf_version_image }} \
-      --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test .
+      --build-arg TNF_SRC_URL={{ test_network_function_repo }} .
     args:
-      chdir: "{{ tnf_git_dir.path }}/cnf-certification-test"
+      chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
   # This is needed because the DCI component is not automatically created, as
   # it is done in case the git repo is directly used, in whose case it is created.
-  # Doing this in the same way that is done in track_git_repo play but with 
+  # Doing this in the same way that is done in track_git_repo play but with
   # the arguments obtained in previous tasks (e.g. commit SHA), as we cannot
   # rely on the last commit id. For that reason, it is better to just do it
   # here rather than changing pre-run and track_git_repo to be adapted to this
@@ -80,11 +86,11 @@
   - name: Manually create the corresponding tnf component for DCI
     dci_component:
       name: "{{ tnf_version_image }}"
-      canonical_project_name: "cnf-certification-test {{ tnf_version_image[:7] }}"
+      canonical_project_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
       team_id: "{{ job_info['job']['team_id'] }}"
       topic_id: "{{ job_info['job']['topic_id'] }}"
-      type: "cnf-certification-test"
-      url: "https://github.com/test-network-function/cnf-certification-test/commit/{{ tnf_version_image }}"  # noqa 204
+      type: "{{ test_network_function_project_name }}"
+      url: "{{ test_network_function_repo }}/commit/{{ tnf_version_image }}"  # noqa 204
       state: present
     register: tnf_git_component
     tags: [dci]
@@ -104,26 +110,24 @@
 
   # In https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
   # there are two main tags to take into account:
-  # -latest: linked to the latest tnf release (currently, v3.0.0). So, v3.0.0 and latest
-  # tags refer to the same container image.
+  # -latest: linked to the latest tnf release.
   # -unstable: related to the HEAD version of the main branch in the tnf repository
   # (https://github.com/test-network-function/cnf-certification-test).
   # So, if a version is provided in test_network_function_version, that version will be
-  # used (but note that versions prior to v3.0.1 are no longer supported in the current
-  # d-o-a-a code). In case we are on the master branch (HEAD version), unstable tag is used.
+  # used. In case we are on the master branch (HEAD version), unstable tag is used.
   - name: Create variable with tnf version name
     set_fact:
       tnf_version_image: "{{ ( test_network_function_version | regex_search('HEAD') ) | ternary('unstable', test_network_function_version) }}"
 
   - name: Create variable with tnf image name
     set_fact:
-      tnf_image: "cnf-certification-test:{{ tnf_version_image }}"
+      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}"
 
-  - name: Clone cnf-certification-test
+  - name: Clone tnf repository
     git:
       repo: "{{ test_network_function_repo }}"
       version: "{{ test_network_function_version }}"
-      dest: "{{ tnf_git_dir.path }}/cnf-certification-test"
+      dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
       force: yes
     # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
     # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
@@ -136,7 +140,7 @@
   - name: Pull tnf container to bring the latest changes in the selected version
     shell: |
       set -ex
-      podman pull quay.io/testnetworkfunction/cnf-certification-test:{{ tnf_version_image }}
+      podman pull quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }}
 
   when: not tnf_is_file_path.stat.exists|bool
 
@@ -149,7 +153,7 @@
 - name: Template tnf_config.yml
   template:
     src: templates/tnf_config.yml.j2
-    dest: "{{ tnf_git_dir.path }}/cnf-certification-test/cnf-certification-test/tnf_config.yml"
+    dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/tnf_config.yml"
 
 - name: Set tnf_partner_registry variable
   set_fact:
@@ -159,7 +163,7 @@
   shell: |
     set -x
 
-    rm -f cnf-certification-test/*.xml
+    rm -f {{ test_network_function_project_name }}/*.xml
 
     export TNF_NON_INTRUSIVE_ONLY={{ tnf_non_intrusive_only }}
     export TNF_RUN_CFD_TEST={{ tnf_run_cfd_test }}
@@ -169,15 +173,15 @@
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
     -i $TNF_IMAGE \
-    -t {{ tnf_git_dir.path }}/cnf-certification-test/cnf-certification-test \
-    -o {{ tnf_git_dir.path }}/cnf-certification-test/cnf-certification-test \
-    -f {{ tnf_suites }} &> cnf-certification-test/execution.log
+    -t {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
+    -o {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
+    -f {{ tnf_suites }} &> {{ test_network_function_project_name }}/execution.log
 
-    cp cnf-certification-test/*.xml {{ tnf_tempdir.path }}
-    cp cnf-certification-test/*.json {{ tnf_tempdir.path }}
-    cp cnf-certification-test/execution.log {{ tnf_tempdir.path }}
-    cp cnf-certification-test/tnf_config.yml {{ tnf_tempdir.path }}
+    cp {{ test_network_function_project_name }}/*.xml {{ tnf_tempdir.path }}
+    cp {{ test_network_function_project_name }}/*.json {{ tnf_tempdir.path }}
+    cp {{ test_network_function_project_name }}/execution.log {{ tnf_tempdir.path }}
+    cp {{ test_network_function_project_name }}/tnf_config.yml {{ tnf_tempdir.path }}
   args:
-    chdir: "{{ tnf_git_dir.path }}/cnf-certification-test"
+    chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
 ...
