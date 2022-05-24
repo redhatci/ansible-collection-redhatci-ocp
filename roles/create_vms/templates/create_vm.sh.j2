@@ -10,7 +10,9 @@ virt-install \
     --vcpus={{ item.vcpu }} \
     --os-variant=rhel8.3 \
     --os-type linux \
-    --network=bridge:{{ vm_bridge_name }},mac="{{ item.mac }}" \
+    {% for bridge, mac in item.network_interfaces.items() %}
+    --network=bridge:{{ bridge }},mac="{{ mac }}" \
+    {% endfor %}
     {% for disk_name, disk_size in item.disks.items() %}
     --disk path={{ images_dir }}/{{ item.name }}_{{ disk_name }}.qcow2,size={{ disk_size }},format=qcow2 \
     {% endfor %}
