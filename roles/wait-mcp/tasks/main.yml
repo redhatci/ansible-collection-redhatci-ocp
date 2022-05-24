@@ -68,7 +68,7 @@
               loop: "{{ reg_disabled_nodes.stdout.split('\n') }}"
               delegate_to: localhost
 
-            - name: Wait for workers to be ready
+            - name: "Wait for workers to be ready - {{ mcp_reason | default('To define the location') }}"
               environment:
                 KUBECONFIG: "{{ kubeconfig_path }}"
               shell: >

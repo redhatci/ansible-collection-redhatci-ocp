@@ -10,6 +10,7 @@
   vars:
     mcp_wait_retries: 30
     mcp_wait_delay: 10
+    mcp_reason: "Before running RedHat tests"
 
 - name: "redhat-tests : Run openshift conformance tests"
   include_tasks: conformance.yml
