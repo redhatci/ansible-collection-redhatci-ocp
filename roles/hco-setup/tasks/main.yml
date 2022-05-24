@@ -1,11 +1,4 @@
 ---
-- name: "cnv-setup : deploy Container Native Virtualization"
-  include_tasks: deploy-cnv.yml
-  when:
-    - cnv_deploy_cnv| bool
-  tags:
-    - install
-
 - name: "cnv-setup : deploy Hyperconverged Operator"
   include_tasks: deploy-hco.yml
   when:
