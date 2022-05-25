@@ -3,7 +3,9 @@
   set_fact:
     test_network_function_repo: https://github.com/test-network-function/test-network-function
     test_network_function_project_name: test-network-function
-  when: test_network_function_version is version("v3.3.3", "<=")
+  when:
+    - test_network_function_version is version("v3.3.3", "<=")
+    - test_network_function_version != "HEAD"
 
 - name: "cnf-cert : Save images in local registry"
   include_tasks: save-images.yml
