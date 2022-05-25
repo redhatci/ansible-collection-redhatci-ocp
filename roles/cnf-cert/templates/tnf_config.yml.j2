@@ -25,9 +25,10 @@ targetPodLabels:
 {% endif %}
 {% endfor %}
 
+# currently not used
 certifiedcontainerinfo:
 
-certifiedoperatorinfo:
+checkDiscoveredContainerCertificationStatus: false
 
 acceptedKernelTaints:
 {% for item in accepted_kernel_taints %}
@@ -35,5 +36,8 @@ acceptedKernelTaints:
   - module: {{ item.module }}
 {% endif %}
 {% endfor %}
+
+# currently not used
+skipHelmChartList:
 
 ...

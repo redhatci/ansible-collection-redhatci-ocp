@@ -8,7 +8,14 @@
     - test_network_function_version != "HEAD"
 
 - name: "cnf-cert : Save images in local registry"
-  include_tasks: save-images.yml
+  include_role:
+    name: mirror_images
+  vars:
+    images:
+      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
+      - "quay.io/testnetworkfunction/debug-partner:latest"
+    local_registry: "{{ provisionhost_registry }}"
+    authfile: "{{ pullsecret_tmp_file }}"
   when:
     - dci_disconnected | default(false) | bool
     - provisionhost_registry|length
@@ -157,11 +164,9 @@
     src: templates/tnf_config.yml.j2
     dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/tnf_config.yml"
 
-- name: Set tnf_partner_registry variable
-  set_fact:
-    tnf_partner_registry: "{{ ( provisionhost_registry|length ) | ternary(provisionhost_registry, 'quay.io') }}"
-
 - name: Run the CNF Test Suite
+  vars:
+    tnf_partner_registry: "{{ ( provisionhost_registry|length ) | ternary(provisionhost_registry, 'quay.io') }}"
   shell: |
     set -x
 
@@ -169,7 +174,7 @@
 
     export TNF_NON_INTRUSIVE_ONLY={{ tnf_non_intrusive_only }}
     export TNF_RUN_CFD_TEST={{ tnf_run_cfd_test }}
-    export LOG_LEVEL={{ tnf_log_level }}
+    export TNF_LOG_LEVEL={{ tnf_log_level }}
     export TNF_PARTNER_REPO={{ tnf_partner_registry }}/testnetworkfunction
     export TNF_IMAGE={{ tnf_image }}
 
