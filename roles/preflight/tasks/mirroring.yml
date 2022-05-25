@@ -144,6 +144,7 @@
       vars:
         mcp_wait_retries: 30
         mcp_wait_delay: 10
+        mcp_reason: "ICSP update in preflight role"
 
 - name: Remove tmp dir
   file:
