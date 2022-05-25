@@ -3,7 +3,9 @@
 - name: Fail if tnf version is lower than v3.3.3
   fail:
     msg: sync-cnf-cert-and-preflight role cannot be executed with tnf versions lower than v3.3.3
-  when: test_network_function_version is version("v3.3.3", "<")
+  when:
+    - test_network_function_version is version("v3.3.3", "<")
+    - test_network_function_version != "HEAD"
 
 - name: Redefine variables if we are using an old tnf version
   set_fact:
