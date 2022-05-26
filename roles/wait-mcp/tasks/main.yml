@@ -77,7 +77,7 @@
               until:
                 - '"SchedulingDisabled" not in nodes.stdout'
                 - '"NotReady" not in nodes.stdout'
-              retries: 30
+              retries: 60
               delay: 10
               delegate_to: localhost
           when:
