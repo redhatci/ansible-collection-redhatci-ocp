@@ -72,7 +72,6 @@
       import_role:
         name: monitor_host
       vars:
-        ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ hostvars['assisted_installer']['host'] }}:{{ hostvars['assisted_installer']['port'] }}/api/assisted-install/v2"
         cluster_id: "{{ add_host_cluster_id }}"
         current_host: "{{ discovered_host_reply.json }}"
         waiting_termination_states:

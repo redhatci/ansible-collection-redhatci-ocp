@@ -120,3 +120,4 @@ image_service_host: "{{ host | default('ansible_fqdn') }}" # bastion -> image se
 use_local_mirror_registry: "{{ setup_registry_service | default(False) }}"
 
 config_file_path: /tmp/wip/config
+port: 8090
