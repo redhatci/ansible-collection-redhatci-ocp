@@ -36,7 +36,7 @@ spec:
     - image: "{{ assisted_service_image }}"
       name: service
       ports:
-      - hostPort: 8090
+      - hostPort: {{ port }}
       envFrom:
       - configMapRef:
           name: config

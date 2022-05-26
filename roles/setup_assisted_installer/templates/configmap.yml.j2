@@ -3,9 +3,9 @@ kind: ConfigMap
 metadata:
   name: config
 data:
-  ASSISTED_SERVICE_HOST: "{{ assisted_service_host }}:8090"
+  ASSISTED_SERVICE_HOST: "{{ assisted_service_host }}:{{ port }}"
   IMAGE_SERVICE_BASE_URL: http://{{ image_service_host }}:8888
-  SERVICE_BASE_URL: "http://{{ assisted_service_host }}:8090"
+  SERVICE_BASE_URL: "http://{{ assisted_service_host }}:{{ port }}"
   ASSISTED_SERVICE_SCHEME: http
   AUTH_TYPE: none
   DB_HOST: 127.0.0.1
