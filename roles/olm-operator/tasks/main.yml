@@ -1,15 +1,3 @@
-# Role to deploy an OLM-based operator
-#
-# Required arguments:
-#   operator: Name of the operator to install
-#   namespace: Namespace where the operator will be installed
-#
-# Optional arguments:
-#   source: CatalogSource where to pull operator from (default: redhat-operators)
-#   source_ns: Namespace where the CatalogSource is (default: openshift-marketplace)
-#   operator_group_spec: OperatorGroupSpec is the spec for an OperatorGroup resource (default: {}, i.e make operator available in all namespaces)
-#     Use: targetNamespaces: [] to define the list of namespaces where the operator should be targeting
-#
 ---
 - name: Assert all required fields are present
   assert:
@@ -91,4 +79,21 @@
     - "'status' in csv.resources[0]"
     - "'phase' in csv.resources[0].status"
     - csv.resources[0].status.phase == 'Succeeded' or csv.resources[0].status.phase == 'Present'
+
+- name: "Patch subscription according to install_approval - Default: Manual"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: "{{ operator }}"
+        namespace: "{{ namespace }}"
+      spec:
+        installPlanApproval: "{{ install_approval | default('Manual') }}"
+        channel: "{{ channel | default(omit) }}"
+        config:
+          resources: {}
+        name: "{{ operator }}"
+        source: "{{ source }}"
+        sourceNamespace: "{{ source_ns }}"
 ...
