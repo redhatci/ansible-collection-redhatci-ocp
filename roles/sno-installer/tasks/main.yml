@@ -67,9 +67,15 @@
 
 - block:
     - include_tasks: 59_cleanup_sno_vm.yml
+      loop: "{{ hosts }}"
+      loop_control:
+        loop_var: host
       tags: cleanup
 
     - include_tasks: 60_deploy_sno_vm.yml
+      loop: "{{ hosts }}"
+      loop_control:
+        loop_var: host
       tags: install
   when: |
     - (sno_install_type is undefined) or

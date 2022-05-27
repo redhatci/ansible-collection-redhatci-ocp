@@ -3,9 +3,12 @@
   block:
   - name: Undefine DNS entries to be redirected in SNO
     file:
-      path: /etc/NetworkManager/dnsmasq.d/{{ vm_net_name }}.conf
+      path: /etc/NetworkManager/dnsmasq.d/{{ network['name'] }}.conf
       state: absent
     become: yes
+    loop: "{{ networks }}"
+    loop_control:
+      loop_var: network
 
   - name: Verify if there are more config files in NM dnsmasq.d
     shell: >
