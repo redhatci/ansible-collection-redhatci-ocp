@@ -1,0 +1,31 @@
+---
+- name: get last commit id
+  command: git -C {{ item }} rev-parse HEAD  # noqa 305
+  register: last_commit_id
+  ignore_errors: true
+
+- name: get repo url
+  command: git -C {{ item }} config --get remote.origin.url
+  register: repo_url
+  when: last_commit_id.rc == 0
+
+# create the component the same way as in
+# dci-ansible/action_plugins/git.py
+- name: Create git repo component
+  dci_component:
+    name: "{{ last_commit_id.stdout }}"
+    canonical_project_name: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }} {{ last_commit_id.stdout[:7] }}"
+    team_id: "{{ job_info['job']['team_id'] }}"
+    topic_id: "{{ job_info['job']['topic_id'] }}"
+    type: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }}"
+    url: "{{ repo_url.stdout | regex_replace('^(.*)@(.*):(.*)', 'https://\\2/\\3') | regex_replace('^ssh://(.*)@(.*)', 'https://\\2') | regex_replace('[.]git$', '') }}/commit/{{ last_commit_id.stdout }}"
+    state: present
+  register: git_component
+  when: last_commit_id.rc == 0
+
+- name: 'Attach git component to the job'
+  dci_job_component:
+    component_id: "{{ git_component.component.id }}"
+    job_id: " {{ job_id }} "
+  when: last_commit_id.rc == 0
+...
