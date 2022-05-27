@@ -58,11 +58,11 @@
 
 - name: Create image cache file
   copy:
-    content: "{{ image_hashes | to_yaml }}"
+    content: "{{ image_hashes | to_nice_yaml }}"
     dest: "{{ image_hashes_path }}"
     mode: 0660
   delegate_to: localhost
-  when: image_hashes_path is file
+  when: image_hashes_path is not file
 
 - name: Update release_images with hashes
   when: get_release_images | bool
