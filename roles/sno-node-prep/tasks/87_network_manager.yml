@@ -4,13 +4,16 @@
     content: |
       address=/api.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
       address=/.apps.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
-      address=/{{ hostvars[groups['masters'][0]]['name'] }}.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
-    dest: /etc/NetworkManager/dnsmasq.d/{{ vm_net_name }}.conf
+      address=/{{ hosts[0]['host_name'] }}.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
+    dest: /etc/NetworkManager/dnsmasq.d/{{ network['name'] }}.conf
     owner: root
     group: root
     mode: u=rw,g=r,o=r
   become: yes
   tags: dnsredirect
+  loop: "{{ networks }}"
+  loop_control:
+    loop_var: network
 
 - name: Include dnsmasq in the DNS configuration of NetworkManager
   ini_file:
