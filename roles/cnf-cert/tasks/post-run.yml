@@ -5,20 +5,6 @@
 - name: Clean CNF Cert Suite resources
   block:
 
-  - name: Check if partner deployment exists
-    k8s_info:
-      api_version: v1
-      kind: Deployment
-      name: tnfpartner
-      namespace: default
-    register: partner_deployment
-
-  - name: Delete the partner deployment
-    shell: |
-      set -ex
-      {{ oc_tool_path }} delete deployment tnfpartner -n default
-    when: partner_deployment.resources|length > 0
-
   - name: Check if debug daemonset exists
     k8s_info:
       api_version: v1
@@ -33,12 +19,20 @@
       {{ oc_tool_path }} delete daemonset debug -n default
     when: debug_daemonset.resources|length > 0
 
+  - name: Check if tnf default namespace exists
+    k8s_info:
+      api_version: v1
+      kind: Namespace
+      name: tnf
+    register: tnf_namespace
+
   - name: Delete tnf namespace
     k8s:
       api_version: v1
       kind: Namespace
       name: tnf
       state: absent
+    when: tnf_namespace.resources|length > 0
 
   when: tnf_postrun_delete_resources|bool
 
