@@ -31,20 +31,20 @@
     - name: Get blocking virtual_media
       set_fact:
         blocking_virtual_media:  "{{ result.redfish_facts.virtual_media.entries
-          | flatten(levels=2)
-          | selectattr('ConnectedVia', 'defined') | list
-          | json_query('[?(
-              ConnectedVia == `URI`
-              && Image != null
-              && (
-                contains(MediaTypes, `CD`)
-                || contains(MediaTypes, `Floppy`)
-                || contains(MediaTypes, `USBStick`)
-                || contains(MediaTypes, `DVD`)
-              )
-            )]'
-          ) | from_yaml
-        }}"
+            | flatten(levels=2)
+            | selectattr('ConnectedVia', 'defined') | list
+            | json_query('[?(
+                ConnectedVia == `URI`
+                && Image != null
+                && (
+                  contains(MediaTypes, `CD`)
+                  || contains(MediaTypes, `Floppy`)
+                  || contains(MediaTypes, `USBStick`)
+                  || contains(MediaTypes, `DVD`)
+                )
+              )]'
+            ) | from_yaml
+          }}"
 
     - name: Attempting to eject blocking media
       community.general.redfish_command:

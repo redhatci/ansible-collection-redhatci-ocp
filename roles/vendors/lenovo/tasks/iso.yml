@@ -64,13 +64,13 @@
         method: PATCH
         body_format: json
         body: {
-        "Boot": {
-            "BootSourceOverrideEnabled": "Disabled",
-            "BootSourceOverrideMode": "UEFI",
-            "BootSourceOverrideTarget": "Hdd",
-            "UefiTargetBootSourceOverride": null
-            }
-        }
+          "Boot": {
+              "BootSourceOverrideEnabled": "Disabled",
+              "BootSourceOverrideMode": "UEFI",
+              "BootSourceOverrideTarget": "Hdd",
+              "UefiTargetBootSourceOverride": null
+              }
+          }
         status_code: [200, 204]
         force_basic_auth: yes
         validate_certs: no
@@ -89,13 +89,13 @@
         method: PATCH
         body_format: json
         body: {
-        "Boot": {
-            "BootSourceOverrideEnabled": "Once",
-            "BootSourceOverrideMode": "UEFI",
-            "BootSourceOverrideTarget": "UefiTarget",
-            "UefiTargetBootSourceOverride": "EXT1"
-            }
-        }
+          "Boot": {
+              "BootSourceOverrideEnabled": "Once",
+              "BootSourceOverrideMode": "UEFI",
+              "BootSourceOverrideTarget": "UefiTarget",
+              "UefiTargetBootSourceOverride": "EXT1"
+              }
+          }
         status_code: [200, 204]
         force_basic_auth: yes
         validate_certs: no

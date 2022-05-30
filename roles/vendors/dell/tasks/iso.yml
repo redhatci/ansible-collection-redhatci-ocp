@@ -22,9 +22,9 @@
   register: drac_version
 
 - name: Using iDRAC ISO method for 13G and below
-  include_tasks: dell_idrac.yml
+  include_tasks: ./iso_idrac.yml
   when: drac_version.stdout | int <= 13
 
 - name: Using iDRAC ISO method for 13G and below
-  include_tasks: dell_redfish.yml
+  include_tasks: ./iso_redfish.yml
   when: drac_version.stdout | int > 13
