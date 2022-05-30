@@ -1,2 +1,3 @@
 ---
 boot_iso_url: "{{ discovery_iso_server }}/{{ discovery_iso_name }}"
+secure_sushy_tools: "{{ secure | default(true) }}"

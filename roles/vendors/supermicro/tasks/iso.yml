@@ -14,14 +14,14 @@
     password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
 
 - block:
-    - import_tasks: virtual_media_mount_iso.yml
+    - import_tasks: ./virtual_media_mount_iso.yml
 
     - name: Set BootSourceOverrideTarget (UsbCd)
       set_fact:
         boot_source_override_target: UsbCd
 
   rescue:
-    - import_tasks: iso_config_mount_iso.yml
+    - import_tasks: ./iso_config_mount_iso.yml
 
     - name: Set BootSourceOverrideTarget (Cd)
       set_fact:

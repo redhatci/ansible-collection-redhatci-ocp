@@ -50,19 +50,19 @@
     - name: Get blocking virtual_media
       set_fact:
         blocking_virtual_media:  "{{ result.redfish_facts.virtual_media.entries
-          | flatten(levels=2)
-          | selectattr('ConnectedVia', 'defined') | list
-          | json_query('[?(
-              ConnectedVia == `URI`
-              && Image != null
-              && (
-                contains(MediaTypes, `CD`)
-                || contains(MediaTypes, `DVD`)
-                || contains(MediaTypes, `VCD-DVD`)
-              )
-            )]'
-          ) | from_yaml
-        }}"
+            | flatten(levels=2)
+            | selectattr('ConnectedVia', 'defined') | list
+            | json_query('[?(
+                ConnectedVia == `URI`
+                && Image != null
+                && (
+                  contains(MediaTypes, `CD`)
+                  || contains(MediaTypes, `DVD`)
+                  || contains(MediaTypes, `VCD-DVD`)
+                )
+              )]'
+            ) | from_yaml
+          }}"
 
     - debug: # noqa unnamed-task
         var: blocking_virtual_media

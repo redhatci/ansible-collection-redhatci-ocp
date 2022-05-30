@@ -7,38 +7,10 @@
   when: boot_iso_url is not defined
   delegate_to: bastion
 
-- include_tasks: dell.yml
-  when: hostvars[inventory_hostname]['vendor'] | lower == 'dell'
-  args:
-    apply:
-      delegate_to: bastion
-
-- include_tasks: hpe.yml
-  when: hostvars[inventory_hostname]['vendor'] | lower == 'hpe'
-  args:
-    apply:
-      delegate_to: bastion
-
-- include_tasks: supermicro/main.yml
-  when: hostvars[inventory_hostname]['vendor'] | lower == 'supermicro'
-  args:
-    apply:
-      delegate_to: bastion
-
-- include_tasks: lenovo.yml
-  when: hostvars[inventory_hostname]['vendor'] | lower == 'lenovo'
-  args:
-    apply:
-      delegate_to: bastion
-
-- include_tasks: kvm.yml
-  when: hostvars[inventory_hostname]['vendor'] | lower == 'kvm'
-  args:
-    apply:
-      delegate_to: bastion
-
-- include_tasks: pxe.yml
-  when: hostvars[inventory_hostname]['vendor'] | lower == 'pxe'
+- name: Boot ISO for "{{ hostvars[inventory_hostname]['vendor'] }}"
+  include_role: 
+    name: "vendors/{{ hostvars[inventory_hostname]['vendor'] | lower }}"
+    tasks_from: iso.yml
   args:
     apply:
       delegate_to: bastion
