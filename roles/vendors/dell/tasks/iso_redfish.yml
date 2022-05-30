@@ -1,11 +1,33 @@
 ---
-- name: DELL Power ON
+- name: DELL Power Off
   community.general.redfish_command:
     category: Systems
-    command: PowerOn
+    command: PowerGracefulShutdown
     baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
     username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
     password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+
+- block:
+    - name: Wait for machine to DELL Shutdown
+      community.general.redfish_info:
+        category: Systems
+        baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+        username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+      register: system_inventory  
+      until: (system_inventory |  json_query(filter_str) | length) == 0
+      retries: 10
+      delay: 30
+      vars:
+        filter_str: "redfish_facts.system.entries[] | [?PowerState == 'On']"
+  rescue:
+    - name: DELL Force Power Off
+      community.general.redfish_command:
+        category: Systems
+        command: PowerForceOff
+        baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
+        username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
+        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
 
 - block:
     - name: Set Dell OneTimeBoot VirtualCD (VCD-DVD)
@@ -98,7 +120,7 @@
 - name: DELL Restart system power gracefully
   community.general.redfish_command:
     category: Systems
-    command: PowerGracefulRestart
+    command: PowerOn
     baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
     username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
     password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
