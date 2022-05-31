@@ -6,27 +6,8 @@
     hosts: "{{ groups['masters'] + groups['workers'] | default([]) }}"
   when: hosts is not defined
 
-- name: Reboot dell
-  include_tasks: dell.yml
+- name: Boot from disk for "{{ hostvars[item]['vendor'] }}"
+  include_role: 
+    name: "vendors/{{ hostvars[item]['vendor'] | lower }}"
+    tasks_from: disk.yml
   loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] | lower == 'dell'
-
-- name: Reboot hpe
-  include_tasks: hpe.yml
-  loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] | lower == 'hpe'
-
-- name: Reboot lenovo
-  include_tasks: lenovo.yml
-  loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] | lower == 'lenovo'
-
-- name: Reboot kvm
-  include_tasks: kvm.yml
-  loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] | lower == 'kvm'
-
-- name: Reboot SuperMicro
-  include_tasks: supermicro.yml
-  loop: "{{ hosts }}"
-  when: hostvars[item]['vendor'] | lower == 'supermicro'
