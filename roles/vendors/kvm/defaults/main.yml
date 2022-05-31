@@ -1,3 +1,8 @@
 ---
 boot_iso_url: "{{ discovery_iso_server }}/{{ discovery_iso_name }}"
 secure_sushy_tools: "{{ secure | default(true) }}"
+bmc_address: "{{ hostvars[target_host]['bmc_address'] }}"
+bmc_user: "{{ hostvars[target_host]['bmc_user'] }}"
+bmc_password: "{{ hostvars[target_host]['bmc_password'] }}"
+base_bmc_address: "{{ secure_sushy_tools | bool | ternary('https', 'http') }}://{{ bmc_address }}"
+vm_name: "{{ target_host.startswith(cluster_name) | ternary(target_host, (cluster_name + '_' + target_host)) }}"

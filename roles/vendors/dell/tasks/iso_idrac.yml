@@ -3,9 +3,14 @@
   block:
     - name: Racadm container to mount and boot to discovery ISO
       containers.podman.podman_container:
-        name: "{{ hostvars[inventory_hostname]['bmc_address'] }}-rac-image"
+        name: "{{ bmc_address }}-rac-image"
         network: host
         image: quay.io/dphillip/racadm-image
         state: started
         rm: true
-        command: ["-r", "{{ hostvars[inventory_hostname]['bmc_address'] }}", "-u", "{{ hostvars[inventory_hostname]['bmc_user'] }}", "-p", "{{ hostvars[inventory_hostname]['bmc_password'] }}", "-i", "{{ boot_iso_url }}"]
+        command: [
+          "-r", "{{ bmc_address }}", 
+          "-u", "{{ bmc_user }}", 
+          "-p", "{{ bmc_password }}", 
+          "-i", "{{ boot_iso_url }}"
+        ]

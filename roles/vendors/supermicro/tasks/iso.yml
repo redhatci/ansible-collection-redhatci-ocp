@@ -9,9 +9,9 @@
   community.general.redfish_command:
     category: Systems
     command: PowerOn
-    baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
-    username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
 
 - block:
     - import_tasks: ./virtual_media_mount_iso.yml
@@ -30,9 +30,9 @@
 
 - name: Set Boot for the SuperMicro # noqa var-spacing # linter wrongly detects a var
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ bmc_address }}/redfish/v1/Systems/1"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: PATCH
     headers:
       content-type: application/json
@@ -45,9 +45,9 @@
 
 - name: Restart the SuperMicro
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ bmc_address }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     headers:
       content-type: application/json

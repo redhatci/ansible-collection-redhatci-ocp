@@ -1,8 +1,8 @@
 - name: Check if there is a ISO mounted on the SuperMicro
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/CD1"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: GET
     validate_certs: no
     force_basic_auth: yes
@@ -11,9 +11,9 @@
 
 - name: Unmount SuperMicro ISO
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.EjectMedia"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.EjectMedia"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     headers:
       content-type: application/json
@@ -27,9 +27,9 @@
 
 - name: Mount SuperMicro ISO
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.InsertMedia"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.InsertMedia"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     headers:
       content-type: application/json
