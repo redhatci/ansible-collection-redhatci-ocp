@@ -3,17 +3,17 @@
   community.general.redfish_command:
     category: Systems
     command: PowerOn
-    baseuri: "{{ hostvars[item]['bmc_address'] }}"
-    username: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
 
 - name: DELL Eject Virtual Media (if any)
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaEject
-    baseuri: "{{ hostvars[item]['bmc_address'] }}"
-    username: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     virtual_media:
       image_url: "{{ boot_iso_url }}"
     resource_id: iDRAC.Embedded.1
@@ -24,14 +24,14 @@
     category: Systems
     command: SetOneTimeBoot
     bootdevice: Hdd
-    baseuri: "{{ hostvars[item]['bmc_address'] }}"
-    username: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
 
 - name: DELL Restart system power gracefully
   community.general.redfish_command:
     category: Systems
     command: PowerGracefulRestart
-    baseuri: "{{ hostvars[item]['bmc_address'] }}"
-    username: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"

@@ -10,4 +10,6 @@
   include_role: 
     name: "vendors/{{ hostvars[item]['vendor'] | lower }}"
     tasks_from: disk.yml
+  vars:
+    target_host: "{{ item }}"
   loop: "{{ hosts }}"

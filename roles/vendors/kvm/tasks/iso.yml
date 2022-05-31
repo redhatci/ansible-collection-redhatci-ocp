@@ -3,16 +3,12 @@
 # Virtual Redfish BMC
 # https://docs.openstack.org/sushy-tools/latest/user/dynamic-emulator.html#uefi-boot
 #
-- name: set base url and vm_name
-  set_fact:
-    base_bmc_address: "{{ secure_sushy_tools | bool | ternary('https', 'http') }}://{{ hostvars[inventory_hostname]['bmc_address'] }}"
-    vm_name: "{{ inventory_hostname.startswith(cluster_name) | ternary(inventory_hostname, (cluster_name + '_' + inventory_hostname)) }}"
 
 - name: Identify System Manager
   uri:
     url: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
     validate_certs: no
@@ -29,14 +25,14 @@
 
 - name: KVM Set System UUID
   set_fact:
-    system_uuid: "{{ http_reply.json['@odata.id'] }}"
-    system_manager: "{{ http_reply.json.Links.ManagedBy[0]['@odata.id'] }}"
+    system_uuid_url: "{{ base_bmc_address }}/{{ http_reply.json['@odata.id'] }}"
+    system_manager_url: "{{ base_bmc_address }}/{{ http_reply.json.Links.ManagedBy[0]['@odata.id'] }}"
 
-- name: KVM Force Power Off System {{ inventory_hostname }}
+- name: KVM Force Power Off System {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_uuid }}/Actions/ComputerSystem.Reset"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_uuid_url }}/Actions/ComputerSystem.Reset"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: { "ResetType": "ForceOff" }
@@ -47,11 +43,11 @@
   register: redfish_poweroff
   ignore_errors: yes
 
-- name: KVM Eject Virtual Media (if any) {{ inventory_hostname }}
+- name: KVM Eject Virtual Media (if any) {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_manager }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_manager_url }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: {}
@@ -65,11 +61,11 @@
     var: redfish_reply
     verbosity: 1
 
-- name: KVM Insert Virtual Media {{ inventory_hostname }}
+- name: KVM Insert Virtual Media {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_manager }}/VirtualMedia/Cd/Actions/VirtualMedia.InsertMedia"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_manager_url }}/VirtualMedia/Cd/Actions/VirtualMedia.InsertMedia"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: { "Image": "{{ boot_iso_url }}", "Inserted": true }
@@ -87,11 +83,11 @@
     var: redfish_reply
     verbosity: 1
 
-- name: KVM Verify Virtual Media {{ inventory_hostname }}
+- name: KVM Verify Virtual Media {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_manager }}/VirtualMedia/Cd"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_manager_url }}/VirtualMedia/Cd"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
     validate_certs: no
@@ -103,11 +99,11 @@
     var: redfish_reply
     verbosity: 1
 
-- name: KVM Set OneTimeBoot Virtual Media {{ inventory_hostname }}
+- name: KVM Set OneTimeBoot Virtual Media {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_uuid }}"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_uuid_url }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: PATCH
     body_format: json
     body:
@@ -129,11 +125,11 @@
     var: redfish_reply
     verbosity: 1
 
-- name: KVM Verify System Power State {{ inventory_hostname }}
+- name: KVM Verify System Power State {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_uuid }}"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_uuid_url }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
     validate_certs: no
@@ -144,11 +140,11 @@
     var: redfish_reply
     verbosity: 1
 
-- name: KVM Force Restart System {{ inventory_hostname }}
+- name: KVM Force Restart System {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_uuid }}/Actions/ComputerSystem.Reset"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_uuid_url }}/Actions/ComputerSystem.Reset"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: { "ResetType": "ForceRestart" }
@@ -159,11 +155,11 @@
   register: redfish_restart
   when: redfish_reply.json.PowerState == "On"
 
-- name: KVM Force Power On System {{ inventory_hostname }}
+- name: KVM Force Power On System {{ target_host }}
   uri:
-    url: "{{ base_bmc_address }}{{ system_uuid }}/Actions/ComputerSystem.Reset"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "{{ system_uuid_url }}/Actions/ComputerSystem.Reset"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: { "ResetType": "ForceOn" }

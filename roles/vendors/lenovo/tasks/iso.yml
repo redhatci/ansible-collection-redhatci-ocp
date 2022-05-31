@@ -2,11 +2,11 @@
 - name: Mount Live ISO, Boot into Live ISO (Lenovo servers)
   block:
 
-    - name: Lenovo Power On the System {{ inventory_hostname }}
+    - name: Lenovo Power On the System {{ target_host }}
       uri:
-        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
-        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        url: "https://{{ bmc_address }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
         method: POST
         body_format: json
         body: {"ResetType": "On"}
@@ -20,11 +20,11 @@
         var: redfish_reply
         verbosity: 1
 
-    - name: Lenovo Eject Virtual Media {{ inventory_hostname }}
+    - name: Lenovo Eject Virtual Media {{ target_host }}
       uri:
-        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
-        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
         method: PATCH
         body_format: json
         body: {"Image": null, "Inserted": false}
@@ -38,11 +38,11 @@
         var: redfish_reply
         verbosity: 1
 
-    - name: Lenovo Insert Virtual Media {{ inventory_hostname }}
+    - name: Lenovo Insert Virtual Media {{ target_host }}
       uri:
-        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
-        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
         method: PATCH
         body_format: json
         body: {"Image":"{{ boot_iso_url }}", "Inserted": true}
@@ -56,11 +56,11 @@
         var: redfish_reply
         verbosity: 1
 
-    - name: Lenovo Set Boot from Hard Disk {{ inventory_hostname }}
+    - name: Lenovo Set Boot from Hard Disk {{ target_host }}
       uri:
-        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
-        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        url: "https://{{ bmc_address }}/redfish/v1/Systems/1"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
         method: PATCH
         body_format: json
         body: {
@@ -81,11 +81,11 @@
         var: redfish_reply
         verbosity: 1
 
-    - name: Lenovo Set Boot Once from Virtual Media {{ inventory_hostname }}
+    - name: Lenovo Set Boot Once from Virtual Media {{ target_host }}
       uri:
-        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
-        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        url: "https://{{ bmc_address }}/redfish/v1/Systems/1"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
         method: PATCH
         body_format: json
         body: {
@@ -106,11 +106,11 @@
         var: redfish_reply
         verbosity: 1
 
-    - name: Lenovo Restart the System {{ inventory_hostname }}
+    - name: Lenovo Restart the System {{ target_host }}
       uri:
-        url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
-        user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-        password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+        url: "https://{{ bmc_address }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
         method: POST
         body_format: json
         body: {"ResetType": "ForceRestart"}

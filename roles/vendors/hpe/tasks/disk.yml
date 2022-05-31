@@ -3,17 +3,17 @@
   community.general.redfish_command:
     category: Systems
     command: PowerOn
-    baseuri: "{{ hostvars[item]['bmc_address'] }}"
-    username: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
 
 - name: HPE Eject Virtual Media (if any)
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaEject
-    baseuri: "{{ hostvars[item]['bmc_address'] }}"
-    username: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     virtual_media:
       image_url: "{{ boot_iso_url }}"
     resource_id: 1
@@ -24,17 +24,17 @@
     category: Systems
     command: SetOneTimeBoot
     bootdevice: Hdd
-    baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
-    username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     resource_id: 1
 
 # ILO appears to use a custom url for Reset so we cannot use the redfish module here
 - name: HPE Restart system power forcefully
   uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
-    user: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
+    url: "https://{{ bmc_address }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     headers:
       content-type: application/json
