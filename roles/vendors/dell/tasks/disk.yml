@@ -27,5 +27,5 @@
   when: drac_version.stdout | int <= 13
 
 - name: "Found iDrac {{ drac_version.stdout }} | Using RedFish ISO method" 
-  include_tasks: dell_redfish.yml
+  include_tasks: ./disk_redfish.yml
   when: drac_version.stdout | int > 13
