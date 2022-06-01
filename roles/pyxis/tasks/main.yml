@@ -1,12 +1,7 @@
 ---
-- name: Verify that pyxis identifier is provided
-  fail:
-    msg: Impossible to submit preflight results to pyxis. Please provide pyxis_identifier.
-  when: operator.pyxis_identifier is undefined
-
 - name: Retrieve results of the preflight tests
   vars:
-    preflight_prefix: "preflight_{{ operator.name }}_{{ operator.version }}"
+    preflight_prefix: "preflight_operator_{{ operator.name }}_{{ operator.version }}"
     preflight_results_file: "{{ job_logs.path }}/{{ preflight_prefix }}_results.json"
   set_fact:
     preflight_output: "{{ lookup('file', preflight_results_file) | from_json }}"
@@ -19,7 +14,7 @@
 
 - name: Submit to Pyxis
   uri:
-    url: "{{ pyxis_url }}/{{ operator.pyxis_identifier }}/test-results"
+    url: "{{ pyxis_url }}/{{ operator.pyxis_operator_identifier }}/test-results"
     method: POST
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"
