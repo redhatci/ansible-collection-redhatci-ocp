@@ -1,0 +1,56 @@
+---
+- name: Download kubeconfig
+  get_url:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/downloads/credentials?file_name=kubeconfig"
+    dest: "{{ kubeconfig_path }}"
+    mode: 0664
+
+- name: Perform basic checks and login
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  block:
+      # The retries is becuase sometimes (although rarely) the cluster isn't quite ready for requests
+    - name: Perform simple connectivity check with oc (wait up to 5 mins) 
+      shell:
+        cmd: "oc explain pods"
+      register: res
+      until: res.rc == 0
+      retries: 5
+      delay: 60
+
+    - name: Check status of cluster operators
+      block:
+        - name: Wait up to 20 mins for cluster to become functional
+          shell:
+            cmd: oc wait clusteroperators --all --for=condition=Available --timeout=20m
+      rescue:
+        - name: Get better info for failure message
+          shell: oc get clusteroperators
+          register: co_result
+
+        - name: Present failing clusteroperators command output
+          fail: 
+            msg: |
+              Cluster has not come up correctly:
+                {{ co_result.stdout }}
+
+    - name: Get credentials
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/credentials"
+        return_content: yes
+      register: credentials
+
+    - name: Login to add token to kubeconfig
+      shell:
+        cmd: "oc login -u {{ credentials.json.username }} -p '{{ credentials.json.password }}'"
+
+- name: Save credentials to file
+  copy:
+    content: "{{ credentials.json | to_yaml }}"
+    dest: "{{ dest_dir }}/{{ kubeadmin_vault_name }}"
+    mode: 0600
+
+- name: Save credentials to vault
+  shell:
+    cmd: "ansible-vault encrypt --vault-password-file {{ kubeadmin_vault_password_file_path }} {{ dest_dir }}/{{ kubeadmin_vault_name }}"
+  when: (kubeadmin_vault_password_file_path is defined) and (kubeadmin_vault_password_file_path is file)
