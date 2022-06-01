@@ -1,13 +1,13 @@
 {
   "_links": {
     "cert_project": {
-      "href": "{{ operator.pyxis_identifier }}"
+      "href": "{{ operator.pyxis_operator_identifier }}"
     },
     "container_image": {
       "href": "{{ operator.bundle_image }}"
     }
   },
-  "cert_project": "{{ operator.pyxis_identifier }}",
+  "cert_project": "{{ operator.pyxis_operator_identifier }}",
   "certification_hash": "{{ preflight_output.certification_hash }}",
   "image": "{{ operator.bundle_image }}",
   "operator_package_name": "{{ operator.name }}",
