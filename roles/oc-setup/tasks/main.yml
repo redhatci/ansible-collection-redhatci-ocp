@@ -12,7 +12,7 @@
     name: "{{ hostvars[item].name }}"
   register: node
   until: "'resources' in node and node.resources != []"
-  retries: 10
+  retries: 30
   delay: 30
   with_items: "{{ groups['masters'] + groups['workers'] }}"
   tags:
