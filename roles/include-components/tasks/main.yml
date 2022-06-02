@@ -1,9 +1,9 @@
 ---
 - include_tasks: track_git_repo.yml
-  loop: "{{ gits_to_components }}"
+  loop: "{{ gits_to_components | flatten }}"
 
 - include_tasks: track_rpm.yml
-  loop: "{{ rpms_to_components }}"
+  loop: "{{ rpms_to_components | flatten }}"
   when: |
     item is not in
     ( gits_to_components |
