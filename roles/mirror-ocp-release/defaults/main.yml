@@ -7,8 +7,8 @@ owner: "{{ ansible_user_uid }}"
 group: "{{ ansible_user_gid }}"
 force: false
 artifacts:
-  - opm-linux.tar.gz
-  - openshift-client-linux.tar.gz
+  - "opm-linux-{{ version }}.tar.gz"
+  - "openshift-client-linux-{{ version }}.tar.gz"
 mirror_artifacts: true
 unpack_artifacts: true
 mirror_disk_images: true
