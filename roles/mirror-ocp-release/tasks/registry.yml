@@ -10,7 +10,7 @@
 - name: "Mirror release images to local registry"
   command: >
     {{ dir }}/oc adm release mirror
-    --registry-config={{ dci_pullsecret_file }}
+    --registry-config={{ auths_file }}
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}:{{ version }}
     --to={{ registry_url | urlsplit('netloc') | quote }}{{ registry_url | urlsplit('path') | quote }}

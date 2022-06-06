@@ -9,6 +9,9 @@
 #   * version: An OpenShift version number e.g. 4.5.21
 #   * cache_dir: Base directory that will hold the OCP version binaries and OS
 #     images
+#   * release_url: The base URL where the release artifacts are stored
+#   * auths_file: Path to the file containing all authentications needed for
+#     container registries e.g. quay.io
 #   * force (default False): If passed as true, the role will re-download all
 #     the OCP release resources
 #   * mirror_artifacts (default True): Download tarball artifacts from the OCP
@@ -39,6 +42,18 @@
       - cache_dir | string
       - version | string
       - release_url | string
+      - auths_file is defined
+
+- name: "Check if authentication file exists"
+  stat:
+    path: "{{ auths_file }}"
+    get_checksum: false
+  register: auths_file_check
+
+- name: "Validate authentication file is present"
+  assert:
+    that:
+      - auths_file_check.stat.isreg | bool
 
 - name: "Validate optional webserver_url variable"
   assert:
@@ -85,6 +100,11 @@
 
 - name: "Unpack release artifacts"
   include_tasks: unpack.yml
+  vars:
+    dir: "{{ cache_dir }}/{{ version }}"
+
+- name: "Extract installer"
+  include_tasks: installer.yml
   vars:
     dir: "{{ cache_dir }}/{{ version }}"
 

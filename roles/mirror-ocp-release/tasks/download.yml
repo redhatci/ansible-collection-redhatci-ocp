@@ -17,12 +17,10 @@
   vars:
     uri: "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/{{ release_digest.stdout | replace(':', '=') }}/signature-1"
 
-# We download the installer regardless to capture the release data facts in
-# facts.yml
-- name: "Download installer"
+- name: "Download client tools"
   include_tasks: fetch.yml
   vars:
-    uri: "{{ release_url | regex_replace('\\/$', '') }}/openshift-install-linux.tar.gz"
+    uri: "{{ release_url | regex_replace('\\/$', '') }}/openshift-client-linux-{{ version }}.tar.gz"
 
 - name: "Download extra release artifacts"
   include_tasks: fetch.yml
