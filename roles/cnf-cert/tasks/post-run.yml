@@ -1,12 +1,11 @@
 ---
-
 # Deleting resources created by the CNF Cert Suite to support the execution
 # Namespace not deleted here, even if being the same used for cnf-cert. To be deleted in partner hooks
 - name: Clean CNF Cert Suite resources
   block:
 
   - name: Check if debug daemonset exists
-    k8s_info:
+    community.kubernetes.k8s_info:
       api_version: v1
       kind: DaemonSet
       name: debug
@@ -20,14 +19,14 @@
     when: debug_daemonset.resources|length > 0
 
   - name: Check if tnf default namespace exists
-    k8s_info:
+    community.kubernetes.k8s_info:
       api_version: v1
       kind: Namespace
       name: tnf
     register: tnf_namespace
 
   - name: Delete tnf namespace
-    k8s:
+    community.kubernetes.k8s:
       api_version: v1
       kind: Namespace
       name: tnf

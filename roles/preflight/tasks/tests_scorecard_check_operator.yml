@@ -52,7 +52,7 @@
     scorecard_config_path: "{{ scorecard_artifacts }}/scorecard-test-config.yaml"
 
 - name: Create scorecard-testing namespace
-  k8s:
+  community.kubernetes.k8s:
     name: scorecard-testing
     api_version: v1
     kind: Namespace
@@ -113,7 +113,7 @@
     dest: "{{ job_logs.path }}/{{ scorecard_prefix }}_suite_olm.json"
 
 - name: Delete scorecard-testing namespace
-  k8s:
+  community.kubernetes.k8s:
     name: scorecard-testing
     api_version: v1
     kind: Namespace
