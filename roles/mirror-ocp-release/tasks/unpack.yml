@@ -1,17 +1,15 @@
 ---
-# We unpack the installer regardless to capture the release data facts in
-# facts.yml
-- name: "Check if installer has been unpacked"
+- name: "Check if OpenShift client tools have been unpacked"
   stat:
-    path: "{{ dir }}/openshift-install"
+    path: "{{ dir }}/oc"
     get_checksum: false
   register: unpacked
   when:
     - not force  # we don't care to stat files if we're forcing
 
-- name: "Unarchive installer tarball"
+- name: "Unarchive client tools tarball"
   unarchive:
-    src: "{{ dir }}/openshift-install-linux.tar.gz"
+    src: "{{ dir }}/openshift-client-linux-{{ version }}.tar.gz"
     dest: "{{ dir }}"
     owner: "{{ owner }}"
     group: "{{ group }}"
