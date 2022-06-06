@@ -68,7 +68,6 @@
       - registry_url is defined
       - registry_url | string
       - (registry_url | urlsplit('scheme')) == 'docker'
-      - pull_secrets is defined
   when:
     - mirror_container_images | bool
 
