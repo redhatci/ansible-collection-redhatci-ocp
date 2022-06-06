@@ -20,17 +20,6 @@
     kind: Namespace
     state: present
 
-- name: Set pyxis auth and submission for check operator
-  vars:
-    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-  set_fact:
-    pyxis_auth_operator: >-
-      --certification-project-id {{ operator.pyxis_operator_identifier }}
-      --pyxis-api-token {{ pyxis_apikey }}
-      --submit
-  when: operator.pyxis_operator_identifier is defined
-  no_log: true
-
 - name: "Run preflight check operator tests for {{ operator.name }}"
   environment:
     - OPENSHIFT_AUTH: "{{ partner_creds }}"
@@ -71,10 +60,6 @@
   with_fileglob:
     - "{{ preflight_operator_artifacts.path }}/*"
 
-- name: Unset pyxis auth to not reuse by following operators
-  set_fact:
-    pyxis_auth_operator: ""
-
 - name: Remove tmp dir
   file:
     path: "{{ preflight_operator_artifacts.path }}"
@@ -100,4 +85,9 @@
   fail:
     msg: "results-junit file is absent, it seems like the tests failed: {{ preflight_junit }}"
   when: not preflight_junit_exists.stat.exists
+
+- name: "Submit the results to Pyxis for {{ operator.name }}"
+  include_role:
+    name: pyxis
+  when: operator.pyxis_operator_identifier is defined
 ...
