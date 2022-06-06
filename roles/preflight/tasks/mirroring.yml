@@ -24,7 +24,7 @@
 
 - name: "Define catalog tag"
   set_fact:
-      index_tag: "{{ ansible_date_time.iso8601_basic }}"
+    index_tag: "{{ ansible_date_time.iso8601_basic }}"
 
 - name: Generate catalog path
   set_fact:
@@ -96,7 +96,6 @@
 
 - name: Manage imageContentSourcePolicy update
   block:
-
     - name: "Get catalog SHA256"
       shell:
         cmd: |
@@ -135,7 +134,7 @@
       loop: "{{ preflight_images }}"
 
     - name: Apply Image Content Source Policy
-      k8s:
+      community.kubernetes.k8s:
         definition: "{{ lookup('file', preflight_prerun_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
 
     - name: Wait for MCP status
@@ -150,4 +149,5 @@
   file:
     path: "{{ preflight_prerun_tmp_dir.path }}"
     state: absent
+
 ...
