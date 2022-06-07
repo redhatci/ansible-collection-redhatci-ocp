@@ -16,7 +16,7 @@
   when: operator.pyxis_container_identifier is defined
   no_log: true
 
-- name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
+- name: "Run preflight check container on operator image for {{ current_operator_image }} with preflight binary"
   shell: >
     cd {{ preflight_container_artifacts.path }};
     {{ preflight_docker_config_env | default('') }}
@@ -30,8 +30,6 @@
     {{ preflight_podman_auth_for_binary | default('') }}
     {{ pyxis_auth_container | default('') }}
   register: preflight_container_output
-  # Compared to GA, a non-0 exit code is only returned on preflight issues and not check failures
-  ignore_errors: true
   no_log: true
 
 - name: Upload logs for preflight check container into DCI
@@ -52,4 +50,5 @@
   file:
     path: "{{ preflight_container_artifacts.path }}"
     state: absent
+
 ...
