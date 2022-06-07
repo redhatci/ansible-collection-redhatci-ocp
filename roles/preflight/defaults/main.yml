@@ -3,7 +3,6 @@
 # preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.1/preflight-linux-amd64
 # If empty, podman image preflight_image would be used for both
 # check container and check operator.
-# Preflight 1.0.8 requires to use podman image everywhere.
 # Preflight 1.2.1 requires to use binary for check container
 # because some container tests fail.
 # The next Preflight release will require to use podman run again.

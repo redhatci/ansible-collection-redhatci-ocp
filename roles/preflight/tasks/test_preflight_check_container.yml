@@ -1,5 +1,4 @@
 ---
-# Preflight 1.0.8 requires to use podman run.
 # Preflight 1.2.1 requires to use binary because some container tests fail.
 # The next Preflight release will require to use podman run again.
 - name: "Run preflight check container on operator images for {{ operator.name }} with podman"
