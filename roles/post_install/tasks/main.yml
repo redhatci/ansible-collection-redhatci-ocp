@@ -12,7 +12,7 @@
       # The retries is becuase sometimes (although rarely) the cluster isn't quite ready for requests
     - name: Perform simple connectivity check with oc (wait up to 5 mins) 
       shell:
-        cmd: "oc explain pods"
+        cmd: "oc get clusterversion"
       register: res
       until: res.rc == 0
       retries: 5
