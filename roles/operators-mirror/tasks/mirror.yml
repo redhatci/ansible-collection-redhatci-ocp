@@ -13,7 +13,7 @@
   retries: 5
   delay: 5
   until:
-    - index_sha is not failed
+    - index_sha.stdout | regex_search('^sha')
 
 - name: "Create a tmp directory for the index mapping"
   tempfile:
