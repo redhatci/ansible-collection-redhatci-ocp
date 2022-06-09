@@ -1,0 +1,19 @@
+{
+  "_links": {
+    "cert_project": {
+      "href": "{{ operator.pyxis_operator_identifier }}"
+    },
+    "container_image": {
+      "href": "{{ operator.bundle_image }}"
+    }
+  },
+  "cert_project": "{{ operator.pyxis_operator_identifier }}",
+  "certification_hash": "{{ preflight_output.certification_hash }}",
+  "content": "{{ preflight_artifact | b64encode }}",
+  "file_size": {{ artifact_info.stat.size | int }},
+  "content_type": "text/plain",
+  "filename": "preflight.log",
+  "operator_package_name": "{{ operator.name }}",
+  "org_id": 0,
+  "version": "{{ operator.version }}"
+}
