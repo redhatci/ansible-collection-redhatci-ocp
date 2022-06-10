@@ -30,7 +30,9 @@
     {{ preflight_podman_auth_for_binary | default('') }}
     {{ pyxis_auth_container | default('') }}
   register: preflight_container_output
-  no_log: true
+  # do not display logs
+  # if preflight invocation contains --submit option
+  no_log: "{{ pyxis_auth_container is defined and pyxis_auth_container | length > 0 }}"
 
 - name: Upload logs for preflight check container into DCI
   vars:
