@@ -61,14 +61,6 @@
       Current value: {{ hostvars[item]['mac'] }}
   loop: "{{ groups['nodes'] }}"
 
-- name: Assert that all values of 'vendor' are supported
-  assert:
-    that:
-      - (hostvars[item]['vendor'] | lower) is in supported_vendor_values
-    quiet: true
-    fail_msg: "Node {{ item }} does not have a supported value for 'vendor'"
-  loop: "{{ groups['nodes'] }}"
-
 - name: Assert that all values of 'role' are supported
   assert:
     that:
