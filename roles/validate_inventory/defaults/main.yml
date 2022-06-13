@@ -16,6 +16,7 @@ supported_vendor_values:
   - lenovo
   - kvm
   - supermicro
+allow_custom_vendor: False
 
 ai_version: "{{ hostvars.assisted_installer.ai_version | default('v2.1.1') }}"
 ai_version_number: "{{ ai_version | regex_replace('v(\\d+\\.\\d+\\.\\d+)', '\\1') }}"

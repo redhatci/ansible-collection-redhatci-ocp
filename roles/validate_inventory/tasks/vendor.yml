@@ -1,0 +1,19 @@
+
+- name: Assert that all values of 'vendor' are supported
+  assert:
+    that:
+      - (hostvars[item]['vendor'] | lower) is in supported_vendor_values
+    quiet: true
+    fail_msg: "Node {{ item }} does not have a supported value for 'vendor'"
+  when: not allow_custom_vendor | bool
+  loop: "{{ groups['nodes'] }}"
+
+- name: "Check vendors role exists"
+  include_role: 
+    name: "vendors/{{ hostvars[item]['vendor'] | lower }}"
+    tasks_from: exists.yml
+    allow_duplicates: true
+  loop: "{{ groups['nodes'] }}"
+  args:
+    apply:
+      delegate_to: bastion

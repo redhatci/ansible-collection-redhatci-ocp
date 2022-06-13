@@ -1,0 +1,3 @@
+- debug: # noqa unnamed-task
+    msg: "SuperMicro vendor role exists"
+    verbosity: 1
