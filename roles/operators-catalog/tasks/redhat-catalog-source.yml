@@ -1,6 +1,6 @@
 ---
 - name: Create CatalogSource for Red Hat operators
-  k8s:
+  community.kubernetes.k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1
       kind: CatalogSource
