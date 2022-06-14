@@ -3,16 +3,39 @@
   vars:
     preflight_prefix: "preflight_operator_{{ operator.name }}_{{ operator.version }}"
     preflight_results_file: "{{ job_logs.path }}/{{ preflight_prefix }}_results.json"
+    preflight_log_file: "{{ job_logs.path }}/{{ preflight_prefix }}_preflight.log"
   set_fact:
     preflight_output: "{{ lookup('file', preflight_results_file) | from_json }}"
+    preflight_artifact: "{{ lookup('file', preflight_log_file) | to_json }}"
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-  no_log: true
 
-- name: Print JSON to be submitted
+- name: Get info of artifact file
+  stat:
+    path: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_{{ operator.version }}_preflight.log"
+  register: artifact_info
+
+- name: Print Test JSON to be submitted
   debug:
     msg: "{{ lookup('template', 'templates/test_results.json.j2') }}"
 
-- name: Submit to Pyxis
+- name: Print Artifact Info to be submitted
+  debug:
+    msg: "{{ lookup('template', 'templates/artifact_info.json.j2') }}"
+
+- name: Publishing artifact to Pyxis
+  uri:
+    url: "{{ pyxis_url }}/{{ operator.pyxis_operator_identifier }}/artifacts"
+    method: POST
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    body: "{{ lookup('template', 'templates/artifact_info.json.j2') }}"
+    status_code: 201
+    timeout: 120
+  no_log: true
+
+
+- name: Submit Test result to Pyxis
   uri:
     url: "{{ pyxis_url }}/{{ operator.pyxis_operator_identifier }}/test-results"
     method: POST
@@ -56,4 +79,5 @@
   fail:
     msg: "Pyxis submission probably failed, the last submission was done {{ time_diff }} min ago"
   when: time_diff | int >= 5
+
 ...
