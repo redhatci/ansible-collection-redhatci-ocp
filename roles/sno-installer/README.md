@@ -85,8 +85,8 @@ Note: This applies to DCI deployments only
 
 - Same commands and DCI tools are used. See main DCI documentation [To prepare the jumpbox](https://github.com/redhat-cip/dci-openshift-agent/blob/master/README.md#installation-of-dci-jumpbox)
 - Examples of SNO inventories can be found in:
-  * [SNO Virtual](https://github.com/redhat-cip/dci-openshift-agent/blob/master/roles/sno-node-prep/tests/inventory-libvirt)
-  * [SNO Baremetal](https://github.com/redhat-cip/dci-openshift-agent/blob/master/roles/sno-node-prep/tests/inventory-baremetal)
+  * [SNO Virtual](https://github.com/redhat-cip/dci-openshift-agent/blob/master/samples/sno_on_libvirt/examples/hosts-libvirt)
+  * [SNO Baremetal](https://github.com/redhat-cip/dci-openshift-agent/blob/master/samples/sno_on_libvirt/examples/hosts-baremetal)
 
 - Review the doc to [Start the DCI agent](https://github.com/redhat-cip/dci-openshift-agent/blob/master/README.md#starting-the-dci-ocp-agent)
 

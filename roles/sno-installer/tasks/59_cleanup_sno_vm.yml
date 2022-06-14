@@ -29,7 +29,7 @@
   with_items:
     - "{{ running_vms.list_vms }}"
     - "{{ paused_vms.list_vms }}"
-  when: item is search(vm_name)
+  when: item is search(host['name'])
   become: yes
   tags: cleanup
 
@@ -38,13 +38,13 @@
     name: "{{ item }}"
     command: undefine
   with_items: "{{ all_vms.list_vms }}"
-  when: item is search(vm_name)
+  when: item is search(host['name'])
   become: yes
   tags: cleanup
 
 - name: Delete old SNO VMs Storage
   file:
-    path: "{{ default_libvirt_pool_dir }}/{{ vm_name }}.qcow2"
+    path: "{{ default_libvirt_pool_dir }}/{{ host['name'] }}.qcow2"
     state: absent
   become: yes
   tags: cleanup

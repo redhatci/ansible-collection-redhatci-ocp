@@ -19,16 +19,18 @@
   shell: |
     virt-install \
     --connect qemu:///system \
-    -n "{{ vm_name }}" \
-    -r "{{ vm_ram_mb }}" \
-    --vcpus "{{ vm_vcpu }}" \
+    -n "{{ host['name'] }}" \
+    -r "{{ host['memory'] }}" \
+    --vcpus "{{ host['vcpus'] }}" \
     --os-variant "rhel8.4" \
     --import \
-    --network network={{ vm_net_name }},mac={{ vm_nic_mac }} \
+    {% for net in host['networks'] %}
+    --network network={{ net['name'] }},mac={{ net['mac'] }} \
+    {% endfor %}
     --graphics none \
     --events on_reboot=restart \
     --cdrom "{{ embeddediso }}" \
-    --disk pool={{ vm_pool_name }},size={{ vm_disk_gb }} \
+    --disk pool={{ vm_pool_name }},size={{ host['disk_gb'] }} \
     --boot hd,cdrom \
     --noautoconsole \
     --wait -1

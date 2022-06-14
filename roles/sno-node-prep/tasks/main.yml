@@ -37,6 +37,9 @@
 - name: "Network and Storage for Virtual SNO"
   block:
     - include_tasks: 70_cleanup_libvirt_network.yml
+      loop: "{{ networks }}"
+      loop_control:
+        loop_var: network
       tags: cleanup
 
     - include_tasks: 71_cleanup_dns_entries.yml
@@ -49,6 +52,9 @@
       tags: storagepool
 
     - include_tasks: 85_libvirt_network.yml
+      loop: "{{ networks }}"
+      loop_control:
+        loop_var: network
       tags: virtnetwork
 
     - include_tasks: 87_network_manager.yml
