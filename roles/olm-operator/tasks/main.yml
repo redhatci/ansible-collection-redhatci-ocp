@@ -7,7 +7,7 @@
       - source | string
 
 - name: Create Namespace for OLM operator
-  k8s:
+  community.kubernetes.k8s:
     definition:
       apiVersion: v1
       kind: Namespace

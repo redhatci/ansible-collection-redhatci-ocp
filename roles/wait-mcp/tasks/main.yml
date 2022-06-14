@@ -7,7 +7,7 @@
         seconds: 60
 
     - name: Get Machine config pools status
-      k8s_info:
+      community.kubernetes.k8s_info:
         api_version: machineconfiguration.openshift.io/v1
         kind: MachineConfigPool
         kubeconfig: "{{ kubeconfig_path }}"

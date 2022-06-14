@@ -22,7 +22,7 @@
       - spec is mapping
 
 - name: Deploy CR
-  k8s:
+  community.kubernetes.k8s:
     definition:
       apiVersion: "{{ api_version }}"
       kind: "{{ kind }}"

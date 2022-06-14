@@ -9,7 +9,7 @@
   changed_when: false
 
 - name: install hco
-  k8s:
+  community.kubernetes.k8s:
     definition:
       apiVersion: "hco.kubevirt.io/{{ api_version | default('v1beta1') }}"
       kind: HyperConverged
@@ -39,7 +39,7 @@
   until: result is not failed
 
 - name: test_ Check for hyperconverged operator
-  k8s_info:
+  community.kubernetes.k8s_info:
     namespace: "{{ cnv_ns }}"
     kind: pods
     label_selectors:

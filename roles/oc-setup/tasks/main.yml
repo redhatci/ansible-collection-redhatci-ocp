@@ -5,7 +5,7 @@
     - install
 
 - name: "test_ oc-setup : Check inventory to match ocp cluster config"
-  k8s_info:
+  community.kubernetes.k8s_info:
     kubeconfig: "{{ kubeconfig_path }}"
     api_version: v1
     kind: node

@@ -23,11 +23,11 @@
 ###
 
 - name: "Create the test VirtualMachine"
-  k8s:
+  community.kubernetes.k8s:
     definition: "{{ lookup('template', cnv_vm_yaml) }}"
 
 - name: "test_ Create the test VirtualMachineInstance"
-  k8s:
+  community.kubernetes.k8s:
     state: present
     definition:
       apiVersion: kubevirt.io/v1alpha3
@@ -39,7 +39,7 @@
         running: true
 
 - name: "test_ Get VMI status"
-  k8s_info:
+  community.kubernetes.k8s_info:
     api: kubevirt.io/v1alpha3
     kind: VirtualMachineInstance
     name: vm-cirros
@@ -50,7 +50,7 @@
   until: vmi_test.resources[0].status.phase == "Running"
 
 - name: "Stopping the test VMI"
-  k8s:
+  community.kubernetes.k8s:
     definition:
       kind: VirtualMachine
       apiVersion: kubevirt.io/v1alpha3
@@ -61,7 +61,7 @@
         running: false
 
 - name: "Deleting the Cirros VMI"
-  k8s:
+  community.kubernetes.k8s:
     state: absent
     definition:
       apiVersion: kubevirt.io/v1alpha3
