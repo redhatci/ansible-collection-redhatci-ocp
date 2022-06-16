@@ -1,0 +1,5 @@
+---
+- name: "Delete tmp tool directory"
+  file:
+    state: absent
+    path: "{{ cv_tool_dir.path }}"
