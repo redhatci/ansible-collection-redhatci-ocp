@@ -1,6 +1,4 @@
-
 ---
-
 - name: Validate we have all the pieces
   assert:
     that:
@@ -9,10 +7,16 @@
     fail_msg: "Missing required parameters/variables"
     success_msg: "All required parameters/variables are defined"
 
+- name: "Get tools"
+  include_tasks: get-tools.yml
+
+- name: "Mirror chart images"
+  include_tasks: mirror-chart-images.yml
+  when: dci_disconnected | default(false) | bool
+
 - name: "Set Logs path"
   set_fact:
     logs_dir: "{{ job_logs.path | default ('/tmp')}}"
 
 - name: Run tests
   include_tasks: tests.yml
-...
