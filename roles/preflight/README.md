@@ -56,13 +56,13 @@ pyxis\_operator\_identifier        | undefined                                  
   # List of operators to certify,
   # you could provide many operators at once.
   preflight_operators_to_certify:
-  - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
-  # Mandatory for the connected environments.
-  index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
-  # Optional; provide it when you need to submit test results.
-  # It's an id of your Container Image Project
-  # https://connect.redhat.com/projects/my_nice_container_id
-  pyxis_container_identifier: "my_nice_container_id"
+    - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
+      # Mandatory for the connected environments.
+      index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
+      # Optional; provide it when you need to submit test results.
+      # It's an id of your Container Image Project
+      # https://connect.redhat.com/projects/my_nice_container_id
+      pyxis_container_identifier: "my_nice_container_id"
 
   # Optional; provide it when you need to submit test results.
   # This token is shared between all your projects.
@@ -94,13 +94,12 @@ pyxis\_operator\_identifier        | undefined                                  
   # List of operators to certify,
   # you could provide many operators at once.
   preflight_operators_to_certify:
-  # In disconnected environments provide a digest (SHA) and not a tag.
-  - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
-
-  # Optional, provide it when you need to submit test results.
-  # It's an id of your Container Image Project
-  # https://connect.redhat.com/projects/my_nice_container_id
-  pyxis_container_identifier: "my_nice_container_id"
+      # In disconnected environments provide a digest (SHA) and not a tag.
+    - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
+      # Optional, provide it when you need to submit test results.
+      # It's an id of your Container Image Project
+      # https://connect.redhat.com/projects/my_nice_container_id
+      pyxis_container_identifier: "my_nice_container_id"
 
   # Optional; provide it when you need to submit test results.
   # This token is shared between all your projects.
