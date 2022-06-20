@@ -33,14 +33,24 @@
             {{ item.local }}:{{ item.local_tag }}
       loop: "{{ ocpmetal_images }}"
 
-    - name: Mirror remote registry to local
+    - name: Mirror release image to local (x86_64)
       command:
         cmd: >
-          /usr/local/bin/oc adm release mirror
+          /usr/local/bin/oc adm release mirror 
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
             --from="{{ release_image_item.remote | quote }}"
             --to-release-image="{{ release_image_item.local | quote }}:{{ release_image_item.local_tag | quote }}"
             --to="{{ release_image_item.local | quote }}"
+
+    - name: Mirror release image to local (arm64)
+      command:
+        cmd: >
+          /usr/local/bin/oc adm release mirror
+            -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
+            --from="{{ release_image_item_arm.remote | quote }}"
+            --to-release-image="{{ release_image_item_arm.local | quote }}:{{ release_image_item_arm.local_tag | quote }}"
+            --to="{{ release_image_item_arm.local | quote }}"
+      when: arm_release_image_key in image_hashes
 
 - name: Populate Mirror  with operators
   become: true
