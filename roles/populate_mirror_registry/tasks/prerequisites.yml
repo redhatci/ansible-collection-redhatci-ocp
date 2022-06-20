@@ -80,7 +80,7 @@
 
     - name: Check binary installed
       command: 
-        cmd: "/usr/local/bin/{{ item }} version"
+        cmd: "/usr/local/bin/{{ item }} help"
       with_items:
         - kubectl
         - oc
