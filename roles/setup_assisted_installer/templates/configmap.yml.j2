@@ -32,3 +32,12 @@ data:
   INSTALLER_IMAGE: {{ assisted_service_installer_image }}
   CONTROLLER_IMAGE: {{ assisted_service_controller_image }}
   AGENT_DOCKER_IMAGE: {{ assisted_service_installer_agent_image }}
+  {% if http_proxy is defined and http_proxy != "" %}
+  HTTP_PROXY: {{ http_proxy }}
+  {% endif %}
+  {% if https_proxy is defined and https_proxy != "" %}
+  HTTPS_PROXY: {{ https_proxy }}
+  {% endif %}
+  {% if no_proxy is defined and no_proxy != "" %}
+  NO_PROXY: {{ no_proxy }}
+  {% endif %}
