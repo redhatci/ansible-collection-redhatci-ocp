@@ -5,6 +5,10 @@
     prefix: preflight_container_artifacts.
   register: preflight_container_artifacts
 
+- name: check if container has already been certified
+  include_tasks: check_if_container_certified.yml
+  when: not preflight_test_certified_image
+
 - name: Set pyxis auth and submission for check container
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
@@ -13,7 +17,9 @@
       --certification-project-id {{ operator.pyxis_container_identifier }}
       --pyxis-api-token {{ pyxis_apikey }}
       --submit
-  when: operator.pyxis_container_identifier is defined
+  when:
+    - operator.pyxis_container_identifier is defined
+    - not (already_certified | default(false) | bool)
   no_log: true
 
 - name: "Run preflight check container on operator image for {{ current_operator_image }} with preflight binary"
@@ -33,6 +39,8 @@
   # do not display logs
   # if preflight invocation contains --submit option
   no_log: "{{ pyxis_auth_container is defined and pyxis_auth_container | length > 0 }}"
+  when:
+    - not (already_certified | default(false) | bool)
 
 - name: Upload logs for preflight check container into DCI
   vars:
@@ -43,6 +51,8 @@
     dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
   with_fileglob:
     - "{{ preflight_container_artifacts.path }}/*"
+  when:
+    - not (already_certified | default(false) | bool)
 
 - name: Unset pyxis auth to not reuse by following containers
   set_fact:

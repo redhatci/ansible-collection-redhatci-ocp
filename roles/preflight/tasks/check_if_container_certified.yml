@@ -1,0 +1,49 @@
+---
+- name: Reset variable for certification
+  set_fact:
+    already_certified: false
+
+- name: "Get Image Digest"
+  shell: >
+    skopeo inspect docker://{{ current_operator_image }} | jq -r '.Digest'
+  register: sha
+
+- name: "Get Image Registry"
+  set_fact:
+    image_repository: "{{ current_operator_image.split('/')[0] }}"
+    image_id: "{{ sha.stdout }}"
+
+- name: "Check with the API if {{ current_operator_image }} is already certified"
+  uri:
+    url: "{{ pyxis_url }}/images?\
+          include=data.image_id\
+          &include=data.docker_image_id&\
+          include=data.certified&\
+          filter=docker_image_id%3D%3D%22{{ image_id }}%22&\
+          page_size=1&page=0"
+    method: GET
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+      accept: application/json
+    status_code: 200
+    timeout: 120
+  register: pyxis_image_info
+  retries: 5
+  delay: 4
+  until: pyxis_image_info.status >= 200
+  no_log: true
+  vars:
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+  when:
+    - '"registry.redhat" not in image_repository'
+
+- block:
+  - name: "Set the variable if the image is already certified"
+    set_fact:
+      already_certified: true
+
+  - name: "Certification Skip for {{ current_operator_image }}"
+    debug:
+      msg: "Certfication for the image {{ current_operator_image }} has been skipped because it has already been certified"
+  when: (pyxis_image_info.json.data[0] is defined and pyxis_image_info.json.data[0].certified == true and preflight_test_certified_image)
+        or "registry.redhat" in image_repository
