@@ -164,7 +164,7 @@
     src: templates/tnf_config.yml.j2
     dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/tnf_config.yml"
 
-# LOG_LEVEL is used for v3.x.x, and TNF_LOG_LEVEL is used for v4.0.0.
+# LOG_LEVEL is used for v3.x.x, and TNF_LOG_LEVEL is used for v4.x.x.
 # Remove LOG_LEVEL when backwards compatibility is no longer needed.
 - name: Run the CNF Test Suite
   vars:
