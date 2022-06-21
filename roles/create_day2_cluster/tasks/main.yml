@@ -48,6 +48,9 @@
       {
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ ssh_public_key }}",
+        "http_proxy": "{{ http_proxy }}",
+        "https_proxy": "{{ https_proxy }}",
+        "no_proxy": "{{ no_proxy }}",
       }
 
 - name: Distribute add_host_cluster_id value to day2_worker hosts
