@@ -8,7 +8,7 @@
   loop: "{{ dci_charts }}"
   loop_control:
     loop_var: chart
-    label: "{{ chart.name }}"
+    label: "{{ chart.chart_file | basename}}"
   register: chart_images
   notify:
     - "Delete tmp tool directory"
@@ -25,3 +25,4 @@
     images: "{{ all_images }}"
     local_registry: "{{ provisionhost_registry }}"
     authfile: "{{ pullsecret_tmp_file }}"
+...

@@ -1,22 +1,45 @@
 ---
-- name: Validate we have all the pieces
+
+- name: "Validate parameters"
   assert:
-    that:
-      - kubeconfig_path is defined
-      - ocp_version_full is defined
-    fail_msg: "Missing required parameters/variables"
-    success_msg: "All required parameters/variables are defined"
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required"
+  with_items:
+      - kubeconfig_path
+      - ocp_version_full
+      - partner_name
+      - partner_email
+      - github_token_path
+      - dci_charts
 
 - name: "Get tools"
   include_tasks: get-tools.yml
 
-- name: "Mirror chart images"
-  include_tasks: mirror-chart-images.yml
-  when: dci_disconnected | default(false) | bool
+## Temporary disabled, failing with images
+## with format like rhscl/mongodb-36-rhel7:1-65
+# - name: "Mirror chart images"
+#   include_tasks: mirror-chart-images.yml
+#   when: dci_disconnected | default(false) | bool
 
 - name: "Set Logs path"
   set_fact:
     logs_dir: "{{ job_logs.path | default ('/tmp')}}"
 
-- name: Run tests
+- name: "Set target repository"
+  set_fact:
+    target_repository: "{{ sandbox_repository | default('openshift-helm-charts/charts') }}"
+
+- name: "Render submission report header"
+  vars:
+    partner: "{{  partner_name | replace(' ','_') }}"
+  template:
+    src: report.j2
+    dest: "{{ logs_dir }}/helm-submission-report.txt"
+
+- name: "Run the tests"
   include_tasks: tests.yml
+  loop: "{{ dci_charts }}"
+  loop_control:
+    loop_var: chart
+    index_var: index
+...

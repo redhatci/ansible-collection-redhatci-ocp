@@ -1,25 +1,109 @@
 ---
+
+- name: "Assert the chart has the required parameters"
+  assert:
+    that:
+      - chart.chart_file is defined
+    fail_msg: "The chart_file parameter is missing"
+    success_msg: "All chart required parameters are defined"
+
+- name: "Check if the chart file exists"
+  uri:
+    url: "{{ chart.chart_file }}"
+    return_content: yes
+  register: file_response
+  ignore_errors: true
+  run_once: true
+
+- name: "Chart file cannot be downloaded"
+  fail:
+    msg: "chart_file cannot be downloaded"
+  when:
+    - file_response.status | int != 200
+
+- name: "Check if the chart values file exists"
+  uri:
+    url: "{{ chart.values_file }}"
+    return_content: yes
+  register: values_response
+  ignore_errors: true
+  run_once: true
+  when: 
+    - chart.chart_values is defined
+
+- name: "Chart values file cannot be downloaded"
+  fail:
+    msg: "chart_values cannot be downloaded"
+  when:
+    - chart.chart_values is defined
+    - values_response is defined
+    - values_response.status | int != 200
+
+- name: "Create working directory"
+  tempfile:
+    state: directory
+  register: work_dir
+
+- name: "Set working directory path"
+  set_fact:
+    work_dir: "{{ work_dir.path }}"
+
+- name: "Run chart show to get chart details"
+  shell:
+    cmd: >
+      {{ helm_tool_path }} show chart {{ chart.chart_file }} |
+      {{ yq_tool_path }} e -o json -
+  register: chart_show
+
+- name: "Set charts details"
+  vars:
+    chart_info: "{{ chart_show.stdout | from_json }}"
+  set_fact:
+    chart_name: "{{ chart_info.name }}"
+    chart_version: "{{ chart_info.version }}"
+    chart_description: "{{ chart_info.description }}"
+
 - name: "Running Chart Verifier"
   shell:
     cmd: >
       podman run --rm
       -e KUBECONFIG=/kubeconfig
       -v {{ kubeconfig_path }}:/kubeconfig:Z
+      -v {{ work_dir }}:/app/chartverifier:Z
       {{ chart_verifier_image }}
-      verify {% if chart.values_file is defined %} -F {{ chart.values_file }} {% endif %}
-      {% if chart.install is defined and chart.install is sameas false %}
+      verify --set profile.vendorType=partner
+      {% if chart.values_file is defined %} -F {{ chart.values_file }} {% endif %}
+      {% if chart.deploy_chart is defined and chart.deploy_chart is sameas false %}
       --disable chart-testing
       {% endif %}
       {% if chart.flags is defined %}{{ chart.flags }}{% endif %}
       --openshift-version {{ ocp_version_full }}
       {{ chart.chart_file }}
-      -o json
-      &> {{ chart.name }}_cv_report.json
+      --write-to-file
   args:
-    chdir: "{{ logs_dir }}"
+    chdir: "{{ work_dir }}"
   ignore_errors: true
-  loop: "{{ dci_charts }}"
-  loop_control:
-    loop_var: chart
-    label: "{{ chart.name }}"
+
+- name: "Copy the report to the Job's log_dir"
+  copy:
+    src: "{{ work_dir }}/report.yaml"
+    dest: "{{ logs_dir }}/{{ chart_name }}_{{ index }}_report.yaml"
+    remote_src: yes
+  delegate_to: localhost
+
+- name: "Validate all tests have passed"
+  shell:
+    cmd: >
+      grep -c FAIL <( {{ yq_tool_path }} e "..|.outcome? | select(.)" report.yaml )
+  register: cv_fail_count
+  args:
+    chdir: "{{ work_dir }}"
+    executable: /bin/bash
+  failed_when: "cv_fail_count.rc not in [ 0, 1 ]"
+
+- name: "Submit CV and create pull request"
+  include_tasks: create_pr.yml
+  when:
+    - chart.create_pr | default(false) | bool
+    - cv_fail_count.stdout | int == 0
 ...
