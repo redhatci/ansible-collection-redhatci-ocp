@@ -23,7 +23,21 @@
     dest: "{{ cv_tool_dir.path }}/yq"
     mode: "0750"
 
+- name: "Set GH version"
+  set_fact:
+    gh_version: "{{ gh_version | default('2.12.1') }}"
+
+- name: "Unarchive GH release tarball"
+  unarchive:
+    src: "https://github.com/cli/cli/releases/download/v{{ gh_version }}/gh_{{ gh_version }}_linux_amd64.tar.gz"
+    dest: "{{ cv_tool_dir.path }}"
+    remote_src: yes
+    extra_opts:
+      - --strip-components=2
+
 - name: "Set tools path"
   set_fact:
     helm_tool_path: "{{ cv_tool_dir.path }}/helm"
     yq_tool_path: "{{ cv_tool_dir.path }}/yq"
+    gh_tool_path: "{{ cv_tool_dir.path }}/gh"
+...
