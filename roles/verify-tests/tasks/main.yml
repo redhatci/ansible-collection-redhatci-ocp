@@ -1,0 +1,8 @@
+---
+- name: Loop over mandatory test results
+  include_tasks: parse_junit_file.yml
+  loop: "{{ tests_to_verify }}"
+  loop_control:
+    loop_var: t
+
+...
