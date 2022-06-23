@@ -65,7 +65,7 @@
   set_fact:
     operator_csv: "{{ packagemanifest | json_query(current_csv) | first  }}"
 
-- name: "{{ ocp_version_maj }} - Wait (up to 10m) for operator's CSV to be ready"
+- name: "{{ ocp_version }} - {{ operator_csv }} - wait for CSV to be ready"
   community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
     namespace: "{{ namespace }}"
