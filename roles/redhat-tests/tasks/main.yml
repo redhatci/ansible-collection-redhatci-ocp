@@ -6,11 +6,12 @@
 
 - name: "Checking if all nodes in MCP are updated and ready before running RedHat tests"
   include_role:
-    name: wait-mcp
+    name: check-resource
   vars:
-    mcp_wait_retries: 30
-    mcp_wait_delay: 10
-    mcp_reason: "Before running RedHat tests"
+    resource_to_check: "MachineConfigPool"
+    check_wait_retries: 30
+    check_wait_delay: 10
+    check_reason: "Before running RedHat tests"
 
 - name: "redhat-tests : Run openshift conformance tests"
   include_tasks: conformance.yml
