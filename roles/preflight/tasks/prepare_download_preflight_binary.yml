@@ -14,5 +14,9 @@
     url: "{{ preflight_binary }}"
     dest: "{{ preflight_binary_dir }}/preflight"
     mode: "0755"
+  register: preflight_file
+  retries: 3
+  delay: 10
+  until: preflight_file is not failed
 
 ...
