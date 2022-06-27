@@ -48,8 +48,8 @@ dci_charts:
     install: false
   -
     name: mychart2
-    chart: http://xyz/pub/projects/mychart2.tgz
-    chart_values: http://xyz/pub/projects/mychart2.yml
+    chart_file: http://xyz/pub/projects/mychart2.tgz
+    values_file: http://xyz/pub/projects/mychart2.yml
     install: true
 ```
 
