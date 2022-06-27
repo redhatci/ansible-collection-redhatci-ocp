@@ -34,7 +34,6 @@
     timeout: 120
   no_log: true
 
-
 - name: Submit Test result to Pyxis
   uri:
     url: "{{ pyxis_url }}/{{ operator.pyxis_operator_identifier }}/test-results"
@@ -46,38 +45,5 @@
     status_code: 201
     timeout: 120
   no_log: true
-
-- name: Send GET query
-  uri:
-    url: "{{ pyxis_url }}/{{ operator.pyxis_operator_identifier }}/test-results"
-    method: GET
-    headers:
-      X-API-KEY: "{{ pyxis_apikey }}"
-  register: preflight_submission
-
-- name: Retrieve the current UTC timestamp
-  environment:
-    TZ: UTC
-  shell: "date '+%Y-%m-%dT%H:%M:%S'"
-  register: time_utc
-
-# Pyxis uses UTC time
-- name: Print the current UTC timestamp and the UTC time of the last submission
-  vars:
-    submission_utc: "{{ preflight_submission | json_query('json.data[-1].last_update_date') }}"
-  debug:
-    msg: |
-      current_time_utc: {{ time_utc.stdout | to_datetime('%Y-%m-%dT%H:%M:%S') }}
-      submission_utc: {{ submission_utc[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') }}
-
-- name: Verify that submission happened less than five minutes ago
-  vars:
-    submission_utc: "{{ preflight_submission | json_query('json.data[-1].last_update_date') }}"
-    time_diff: "{{ ( time_utc.stdout | to_datetime('%Y-%m-%dT%H:%M:%S')
-                        - submission_utc[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') )
-                        .total_seconds() // 60 }}"
-  fail:
-    msg: "Pyxis submission probably failed, the last submission was done {{ time_diff }} min ago"
-  when: time_diff | int >= 5
 
 ...
