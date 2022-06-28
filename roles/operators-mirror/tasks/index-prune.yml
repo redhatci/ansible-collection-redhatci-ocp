@@ -8,6 +8,10 @@
   set_fact:
       index_tag: "{{ ocp_major }}.{{ ocp_minor }}_{{ ansible_date_time.iso8601_basic }}"
 
+- name: "Set operator source index"
+  set_fact:
+    source_index: "{{ operators_index | default('registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }}') }}"
+
 - name: "Prune SQLite based catalog index"
   block:
     - name: "Prune source index but opm_mirror_list"
@@ -18,7 +22,7 @@
           set -x;
           REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
           {{ provision_cache_store }}/{{ version }}/opm index prune
-          --from-index registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }}
+          --from-index {{ source_index }}
           --packages {{ opm_mirror_list | join(",") }}
           --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }}
       register: prune_result
@@ -54,7 +58,7 @@
           set -x;
           REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
           {{ provision_cache_store }}/{{ version }}/opm render
-          registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }} |
+          {{ source_index }} |
           jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'  >> {{ tmp_prune.path }}/configs/index.json
       register: prune_result
       until: prune_result.rc == 0
