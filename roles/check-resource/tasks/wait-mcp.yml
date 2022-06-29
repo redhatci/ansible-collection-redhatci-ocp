@@ -24,6 +24,7 @@
       when:
         - '"bz2062038" not in dci_workarounds|default([])'
         - '"bz2050394" not in dci_workarounds|default([])'
+        - '"bz2101896" not in dci_workarounds|default([])'
 
     - name: Apply workaround
       block:
@@ -46,6 +47,6 @@
 
       when:
         - dci_workarounds is defined
-        - '"bz2062038" in dci_workarounds or "bz2050394" in dci_workarounds'
+        - '"bz2062038" in dci_workarounds or "bz2050394" in dci_workarounds or "bz2101896" in dci_workarounds'
 
 ...
