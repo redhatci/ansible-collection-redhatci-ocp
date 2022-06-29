@@ -20,6 +20,7 @@
         msg: "No workaround is defined, so the job has to fail at this point"
       when:
         - '"bz2050394" not in dci_workarounds|default([])'
+        - '"bz2101896" not in dci_workarounds|default([])'
 
     - name: Apply workaround
       block:
@@ -42,6 +43,6 @@
 
       when:
         - dci_workarounds is defined
-        - '"bz2050394" in dci_workarounds'
+        - '"bz2050394" in dci_workarounds or "bz2101896" in dci_workarounds'
 
 ...

@@ -13,7 +13,7 @@
       when: resource_to_check == "MachineConfigPool"
 
     # Check SriovNetworkNodeState application
-    - name: Check MCP application
+    - name: Check SriovNetworkNodeState application
       include_tasks:
         file: wait-sriov.yml
         apply:
