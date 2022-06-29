@@ -14,7 +14,7 @@
 
 - name: "Prune SQLite based catalog index"
   block:
-    - name: "Prune source index but opm_mirror_list"
+    - name: "Prune source index but mirror_list"
       shell:
         # opm requires write perms in the working directory
         chdir: "{{ tmp_prune.path }}"
@@ -23,7 +23,7 @@
           REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
           {{ provision_cache_store }}/{{ version }}/opm index prune
           --from-index {{ source_index }}
-          --packages {{ opm_mirror_list | join(",") }}
+          --packages {{ mirror_list | join(",") }}
           --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }}
       register: prune_result
       until: prune_result.rc == 0
@@ -64,7 +64,7 @@
       until: prune_result.rc == 0
       retries: 3
       delay: 10
-      with_items: "{{ opm_mirror_list }}"
+      with_items: "{{ mirror_list }}"
       loop_control:
         loop_var: operator_name
 
@@ -118,11 +118,11 @@
 - name: "Set new minor version when operators are missing"
   set_fact:
     ocp_minor: "{{ ocp_minor | int -1 }}"
-  when: prune_count.stdout | int != opm_mirror_list | length
+  when: prune_count.stdout | int != mirror_list | length
 
 - name: "Fallback to previous OCP version"
   include_tasks: index-prune.yml
   when:
     - index_fallback | int <= 3
-    - prune_count.stdout | int != opm_mirror_list | length
+    - prune_count.stdout | int != mirror_list | length
 ...

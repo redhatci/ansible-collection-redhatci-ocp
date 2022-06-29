@@ -15,7 +15,7 @@
   - name: "Required operators not found"
     fail:
       msg: "All required operators not found"
-    when: prune_count.stdout | int != opm_mirror_list | length
+    when: prune_count.stdout | int != mirror_list | length
 
   - name: "Set the index version of pruned index"
     set_fact:
