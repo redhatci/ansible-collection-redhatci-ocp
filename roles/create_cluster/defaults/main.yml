@@ -16,8 +16,8 @@ ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] | default(80
 ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v2"
 URL_ASSISTED_INSTALLER_CLUSTERS: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters"
 
-http_auth_username: "none"
-http_auth_password: "none"
+HTTP_AUTH_USERNAME: "none"
+HTTP_AUTH_PASSWORD: "none"
 http_proxy: ""
 https_proxy: ""
 no_proxy: ""
