@@ -87,6 +87,66 @@
   delegate_facts: true
   loop:  "{{ groups['all'] }}"
 
+- name: "Save infra_env_id"
+  copy:
+    content: "{{ infra_env_id }}"
+    dest: "{{ fetched_dest }}/infra_env_id.txt"
+    mode: 0644
+  delegate_to: localhost
+    
+- name: Get discovery ignition file
+  uri:
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/infra-envs/{{ infra_env_id }}/downloads/files?file_name=discovery.ign"
+    method: GET
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    return_content: True
+  register: discovery_ign_reply
+
+- name: "Save discovery.ign"
+  copy:
+    content: "{{ discovery_ign_reply.content }}"
+    dest: "{{ fetched_dest }}/discovery.ign"
+    mode: 0644
+  delegate_to: localhost
+
+- name: Patch discovery user password
+  when: hashed_discovery_password is defined
+  block:
+    - name: Get discovery ign content
+      set_fact:
+        discovery_content: "{{ discovery_ign_reply.content | from_json }}"
+
+    - name: Password patch
+      set_fact:
+        discovery_password_patch:
+          ignition:
+            version: "{{ discovery_content.ignition.version }}"
+          passwd: 
+            users: "{{ [discovery_content.passwd.users[0] | combine({'passwordHash': hashed_discovery_password})] }}"
+
+    - name: Create Infra env
+      vars:
+        previous_patches: "{{ patch_discovery_ignition | default({}) }}"
+      uri:
+        url: "{{ ASSISTED_INSTALLER_BASE_URL }}/infra-envs/{{ infra_env_id }}"
+        method: PATCH
+        url_username: "{{ HTTP_AUTH_USERNAME }}"
+        url_password: "{{ HTTP_AUTH_PASSWORD }}"
+        body_format: json
+        status_code: [201]
+        return_content: True
+        body: 
+          ignition_config_override: "{{ (previous_patches| combine(discovery_password_patch)) | to_json }}"
+      register: infra_env_patch_reply
+
+    - name: "Save patched_discovery.ign"
+      copy:
+        content: "{{ infra_env_patch_reply.content }}"
+        dest: "{{ fetched_dest }}/patched_discovery.ign"
+        mode: 0644
+      delegate_to: localhost
+  
 - name: Put discovery iso in http store
   block:
     - name: Create discovery directory
