@@ -10,7 +10,7 @@ Name                               | Default                                    
 ---------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
 do\_preflight\_tests               | false                                                | Mandatory. Trigger to activate the preflight tests.
 preflight\_operators\_to\_certify  | undefined                                            | Mandatory. List of operators to be checked for certification with Preflight Cert Suite. This variable is mandatory to run Preflight cert suite. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-certify) for the example.
-preflight\_binary                  | https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.1/preflight-linux-amd64              | Optional. [Version of Preflight Cert Suite to run check container cert suite](https://quay.io/repository/opdev/preflight?tab=tags)
+preflight\_binary                  | <https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.2.1/preflight-linux-amd64>              | Optional. [Version of Preflight Cert Suite to run check container cert suite](https://quay.io/repository/opdev/preflight?tab=tags)
 preflight\_image                   | quay.io/opdev/preflight:1.2.1                                  | Optional. [Version of Preflight Cert Suite to run check operator cert suite](https://quay.io/repository/opdev/preflight?tab=tags)
 preflight\_namespace               | preflight-testing                                    | Optional. Namespace to use for preflight tests
 pyxis\_apikey\_path                | undefined                                            | Optional. This is a path to file that contains partner's token. Parner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
@@ -26,7 +26,6 @@ bundle\_image                      | undefined                                  
 index\_image                       | undefined                                            | Optional for connected environments and mandatory for disconnected.
 pyxis\_container\_identifier       | undefined                                            | Optional. To get this identifier, please create a project of type "Container Image project" at connect.redhat.com. Set this project identifier to submit Preflight `check container` results to Pyxis and connect.redhat.com. This identifier is unique for each container. If you have to certify multiple containers please create multiple projects. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client).
 pyxis\_operator\_identifier        | undefined                                            | Optional. This variable should be defined for each operator. To get this identifier, please create a project of type "Operator Bundle Image project" at connect.redhat.com. Set this project identifier to submit Preflight `check operator` results to Pyxis and connect.redhat.com. This identifier is unique for each operator. If you have to certify multiple operators please create multiple projects. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client).
-
 
 ## How to run preflight cert suite
 
@@ -111,10 +110,10 @@ pyxis\_operator\_identifier        | undefined                                  
   ```
 
 - Run dci-openshift-app-agent:
-  ```sh
-  dci-openshift-app-agent-ctl -s -- -v
-  ```
 
+    ```Shell
+    dci-openshift-app-agent-ctl -s -- -v
+    ```
 
 ## Preflight CI
 

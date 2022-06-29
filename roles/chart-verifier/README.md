@@ -18,7 +18,7 @@ If installation is enabled for a chart, all the images and other required files 
 
 The chart report will show timeout errors if any of the images or files are not reachable.
 
-In DCI, the namespaces defined and created by {{ dci_openshift_app_ns }} variable can be used to deploy chart. The chart will removed after the test verification is complete.
+In DCI, the namespaces defined and created by `dci_openshift_app_ns` variable can be used to deploy chart. The chart will removed after the test verification is complete.
 
 ### Results
 
