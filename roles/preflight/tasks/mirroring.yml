@@ -139,11 +139,12 @@
 
     - name: Wait for MCP status
       include_role:
-        name: wait-mcp
+        name: check-resource
       vars:
-        mcp_wait_retries: 30
-        mcp_wait_delay: 10
-        mcp_reason: "ICSP update in preflight role"
+        resource_to_check: "MachineConfigPool"
+        check_wait_retries: 30
+        check_wait_delay: 10
+        check_reason: "ICSP update in preflight role"
 
 - name: Remove tmp dir
   file:
