@@ -1,0 +1,12 @@
+---
+- name: Check the state of ovnkube-node-XXX pods
+  shell: >
+    {{ oc_tool_path }} get pods -n openshift-ovn-kubernetes --no-headers=true |
+    awk '! /Running/ && /ovnkube-node/'
+  register: bad_ovnkube_pods
+
+- name: Fail when network is in a bad state
+  fail:
+    msg: "Failing because some of ovnkube-node-XXX pods are not in a running state"
+  when: bad_ovnkube_pods.stdout | length > 0
+...
