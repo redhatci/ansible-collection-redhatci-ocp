@@ -69,7 +69,7 @@
     body_format: json
     status_code: [201]
     return_content: True
-    body: "{{ infra_env_body }} "
+    body: "{{ infra_env_body }}"
   register: infra_env_reply
 
 - debug: # noqa unnamed-task
