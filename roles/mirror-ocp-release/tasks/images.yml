@@ -28,4 +28,15 @@
   when:
     - install_type == 'sno'
     - sno_install_type == 'virtual'
+
+- name: "Mirror Assisted Installer Disk Images"
+  include_tasks: fetch.yml
+  vars:
+    uri: "{{ ocp_release_data['rhcos_images'][item + '_location'] }}"
+    checksum: "sha256:{{ ocp_release_data['rhcos_images'][item + '_sha256']}}"
+  loop:
+    - metal_iso
+    - metal_pxe_rootfs
+  when:
+    - install_type == 'assisted'
 ...
