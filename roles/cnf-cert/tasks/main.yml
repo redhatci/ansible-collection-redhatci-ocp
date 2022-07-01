@@ -194,4 +194,16 @@
   args:
     chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
+# claim.json file must be present if the execution finished correctly, else make the job to fail
+- name: Fail if execution did not finish correctly
+  block:
+    - name: Check if the execution finished correctly
+      stat:
+        path: "{{ tnf_tempdir.path }}/claim.json"
+      register: claim_json_present
+
+    - name: CNF Cert Suite execution did not finish correctly
+      fail:
+        msg: claim.json file does not exist, so CNF Cert Suite execution did not finish correctly
+      when: not claim_json_present.stat.exists|bool
 ...
