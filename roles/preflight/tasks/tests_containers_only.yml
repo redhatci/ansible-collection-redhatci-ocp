@@ -1,0 +1,35 @@
+---
+- name: Standalone containers tests
+  block:
+    - name: Create tmp directory for custom configurations and preflight binary
+      tempfile:
+        state: directory
+        prefix: preflight_tmp_dir.
+      register: preflight_tmp_dir
+
+    - name: Download preflight binary if necessary
+      include_tasks: prepare_download_preflight_binary.yml
+      when: preflight_binary | length > 0
+
+    # Use authentication file for private registry
+    - name: Set authentication for registry access
+      include_tasks: prepare_json_authentication.yml
+      when: partner_creds | length
+
+    - name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
+      # introducing operator variable to reuse the functionality
+      # for e2e certification when operator is defined
+      vars:
+        current_operator_image: "{{ c.container_image }}"
+        operator:
+          name: "{{ current_operator_image.split('/')[-1].split(':')[0].split('@')[0] }}"
+          version: "{{ current_operator_image.split(':')[-1] }}"
+          pyxis_container_identifier: "{% if c.pyxis_container_identifier is defined %}{{ c.pyxis_container_identifier }}{% endif %}"
+      include_tasks: test_preflight_check_container_binary.yml
+      loop: "{{ preflight_containers_to_certify }}"
+      loop_control:
+        loop_var: c
+  always:
+    - name: Teardown
+      include_tasks: teardown.yml
+...

@@ -18,8 +18,9 @@
       --pyxis-api-token {{ pyxis_apikey }}
       --submit
   when:
-    - operator.pyxis_container_identifier is defined
     - not (already_certified | default(false) | bool)
+    - operator.pyxis_container_identifier is defined
+    - operator.pyxis_container_identifier | length > 0
   no_log: true
 
 - name: "Run preflight check container on operator image for {{ current_operator_image }} with preflight binary"
