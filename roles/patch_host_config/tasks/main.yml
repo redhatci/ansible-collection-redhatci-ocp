@@ -15,6 +15,11 @@
 
 - name: Identify the discovered host {{ discovered_host.id }}
   set_fact:
+    host: "{{ host.json }}"
+  when: discovered_host.inventory is not defined
+
+- name: Identify the discovered host {{ discovered_host.id }}
+  set_fact:
     host: "{{ discovered_host }}"
   when: discovered_host.inventory is defined
 
