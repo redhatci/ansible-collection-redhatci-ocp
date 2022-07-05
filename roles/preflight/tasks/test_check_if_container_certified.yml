@@ -3,9 +3,22 @@
   set_fact:
     already_certified: false
 
+- name: Install Skopeo package
+  become: true
+  package:
+    name:
+      - "skopeo"
+    state: installed
+
 - name: "Get Image Digest"
   shell: >
-    skopeo inspect docker://{{ current_operator_image }} | jq -r '.Digest'
+    skopeo inspect
+    {% if partner_creds is defined %}
+    --authfile {{ partner_creds }}
+    {% else %}
+    --no-creds
+    {% endif %}
+    docker://{{ current_operator_image }} | jq -r '.Digest'
   register: sha
 
 - name: "Get Image Registry"
@@ -31,11 +44,13 @@
   retries: 5
   delay: 4
   until: pyxis_image_info.status >= 200
-  no_log: true
+  no_log: false
+  ignore_errors: true
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
   when:
     - '"registry.redhat" not in image_repository'
+    - 'sha.stdout | length > 0'
 
 - block:
   - name: "Set the variable if the image is already certified"
