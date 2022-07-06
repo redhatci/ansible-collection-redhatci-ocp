@@ -144,7 +144,7 @@
     path: "{{ logs_dir }}/helm-submission-report.txt"
     line:
       " {{ chart_name }} {{ chart_version }} submitted via {{ pr_details.stdout_lines[2] }}"
-    insertafter: EO
+    insertafter: EOF
   notify:
     - "helm-chart-verifier cleanup"
 ...

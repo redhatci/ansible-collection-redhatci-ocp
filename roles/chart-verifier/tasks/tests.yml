@@ -28,7 +28,7 @@
   register: values_response
   ignore_errors: true
   run_once: true
-  when: 
+  when:
     - chart.chart_values is defined
 
 - name: "Chart values file cannot be downloaded"
