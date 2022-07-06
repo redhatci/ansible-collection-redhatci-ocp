@@ -44,6 +44,10 @@
       pull_secret: "{{ pull_secret | to_json }}"
       image_type: "full-iso"
       cluster_id: "{{ iso_cluster_id }}"
+      proxy:
+        http_proxy: "{{ http_proxy }}"
+        https_proxy: "{{ https_proxy }}"
+        no_proxy: "{{ no_proxy }}"
 
 - name: Create infra_env_body
   set_fact:
