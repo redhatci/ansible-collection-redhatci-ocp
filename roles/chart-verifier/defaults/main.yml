@@ -1,9 +1,4 @@
 ---
 # These variables have the lowest priority of any variables available, and can be easily overridden by any other variable, including inventory variables.
 chart_verifier_image: quay.io/redhat-certification/chart-verifier:main
-dci_charts:
-  -
-    name: valid_chart
-    chart_file: "https://github.com/redhat-certification/chart-verifier/raw/main/pkg/chartverifier/checks/chart-0.1.0-v3.valid.tgz"
-    install: false
 ...

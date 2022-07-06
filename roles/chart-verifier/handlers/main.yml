@@ -3,3 +3,19 @@
   file:
     state: absent
     path: "{{ cv_tool_dir.path }}"
+
+- name: "Delete work_dir directory"
+  file:
+    state: absent
+    path: "{{ work_dir }}"
+  listen: "helm-chart-verifier cleanup"
+
+- name: "Delete the one time use key from Github"
+  shell: "{{ gh_tool_path }} api -X DELETE user/keys/{{ key_id }}"
+  ignore_errors: true
+  listen: "helm-chart-verifier cleanup"
+
+- name: "GH logout"
+  shell: "{{ gh_tool_path }} auth logout --hostname github.com"
+  listen: "helm-chart-verifier cleanup"
+...
