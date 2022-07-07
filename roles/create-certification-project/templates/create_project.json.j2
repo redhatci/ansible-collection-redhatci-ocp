@@ -1,0 +1,21 @@
+{
+    "certification_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
+    "certification_status": "Started",
+    "container": {
+      "auto_publish": false,
+      "distribution_method": "external",
+      "os_content_type": "Red Hat Universal Base Image (UBI)",
+      "privileged": false,
+      "registry": "{{ current_operator_image.split('/')[0] }}",
+      "repository": "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
+      "type": "container"
+    },
+    "creation_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
+    "last_update_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
+    "marketplace": {
+      "enablement_status": "ineligible"
+    },
+    "name": "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[-1] }}",
+    "project_status": "active",
+    "type": "Containers"
+}
