@@ -1,16 +1,16 @@
 - name: check skopeo is installed
   shell: /usr/bin/skopeo --version
 
-- name: Filter images 
+- name: Filter images
   when: get_release_images | bool
-  block: 
+  block:
     - name: Filter os images
       set_fact:
         os_images: "{{ os_images | json_query(os_filter) }}"
       vars:
         os_filter: "[?(openshift_version == '{{ openshift_version }}')]"
       when: (not get_all_release_versions) | bool
-    
+
     - debug: # noqa unnamed-task
         var: os_images
         verbosity: 1
@@ -21,11 +21,11 @@
       vars:
         release_filter: "[?(version == '{{ openshift_full_version }}')]"
       when: (not get_all_release_versions) | bool
-   
+
     - debug: # noqa unnamed-task
         var: release_images
         verbosity: 1
-        
+
 - name: Get cached images
   include_vars:
     file: "{{ image_hashes_path }}"
@@ -67,25 +67,26 @@
 - name: Update release_images with hashes
   when: get_release_images | bool
   block:
-    - name: Update released items
-      vars: 
+    - name: Update released items (image:tag format)
+      vars:
         updated_release_images: []
       set_fact:
         updated_release_images: "{{ updated_release_images + [item | combine({'url': item.url.split(':')[0] + '@' + image_hashes['release_' + item.version + '_' + item.cpu_architecture]  })] }}"
-      when: 
+      when:
+        - ('@' not in item.url)
         - (':' in item.url)
         - ('release_' + item.version + '_' + item.cpu_architecture) in image_hashes
       loop: "{{ release_images }}"
 
-    - name: Redefine release images to 
+    - name: Redefine release images to
       set_fact:
         release_images: "{{ updated_release_images }}"
       when: updated_release_images is defined
-   
+
     - debug: # noqa unnamed-task
         var: os_images
         verbosity: 1
-    
+
     - debug: # noqa unnamed-task
         var: release_images
         verbosity: 1
