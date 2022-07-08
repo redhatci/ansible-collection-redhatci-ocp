@@ -67,11 +67,17 @@
 - name: Update release_images with hashes
   when: get_release_images | bool
   block:
-    - name: Update released items (image:tag format)
-      vars:
-        updated_release_images: []
+    - name: Prepopulate list with fully qualified images
       set_fact:
-        updated_release_images: "{{ updated_release_images + [item | combine({'url': item.url.split(':')[0] + '@' + image_hashes['release_' + item.version + '_' + item.cpu_architecture]  })] }}"
+        updated_release_images: "{{ updated_release_images | default([]) + [item | combine({'url': item.url })] }}"
+      when:
+        - ('@' in item.url)
+        - (':' in item.url)
+      loop: "{{ release_images }}"
+
+    - name: Update released items (image:tag format)
+      set_fact:
+        updated_release_images: "{{ updated_release_images | default([]) + [item | combine({'url': item.url.split(':')[0] + '@' + image_hashes['release_' + item.version + '_' + item.cpu_architecture]  })] }}"
       when:
         - ('@' not in item.url)
         - (':' in item.url)
@@ -80,8 +86,7 @@
 
     - name: Redefine release images to
       set_fact:
-        release_images: "{{ updated_release_images }}"
-      when: updated_release_images is defined
+        release_images: "{{ updated_release_images | default([]) }}"
 
     - debug: # noqa unnamed-task
         var: os_images
