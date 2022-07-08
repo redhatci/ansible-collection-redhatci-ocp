@@ -1,0 +1,30 @@
+---
+- name: Print JSON draft for the project to be created
+  debug:
+    msg: "{{ lookup('template', 'templates/create_project.json.j2') }}"
+
+- name: Create certification project
+  vars:
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+  uri:
+    url: "{{ create_project_url }}"
+    method: POST
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    body: "{{ lookup('template', 'templates/create_project.json.j2') }}"
+    status_code: 201
+    timeout: 120
+  register: cert_project_output
+
+- name: Set project ID to reuse it later
+  set_fact:
+    cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"
+
+- name: Print the URL of created certification project
+  debug:
+    msg: |
+      Certification project was created and could be checked here:
+      {{ connect_url }}/{{ cert_project_id }}/overview
+
+...

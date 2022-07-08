@@ -63,14 +63,19 @@ The idea is use one of them.
   # if your registry is private.
   partner_creds: "/opt/pull-secrets/partner_config.json"
 
-  # List of operators to certify,
-  # you could provide many operators at once.
+  # List of images to certify,
+  # you could provide many containers at once.
   preflight_containers_to_certify:
     - container_image: "quay.io/rh-nfv-int/testpmd-operator:v0.2.9"
       # Optional; provide it when you need to submit test results.
       # It's an id of your Container Image Project
       # https://connect.redhat.com/projects/my_nice_container_id
       pyxis_container_identifier: "my_nice_container_id"
+    - container_image: "quay.io/rh-nfv-int/bla-bla:v0.2.9"
+      # Optional; provide it when you need to submit test results.
+      # It's an id of your Container Image Project
+      # https://connect.redhat.com/projects/my_nice_container_id
+      pyxis_container_identifier: "my_nice_container_id2"
 
   # Optional; provide it when you need to submit test results.
   # This token is shared between all your projects.
@@ -98,8 +103,8 @@ The idea is use one of them.
   # In this case, please provide all credentials here.
   partner_creds: "/opt/pull-secrets/partner_config.json"
 
-  # List of operators to certify,
-  # you could provide many operators at once.
+  # List of images to certify,
+  # you could provide many containers at once.
   preflight_containers_to_certify:
       # In disconnected environments provide a digest (SHA) and not a tag.
     - container_image: "quay.io/rh-nfv-int/testpmd-operator@sha256:339096a68f09eb42aa9bb8d72bf1d958fe14a15c93fb850e27ce18208fed23ed"

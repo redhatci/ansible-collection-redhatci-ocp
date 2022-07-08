@@ -5,11 +5,11 @@
     prefix: preflight_container_artifacts.
   register: preflight_container_artifacts
 
-- name: check if container has already been certified
-  include_tasks: check_if_container_certified.yml
+- name: Check if container has already been certified
+  include_tasks: test_check_if_container_certified.yml
   when: not preflight_test_certified_image
 
-- name: Set pyxis auth and submission for check container
+- name: Set pyxis auth if cert project is already here
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
   set_fact:
@@ -22,6 +22,25 @@
     - operator.pyxis_container_identifier is defined
     - operator.pyxis_container_identifier | length > 0
   no_log: true
+
+- name: Create certification project if required
+  block:
+    - name: Proceed to the project creation
+      include_role:
+        name: create-certification-project
+
+    - name: Set pyxis auth after project creation
+      vars:
+        pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+      set_fact:
+        pyxis_auth_container: >-
+          --certification-project-id {{ cert_project_id }}
+          --pyxis-api-token {{ pyxis_apikey }}
+          --submit
+      no_log: true
+  when:
+    - create_cert_projects | default(false)
+    - operator.pyxis_container_identifier is not defined or operator.pyxis_container_identifier | length == 0
 
 - name: "Run preflight check container on operator image for {{ current_operator_image }} with preflight binary"
   shell: >
