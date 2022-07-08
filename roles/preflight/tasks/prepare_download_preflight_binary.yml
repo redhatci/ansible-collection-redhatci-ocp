@@ -9,11 +9,14 @@
     state: directory
     recurse: yes
 
+# Using shell instead of get_url due to this bug:
+# https://github.com/ansible/ansible/issues/68843
 - name: Download preflight
-  get_url:
-    url: "{{ preflight_binary }}"
-    dest: "{{ preflight_binary_dir }}/preflight"
-    mode: "0755"
+  shell:
+    cmd:
+      wget -q {{ preflight_binary }}
+      -O {{ preflight_binary_dir }}/preflight &&
+      chmod 0755 {{ preflight_binary_dir }}/preflight
   register: preflight_file
   retries: 3
   delay: 10
