@@ -37,6 +37,8 @@
   delegate_to: "{{ item.host }}"
   delegate_facts: true
   loop: "{{ bmc_dns_records | dict2items(key_name='host', value_name='data') }}"
+  when:
+    - bmc_dns_records is defined
 
 - name: Get bastions, services (not including registry) when it ansible_host is an IP address
   include_tasks: create_host_entry.yml
