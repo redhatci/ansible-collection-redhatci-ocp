@@ -10,21 +10,32 @@ Name                | Default      | Description
 tests\_to\_verify   | undefined    | A complex list of expected results. Each element contains a JUnit filename and a list of expected resuls for that filename. A sublist of expected results could contain one or more pair "testcase name"-"passed".
 
 ```yaml
-# example of the list of expected results per file
+# Example of the list of expected results per file.
+# expected_results/testcase could contain Python regex.
+# Please use single quotes with regex to avoid Python/Ansible syntax interference.
 tests_to_verify:
   - filename: "preflight_container_simple-demo-operator_0.0.6_kube-rbac-proxy_results-junit.xml"
     expected_results:
-      - testcase: HasUniqueTag
-        passed: False
-      - testcase: LayerCountAcceptable
+      - testcase: 'Has\w+Tag'
+        passed: True
+      - testcase: 'LayerCountAcceptable'
+        passed: True
+      - testcase: 'RunAsNonRoot'
         passed: True
   - filename: "preflight_container_simple-demo-operator_0.0.6_simple-demo-operator_results-junit.xml"
     expected_results:
-      - testcase: HasLicense
+      - testcase: '[a-zA-Z]+'
         passed: True
-      - testcase: HasUniqueTag
+      - testcase: 'HasUniqueTag'
         passed: True
-      - testcase: LayerCountAcceptable
+      - testcase: 'Has*'
         passed: True
-      - testcase: HasNoProhibitedPackages
+      - testcase: 'Run[a-zA-Z]{5}Root'
+        passed: True
+      - testcase: 'BasedOnUbi'
+        passed: True
+  - filename: "preflight_operator_simple-demo-operator_0.0.6_results-junit.xml"
+    expected_results:
+      - testcase: '[a-zA-Z0-9]+'
+        passed: True
 ```

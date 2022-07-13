@@ -21,7 +21,7 @@
 
 - name: "Fail if not all test results are as expected for {{ t.filename }}"
   vars:
-    expectation_failed: "{{ t.expected_results | difference(actual_results) }}"
+    expectation_failed: "{{ t.expected_results | regex_diff(actual_results) }}"
   fail:
     msg: "The following expectations failed: {{ expectation_failed }}"
   when: expectation_failed | length > 0
