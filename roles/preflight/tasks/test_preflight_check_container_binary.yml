@@ -58,7 +58,7 @@
   register: preflight_container_output
   # do not display logs
   # if preflight invocation contains --submit option
-  no_log: "{{ pyxis_auth_container is defined and pyxis_auth_container | length > 0 }}"
+  #no_log: "{{ pyxis_auth_container is defined and pyxis_auth_container | length > 0 }}"
   when:
     - not (already_certified | default(false) | bool)
 
