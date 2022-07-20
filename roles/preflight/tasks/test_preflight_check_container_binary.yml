@@ -62,6 +62,14 @@
   when:
     - not (already_certified | default(false) | bool)
 
+- name: Unset pyxis auth to not reuse by following containers
+  set_fact:
+    pyxis_auth_container: ""
+
+- name: "Run health check on {{ current_operator_image }}"
+  include_tasks: test_run_health_check.yml
+  when: preflight_run_health_check
+
 - name: Upload logs for preflight check container into DCI
   vars:
     image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
@@ -73,10 +81,6 @@
     - "{{ preflight_container_artifacts.path }}/*"
   when:
     - not (already_certified | default(false) | bool)
-
-- name: Unset pyxis auth to not reuse by following containers
-  set_fact:
-    pyxis_auth_container: ""
 
 - name: Remove tmp dir
   file:
