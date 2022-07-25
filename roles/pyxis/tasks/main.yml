@@ -24,7 +24,7 @@
 
 - name: Publishing artifact to Pyxis
   uri:
-    url: "{{ pyxis_url }}/projects/certification/id/{{ operator.pyxis_operator_identifier }}/artifacts"
+    url: "{{ pyxis_url }}/projects/certification/id/{{ cert_project_id }}/artifacts"
     method: POST
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"
@@ -35,7 +35,7 @@
 
 - name: Submit Test result to Pyxis
   uri:
-    url: "{{ pyxis_url }}/projects/certification/id/{{ operator.pyxis_operator_identifier }}/test-results"
+    url: "{{ pyxis_url }}/projects/certification/id/{{ cert_project_id }}/test-results"
     method: POST
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"
@@ -43,5 +43,9 @@
     body: "{{ lookup('template', 'templates/test_results.json.j2') }}"
     status_code: 201
     timeout: 120
+
+- name: Unset project ID to ensure no occasionnal reuse
+  set_fact:
+    cert_project_id: ""
 
 ...
