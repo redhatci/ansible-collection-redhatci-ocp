@@ -30,6 +30,8 @@
         check container
         {{ current_operator_image }}
       register: preflight_container_output
+      retries: 6
+      delay: 10
   always:
     - name: Upload logs for preflight check container into DCI
       vars:
