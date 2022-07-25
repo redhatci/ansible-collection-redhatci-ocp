@@ -98,10 +98,33 @@
         state: absent
       when: (ai_pod_details.pods | length) > 0
 
+    - name: network_name
+      ansible.builtin.set_fact:
+        network_name: assisted_installer_network
+      when: use_ipv6 | default(False)
+
+    - name: Create ipv6 network
+      containers.podman.podman_network:
+        debug: true
+        name: "{{ network_name }}"
+        subnet: "{{ podman_ipv6_network_subnet }}"
+        gateway: "{{ podman_ipv6_network_gateway }}"
+        ipv6: true
+        recreate: true
+      when: use_ipv6 | default(False)
+      become: true
+
+    - name: Update podman_networks with ipv6
+      ansible.builtin.set_fact:
+        podman_networks:
+          - "{{ network_name }}"
+      when: network_name is defined
+
     - name: Play kube file
       containers.podman.podman_play:
         kube_file: "{{ assisted_installer_dir }}/pod.yml"
         configmap: "{{ assisted_installer_dir }}/configmap.yml"
+        network: "{{ podman_networks | default(omit) }}"
         recreate: true
         state: created
 
