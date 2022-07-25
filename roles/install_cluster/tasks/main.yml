@@ -14,7 +14,9 @@
     status_code: [200, 201]
     return_content: True
   register: cluster
-  until: ( cluster.json.hosts | length == inventory_nodes | length ) and ( cluster.json.status == "pending-for-input")
+  until:
+    - (cluster.json.hosts | length) == (inventory_nodes | length)
+    - cluster.json.status in host_discovery_states
   retries: 20
   delay: 60
   when: install | bool == True
@@ -27,6 +29,7 @@
   loop_control:
     loop_var: discovered_host
   no_log: True
+  when: install | bool == True
 
 - name: Patch cluster with config vars relevant to the selected HA mode
   when: (install | bool == True)
@@ -64,6 +67,7 @@
 - debug: # noqa unnamed-task
     var: http_reply.json
     verbosity: 1
+  when: install | bool == True
 
 # Monitor cluster discovery
 - name: Wait up to 20 minutes for the cluster to report as ready
@@ -97,7 +101,7 @@
   when: install | bool == True
 
 
-- name: Wait for cluster to being installing
+- name: Allow up to 5 minutes for cluster to begin installing
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
     method: GET
@@ -106,6 +110,7 @@
     body_format: json
     body: {}
   when: install | bool == True
-  register: http_reply
-  until: 
-    http_reply.json.status in ["preparing-for-installation", "installing", "installing-pending-user-action"]
+  register: cluster
+  until: cluster.json.status in cluster_installation_states
+  retries: 5
+  delay: 60

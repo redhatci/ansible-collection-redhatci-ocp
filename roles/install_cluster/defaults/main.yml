@@ -16,3 +16,14 @@ HTTP_AUTH_PASSWORD: "none"
 fetched_dest: "{{ repo_root_path }}/fetched"
 
 single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"
+
+host_discovery_states:
+  - discovering
+  - known
+  - pending-for-input
+  - insufficient
+  - ready
+
+cluster_installation_states:
+  - installing
+  - installing-pending-user-action
