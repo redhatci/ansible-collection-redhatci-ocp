@@ -49,6 +49,8 @@
     check operator
     {{ operator.bundle_image }}
   register: preflight_exec
+  retries: 6
+  delay: 10
   ignore_errors: true
 
 - name: Upload logs for preflight check operator into DCI
