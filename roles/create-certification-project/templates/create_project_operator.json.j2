@@ -1,0 +1,24 @@
+{
+    "certification_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
+    "certification_status": "Started",
+    "container": {
+      "auto_publish": false,
+      "build_categories": "Operator bundle",
+      "distribution_method": "rhcc",
+      "hosted_registry": false,
+      "os_content_type": "Operator Bundle Image",
+      "privileged": false,
+      "registry": "{{ operator.bundle_image.split('/')[0] }}",
+      "repository": "{{ operator.bundle_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
+      "type": "operator bundle image"
+    },
+    "creation_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
+    "last_update_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
+    "marketplace": {
+      "enablement_status": "ineligible"
+    },
+    "name": "{{ operator.bundle_image.split('@')[0].split(':')[0].split('/')[-1] }}",
+    "operator_distribution": "connect",
+    "project_status": "active",
+    "type": "Containers"
+}
