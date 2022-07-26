@@ -28,6 +28,8 @@
     - name: Proceed to the project creation
       include_role:
         name: create-certification-project
+      vars:
+        project_type: "container"
 
     - name: Set pyxis auth after project creation
       vars:
@@ -37,7 +39,8 @@
           --certification-project-id {{ cert_project_id }}
           --pyxis-api-token {{ pyxis_apikey }}
           --submit
-      no_log: true
+        cert_project_id: ""
+      # no_log: true
   when:
     - create_cert_projects | default(false)
     - operator.pyxis_container_identifier is not defined or operator.pyxis_container_identifier | length == 0
