@@ -62,11 +62,6 @@
   with_fileglob:
     - "{{ preflight_operator_artifacts.path }}/*"
 
-- name: Remove tmp dir
-  file:
-    path: "{{ preflight_operator_artifacts.path }}"
-    state: absent
-
 - name: Delete preflight namespace
   community.kubernetes.k8s:
     name: "{{ preflight_namespace }}"
@@ -107,7 +102,30 @@
 - name: "Submit the results to Pyxis for {{ operator.name }}"
   include_role:
     name: pyxis
-  when:
-    - cert_project_id is defined
-    - cert_project_id | length > 0
+  when: cert_project_id | default('') | length > 0
+
+- name: Create certification PR
+  block:
+    - name: Set target repository
+      set_fact:
+        target_repository: "{{ sandbox_repository | default('redhat-openshift-ecosystem/certified-operators') }}"
+
+    - name: Create a PR for certification
+      include_role:
+        name: create-pr
+      vars:
+        product_name: "{{ operator.name }}"
+        product_version: "{{ operator.version }}"
+        fork_name: "certified-operator-{{ operator.name }}-{{ operator.version }}"
+        work_dir: "{{ preflight_operator_artifacts.path }}"
+  when: operator.create_pr | default(false) | bool
+
+- name: Unset project ID to ensure no occasionnal reuse
+  set_fact:
+    cert_project_id: ""
+
+- name: Remove tmp dir
+  file:
+    path: "{{ preflight_operator_artifacts.path }}"
+    state: absent
 ...

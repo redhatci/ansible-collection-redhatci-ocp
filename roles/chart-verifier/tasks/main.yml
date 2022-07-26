@@ -7,11 +7,9 @@
   with_items:
       - kubeconfig_path
       - ocp_version_full
-      - partner_name
-      - partner_email
-      - github_token_path
       - dci_charts
 
+# Get tools like yq and helm
 - name: "Get tools"
   include_tasks: get-tools.yml
 
