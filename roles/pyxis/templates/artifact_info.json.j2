@@ -1,13 +1,13 @@
 {
   "_links": {
     "cert_project": {
-      "href": "{{ operator.pyxis_operator_identifier }}"
+      "href": "{{ cert_project_id }}"
     },
     "container_image": {
       "href": "{{ operator.bundle_image }}"
     }
   },
-  "cert_project": "{{ operator.pyxis_operator_identifier }}",
+  "cert_project": "{{ cert_project_id }}",
   "certification_hash": "{{ preflight_output.certification_hash }}",
   "content": "{{ preflight_artifact | b64encode }}",
   "file_size": {{ artifact_info.stat.size | int }},

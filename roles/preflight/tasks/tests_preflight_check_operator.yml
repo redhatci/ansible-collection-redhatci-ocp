@@ -88,8 +88,26 @@
     msg: "results-junit file is absent, it seems like the tests failed: {{ preflight_junit }}"
   when: not preflight_junit_exists.stat.exists
 
+- name: Create certification project if pyxis_operator_identifier is not defined
+  include_role:
+    name: create-certification-project
+  vars:
+    project_type: "operator"
+  when:
+    - create_cert_projects | default(false)
+    - operator.pyxis_operator_identifier is not defined or operator.pyxis_operator_identifier | length == 0
+
+- name: Set cert_project_id if pyxis_operator_identifier is defined
+  set_fact:
+    cert_project_id: "{{ operator.pyxis_operator_identifier }}"
+  when:
+    - operator.pyxis_operator_identifier is defined
+    - operator.pyxis_operator_identifier | length > 0
+
 - name: "Submit the results to Pyxis for {{ operator.name }}"
   include_role:
     name: pyxis
-  when: operator.pyxis_operator_identifier is defined
+  when:
+    - cert_project_id is defined
+    - cert_project_id | length > 0
 ...
