@@ -67,7 +67,7 @@
   assert:
     that:
       - install_type | string
-      - install_type in ('ipi', 'sno', 'upi',)
+      - install_type in ('ipi', 'sno', 'upi', 'vsphere')
 
 - name: "Validate SNO install type"
   assert:
