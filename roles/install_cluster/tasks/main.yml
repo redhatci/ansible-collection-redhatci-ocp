@@ -44,7 +44,7 @@
   - name: Set config vars for patching the cluster (HA)
     set_fact:
       cluster_config_patch_request_body: {
-        "vip_dhcp_allocation": "{{ vip_dhcp_allocation | lower | bool }}",
+        "vip_dhcp_allocation": "{{ vip_dhcp_allocation | bool }}",
         "ingress_vip": "{{ ingress_vip }}",
         "api_vip": "{{ api_vip }}",
       }
@@ -54,15 +54,111 @@
       var: cluster_config_patch_request_body
       verbosity: 1
 
-  - name: "Patch cluster"
-    uri:
-      url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
-      method: PATCH
-      status_code: [201]
-      return_content: True
-      body_format: json
-      body: "{{ cluster_config_patch_request_body }}"
-    register: http_reply
+- name: Add cluster_id to machine_networks
+  vars:
+    extra_machine_networks_with_cluster_id: []
+  set_fact:
+    extra_machine_networks_with_cluster_id: "{{ (
+        extra_machine_networks_with_cluster_id + [item | combine({'cluster_id': cluster_id})]
+      ) }}"
+  loop: "{{ extra_machine_networks | default([]) }}"
+
+- name: Add cluster_id to cluster_networks
+  vars:
+    extra_cluster_networks_with_cluster_id: []
+  set_fact:
+    extra_cluster_networks_with_cluster_id: "{{ (
+        extra_cluster_networks_with_cluster_id + [item | combine({'cluster_id': cluster_id})]
+      ) }}"
+  loop: "{{ extra_cluster_networks | default([]) }}"
+
+- name: Add cluster_id to service_networks
+  vars:
+    extra_service_networks_with_cluster_id: []
+  set_fact:
+    extra_service_networks_with_cluster_id: "{{ (
+        extra_service_networks_with_cluster_id + [item | combine({'cluster_id': cluster_id})]
+      ) }}"
+  loop: "{{ extra_service_networks | default([]) }}"
+
+- name: Set patch cluster body (single stack)
+  set_fact:
+    patch_cluster_networking_body: '{{
+        {
+          "cluster_networks": [
+              {
+                "cluster_id": cluster_id,
+                "cidr": cluster_network_cidr,
+                "host_prefix": (cluster_network_host_prefix | int),
+              }
+          ],
+          "service_networks": [
+            {
+              "cluster_id": cluster_id,
+              "cidr": service_network_cidr,
+            }
+          ],
+        } | to_json
+      }}'
+  when:
+    - install | bool == True
+    - extra_machine_networks_with_cluster_id is not defined
+    - extra_cluster_networks_with_cluster_id is not defined
+    - extra_service_networks_with_cluster_id is not defined
+
+- name: Set patch cluster body (dual stack)
+  set_fact:
+    patch_cluster_networking_body: '{{
+        {
+           "machine_networks": [
+              {
+                "cluster_id": cluster_id,
+                "cidr": machine_network_cidr,
+              }
+          ] + extra_machine_networks_with_cluster_id,
+          "cluster_networks": [
+              {
+                "cluster_id": cluster_id,
+                "cidr": cluster_network_cidr,
+                "host_prefix": (cluster_network_host_prefix | int),
+              }
+          ] + extra_cluster_networks_with_cluster_id,
+          "service_networks": [
+            {
+              "cluster_id": cluster_id,
+              "cidr": service_network_cidr,
+            }
+          ] + extra_service_networks_with_cluster_id,
+        } | to_json
+      }}'
+  when:
+    - install | bool == True
+    - extra_machine_networks_with_cluster_id is defined
+    - extra_cluster_networks_with_cluster_id is defined
+    - extra_service_networks_with_cluster_id is defined
+
+- debug: # noqa unnamed-task
+    var: cluster_config_patch_request_body
+    verbosity: 1
+  when: install | bool
+
+- debug: # noqa unnamed-task
+    var: patch_cluster_networking_body
+    verbosity: 1
+  when: install | bool
+
+- name: patch cluster
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: PATCH
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [200, 201]
+    return_content: True
+    body: "{{ cluster_config_patch_request_body | combine(patch_cluster_networking_body | from_json) | to_json }}"
+  register: http_reply
+  when: install | bool == True
 
 - debug: # noqa unnamed-task
     var: http_reply.json
