@@ -7,7 +7,6 @@
 - name: Update preflight_podman_auth variable for preflight command
   set_fact:
     preflight_podman_auth: "-v {{ preflight_tmp_dir.path }}/config.json:/opt/config.json"
-    preflight_podman_auth_for_binary: "--docker-config {{ preflight_tmp_dir.path }}/config.json"
     preflight_PFLT_dockerconfig: "-e PFLT_DOCKERCONFIG=/opt/config.json"
     preflight_docker_config_env: "DOCKER_CONFIG={{ preflight_tmp_dir.path }}"
 ...
