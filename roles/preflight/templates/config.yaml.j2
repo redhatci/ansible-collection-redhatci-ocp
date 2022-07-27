@@ -1,0 +1,10 @@
+{% if partner_creds | length %}
+dockerConfig: {{ preflight_tmp_dir.path }}/config.json
+{% endif %}
+loglevel: trace
+logfile: {{ preflight_container_artifacts.path }}/preflight.log
+artifacts: {{ preflight_container_artifacts.path }}
+{% if cert_project_id | default('') | length %}
+certification_project_id: {{ cert_project_id }}
+pyxis_api_token: {{ lookup('file', pyxis_apikey_path) }}
+{% endif %}

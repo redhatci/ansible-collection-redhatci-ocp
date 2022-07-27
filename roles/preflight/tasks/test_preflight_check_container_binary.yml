@@ -1,95 +1,69 @@
 ---
-- name: Create temporary (container) preflight artifacts directory
-  tempfile:
-    state: directory
-    prefix: preflight_container_artifacts.
-  register: preflight_container_artifacts
-
 - name: Check if container has already been certified
   include_tasks: test_check_if_container_certified.yml
   when: not preflight_test_certified_image
 
-- name: Set pyxis auth if cert project is already here
-  vars:
-    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-  set_fact:
-    pyxis_auth_container: >-
-      --certification-project-id {{ operator.pyxis_container_identifier }}
-      --pyxis-api-token {{ pyxis_apikey }}
-      --submit
-  when:
-    - not (already_certified | default(false) | bool)
-    - operator.pyxis_container_identifier is defined
-    - operator.pyxis_container_identifier | length > 0
-  no_log: true
-
-- name: Create certification project if required
+- name: "Non-certified image or force test run for {{ current_operator_image }}"
   block:
-    - name: Proceed to the project creation
+    - name: Create temporary (container) preflight artifacts directory
+      tempfile:
+        state: directory
+        prefix: preflight_container_artifacts.
+      register: preflight_container_artifacts
+
+    - name: Set cert_project_id if cert project is already here
+      set_fact:
+        cert_project_id: "{{ operator.pyxis_container_identifier }}"
+      when: operator.pyxis_container_identifier | default('') | length > 0
+
+    - name: "Create certification project for {{ current_operator_image }}"
       include_role:
         name: create-certification-project
       vars:
         project_type: "container"
+      when:
+        - create_cert_projects | default(false)
+        - operator.pyxis_container_identifier | default('') | length == 0
 
-    - name: Set pyxis auth after project creation
-      vars:
-        pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+    - name: Template config.yaml with Preflight setup
+      template:
+        src: templates/config.yaml.j2
+        dest: "{{ preflight_container_artifacts.path }}/config.yaml"
+
+    - name: "Run preflight check container on operator image {{ current_operator_image }} with preflight binary"
+      shell: >
+        PFLT_JUNIT=true
+        {{ preflight_binary_dir }}/preflight
+        check container
+        {{ current_operator_image }}
+        {% if cert_project_id | default('') | length %}
+        --submit
+        {% endif %}
+      args:
+        chdir: "{{ preflight_container_artifacts.path }}"
+
+    - name: Unset pyxis auth to not reuse by following containers
       set_fact:
-        pyxis_auth_container: >-
-          --certification-project-id {{ cert_project_id }}
-          --pyxis-api-token {{ pyxis_apikey }}
-          --submit
         cert_project_id: ""
-      # no_log: true
-  when:
-    - create_cert_projects | default(false)
-    - operator.pyxis_container_identifier is not defined or operator.pyxis_container_identifier | length == 0
 
-- name: "Run preflight check container on operator image for {{ current_operator_image }} with preflight binary"
-  shell: >
-    cd {{ preflight_container_artifacts.path }};
-    {{ preflight_docker_config_env | default('') }}
-    PFLT_JUNIT=true
-    PFLT_ARTIFACTS={{ preflight_container_artifacts.path }}
-    PFLT_LOGFILE={{ preflight_container_artifacts.path }}/preflight.log
-    PFLT_LOGLEVEL=trace
-    {{ preflight_binary_dir }}/preflight
-    check container
-    {{ current_operator_image }}
-    {{ preflight_podman_auth_for_binary | default('') }}
-    {{ pyxis_auth_container | default('') }}
-  register: preflight_container_output
-  retries: 6
-  delay: 10
-  # do not display logs
-  # if preflight invocation contains --submit option
-  #no_log: "{{ pyxis_auth_container is defined and pyxis_auth_container | length > 0 }}"
-  when:
-    - not (already_certified | default(false) | bool)
+    - name: "Run health check on {{ current_operator_image }}"
+      include_tasks: test_run_health_check.yml
+      when: preflight_run_health_check | bool
 
-- name: Unset pyxis auth to not reuse by following containers
-  set_fact:
-    pyxis_auth_container: ""
+    - name: Upload logs for preflight check container into DCI
+      vars:
+        image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
+        preflight_prefix: "preflight_container_{{ operator.name }}_{{ operator.version }}_{{ image_name }}"
+      copy:
+        src: "{{ item }}"
+        dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
+      with_fileglob:
+        - "{{ preflight_container_artifacts.path }}/*"
 
-- name: "Run health check on {{ current_operator_image }}"
-  include_tasks: test_run_health_check.yml
-  when: preflight_run_health_check
-
-- name: Upload logs for preflight check container into DCI
-  vars:
-    image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
-    preflight_prefix: "preflight_container_{{ operator.name }}_{{ operator.version }}_{{ image_name }}"
-  copy:
-    src: "{{ item }}"
-    dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
-  with_fileglob:
-    - "{{ preflight_container_artifacts.path }}/*"
-  when:
-    - not (already_certified | default(false) | bool)
-
-- name: Remove tmp dir
-  file:
-    path: "{{ preflight_container_artifacts.path }}"
-    state: absent
+    - name: Remove tmp dir
+      file:
+        path: "{{ preflight_container_artifacts.path }}"
+        state: absent
+  when: not (already_certified | default(false) | bool)
 
 ...
