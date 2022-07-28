@@ -1,0 +1,16 @@
+[Unit]
+Description=Set hostname workaround for RDNS lookups setting hostname
+Before=systemd-user-sessions.service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+Type=oneshot
+TimeoutSec=60
+ExecStart=/bin/bash /usr/local/bin/set-hostname-workaround.sh
+PrivateTmp=true
+RemainAfterExit=no
+
+[Install]
+WantedBy=agent.service
