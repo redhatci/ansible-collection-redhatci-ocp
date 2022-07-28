@@ -1,0 +1,40 @@
+{
+    "ignition": {
+        "version": "3.1.0"
+    },
+    "systemd": {
+        "units": [
+            {
+                "name": "set-hostname-workaround.service",
+                "enabled": true,
+                "contents": {{ (lookup('template', 'set-hostname-workaround.service.j2') | string) | to_json }}
+            }
+        ]
+    },
+    "storage": {
+        "files": [
+            {
+                "path": "/usr/local/bin/set-hostname-workaround.sh",
+                "mode": 420,
+                "overwrite": true,
+                "user": {
+                    "name": "root"
+                },
+                "contents": {
+                    "source": "data:text/plain;base64,{{ lookup('template', 'set-hostname-workaround.sh.j2') | string | b64encode }}"
+                }
+            },
+            {
+                "path": "/etc/NetworkManager/conf.d/NoRDNS.conf",
+                "mode": 420,
+                "overwrite": true,
+                "user": {
+                    "name": "root"
+                },
+                "contents": {
+                    "source": "data:text/plain;base64,{{ ("[main]\nhostname-mode=" + (nm_hostname_mode | default('none')) + "\n") | string | b64encode }}"
+                }
+            }
+        ]
+    }
+}

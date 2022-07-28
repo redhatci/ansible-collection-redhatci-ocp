@@ -31,3 +31,5 @@ ai_version_number: "{{ ai_version | regex_replace('v(\\d+\\.\\d+\\.\\d+)', '\\1'
 http_proxy: ""
 https_proxy: ""
 no_proxy: ""
+
+use_hostname_workaround: false

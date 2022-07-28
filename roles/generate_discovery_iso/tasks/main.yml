@@ -21,7 +21,12 @@
 
 - name: Load patch for discovery ignition
   set_fact:
-    patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition.j2') }}"
+    patch_discovery_ignition: "{{ lookup('template', 'patch-discovery-ignition-hostname-workground.j2') }}"
+  when: use_hostname_workaround | bool == True
+
+- name: Load patch for discovery ignition
+  set_fact:
+    patch_discovery_ignition: "{{ (patch_discovery_ignition | default({})) | combine(lookup('template', 'patch-discovery-ignition.j2') | from_json) }}"
   when: disconnected | bool == True
 
 - debug: # noqa unnamed-task
@@ -52,7 +57,7 @@
 - name: Create infra_env_body
   set_fact:
     infra_env_body: "{{ infra_env_body | combine({'ignition_config_override': patch_discovery_ignition | to_json}) }}"
-  when: disconnected | bool == True
+  when: (disconnected | bool  or use_hostname_workaround | bool)
 
 - name: IP config
   set_fact:
