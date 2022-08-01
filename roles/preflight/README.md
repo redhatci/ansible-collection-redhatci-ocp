@@ -150,8 +150,6 @@ The idea is use one of them.
   dci_name: "Testpmd-Operator-Preflight"
   dci_tags: ["debug", "testpmd-operator"]
 
-  do_preflight_tests: true
-
   # Optional, please provide these credentials
   # if your registry is private.
   partner_creds: "/opt/pull-secrets/partner_config.json"
@@ -188,7 +186,6 @@ The idea is use one of them.
   dci_name: "Testpmd-Operator-Preflight"
   dci_tags: ["debug", "testpmd-operator"]
 
-  do_preflight_tests: true
   # Mandatory for disconnected environment,
   # this registry is used for mirrored images
   # and to store an index (catalog) image.
