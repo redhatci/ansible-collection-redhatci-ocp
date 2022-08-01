@@ -77,7 +77,7 @@
 
     - name: Update released items (image:tag format)
       set_fact:
-        updated_release_images: "{{ updated_release_images | default([]) + [item | combine({'url': item.url.split(':')[0] + '@' + image_hashes['release_' + item.version + '_' + item.cpu_architecture]  })] }}"
+        updated_release_images: "{{ updated_release_images | default([]) + [item | combine({'url': item.url.rsplit(':', 1)[0] + '@' + image_hashes['release_' + item.version + '_' + item.cpu_architecture]  })] }}"
       when:
         - ('@' not in item.url)
         - (':' in item.url)
