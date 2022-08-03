@@ -59,17 +59,40 @@
     with_items: "{{ list_sh_scripts.files }}"
 
   # We need to check the SHA in this way, because extract-dependencies changes the
-  # commit id when creating the new branch based on the PR, but the original id
-  # is saved in .git/ORIG_HEAD file.
-  - name: Retrieve commit SHA from the downloaded repo
-    shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
-    register: tnf_repo_info
-    args:
-      chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+  # commit id when creating the new branch based on the PR, but only if new PRs are merged 
+  # in the repo and we have not included them in our change. In these cases, the original 
+  # id is saved in .git/ORIG_HEAD file. Else, we can find it in the location called
+  # `.git/refs/heads/prXXX`
+  - name: "Check if .git/ORIG_HEAD file exists"
+    stat:
+      path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/.git/ORIG_HEAD"
+    register: orig_head_file
 
-  - name: Create variable with tnf version name
-    set_fact:
-      tnf_version_image: "{{ tnf_repo_info.stdout }}"
+  - name: Actions when .git/ORIG_HEAD file exists
+    block:
+      - name: Retrieve commit SHA from the downloaded repo - from ORIG_HEAD
+        shell: cat .git/ORIG_HEAD
+        register: tnf_repo_info_head
+        args:
+          chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+
+      - name: Create variable with tnf version name
+        set_fact:
+          tnf_version_image: "{{ tnf_repo_info_head.stdout }}"
+    when: orig_head_file.stat.exists
+
+  - name: Actions when .git/ORIG_HEAD file does not exist
+    block:
+      - name: Retrieve commit SHA from the downloaded repo - from refs
+        shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
+        register: tnf_repo_info_branch
+        args:
+          chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+
+      - name: Create variable with tnf version name
+        set_fact:
+          tnf_version_image: "{{ tnf_repo_info_branch.stdout }}"
+    when: not orig_head_file.stat.exists
 
   - name: Create variable with tnf image name
     set_fact:
@@ -81,7 +104,8 @@
       set -x
       podman build -t {{ tnf_image }} \
       --build-arg TNF_VERSION={{ tnf_version_image }} \
-      --build-arg TNF_SRC_URL={{ test_network_function_repo }} .
+      --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
+      --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
     args:
       chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
@@ -99,7 +123,7 @@
       team_id: "{{ job_info['job']['team_id'] }}"
       topic_id: "{{ job_info['job']['topic_id'] }}"
       type: "{{ test_network_function_project_name }}"
-      url: "{{ test_network_function_repo }}/commit/{{ tnf_version_image }}"  # noqa 204
+      url: "https://github.com/test-network-function/cnf-certification-test/commit/{{ tnf_version_image }}"  # noqa 204
       state: present
     register: tnf_git_component
     tags: [dci]
