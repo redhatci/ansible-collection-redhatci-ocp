@@ -47,8 +47,16 @@
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true
 
+- name: Convert Oval file to Junit
+  dci_oval_to_junit:
+    oval_result_src: "{{ preflight_container_artifacts.path }}/oval-report.xml"
+    junit_dest: "{{ preflight_container_artifacts.path }}/oval-report.junit.xml"
+
 - name: Remove garbage files
   file:
-    path: "{{ preflight_container_artifacts.path }}/rhel-{{ ansible_distribution_major_version }}.oval.xml"
+    path: "{{ item }}"
     state: absent
+  loop:
+    - "{{ preflight_container_artifacts.path }}/rhel-{{ ansible_distribution_major_version }}.oval.xml"
+    - "{{ preflight_container_artifacts.path }}/oval-report.xml"
 ...
