@@ -2,6 +2,7 @@
 dockerConfig: {{ preflight_tmp_dir.path }}/config.json
 {% endif %}
 loglevel: trace
+junit: true
 logfile: {{ preflight_container_artifacts.path }}/preflight.log
 artifacts: {{ preflight_container_artifacts.path }}
 {% if cert_project_id | default('') | length %}
