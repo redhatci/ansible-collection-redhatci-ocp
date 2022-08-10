@@ -1,18 +1,10 @@
 ---
-# Preflight 1.3.3 requires to use binary because some container tests fail.
+# Preflight 1.3.4 requires to use binary because some container tests fail.
 # The next Preflight release will require to use podman run again.
-- name: "Run preflight check container on operator images for {{ operator.name }} with podman"
-  include_tasks: test_preflight_check_container_podman.yml
-  loop: "{{ operator.operator_images }}"
-  loop_control:
-    loop_var: current_operator_image
-  when: preflight_binary | length == 0
-
 - name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
   include_tasks: test_preflight_check_container_binary.yml
   loop: "{{ operator.operator_images }}"
   loop_control:
     loop_var: current_operator_image
-  when: preflight_binary | length > 0
 
 ...
