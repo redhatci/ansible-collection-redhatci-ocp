@@ -1,13 +1,13 @@
 ---
 # Define preflight_binary if you intend to use it for check container tests.
-# preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.3.3/preflight-linux-amd64
+# preflight_binary: https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.3.4/preflight-linux-amd64
 # If empty, podman image preflight_image would be used for both
 # check container and check operator.
-# Preflight 1.3.3 requires to use binary for check container
+# Preflight 1.3.4 requires to use binary for check container
 # because some container tests fail.
 # The next Preflight release will require to use podman run again.
-preflight_binary: "https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.3.3/preflight-linux-amd64"
-preflight_image: "quay.io/opdev/preflight:1.3.3"
+preflight_binary: "https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.3.4/preflight-linux-amd64"
+preflight_image: "quay.io/opdev/preflight:1.3.4"
 preflight_namespace: preflight-testing
 preflight_custom_ca: ""
 preflight_podman_ca: ""

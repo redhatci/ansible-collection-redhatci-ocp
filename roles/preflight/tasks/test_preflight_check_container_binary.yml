@@ -5,6 +5,15 @@
 
 - name: "Non-certified image or force test run for {{ current_operator_image }}"
   block:
+    - name: "Validate parameters for check container run on {{ current_operator_image }}"
+      assert:
+        that:
+          - preflight_binary | length
+          - operator.name is defined
+          - operator.version is defined
+        fail_msg: "Cannot run preflight check container: automatically generated config is missing"
+        success_msg: "All required parameters are ok, proceeding to run preflight check container"
+
     - name: Create temporary (container) preflight artifacts directory
       tempfile:
         state: directory
@@ -14,7 +23,7 @@
     - name: Set cert_project_id if cert project is already here
       set_fact:
         cert_project_id: "{{ operator.pyxis_container_identifier }}"
-      when: operator.pyxis_container_identifier | default('') | length > 0
+      when: operator.pyxis_container_identifier | default('') | length
 
     - name: "Create certification project for {{ current_operator_image }}"
       include_role:
@@ -27,12 +36,11 @@
 
     - name: Template config.yaml with Preflight setup
       template:
-        src: templates/config.yaml.j2
+        src: templates/config_container.yaml.j2
         dest: "{{ preflight_container_artifacts.path }}/config.yaml"
 
     - name: "Run preflight check container on operator image {{ current_operator_image }} with preflight binary"
       shell: >
-        PFLT_JUNIT=true
         {{ preflight_binary_dir }}/preflight
         check container
         {{ current_operator_image }}
