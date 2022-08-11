@@ -27,7 +27,7 @@
   shell:
     cmd: >
       podman pull
-      {% if partner_creds is defined %}
+      {% if partner_creds | length %}
       --authfile {{ partner_creds }}
       {% endif %}
       {{ current_operator_image }}
