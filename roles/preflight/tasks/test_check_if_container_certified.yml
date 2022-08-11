@@ -13,7 +13,7 @@
 - name: "Get Image Digest"
   shell: >
     skopeo inspect
-    {% if partner_creds is defined %}
+    {% if partner_creds | length %}
     --authfile {{ partner_creds }}
     {% else %}
     --no-creds
