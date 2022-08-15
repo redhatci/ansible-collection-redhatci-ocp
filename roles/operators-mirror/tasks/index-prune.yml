@@ -10,7 +10,7 @@
 
 - name: "Set operator source index"
   set_fact:
-    source_index: "{{ operators_index | default('registry.redhat.io/redhat/redhat-operator-index:v{{ ocp_major }}.{{ ocp_minor }}') }}"
+    source_index: "{{ operators_index | default('registry.redhat.io/redhat/redhat-operator-index:v' + ocp_major + '.' + ocp_minor) }}"
 
 - name: "Prune SQLite based catalog index"
   block:

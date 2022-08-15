@@ -1,5 +1,4 @@
 ---
-
 - name: "Build Operator catalog index"
   include_tasks: build-catalog-index.yml
 
@@ -58,10 +57,20 @@
     src: mirror-bundle.yml
     dest: "{{ dci_cluster_configs_dir }}/mirror-bundle.yml"
 
-- name: Copy trust bundle
+- name: Copy trust bundle for non assisted hosts (ini style inventory)
   copy:
     src: "{{ hostvars[groups['registry_host'][0]].disconnected_registry_mirrors_file }}"
     dest: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
+  when:
+    - install_type is not defined or install_type != 'assisted'
+
+- name: Copy trust bundle for assisted hosts (yaml style inventory)
+  copy:
+    src: "{{ hostvars.registry_host.disconnected_registry_mirrors_file }}"
+    dest: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
+  when:
+    - install_type is defined
+    - install_type == 'assisted'
 
 - name: Add Dynamic mirror to trust bundle
   blockinfile:
@@ -72,6 +81,6 @@
   set_fact:
     disconnected_registry_mirrors_file: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
   delegate_facts: true
-  delegate_to: "{{ groups['registry_host'][0] }}"
+  delegate_to: registry_host
 
 ...
