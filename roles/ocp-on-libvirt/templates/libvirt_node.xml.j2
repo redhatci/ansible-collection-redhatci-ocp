@@ -43,6 +43,17 @@
       <target dev='sda' bus='scsi'/>
       {% endif %}
     </disk>
+    {% if host['disk2_size'] is defined %}
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='{{ host['disk_cache'] }}'/>
+      <source file='{{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2'/>
+      {% if host['disk_bus'] == 'virtio_blk' %}
+      <target dev='vdb' bus='virtio'/>
+      {% else %}
+      <target dev='sdb' bus='scsi'/>
+      {% endif %}
+    </disk>
+    {% endif %}
     {% if host['disk_bus'] == 'virtio_scsi' %}
       <controller type='scsi' model='virtio-scsi' />
     {% endif %}
