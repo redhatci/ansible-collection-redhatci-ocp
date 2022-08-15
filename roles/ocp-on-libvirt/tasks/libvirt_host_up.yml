@@ -13,10 +13,17 @@
   include: copy_image_src.yml
   when: node_exists.failed
 
-- name: "Add additional storage"
+- name: "Resize OS disk"
   command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
   become: "{{ libvirt_become }}"
   when: host['disk_size'] is defined and node_exists.failed
+
+- name: "Create an additional disk"
+  command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }} "
+  become: "{{ libvirt_become }}"
+  when:
+    - host['disk2_size'] is defined and node_exists.failed
+    - '"worker" in host["name"]'
 
 - name: "Create directories"
   file:
