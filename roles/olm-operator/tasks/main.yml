@@ -25,22 +25,6 @@
         namespace: "{{ namespace }}"
       spec: "{{ operator_group_spec | default(omit) }}"
 
-- name: Create subscription for OLM operator
-  community.kubernetes.k8s:
-    definition:
-      apiVersion: operators.coreos.com/v1alpha1
-      kind: Subscription
-      metadata:
-        name: "{{ operator }}"
-        namespace: "{{ namespace }}"
-      spec:
-        channel: "{{ channel | default(omit) }}"
-        config:
-          resources: {}
-        name: "{{ operator }}"
-        source: "{{ source }}"
-        sourceNamespace: "{{ source_ns }}"
-
 - name: Get operator's package manifest
   community.kubernetes.k8s_info:
     api: packages.operators.coreos.com/v1
@@ -59,11 +43,37 @@
   set_fact:
     default_channel: "{{ packagemanifest | json_query(channels) | join('') | string }}"
 
-- name: "Get operator's CSV for desired channel"
-  vars:
-    current_csv: "resources[*].status.channels[? name=='{{ channel | default ( default_channel ) }}' ].currentCSV | [0]"
+- name: "Set Desired channel"
   set_fact:
-    operator_csv: "{{ packagemanifest | json_query(current_csv) | first  }}"
+    desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
+
+- name: Create subscription for OLM operator
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: "{{ operator }}"
+        namespace: "{{ namespace }}"
+      spec:
+        channel: "{{ desired_channel }}"
+        config:
+          resources: {}
+        name: "{{ operator }}"
+        source: "{{ source }}"
+        sourceNamespace: "{{ source_ns }}"
+
+- name: "Get Operator's CSV"
+  block:
+    - name: "Get operator's CSV for desired channel"
+      vars:
+        current_csv: "resources[*].status.channels[? name=='{{ desired_channel }}' ].currentCSV | [0]"
+      set_fact:
+        operator_csv: "{{ packagemanifest | json_query(current_csv) | first  }}"
+  rescue:
+    - name: "Operator's CSV not found in the specifed channel"
+      fail:
+        msg: "Operator's CSV not found in the specifed channel, check if channel: {{ desired_channel }} is valid"
 
 - name: "{{ ocp_version }} - {{ operator_csv }} - wait for CSV to be ready"
   community.kubernetes.k8s_info:
