@@ -106,6 +106,15 @@
       systemd:
           daemon_reload: yes
 
+    - name: Allow platform-python to be executed by systemd
+      sefcontext:
+        target: "{{ vbmc_virtualenv }}/bin/platform-python"
+        setype: bin_t
+        state: present
+
+    - name: Apply new SELinux file context for platform-python
+      command: "restorecon -irv {{ vbmc_virtualenv }}/bin/platform-python"
+
     - name: restart virtualbmc
       service:
           name: virtualbmc
