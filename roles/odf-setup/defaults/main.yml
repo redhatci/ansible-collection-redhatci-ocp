@@ -1,0 +1,29 @@
+---
+# defaults file for ocs-setup
+
+### Local Storage Operator variables
+
+# (Required) Channel versions to use, namespace and operators names
+local_storage_operator: local-storage-operator
+local_storage_namespace: openshift-local-storage
+
+# (Required) Name of the LSO Storage Class
+local_storage_class: localblock
+
+# (Required) Type of LSO Volume Mode, either filesystem or block
+local_volume_mode: block
+
+# (Required) Replica size
+replica_size: 3
+
+### OCS Storage Operator variables
+
+# (Required) Channel versions to use, namespace and operators names
+ocs_storage_operator: ocs-operator
+ocs_storage_namespace: openshift-storage
+
+# (Optional) Whether to enable Multicloud Object Gateway (nooba)
+enable_object_gateway: false
+
+# (Required) default storageclass annotation
+default_storageclass_annotation: '{"storageclass.kubernetes.io/is-default-class": "true"}'

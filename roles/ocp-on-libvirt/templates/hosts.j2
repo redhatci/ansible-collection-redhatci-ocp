@@ -13,6 +13,17 @@ dir="{{ '{{' }} ansible_user_dir {{ '}}' }}/clusterconfigs"
 
 #webserver_url="http://{{ ansible_fqdn }}:8080"
 
+{% if enable_lso | default(false) | bool %}
+ocs_install_type=internal
+local_storage_devices='["/dev/sdb"]'
+
+[ocs_nodes:children]
+workers
+
+[ocs_nodes:vars]
+lso_label='{"cluster.ocs.openshift.io/openshift-storage": ""}'
+{% endif %}
+
 # Master nodes
 [masters]
 {% for key, value in ironic_nodes.items() %}
