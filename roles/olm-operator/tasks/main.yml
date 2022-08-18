@@ -30,22 +30,19 @@
     api: packages.operators.coreos.com/v1
     kind: PackageManifest
     name: "{{ operator }}"
-    namespace:  default
+    namespace: default
   register: packagemanifest
   retries: 9
   delay: 10
   until:
     - packagemanifest.resources | length == 1
 
-- name: "Get operator's default channel name"
+- name: "Set Desired channel"
   vars:
     channels: "resources[*].status.defaultChannel"
-  set_fact:
     default_channel: "{{ packagemanifest | json_query(channels) | join('') | string }}"
-
-- name: "Set Desired channel"
   set_fact:
-    desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
+    desired_channel: "{{ ( channel | default(None) | length ) | ternary(channel, default_channel) }}"
 
 - name: Create subscription for OLM operator
   community.kubernetes.k8s:
@@ -100,10 +97,9 @@
         namespace: "{{ namespace }}"
       spec:
         installPlanApproval: "{{ install_approval | default('Manual') }}"
-        channel: "{{ channel | default(omit) }}"
+        channel: "{{ desired_channel }}"
         config:
           resources: {}
         name: "{{ operator }}"
         source: "{{ source }}"
         sourceNamespace: "{{ source_ns }}"
-...
