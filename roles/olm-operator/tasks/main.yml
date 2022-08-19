@@ -42,7 +42,7 @@
     channels: "resources[*].status.defaultChannel"
     default_channel: "{{ packagemanifest | json_query(channels) | join('') | string }}"
   set_fact:
-    desired_channel: "{{ ( channel | default(None) | length ) | ternary(channel, default_channel) }}"
+    desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
 
 - name: Create subscription for OLM operator
   community.kubernetes.k8s:

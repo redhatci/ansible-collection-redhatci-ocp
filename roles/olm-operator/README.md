@@ -8,10 +8,10 @@ Name                        | Required  | Default                | Description
 --------------------------- |-----------|------------------------|--------------------------------------
 operator                    | Yes       | undefined              | Name of the operator to install
 namespace                   | Yes       | undefined              | Namespace where the operator will be installed
-channel                     | No        | None                   | The defaultChannel of the operator is used if no channel is defined
+channel                     | No        | \<defaultChannel\>     | The default channel of the operator is calculated and used when undefined
 source                      | No        | redhat-operators       | CatalogSource where to pull operator from
 source_ns                   | No        | openshift-marketplace  | Namespace where the CatalogSource is (default: )
-operator_group_spec         | No        | default: {}            | OperatorGroupSpec is the spec for an OperatorGroup resource. e.g. make operator available in all namespaces)
+operator_group_spec         | No        | {}                     | OperatorGroupSpec is the spec for an OperatorGroup resource. e.g. make operator available in all namespaces)
 install_approval            | No        | Manual                 | Operator install plan approval mode, either Automatic or Manual (default)
 
 ## Example of usage
