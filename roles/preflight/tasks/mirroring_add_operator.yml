@@ -5,15 +5,15 @@
       skopeo inspect
       docker://{{ operator.bundle_image }} |
       jq -r '.Labels."operators.operatorframework.io.bundle.channel.default.v1"'
-  register: default_channel
+  register: def_channel
   retries: 5
   delay: 5
-  until: default_channel is not failed
+  until: def_channel is not failed
 
 - name: "Initialize operators index {{ operator.name }}"
   shell: >
     {{ opm_tool_path }} init {{ operator.name }}
-    --default-channel={{ default_channel.stdout }}
+    --default-channel={{ def_channel.stdout }}
     --output=yaml >> disconnected-catalog/index.yml
   args:
     chdir: "{{ preflight_prerun_tmp_dir.path }}"
@@ -33,7 +33,7 @@
       ---
       schema: olm.channel
       package: {{ operator.name }}
-      name: {{ default_channel.stdout }}
+      name: {{ def_channel.stdout }}
       entries:
         - name: {{ operator.operator_name }}
     marker: "# {{ operator.name }}-channel"
