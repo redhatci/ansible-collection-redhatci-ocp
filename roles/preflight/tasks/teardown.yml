@@ -17,4 +17,10 @@
       command: /bin/update-ca-trust
   when: preflight_custom_ca | length
   become: true
+
+- name: "Remove the local preflight image"
+  shell:
+    cmd: >
+      podman rmi -f {{ preflight_image }}
 ...
+
