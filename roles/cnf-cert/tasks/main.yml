@@ -99,7 +99,7 @@
       tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}"
 
   # Steps from https://github.com/test-network-function/cnf-certification-test#building-the-container-image-locally
-  - name: Build the tnf container locally
+  - name: Build the tnf image locally
     shell: |
       set -x
       podman build -t {{ tnf_image }} \
