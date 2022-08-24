@@ -38,8 +38,8 @@
     headers:
       Accept: "application/json"
   become: true
-  retries: 3
-  delay: 10
+  retries: 10
+  delay: 20
   register: downloaded
   until: downloaded is not failed
 
