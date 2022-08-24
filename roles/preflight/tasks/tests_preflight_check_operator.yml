@@ -28,7 +28,6 @@
   shell: >
     podman run
     --rm
-    --pull=always
     --privileged
     -e PFLT_JUNIT=true
     -e PFLT_ARTIFACTS=/artifacts
@@ -49,8 +48,6 @@
     check operator
     {{ operator.bundle_image }}
   register: preflight_exec
-  retries: 6
-  delay: 10
   ignore_errors: true
 
 - name: Upload logs for preflight check operator into DCI
@@ -73,6 +70,24 @@
     api_version: v1
     kind: Namespace
     state: absent
+
+- block:
+    - name: Wait for namespace to be destroyed
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ preflight_namespace }}"
+      register: preflight_namespace_presence
+      until: preflight_namespace_presence.resources | length == 0
+      retries: 30
+      delay: 10
+  rescue:
+    - name: Print hanging resources
+      shell: "{{ oc_tool_path }} get all -n {{ preflight_namespace }}"
+
+    - name: Impossible to destroy namespace
+      fail:
+        msg: "Impossible to destroy namespace {{ preflight_namespace }}"
 
 - name: Check the presence of junit file with test results
   vars:
