@@ -12,12 +12,13 @@ manual
 logdir /var/log/chrony
 log measurements statistics tracking
 {% endif %}
+
 allow 127.0.0.1
-{% if ntp_server_allow %}
-allow {{ ntp_server_allow }}
-{% endif %}
+{% for allow_server in ntp_server_allows %}
+allow {{ allow_server }}
+{% endfor %}
+
 server 127.0.0.1
 {% for item in ntp_pool_servers %}
 server {{ item }}
 {% endfor %}
-
