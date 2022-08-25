@@ -26,7 +26,7 @@
 
 - name: Load patch for discovery ignition
   set_fact:
-    patch_discovery_ignition: "{{ (patch_discovery_ignition | default({})) | combine(lookup('template', 'patch-discovery-ignition.j2') | from_json) }}"
+    patch_discovery_ignition: "{{ (patch_discovery_ignition | default({})) | combine(lookup('template', 'patch-discovery-ignition.j2')) }}"
   when: disconnected | bool == True
 
 - debug: # noqa unnamed-task
@@ -85,7 +85,7 @@
     var: infra_env_reply.json
     verbosity: 1
 
-- name: Set infra-env id on all hosts 
+- name: Set infra-env id on all hosts
   set_fact:
     infra_env_id: "{{ infra_env_reply.json.id }}"
   delegate_to: "{{ item }}"
@@ -98,7 +98,7 @@
     dest: "{{ fetched_dest }}/infra_env_id.txt"
     mode: 0644
   delegate_to: localhost
-    
+
 - name: Get discovery ignition file
   uri:
     url: "{{ ASSISTED_INSTALLER_BASE_URL }}/infra-envs/{{ infra_env_id }}/downloads/files?file_name=discovery.ign"
@@ -127,7 +127,7 @@
         discovery_password_patch:
           ignition:
             version: "{{ discovery_content.ignition.version }}"
-          passwd: 
+          passwd:
             users: "{{ [discovery_content.passwd.users[0] | combine({'passwordHash': hashed_discovery_password})] }}"
 
     - name: Create Infra env
@@ -141,7 +141,7 @@
         body_format: json
         status_code: [201]
         return_content: True
-        body: 
+        body:
           ignition_config_override: "{{ (previous_patches| combine(discovery_password_patch)) | to_json }}"
       register: infra_env_patch_reply
 
@@ -151,7 +151,7 @@
         dest: "{{ fetched_dest }}/patched_discovery.ign"
         mode: 0644
       delegate_to: localhost
-  
+
 - name: Put discovery iso in http store
   block:
     - name: Create discovery directory
