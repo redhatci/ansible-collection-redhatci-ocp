@@ -1,0 +1,14 @@
+---
+# Only remove the local tnf image if:
+# - It's not generated from the latest, stable version (test_network_function_version)
+# - It has already been created (tnf_image and tnf_version_image would exist)
+- name: "Remove the local tnf image"
+  shell:
+    cmd: >
+      podman rmi -f {{ tnf_image }}
+  when:
+    - tnf_image is defined
+    - tnf_version_image is defined
+    - tnf_version_image != test_network_function_version
+
+...
