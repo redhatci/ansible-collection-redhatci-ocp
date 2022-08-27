@@ -1,12 +1,12 @@
 - name: "Does node exist"
   ignore_errors: yes
-  virt:
+  community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
   register: node_exists
 
 - name: "destroy node"
-  virt:
+  community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: destroy
   when: node_exists['status'] is defined and node_exists['status'] == 'running'

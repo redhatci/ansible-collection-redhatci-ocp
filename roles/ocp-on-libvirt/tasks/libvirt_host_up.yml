@@ -1,6 +1,6 @@
 - name: "Does node already exist"
   ignore_errors: yes
-  virt:
+  community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
   register: node_exists
@@ -52,7 +52,7 @@
   when: node_exists.failed
 
 - name: "define node"
-  virt:
+  community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: define
     xml: "{{ lookup('template', 'libvirt_node.xml.j2') }}"
@@ -62,12 +62,12 @@
   command: sync
 
 - name: "Start VM"
-  virt:
+  community.libvirt.virt:
     name: "{{ host['name'] }}"
     state: "running"
 
 - name: "Wait for the vm to shut down"
-  virt:
+  community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
   register: vmstatus
@@ -85,7 +85,7 @@
   command: sync
 
 - name: "Start VM again"
-  virt:
+  community.libvirt.virt:
     name: "{{ host['name'] }}"
     state: "running"
   when: node_exists.failed
