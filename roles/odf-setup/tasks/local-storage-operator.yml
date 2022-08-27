@@ -1,0 +1,48 @@
+---
+- name: Add Storage node labels
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: "{{ hostvars[node].name }}"
+        labels:
+          "{{ hostvars[node].lso_label }}"
+  loop: "{{ groups['ocs_nodes'] }}"
+  loop_control:
+    loop_var: node
+    label: "{{ hostvars[node].name }}"
+  when:
+    - groups['ocs_nodes'] is defined
+    - hostvars[node].lso_label is defined
+
+- name: Configure Local Storage Volumes
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'local-storage-block.yml.j2') }}"
+  register: local_storage_volcrd
+
+- name: Set Default Storage Class for LSO
+  block:
+    - name: Check LSO Storage Class exists
+      community.kubernetes.k8s_info:
+        kind: StorageClass
+        name: "{{ local_storage_class }}"
+      register: lso_storage_class
+      retries: 30
+      delay: 10
+      until: lso_storage_class.resources != []
+
+    - name: Set Default Local Storage Class
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: "{{ local_storage_class }}"
+            annotations:
+              "{{ default_storageclass_annotation }}"
+  when:
+    - not enable_ocs | default(false) | bool
+...

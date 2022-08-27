@@ -1,0 +1,34 @@
+apiVersion: ocs.openshift.io/v1
+kind: StorageCluster
+metadata:
+  namespace: {{ ocs_storage_namespace }}
+  name: {{ ocs_storagecluster_name }}
+spec:
+{% if enable_object_gateway | default(false) | bool %}
+  multiCloudGateway:
+    reconcileStrategy: ignore
+{% endif %}
+{% if ocs_install_type == 'external' %}
+  externalStorage:
+    enable: true
+  labelSelector: {}
+{% elif ocs_install_type == 'internal' %}
+  manageNodes: false
+  monDataDirHostPath: /var/lib/rook
+  storageDeviceSets:
+  - count: {{ local_storage_devices | from_json | length }}
+    dataPVCTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: "1"
+        storageClassName: localblock
+        volumeMode: Block
+    name: ocs-deviceset
+    placement: {}
+    portable: false
+    replica: {{ replica_size | int }}
+    resources: {}
+{% endif %}

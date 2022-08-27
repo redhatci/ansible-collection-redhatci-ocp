@@ -1,0 +1,5 @@
+---
+- name: "Deploy OCS and LocalStorage"
+  hosts: provisioner
+  roles:
+    - odf-setup

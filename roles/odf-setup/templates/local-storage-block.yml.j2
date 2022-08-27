@@ -1,0 +1,29 @@
+apiVersion: local.storage.openshift.io/v1
+kind: LocalVolume
+metadata:
+  namespace: "{{ local_storage_namespace }}"
+  name: local-block
+spec:
+  tolerations:
+  - key: "node.ocs.openshift.io/storage"
+    value: "true"
+    effect: NoSchedule
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: cluster.ocs.openshift.io/openshift-storage
+          operator: In
+          values:
+          - ""
+  storageClassDevices:
+    - storageClassName: {{ local_storage_class }}
+{% if local_volume_mode is defined and local_volume_mode == 'filesystem' %}
+      volumeMode: Filesystem
+      fsType: xfs
+{% elif local_volume_mode is defined and local_volume_mode == 'block' %}
+      volumeMode: Block
+{% endif %}
+      devicePaths:
+{% for disk in local_storage_devices | from_json %}
+        - {{ disk }}
+{% endfor %}
