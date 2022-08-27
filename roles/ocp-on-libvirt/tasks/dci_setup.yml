@@ -35,7 +35,7 @@
   when: '"workers" in item.key'
   loop: "{{ ironic_nodes | dict2items }}"
 - name: Startup provisionhost
-  virt:
+  community.libvirt.virt:
     name: "{{ item.key }}"
     state: running
   loop: "{{ lookup('dict', ironic_nodes) }}"

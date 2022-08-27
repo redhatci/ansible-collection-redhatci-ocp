@@ -1,13 +1,13 @@
 ---
 - name: Get list of all VMs
-  virt:
+  community.libvirt.virt:
     command: list_vms
   register: all_vms
   become: yes
   tags: cleanup
 
 - name: Get list of all running VMs
-  virt:
+  community.libvirt.virt:
     command: list_vms
     state: running
   register: running_vms
@@ -15,7 +15,7 @@
   tags: cleanup
 
 - name: Get list of all paused VMs
-  virt:
+  community.libvirt.virt:
     command: list_vms
     state: paused
   register: paused_vms
@@ -23,7 +23,7 @@
   tags: cleanup
 
 - name: Destroy old SNO VMs, if any
-  virt:
+  community.libvirt.virt:
     name: "{{ item }}"
     command: destroy
   with_items:
@@ -34,7 +34,7 @@
   tags: cleanup
 
 - name: Undefine old SNO VMs, if any
-  virt:
+  community.libvirt.virt:
     name: "{{ item }}"
     command: undefine
   with_items: "{{ all_vms.list_vms }}"

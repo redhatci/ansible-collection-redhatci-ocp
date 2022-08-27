@@ -1,6 +1,6 @@
 ---
 - name: Does network exist
-  virt_net:
+  community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: status
   register: network_exists
@@ -9,7 +9,7 @@
   tags: cleanup
 
 - name: Stop SNO network
-  virt_net:
+  community.libvirt.virt_net:
     command: destroy
     name: "{{ network['name'] }}"
   become: yes
@@ -17,7 +17,7 @@
   tags: cleanup
 
 - name: Undefine SNO network
-  virt_net:
+  community.libvirt.virt_net:
     command: undefine
     name: "{{ network['name'] }}"
   become: yes
