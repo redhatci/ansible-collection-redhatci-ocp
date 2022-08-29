@@ -31,6 +31,7 @@ bundle\_image                      | undefined                                  
 index\_image                       | undefined                                            | Optional for connected environments and mandatory for disconnected.
 pyxis\_container\_identifier       | undefined                                            | Optional. To get this identifier, please create a project of type "Container Image project" at connect.redhat.com. Set this project identifier to submit Preflight `check container` results to Pyxis and connect.redhat.com. This identifier is unique for each container. If you have to certify multiple containers please create multiple projects. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client).
 pyxis\_operator\_identifier        | undefined                                            | Optional. This variable should be defined for each operator. To get this identifier, please create a project of type "Operator Bundle Image project" at connect.redhat.com. Set this project identifier to submit Preflight `check operator` results to Pyxis and connect.redhat.com. This identifier is unique for each operator. If you have to certify multiple operators please create multiple projects. Please do not forget to provide Pyxis credentials: pyxis\_apikey\_path with Pyxis token (shared for all projects within one client).
+create\_pr                         | false                                                | Will create a PR in redhat-openshift-ecosystem/certified-operators GH project, needed in the certification workflow
 
 ## Two modes of certification
 
@@ -169,6 +170,8 @@ The idea is use one of them.
       # It's an id of your Operator Bundle Image
       # https://connect.redhat.com/projects/my_nice_container_id
       pyxis_operator_identifier: "my_nice_operator_id"
+      # Enabling the automatic PR creation for certification
+      create_pr: true
 
   # Optional; provide it when you need to submit test results.
   # This token is shared between all your projects.
@@ -225,6 +228,34 @@ The idea is use one of them.
     ```Shell
     dci-openshift-app-agent-ctl -s -- -v
     ```
+## Creating PR for operator bundle certification
+Requirements needed for operator bundle are the following:
+
+1. A project in [Red Hat Partner Connect](https://connect.redhat.com/) must be created for each operator to be tested. Check the role [create-certification-project](roles/create-certification-project/README.md) to create it via this agent.
+2. The Github user used when creating the fork must be added to the Project on connect.redhat.com following [these instructions from the certification project](https://github.com/redhat-openshift-ecosystem/certification-releases/blob/main/4.9/ga/troubleshooting.md#submission-validation)
+3. The operator bundle image must be provided (it should already be done by the preflight).
+
+### Annotations file
+See [this documentation about annotations for bundle operator](https://github.com/operator-framework/operator-registry/blob/v1.12.6/docs/design/operator-bundle.md#bundle-annotations). Pyxis is also requesting a specific annotation on which the openshift version the bundle is intended to run.
+Here is an example of one annotations.yaml from a bundle:
+```yaml
+annotations:
+  # Pyxis annotations.
+  com.redhat.openshift.versions: "v4.7-v4.10"
+
+  # Core bundle annotations.
+  operators.operatorframework.io.bundle.mediatype.v1: registry+v1
+  operators.operatorframework.io.bundle.manifests.v1: manifests/
+  operators.operatorframework.io.bundle.metadata.v1: metadata/
+  operators.operatorframework.io.bundle.package.v1: "my-great-operator"
+  operators.operatorframework.io.bundle.channels.v1: stable
+  operators.operatorframework.io.bundle.channel.default.v1: stable
+
+  # Annotations for testing.
+  operators.operatorframework.io.test.mediatype.v1: scorecard+v1
+  operators.operatorframework.io.test.config.v1: tests/scorecard/
+```
+Note that if 'com.redhat.openshift.version' annotation is missing, the role will fail.
 
 ## Preflight CI
 

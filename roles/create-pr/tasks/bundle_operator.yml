@@ -1,0 +1,111 @@
+---
+- name: "Create version directory"
+  file:
+    path: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}"
+    state: directory
+    mode: '0755'
+
+- name: "Create manifest and metadata directories"
+  file:
+    path: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "manifests"
+    - "metadata"
+
+- name: "Git create a local branch"
+  shell: "git checkout -b {{ local_branch }}"
+  args:
+    chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}"
+
+- name: "Render bundle operator image"
+  shell: >
+    {{ preflight_docker_config_env | default('') }}
+    {{ opm_tool_path }} render {{ operator.bundle_image }}
+  register: rendered_bundle
+
+- name: "Get inspected data"
+  set_fact:
+    bundle_data: "{{ rendered_bundle.stdout | from_json }}"
+
+- name: "Get operator name, version and image data blob"
+  vars:
+    name_query: "properties[? type==`olm.package`].value.packageName"
+    version_query: "properties[? type==`olm.package`].value.version"
+    data_query: "properties[? type==`olm.bundle.object`].value.data"
+  set_fact:
+    operator_name: "{{ bundle_data | json_query('name') | join('') }}"
+    short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
+    operator_version: "{{ bundle_data | json_query(version_query) | join('') }}"
+    data_blobs: "{{ bundle_data | json_query(data_query) }}"
+
+- name: "Copy manifest files from bundle"
+  copy: content="{{ data_yaml }}" dest={{ chdir }}/{{ metadata }}_{{ apiversion }}_{{ kind }}.yaml
+  vars:
+    data_yaml: "{{ blob | b64decode | from_json | to_yaml }}"
+    metadata: "{{ blob | b64decode | from_json | json_query('metadata.name') }}"
+    apiversion: "{{ blob | b64decode | from_json |json_query('apiVersion')| replace('/','_') }}"
+    kind: "{{ blob | b64decode | from_json| json_query('kind') }}"
+    chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/manifests"
+  loop: "{{ data_blobs | list }}"
+  loop_control:
+    loop_var: blob
+
+- name: Retrieve annotations.yaml file from bundle image
+  shell:
+    cmd: >
+      podman cp
+      $(podman create --rm {{ operator.bundle_image }} bash):/metadata/annotations.yaml .
+    chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata"
+
+- name: "Ensure that annotations.yaml contains 'com.redhat.openshift.versions: v4.x-v4.xx'"
+  lineinfile:
+    name: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata/annotations.yaml"
+    regexp: "^(.*)com.redhat.openshift.versions(.*)$"
+    state: absent
+  check_mode: yes
+  changed_when: false
+  register: versions_present
+
+- name: "Fail if com.redhat.openshift.versions is not found"
+  fail:
+    msg: com.redhat.openshift.versions is missing in the bundle annotations.
+  when: versions_present.found != 1
+
+- name: "Render CI.yaml file"
+  template:
+    src: ci.yaml.j2
+    dest: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/ci.yaml"
+
+- name: "Git add new operator files to the repository"
+  vars:
+    partner: "{{  partner_name | replace(' ','_') }}"
+  shell:
+    cmd: |
+     git config user.email {{ partner_email }}
+     git config user.name {{ github_username }}
+     git add operators/{{ product_name }}
+     git commit -m 'Added {{ product_name }} version {{ product_version }}'
+  args:
+    chdir: "{{ work_dir }}/{{ fork_name }}"
+
+- name: "Push branch and create PR to the forked repository"
+  shell:
+    cmd: |
+      eval "$(ssh-agent)"
+      ssh-add {{ work_dir }}/ssh_key
+      git push -u origin {{ local_branch }}
+      {{ gh_tool_path }} pr create \
+      --title "operator {{ product_name }} ({{ product_version }})" \
+      --body "Adding Operator {{ product_name }} version {{ product_version }} - DCI Job: {{ job_id }}" \
+      --repo {{ target_repository }}
+  args:
+    chdir: "{{ work_dir }}/{{ fork_name }}"
+  register: pr_details
+
+- name: "Get PR submission details"
+  debug:
+    msg: "{{ pr_details.stdout_lines[2] }}"
+  when: pr_details.rc == 0
+...

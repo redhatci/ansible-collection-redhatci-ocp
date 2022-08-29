@@ -44,8 +44,4 @@
     status_code: 201
     timeout: 120
 
-- name: Unset project ID to ensure no occasionnal reuse
-  set_fact:
-    cert_project_id: ""
-
 ...
