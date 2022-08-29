@@ -1,5 +1,4 @@
 ---
-
 - name: "Assert the chart has the required parameters"
   assert:
     that:
@@ -10,7 +9,6 @@
 - name: "Check if the chart file exists"
   uri:
     url: "{{ chart.chart_file }}"
-    return_content: yes
   register: file_response
   ignore_errors: true
   run_once: true
@@ -42,11 +40,11 @@
 - name: "Create working directory"
   tempfile:
     state: directory
-  register: work_dir
+  register: tmp_dir
 
 - name: "Set working directory path"
   set_fact:
-    work_dir: "{{ work_dir.path }}"
+    work_chart_dir: "{{ tmp_dir.path }}"
 
 - name: "Run chart show to get chart details"
   shell:
@@ -69,7 +67,7 @@
       podman run --rm
       -e KUBECONFIG=/kubeconfig
       -v {{ kubeconfig_path }}:/kubeconfig:Z
-      -v {{ work_dir }}:/app/chartverifier:Z
+      -v {{ work_chart_dir }}:/app/chartverifier:Z
       {{ chart_verifier_image }}
       verify --set profile.vendorType=partner
       {% if chart.values_file is defined %} -F {{ chart.values_file }} {% endif %}
@@ -81,12 +79,12 @@
       {{ chart.chart_file }}
       --write-to-file
   args:
-    chdir: "{{ work_dir }}"
+    chdir: "{{ work_chart_dir }}"
   ignore_errors: true
 
 - name: "Copy the report to the Job's log_dir"
   copy:
-    src: "{{ work_dir }}/report.yaml"
+    src: "{{ work_chart_dir }}/report.yaml"
     dest: "{{ logs_dir }}/{{ chart_name }}_{{ index }}_report.yaml"
     remote_src: yes
   delegate_to: localhost
@@ -97,13 +95,26 @@
       grep -c FAIL <( {{ yq_tool_path }} e "..|.outcome? | select(.)" report.yaml )
   register: cv_fail_count
   args:
-    chdir: "{{ work_dir }}"
+    chdir: "{{ work_chart_dir }}"
     executable: /bin/bash
   failed_when: "cv_fail_count.rc not in [ 0, 1 ]"
 
 - name: "Submit CV and create pull request"
-  include_tasks: create_pr.yml
+  include_role:
+    name: create-pr
+  vars:
+    product_name: "{{ chart_name }}"
+    product_version: "{{ chart_version }}"
+    fork_name: "charts-{{ chart_name }}-{{ chart_version }}"
+    work_dir: "{{ work_chart_dir }}"
   when:
     - chart.create_pr | default(false) | bool
     - cv_fail_count.stdout | int == 0
+
+- name: "Get PR submission details"
+  debug:
+    msg: "{{ pr_details.stdout_lines[2] }}"
+  when: pr_details.rc == 0
+  notify:
+    - "helm-chart-verifier cleanup"
 ...
