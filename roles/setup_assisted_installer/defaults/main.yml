@@ -50,3 +50,6 @@ no_proxy: ""
 
 podman_ipv6_network_subnet: 'fd00::1:8:0/112'
 podman_ipv6_network_gateway: 'fd00::1:8:1'
+
+
+assisted_service_extra_config: {}

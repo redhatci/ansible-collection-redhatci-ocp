@@ -1,3 +1,4 @@
+#jinja2:trim_blocks: True, lstrip_blocks: True
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -41,3 +42,6 @@ data:
   {% if no_proxy is defined and no_proxy != "" %}
   NO_PROXY: {{ no_proxy }}
   {% endif %}
+  {% for k, v in assisted_service_extra_config.items() %}
+  {{ k }}: {{ v }}
+  {% endfor %}
