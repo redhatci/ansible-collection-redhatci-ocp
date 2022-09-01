@@ -4,7 +4,7 @@ test_network_function_version: "v4.0.2"
 test_network_function_project_name: cnf-certification-test
 dci_openshift_app_image: "quay.io/testnetworkfunction/cnf-test-partner:latest"
 tnf_if: eth0
-tnf_suites: "access-control networking lifecycle observability platform-alteration operator"
+tnf_suites: "-f access-control networking lifecycle observability platform-alteration operator"
 # By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
 # and set the other items as empty values. Under these conditions (i.e. no pods are discovered), no CNF Cert Suite tests are run.
 tnf_config:
