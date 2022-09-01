@@ -10,6 +10,10 @@
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
+    - include_tasks: libvirt_host_up2.yml
+      loop: "{{ hosts }}"
+      loop_control:
+        loop_var: host
     - include_tasks: dns_setup.yml
       when: do_dns_config|bool
     - include_role:
