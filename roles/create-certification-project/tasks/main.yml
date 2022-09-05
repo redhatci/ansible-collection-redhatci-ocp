@@ -1,4 +1,8 @@
 ---
+- name: Get GitHub username from provided token
+  include_tasks: get-gh-username.yml
+  when: project_type == 'operator'
+
 - name: Print JSON draft for the project to be created
   vars:
     template_filename: "templates/create_project_{{ project_type }}.json.j2"
