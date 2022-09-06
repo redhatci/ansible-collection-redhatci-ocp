@@ -35,8 +35,15 @@ targetCrdFilters:
 {% endif %}
 {% endfor %}
 
-# currently not used
 certifiedcontainerinfo:
+{% for container in tnf_certified_container_info %}
+{% if container.name is defined and container.name|length and container.repository is defined and container.repository|length %}
+  - name: {{ container.name }}
+    repository: {{ container.repository }}
+    tag: {{ container.tag | default('latest') }}
+    digest: {{ container.digest | default('') }}
+{% endif %}
+{% endfor %}
 
 checkDiscoveredContainerCertificationStatus: false
 
