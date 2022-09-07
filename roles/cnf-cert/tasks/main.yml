@@ -204,13 +204,13 @@
     export TNF_LOG_LEVEL={{ tnf_log_level }}
     export TNF_PARTNER_REPO={{ tnf_partner_registry }}/testnetworkfunction
     export TNF_IMAGE={{ tnf_image }}
-    export TNF_SUITES='{{ tnf_suites }}'
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
-    -i $TNF_IMAGE \
     -t {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
     -o {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
-    -f $TNF_SUITES &> {{ test_network_function_project_name }}/execution.log
+    {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
+    {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
+    -i $TNF_IMAGE &> {{ test_network_function_project_name }}/execution.log
 
     cp {{ test_network_function_project_name }}/*.xml {{ tnf_tempdir.path }}
     cp {{ test_network_function_project_name }}/*.json {{ tnf_tempdir.path }}
