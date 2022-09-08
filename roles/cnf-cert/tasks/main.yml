@@ -210,6 +210,7 @@
     -o {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
     {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
     {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
+    {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
     -i $TNF_IMAGE &> {{ test_network_function_project_name }}/execution.log
 
     cp {{ test_network_function_project_name }}/*.xml {{ tnf_tempdir.path }}
