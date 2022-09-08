@@ -1,5 +1,4 @@
 ---
-
 - name: "Build Operator catalog index"
   include_tasks: build-catalog-index.yml
 
@@ -60,7 +59,7 @@
 
 - name: Copy trust bundle
   copy:
-    src: "{{ hostvars[groups['registry_host'][0]].disconnected_registry_mirrors_file }}"
+    src: "{{ hostvars[groups['registry_host'] | first].disconnected_registry_mirrors_file }}"
     dest: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
 
 - name: Add Dynamic mirror to trust bundle
@@ -72,6 +71,5 @@
   set_fact:
     disconnected_registry_mirrors_file: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
   delegate_facts: true
-  delegate_to: "{{ groups['registry_host'][0] }}"
-
+  delegate_to: "{{ groups['registry_host'][0] if 'registry_host' in groups else 'registry_host' }}"
 ...

@@ -10,8 +10,6 @@
 #   * cache_dir: Base directory that will hold the OCP version binaries and OS
 #     images
 #   * release_url: The base URL where the release artifacts are stored
-#   * auths_file: Path to the file containing all authentications needed for
-#     container registries e.g. quay.io
 #   * force (default False): If passed as true, the role will re-download all
 #     the OCP release resources
 #   * mirror_artifacts (default True): Download tarball artifacts from the OCP
@@ -23,6 +21,8 @@
 #     which install_type and sno_install_type you provide
 #   * mirror_container_images (default True): Mirror all container images from
 #     upstream container registries to the provided registry
+#   * auths_file (optional): Path to the file containing all authentications
+#     needed for container registries e.g.  quay.io
 #   * write_custom_config (default True): Writes the OCP configuration files and
 #     sets the custom URL facts
 #   * webserver_url (optional): If provided, configuration files pointing to
@@ -42,18 +42,22 @@
       - cache_dir | string
       - version | string
       - release_url | string
-      - auths_file is defined
 
 - name: "Check if authentication file exists"
   stat:
     path: "{{ auths_file }}"
     get_checksum: false
   register: auths_file_check
+  when:
+    - auths_file is defined
 
-- name: "Validate authentication file is present"
+- name: "Validate optional authentication file"
   assert:
     that:
+      - auths_file is defined
       - auths_file_check.stat.isreg | bool
+  when:
+    - mirror_container_images | bool
 
 - name: "Validate optional webserver_url variable"
   assert:
