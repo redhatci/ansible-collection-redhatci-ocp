@@ -35,6 +35,7 @@
   register: health_check
   retries: 6
   delay: 10
+  until: health_check.rc == 0
 
 - name: Run health check
   shell:
