@@ -1,0 +1,26 @@
+---
+- name: "Check if the ACM CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: multiclusterengines.multicluster.openshift.io
+  register: acm_crd
+
+- name: "Fail if ACM CRD is not present"
+  fail:
+    msg: "CRDs are not present"
+  when: acm_crd.resources | list | count == 0
+
+- name: "Check that a default storageclass exists"
+  k8s_info:
+    api_version: v1
+    kind: StorageClass
+  register: storage_class
+
+- name: "Fail when no default storage class is available"
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"
+  fail:
+    msg: "No default storage class was found"
+  when: "not('true' in query_results)"
+...

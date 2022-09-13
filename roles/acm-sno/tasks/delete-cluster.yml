@@ -1,0 +1,87 @@
+---
+- name: "Validate parameters"
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required"
+  with_items:
+      - acm_cluster_name
+
+- name: "Delete managed cluster"
+  community.kubernetes.k8s:
+    state: absent
+    api: cluster.open-cluster-management.io/v1
+    kind: ManagedCluster
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+
+- name: "Delete cluster deployment"
+  community.kubernetes.k8s:
+    api: hive.openshift.io/v1
+    state: absent
+    kind: ClusterDeployment
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+
+- name: "Delete bare-metal host"
+  community.kubernetes.k8s:
+    state: absent
+    api: metal3.io/v1alpha1
+    kind: BareMetalHost
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+
+- name: "Wait for BMH to be deprovisioned"
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: BareMetalHost
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+  register: cluster_bmh
+  until:
+    - cluster_bmh.resources | length == 0
+  retries: 20
+  delay: 15
+
+- name: "Delete infraEnv"
+  community.kubernetes.k8s:
+    state: absent
+    api: agent-install.openshift.io/v1beta1
+    kind: InfraEnv
+    name: "{{ acm_cluster_name }}-infra"
+    namespace: "{{ acm_cluster_name }}"
+  ignore_errors: true
+
+- name: "Delete agent cluster install"
+  community.kubernetes.k8s:
+    state: absent
+    api: extensions.hive.openshift.io/v1beta1
+    kind: AgentClusterInstall
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+
+- name: "Delete klusterlet addon config"
+  community.kubernetes.k8s:
+    state: absent
+    api: agent.open-cluster-management.io/v1
+    kind: KlusterletAddonConfig
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+
+- name: "Delete cluster namespace"
+  community.kubernetes.k8s:
+    state: absent
+    api: v1
+    kind: Namespace
+    name: "{{ acm_cluster_name }}"
+
+- name: "Wait for cluster namespace to be deleted"
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Namespace
+    name: "{{ acm_cluster_name }}"
+  register: cluster_ns
+  until:
+    - cluster_ns.resources | length == 0
+  retries: 6
+  delay: 10
+...

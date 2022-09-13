@@ -1,0 +1,48 @@
+- name: "Get cluster install status"
+  community.kubernetes.k8s_info:
+    api: extensions.hive.openshift.io/v1beta1
+    kind: AgentClusterInstall
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+  register: install_status
+  no_log: true
+  retries: 6
+  delay: 5
+
+- name: "Get completion progress"
+  set_fact:
+    completion_percentage: "{{ install_status.resources[0].status.progress.totalPercentage }}"
+    state_info: "{{ install_status.resources[0].status.debugInfo.state }}"
+
+- name: "Print completion status"
+  debug:
+    msg:
+      - "Cluster install completed at {{ completion_percentage }} %"
+      - "{{ state_info }}"
+      - "Approximated elapsed time: {{ elapsed_time | int / 60  }}  mins"
+
+- name: Wait for install
+  block:
+    - name: "Waiting for 3 minutes"
+      pause:
+        seconds: 180
+
+    - name: "Update elapsed time"
+      set_fact:
+        elapsed_time: "{{ elapsed_time | int + 180 }}"
+
+    - name: "Check if time is up"
+      fail:
+        msg: "Failed due to timeout"
+      when:
+        - completion_percentage | int < 100
+        - elapsed_time | int >= ( acm_creation_timeout | int * 60 )
+
+    - name: "Monitor the installation"
+      include_tasks: monitor-install.yml
+      when:
+        - completion_percentage | int != 100
+        - elapsed_time | int < ( acm_creation_timeout | int * 60 )
+  when:
+    - completion_percentage | int != 100
+...
