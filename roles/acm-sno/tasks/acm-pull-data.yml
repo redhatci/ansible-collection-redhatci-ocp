@@ -1,0 +1,54 @@
+---
+- name: "Get current worker's MCP"
+  community.kubernetes.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+    name: worker
+  register: worker_mcp
+
+- name: "Get current worker's Machine config Pools"
+  set_fact:
+    acm_mc: "{{ worker_mcp.resources[0].spec.configuration.name }}"
+
+- name: "Get current worker's Machine configs"
+  community.kubernetes.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfig
+    name: "{{ acm_mc }}"
+  register: worker_mc
+
+- name: "Setting config facts based on Hub Cluster configs"
+  vars:
+    query: "resources[0].spec.config.storage.files[? path=='/etc/containers/registries.conf']"
+    registry_details: "{{ worker_mc | json_query(query) }}"
+  set_fact:
+    acm_registry_conf: "{{ acm_user_registry | default(registry_details[0].contents.source.split(',')[1] | urldecode() ) }}"
+
+- name: "Get cluster user-ca cert if exists"
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: ConfigMap
+    name: "user-ca-bundle"
+    namespace: openshift-config
+  register: user_ca_bundle
+
+- name: "Get the user_ca_bundle content"
+  set_fact:
+    acm_user_ca_bundle: '{{ acm_user_bundle | default(user_ca_bundle.resources[0].data["ca-bundle.crt"]) }}'
+  when:
+    - user_bundle is defined or
+      user_ca_bundle.resources | length == 1
+
+- name: "Get hub cluster pull_secret details"
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Secret
+    name: "pull-secret"
+    namespace: openshift-config
+  register: acm_pull_secret
+
+- name: "Setting config facts based on Hub Cluster configs"
+  set_fact:
+    acm_ssh_key: "{{ worker_mc.resources[0].spec.config.passwd.users[0].sshAuthorizedKeys[0] }}"
+    acm_pull_secret: '{{ acm_pull_secret.resources[0].data[".dockerconfigjson"] }}'
+...

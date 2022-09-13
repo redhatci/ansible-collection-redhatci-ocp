@@ -1,0 +1,376 @@
+---
+- name: "Validate parameters"
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required"
+  with_items:
+      - acm_bmc_user
+      - acm_bmc_address
+      - acm_boot_mac_address
+      - acm_machine_cidr
+
+- name: "Create a managed cluster namespace"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ acm_cluster_name }}"
+
+- name: "Pull data from Hub cluster"
+  include_tasks: acm-pull-data.yml
+
+- name: "Inherit mirroring from hub"
+  set_fact:
+    inherit_mirroring: true
+  when:
+    - acm_registry_conf is defined
+    - acm_user_ca_bundle is defined
+    - acm_disconnected | bool
+
+- name: "Create a Config map with registry entries and CA bundle"
+  vars:
+    cm_def: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: mirror-registry-config-map
+        namespace: "multicluster-engine"
+        labels:
+          app: assisted-service
+      data:
+        registries.conf: |
+          {{ acm_registry_conf | indent(4) }}
+        ca-bundle.crt: |
+          {{ acm_user_ca_bundle | indent(4) }}
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ cm_def }}"
+    namespace: multicluster-engine
+  when:
+    - inherit_mirroring is defined
+    - inherit_mirroring | bool
+
+- name: "Check the AgentServiceConfig instance"
+  community.kubernetes.k8s_info:
+    api: agent-install.openshift.io/v1beta1
+    kind: AgentServiceConfig
+    name: agent
+    namespace: multicluster-engine
+  register: asg
+
+- name: "Patch the Agent Service Config"
+  vars:
+    rhcos_version: "{{ acm_ocp_version.split('.')[:2] | join('.') }}"
+    os_images:
+      openshiftVersion: "{{ acm_ocp_version }}"
+      version: "{{ rhcos_version }}"
+      url: "{{ acm_iso_url }}"
+      rootFSUrl: "{{ acm_root_fs_url }}"
+      cpuArchitecture: x86_64
+    as_def:
+      apiVersion: agent-install.openshift.io/v1beta1
+      kind: AgentServiceConfig
+      metadata:
+        name: agent
+        namespace: multicluster-engine
+      spec:
+        osImages: "{{ asg.resources[0].spec.osImages + [os_images] }}"
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ as_def }}"
+  when: (asg.resources | length == 1)
+
+- name: "Create the Agent Service config"
+  vars:
+    agent_def: |
+      apiVersion: agent-install.openshift.io/v1beta1
+      kind: AgentServiceConfig
+      metadata:
+        name: agent
+        namespace: multicluster-engine
+      spec:
+        databaseStorage:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ acm_db_volume_size }}"
+        filesystemStorage:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ acm_fs_volume_size }}"
+        imageStorage:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ acm_img_volume_size }}"
+        osImages:
+          - openshiftVersion: "{{ acm_ocp_version }}"
+            version: "{{ acm_ocp_version.split('.')[:2] | join('.') }}"
+            url: "{{ acm_iso_url }}"
+            rootFSUrl: "{{ acm_root_fs_url }}"
+            cpuArchitecture: x86_64
+        {% if inherit_mirroring is defined and inherit_mirroring | bool  %}
+      mirrorRegistryRef:
+          name: mirror-registry-config-map
+        {% endif %}
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ agent_def }}"
+  when: (asg.resources | length != 1)
+
+- name: "Wait for assisted-image-service pods to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    label_selectors:
+      - "app=assisted-image-service"
+    field_selectors:
+      - status.phase=Running
+    namespace: multicluster-engine
+    wait: yes
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 20
+  delay: 15
+  no_log: true
+
+- name: "Wait for assisted-service to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    label_selectors:
+      - "app=assisted-service"
+    field_selectors:
+      - status.phase=Running
+    namespace: multicluster-engine
+    wait: yes
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 20
+  delay: 15
+  no_log: true
+
+- name: "Validate the Service config volumes binding"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "multicluster-engine"
+  register: volumes_list
+  until: volumes_list|json_query('resources[*].status.phase')|unique == ["Bound"]
+  retries: 20
+  delay: 15
+
+- name: "Set pull secret for Assisted installer and Cluster deployment"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "pullsecret-{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+      data:
+        .dockerconfigjson: "{{ acm_pull_secret }}"
+      type: kubernetes.io/dockerconfigjson
+
+- name: "Define Random ClusterImageSet name"
+  set_fact:
+    img_release: "{{ lookup('password', '/dev/null length=15 chars=ascii_lowercase,digits') }}"
+
+- name: "Create the ClusterImageSet"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: hive.openshift.io/v1
+      kind: ClusterImageSet
+      metadata:
+        labels:
+          channel: stable
+          visible: 'true'
+        name: "img-{{ img_release }}"
+        namespace: open-cluster-management
+      spec:
+        releaseImage: "{{ acm_release_image }}"
+
+# Keeping some placeholders related to IPv6 configuration
+- name: "Create the Agent cluster install"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: extensions.hive.openshift.io/v1beta1
+      kind: AgentClusterInstall
+      metadata:
+        name: "{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+      spec:
+        clusterDeploymentRef:
+          name: "{{ acm_cluster_name }}"
+        imageSetRef:
+          name: "img-{{ img_release }}"
+        networking:
+          clusterNetwork:
+            - cidr: "{{ acm_cluster_network_cidr }}"
+              hostPrefix: "{{ acm_cluster_network_host_prefix }}"
+            # - cidr: "fd01::/48"
+            #   hostPrefix: 64
+          machineNetwork:
+            - cidr: "{{ acm_machine_cidr }}"
+            # - cidr: "2600:52:7:16::/64"
+          serviceNetwork:
+            - "{{ acm_service_network_cidr }}"
+            # - "fd02::/112"
+        provisionRequirements:
+          controlPlaneAgents: 1
+          workerAgents: 0
+        sshPublicKey: "{{ acm_ssh_key }}"
+
+- name: "Request the cluster deployment"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: hive.openshift.io/v1
+      kind: ClusterDeployment
+      metadata:
+        name: "{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+      spec:
+        clusterName: "{{ acm_cluster_name }}"
+        baseDomain: "{{ acm_base_domain }}"
+        controlPlaneConfig:
+          servingCertificates: {}
+        installed: false
+        clusterInstallRef:
+          group: extensions.hive.openshift.io
+          kind: AgentClusterInstall
+          name: "{{ acm_cluster_name }}"
+          version: v1beta1
+        platform:
+          agentBareMetal:
+            agentSelector:
+              matchLabels:
+                cluster-name: "{{ acm_cluster_name }}"
+        pullSecretRef:
+          name: "pullsecret-{{ acm_cluster_name }}"
+
+- name: "Create KlusterletAddonConfig"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: agent.open-cluster-management.io/v1
+      kind: KlusterletAddonConfig
+      metadata:
+        name: "{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+      spec:
+        clusterName: "{{ acm_cluster_name }}"
+        clusterNamespace: "{{ acm_cluster_name }}"
+        clusterLabels:
+          cloud: auto-detect
+          vendor: auto-detect
+        applicationManager:
+          enabled: false
+        certPolicyController:
+          enabled: false
+        iamPolicyController:
+          enabled: false
+        policyController:
+          enabled: false
+        searchCollector:
+          enabled: false
+
+- name: "Create ManagedCluster"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: cluster.open-cluster-management.io/v1
+      kind: ManagedCluster
+      metadata:
+        name: "{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+      spec:
+        hubAcceptsClient: true
+
+- name: "Create the InfraEnv"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: agent-install.openshift.io/v1beta1
+      kind: InfraEnv
+      metadata:
+        labels:
+          agentclusterinstalls.extensions.hive.openshift.io/location: "{{ acm_cluster_location }}"
+          networkType: dhcp
+        name: "{{ acm_cluster_name }}-infra"
+        namespace: "{{ acm_cluster_name }}"
+      spec:
+        clusterRef:
+          name: "{{ acm_cluster_name }}"
+          namespace: "{{ acm_cluster_name }}"
+        agentLabels:
+          agentclusterinstalls.extensions.hive.openshift.io/location: "{{ acm_cluster_location }}"
+        cpuArchitecture: x86_64
+        nmStateConfigLabelSelector:
+          matchLabels:
+            infraenvs.agent-install.openshift.io: "{{ acm_cluster_name }}"
+        pullSecretRef:
+          name: "pullsecret-{{ acm_cluster_name }}"
+        sshAuthorizedKey: "{{ acm_ssh_key }}"
+
+- name: "Wait for the boot ISO creation"
+  community.kubernetes.k8s_info:
+    api: agent-install.openshift.io/v1beta1
+    kind: InfraEnv
+    name: "{{ acm_cluster_name }}-infra"
+    namespace: "{{ acm_cluster_name }}"
+  register: infraenv_status
+  until:
+    - infraenv_status | json_query('resources[0].status.conditions[0].reason') == 'ImageCreated'
+    - infraenv_status | json_query('resources[0].status.conditions[0].status') == 'True'
+  retries: 15
+  delay: 6
+
+- name: "BMC credentials"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      data:
+        username: "{{ acm_bmc_user | b64encode }}"
+        password: "{{ acm_bmc_pass | b64encode }}"
+      kind: Secret
+      metadata:
+        name: "bmc-{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+      type: Opaque
+
+- name: "Create BareMetalHost"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: BareMetalHost
+      metadata:
+        annotations:
+          inspect.metal3.io: disabled
+          bmac.agent-install.openshift.io/hostname: "{{ acm_cluster_name }}"
+          bmac.agent-install.openshift.io/role: master
+        labels:
+          infraenvs.agent-install.openshift.io: "{{ acm_cluster_name }}-infra"
+        name: "{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+      spec:
+        automatedCleaningMode: disabled
+        bmc:
+          address: "{{ acm_bmc_address }}"
+          credentialsName: "bmc-{{ acm_cluster_name }}"
+          disableCertificateVerification: true
+        bootMACAddress: "{{ acm_boot_mac_address  }}"
+        online: true
+
+- name: "Wait for the Host Provisioning"
+  community.kubernetes.k8s_info:
+    api: metal3.io/v1alpha1
+    kind: BareMetalHost
+    name: "{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+  register: bmh_status
+  until: bmh_status | json_query('resources[0].status.provisioning.state') == 'provisioned'
+  retries: 10
+  delay: 30
+...
