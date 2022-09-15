@@ -2,7 +2,7 @@
 test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
 test_network_function_version: "v4.0.2"
 test_network_function_project_name: cnf-certification-test
-tnf_suites: "access-control networking lifecycle observability platform-alteration operator manageability affiliated-certification-container-is-certified"
+tnf_suites: "access-control networking lifecycle observability platform-alteration operator-install-status-succeeded operator-install-status-no-privileges operator-install-source manageability chaostesting affiliated-certification-container-is-certified affiliated-certification-helmchart-is-certified"
 tnf_skip_suites: ""
 tnf_labels: ""
 # By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
