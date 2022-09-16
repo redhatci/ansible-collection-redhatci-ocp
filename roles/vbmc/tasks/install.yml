@@ -46,8 +46,7 @@
       - pip
       - dateutils
       - libvirt-python=={{ libvirt_version }}
-      - pyghmi=={{ pyghmi_version }}
-      - pyzmq=={{ pyzmq_version }}
+      - pyghmi==1.5.13
     state: latest
 
 - name: Install python-virtualbmc with pip
