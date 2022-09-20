@@ -23,6 +23,9 @@
     name: cluster-config-v1
     namespace: kube-system
   register: ic
+  until: "'resources' in ic and ic.resources != []"
+  retries: 12
+  delay: 5
 
 - name: "Save the install-config"
   vars:
