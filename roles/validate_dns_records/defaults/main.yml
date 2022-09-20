@@ -4,3 +4,4 @@ required_domains:
   - "{{ '*.apps.' + domain }}"
 required_binary: dig
 required_binary_provided_in_package: bind-utils
+domain: "{{ cluster_name }}.{{ base_dns_domain }}"
