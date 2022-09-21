@@ -19,22 +19,17 @@
     state: directory
   register: tmp_index
 
-# Starting 4.11, Indices use File Base Catalogs, the backend changes from /database/index.db to /configs/
-- name: "Set index mapping type"
-  set_fact:
-      index_mapping: "{{ ( index_minor | int <= 10 ) | ternary('/database/index.db','/configs/') }}"
-
 - name: "Mirror catalog manifests"
   shell:
     chdir: "{{ dci_cluster_configs_dir }}"
     cmd: >
       set -x;
-      {{ provision_cache_store }}/{{ version }}/oc adm catalog mirror
+      {{ tmp_prune.path }}/oc adm catalog mirror
       {{ local_registry }}{{ opm_local_registry_path }}@{{ index_sha.stdout }}
       {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
       --index-filter-by-os="linux/amd64"
       --to-manifests={{ dci_cluster_configs_dir }}/{{ manifests_dir }}
-      --path={{ index_mapping }}:{{ tmp_index.path }} 2>&1
+      --path=/configs/:{{ tmp_index.path }} 2>&1
   register: catalog_manifests_output
 
 - name: "Delete tmp Index directory"
