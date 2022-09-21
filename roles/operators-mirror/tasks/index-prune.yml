@@ -12,28 +12,6 @@
   set_fact:
     source_index: "{{ operators_index | default('registry.redhat.io/redhat/redhat-operator-index:v' + ocp_major + '.' + ocp_minor) }}"
 
-- name: "Prune SQLite based catalog index"
-  block:
-    - name: "Prune source index but mirror_list"
-      shell:
-        # opm requires write perms in the working directory
-        chdir: "{{ tmp_prune.path }}"
-        cmd: >
-          set -x;
-          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
-          {{ provision_cache_store }}/{{ version }}/opm index prune
-          --from-index {{ source_index }}
-          --packages {{ mirror_list | join(",") }}
-          --tag {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }}
-      register: prune_result
-      until: prune_result.rc == 0
-      retries: 3
-      delay: 10
-      notify:
-        - "Fix permissions and removing tmp files"
-  when:
-    - ocp_minor | int <= 10
-
 - name: "Create index working directory"
   file:
     path: "{{ tmp_prune.path }}/configs"
@@ -46,39 +24,32 @@
     dest: "{{ tmp_prune.path }}/configs.Dockerfile"
     mode: 0644
 
-# This should be a workaround until the opm prune supports FBC format
-# https://github.com/redhat-openshift-ecosystem/community-operators-prod/discussions/512
-# opm render reads auths only from docker configs
-- name: "Prune File Based Catalog index"
-  block:
-    - name: "Extract the operator's channel and packages from the catalog index"
-      shell:
-        chdir: "{{ tmp_prune.path }}"
-        cmd: >
-          set -x;
-          REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
-          {{ provision_cache_store }}/{{ version }}/opm render
-          {{ source_index }} |
-          jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'  >> {{ tmp_prune.path }}/configs/index.json
-      register: prune_result
-      until: prune_result.rc == 0
-      retries: 3
-      delay: 10
-      with_items: "{{ mirror_list }}"
-      loop_control:
-        loop_var: operator_name
+- name: "Extract the operator's channel and packages from the catalog index"
+  shell:
+    chdir: "{{ tmp_prune.path }}"
+    cmd: >
+      set -x;
+      REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
+      {{ tmp_prune.path }}/opm render
+      {{ source_index }} |
+      jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'  >> {{ tmp_prune.path }}/configs/index.json
+  register: prune_result
+  until: prune_result.rc == 0
+  retries: 3
+  delay: 10
+  with_items: "{{ mirror_list }}"
+  loop_control:
+    loop_var: operator_name
 
-    - name: "Build the catalog index"
-      shell:
-        chdir: "{{ tmp_prune.path }}"
-        cmd: |
-          set -x
-          podman build -t {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }} \
-          -f {{ tmp_prune.path }}/configs.Dockerfile .
-      notify:
-        - "Fix permissions and removing tmp files"
-  when:
-    - ocp_minor | int >= 11
+- name: "Build the catalog index"
+  shell:
+    chdir: "{{ tmp_prune.path }}"
+    cmd: |
+      set -x
+      podman build -t {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }} \
+      -f {{ tmp_prune.path }}/configs.Dockerfile .
+  notify:
+    - "Fix permissions and removing tmp files"
 
 - name: "Push the new index image to the local registry"
   shell:

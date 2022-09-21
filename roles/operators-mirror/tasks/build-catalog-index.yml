@@ -5,6 +5,18 @@
       state: directory
     register: tmp_prune
 
+  - name: "Download stable opm client"
+    vars:
+      ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable"
+    unarchive:
+      src: "{{ item }}"
+      dest: "{{ tmp_prune.path }}"
+      remote_src: true
+      mode: 0755
+    loop:
+      - "{{ ocp_clients_url }}/opm-linux.tar.gz"
+      - "{{ ocp_clients_url }}/openshift-client-linux.tar.gz"
+
   - name: "Fallback index to prune indexes - Try up to 3 previous versions"
     set_fact:
       index_fallback: 0
