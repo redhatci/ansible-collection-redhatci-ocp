@@ -36,57 +36,40 @@
     prefix: preflight_prerun_tmp_dir.
   register: preflight_prerun_tmp_dir
 
-- name: Build index image in temporary preflight directory < 4.9
-  vars:
-    preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list | unique }}"
-  environment:
-    - REGISTRY_AUTH_FILE: "{{ partner_creds }}"
-  shell:
-    cmd: >
-      {{ opm_tool_path }} index add --pull-tool podman
-      --bundles {{ ','.join(preflight_bundle_images) }}
-      --tag {{ OO_INDEX }}
+- name: "Create index build directory"
+  file:
+    path: "{{ preflight_prerun_tmp_dir.path }}/disconnected-catalog"
+    state: directory
+    mode: 0755
+
+- name: Build index image in temporary preflight directory
+  include_tasks: mirroring_add_operator.yml
+  loop: "{{ preflight_operators_to_check }}"
+  loop_control:
+    loop_var: operator
+    label: "{{ operator.name }}"
+
+- name: "Validate catalog"
+  shell: |
+    {{ opm_tool_path }} validate disconnected-catalog
+  args:
     chdir: "{{ preflight_prerun_tmp_dir.path }}"
-  when: ocp_version_min | int < 9
+  register: catalog_validation
+  failed_when: catalog_validation.rc != 0
 
-- name: Build index image in temporary preflight directory >= 4.9 (FBC)
-  block:
-    - name: "Create index directory"
-      file:
-        path: "{{ preflight_prerun_tmp_dir.path }}/disconnected-catalog"
-        state: directory
-        mode: 0755
+- name: "Add Dockerfile"
+  copy:
+    src: disconnected-catalog.Dockerfile
+    dest: "{{ preflight_prerun_tmp_dir.path }}/disconnected-catalog.Dockerfile"
+    mode: 644
 
-    - name: Build index image in temporary preflight directory
-      include_tasks: mirroring_add_operator.yml
-      loop: "{{ preflight_operators_to_check }}"
-      loop_control:
-        loop_var: operator
-        label: "{{ operator.name }}"
-
-    - name: "Validate catalog"
-      shell: |
-        {{ opm_tool_path }} validate disconnected-catalog
-      args:
-        chdir: "{{ preflight_prerun_tmp_dir.path }}"
-      register: catalog_validation
-      failed_when: catalog_validation.rc != 0
-
-    - name: "Add Dockerfile"
-      copy:
-        src: disconnected-catalog.Dockerfile
-        dest: "{{ preflight_prerun_tmp_dir.path }}/disconnected-catalog.Dockerfile"
-        mode: 644
-
-    - name: "Build operator catalog"
-      shell: |
-        podman build . \
-        -f disconnected-catalog.Dockerfile \
-        -t {{ OO_INDEX }}
-      args:
-        chdir: "{{ preflight_prerun_tmp_dir.path }}"
-
-  when: ocp_version_min | int >= 9
+- name: "Build operator catalog"
+  shell: |
+    podman build . \
+    -f disconnected-catalog.Dockerfile \
+    -t {{ OO_INDEX }}
+  args:
+    chdir: "{{ preflight_prerun_tmp_dir.path }}"
 
 - name: Push index image into local registry
   shell: >
