@@ -96,9 +96,9 @@
       set_fact:
         operator_csv: "{{ packagemanifest | json_query(current_csv) | first  }}"
   rescue:
-    - name: "Operator's CSV not found in the specifed channel"
+    - name: "Operator's CSV not found in the specified channel"
       fail:
-        msg: "Operator's CSV not found in the specifed channel, check if channel: {{ desired_channel }} is valid"
+        msg: "Operator's CSV not found in the specified channel, check if channel: {{ desired_channel }} is valid"
 
 - name: "{{ ocp_version }} - {{ operator_csv }} - wait for CSV to be ready"
   community.kubernetes.k8s_info:
@@ -131,3 +131,4 @@
         name: "{{ operator }}"
         source: "{{ source }}"
         sourceNamespace: "{{ source_ns }}"
+...
