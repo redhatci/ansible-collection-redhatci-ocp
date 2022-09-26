@@ -55,7 +55,9 @@
   args:
     chdir: "{{ preflight_prerun_tmp_dir.path }}"
   register: catalog_validation
-  failed_when: catalog_validation.rc != 0
+  retries: 6
+  delay: 10
+  until: catalog_validation.rc == 0
 
 - name: "Add Dockerfile"
   copy:
