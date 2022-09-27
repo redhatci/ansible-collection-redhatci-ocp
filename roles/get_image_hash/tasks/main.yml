@@ -99,8 +99,9 @@
       set_fact:
         assisted_installer_os_images: "{{ os_images }}"
         assisted_installer_release_images: "{{ release_images }}"
-      delegate_to: "assisted_installer"
+      delegate_to: "{{ item }}"
       delegate_facts: true
+      loop: "{{ destination_hosts }}"
 
 - name: "Set image hashes in {{ item }}"
   set_fact:

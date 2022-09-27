@@ -74,6 +74,23 @@
       tags: validate_pxe
       when: (setup_pxe_service | default(false)) | bool
 
+    - include_tasks:
+        file: agent_based_installer_feature_gates.yml
+        apply:
+          tags: validate_agent_based_installer
+      when:
+        - (use_agent_based_installer | default(false) | bool)
+        - not ((ignore_agent_based_installer_feature_gates | default(false)) | bool)
+      tags: validate_agent_based_installer
+
+    - include_tasks:
+        file: agent_based_installer_requirements.yml
+        apply:
+          tags: validate_agent_based_installer
+      when:
+        - (use_agent_based_installer | default(false) | bool)
+      tags: validate_agent_based_installer
+
   when: not (inventory_validated | default(False) | bool)
   delegate_to: "{{ validation_host | default('bastion') }}"
 

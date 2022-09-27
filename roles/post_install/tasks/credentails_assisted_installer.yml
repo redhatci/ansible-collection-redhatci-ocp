@@ -1,0 +1,17 @@
+- name: Get credentials from assisted installer
+  ansible.builtin.uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/credentials"
+    return_content: true
+  register: credentials_reply
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Set credentials
+  ansible.builtin.set_fact:
+    credentials: "{{ credentials_reply.json }}"
+
+- name: Login to add token to kubeconfig
+  ansible.builtin.shell:
+    cmd: "oc login -u {{ credentials.username }} -p '{{ credentials.password }}'"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"

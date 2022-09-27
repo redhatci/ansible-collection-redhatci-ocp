@@ -1,0 +1,10 @@
+- name: Wait for bootstrap complete
+  ansible.builtin.shell:
+    cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for bootstrap-complete"
+    chdir: "{{ manifests_dir }}"
+  ignore_errors: True # Timeout is fixed and some bare metal clusters complete bootstrap just after the timeout
+
+- name: Wait for install complete
+  ansible.builtin.shell:
+    cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
+    chdir: "{{ manifests_dir }}"
