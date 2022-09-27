@@ -1,0 +1,2 @@
+generated_dir: "{{ repo_root_path }}/generated"
+manifests_dir: "{{ generated_dir}}/{{ cluster_name }}"

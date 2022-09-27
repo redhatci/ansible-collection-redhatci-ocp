@@ -1,0 +1,40 @@
+---
+- name: "Create {{ extract_dest_path }}"
+  ansible.builtin.file:
+    path: "{{ extract_dest_path }}"
+    state: directory
+    mode: 0755
+    recurse: true
+
+- name: Create pull_secret_file
+  ansible.builtin.copy:
+    content: "{{ pull_secret }}"
+    dest: "{{ pull_secret_file }}"
+    mode: "0600"
+
+- name: Extract openshift_installer
+  ansible.builtin.shell:
+    cmd: >
+      oc adm
+      -a {{ pull_secret_file }}
+      release extract
+      --command=openshift-install
+      {{ release_image }}
+      --to={{ extract_dest_path }}
+
+- name: Check extracted installer has agent subcommand
+  ansible.builtin.shell:
+    cmd: "{{ openshift_installer_path }} agent --help"
+  register: res
+  failed_when: false
+
+- name: Check agent sub-commmand output
+  ansible.builtin.fail:
+    msg: >
+      Version of openshift install extracted from
+      release image does not have agent subcommand
+  when: "'unknown command' in res.stderr"
+
+- name: Set agent_based_installer_path
+  ansible.builtin.set_fact:
+    agent_based_installer_path: "{{ openshift_installer_path }}"

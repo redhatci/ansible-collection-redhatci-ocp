@@ -1,0 +1,18 @@
+generated_dir: "{{ repo_root_path }}/generated"
+manifests_dir: "{{ generated_dir }}/{{ cluster_name }}"
+cluster_manifest_dir: "{{ manifests_dir }}/cluster-manifests"
+extra_manifest_dir: "{{ manifests_dir }}/openshift"
+mac_interface_default_mapping: "interfaces[?(name != null && mac != null)].{logical_nic_name: name, mac_address: mac}"
+static_network_config: {}
+arch: x86_64
+version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
+release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
+mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['registry_host']['registry_port'] }}"
+agent_based_installer_bootstrap_node: "{{ groups['masters'][0] }}"
+host_ip_keyword: ansible_host
+use_local_mirror_registry: "{{ setup_registry_service | default(true) }}"
+single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"
+
+manifests: true
+extra_manifests: []
+manifest_templates: "{{ extra_manifests }}"

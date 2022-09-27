@@ -1,0 +1,11 @@
+- name: Fetch kubeadmin password
+  ansible.builtin.slurp:
+    src: "{{ auth_dir }}/kubeadmin-password"
+  register: kubeadmin_password
+
+- name: Construct kubeadmin credentials
+  ansible.builtin.set_fact:
+    credentials:
+      console_url: "https://console-openshift-console.apps.{{ domain }}"
+      password: "{{ kubeadmin_password.content | b64decode }}"
+      username: "kubeadmin"

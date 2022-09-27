@@ -1,17 +1,21 @@
 ---
-- name: Download kubeconfig
-  get_url:
-    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/downloads/credentials?file_name=kubeconfig"
-    dest: "{{ kubeconfig_path }}"
-    mode: 0664
+- name: Fetch kubeconfig for assisted installer
+  ansible.builtin.include_tasks:
+    file: fetch_kubeconfg_assisted_installer.yml
+  when: not ((use_agent_based_installer | default(false)) | bool)
+
+- name: Fetch kubeconfig for agent based installer
+  ansible.builtin.include_tasks:
+    file: fetch_kubeconfg_agent_based_installer.yml
+  when: (use_agent_based_installer | default(false)) | bool
 
 - name: Perform basic checks and login
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   block:
       # The retries is becuase sometimes (although rarely) the cluster isn't quite ready for requests
-    - name: Perform simple connectivity check with oc (wait up to 5 mins) 
-      shell:
+    - name: Perform simple connectivity check with oc (wait up to 5 mins)
+      ansible.builtin.shell:
         cmd: "oc get clusterversion"
       register: res
       until: res.rc == 0
@@ -21,36 +25,36 @@
     - name: Check status of cluster operators
       block:
         - name: Wait up to 20 mins for cluster to become functional
-          shell:
+          ansible.builtin.shell:
             cmd: oc wait clusteroperators --all --for=condition=Available --timeout=20m
       rescue:
-        - name: Get better info for failure message
-          shell: oc get clusteroperators
+        - name: Getting more info for failure message
+          ansible.builtin.shell: oc get clusteroperators
           register: co_result
 
         - name: Present failing clusteroperators command output
-          fail: 
+          ansible.builtin.fail:
             msg: |
               Cluster has not come up correctly:
                 {{ co_result.stdout }}
 
-    - name: Get credentials
-      uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/credentials"
-        return_content: yes
-      register: credentials
+- name: Fetch credentials for assisted installer
+  ansible.builtin.include_tasks:
+    file: credentails_assisted_installer.yml
+  when: not ((use_agent_based_installer | default(false)) | bool)
 
-    - name: Login to add token to kubeconfig
-      shell:
-        cmd: "oc login -u {{ credentials.json.username }} -p '{{ credentials.json.password }}'"
+- name: Fetch credentials for agent based installer
+  ansible.builtin.include_tasks:
+    file: credentails_agent_based_installer.yml
+  when: (use_agent_based_installer | default(false)) | bool
 
 - name: Save credentials to file
-  copy:
-    content: "{{ credentials.json | to_nice_json }}"
+  ansible.builtin.copy:
+    content: "{{ credentials | to_nice_json }}"
     dest: "{{ dest_dir }}/{{ kubeadmin_vault_name }}"
     mode: 0600
 
 - name: Save credentials to vault
-  shell:
+  ansible.builtin.shell:
     cmd: "ansible-vault encrypt --vault-password-file {{ kubeadmin_vault_password_file_path }} {{ dest_dir }}/{{ kubeadmin_vault_name }}"
   when: (kubeadmin_vault_password_file_path is defined) and (kubeadmin_vault_password_file_path is file)
