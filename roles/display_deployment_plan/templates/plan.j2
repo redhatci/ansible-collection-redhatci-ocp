@@ -24,7 +24,12 @@ An OpenShift cluster is about to be deployed. Please double check the provided i
   {{ row_format_str | format('Setup HTTP Store Service', inventory.setup_http_store_service) }}
   {{ row_format_str | format('Setup Assisted Installer', inventory.setup_assisted_installer) }}
   {{ row_format_str | format('Setup PXE Service', inventory.setup_pxe_service) }}
-
+  {% if inventory.setup_pxe_service | bool and inventory.num_pxe_nodes | int > 0 -%}
+  {{ row_format_str | format('Number of PXE Nodes', inventory.num_pxe_nodes) }}
+  {% elif inventory.setup_pxe_service | bool and inventory.num_pxe_nodes | int == 0 +%}
+  {{ row_format_str | format('Number of PXE Nodes', messages.pxe_hosts_missing) }}
+  {% else %}
+  {% endif +%}
   {{ row_format_str | format('Discovery ISO Name', inventory.discovery_iso_name) }}
   {{ row_format_str | format('Discovery ISO Download Path', inventory.discovery_iso_download_path) }}
 

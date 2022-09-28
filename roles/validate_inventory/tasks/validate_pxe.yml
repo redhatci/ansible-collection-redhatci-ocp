@@ -8,37 +8,29 @@
     quiet: true
   when: hostvars['dns_host']['use_pxe'] | default(false)
 
-- name: Get all PXE Nodes
-  vars:
-    pxe_node_names: []
-  set_fact:
-    pxe_node_names: "{{ pxe_node_names + [item] }}"
-  when: hostvars[item]['vendor'] | lower == 'pxe'
-  loop: "{{ groups['nodes'] }}"
-
-- block:
-  - name: "Check if ipmitool installed"
-    ansible.builtin.shell:
-      cmd: "ipmitool -V"
-    register: ipmitool_check
-    ignore_errors: True
-    changed_when: False
-  
-  - name: Record failures
-    fail:
-      msg: "ipmitool must be installed for pxe installatio"
-    when: ipmitool_check.rc != 0
-  
-  - name: "Check if pyghmi installed"
-    ansible.builtin.shell:
-      cmd: "pip3 show pyghmi"
-    register: pyghmi_check
-    ignore_errors: True
-    changed_when: False
-  
-  - name: Record failures
-    fail:
-      msg: "pyghmi must be installed for pxe installation"
-    when: pyghmi_check.rc != 0
-  when: pxe_node_names | length >= 1
+- name: Check for ipmitool and pyghmi
   delegate_to: bastion
+  block:
+    - name: "Check if ipmitool installed"
+      ansible.builtin.shell:
+        cmd: "ipmitool -V"
+      register: ipmitool_check
+      ignore_errors: True
+      changed_when: False
+    
+    - name: Record failures
+      fail:
+        msg: "ipmitool must be installed for pxe installation"
+      when: ipmitool_check.rc != 0
+    
+    - name: "Check if pyghmi installed"
+      ansible.builtin.shell:
+        cmd: "pip3 show pyghmi"
+      register: pyghmi_check
+      ignore_errors: True
+      changed_when: False
+    
+    - name: Record failures
+      fail:
+        msg: "pyghmi must be installed for pxe installation"
+      when: pyghmi_check.rc != 0
