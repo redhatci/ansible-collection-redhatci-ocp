@@ -10,6 +10,10 @@
     url: https://www.redhat.com/security/data/oval/v2/RHEL{{ ansible_distribution_major_version }}/rhel-{{ ansible_distribution_major_version }}.oval.xml.bz2
     dest: "{{ preflight_container_artifacts.path }}"
   become: true
+  register: hc_req
+  until: hc_req.changed
+  retries: 3
+  delay: 10
 
 # Unarchive module can not be used: https://github.com/ansible/community/wiki/Module:-unarchive
 # Files that are only compressed such as foo.bz2 and bar.gz
