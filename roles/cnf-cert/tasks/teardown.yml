@@ -19,4 +19,15 @@
     - tnf_version_image is defined
     - tnf_version_image != test_network_function_version
 
+- name: Removing PodSecurity-related labels in default namespace
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: default
+        labels:
+          pod-security.kubernetes.io/enforce: null
+          pod-security.kubernetes.io/enforce-version: null
+  when: ocp_version is version("4.12", ">=")
 ...

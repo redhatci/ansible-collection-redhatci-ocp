@@ -99,13 +99,14 @@
       tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}"
 
   # Steps from https://github.com/test-network-function/cnf-certification-test#building-the-container-image-locally
+  # Until 4.12 is officially released, consider we are using OCP 4.11 to be able to build the image.
   - name: Build the tnf image locally
     shell: |
       set -x
       podman build -t {{ tnf_image }} \
       --build-arg TNF_VERSION={{ tnf_version_image }} \
       --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
-      --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
+      --build-arg OPENSHIFT_VERSION={{ ocp_version is version("4.12", ">=") | ternary('4.11.0', ocp_version_full) }} .
     args:
       chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
@@ -187,6 +188,21 @@
   template:
     src: templates/tnf_config.yml.j2
     dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/tnf_config.yml"
+
+# Doing this just before running tnf, just to spend the enough time changing PodSecurity constraints
+# in default namespace.
+- name: Labeling default namespace, so that tnf debug daemonset covers PodSecurity requirements
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: default
+        labels:
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+    wait: yes
+  when: ocp_version is version("4.12", ">=")
 
 # LOG_LEVEL is used for v3.x.x, and TNF_LOG_LEVEL is used for v4.x.x.
 # Remove LOG_LEVEL when backwards compatibility is no longer needed.
