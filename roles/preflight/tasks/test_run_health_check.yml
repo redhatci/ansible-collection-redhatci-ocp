@@ -37,9 +37,9 @@
       {{ current_operator_image }}
   become: true
   register: health_check
-  retries: 6
+  retries: 2
   delay: 10
-  until: health_check.rc == 0
+  until: not health_check.failed
 
 - name: Run health check
   shell:

@@ -42,7 +42,7 @@
     timeout: 120
   register: pyxis_image_info
   retries: 5
-  delay: 4
+  delay: 10
   until: pyxis_image_info.status >= 200
   no_log: false
   ignore_errors: true

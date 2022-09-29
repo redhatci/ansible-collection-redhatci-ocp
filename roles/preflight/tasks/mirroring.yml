@@ -55,9 +55,9 @@
   args:
     chdir: "{{ preflight_prerun_tmp_dir.path }}"
   register: catalog_validation
-  retries: 6
+  retries: 2
   delay: 10
-  until: catalog_validation.rc == 0
+  until: not catalog_validation.failed
 
 - name: "Add Dockerfile"
   copy:
@@ -87,10 +87,9 @@
           skopeo inspect --authfile {{ pullsecret_tmp_file }} \
           docker://{{ OO_INDEX }} | jq -r '.Digest'
       register: catalog_sha
-      retries: 5
-      delay: 5
-      until:
-        - catalog_sha is not failed
+      retries: 2
+      delay: 10
+      until: not catalog_sha.failed
 
     - name: "Remove local catalog image"
       shell: |
@@ -105,7 +104,9 @@
         {{ oc_tool_path }} adm catalog mirror -a {{ partner_creds }}
         {{ OO_INDEX }} {{ provisionhost_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
       register: catalog_mirror
-      failed_when: catalog_mirror.stderr.find('error:') != -1
+      retries: 2
+      delay: 10
+      until: catalog_mirror.stderr.find('error:') == -1
 
     - name: Append to imageContentSourcePolicy
       blockinfile:

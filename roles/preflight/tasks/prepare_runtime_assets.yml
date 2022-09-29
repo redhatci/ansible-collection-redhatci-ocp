@@ -10,6 +10,9 @@
       runtime-assets
     chdir: "{{ preflight_tmp_dir.path }}"
   register: preflight_assets
+  retries: 2
+  delay: 10
+  until: not preflight_assets.failed
 
 - name: Get scorecard config images
   set_fact:

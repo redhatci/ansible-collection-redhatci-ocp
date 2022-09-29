@@ -6,9 +6,9 @@
       docker://{{ operator.bundle_image }} |
       jq -r '.Labels."operators.operatorframework.io.bundle.channel.default.v1"'
   register: def_channel
-  retries: 5
-  delay: 5
-  until: def_channel is not failed
+  retries: 2
+  delay: 10
+  until: not def_channel.failed
 
 - name: "Initialize operators index {{ operator.name }}"
   shell: >

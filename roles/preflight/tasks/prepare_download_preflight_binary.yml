@@ -18,8 +18,8 @@
       -O {{ preflight_binary_dir }}/preflight &&
       chmod 0755 {{ preflight_binary_dir }}/preflight
   register: preflight_file
-  retries: 3
+  retries: 2
   delay: 10
-  until: preflight_file is not failed
+  until: not preflight_file.failed
 
 ...
