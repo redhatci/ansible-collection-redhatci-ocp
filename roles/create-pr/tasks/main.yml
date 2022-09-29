@@ -10,12 +10,10 @@
       - github_token_path
       - target_repository
       - work_dir
-      - partner_name
-      - partner_email
 
 - name: Validate that cert_project_id is provided
   fail:
-    msg: "Please define operator.pyxis_operator_identifier or use create_cert_project"
+    msg: "Please define operator.pyxis_operator_identifier or use create_container_project / create_operator_project"
   when:
     - cert_project_id | default('') | length == 0
     - target_repository == "redhat-openshift-ecosystem/certified-operators"

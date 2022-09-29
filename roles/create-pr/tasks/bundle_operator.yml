@@ -60,18 +60,10 @@
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata"
 
 - name: "Ensure that annotations.yaml contains 'com.redhat.openshift.versions: v4.x-v4.xx'"
-  lineinfile:
-    name: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata/annotations.yaml"
-    regexp: "^(.*)com.redhat.openshift.versions(.*)$"
-    state: absent
-  check_mode: yes
-  changed_when: false
-  register: versions_present
-
-- name: "Fail if com.redhat.openshift.versions is not found"
-  fail:
-    msg: com.redhat.openshift.versions is missing in the bundle annotations.
-  when: versions_present.found != 1
+  shell: |
+    cat {{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata/annotations.yaml
+  register: preflight_annotations
+  failed_when: "'com.redhat.openshift.versions' not in preflight_annotations.stdout"
 
 - name: "Render CI.yaml file"
   template:
@@ -79,14 +71,12 @@
     dest: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/ci.yaml"
 
 - name: "Git add new operator files to the repository"
-  vars:
-    partner: "{{  partner_name | replace(' ','_') }}"
   shell:
     cmd: |
-     git config user.email {{ partner_email }}
-     git config user.name {{ github_username }}
-     git add operators/{{ product_name }}
-     git commit -m 'Added {{ product_name }} version {{ product_version }}'
+      git config user.email {{ github_username }}
+      git config user.name {{ github_username }}
+      git add operators/{{ product_name }}
+      git commit -m 'Added {{ product_name }} version {{ product_version }}'
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
 

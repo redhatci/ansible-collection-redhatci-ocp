@@ -44,11 +44,11 @@
     partner: "{{  partner_name | replace(' ','_') }}"
   shell:
     cmd: |
-     git config user.email {{ partner_email }}
-     git config user.name {{ github_username }}
-     git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/OWNERS
-     git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/{{ chart_name }}/{{ chart_version }}/
-     git commit -m 'Added {{ chart_name }}_{{ chart_version }}'
+      git config user.email {{ partner_email }}
+      git config user.name {{ github_username }}
+      git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/OWNERS
+      git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/{{ chart_name }}/{{ chart_version }}/
+      git commit -m 'Added {{ chart_name }}_{{ chart_version }}'
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
 
