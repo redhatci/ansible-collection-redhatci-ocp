@@ -26,13 +26,14 @@ preflight_run_health_check      | true                                          
 
 Name                               | Default                                              | Description
 ---------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
-bundle_image                      | undefined                                            | Mandatory. In the connected environment, the image could be provided by tag. In the disconnected, you have to provide the image by digest.
-index_image                       | undefined                                            | Optional for connected environments and mandatory for disconnected.
-pyxis_container_identifier        | undefined                                             | Optional. Use this option if you'd like manually create container project and use it for the submission of the test results. To get this identifier, please create a project of type "Container Image project" at connect.redhat.com. It will be used to submit Preflight `check container` results to Pyxis and connect.redhat.com. This identifier is unique for every container. If you have to certify multiple containers, please create multiple projects. Please do not forget to provide Pyxis token `pyxis_apikey_path` shared for all projects within one partner.
-pyxis_operator_identifier         | undefined                                             | Optional. Use this option if you'd like manually create container project and use it for the submission of the test results. To get this identifier, please create a project of type "Operator Bundle Image project" at connect.redhat.com. It will be used to submit Preflight `check operator` results to Pyxis and connect.redhat.com. This identifier is unique for every container. If you have to certify multiple operators, please create multiple projects. Please do not forget to provide Pyxis token `pyxis_apikey_path` shared for all projects within one partner.
-create_container_project          | undefined        | Optional. If you use this parameter, DCI would automatically create "Container Image project" for you using `pyxis_apikey_path`. `create_container_project` and `pyxis_container_identifier` are incompatible options, you have to choose one of them.
-create_operator_project          | undefined        | Optional. If you use this parameter, DCI would automatically create "Operator Bundle Image project" for you using `pyxis_apikey_path`. `create_operator_project` and `pyxis_operator_identifier` are incompatible options, you have to choose one of them.
-create_pr                         | false                                                | Optional. Use this option if you'd like to create a certification PR at [certified-operators](https://github.com/redhat-openshift-ecosystem/certified-operators/pulls). Creation of such a PR is a part of operator certification process and required to publish the operator in the catalog. Please do not forget to provide `github_token_path` when using this option.
+bundle_image                       | undefined                                            | Mandatory. In the connected environment, the image could be provided by tag. In the disconnected, you have to provide the image by digest.
+index_image                        | undefined                                            | Optional for connected environments and mandatory for disconnected.
+pyxis_container_identifier         | undefined                                            | Optional. Use this option if you'd like manually create container project and use it for the submission of the test results. To get this identifier, please create a project of type "Container Image project" at connect.redhat.com. It will be used to submit Preflight `check container` results to Pyxis and connect.redhat.com. This identifier is unique for every container. If you have to certify multiple containers, please create multiple projects. Please do not forget to provide Pyxis token `pyxis_apikey_path` shared for all projects within one partner.
+pyxis_operator_identifier          | undefined                                            | Optional. Use this option if you'd like manually create container project and use it for the submission of the test results. To get this identifier, please create a project of type "Operator Bundle Image project" at connect.redhat.com. It will be used to submit Preflight `check operator` results to Pyxis and connect.redhat.com. This identifier is unique for every container. If you have to certify multiple operators, please create multiple projects. Please do not forget to provide Pyxis token `pyxis_apikey_path` shared for all projects within one partner.
+create_container_project           | undefined        | Optional. If you use this parameter, DCI would automatically create "Container Image project" for you using `pyxis_apikey_path`. `create_container_project` and `pyxis_container_identifier` are incompatible options, you have to choose one of them.
+create_operator_project            | undefined        | Optional. If you use this parameter, DCI would automatically create "Operator Bundle Image project" for you using `pyxis_apikey_path`. `create_operator_project` and `pyxis_operator_identifier` are incompatible options, you have to choose one of them.
+create_pr                          | false                                                | Optional. Use this option if you'd like to create a certification PR at [certified-operators](https://github.com/redhat-openshift-ecosystem/certified-operators/pulls). Creation of such a PR is a part of operator certification process and required to publish the operator in the catalog. Please do not forget to provide `github_token_path` when using this option.
+merge_pr                           | false                                                | Optional. Use this option if you'd like to merge a certification PR at [certified-operators](https://github.com/redhat-openshift-ecosystem/certified-operators/pulls).
 
 ## Two modes of certification
 
@@ -200,6 +201,9 @@ The idea is use one of them.
       # Optional; use it to automatically open cert PR
       # at the certified-operators repository
       create_pr: true
+      # Optional; use it to automatically merge cert PR
+      # at the certified-operators repository
+      merge_pr: true
 
   # Optional; provide it when you need to submit test results.
   # This token is shared between all your projects.
@@ -252,6 +256,9 @@ The idea is use one of them.
       # Optional; use it to automatically open cert PR
       # at the certified-operators repository
       create_pr: true
+      # Optional; use it to automatically merge cert PR
+      # at the certified-operators repository
+      merge_pr: true
 
   # Optional; provide it when you need to submit test results.
   # This token is shared between all your projects.
