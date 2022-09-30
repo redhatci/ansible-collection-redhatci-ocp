@@ -56,5 +56,6 @@
       create_container_project: "{{ operator.create_container_project | default(omit) }}"
       create_operator_project: "{{ operator.create_operator_project | default(omit) }}"
       create_pr: "{{ operator.create_pr | default(omit) }}"
+      merge_pr: "{{ operator.merge_pr | default(omit) }}"
   set_fact:
     preflight_operators_to_check: "{{ preflight_operators_to_check + [ operator_to_check ] }}"

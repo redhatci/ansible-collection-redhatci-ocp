@@ -2,15 +2,22 @@
 
 This role automatically creates a container certification project if option `create_container_project: true` is provided, and operator certification project if `create_operator_project: true`.
 
-## Variables
+## Global Variables
 
 Name                     | Default                                                                    | Description
 -------------------      | ------------                                                               | -------------
-create_container_project | false                                                                      | If set to true, it would create new container certification project
-create_operator_project  | false                                                                      | If set to true, it would create new operator certification project
-connect_url              | https://connect.redhat.com/projects                                        | Certification UI link
-create_project_url       | https://catalog.redhat.com/api/containers/v1/projects/certification            | Pyxis API to create certification project
-github_token_path        | undefined            | Path to GitHub token to be used for the operator certification project
+connect_url              | https://connect.redhat.com/projects                                        | Mandatory; usually there is no need in redefining it. Certification UI link, you may need to change it to target UAT environment for the testing.
+create_project_url       | https://catalog.redhat.com/api/containers/v1/projects/certification        | Mandatory; usually there is no need in redefining it.Pyxis API to create certification project, you may need to change it to target UAT environment for the testing.
+github_token_path        | undefined                                                                  | Mandatory when using `create_operator_project`. Path to GitHub token to be used for the operator certification project.
+
+
+## Variables to define for each operator / container
+
+Name                     | Default                                                                    | Description
+-------------------      | ------------                                                               | -------------
+create_container_project | false                                                                      | If set to true, it would create a new container certification project.
+create_operator_project  | false                                                                      | If set to true, it would create a new operator certification project.
+
 
 ## Example of configuration file
 
@@ -57,7 +64,7 @@ github_token_path: "/opt/cache/dcicertbot-token.txt"
 
 ## GitHub token
 
-Please note that github_token_path is required when using create_operator_project project. It is used to setup proper permissions in the certification project.
+Please note that `github_token_path` is required when using `create_operator_project` project. It is used to setup proper permissions in the certification project.
 
 Here are the required token permissions.
 
