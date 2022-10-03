@@ -21,7 +21,6 @@
 
 - name: "Render bundle operator image"
   shell: >
-    {{ preflight_docker_config_env | default('') }}
     {{ opm_tool_path }} render {{ operator.bundle_image }}
   register: rendered_bundle
 
