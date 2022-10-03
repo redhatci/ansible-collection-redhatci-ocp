@@ -1,0 +1,75 @@
+---
+- name: "Validate parameters"
+  assert:
+    that:
+      - fbc_bundles is defined
+      - fbc_bundles | type_debug == "list"
+      - fbc_index_image is defined
+    fail_msg: "At least one of the parameters requirements is missing"
+
+- name: Create temporary directory
+  tempfile:
+    state: directory
+    prefix: fbc_tmp_dir.
+  register: fbc_tmp_dir
+
+- name: "Set working directory"
+  set_fact:
+    fbc_tmp_dir: "{{ fbc_tmp_dir.path }}"
+
+- name: "Set opm cmd"
+  set_fact:
+    fbc_opm_cmd: "{{ fbc_tmp_dir }}/opm {{ fbc_opm_args }}"
+
+- name: "Download stable opm client"
+  vars:
+    ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz"
+  unarchive:
+    src: "{{ ocp_clients_url }}"
+    dest: "{{ fbc_tmp_dir }}"
+    remote_src: true
+    mode: 0755
+
+- name: "Create index build directory"
+  file:
+    path: "{{ fbc_tmp_dir }}/catalog"
+    state: directory
+    mode: 0755
+
+- name: "Build index image in temporary directory"
+  include_tasks: add-bundle.yml
+  loop: "{{ fbc_bundles }}"
+  loop_control:
+    loop_var: bundle
+    label: "{{ bundle }}"
+
+- name: "Validate catalog"
+  shell: |
+    {{ fbc_opm_cmd }} validate catalog
+  args:
+    chdir: "{{ fbc_tmp_dir }}"
+  register: catalog_validation
+  retries: 6
+  delay: 2
+  until: not catalog_validation.failed
+
+- name: "Add Dockerfile"
+  copy:
+    src: catalog.Dockerfile
+    dest: "{{ fbc_tmp_dir }}/catalog.Dockerfile"
+    mode: 644
+
+- name: "Build the catalog"
+  shell: >
+    podman build .
+    -f catalog.Dockerfile
+    -t {{ fbc_index_image }}
+  args:
+    chdir: "{{ fbc_tmp_dir }}"
+  notify:
+    - "Delete temp directory"
+
+- name: "fbc_index_image"
+  debug:
+    msg: "Catalog image build as {{ fbc_index_image }}"
+...

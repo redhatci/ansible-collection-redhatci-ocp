@@ -1,0 +1,63 @@
+---
+- name: "Render bundle operator image"
+  shell: >
+    {{ fbc_opm_cmd }} render {{ bundle }}
+  args:
+    chdir: "{{ fbc_tmp_dir }}"
+  register: rendered_bundle
+
+- name: "Get inspected data"
+  set_fact:
+    bundle_data: "{{ rendered_bundle.stdout | from_json }}"
+
+- name: "Get operator name, version and image data blob"
+  vars:
+    name_query: "properties[? type==`olm.package`].value.packageName"
+    version_query: "properties[? type==`olm.package`].value.version"
+    data_query: "properties[? type==`olm.bundle.object`].value.data"
+  set_fact:
+    fbc_operator_name: "{{ bundle_data | json_query('name') | join('') }}"
+    fbc_short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
+
+- name: "Get default bundle channel"
+  shell:
+    cmd: >
+      skopeo inspect
+      docker://{{ bundle }}
+  register: bundle_inspect
+
+- name: "Set default channel"
+  vars:
+    query_channel: "Labels.\"operators.operatorframework.io.bundle.channels.v1\""
+    bundle_channel: "{{ bundle_inspect.stdout | from_json | json_query(query_channel) }}"
+  set_fact:
+    fbc_default_channel: "{{  bundle_channel | length | ternary(bundle_channel, 'latest')}}"
+
+- name: "Initialize operators index"
+  shell: >
+    {{ fbc_opm_cmd }} init {{ fbc_short_name }}
+    --default-channel={{ fbc_default_channel }}
+    --output=yaml >> catalog/index.yml
+  args:
+    chdir: "{{ fbc_tmp_dir }}"
+
+- name: "Render bundle for {{ fbc_short_name }}"
+  shell: >
+    {{ ansible_env.DOCKER_CONFIG|default('') }}
+    {{ fbc_opm_cmd }} render {{ bundle }}
+    --output=yaml >> {{ fbc_tmp_dir }}/catalog/index.yml
+  args:
+    chdir: "{{ fbc_tmp_dir }}"
+
+- name: "Append operator channel"
+  blockinfile:
+    dest: "{{ fbc_tmp_dir }}/catalog/index.yml"
+    content: |
+      ---
+      schema: olm.channel
+      package: {{ fbc_short_name }}
+      name: {{ fbc_default_channel }}
+      entries:
+        - name: {{ fbc_operator_name }}
+    marker: "# {{ fbc_operator_name }}-channel"
+...
