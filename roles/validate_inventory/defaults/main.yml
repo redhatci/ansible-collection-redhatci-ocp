@@ -16,6 +16,7 @@ supported_vendor_values:
   - kvm
   - supermicro
   - pxe
+  - zt
 
 allow_custom_vendor: False
 

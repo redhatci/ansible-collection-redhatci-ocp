@@ -1,0 +1,37 @@
+---
+- name: Set resource_id
+  ansible.builtin.import_tasks:
+    file: "./power_off.yml"
+
+- name: Set resource_id
+  ansible.builtin.import_tasks:
+    file: "./set_resource_id.yml"
+
+- name: ZT Eject Virtual Media (if any)
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaEject
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    virtual_media:
+      image_url: "{{ boot_iso_url }}"
+    resource_id: "{{ resource_id }}"
+  ignore_errors: yes
+
+- name: Set ZT OneTimeBoot Hdd
+  community.general.redfish_command:
+    category: Systems
+    command: SetOneTimeBoot
+    bootdevice: Hdd
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+
+- name: ZT Power on system
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
