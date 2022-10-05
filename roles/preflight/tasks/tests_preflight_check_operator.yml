@@ -136,6 +136,9 @@
     - name: Create a PR for certification
       include_role:
         name: create-pr
+        apply:
+          environment:
+            - DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
       vars:
         product_name: "{{ operator.name }}"
         product_version: "{{ operator.version }}"
