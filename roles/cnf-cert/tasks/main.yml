@@ -175,6 +175,10 @@
     shell: |
       set -ex
       podman pull quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }}
+    register: result
+    retries: 2
+    delay: 10
+    until: result.rc == 0
 
   when: not tnf_is_file_path.stat.exists|bool
 
