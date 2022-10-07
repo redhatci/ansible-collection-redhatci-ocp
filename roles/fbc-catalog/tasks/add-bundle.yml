@@ -25,6 +25,9 @@
       skopeo inspect
       docker://{{ bundle }}
   register: bundle_inspect
+  retries: 2
+  delay: 10
+  until: bundle_inspect.rc == 0
 
 - name: "Set default channel"
   vars:
