@@ -23,7 +23,7 @@ In order to run the chart-verifier tool and get your helm chart certified the fo
 1. A project in [Red Hat Partner Connect](https://connect.redhat.com/) must be created for each chart to be tested.
 1. An OWNERS file will be created by a bot in https://github.com/openshift-helm-charts/charts/tree/main/charts/partners/<partner_name>/<chart_name>/OWNERS. Once the project information is complete in the connect site. This may take a bit to complete.
 1. The version of the chart and partner used during the tests must match with the values defined in the [Red Hat Partner Connect](https://connect.redhat.com/) project.
-1. All the tests assigned to the partner profile must pass and the chart tests sucessfully executed against a running cluster.
+1. All the tests assigned to the partner profile must pass and the chart tests successfully executed against a running cluster.
 1. A pull request will be created to submit the chart and the results to the [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) repository. If all the automated tests pass, the chart and report will be merged.
 
 * A chart cannot be re-certified, it should be bumped to a new version. If a test needs to be re-run.
@@ -32,7 +32,7 @@ For more information about the certification process see the [helm charts docume
 
 ## How this role works
 
-This role integrates the chart-verifier as an additionl test suite available in DCI. The purpose is allowing partners to go through the charts certification process or getting familiar with it. The role will go over the list of charts defined in the `dci_charts` variable and run the chart-verifier tool for each of them. If the tests pass, the chart will be pushed to the [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/).
+This role integrates the chart-verifier as an additional test suite available in DCI. The purpose is allowing partners to go through the charts certification process or getting familiar with it. The role will go over the list of charts defined in the `dci_charts` variable and run the chart-verifier tool for each of them. If the tests pass, the chart will be pushed to the [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/).
 
 The role supports defining a `sandbox_repository` variable, that will allow to submit the PRs to a different repository that already contains a fork of [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) repo. This will help partners to implement CI and get prepared with the real certification process.
 
@@ -43,10 +43,10 @@ The `dci_charts` variable is a list of charts that supports the following parame
 
 | Parameter         | Type           | Default           | Description                                         |
 |-------------------|----------------|-------------------|-----------------------------------------------------|
-| chart_file        | string         | undefined         | Name of the chart to be tested                      |
-| flags             | string         | undefined         | Values to be overriden in the chart or setting to be passed to the chart verifier tool. See: [Run helm chart checks](https://github.com/redhat-certification/chart-verifier/blob/main/docs/helm-chart-checks.md#run-helm-chart-checks). This field is optional |
+| chart_file        | string         | undefined         | URL or local path to the chart to be tested         |
+| flags             | string         | undefined         | Values to be overridden in the chart or setting to be passed to the chart verifier tool. See: [Run helm chart checks](https://github.com/redhat-certification/chart-verifier/blob/main/docs/helm-chart-checks.md#run-helm-chart-checks). This field is optional |
 | create_pr         | boolean        | false             | Creates a pull request on the defined repository (sandbox/openshfit-repo).   |
-| values_file       | string         | undefined         | File with the values to be overriden in the chart. This field is optional      |
+| values_file       | string         | undefined         | URL or local path to file with the values to be overridden in the chart. This field is optional |
 | deploy_chart      | boolean        | true              | Deploys the chart to the cluster. This step is mandatory for the certification |
 
 * Other metadata like the chart name, and the chart version are automatically obtained from the chart's metadata.
@@ -60,6 +60,12 @@ dci_charts:
     create_pr: false
     values_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/values.yaml
     deploy_chart: false
+  - chart_file: /home/<user>/charts/samplechart-0.1.1.tgz
+    flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
+    create_pr: false
+    values_file: /home/<user>/charts/values.yaml
+    deploy_chart: false
+  - chart_file: /home/<user>/charts/samplechart-0.1.1.tgz
 ```
 
 ## Chart requirements and installation
@@ -117,12 +123,17 @@ dci_charts:
   - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.2.tgz
     flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
     create_pr: false
-    values_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/values.yaml
+    values_file: https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
     deploy_chart: false
   - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.2.tgz
     flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
     create_pr: true
-    values_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/values.yaml
+    values_file: https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
+    deploy_chart: false
+  - chart_file: /home/<user>/charts/samplechart-0.1.1.tgz
+    flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
+    create_pr: false
+    values_file: /home/<user>/charts/values.yaml
     deploy_chart: false
 ```
 
@@ -165,9 +176,9 @@ See below for an example of how to use the chart-verifier in a DCI pipeline.
 
 ## Known issues and limitations
 
-1. The helm-chart-verifier tool validates the images used in the charts by checking that the repository/image combined values match with the information available in the Red Hat certification datatabase. That limits the testing with DCI in disconnected environments where the registry hosting an already certified image do not match with the registry used to certify the image.
+1. The helm-chart-verifier tool validates the images used in the charts by checking that the repository/image combined values match with the information available in the Red Hat certification database. That limits the testing with DCI in disconnected environments where the registry hosting an already certified image do not match with the registry used to certify the image.
 
-1. At this time there is no suppport to automatically manage certification projects in connect.redhat.com.
+1. At this time there is no support to automatically manage certification projects in connect.redhat.com.
 
 1. The pull requests that fail the tests need to be manually deleted by the partner.
 
