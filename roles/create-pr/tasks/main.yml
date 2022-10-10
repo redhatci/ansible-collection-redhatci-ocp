@@ -43,7 +43,7 @@
 
 - name: "Set local branch name"
   set_fact:
-    local_branch: "{{ product_name }}_{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+    local_branch: "{{ product_name }}"
 
 - name: "Generate a one time use SSH key"
   openssh_keypair:

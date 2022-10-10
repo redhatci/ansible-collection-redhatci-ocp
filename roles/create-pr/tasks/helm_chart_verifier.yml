@@ -52,6 +52,16 @@
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
 
+- name: Ensure that remote branch is absent to avoid merge conflicts
+  shell:
+    cmd: |
+      eval "$(ssh-agent)"
+      ssh-add {{ work_dir }}/ssh_key
+      git push origin --delete {{ local_branch }}
+  args:
+    chdir: "{{ work_dir }}/{{ fork_name }}"
+  ignore_errors: true
+
 - name: "Push branch and create PR to the forked repository"
   shell:
     cmd: |
