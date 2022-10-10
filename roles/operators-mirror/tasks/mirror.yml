@@ -39,32 +39,36 @@
   when:
     - tmp_index is defined
 
-- name: Generate mirror entries
-  set_fact:
-    mirrors: "{{ mirrors | default({}) | combine({ item.split('=')[0].split('/')[0]
-            + '/' + item.split('=')[0].split('/')[1] :
-            item.split('=')[1].split('/')[0]
-            + '/' + item.split('=')[1].split('/')[1]}) }}"
-  loop: "{{ lookup('file', dci_cluster_configs_dir + '/' + manifests_dir + '/mapping.txt').splitlines() }}"
+- name: "Set up mirror bundles"
+  block:
+    - name: Generate mirror entries
+      set_fact:
+        mirrors: "{{ mirrors | default({}) | combine({ item.split('=')[0].split('/')[0]
+                + '/' + item.split('=')[0].split('/')[1] :
+                item.split('=')[1].split('/')[0]
+                + '/' + item.split('=')[1].split('/')[1]}) }}"
+      loop: "{{ lookup('file', dci_cluster_configs_dir + '/' + manifests_dir + '/mapping.txt').splitlines() }}"
 
-- name: Generate mirror bundle
-  template:
-    src: mirror-bundle.yml
-    dest: "{{ dci_cluster_configs_dir }}/mirror-bundle.yml"
+    - name: Generate mirror bundle
+      template:
+        src: mirror-bundle.yml
+        dest: "{{ dci_cluster_configs_dir }}/mirror-bundle.yml"
 
-- name: Copy trust bundle
-  copy:
-    src: "{{ hostvars[groups['registry_host'] | first].disconnected_registry_mirrors_file }}"
-    dest: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
+    - name: Copy trust bundle
+      copy:
+        src: "{{ hostvars[groups['registry_host'] | first].disconnected_registry_mirrors_file }}"
+        dest: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
 
-- name: Add Dynamic mirror to trust bundle
-  blockinfile:
-    path: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
-    block: "{{ lookup('file', dci_cluster_configs_dir + '/mirror-bundle.yml') }}"
+    - name: Add Dynamic mirror to trust bundle
+      blockinfile:
+        path: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
+        block: "{{ lookup('file', dci_cluster_configs_dir + '/mirror-bundle.yml') }}"
 
-- name: Override disconnected_registry_mirrors_file
-  set_fact:
-    disconnected_registry_mirrors_file: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
-  delegate_facts: true
-  delegate_to: "{{ groups['registry_host'][0] if 'registry_host' in groups else 'registry_host' }}"
+    - name: Override disconnected_registry_mirrors_file
+      set_fact:
+        disconnected_registry_mirrors_file: "{{ dci_cluster_configs_dir }}/trust-bundle.yml"
+      delegate_facts: true
+      delegate_to: "{{ groups['registry_host'][0] if 'registry_host' in groups else 'registry_host' }}"
+  when:
+    - install_type != 'acm'
 ...
