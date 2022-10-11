@@ -58,12 +58,6 @@
       $(podman create --rm {{ operator.bundle_image }} bash):/metadata/annotations.yaml .
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata"
 
-- name: "Ensure that annotations.yaml contains 'com.redhat.openshift.versions: v4.x-v4.xx'"
-  shell: |
-    cat {{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata/annotations.yaml
-  register: preflight_annotations
-  failed_when: "'com.redhat.openshift.versions' not in preflight_annotations.stdout"
-
 - name: "Render CI.yaml file"
   template:
     src: ci.yaml.j2
@@ -78,6 +72,16 @@
       git commit -m 'Added {{ product_name }} version {{ product_version }}'
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
+
+- name: Ensure that remote branch is absent to avoid merge conflicts
+  shell:
+    cmd: |
+      eval "$(ssh-agent)"
+      ssh-add {{ work_dir }}/ssh_key
+      git push origin --delete {{ local_branch }}
+  args:
+    chdir: "{{ work_dir }}/{{ fork_name }}"
+  ignore_errors: true
 
 - name: "Push branch and create PR to the forked repository"
   shell:
