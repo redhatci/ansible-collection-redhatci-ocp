@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="3" disabled="0" errors="0" failures="0" time="TEST_TIME">
+    <testsuite name="StorageUpgradeRWO" tests="1" disabled="0" skipped="0" errors="0" failures="0" time="TEST_TIME"
+               timestamp="DATE">
+        <properties>
+            <property name="NumberOfTries" value="NB_TRY_RWO"></property>
+            <property name="NumberOfSuccess" value="NB_SUCCESS_RWO"></property>
+            <property name="NbOfFailures" value="FAILS_RWO"></property>
+            <property name="PercentageOfFailure" value="PERCENT_RWO"></property>
+            <property name="EstimatedDownTimeInMin" value="DOWN_RWO"></property>
+        </properties>
+        <testcase name="Testing Binding and Writing of a PVC to a single pod" classname="Storage Upgrade RWO"
+                  status="passed" time="TEST_TIME"/>
+    </testsuite>
+    <testsuite name="StorageUpgradeROX" tests="1" disabled="0" skipped="0" errors="0" failures="0" time="TEST_TIME"
+               timestamp="DATE">
+        <properties>
+            <property name="NumberOfTries" value="NB_TRY_ROX"></property>
+            <property name="NumberOfSuccess" value="NB_SUCCESS_ROX"></property>
+            <property name="NbOfFailures" value="FAILS_ROX"></property>
+            <property name="PercentageOfFailure" value="PERCENT_ROX"></property>
+            <property name="EstimatedDownTimeInMin" value="DOWN_ROX"></property>
+        </properties>
+        <testcase name="Testing Reading values from PVC bound simultaneously to 2 pods" classname="Storage Upgrade ROX"
+                  status="passed" time="TEST_TIME"/>
+    </testsuite>
+    <testsuite name="StorageUpgradeRWX" tests="1" disabled="0" skipped="0" errors="0" failures="0" time="TEST_TIME"
+               timestamp="DATE">
+        <properties>
+            <property name="NumberOfTries" value="NB_TRY_RWX"></property>
+            <property name="NumberOfSuccess" value="NB_SUCCESS_RWX"></property>
+            <property name="NbOfFailures" value="FAILS_RWX"></property>
+            <property name="PercentageOfFailure" value="PERCENT_RWX"></property>
+            <property name="EstimatedDownTimeInMin" value="DOWN_RWX"></property>
+        </properties>
+        <testcase name="Testing Writing of a PVC bound simultaneously to 2 pods" classname="Storage Upgrade RWX"
+                  status="passed" time="TEST_TIME"/>
+    </testsuite>
+</testsuites>

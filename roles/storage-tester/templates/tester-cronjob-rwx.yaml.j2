@@ -1,0 +1,43 @@
+{% if ocp_version_storage is version('4.8', operator='lt', strict=True) %}
+apiVersion: batch/v1beta1
+{% else %}
+apiVersion: batch/v1
+{% endif %}
+kind: CronJob
+metadata:
+  name: storage-volume-creation-test-rwx
+  namespace: storage-tester
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: "Replace"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 150
+  jobTemplate:
+    spec:
+      parallelism: 2
+      activeDeadlineSeconds: 60
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            parent: "cronjobstoragerwx"
+        spec:
+          containers:
+          - name: volume-tester-rwx
+{% if dci_disconnected | default(false) %}
+            image: "{{ local_registry_host }}:{{ local_registry_port }}/rhel8/support-tools"
+{% else %}
+            image: "registry.redhat.io/rhel8/support-tools"
+{% endif %}
+            imagePullPolicy: IfNotPresent
+            command: ["/bin/sh"]
+            args: ["-c", "date >> /data-tester/$HOSTNAME.txt; sleep 5"]
+            volumeMounts:
+              - name: volume-tester-for-upgrade
+                mountPath: /data-tester
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 5
+          volumes:
+          - name: volume-tester-for-upgrade
+            persistentVolumeClaim:
+               claimName: storage-upgrade-tester-rwx
