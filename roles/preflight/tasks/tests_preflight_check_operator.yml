@@ -85,7 +85,7 @@
       register: preflight_namespace_presence
       until: preflight_namespace_presence.resources | length == 0
       retries: 30
-      delay: 10
+      delay: 20
   rescue:
     - name: Print hanging resources
       shell: "{{ oc_tool_path }} get all -n {{ preflight_namespace }}"
