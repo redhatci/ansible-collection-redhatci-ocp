@@ -18,6 +18,8 @@
       - libvirt
       - libvirt-daemon-kvm
       - virt-install
+      - langpacks-en
+      - glibc-all-langpacks
       - "libvirt-python{% if ansible_python.version.major == 3 %}3{% endif %}"
       - "python{% if ansible_python.version.major == 3 %}3{% endif %}-netaddr"
       - "python{% if ansible_python.version.major == 3 %}3{% endif %}-lxml"

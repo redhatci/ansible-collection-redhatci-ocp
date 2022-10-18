@@ -8,6 +8,7 @@
           - libvirt-devel
           - "python{% if ansible_python.version.major == 3 %}3{% endif %}-setuptools"
           - "python{% if ansible_python.version.major == 3 %}3{% endif %}-pip"
+          - "python{% if ansible_python.version.major == 3 %}3{% endif %}-devel"
           - ipmitool
           - psmisc
         state: latest
@@ -41,7 +42,7 @@
 - name: Prepare venv for vbmc
   pip:
     virtualenv: "{{ vbmc_virtualenv }}"
-    virtualenv_command: "virtualenv-{{ ansible_python.version.major }}"
+    virtualenv_command: "virtualenv{% if ansible_distribution_major_version | int < 9 %}-{{ ansible_python.version.major }}{% endif %}"
     name:
       - pip
       - dateutils
@@ -52,7 +53,7 @@
 - name: Install python-virtualbmc with pip
   pip:
     virtualenv: "{{ vbmc_virtualenv }}"
-    virtualenv_command: "virtualenv-{{ ansible_python.version.major }}"
+    virtualenv_command: "virtualenv{% if ansible_distribution_major_version | int < 9 %}-{{ ansible_python.version.major }}{% endif %}"
     name: virtualbmc
     version: "{{ vbmc_version }}"
   environment:
