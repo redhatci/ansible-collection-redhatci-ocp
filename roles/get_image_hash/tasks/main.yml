@@ -30,7 +30,7 @@
   include_vars:
     file: "{{ image_hashes_path }}"
     name: image_hashes
-  when: image_hashes_path is file and ignore_cached_image_hashes | bool
+  when: image_hashes_path is file and not (ignore_cached_image_hashes | bool)
   delegate_to: localhost
 
 - name: Build release_images entries
@@ -62,7 +62,6 @@
     dest: "{{ image_hashes_path }}"
     mode: 0660
   delegate_to: localhost
-  when: image_hashes_path is not file
 
 - name: Update release_images with hashes
   when: get_release_images | bool
