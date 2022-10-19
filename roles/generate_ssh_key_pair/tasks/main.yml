@@ -21,6 +21,7 @@
 - name: Generate an OpenSSH rsa keypair
   community.crypto.openssh_keypair:
     path: "{{ key_pair_dir }}/{{ private_key_name }}"
+    mode: 0600
   args: "{{ openssh_keypair_args | default({}) }}"
 
 - name: Fetch SSH Key
