@@ -1,7 +1,7 @@
 virt_packages:
   - python3
   - libvirt
-  -  virt-install 
+  -  virt-install
   - qemu-kvm
   - virt-manager
   - python3-pip
@@ -9,7 +9,8 @@ virt_packages:
   - python3-libvirt
 
 images_dir: /var/lib/libvirt/images/
-vm_create_scripts_dir: /home/redhat/vm_create_scripts/
+path_base_dir: /home/redhat
+vm_create_scripts_dir: "{{ path_base_dir }}/vm_create_scripts/"
 
 vm_bridge_name: "{{ cluster_name }}-br"
 network_name: "net-{{ cluster_name }}"

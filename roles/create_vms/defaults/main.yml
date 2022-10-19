@@ -1,5 +1,6 @@
 network_name: "net-{{ cluster_name }}"
-vm_create_scripts_dir: /home/redhat/vm_create_scripts/
+path_base_dir: /home/redhat
+vm_create_scripts_dir: "{{ path_base_dir }}/vm_create_scripts/"
 
 virt_packages:
   - python3
