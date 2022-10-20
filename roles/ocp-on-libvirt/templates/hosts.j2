@@ -52,7 +52,7 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 [provisioner]
 {% for key, value in ironic_nodes.items() %}
 {% if 'provision' in key %}
-{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} ansible_user={{ provisionhost_user }} prov_nic=eth0 pub_nic=eth1 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+{{ key }}{{ "." + ansible_fqdn if not do_dns_config|bool }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} ansible_user={{ provisionhost_user }} prov_nic=eth0 pub_nic=eth1 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 {% endif %}
 {% endfor %}
 
