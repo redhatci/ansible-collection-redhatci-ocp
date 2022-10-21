@@ -77,10 +77,10 @@ tnf_certified_container_info:
   - name: rocketchat/rocketchat
     repository: registry.connect.redhat.com
     tag: 0.56.0-1 # optional, "latest" assumed if empty
-    digest: # if set, takes precedence over tag. e.g. "sha256:aa34453a6417f8f76423ffd2cf874e9c4a1a5451ac872b78dc636ab54a0ebbc3"
+    digest: # if set, takes precedence over tag. e.g. "sha256:03f7f2499233a302351821d6f78f0e813c3f749258184f4133144558097c57b0"
   - name: rocketchat/rocketchat
     repository: registry.connect.redhat.com
     tag: 0.56.0-1
-    digest: sha256:c358eee360a1e7754c2d555ec5fba4e6a42f1ede2bc9dd9e59068dd287113b33
+    digest: sha256:03f7f2499233a302351821d6f78f0e813c3f749258184f4133144558097c57b0
 ...
 ```
