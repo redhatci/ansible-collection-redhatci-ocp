@@ -52,6 +52,17 @@
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true
 
+- name: Change the ownership of oval report
+  file:
+    path: "{{ file }}"
+    owner: "{{ ansible_user_id }}"
+  loop:
+    - "{{ preflight_container_artifacts.path }}/oval-report.xml"
+    - "{{ preflight_container_artifacts.path }}/oval-report.html"
+  loop_control:
+    loop_var: file
+  become: true
+
 - name: Convert Oval file to Junit
   dci_oval_to_junit:
     oval_result_src: "{{ preflight_container_artifacts.path }}/oval-report.xml"
