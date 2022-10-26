@@ -27,5 +27,9 @@
   dci_job_component:
     component_id: "{{ git_component.component.id }}"
     job_id: " {{ job_id }} "
+  register : job_component_result
+  until: job_component_result is not failed
+  retries: 5
+  delay: 20
   when: last_commit_id.rc == 0
 ...
