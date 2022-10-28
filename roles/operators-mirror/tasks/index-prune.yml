@@ -18,25 +18,33 @@
     state: directory
     mode: 0755
 
-- name: "Copy configs.Dockerfile to Temp directory"
+- name: "Copy configs.Dockerfile to temp directory"
   copy:
     src: configs.Dockerfile
     dest: "{{ tmp_prune.path }}/configs.Dockerfile"
     mode: 0644
 
-- name: "Extract the operator's channel and packages from the catalog index"
+- name: "Render the catalog index"
   shell:
     chdir: "{{ tmp_prune.path }}"
     cmd: >
       set -x;
       REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
-      {{ tmp_prune.path }}/opm render
-      {{ source_index }} |
-      jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'  >> {{ tmp_prune.path }}/configs/index.json
+      {{ tmp_prune.path }}/opm render {{ source_index }} >
+      {{ tmp_prune.path }}/index-packages
   register: prune_result
   until: prune_result.rc == 0
   retries: 3
   delay: 10
+
+- name: "Extract required operator's channel, and packages"
+  shell:
+    chdir: "{{ tmp_prune.path }}"
+    cmd: >
+      set -x;
+      jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'
+      {{ tmp_prune.path }}/index-packages
+      >> {{ tmp_prune.path }}/configs/index.json
   with_items: "{{ mirror_list }}"
   loop_control:
     loop_var: operator_name
@@ -50,6 +58,12 @@
       -f {{ tmp_prune.path }}/configs.Dockerfile .
   notify:
     - "Fix permissions and removing tmp files"
+
+- name: "Validate the pruned index"
+  shell: |
+    {{ tmp_prune.path }}/opm validate configs/
+  args:
+    chdir: "{{ tmp_prune.path }}"
 
 - name: "Push the new index image to the local registry"
   shell:
@@ -70,6 +84,17 @@
       podman inspect {{ grpc_container_id.stdout }} | jq '.[].NetworkSettings.Ports."50051/tcp"[].HostPort'
   register: grpc_port
 
+- name: "Get the operators available in the pruned catalog"
+  shell:
+    cmd: >
+      grpcurl -plaintext localhost:{{ grpc_port.stdout  }} api.Registry/ListPackages |
+      jq ".name"
+  register: packages_list
+
+- name: "List operators available in the pruned catalog"
+  debug:
+    msg: "{{ packages_list.stdout }}"
+
 - name: "Get the number of operators in the pruned catalog"
   shell:
     cmd: |
@@ -85,6 +110,11 @@
   shell:
     cmd: >
       podman rmi -f {{ local_registry }}{{ opm_local_registry_path }}:{{ index_tag }}
+
+- name: "Delete image config directory"
+  file:
+    state: absent
+    path: "{{ tmp_prune.path }}/configs"
 
 - name: "Set new minor version when operators are missing"
   set_fact:
