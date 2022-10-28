@@ -2,6 +2,7 @@
 - include_vars:
     file: ipmi_nodes.json
     name: ironic_nodes
+
 - name: Generating hosts inventory file
   template:
     src: hosts.j2
@@ -10,6 +11,7 @@
     input_prefix: "{{ lookup('env', 'PREFIX') }}"
     inventory_prefix: "{{ (input_prefix | replace('-p ', '')) + '-' if input_prefix != '' else '' }}"
   delegate_to: localhost
+
 - name: Update running inventory of masters
   add_host:
     name: "{{ item.key }}"
@@ -22,6 +24,7 @@
     socket_console: "{{ enable_conserver }}"
   when: '"master" in item.key'
   loop: "{{ ironic_nodes | dict2items }}"
+
 - name: Update running inventory of workers
   add_host:
     name: "{{ item.key }}"
@@ -34,6 +37,7 @@
     socket_console: "{{ enable_conserver }}"
   when: '"workers" in item.key'
   loop: "{{ ironic_nodes | dict2items }}"
+
 - name: Startup provisionhost
   community.libvirt.virt:
     name: "{{ item.key }}"
