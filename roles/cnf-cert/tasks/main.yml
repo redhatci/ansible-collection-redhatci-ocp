@@ -186,12 +186,6 @@
 
   when: not tnf_is_file_path.stat.exists|bool
 
-- name: Create temporary build directory
-  tempfile:
-    state: directory
-  register: tnf_tempdir
-  when: tnf_tempdir is not defined
-
 - name: Template tnf_config.yml
   template:
     src: templates/tnf_config.yml.j2
@@ -237,10 +231,10 @@
     {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
     -i $TNF_IMAGE &> {{ test_network_function_project_name }}/execution.log
 
-    cp {{ test_network_function_project_name }}/*.xml {{ tnf_tempdir.path }}
-    cp {{ test_network_function_project_name }}/*.json {{ tnf_tempdir.path }}
-    cp {{ test_network_function_project_name }}/execution.log {{ tnf_tempdir.path }}
-    cp {{ test_network_function_project_name }}/tnf_config.yml {{ tnf_tempdir.path }}
+    cp {{ test_network_function_project_name }}/*.xml {{ job_logs.path }}
+    cp {{ test_network_function_project_name }}/*.json {{ job_logs.path }}
+    cp {{ test_network_function_project_name }}/execution.log {{ job_logs.path }}
+    cp {{ test_network_function_project_name }}/tnf_config.yml {{ job_logs.path }}
   args:
     chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
@@ -249,7 +243,7 @@
   block:
     - name: Check if the execution finished correctly
       stat:
-        path: "{{ tnf_tempdir.path }}/claim.json"
+        path: "{{ job_logs.path }}/claim.json"
       register: claim_json_present
 
     - name: CNF Cert Suite execution did not finish correctly
