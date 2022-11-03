@@ -51,6 +51,10 @@
     --output=yaml >> {{ fbc_tmp_dir }}/catalog/index.yml
   args:
     chdir: "{{ fbc_tmp_dir }}"
+  register: render_result
+  retries: 3
+  delay: 10
+  until: render_result.rc == 0
 
 - name: "Append operator channel"
   blockinfile:
