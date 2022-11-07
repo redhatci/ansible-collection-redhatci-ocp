@@ -2,7 +2,6 @@
 ### tasks in disconnected environment
 - block:
   - name: "Mirror Cirros-VM image for test"
-    delegate_to: localhost
     shell:
       cmd: >
          skopeo copy --authfile {{ dci_pullsecret_file }}
