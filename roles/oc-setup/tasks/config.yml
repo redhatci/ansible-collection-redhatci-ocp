@@ -1,10 +1,7 @@
 ---
-- name: "Generate Random password for admin user"
+- name: "Generate Random passwords for users htpassIDP"
   set_fact:
     admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
-
-- name: "Generate random password for nonadmin user"
-  set_fact:
     nonadmin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
 
 - name: "Save passwords to the cluster configs directory"
@@ -23,41 +20,67 @@
     name: "ocp_creds.txt"
     job_id: "{{ hostvars.localhost.job_id }}"
     mime: "text/plain"
-  delegate_to: localhost
 
-- name: "oc-setup : Create users.htpasswd file"
-  shell: |
-    # create admin user
-    htpasswd -cbB {{ dci_cluster_configs_dir }}/users.htpasswd admin {{ admin_pass }}
-    # append nonadmin user
-    htpasswd -bB {{ dci_cluster_configs_dir }}/users.htpasswd nonadmin {{ nonadmin_pass }}
-    ls -lh {{ dci_cluster_configs_dir }}/
+- name: Create http auth file
+  htpasswd:
+    path: "{{ dci_cluster_configs_dir }}/users.htpasswd"
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
+    mode: 0640
+  loop:
+    - user: admin
+      password: "{{ admin_pass }}"
+    - user: nonadmin
+      password: "{{ nonadmin_pass }}"
 
-- name: "oc-setup : Set htpasswd config secret in openshift"
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  shell: >
-    set -o pipefail;
-    {{ oc_tool_path }} create secret generic htpass-secret
-    --from-file=htpasswd={{ dci_cluster_configs_dir }}/users.htpasswd
-    --namespace openshift-config
-    --dry-run --output yaml | {{ oc_tool_path }} apply -f -
+- name: "Encoding the password file"
+  slurp:
+    src: "{{ dci_cluster_configs_dir }}/users.htpasswd"
+  register: encoded_password
 
-- name: "oc-setup : Upload the IDP config to the jumphost"
-  copy:
-    src: httpasswd-config.yml
-    dest: "{{ dci_cluster_configs_dir }}/"
-    mode: "0640"
+- name: "Set htpasswd config secret in openshift"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: htpass-secret
+        namespace: openshift-config
+      type: Opaque
+      data:
+        htpasswd: "{{ encoded_password.content }}"
 
-- name: "oc-setup : Setup htpasswd auth IDP backend in openshift"
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  shell: |
-    {{ oc_tool_path }} apply -f {{ dci_cluster_configs_dir }}/httpasswd-config.yml
+- name: "Setup htpasswd auth IDP backend in openshift"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: OAuth
+      metadata:
+        name: cluster
+      spec:
+        identityProviders:
+        - name: htpassidp
+          challenge: true
+          login: true
+          mappingMethod: claim
+          type: HTPasswd
+          htpasswd:
+            fileData:
+              name: htpass-secret
 
-- name: "oc-setup : Give cluster-admin to the admin user"
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  shell: |
-    {{ oc_tool_path }} adm policy add-cluster-role-to-user cluster-admin admin
+- name: "Grant cluster-admin permissions to admin user"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-admin-admin
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: User
+          name: "admin"
 ...

@@ -1,5 +1,12 @@
 ---
-- name: "oc-setup : Get oc binary and KUBECONFIG auth/creds from provisioner node"
+
+- name: "Install required packages"
+  package:
+    name: python3-passlib
+    state: present
+  become: true
+
+- name: "Get oc binary and KUBECONFIG auth/creds from provisioner node"
   delegate_to: "{{ groups['provisioner'][0] }}"
   fetch:
     src: "{{ item }}"
@@ -10,14 +17,13 @@
   - "{{ dir }}/auth/kubeconfig"
   - "{{ dir }}/auth/kubeadmin-password"
 
-- name: "oc-setup : Give execution permissions to oc binary"
+- name: "Grant execution permissions to oc binary"
   file:
     path: '{{ dci_cluster_configs_dir }}/oc'
     mode: 0755
 
 - name: "Get cluster install-config"
   community.kubernetes.k8s_info:
-    kubeconfig: "{{ kubeconfig_path }}"
     api: v1
     kind: ConfigMap
     name: cluster-config-v1
@@ -66,13 +72,7 @@
   - "{{ dci_cluster_configs_dir }}/kubeconfig"
   - "{{ dci_cluster_configs_dir }}/kubeadmin-password"
 
-- name: "oc-setup : Install packages needed for login"
-  package:
-    name: httpd-tools
-    state: present
-  become: true
-
-- name: "oc-setup : Create .kube directory"
+- name: "Create .kube directory"
   delegate_to: "{{ groups['provisioner'][0] }}"
   file:
     path: "{{ ansible_env.HOME }}/.kube"
@@ -86,7 +86,7 @@
     get_checksum: false
   register: kube_config
 
-- name: "oc-setup : Symlink kubeconfig to .kube/config"
+- name: "Symlink kubeconfig to .kube/config"
   delegate_to: "{{ groups['provisioner'][0] }}"
   file:
     src: "{{ dir }}/auth/kubeconfig"
