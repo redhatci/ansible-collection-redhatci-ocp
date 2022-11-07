@@ -31,28 +31,21 @@
   set_fact:
     bundle_data: "{{ rendered_bundle.stdout | from_json }}"
 
-- name: "Get operator name, version and image data blob"
+- name: Get operator name and version
   vars:
     name_query: "properties[? type==`olm.package`].value.packageName"
     version_query: "properties[? type==`olm.package`].value.version"
-    data_query: "properties[? type==`olm.bundle.object`].value.data"
   set_fact:
     operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
     operator_version: "{{ bundle_data | json_query(version_query) | join('') }}"
-    data_blobs: "{{ bundle_data | json_query(data_query) }}"
 
-- name: "Copy manifest files from bundle"
-  copy: content="{{ data_yaml }}" dest={{ chdir }}/{{ metadata }}_{{ apiversion }}_{{ kind }}.yaml
-  vars:
-    data_yaml: "{{ blob | b64decode | from_json | to_yaml }}"
-    metadata: "{{ blob | b64decode | from_json | json_query('metadata.name') }}"
-    apiversion: "{{ blob | b64decode | from_json |json_query('apiVersion')| replace('/','_') }}"
-    kind: "{{ blob | b64decode | from_json| json_query('kind') }}"
+- name: Copy manifest files from bundle
+  shell:
+    cmd: >
+      podman cp
+      $(podman create --rm {{ operator.bundle_image }} bash):/manifests/. .
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/manifests"
-  loop: "{{ data_blobs | list }}"
-  loop_control:
-    loop_var: blob
 
 - name: Retrieve annotations.yaml file from bundle image
   shell:
