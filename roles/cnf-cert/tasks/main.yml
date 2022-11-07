@@ -1,4 +1,13 @@
 ---
+
+- name: Fail if tnf_suites is not provided in tnf versions lower or equal than v4.0.2
+  assert:
+    that: "tnf_suites|length"
+    fail_msg: "tnf_suites is required in tnf versions lower or equal than v4.0.2"
+  when:
+    - test_network_function_version is version("v4.0.2", "<=")
+    - test_network_function_version != "HEAD"
+
 - name: Redefine variables if we are using an old tnf version
   set_fact:
     test_network_function_repo: https://github.com/test-network-function/test-network-function
@@ -6,6 +15,14 @@
   when:
     - test_network_function_version is version("v3.3.3", "<=")
     - test_network_function_version != "HEAD"
+
+# This is to ensure compatibility with partners that are still using tnf_suites
+# in latest tnf version. In that case, we override tnf_labels default value to "".
+- name: Redefine variables if tnf_suites is provided
+  set_fact:
+    tnf_labels: ""
+  when:
+    - tnf_suites|length
 
 - name: "cnf-cert : Save images in local registry"
   include_role:
@@ -98,7 +115,7 @@
     set_fact:
       tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}"
 
-  # Steps from https://github.com/test-network-function/cnf-certification-test#building-the-container-image-locally
+  # Steps from https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
   # Until 4.12 is officially released, consider we are using OCP 4.11 to be able to build the image.
   - name: Build the tnf image locally
     shell: |
