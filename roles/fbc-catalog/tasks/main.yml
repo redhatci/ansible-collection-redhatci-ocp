@@ -54,10 +54,10 @@
   until: not catalog_validation.failed
 
 - name: "Add Dockerfile"
-  copy:
-    src: catalog.Dockerfile
+  template:
+    src: catalog.Dockerfile.j2
     dest: "{{ fbc_tmp_dir }}/catalog.Dockerfile"
-    mode: 644
+    mode: 0644
 
 - name: "Build the catalog"
   shell: >

@@ -19,8 +19,8 @@
     mode: 0755
 
 - name: "Copy configs.Dockerfile to temp directory"
-  copy:
-    src: configs.Dockerfile
+  template:
+    src: configs.Dockerfile.j2
     dest: "{{ tmp_prune.path }}/configs.Dockerfile"
     mode: 0644
 
