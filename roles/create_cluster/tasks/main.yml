@@ -75,7 +75,7 @@
 - name: "Save cluster_id"
   copy:
     content: "{{ cluster_id }}"
-    dest: "{{ fetched_dest }}/cluster.txt"
+    dest: "{{ fetched_dest }}/{{ cluster_id_filename }}"
     mode: 0644
   delegate_to: localhost
   become: no
