@@ -2,6 +2,10 @@
 - include_tasks: track_git_repo.yml
   loop: "{{ gits_to_components | flatten }}"
 
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+
 - include_tasks: track_rpm.yml
   loop: "{{ rpms_to_components | flatten }}"
   when: |
