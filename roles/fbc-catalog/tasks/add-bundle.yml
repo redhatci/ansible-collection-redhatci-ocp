@@ -5,6 +5,9 @@
   args:
     chdir: "{{ fbc_tmp_dir }}"
   register: rendered_bundle
+  retries: 2
+  delay: 10
+  until: rendered_bundle.rc == 0
 
 - name: "Get inspected data"
   set_fact:
