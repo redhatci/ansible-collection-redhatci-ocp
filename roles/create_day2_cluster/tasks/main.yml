@@ -28,7 +28,7 @@
 - name: "Save add_host_cluster_id"
   copy:
     content: "{{ add_host_cluster_id }}"
-    dest: "{{ fetched_dest }}/day2_cluster.txt"
+    dest: "{{ fetched_dest }}/{{ day2_cluster_id_filename }}"
     mode: 0644
   delegate_to: localhost
   become: no
