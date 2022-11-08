@@ -23,6 +23,9 @@
   shell: >
     {{ opm_tool_path }} render {{ operator.bundle_image }}
   register: rendered_bundle
+  retries: 2
+  delay: 10
+  until: rendered_bundle.rc == 0
 
 - name: "Get inspected data"
   set_fact:
