@@ -12,4 +12,4 @@ ADD configs /configs
 # Set DC-specific label for the location of the DC root directory
 # in the image
 LABEL operators.operatorframework.io.index.configs.v1=/configs
-LABEL maintainer="Telco DCI team" quay.expires-after=24h
+LABEL maintainer="Telco DCI team"{% if opm_expire %} quay.expires-after={{ opm_expire_time }}{% endif %}
