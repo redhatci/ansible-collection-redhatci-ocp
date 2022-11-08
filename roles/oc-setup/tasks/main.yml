@@ -1,12 +1,11 @@
 ---
-- name: "oc-setup : Install binaries and other packages in jumphost"
+- name: "Install binaries and other packages in jumphost"
   include_tasks: install.yml
   tags:
     - install
 
-- name: "test_ oc-setup : Check inventory to match ocp cluster config"
+- name: "test_ Check inventory to match ocp cluster config"
   community.kubernetes.k8s_info:
-    kubeconfig: "{{ kubeconfig_path }}"
     api_version: v1
     kind: node
     name: "{{ hostvars[item].name }}"
@@ -18,7 +17,7 @@
   tags:
     - check
 
-- name: "oc-setup : Configure clients in jumphost"
+- name: "Configure clients in jumphost"
   include_tasks: config.yml
   tags:
     - config
