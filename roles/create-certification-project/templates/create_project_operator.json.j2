@@ -12,7 +12,7 @@
       "registry": "{{ operator.bundle_image.split('/')[0] }}",
       "repository": "{{ operator.bundle_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
       "repository_description": "{{ operator.bundle_image.split('/')[1] }}",
-      "repository_name": "{{ operator.bundle_image.split('/')[1] }}",
+      "repository_name": "{{ operator.bundle_image.split('@')[0].split(':')[0].split('/')[-1] }}",
       "type": "operator bundle image"
     },
     "creation_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
