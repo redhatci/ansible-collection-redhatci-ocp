@@ -41,6 +41,26 @@
     create_body_extras: "{{ create_body_extras | combine({'network_type': network_type }) }}"
   when: network_type is defined
 
+- name: Add LSO to olm_operators
+  set_fact:
+    olm_operators: "{{ (olm_operators | default([])) + [{'name': 'lso'}] }}"
+  when: ((install_odf | default(false)) | bool) or ((install_lso | default(false)) | bool)
+
+- name: Add OCS to olm_operators
+  set_fact:
+    olm_operators: "{{ (olm_operators | default([])) + [{'name': 'ocs'}] }}"
+  when: ((install_odf | default(false)) | bool)
+
+- name: Add CNV to olm_operators
+  set_fact:
+    olm_operators: "{{ (olm_operators | default([])) + [{'name': 'cnv'}] }}"
+  when: ((install_cnv | default(false)) | bool)
+
+- name: Add Operators
+  set_fact:
+    create_body_extras: "{{ create_body_extras | combine({'olm_operators': olm_operators}) }}"
+  when: olm_operators is defined
+
 - debug: # noqa unnamed-task
     msg: "{{ create_body | from_json | combine(create_body_extras) | to_nice_json }}"
     verbosity: 1
