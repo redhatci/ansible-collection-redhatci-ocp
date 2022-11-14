@@ -1,6 +1,6 @@
 ---
 test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
-test_network_function_version: "v4.1.0"
+test_network_function_version: v4.1.1
 test_network_function_project_name: cnf-certification-test
 tnf_suites: ""
 tnf_skip_suites: ""
