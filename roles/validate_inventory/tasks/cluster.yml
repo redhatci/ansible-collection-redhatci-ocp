@@ -49,12 +49,12 @@
 - name: Assert bmc_ip is correct type
   assert:
     that:
-      - hostvars[item]['bmc_ip'] | ipaddr('bool')
+      - hostvars[item]['bmc_ip'] | ansible.utils.ipaddr('bool')
     quiet: true
     fail_msg: "Node {{ item }}'s bmc_ip must be a valid IP address'"
   loop: "{{ groups['nodes'] }}"
   when: hostvars[item]['bmc_ip'] is defined
-  
+
 - name: Assert bmc_address is correct type
   assert:
     that:
@@ -67,7 +67,7 @@
 - name: Assert required vars are correctly typed
   assert:
     that:
-      - (hostvars[item]['mac'] | hwaddr('bool')) == true
+      - (hostvars[item]['mac'] | ansible.utils.hwaddr('bool')) == true
       - hostvars[item]['bmc_password'] is string
       - hostvars[item]['bmc_user'] is string
       - hostvars[item]['vendor'] is string
@@ -81,7 +81,7 @@
       - ( hostvars[item]['mac'] | string | regex_search('^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$')) is not none
     quiet: true
     fail_msg: |-
-      The mac address for node {{ item }} needs to be in linx format XX:XX:XX:XX:XX:XX 
+      The mac address for node {{ item }} needs to be in linx format XX:XX:XX:XX:XX:XX
       Make sure to wrap it quotes to make sure it is not being mangled
       Current value: {{ hostvars[item]['mac'] }}
   loop: "{{ groups['nodes'] }}"

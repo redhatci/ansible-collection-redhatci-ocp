@@ -14,7 +14,7 @@
 - name: Assert VIPs are within the machine network
   assert:
     that:
-      - hostvars['assisted_installer'][item] | ipaddr(hostvars['assisted_installer']['machine_network_cidr']) | ipaddr('bool')
+      - hostvars['assisted_installer'][item] | ansible.utils.ipaddr(hostvars['assisted_installer']['machine_network_cidr']) | ansible.utils.ipaddr('bool')
     fail_msg: "{{ item }} is not within the machine network!"
   when: vip_dhcp_allocation == false
   loop:
@@ -24,7 +24,7 @@
 - name: Assert nodes are within the machine network
   assert:
     that:
-      - hostvars[item]['ansible_host'] | ipaddr(hostvars['assisted_installer']['machine_network_cidr']) | ipaddr('bool')
+      - hostvars[item]['ansible_host'] | ansible.utils.ipaddr(hostvars['assisted_installer']['machine_network_cidr']) | ansible.utils.ipaddr('bool')
     fail_msg: "{{ item }} is not within the machine network!"
   when: vip_dhcp_allocation == false
   loop: "{{ groups['masters'] + (groups['workers'] | default([])) }}"  # This should not include day2_workers as they can be RWNs

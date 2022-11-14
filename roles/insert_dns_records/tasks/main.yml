@@ -27,9 +27,9 @@
         }
       ) }}"
   loop: "{{ groups['nodes'] }}"
-  when: 
+  when:
     - hostvars[item]['bmc_ip'] is defined
-    - hostvars[item]['bmc_ip'] | ipaddr('bool') 
+    - hostvars[item]['bmc_ip'] | ansible.utils.ipaddr('bool')
 
 - name: Define bmc_address where required
   set_fact:
@@ -46,10 +46,10 @@
     entry_address: "{{ hostvars[item]['ansible_fqdn'] }}"
     entry_name: "{{ item }}"
   loop: "{{ groups['bastions'] + groups['services'] }}"
-  when: 
+  when:
     - item != 'registry_host'
-    - hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ipaddr('bool') 
-    - not (hostvars[item]['dns_skip_record'] | default(False)) | bool 
+    - hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool')
+    - not (hostvars[item]['dns_skip_record'] | default(False)) | bool
 
 - name: Get registry_host when it ansible_host is an IP address
   include_tasks: create_host_entry.yml
@@ -57,9 +57,9 @@
     entry_address: "{{   hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
     entry_name: "registry_host"
     entry_extra_check: "{{ hostvars['registry_host']['registry_fqdn']  is not defined }}"
-  when: 
+  when:
     - "'registry_host' in hostvars"
-    - hostvars['registry_host'][hostvars['registry_host']['host_ip_keyword'] | default(host_ip_keyword)] | ipaddr('bool') 
+    - hostvars['registry_host'][hostvars['registry_host']['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool')
     - not (hostvars['registry_host']['dns_skip_record'] | default(False)) | bool
 
 - name: Get vm_hosts when ansible_host is an IP address
@@ -69,7 +69,7 @@
     entry_name: "{{ item }}"
     entry_extra_check: "{{ hostvars[item]['sushy_fqdn']  is not defined }}"
   loop: "{{ groups['vm_hosts'] | default([]) }}"
-  when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ipaddr('bool') and (not (hostvars[item]['dns_skip_record'] | default(False))) | bool 
+  when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool') and (not (hostvars[item]['dns_skip_record'] | default(False))) | bool
 
 - name: Configure firewall
   become: true

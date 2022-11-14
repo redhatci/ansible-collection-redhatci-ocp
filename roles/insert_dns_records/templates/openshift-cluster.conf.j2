@@ -17,7 +17,7 @@ server={{ upstream_dns }}
 
 {% if use_dhcp %}
 dhcp-range= tag:{{ cluster_name }},{{ dhcp_range_first }},{{ dhcp_range_last }}
-dhcp-option= tag:{{ cluster_name }},option:netmask,{{ (gateway + '/' + prefix | string) | ipaddr('netmask') }}
+dhcp-option= tag:{{ cluster_name }},option:netmask,{{ (gateway + '/' + prefix | string) | ansible.utils.ipaddr('netmask') }}
 dhcp-option= tag:{{ cluster_name }},option:router,{{ gateway }}
 dhcp-option= tag:{{ cluster_name }},option:dns-server,{{ listen_address }}
 dhcp-option= tag:{{ cluster_name }},option:domain-search,{{ domain }}
