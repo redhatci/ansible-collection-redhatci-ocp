@@ -3,7 +3,7 @@
   assert:
     that:
       - hostvars['dns_host'][item] is defined
-      - hostvars['dns_host'][item] | ipaddr('bool') == True
+      - hostvars['dns_host'][item] | ansible.utils.ipaddr('bool') == True
     quiet: true
   when: hostvars['dns_host']['use_dhcp'] | default(false)
   loop:
@@ -14,7 +14,7 @@
   assert:
     that:
       - hostvars['dns_host']['ntp_server'] is defined
-      - hostvars['dns_host']['ntp_server'] | ipaddr('bool') == True
+      - hostvars['dns_host']['ntp_server'] | ansible.utils.ipaddr('bool') == True
   when: hostvars['dns_host']['setup_dns_service'] | default(false) and hostvars['dns_host']['use_dhcp'] | default(false)
 
 # All other DNS config is excluded for brevity at this time.

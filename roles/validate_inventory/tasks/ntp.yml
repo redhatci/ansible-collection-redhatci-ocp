@@ -2,5 +2,5 @@
   assert:
     that:
       - hostvars['ntp_host']['ntp_server'] is defined
-      - hostvars['ntp_host']['ntp_server'] | ipaddr('bool') == True
+      - hostvars['ntp_host']['ntp_server'] | ansible.utils.ipaddr('bool') == True
   when: hostvars['ntp_host']['setup_ntp_service'] | default(false)

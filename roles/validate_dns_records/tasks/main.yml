@@ -17,5 +17,5 @@
     cmd: "{{ required_binary }} {{ item }} +short"
   register: res
   changed_when: false
-  failed_when: res.stdout | ipaddr == false
+  failed_when: res.stdout | ansible.utils.ipaddr == false
   loop: "{{ required_domains }}"
