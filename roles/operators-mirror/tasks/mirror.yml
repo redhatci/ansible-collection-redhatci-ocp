@@ -26,10 +26,13 @@
       set -x;
       {{ tmp_prune.path }}/oc adm catalog mirror
       {{ local_registry }}{{ opm_local_registry_path }}@{{ index_sha.stdout }}
-      {{ local_registry }} -a {{ dci_pullsecret_file }} --insecure
+      {{ local_registry }}
       --index-filter-by-os="linux/amd64"
+      --insecure
+      --max-components=3
+      --path=/configs/:{{ tmp_index.path }}
+      --registry-config {{ dci_pullsecret_file }}
       --to-manifests={{ dci_cluster_configs_dir }}/{{ manifests_dir }}
-      --path=/configs/:{{ tmp_index.path }} 2>&1
   register: catalog_manifests_output
 
 - name: "Delete tmp Index directory"
