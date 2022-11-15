@@ -24,6 +24,6 @@ spec:
       volumeMode: Block
 {% endif %}
       devicePaths:
-{% for disk in local_storage_devices | from_json %}
-        - {{ disk }}
+{% for path in disk_id.stdout_lines %}
+       {{ path }}
 {% endfor %}

@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ocs-disk-gatherer
+spec: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ocs-disk-gatherer-sa
+  namespace: ocs-disk-gatherer
+---
+apiVersion: security.openshift.io/v1
+defaultAddCapabilities: []
+fsGroup:
+  type: MustRunAs
+groups: []
+kind: SecurityContextConstraints
+metadata:
+  generation: 1
+  name: ocs-disk-gatherer-scc
+priority: null
+readOnlyRootFilesystem: false
+requiredDropCapabilities: []
+allowHostDirVolumePlugin: true
+allowHostIPC: true
+allowHostNetwork: true
+allowHostPID: true
+allowHostPorts: true
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: true
+allowedCapabilities: null
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:ocs-disk-gatherer:ocs-disk-gatherer-sa
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- hostPath
+- persistentVolumeClaim
+- projected
+- secret
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ocs-disk-gatherer
+  namespace: ocs-disk-gatherer
+  labels:
+    k8s-app: ocs-disk-gatherer
+spec:
+  selector:
+    matchLabels:
+      name: ocs-disk-gatherer
+  template:
+    metadata:
+      labels:
+        name: ocs-disk-gatherer
+    spec:
+      nodeSelector:
+        cluster.ocs.openshift.io/openshift-storage: ''
+      tolerations:
+      - key: "node.ocs.openshift.io/storage"
+        operator: Equal
+        value: "true"
+      containers:
+      - name: collector
+{% if dci_disconnected | default(false) | bool %}
+        image: {{ local_registry_host }}:{{ local_registry_port }}/ubi8/ubi
+{% else %}
+        image: registry.access.redhat.com/ubi8/ubi
+{% endif %}
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -c
+        - |
+          #!/bin/bash
+          while true;
+          do
+{% if local_storage_devices is defined and local_storage_devices | length != 0 %}
+          for disk in $(readlink -f $(ls -1 /dev/disk/by-id/* | egrep -v 'DVD|dm|ceph|luks|part|lvm') | grep '{% for dev in local_storage_devices%}{{ dev }}{% if not loop.last%}\|{% endif %}{% endfor %}' | sort|uniq); do
+{% else %}
+          for disk in $(readlink -f $(ls -1 /dev/disk/by-id/* | egrep -v 'DVD|dm|ceph|luks|part|lvm') | sort|uniq); do
+{% endif %}
+            DISKNAME=$(basename $disk)
+            echo " - $(ls -l /dev/disk/by-id/*|grep "$DISKNAME" | head -n1 | awk '{print $9}')";
+          done;
+          sleep '600';
+          done;
+        volumeMounts:
+          - mountPath: /dev/disk
+            name: dev-disk
+        env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+      serviceAccount: ocs-disk-gatherer-sa
+      serviceAccountName: ocs-disk-gatherer-sa
+      securityContext: {}
+      volumes:
+      - name: dev-disk
+        hostPath:
+          path: /dev/disk
