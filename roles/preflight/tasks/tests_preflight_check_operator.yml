@@ -25,10 +25,16 @@
 
 - name: Create preflight namespace
   community.kubernetes.k8s:
-    name: "{{ preflight_namespace }}"
-    api_version: v1
-    kind: Namespace
     state: present
+    definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ preflight_namespace }}"
+        labels:
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+          pod-security.kubernetes.io/enforce: "baseline"
+          pod-security.kubernetes.io/warn: "baseline"
 
 - name: "Run preflight check operator tests for {{ operator.name }}"
   environment:
@@ -39,6 +45,7 @@
     podman run
     --rm
     --privileged
+    --security-opt=label=disable
     -e PFLT_JUNIT=true
     -e PFLT_ARTIFACTS=/artifacts
     -e PFLT_LOGFILE=/artifacts/preflight.log
