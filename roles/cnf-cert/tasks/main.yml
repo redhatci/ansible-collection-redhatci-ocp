@@ -218,10 +218,10 @@
       metadata:
         name: default
         labels:
+          security.openshift.io/scc.podSecurityLabelSync: "false"
           pod-security.kubernetes.io/enforce: privileged
           pod-security.kubernetes.io/enforce-version: latest
     wait: yes
-  when: ocp_version is version("4.12", ">=")
 
 # LOG_LEVEL is used for v3.x.x, and TNF_LOG_LEVEL is used for v4.x.x.
 # Remove LOG_LEVEL when backwards compatibility is no longer needed.
