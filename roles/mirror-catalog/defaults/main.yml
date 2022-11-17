@@ -1,0 +1,3 @@
+---
+mc_port: "{% if mc_registry_port is defined %}:{{ mc_registry_port }}{% endif %}"
+mc_registry: "{{ mc_registry_host | default() }}{{ mc_port }}"
