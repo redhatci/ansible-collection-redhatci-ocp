@@ -5,6 +5,9 @@ sushy_auth_dir: "{{ sushy_dir }}/auth"
 sushy_cert_dir: "{{ sushy_dir }}/cert"
 sushy_auth_file: "{{ sushy_auth_dir }}/htpasswd"
 sushy_data_dir: "{{ sushy_dir }}/data"
+sushy_packages:
+  - python3-pip
+  - python3-virtualenv
 
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"

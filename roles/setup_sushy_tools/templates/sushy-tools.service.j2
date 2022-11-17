@@ -6,7 +6,7 @@ After=network.target syslog.target
 Type=simple
 TimeoutStartSec=5m
 WorkingDirectory={{ sushy_dir }}
-ExecStart=/usr/local/bin/sushy-emulator --config {{ sushy_dir }}/sushy-emulator.conf
+ExecStart={{ sushy_dir }}/bin/sushy-emulator --config {{ sushy_dir }}/sushy-emulator.conf
 Restart=always
 
 [Install]

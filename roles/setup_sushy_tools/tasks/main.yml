@@ -2,9 +2,26 @@
 - name: Install sushy-tools
   become: true
   block:
-    - name: Install sushy-tools via pip3
+    - name: Install required packages
+      package:
+        name: "{{ sushy_packages }}"
+        state: present
+
+    - name: "Create sushy-tools directory {{ item }}"
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      loop:
+        - "{{ sushy_dir }}"
+        - "{{ sushy_auth_dir }}"
+        - "{{ sushy_cert_dir }}"
+        - "{{ sushy_data_dir }}"
+
+    - name: Install sushy-tools via pip3 in a virtual environment
       pip:
         name: "sushy-tools"
+        virtualenv: "{{ sushy_dir }}"
 
     - name: Install httpd-tools for htpasswd
       package:
@@ -19,17 +36,6 @@
         permanent: yes
         immediate: yes
       loop: "{{ [sushy_tools_port] | product(['internal', 'public']) | list }}"
-
-    - name: "Create sushy-tools conf directory {{ item }}"
-      file:
-        path: "{{ item }}"
-        state: directory
-        mode: 0755
-      loop:
-        - "{{ sushy_dir }}"
-        - "{{ sushy_auth_dir }}"
-        - "{{ sushy_cert_dir }}"
-        - "{{ sushy_data_dir }}"
 
     - name: Secure sushy tools
       when: secure_sushy_tools | bool
