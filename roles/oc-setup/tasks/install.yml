@@ -17,11 +17,6 @@
   - "{{ dir }}/auth/kubeconfig"
   - "{{ dir }}/auth/kubeadmin-password"
 
-- name: "Grant execution permissions to oc binary"
-  file:
-    path: '{{ dci_cluster_configs_dir }}/oc'
-    mode: 0755
-
 - name: "Get cluster install-config"
   community.kubernetes.k8s_info:
     api: v1

@@ -24,7 +24,7 @@
     chdir: "{{ dci_cluster_configs_dir }}"
     cmd: >
       set -x;
-      {{ tmp_prune.path }}/oc adm catalog mirror
+      {{ oc_tool_path }} adm catalog mirror
       {{ local_registry }}{{ opm_local_registry_path }}@{{ index_sha.stdout }}
       {{ local_registry }}
       --index-filter-by-os="linux/amd64"

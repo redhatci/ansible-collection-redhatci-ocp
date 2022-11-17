@@ -30,7 +30,7 @@
     cmd: >
       set -x;
       REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
-      {{ tmp_prune.path }}/opm render {{ source_index }} >
+      {{ dci_cluster_configs_dir }}/opm render {{ source_index }} >
       {{ tmp_prune.path }}/index-packages
   register: prune_result
   until: prune_result.rc == 0
@@ -61,7 +61,7 @@
 
 - name: "Validate the pruned index"
   shell: |
-    {{ tmp_prune.path }}/opm validate configs/
+    {{ dci_cluster_configs_dir }}/opm validate configs/
   args:
     chdir: "{{ tmp_prune.path }}"
 
