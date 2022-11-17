@@ -1,4 +1,10 @@
 ---
+- name: Fail if tnf version is lower than v4.0.0
+  fail:
+    msg: "cnf-cert role is no longer compatible with tnf versions lower than v4.0.0"
+  when:
+    - test_network_function_version is version("v4.0.0", "<")
+    - test_network_function_version != "HEAD"
 
 - name: Fail if tnf_suites is not provided in tnf versions lower or equal than v4.0.2
   assert:
@@ -6,14 +12,6 @@
     fail_msg: "tnf_suites is required in tnf versions lower or equal than v4.0.2"
   when:
     - test_network_function_version is version("v4.0.2", "<=")
-    - test_network_function_version != "HEAD"
-
-- name: Redefine variables if we are using an old tnf version
-  set_fact:
-    test_network_function_repo: https://github.com/test-network-function/test-network-function
-    test_network_function_project_name: test-network-function
-  when:
-    - test_network_function_version is version("v3.3.3", "<=")
     - test_network_function_version != "HEAD"
 
 # This is to ensure compatibility with partners that are still using tnf_suites
@@ -223,8 +221,6 @@
           pod-security.kubernetes.io/enforce-version: latest
     wait: yes
 
-# LOG_LEVEL is used for v3.x.x, and TNF_LOG_LEVEL is used for v4.x.x.
-# Remove LOG_LEVEL when backwards compatibility is no longer needed.
 - name: Run the CNF Test Suite
   vars:
     tnf_partner_registry: "{{ ( provisionhost_registry|length ) | ternary(provisionhost_registry, 'quay.io') }}"
@@ -235,7 +231,6 @@
 
     export TNF_NON_INTRUSIVE_ONLY={{ tnf_non_intrusive_only }}
     export TNF_RUN_CFD_TEST={{ tnf_run_cfd_test }}
-    export LOG_LEVEL={{ tnf_log_level }}
     export TNF_LOG_LEVEL={{ tnf_log_level }}
     export TNF_PARTNER_REPO={{ tnf_partner_registry }}/testnetworkfunction
     export TNF_IMAGE={{ tnf_image }}
