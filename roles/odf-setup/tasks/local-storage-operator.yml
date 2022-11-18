@@ -1,4 +1,14 @@
 ---
+- name: Mirroring the image needed for gathering info
+  include_role:
+    name: mirror_images
+  vars:
+    images: ['registry.access.redhat.com/ubi8/ubi']
+    local_registry: "{{ local_registry_host }}:{{ local_registry_port }}"
+    authfile: "{{ dci_pullsecret_file }}"
+  when:
+    - dci_disconnected | default(false) | bool
+
 - name: Add Storage node labels
   community.kubernetes.k8s:
     state: present
@@ -17,10 +27,29 @@
     - groups['ocs_nodes'] is defined
     - hostvars[node].lso_label is defined
 
+- name: Deploying DaemonSet to gather disk-id on nodes
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'ocs-disk-gatherer.yml.j2') }}"
+    state: present
+    wait: true
+
+- name: Gathering result from DaemonSet
+  shell:
+    cmd: >
+      sleep 90 ;
+      {{ oc_tool_path }} logs --selector name=ocs-disk-gatherer --tail=-1 --since=10m --namespace ocs-disk-gatherer
+  register: disk_id
+
 - name: Configure Local Storage Volumes
   community.kubernetes.k8s:
     definition: "{{ lookup('template', 'local-storage-block.yml.j2') }}"
   register: local_storage_volcrd
+
+- name: Remove DaemonSet ocs-disk-gatherer
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'ocs-disk-gatherer.yml.j2') }}"
+    state: absent
+    wait: true
 
 - name: Set Default Storage Class for LSO
   block:

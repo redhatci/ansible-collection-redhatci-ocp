@@ -15,7 +15,7 @@ dir="{{ '{{' }} ansible_user_dir {{ '}}' }}/clusterconfigs"
 
 {% if enable_lso | default(false) | bool %}
 ocs_install_type=internal
-local_storage_devices='["/dev/sdb"]'
+local_storage_devices=["/dev/sdb"]
 
 [ocs_nodes:children]
 workers

@@ -16,7 +16,7 @@ spec:
   manageNodes: false
   monDataDirHostPath: /var/lib/rook
   storageDeviceSets:
-  - count: {{ local_storage_devices | from_json | length }}
+  - count: {{ local_storage_devices | length }}
     dataPVCTemplate:
       spec:
         accessModes:

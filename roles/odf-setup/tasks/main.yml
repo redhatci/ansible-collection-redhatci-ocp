@@ -10,7 +10,6 @@
 - name: Validate LSO variables
   assert:
     that:
-      - local_storage_devices is defined
       - hostvars[groups['ocs_nodes'][0]]['lso_label'] is defined
   when:
     - enable_lso | bool
