@@ -15,19 +15,19 @@
   vars:
     uri: "{{ ocp_release_data['rhcos_images']['metal_pxe_rootfs_location'] }}"
     checksum: "sha256:{{ ocp_release_data['rhcos_images']['metal_pxe_rootfs_sha256']}}"
-  when:
-    - install_type == 'sno'
-    - sno_install_type == 'baremetal'
+  when: >
+    (install_type == 'sno' and sno_install_type == 'baremetal') or
+    (install_type == 'acm')
 
 - name: "Mirror SNO Virtual Disk Images"
   include_tasks: fetch.yml
   vars:
     uri: "{{ ocp_release_data['rhcos_images']['metal_iso_location'] }}"
     checksum: "sha256:{{ ocp_release_data['rhcos_images']['metal_iso_sha256']}}"
-    setype: "virt_content_t"
-  when:
-    - install_type == 'sno'
-    - sno_install_type == 'virtual'
+    setype: "public_content_t"
+  when: >
+    (install_type == 'sno' and sno_install_type == 'virtual') or
+    (install_type == 'acm')
 
 - name: "Mirror Assisted Installer Disk Images"
   include_tasks: fetch.yml
