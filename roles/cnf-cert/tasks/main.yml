@@ -18,7 +18,7 @@
 
 # This is to ensure compatibility with partners that are still using tnf_suites
 # in latest tnf version. In that case, we override tnf_labels default value to "".
-- name: Redefine variables if tnf_suites is provided
+- name: Redefine tnf_labels variable if tnf_suites is provided
   set_fact:
     tnf_labels: ""
   when:
