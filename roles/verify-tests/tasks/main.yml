@@ -1,4 +1,11 @@
 ---
+
+- name: Install required python3-xmltodict rpm package
+  package:
+    name: python3-xmltodict
+    state: present
+  become: true
+
 - name: Loop over mandatory test results
   include_tasks: parse_junit_file.yml
   loop: "{{ tests_to_verify }}"
