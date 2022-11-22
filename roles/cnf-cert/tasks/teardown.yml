@@ -16,8 +16,7 @@
       when: tnf_image_info.images|length
   when:
     - tnf_image is defined
-    - tnf_version_image is defined
-    - tnf_version_image != test_network_function_version
+    - tnf_version_image | default('') != test_network_function_version
 
 - name: Removing PodSecurity-related labels in default namespace
   community.kubernetes.k8s:
