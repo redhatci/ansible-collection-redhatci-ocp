@@ -1,17 +1,11 @@
 ---
-# this may happen at 2.4.
-- name: set API version for <= 2.4
-  when:
-    - cnv_version is defined
-    - cnv_version is version('2.4', '<=')
-  set_fact:
-      api_version: v1alpha1
-  changed_when: false
-
+# 2022/11/25: hco.kubevirt.io/v1beta1 is still not deprecated
+# v1 API is not available for HyperConverged:
+# https://github.com/kubevirt/hyperconverged-cluster-operator/blob/437ce92d4e048e5dd355e40a15094dcae73a1310/docs/cluster-configuration.md#storage-resource-configurations-example
 - name: install hco
   community.kubernetes.k8s:
     definition:
-      apiVersion: "hco.kubevirt.io/{{ api_version | default('v1beta1') }}"
+      apiVersion: "hco.kubevirt.io/{{ cnv_api_version | default('v1beta1') }}"
       kind: HyperConverged
       metadata:
         name: kubevirt-hyperconverged
@@ -25,7 +19,7 @@
 
 - name: test_ Check for hyperconverged
   community.kubernetes.k8s_info:
-    api_version: "hco.kubevirt.io/{{ api_version | default('v1beta1') }}"
+    api_version: "hco.kubevirt.io/{{ cnv_api_version | default('v1beta1') }}"
     namespace: "{{ cnv_ns }}"
     kind: HyperConverged
     wait: true
