@@ -3,13 +3,6 @@
   set_fact:
     already_certified: false
 
-- name: Install Skopeo package
-  become: true
-  package:
-    name:
-      - "skopeo"
-    state: installed
-
 - name: "Get Image Digest"
   shell: >
     skopeo inspect
