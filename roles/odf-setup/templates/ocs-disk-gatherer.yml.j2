@@ -72,7 +72,7 @@ spec:
       containers:
       - name: collector
 {% if dci_disconnected | default(false) | bool %}
-        image: {{ local_registry_host }}:{{ local_registry_port }}/ubi8/ubi
+        image: {{ local_registry }}/ubi8/ubi
 {% else %}
         image: registry.access.redhat.com/ubi8/ubi
 {% endif %}

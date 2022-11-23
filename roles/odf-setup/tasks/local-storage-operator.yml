@@ -4,7 +4,7 @@
     name: mirror_images
   vars:
     images: ['registry.access.redhat.com/ubi8/ubi']
-    local_registry: "{{ local_registry_host }}:{{ local_registry_port }}"
+    local_registry: "{{ local_registry }}"
     authfile: "{{ dci_pullsecret_file }}"
   when:
     - dci_disconnected | default(false) | bool
