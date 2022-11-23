@@ -2,9 +2,6 @@
 - name: "Set Facts"
   include_tasks: facts.yml
 
-- name: "Install Packages"
-  include_tasks: install.yml
-
 - name: "Mirror"
   include_tasks: mirror.yml
 ...
