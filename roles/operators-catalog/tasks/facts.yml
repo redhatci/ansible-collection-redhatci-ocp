@@ -6,4 +6,4 @@
     opm_local_registry_path: "{{ hostvars.localhost.opm_local_registry_path }}"
     index_tag: "{{ hostvars.localhost.index_tag }}"
     index_minor: "{{ hostvars.localhost.index_minor }}"
-    local_registry: "{{ hostvars.localhost.local_registry_host }}:{{ hostvars.localhost.local_registry_port }}"
+    local_registry: "{{ hostvars.localhost.local_registry }}"

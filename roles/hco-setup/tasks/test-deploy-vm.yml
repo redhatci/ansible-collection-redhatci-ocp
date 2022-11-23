@@ -6,7 +6,7 @@
       cmd: >
          skopeo copy --authfile {{ dci_pullsecret_file }}
          --dest-tls-verify=false docker://quay.io/{{ cirros_vm_image }}
-         docker://{{ local_registry_host }}:{{ local_registry_port }}/{{ cirros_vm_image }}
+         docker://{{ local_registry }}/{{ cirros_vm_image }}
     register: copy
     retries: 5
     delay: 5
@@ -15,10 +15,9 @@
 
   - name: "Cirros VM image definition (disconnected mode)"
     set_fact:
-      cirros_vm_image: "{{ local_registry_host }}:{{ local_registry_port }}/{{ cirros_vm_image }}"
+      cirros_vm_image: "{{ local_registry }}/{{ cirros_vm_image }}"
   when:
-    - local_registry_host is defined
-    - local_registry_port is defined
+    - local_registry | length
 ###
 
 - name: "Create the test VirtualMachine"
