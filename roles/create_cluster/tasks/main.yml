@@ -28,9 +28,13 @@
           "https_proxy": https_proxy,
           "no_proxy": no_proxy,
           "additional_ntp_source": ntp_server,
-          "schedulable_masters": schedulable_masters, 
         } | to_json
       }}'
+
+- name: Assign schedulable_masters if cluster has workers
+  set_fact:
+    create_body_extras: "{{ create_body_extras | combine({'schedulable_masters': schedulable_masters }) }}"
+  when: has_workers | bool
 
 - name: Add network_type to extras for create_body
   set_fact:
