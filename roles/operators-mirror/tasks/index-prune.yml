@@ -29,7 +29,6 @@
     chdir: "{{ tmp_prune.path }}"
     cmd: >
       set -x;
-      REGISTRY_AUTH_FILE={{ dci_pullsecret_file }}
       {{ dci_cluster_configs_dir }}/opm render {{ source_index }} >
       {{ tmp_prune.path }}/index-packages
   register: prune_result
