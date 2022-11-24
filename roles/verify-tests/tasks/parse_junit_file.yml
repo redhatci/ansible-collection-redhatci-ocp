@@ -11,13 +11,26 @@
     msg: "Could not verify test results: {{ t.filename }} is not present"
   when: not junit_file.stat.exists
 
-- name: Retrieve test cases
+- name: Retrieve JSON content
   vars:
     junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
-    json_content: "{{ lookup('file', junit_filename) | xml2json | replace('@', '') }}"
-    jquery: "testsuites.testsuite.testcase[*].{testcase: name, passed: failure == null}"
   set_fact:
-    actual_results: "{{ json_content | json_query(jquery) }}"
+    json_content: "{{ lookup('file', junit_filename) | xml2json | replace('@', '') }}"
+
+- name: Count how many testcases do we have
+  vars:
+    jquery: "testsuites.testsuite.tests"
+  set_fact:
+    test_count: "{{ json_content | json_query(jquery) }}"
+
+- name: Get the actual tests results
+  vars:
+    single_jquery: "testsuites.testsuite.testcase.{testcase: name, passed: failure == null}"
+    array_jquery: "testsuites.testsuite.testcase[*].{testcase: name, passed: failure == null}"
+  set_fact:
+    actual_results: >
+      {% if test_count | int == 1 %}{{ json_content | json_query(single_jquery) }}
+      {% else %}{{ json_content | json_query(array_jquery) }}{% endif %}
 
 - name: "Fail if not all test results are as expected for {{ t.filename }}"
   vars:
