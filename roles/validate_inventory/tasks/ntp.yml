@@ -1,4 +1,4 @@
-- name: Check ntp_server is valid 
+- name: Check ntp_server is valid
   assert:
     that:
       - hostvars['ntp_host']['ntp_server'] is defined
