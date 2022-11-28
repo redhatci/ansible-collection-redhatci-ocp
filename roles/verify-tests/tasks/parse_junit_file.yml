@@ -23,9 +23,19 @@
   set_fact:
     test_count: "{{ json_content | json_query(jquery) }}"
 
+# TODO: this is a quick workaround.
+# We have to understand a reliable way to retrieve
+# a number of tests from a standard JUnit.
+- name: Fail if xml file format is unexpected
+  fail:
+    msg: >
+      Please verify the format of {{ junit_filename }}.
+      We expect to have one testsuite and a number of tests in testsuites.testsuite.tests.
+  when: test_count | length == 0
+
 - name: Get the actual tests results
   vars:
-    single_jquery: "testsuites.testsuite.testcase.{testcase: name, passed: failure == null}"
+    single_jquery: "testsuites.testsuite.testcase.[{testcase: name, passed: failure == null}]"
     array_jquery: "testsuites.testsuite.testcase[*].{testcase: name, passed: failure == null}"
   set_fact:
     actual_results: >
