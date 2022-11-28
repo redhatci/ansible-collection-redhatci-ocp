@@ -25,7 +25,7 @@ spec:
           containers:
           - name: volume-tester-rwx
 {% if dci_disconnected | default(false) %}
-            image: "{{ local_registry_host }}:{{ local_registry_port }}/rhel8/support-tools"
+            image: "{{ local_registry }}/rhel8/support-tools"
 {% else %}
             image: "registry.redhat.io/rhel8/support-tools"
 {% endif %}
