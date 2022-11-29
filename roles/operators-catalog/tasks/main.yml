@@ -1,4 +1,0 @@
----
-- name: Deploy Red Hat Catalog Source
-  include_tasks: redhat-catalog-source.yml
-...
