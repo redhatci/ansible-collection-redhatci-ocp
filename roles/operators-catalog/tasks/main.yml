@@ -1,7 +1,4 @@
 ---
-- name: Set facts
-  include_tasks: facts.yml
-
 - name: Deploy Red Hat Catalog Source
   include_tasks: redhat-catalog-source.yml
 ...
