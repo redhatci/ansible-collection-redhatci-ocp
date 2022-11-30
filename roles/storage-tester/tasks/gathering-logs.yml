@@ -9,7 +9,10 @@
     dest: "{{ job_logs.path }}/junit-storage-upgrade.xml"
 
 - name: "Run gather-storage-upgrade-RWO script"
-  shell: "{{ role_path }}/scripts/storage-tester-RWO.sh {{ job_logs.path }}/junit-storage-upgrade.xml | tee {{ job_logs.path }}/gather-storage-upgrade-tester-RWO.log"
+  script:
+    cmd: >
+      {{ role_path }}/scripts/storage-tester-RWO.sh {{ job_logs.path }}/junit-storage-upgrade.xml
+      | tee {{ job_logs.path }}/gather-storage-upgrade-tester-RWO.log
   register: upgrade_tester_result_rwo
   retries: 5
   delay: 5
@@ -17,7 +20,10 @@
   delegate_to: localhost
 
 - name: "Run gather-storage-upgrade-ROX script"
-  shell: "{{ role_path }}/scripts/storage-tester-ROX.sh {{ job_logs.path }}/junit-storage-upgrade.xml | tee {{ job_logs.path }}/gather-storage-upgrade-tester-ROX.log"
+  script:
+    cmd: >
+      {{ role_path }}/scripts/storage-tester-ROX.sh {{ job_logs.path }}/junit-storage-upgrade.xml
+      | tee {{ job_logs.path }}/gather-storage-upgrade-tester-ROX.log
   register: upgrade_tester_result_rox
   retries: 5
   delay: 5
@@ -25,7 +31,10 @@
   delegate_to: localhost
 
 - name: "Run gather-storage-upgrade-RWX script"
-  shell: "{{ role_path }}/scripts/storage-tester-RWX.sh {{ job_logs.path }}/junit-storage-upgrade.xml | tee {{ job_logs.path }}/gather-storage-upgrade-tester-RWX.log"
+  script:
+    cmd: >
+      {{ role_path }}/scripts/storage-tester-RWX.sh {{ job_logs.path }}/junit-storage-upgrade.xml
+      | tee {{ job_logs.path }}/gather-storage-upgrade-tester-RWX.log
   register: upgrade_tester_result_rwx
   retries: 5
   delay: 5
