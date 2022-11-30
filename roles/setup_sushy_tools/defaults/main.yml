@@ -8,6 +8,10 @@ sushy_data_dir: "{{ sushy_dir }}/data"
 sushy_packages:
   - python3-pip
   - python3-virtualenv
+  - libvirt-devel
+sushy_pip_packages:
+  - sushy-tools
+  - libvirt-python
 
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"

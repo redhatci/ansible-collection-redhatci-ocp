@@ -18,10 +18,11 @@
         - "{{ sushy_cert_dir }}"
         - "{{ sushy_data_dir }}"
 
-    - name: Install sushy-tools via pip3 in a virtual environment
+    - name: Install sushy-tools via pip in a virtual environment
       pip:
-        name: "sushy-tools"
+        name: "{{ item }}"
         virtualenv: "{{ sushy_dir }}"
+      loop: "{{ sushy_pip_packages }}"
 
     - name: Install httpd-tools for htpasswd
       package:
