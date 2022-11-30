@@ -4,7 +4,6 @@
     name: mirror_images
   vars:
     images: ['registry.redhat.io/rhel8/support-tools']
-    local_registry: "{{ local_registry_host }}:{{ local_registry_port }}"
     authfile: "{{ dci_pullsecret_file }}"
   when:
     - dci_disconnected | default(false) | bool
