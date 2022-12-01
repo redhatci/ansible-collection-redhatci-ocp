@@ -8,9 +8,10 @@
 
 - include_tasks: track_rpm.yml
   loop: "{{ rpms_to_components | flatten }}"
-  when: |
-    item is not in
-    ( gits_to_components |
-    map('regex_replace', '^(.*)/$', '\\1') |
-    map('regex_replace', '^.*/(.*)$', '\\1') | list)
+  when:
+    - item is not in
+      ( gits_to_components |
+      map('regex_replace', '^(.*)/$', '\\1') |
+      map('regex_replace', '^.*/(.*)$', '\\1') | list)
+    - item in ansible_facts.packages
 ...
