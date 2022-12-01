@@ -20,9 +20,8 @@
 
     - name: Install sushy-tools via pip in a virtual environment
       pip:
-        name: "{{ item }}"
+        name: "{{ sushy_pip_packages }}"
         virtualenv: "{{ sushy_dir }}"
-      loop: "{{ sushy_pip_packages }}"
 
     - name: Install httpd-tools for htpasswd
       package:
