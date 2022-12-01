@@ -2,7 +2,7 @@
 - name: Requirements validation for the mirror catalog role
   assert:
     that:
-      - mc_registry | length
+      - mc_registry | default("") | length
       - mc_oc_tool_path is defined
       - mc_catalog is defined
       - mc_catalog | length
@@ -60,4 +60,4 @@
     group: "{{ ansible_user_gid }}"
     mode: "0644"
   notify:
-    - "Delete temp directory"
+    - "Delete tmp directory"
