@@ -8,6 +8,7 @@ sushy_data_dir: "{{ sushy_dir }}/data"
 sushy_packages:
   - python3-pip
   - python3-virtualenv
+  - gcc
   - libvirt-devel
 sushy_pip_packages:
   - sushy-tools
