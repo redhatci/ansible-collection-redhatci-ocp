@@ -1,0 +1,36 @@
+---
+- name: Assert required fields exist
+  assert:
+    that:
+      - cs_name is defined
+      - cs_name | string
+      - cs_image is defined
+      - cs_image | string
+
+- name: Create {{ cs_name }} CatalogSource
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: CatalogSource
+      metadata:
+        name: "{{ cs_name }}"
+        namespace: "{{ cs_namespace }}"
+      spec:
+        displayName: "{{ cs_name }}"
+        image: "{{ cs_image }}"
+        publisher: "{{ cs_publisher }}"
+        sourceType: "{{ cs_type }}"
+
+- name: Wait for {{ cs_name }} CatalogSource to be Ready
+  community.kubernetes.k8s_info:
+    api: operators.coreos.com/v1alpha1
+    kind: CatalogSource
+    name: "{{ cs_name }}"
+    namespace: "{{ cs_namespace }}"
+  register: cs_status
+  until:
+    - cs_status | json_query('resources[0].status.connectionState.lastObservedState') == 'READY'
+  retries: 6
+  delay: 10
+
+...

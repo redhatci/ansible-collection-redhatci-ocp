@@ -1,5 +1,0 @@
----
-namespace: openshift-marketplace
-publisher: Red Hat
-source_type: grpc
-...
