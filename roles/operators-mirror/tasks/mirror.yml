@@ -1,4 +1,0 @@
----
-- name: "Build Operator catalog index"
-  include_tasks: build-catalog-index.yml
-...
