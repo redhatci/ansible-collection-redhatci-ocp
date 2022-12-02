@@ -42,6 +42,5 @@ See below an example of how to use the acm-setup role to configure ACM.
 
 * [acm-sno](../acm-sno/README.md): A role that deploys an SNO instance using ACM.
 * [mirror-ocp-release](../mirror-ocp-release/): A role that mirrors an OCP release to a third-party or local registry.
-* [operators-mirror](../operators-mirror/): A role that mirrors operators from a Catalog index into a third-party or local registry.
 * [dci-openshfit-agent](https://github.com/redhat-cip/dci-openshift-agent/): An agent that allows the deployment of OCP clusters, it is integrated with DCI (Red Hat Distributed CI).
 * [dci-openshfit-app-agent](https://github.com/redhat-cip/dci-openshift-app-agent/): An agent that allows the deployment of workloads and certification testing on top OCP clusters, it is integrated with DCI (Red Hat Distributed CI).
