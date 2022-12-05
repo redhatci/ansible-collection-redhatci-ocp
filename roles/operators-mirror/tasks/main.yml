@@ -1,7 +1,0 @@
----
-- name: "Set Facts"
-  include_tasks: facts.yml
-
-- name: "Mirror"
-  include_tasks: mirror.yml
-...

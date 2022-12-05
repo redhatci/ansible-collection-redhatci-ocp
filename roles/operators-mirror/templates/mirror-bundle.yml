@@ -1,5 +1,0 @@
-{% for key, value in mirrors.items() %}
-- mirrors:
-  - {{ value }}
-  source: {{ key }}
-{% endfor %}
