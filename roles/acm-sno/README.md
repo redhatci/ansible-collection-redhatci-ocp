@@ -35,7 +35,7 @@ This role only been tested in x86_64 architectures.
 | acm_disconnected                       | false                         | No          | If set to `true` the registry.conf and CA from the hub are inherited to the new instance |
 | acm_ocp_version                        | 4.9.47             | No             | Full OCP version to install on the spoke cluster. <major>.<minor>.<patch> |
 | acm_release_image                      | quay.io/openshift-release-dev/ocp-release:4.9.47-x86_64| No        |The specific release image to deploy. See https://quay.io/openshift-release-dev/ocp-release for the options to choose|
-| acm_creation_timeout                   | 60                            | No          | Timeout in minutes for a cluster to be created|
+| acm_creation_timeout                   | 90                            | No          | Timeout in minutes for a cluster to be created|
 | acm_bmc_user                           | None                          | Yes         | Username for the BMC|
 | acm_bmc_pass                           | None                          | Yes         | Password for the BMC|
 | acm_bmc_address                        | None                          | Yes         | IP address of the target BMC                  |
