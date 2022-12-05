@@ -1,0 +1,29 @@
+{
+    "certification_status": "In Progress",
+    "contacts": [
+      {
+        "email_address": "{{ cert_settings.email_address }}",
+        "type": "Technical contact"
+      }
+    ],
+    "container": {
+      "auto_publish": {{ cert_settings.auto_publish }},
+      "os_content_type": "{{ cert_settings.os_content_type }}",
+      "privileged": {{ cert_settings.privileged }},
+      "application_categories": [
+      "{{ cert_settings.application_categories }}"
+      ],
+      "build_categories": "{{ cert_settings.build_categories }}",
+      "registry_override_instruct": "{{ cert_settings.registry_override_instruct }}",
+      "release_category": "{{ cert_settings.release_category }}",
+      "repository_description": "{{ cert_settings.repository_description }}",
+      "short_description": "{{ operator.short_description }}",
+      "type": "container"
+    },
+    "marketplace": {
+      "enablement_status": "ineligible"
+    },
+    "name": "{{ image_name }}",
+    "project_status": "active",
+    "type": "Containers"
+}

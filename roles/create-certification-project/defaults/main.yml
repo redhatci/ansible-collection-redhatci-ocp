@@ -1,4 +1,7 @@
 ---
 create_project_url: "https://catalog.redhat.com/api/containers/v1/projects/certification"
 connect_url: "https://connect.redhat.com/projects"
+# This API is to verify existing Product Listing
+create_product_url: "https://catalog.redhat.com/api/containers/v1/product-listings"
+verify_project_url: "https://catalog.redhat.com/api/containers/v1/vendors/org-id"
 ...
