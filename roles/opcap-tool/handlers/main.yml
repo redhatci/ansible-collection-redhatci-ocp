@@ -1,0 +1,6 @@
+---
+- name: "Remove opcap dir"
+  file:
+    path: "{{ opcap_dir.path }}"
+    state: absent
+...
