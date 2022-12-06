@@ -1,0 +1,46 @@
+---
+
+- name: "Validate parameters"
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required"
+  with_items:
+      - opcap_target_catalog_source
+      - opcap_catalog_source_namespace
+      - opcap_output_dir
+
+- name: "Create tmp dir for Opcap tool"
+  tempfile:
+    state: directory
+    prefix: opcap_tool.
+  register: opcap_dir
+
+- name: "Build opcap from source"
+  include_tasks: build.yml
+
+- name: "Display Available package in the catalog"
+  shell:
+    cmd: >
+      ./opcap list packages --catalogsource={{ opcap_target_catalog_source }}
+    chdir: "{{ opcap_dir.path }}/opcap/bin"
+
+- name: "Run opcap check"
+  shell:
+    cmd: >
+      ./opcap check --audit-plan={{ opcap_audit_plan }}
+      --catalogsource={{ opcap_target_catalog_source }}
+      --catalogsourcenamespace={{ opcap_catalog_source_namespace }}
+      {% if opcap_packages is defined %}
+      --packages={{ opcap_packages }}
+      {% endif %}
+    chdir: "{{ opcap_dir.path }}/opcap/bin"
+  register: opcap_check
+
+- name: "Copy Results in {{ opcap_output_dir }}"
+  copy:
+    src: "{{ opcap_dir.path }}/opcap/bin/operator_install_report.json"
+    dest: "{{ opcap_output_dir }}/{{ opcap_target_catalog_source }}_install_report.json"
+  when: opcap_check.stdout != ""
+  notify:
+    - "Remove opcap dir"
+...
