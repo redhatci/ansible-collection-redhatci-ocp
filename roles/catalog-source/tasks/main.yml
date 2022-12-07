@@ -31,6 +31,6 @@
   until:
     - cs_status | json_query('resources[0].status.connectionState.lastObservedState') == 'READY'
   retries: 6
-  delay: 10
+  delay: 20
 
 ...
