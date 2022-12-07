@@ -55,7 +55,7 @@
     -e KUBECONFIG=/kubeconfig
     -e PFLT_INDEXIMAGE={{ OO_INDEX }}
     -e PFLT_NAMESPACE={{ preflight_namespace }}
-    -e PFLT_SERVICEACCOUNT=default
+    -e PFLT_SERVICEACCOUNT={{ preflight_sa }}
     -e PFLT_SCORECARD_IMAGE={{ preflight_assets_images[0] }}
     -v {{ preflight_tmp_dir.path }}/kubeconfig:/kubeconfig
     -v {{ preflight_operator_artifacts.path }}:/artifacts
