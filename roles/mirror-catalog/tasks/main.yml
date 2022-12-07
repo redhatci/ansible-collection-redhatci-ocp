@@ -39,7 +39,6 @@
       --index-filter-by-os="linux/amd64"
       --insecure
       --max-components=3
-      --path=/configs/:{{ mc_tmp.path }}
       {% if mc_pullsecret is defined %}
       --registry-config {{ mc_pullsecret }}
       {% endif %}

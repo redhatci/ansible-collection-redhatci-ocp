@@ -13,7 +13,6 @@
     dest: "{{ dci_cluster_configs_dir }}/"
     flat: true
   loop:
-  - "/usr/local/bin/oc"
   - "{{ dir }}/auth/kubeconfig"
   - "{{ dir }}/auth/kubeadmin-password"
 
