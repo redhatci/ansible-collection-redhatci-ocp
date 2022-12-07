@@ -8,7 +8,8 @@ Follow this post to know more about [components](https://blog.distributed-ci.io/
 
 Variables used by this role:
 
-| Setting               | Required | Type   | Description                                                        |
-| --------------------- | -------- | ------ | -------------------------------------------------------------------|
-| rpms\_to\_components  | True     | List   | List of RPM names to include as components                         |
-| gits\_to\_components  | True     | List   | List of directories from GIT repositories to include as components |
+| Setting        | Required | Type   | Description                                                        |
+| -------------- | -------- | ------ | -------------------------------------------------------------------|
+| ic\_rpms       | True     | List   | List of RPM names to include as components                         |
+| ic\_gits       | True     | List   | List of directories from GIT repositories to include as components |
+| ic\_dev\_gits  | True     | List   | List of complimentary directories from GIT repositories to include as components |

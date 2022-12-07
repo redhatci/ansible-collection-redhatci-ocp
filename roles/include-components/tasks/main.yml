@@ -1,13 +1,13 @@
 ---
 
 - include_tasks: track_git_repo.yml
-  loop: "{{ dev_gits_to_components }}"
+  loop: "{{ ic_dev_gits }}"
 
 - include_tasks: track_git_repo.yml
-  loop: "{{ gits_to_components }}"
+  loop: "{{ ic_gits }}"
   when: |
     item|regex_replace('^(?:.*/(.+)|.*/([^/]+))$', '\\1') is not in
-    ( dev_gits_to_components |
+    ( ic_dev_gits |
     map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') | list)
 
 - name: Gather the package facts
@@ -15,10 +15,10 @@
     manager: auto
 
 - include_tasks: track_rpm.yml
-  loop: "{{ rpms_to_components }}"
+  loop: "{{ ic_rpms }}"
   when:
     - item is not in
-      ( (gits_to_components + dev_gits_to_components) |
+      ( (ic_gits + ic_dev_gits) |
         map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') |
         map('regex_replace', 'python', 'python3') | list)
     - item in ansible_facts.packages
