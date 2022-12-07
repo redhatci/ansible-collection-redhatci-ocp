@@ -14,7 +14,7 @@
   delay: 60
   delegate_to: bastion
 
-- name: "Fail installation because user cancelled (ERROR)"
+- name: "Fail installation because of cluster error (ERROR)"
   fail:
     msg: "Cluster installation failed - Reset the installation process to return to the configuration and try again"
   when: cluster.json.status == 'error'
