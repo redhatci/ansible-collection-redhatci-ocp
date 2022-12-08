@@ -14,3 +14,5 @@ vm_create_scripts_dir: "{{ path_base_dir }}/vm_create_scripts/"
 
 vm_bridge_name: "{{ cluster_name }}-br"
 network_name: "net-{{ cluster_name }}"
+
+vm_node_prefix: "{{ cluster_name }}_"

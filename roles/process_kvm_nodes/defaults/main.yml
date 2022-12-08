@@ -17,3 +17,5 @@ vm_group_params:
     memory: "{{ vm_spec_worker_memory | default(vm_spec_defaults.worker.memory) }}"
     vcpu: "{{ vm_spec_worker_vcpu | default(vm_spec_defaults.worker.vcpu) }}"
     disk_size: "{{ vm_spec_worker_disk_size | default(vm_spec_defaults.worker.disk_size) }}"
+
+vm_node_prefix: "{{ cluster_name }}_"
