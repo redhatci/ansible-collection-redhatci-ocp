@@ -1,6 +1,6 @@
 - name: Create inventory host to vm name mapper
   set_fact:
-    cluster_vm_names: "{{ (cluster_vm_names | default([])) + [item.startswith(cluster_name) | ternary(item, (cluster_name + '_' + item))] }}"
+    cluster_vm_names: "{{ (cluster_vm_names | default([])) + [item.startswith(vm_node_prefix) | ternary(item, (vm_node_prefix + item))] }}"
   loop: "{{ groups['nodes'] }}"
   when: hostvars[item]['vendor'] | lower == 'kvm'
 
