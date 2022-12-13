@@ -29,6 +29,12 @@
     - name: "mirror_images : {{ image_name }} already mirrored"
       command: >
         skopeo inspect
+        {% if authfile is defined %}
+        --authfile {{ authfile }}
+        {% endif %}
+        {% if dest_authfile is defined %}
+        --authfile {{ dest_authfile }}
+        {% endif %}
         --tls-verify=false
         docker://{{ local_image_location }}
       register: mg_inspect
