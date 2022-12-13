@@ -1,4 +1,4 @@
-ai_version: v2.1.1
+ai_version: v2.5.0
 controller_tag: "{{ ai_version }}"
 installer_agent_tag: "{{ ai_version }}"
 installer_tag: "{{ ai_version }}"

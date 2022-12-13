@@ -20,7 +20,7 @@ supported_vendor_values:
 
 allow_custom_vendor: False
 
-ai_version: "{{ hostvars.assisted_installer.ai_version | default('v2.1.1') }}"
+ai_version: "{{ hostvars.assisted_installer.ai_version | default('v2.5.0') }}"
 ai_version_number: "{{ ai_version | regex_replace('v(\\d+\\.\\d+\\.\\d+)', '\\1') }}"
 
 supported_ocp_versions:
