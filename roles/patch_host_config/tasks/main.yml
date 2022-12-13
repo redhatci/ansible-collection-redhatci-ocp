@@ -69,6 +69,14 @@
             })
           }}"
 
+- name: Set the installation disk path
+  when: hostvars[inv_hostname]['openshift_labels'] is defined
+  set_fact:
+    patch_host_body: "{{ patch_host_body | combine({
+          'node_labels': (hostvars[inv_hostname]['openshift_labels'] |  dict2items | list)
+        })
+      }}"
+
 - name: "Patch host {{ host_name }}"
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host.id }}"
