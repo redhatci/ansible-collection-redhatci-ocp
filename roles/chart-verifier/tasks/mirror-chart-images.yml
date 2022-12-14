@@ -23,6 +23,5 @@
     name: mirror_images
   vars:
     images: "{{ all_images }}"
-    local_registry: "{{ provisionhost_registry }}"
     authfile: "{{ pullsecret_tmp_file }}"
 ...
