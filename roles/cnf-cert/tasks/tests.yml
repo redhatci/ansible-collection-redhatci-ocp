@@ -29,11 +29,10 @@
     images:
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"
       - "quay.io/testnetworkfunction/debug-partner:latest"
-    local_registry: "{{ provisionhost_registry }}"
     authfile: "{{ pullsecret_tmp_file }}"
   when:
     - dci_disconnected | default(false) | bool
-    - provisionhost_registry|length
+    - local_registry | length
 
 - name: Create temporary directory for git repos
   tempfile:
@@ -223,7 +222,7 @@
 
 - name: Run the CNF Test Suite
   vars:
-    tnf_partner_registry: "{{ ( provisionhost_registry|length ) | ternary(provisionhost_registry, 'quay.io') }}"
+    tnf_partner_registry: "{{ ( local_registry | length ) | ternary(local_registry, 'quay.io') }}"
   shell: |
     set -x
 
