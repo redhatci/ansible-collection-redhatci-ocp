@@ -47,8 +47,8 @@
 - name: Set up local dnsmasq for apps and api name resolution
   copy:
     content: |
-       address=/.apps.{{ cluster_domain }}/192.168.123.10
-       address=/api.{{ cluster_domain }}/192.168.123.5
+       address=/.apps.{{ cluster_domain }}/{{ apps_ip_address }}
+       address=/api.{{ cluster_domain }}/{{ api_ip_address }}
     dest: /etc/NetworkManager/dnsmasq.d/dnsmasq.{{ cluster }}.conf
   become: "{{ libvirt_become }}"
 
