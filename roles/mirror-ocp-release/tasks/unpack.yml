@@ -55,6 +55,7 @@
       loop: "{{ artifacts }}"
       when:
         - force or not unpacked.stat.exists
+        - build != "nightly"
 
     - name: "Touch marker for extra artifacts unpacked"
       file:

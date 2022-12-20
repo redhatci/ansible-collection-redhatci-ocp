@@ -85,6 +85,22 @@
     - getoc
     - cache
 
+# Web page is built on the fly for openshift-release-artifacts located builds.
+# During 30 minutes, we will try to retrieve the release.txt by making a request every 10 seconds.
+# We reproduce the behavior of the HTML page (which refreshes the page every 5 seconds)
+# We look at the "Extracting tools" keywords in the content of the HTML page.
+- name: "Check base page"
+  ansible.builtin.uri:
+    url: "{{ release_url }}/{{ version }}"
+    return_content: true
+  register: base_page
+  retries: 180
+  delay: 10
+  until: "'Extracting tools' not in base_page.content"
+  when:
+    - release_url.startswith("https://openshift-release-artifacts.apps")
+    - not release_txt.stat.exists or force_mirroring
+
 - name: "Fetch release.txt"
   get_url:
     url: "{{ release_url }}/{{ version }}/release.txt"
