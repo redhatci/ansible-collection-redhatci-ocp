@@ -1,4 +1,5 @@
 ---
+libvirt_image_path: /var/lib/libvirt/images
 enable_conserver: false
 do_dns_config: true
 apps_ip_address: 192.168.123.10
