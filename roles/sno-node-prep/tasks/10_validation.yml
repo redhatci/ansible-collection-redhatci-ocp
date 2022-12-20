@@ -33,10 +33,10 @@
 
 - name: Fail if build is undefined, empty or not valid.
   assert:
-    fail_msg: "The build is undefined, empty or not valid. Use a value such as 'dev' or 'ga'."
+    fail_msg: "The build is undefined, empty or not valid. Use a value such as 'nightly', 'dev' or 'ga'."
     that:
       - build is defined
-      - (build == "dev") or (build == "ga")
+      - build in ("dev", "ga", "nightly")
   tags:
   - always
   - validation
@@ -57,18 +57,9 @@
   - always
   - validation
 
-- name: Set release_url for development envs
+- name: Set release_url
   set_fact:
-    release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview') }}"
-  when: build == 'dev'
-  tags:
-  - always
-  - validation
-
-- name: Set release_url for GA envs
-  set_fact:
-    release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp') }}"
-  when: build == 'ga'
+    release_url: "{{ (webserver_url|length) | ternary(webserver_url, '/'.join(url.split('/')[:-1])) }}"
   tags:
   - always
   - validation
