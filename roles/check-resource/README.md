@@ -1,6 +1,6 @@
 # check-resource role
 
-Role to wait for the deployment of a given resource; applying workarounds based on the `dci_workaround` list.
+Role to wait for the deployment of a given resource.
 
 Supported resources:
 
