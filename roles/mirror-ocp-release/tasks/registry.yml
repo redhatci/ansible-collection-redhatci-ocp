@@ -5,7 +5,7 @@
     get_checksum: false
   register: container_images_done
   when:
-    - not force  # we don't care to stat files if we're forcing
+    - not force # we don't care to stat files if we're forcing
 
 - name: "Mirror release images to local registry"
   command: >
@@ -21,14 +21,31 @@
   when:
     - force or not container_images_done.stat.exists
 
+- name: Generate ImageContentSourcePolicy
+  shell: >
+    set -o pipefail &&
+    echo -e "{{ result.stdout }}" |
+    sed -n '/apiVersion/,$p' |
+    sed -e 's/name:.*/name: release-{{ version }}/'
+  register: icsp_release
+  when:
+    - force or not container_images_done.stat.exists
+
+- name: "Write mirrored image content source policy"
+  copy:
+    dest: "{{ dir }}/imagecontentsourcepolicy.yaml"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "0644"
+    setype: httpd_sys_content_t
+    content: "{{ icsp_release.stdout }}"
+  become: true
+  when:
+    - force or not container_images_done.stat.exists
+
 - name: "Marker for container images mirrored"
   file:
     dest: "{{ cache_dir }}/{{ version }}/container_images.done"
     state: touch
-    owner: "{{ owner }}"
-    group: "{{ group }}"
-    mode: "0644"
-  become: true
-  when:
-    - force or not container_images_done.stat.exists
+
 ...

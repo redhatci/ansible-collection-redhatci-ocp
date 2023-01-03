@@ -45,31 +45,6 @@
   register: downloaded
   until: downloaded is not failed
 
-- name: "Write mirrored image content source policy"
-  copy:
-    dest: "{{ dir }}/imagecontentsourcepolicy.yaml"
-    owner: "{{ owner }}"
-    group: "{{ group }}"
-    mode: "0644"
-    setype: httpd_sys_content_t
-    content: |
-      apiVersion: operator.openshift.io/v1alpha1
-      kind: ImageContentSourcePolicy
-      metadata:
-        name: release-{{ version }}
-      spec:
-        repositoryDigestMirrors:
-        - mirrors:
-          - {{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}
-          source: quay.io/openshift-release-dev/ocp-release
-        - mirrors:
-          - {{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}
-          source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
-        - mirrors:
-          - {{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}
-          source: registry.svc.ci.openshift.org/ocp/release
-  become: true
-
 - name: "Write signature config map"
   copy:
     dest: "{{ dir }}/signature.yaml"
