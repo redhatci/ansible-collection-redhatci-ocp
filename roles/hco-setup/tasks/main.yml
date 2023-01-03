@@ -7,6 +7,8 @@
     - install
 
 - name: "cnv-setup : deploy test Virtual Machine"
+  vars:
+    kubevirt_api_version: "{% if ocp_version is version('4.8', '<') %}v1alpha3{% else %}v1{% endif %}"
   include_tasks: test-deploy-vm.yml
   when:
     - test_deploy_vm| bool
