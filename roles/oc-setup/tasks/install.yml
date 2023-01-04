@@ -1,21 +1,4 @@
 ---
-
-- name: "Install required packages"
-  package:
-    name: python3-passlib
-    state: present
-  become: true
-
-- name: "Get oc binary and KUBECONFIG auth/creds from provisioner node"
-  delegate_to: "{{ groups['provisioner'][0] }}"
-  fetch:
-    src: "{{ item }}"
-    dest: "{{ dci_cluster_configs_dir }}/"
-    flat: true
-  loop:
-  - "{{ dir }}/auth/kubeconfig"
-  - "{{ dir }}/auth/kubeadmin-password"
-
 - name: "Get cluster install-config"
   community.kubernetes.k8s_info:
     api: v1
@@ -65,27 +48,4 @@
   loop:
   - "{{ dci_cluster_configs_dir }}/kubeconfig"
   - "{{ dci_cluster_configs_dir }}/kubeadmin-password"
-
-- name: "Create .kube directory"
-  delegate_to: "{{ groups['provisioner'][0] }}"
-  file:
-    path: "{{ ansible_env.HOME }}/.kube"
-    state: directory
-    mode: '0750'
-
-- name: "Check if .kube/config exists"
-  delegate_to: "{{ groups['provisioner'][0] }}"
-  stat:
-    path: "{{ ansible_env.HOME }}/.kube/config"
-    get_checksum: false
-  register: kube_config
-
-- name: "Symlink kubeconfig to .kube/config"
-  delegate_to: "{{ groups['provisioner'][0] }}"
-  file:
-    src: "{{ dir }}/auth/kubeconfig"
-    dest: "{{ ansible_env.HOME }}/.kube/config"
-    state: link
-  when:
-    - not kube_config.stat.exists
 ...
