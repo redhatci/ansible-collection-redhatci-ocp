@@ -59,7 +59,7 @@
 
 - name: Set release_url
   set_fact:
-    release_url: "{{ (webserver_url|length) | ternary(webserver_url, '/'.join(url.split('/')[:-1])) }}"
+    release_url: "{{ (webserver_url|length) | ternary(webserver_url, '/'.join(hostvars.localhost.url.split('/')[:-1])) }}"
   tags:
   - always
   - validation
