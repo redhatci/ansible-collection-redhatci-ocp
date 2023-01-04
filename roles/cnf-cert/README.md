@@ -8,6 +8,7 @@ Before executing the CNF (Cloud-native network function) Cert Suite, it's import
 
 Name                                    | Default                                              | Description
 --------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
+tnf\_stage                              | "tests"                                              | Stage to be run when calling the role from outside. Possible values: "tests" (default), "post-run" and "teardown".
 test\_network\_function\_repo           | https://github.com/test-network-function/cnf-certification-test | Repository to download the tnf code. However, if we are testing a pull request from cnf-certification-test repo, this variable will be pointing to the file path where the pull request code has been downloaded in the jumphost.
 test\_network\_function\_version        | v4.1.2                                               | CNF Cert Suite version downloaded. DCI App Agent supports the latest stable version, which is v4.1.2. HEAD version (in the main branch) can be also used, but it is not guaranteed a complete compatibility with the latest unstable changes. The versions prior to v4.0.0 are not compatible with the agent.
 test\_network\_function\_project\_name  | cnf-certification-test                               | Directory name to look at on the tnf repo.
