@@ -14,6 +14,21 @@
     - test_network_function_version is version("v4.0.2", "<=")
     - test_network_function_version != "HEAD"
 
+# This check is included as a warning for users in case of not defining
+# partner_creds properly, as cnf-cert will include preflight in the HEAD
+# branch
+- name: (In HEAD version) Verify if partner_creds is provided
+  assert:
+    that: "partner_creds|length"
+    fail_msg: >
+      WARNING.
+      Note that, in HEAD branch, CNF Cert Suite includes preflight.
+      If you need credentials to pull the images under test,
+      you need to set up partner_creds variable,
+      else CNF Cert Suite execution will fail.
+  when: test_network_function_version == "HEAD"
+  ignore_errors: true
+
 # This is to ensure compatibility with partners that are still using tnf_suites
 # in latest tnf version. In that case, we override tnf_labels default value to "".
 - name: Redefine tnf_labels variable if tnf_suites is provided
@@ -229,6 +244,13 @@
       TNF_LOG_LEVEL: "{{ tnf_log_level }}"
   when: tnf_env_vars|length == 0
 
+# Use authentication file for private registry
+- name: Set authentication for registry access
+  include_tasks: prepare_json_authentication.yml
+  when:
+    - test_network_function_version == "HEAD"
+    - partner_creds|length
+
 # The task automatically append TNF_PARTNER_REPO and TNF_IMAGE environment variables to tnf_env_vars
 - name: Run the CNF Test Suite
   vars:
@@ -245,6 +267,7 @@
     {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
     {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
     {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
+    {% if test_network_function_version == "HEAD" and partner_creds|length %}-c {{ tnf_dockercfg_path }} \{% endif %}
     -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
 
     cp {{ test_network_function_project_name }}/*.xml {{ job_logs.path }}

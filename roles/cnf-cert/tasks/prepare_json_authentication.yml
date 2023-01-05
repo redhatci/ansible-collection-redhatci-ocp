@@ -1,0 +1,9 @@
+---
+- name: Copy authentication config
+  copy:
+    src: "{{ partner_creds }}"
+    dest: "{{ tnf_git_dir.path }}/config.json"
+
+- name: Update tnf_dockercfg_path variable
+  set_fact:
+    tnf_dockercfg_path: "{{ tnf_git_dir.path }}/config.json"
