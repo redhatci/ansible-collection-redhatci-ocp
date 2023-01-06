@@ -3,12 +3,14 @@
   block:
     - name: "Wait for up to 20 minutes for {{ inventory_hostname }} to be discovered"
       uri:
-        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}?with-inventory=True"
         method: GET
         status_code: [200, 201]
         return_content: True
       register: cluster
-      until: (hostvars[inventory_hostname]['mac'] | upper) in (cluster.json.hosts | map(attribute='inventory') | map('from_json') | map(attribute='interfaces') | flatten | map(attribute='mac_address') | map('upper') | list)
+      until:
+        - ("json" in cluster)
+        - (hostvars[inventory_hostname]['mac'] | upper) in (cluster.json.hosts | map(attribute='inventory') | map('from_json') | map(attribute='interfaces') | flatten | map(attribute='mac_address') | map('upper') | list)
       retries: 20
       delay: 60
 

@@ -19,3 +19,5 @@ vm_group_params:
     disk_size: "{{ vm_spec_worker_disk_size | default(vm_spec_defaults.worker.disk_size) }}"
 
 vm_node_prefix: "{{ cluster_name }}_"
+
+nodes_to_process: "{{ groups['nodes'] }}"

@@ -17,7 +17,7 @@
   set_fact:
     vm_hostname: "{{ hostvars[kvm_node_hostname]['vm_host'] }}"
     vm_mac: "{{ hostvars[kvm_node_hostname]['mac'] }}"
-    
+
 - name: Set kvm_network_interfaces
   set_fact:
     kvm_network_interfaces: "{{
@@ -38,6 +38,6 @@
       disks: "{{ kvm_node_disks }}"
       network_interfaces: "{{ kvm_network_interfaces }}"
 
-- name: Update all_kvm_nodes
+- name: Update processed_kvm_nodes
   set_fact:
-    all_kvm_nodes: "{{ all_kvm_nodes | combine({kvm_node.vm_host: ((all_kvm_nodes[kvm_node.vm_host] | default([])) +  [kvm_node])}) }}"
+    processed_kvm_nodes: "{{ processed_kvm_nodes | combine({kvm_node.vm_host: ((processed_kvm_nodes[kvm_node.vm_host] | default([])) +  [kvm_node])}) }}"
