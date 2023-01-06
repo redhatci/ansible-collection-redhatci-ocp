@@ -1,34 +1,25 @@
 ---
-- name: "Read release_image from release.txt"
-  shell:
-    cmd: >
-      sed -n 's/Pull From:\s*\(.*\)/\1/p'
-      {{ dir }}/release.txt | tr -d '[[:blank:]]'
-    warn: false  # runner complains about using sed
-  register: release_image
-  changed_when: false
-
 - name: "Check if installer has been extracted"
   stat:
-    path: "{{ dir }}/{{ installer }}"
+    path: "{{ dir }}/openshift-baremetal-install"
     get_checksum: false
   register: target
   when:
     - not force  # we don't care to stat files if we're forcing
 
-- name: "Extract installer command from container image"
+- name: "Extract installer command from release image"
   command: >
-    {{ dir }}/oc adm release extract
+    {{ oc_tool_path }} adm release extract
     --registry-config={{ auths_file }}
-    --command={{ installer }}
-    --to={{ dir }}
-    {{ release_image.stdout }}
+    --command=openshift-baremetal-install
+    --from {{ pull_url }}
+    --to "{{ dir }}"
   when:
     - force or not target.stat.exists
 
 - name: "Make installer command readable from HTTP"
   file:
-    path: "{{ dir }}/{{ installer }}"
+    path: "{{ dir }}/openshift-baremetal-install"
     state: file
     owner: "{{ owner }}"
     group: "{{ group }}"

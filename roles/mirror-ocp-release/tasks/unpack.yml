@@ -7,67 +7,17 @@
   when:
     - not force  # we don't care to stat files if we're forcing
 
-- name: "Get client tools tarball"
-  block:
-    - name: "Unarchive client tarball"
-      unarchive:
-        src: "{{ dir }}/openshift-client-linux-{{ version }}.tar.gz"
-        dest: "{{ dir }}"
-        owner: "{{ owner }}"
-        group: "{{ group }}"
-        mode: "0755"
-        remote_src: true
-        exclude:
-          - README.md
-
-    - name: "Marker for doaa to avoid redownloaded"
-      file:
-        state: touch
-        dest: "{{ dir }}/client_tools.done"
-        owner: "{{ owner }}"
-        group: "{{ group }}"
-        mode: "0644"
-  become: true
+- name: "Unarchive client tarball"
+  unarchive:
+    src: "{{ dir }}/openshift-client-linux-{{ version }}.tar.gz"
+    dest: "{{ dir }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "0755"
+    remote_src: true
+    exclude:
+      - README.md
   when:
     - force or not unpacked.stat.exists
 
-- name: "Process extra artifacts"
-  block:
-    - name: "Check if extra artifacts have already been unpacked"
-      stat:
-        path: "{{ dir }}/artifacts.done"
-        get_checksum: false
-      register: unpacked
-      when:
-        - not force  # we don't care to stat files if we're forcing
-
-    - name: "Unarchive extra artifact tarballs"
-      unarchive:
-        src: "{{ dir }}/{{ item }}"
-        dest: "{{ dir }}"
-        owner: "{{ owner }}"
-        group: "{{ group }}"
-        mode: "0755"
-        remote_src: true
-        exclude:
-          - README.md
-      become: true
-      loop: "{{ artifacts }}"
-      when:
-        - force or not unpacked.stat.exists
-        - build != "nightly"
-
-    - name: "Touch marker for extra artifacts unpacked"
-      file:
-        dest: "{{ dir }}/artifacts.done"
-        state: touch
-        owner: "{{ owner }}"
-        group: "{{ group }}"
-        mode: "0644"
-      become: true
-      when:
-        - force or not unpacked.stat.exists
-  when:
-    - mirror_artifacts | bool
-    - unpack_artifacts | bool
 ...

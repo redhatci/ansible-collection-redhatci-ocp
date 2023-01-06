@@ -1,64 +1,38 @@
 ---
 - name: "Check if commands were extracted"
   stat:
-    path: "{{ cache_dir }}/{{ version }}/{{ installer_binary }}"
+    path: "{{ cache_dir }}/{{ version }}/openshift-install"
     get_checksum: false
-  loop: "{{ installer_extract_cmds }}"
-  loop_control:
-    loop_var: installer_binary
-  register: extracted_cmds
-  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
-  tags: extract
-
-- name: "Copy PullSecret and extract/copy openshift installer in connected mode"
-  block:
-    - name: "Check if {{ pullsecret_file }} exits"
-      stat:
-        path: "{{ pullsecret_file }}"
-        get_checksum: false
-      register: pullfile
-
-    - name: "Copy pullsecret var content to {{ pullsecret_file }}"
-      copy:
-        content: "{{ pullsecret }}"
-        dest: "{{ pullsecret_file }}"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: '0644'
-        force: true
-      when:
-        - not pullfile.stat.exists
-
-    - name: "Extract openshift installer commands"
-      command: >
-        {{ cache_dir }}/{{ version }}/oc adm release extract
-        --registry-config={{ pullsecret_file | quote }}
-        --command={{ item.installer_binary }}
-        --to={{ cache_dir }}/{{ version }}
-        {{ release_image.stdout }}
-      when:
-        - not item.stat.exists
-      loop: "{{ extracted_cmds.results }}"  # loop over the results registered previously
-      loop_control:
-        label: "{{ item.installer_binary }}"  # installer_binary already exists in this loop object
-      become: true
+  register: extracted_cmd
   delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
   tags:
-    - pullsecret
+    - extract
+
+- name: "Unarchive installer tarball"
+  unarchive:
+    src: "{{ cache_dir }}/{{ version }}/openshift-install-linux-{{ version }}.tar.gz"
+    dest: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    remote_src: true
+    exclude:
+      - README.md
+  delegate_to: "{{ cache_server }}"
+  when:
+    - not extracted_cmd.stat.exists
+  tags:
     - extract
 
 # If the provisioner host got the installer, lets just copy it to /usr/local/bin
 - name: "Copy openshift-install binary to {{ ocp_binary_path }}"
   copy:
-    src: "{{ cache_dir }}/{{ version }}/{{ item.installer_binary }}"
+    src: "{{ cache_dir }}/{{ version }}/openshift-install"
     dest: "{{ ocp_binary_path }}/{{ item.installer_binary }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: '0755'
     remote_src: true
-  loop: "{{ extracted_cmds.results }}"  # loop over the results registered previously
-  loop_control:
-    label: "{{ item.installer_binary }}"  # installer_binary already exists in this loop object
   become: true
   when:
     - cache_provisioner | bool
@@ -72,44 +46,32 @@
       fetch:
         dest: /tmp/
         flat: true
-        src: "{{ cache_dir }}/{{ version }}/{{ installer_binary }}"
-      loop: "{{ installer_extract_cmds }}"
-      loop_control:
-        loop_var: installer_binary
+        src: "{{ cache_dir }}/{{ version }}/openshift-install"
       delegate_to: "{{ groups['registry_host'][0] }}"
 
     - name: "Copy the openshift installer from control machine to the provisioner host"
       copy:
         src: "/tmp/openshift-install"
-        dest: "{{ dir }}/{{ installer_binary }}"
+        dest: "{{ dir }}/openshift-install"
         owner: "{{ ansible_user_id }}"
         group: "{{ ansible_user_gid }}"
         mode: 0755
-      loop: "{{ installer_extract_cmds }}"
-      loop_control:
-        loop_var: installer_binary
       become: true
 
     - name: "Remove the temporary copy of the openshift installer on control machine"
       file:
-        path: "/tmp/{{ installer_binary }}"
+        path: "/tmp/openshift-install"
         state: absent
-      loop: "{{ installer_extract_cmds }}"
-      loop_control:
-        loop_var: installer_binary
       delegate_to: localhost
 
     - name: "Copy openshift installer binary to {{ ocp_binary_path }} provisioner"
       copy:
         src: "{{ dir }}/openshift-install"
-        dest: "{{ ocp_binary_path }}/{{ installer_binary }}"
+        dest: "{{ ocp_binary_path }}/openshift-install"
         owner: "{{ ansible_user_id }}"
         group: "{{ ansible_user_gid }}"
         mode: "0755"
         remote_src: true
-      loop: "{{ installer_extract_cmds }}"
-      loop_control:
-        loop_var: installer_binary
       become: true
   when:
     - not cache_provisioner | bool
