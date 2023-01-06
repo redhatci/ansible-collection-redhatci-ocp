@@ -10,7 +10,7 @@
 
 - name: "Write rhcos.json from command (>= 4.8)"
   shell: >
-    {{ dir }}/{{ installer }} coreos print-stream-json >
+    {{ dir }}/openshift-baremetal-install coreos print-stream-json >
     {{ dir }}/rhcos.json
   when:
     - version is version("4.8", ">=")
@@ -20,7 +20,7 @@
   block:
     - name: "Get Git SHA from installer"
       shell: >
-        {{ cache_dir }}/{{ version }}/{{ installer }} version |
+        {{ cache_dir }}/{{ version }}/openshift-baremetal-install version |
         grep "^built from" |
         awk '{ print $NF }'
       register: commit_id

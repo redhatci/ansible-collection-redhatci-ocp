@@ -9,14 +9,9 @@
 #   * version: An OpenShift version number e.g. 4.5.21
 #   * cache_dir: Base directory that will hold the OCP version binaries and OS
 #     images
-#   * release_url: The base URL where the release artifacts are stored
+#   * pull_url: The release image URL that contains the release artifacts
 #   * force (default False): If passed as true, the role will re-download all
 #     the OCP release resources
-#   * mirror_artifacts (default True): Download tarball artifacts from the OCP
-#     mirror
-#   * unpack_artifacts (default True): Unpack all downloaded tarball artifacts
-#   * artifacts (optional): List of all artifacts to download from the OCP
-#     mirror *besides the installer*
 #   * mirror_disk_images (default True): Download all disk images depending on
 #     which install_type and sno_install_type you provide
 #   * mirror_container_images (default True): Mirror all container images from
@@ -41,7 +36,7 @@
     that:
       - cache_dir | string
       - version | string
-      - release_url | string
+      - pull_url | string
 
 - name: "Check if authentication file exists"
   stat:

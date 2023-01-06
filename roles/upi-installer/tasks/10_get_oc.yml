@@ -85,65 +85,47 @@
     - getoc
     - cache
 
-# Web page is built on the fly for openshift-release-artifacts located builds.
-# During 30 minutes, we will try to retrieve the release.txt by making a request every 10 seconds.
-# We reproduce the behavior of the HTML page (which refreshes the page every 5 seconds)
-# We look at the "Extracting tools" keywords in the content of the HTML page.
-- name: "Check base page"
-  ansible.builtin.uri:
-    url: "{{ release_url }}/{{ version }}"
-    return_content: true
-  register: base_page
-  retries: 180
-  delay: 10
-  until: "'Extracting tools' not in base_page.content"
-  when:
-    - release_url.startswith("https://openshift-release-artifacts.apps")
-    - not release_txt.stat.exists or force_mirroring
-
-- name: "Fetch release.txt"
-  get_url:
-    url: "{{ release_url }}/{{ version }}/release.txt"
-    dest: "{{ cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
-    mode: "0644"
-    timeout: 120
-  retries: 5
-  delay: 10
-  register: release_txt
-  until: release_txt is not failed
-  delegate_to: "{{ cache_server }}"
-  when:
-    - not release_txt.stat.exists or force_mirroring
-  tags:
-    - getoc
-    - cache
-
-- name: "Read release_version from release.txt"
-  shell: "set -o pipefail && sed -n 's/Version:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
-  register: release_version
-  changed_when: false
-  no_log: true
+- name: "Create tmp directory for stable client"
+  tempfile:
+    state: directory
+    prefix: upi_oc.
+  register: upi_tmp_dir
   delegate_to: "{{ cache_server }}"
   tags:
     - getoc
     - cache
 
-- name: "Read release_image from release.txt"
-  shell: "set -o pipefail && sed -n 's/Pull From:\\s*\\(.*\\)/\\1/p' {{ cache_dir }}/{{ version }}/release.txt | tr -d '[[:blank:]]'"
-  register: release_image
-  changed_when: false
-  no_log: true
+- name: "Download stable client"
+  vars:
+    ocp_stable_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
+  unarchive:
+    src: "{{ ocp_stable_url }}/stable/openshift-client-linux.tar.gz"
+    dest: "{{ upi_tmp_dir.path }}"
+    remote_src: true
+    mode: 0755
   delegate_to: "{{ cache_server }}"
   tags:
     - getoc
     - cache
 
-- name: "Print the release version"
-  debug:
-    msg: "release version {{ release_version }}"
-    verbosity: 2
+- name: "Extract artifacts from release image"
+  shell:
+    cmd: >
+      {{ upi_tmp_dir.path }}/oc adm release extract
+      --registry-config {{ pullsecret_file }}
+      --tools
+      --from {{ pull_url }}
+      --to "{{ cache_dir }}/{{ version }}"
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Remove temporary oc client"
+  file:
+    path: "{{ upi_tmp_dir.path }}"
+    state: absent
+  delegate_to: "{{ cache_server }}"
   tags:
     - getoc
     - cache
@@ -158,19 +140,12 @@
     - getoc
     - cache
 
-- name: "Fetch and Untar client tools"
+- name: "Unarchive client tarball"
   unarchive:
-    src: "{{ release_url }}/{{ version }}/{{ item }}-linux.tar.gz"
+    src: "{{ cache_dir }}/{{ version }}/openshift-client-linux-{{ version }}.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
     mode: "0755"
     remote_src: true
-  register: result
-  retries: 3
-  delay: 10
-  until: result is not failed
-  loop: "{{ client_tools }}"
   delegate_to: "{{ cache_server }}"
   when:
     - not client_tools_done.stat.exists or force_mirroring

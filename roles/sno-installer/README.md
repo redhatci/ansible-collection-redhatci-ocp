@@ -14,6 +14,7 @@ For any type of SNO installation, these variables are always required
 - dir # directory to store deployment files
 - extcidrnet # CIDR of the network to use
 - install_type # DCI use only, options: ipi (default), sno
+- pull_image # The "Pull From" `ocp_release` image to use from the release.txt file. In DCI this is provided in the OCP component.
 
 ## SNO Virtual
 

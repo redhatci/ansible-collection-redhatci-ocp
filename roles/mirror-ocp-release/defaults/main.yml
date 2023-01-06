@@ -6,11 +6,6 @@ sno_install_type: baremetal
 owner: "{{ ansible_user_uid }}"
 group: "{{ ansible_user_gid }}"
 force: false
-installer: openshift-baremetal-install
-artifacts:
-  - "opm-linux-{{ version }}.tar.gz"
-mirror_artifacts: true
-unpack_artifacts: true
 mirror_disk_images: true
 mirror_container_images: true
 write_custom_config: true

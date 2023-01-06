@@ -33,7 +33,7 @@
         - ( requested_control | int != control_nodes_count | int ) or
           ( requested_compute | int != compute_nodes_count | int)
   when:
-    - install_type in ['ipi', 'upi', 'sno']
+    - install_type == "ipi"
   tags:
     - check
 
