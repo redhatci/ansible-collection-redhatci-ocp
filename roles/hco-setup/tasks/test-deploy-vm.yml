@@ -28,7 +28,7 @@
   community.kubernetes.k8s:
     state: present
     definition:
-      apiVersion: kubevirt.io/v1alpha3
+      apiVersion: kubevirt.io/{{ kubevirt_api_version }}
       kind: VirtualMachine
       metadata:
         name: vm-cirros
@@ -38,7 +38,7 @@
 
 - name: "test_ Get VMI status"
   community.kubernetes.k8s_info:
-    api: kubevirt.io/v1alpha3
+    api: kubevirt.io/{{ kubevirt_api_version }}
     kind: VirtualMachineInstance
     name: vm-cirros
     namespace: default
@@ -51,7 +51,7 @@
   community.kubernetes.k8s:
     definition:
       kind: VirtualMachine
-      apiVersion: kubevirt.io/v1alpha3
+      apiVersion: kubevirt.io/{{ kubevirt_api_version }}
       metadata:
         name: vm-cirros
         namespace: default
@@ -62,7 +62,7 @@
   community.kubernetes.k8s:
     state: absent
     definition:
-      apiVersion: kubevirt.io/v1alpha3
+      apiVersion: kubevirt.io/{{ kubevirt_api_version }}
       kind: VirtualMachine
       metadata:
         name: vm-cirros
