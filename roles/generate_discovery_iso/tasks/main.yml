@@ -130,7 +130,7 @@
           passwd:
             users: "{{ [discovery_content.passwd.users[0] | combine({'passwordHash': hashed_discovery_password})] }}"
 
-    - name: Create Infra env
+    - name: Patch Infra env
       vars:
         previous_patches: "{{ patch_discovery_ignition | default({}) }}"
       uri:

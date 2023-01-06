@@ -10,7 +10,7 @@
     body: >-
       {
         "name": "{{ cluster_name + '-day2' }}",
-        "api_vip_dnsname": "{{ 'api.' + cluster_name + '.' + base_dns_domain }}",
+        "api_vip_dnsname": "api.{{ cluster_name }}.{{ base_dns_domain }}",
         "openshift_cluster_id": "{{ cluster_id }}",
         "openshift_version": "{{ openshift_full_version }}"
       }
