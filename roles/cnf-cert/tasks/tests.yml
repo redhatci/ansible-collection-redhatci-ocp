@@ -220,19 +220,24 @@
           pod-security.kubernetes.io/enforce-version: latest
     wait: yes
 
+# Task to be deleted when removing backwards compatibility with env vars usage.
+- name: Redefine tnf_env_vars if empty using default environment variables
+  set_fact:
+    tnf_env_vars:
+      TNF_NON_INTRUSIVE_ONLY: "{{ tnf_non_intrusive_only }}"
+      TNF_RUN_CFD_TEST: "{{ tnf_run_cfd_test }}"
+      TNF_LOG_LEVEL: "{{ tnf_log_level }}"
+  when: tnf_env_vars|length == 0
+
+# The task automatically append TNF_PARTNER_REPO and TNF_IMAGE environment variables to tnf_env_vars
 - name: Run the CNF Test Suite
   vars:
-    tnf_partner_registry: "{{ ( local_registry | length ) | ternary(local_registry, 'quay.io') }}"
+    tnf_partner_repo: "{{ ( local_registry | length ) | ternary(local_registry, 'quay.io') }}/testnetworkfunction"
+  environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image}) }}"
   shell: |
     set -x
 
     rm -f {{ test_network_function_project_name }}/*.xml
-
-    export TNF_NON_INTRUSIVE_ONLY={{ tnf_non_intrusive_only }}
-    export TNF_RUN_CFD_TEST={{ tnf_run_cfd_test }}
-    export TNF_LOG_LEVEL={{ tnf_log_level }}
-    export TNF_PARTNER_REPO={{ tnf_partner_registry }}/testnetworkfunction
-    export TNF_IMAGE={{ tnf_image }}
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
     -t {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
@@ -240,7 +245,7 @@
     {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
     {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
     {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
-    -i $TNF_IMAGE &> {{ test_network_function_project_name }}/execution.log
+    -i {{ tnf_image }} &> {{ test_network_function_project_name }}/execution.log
 
     cp {{ test_network_function_project_name }}/*.xml {{ job_logs.path }}
     cp {{ test_network_function_project_name }}/*.json {{ job_logs.path }}
