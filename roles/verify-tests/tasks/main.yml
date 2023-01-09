@@ -1,9 +1,7 @@
 ---
-
-- name: Install required python3-xmltodict rpm package
-  package:
-    name: python3-xmltodict
-    state: present
+- name: Install junitparser needed to parse the tests
+  pip:
+    name: junitparser
   become: true
 
 - name: Loop over mandatory test results
