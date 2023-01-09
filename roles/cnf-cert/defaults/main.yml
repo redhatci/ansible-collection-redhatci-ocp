@@ -15,8 +15,10 @@ tnf_config:
     operators_regexp: ""
     exclude_connectivity_regexp: ""
 accepted_kernel_taints: []
+tnf_postrun_delete_resources: true
+tnf_certified_container_info: []
+tnf_env_vars: {}
+# Next three variables to be deleted when removing backwards compatibility with env vars usage. Also review cnf-cert README.
 tnf_non_intrusive_only: false
 tnf_run_cfd_test: false
 tnf_log_level: "debug"
-tnf_postrun_delete_resources: true
-tnf_certified_container_info: []
