@@ -11,36 +11,11 @@
     msg: "Could not verify test results: {{ t.filename }} is not present"
   when: not junit_file.stat.exists
 
-- name: Retrieve JSON content
+- name: "Retrieve the actual test results from {{ t.filename }}"
   vars:
     junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
   set_fact:
-    json_content: "{{ lookup('file', junit_filename) | xml2json | replace('@', '') }}"
-
-- name: Count how many testcases do we have
-  vars:
-    jquery: "testsuites.testsuite.tests"
-  set_fact:
-    test_count: "{{ json_content | json_query(jquery) }}"
-
-# TODO: this is a quick workaround.
-# We have to understand a reliable way to retrieve
-# a number of tests from a standard JUnit.
-- name: Fail if xml file format is unexpected
-  fail:
-    msg: >
-      Please verify the format of {{ junit_filename }}.
-      We expect to have one testsuite and a number of tests in testsuites.testsuite.tests.
-  when: test_count | length == 0
-
-- name: Get the actual tests results
-  vars:
-    single_jquery: "testsuites.testsuite.testcase.[{testcase: name, passed: failure == null}]"
-    array_jquery: "testsuites.testsuite.testcase[*].{testcase: name, passed: failure == null}"
-  set_fact:
-    actual_results: >
-      {% if test_count | int == 1 %}{{ json_content | json_query(single_jquery) }}
-      {% else %}{{ json_content | json_query(array_jquery) }}{% endif %}
+    actual_results: "{{ junit_filename | junit2dict }}"
 
 - name: "Fail if not all test results are as expected for {{ t.filename }}"
   vars:

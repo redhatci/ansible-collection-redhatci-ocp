@@ -4,17 +4,25 @@ class FilterModule(object):
             'regex_diff': self.regex_diff,
         }
 
-    def regex_diff(self, a, b):
+    def regex_diff(self, expected, actual):
         '''
-        To get the difference of 2 lists (items in 1 that do not exist in 2).
-        Expected lists format:
+        To get the difference between two lists (items in 'expected' that are not present in 'actual').
+        The lists should be in the following format:
         [{'testcase': 'BlaBlaTest', 'passed': False}, {'testcase': 'Bla*', 'passed': True}].
-        List 1 could contain standard Python regex in the testcase field.
+        The 'expected' list may contain standard Python regex in the 'testcase' field.
         '''
         from re import compile
-        return [x for x in a \
+        failed_tests = []
+        for ex_case in expected:
+            absent = True
+            for ac_case in actual:
+                # check if the expected testcase is present in the actual results
+                if compile(ex_case.get('testcase')).search(ac_case.get('testcase')):
+                    absent = False
+                    # if it's present but the result is not as expected
+                    if ex_case['passed'] != ac_case['passed']:
+                        failed_tests.append({'failed_expectation': ex_case, 'actual_result': ac_case})
             # if expected test is absent in the actual results
-            if not any(compile(x.get('testcase')).search(y.get('testcase')) for y in b) \
-            # or its result is not as expected
-            or any(compile(x.get('testcase')).search(y.get('testcase')) \
-            and x.get('passed') != y.get('passed') for y in b) ]
+            if absent:
+                failed_tests.append({'expected_testcase_absent': ex_case})
+        return failed_tests
