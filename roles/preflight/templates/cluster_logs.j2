@@ -25,3 +25,8 @@ Subscription message =====================================================
 {{ preflight_subs | json_query('resources[*].status.conditions') | join('\n') }}
 {% else %}
 {% endif %}
+Catalog message =====================================================
+{% if catalog_info.resources %}
+{{ catalog_info | json_query('resources[*].status.conditions') | join('\n') }}
+{% else %}
+{% endif %}

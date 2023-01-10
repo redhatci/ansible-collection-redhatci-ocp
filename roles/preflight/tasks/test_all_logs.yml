@@ -1,29 +1,36 @@
 ---
 - name: Retrieve installed Subscription
-  k8s_info:
+  community.kubernetes.k8s_info:
     api_version: operators.coreos.com/v1alpha1
     kind: Subscription
     namespace: "{{ operator.name }}"
   register: preflight_subs
 
 - name: Check CSV with k8s_info
-  k8s_info:
+  community.kubernetes.k8s_info:
     api_version: operators.coreos.com/v1alpha1
     kind: ClusterServiceVersion
     namespace: "{{ operator.name }}"
   register: preflight_csv
 
 - name: Get events
-  k8s_info:
+  community.kubernetes.k8s_info:
     kind: Event
     namespace: "{{ operator.name }}"
   register: preflight_events
 
 - name: Get pods
-  k8s_info:
+  community.kubernetes.k8s_info:
     kind: Pod
     namespace: "{{ operator.name }}"
   register: preflight_pods
+
+- name: Get CatalogSource
+  community.kubernetes.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: CatalogSource
+    namespace: "{{ operator.name }}"
+  register: catalog_info
 
 - name: Upload logs into DCI
   template:
