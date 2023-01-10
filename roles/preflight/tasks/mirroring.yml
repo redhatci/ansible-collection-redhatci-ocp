@@ -73,16 +73,17 @@
       set_fact:
         OO_INDEX: "{{ local_registry }}/telcoci/preflight/disconnected-catalog@{{ catalog_sha.stdout }}"
 
-    - name: Save catalog manifests to temporary scorecard directory
+    - name: Mirror the disconnected-catalog
       shell: >
         {{ oc_tool_path }} adm catalog mirror -a {{ partner_creds }}
+        --max-components=3
         {{ OO_INDEX }} {{ local_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
       register: catalog_mirror
       retries: 2
       delay: 10
       until: catalog_mirror.stderr.find('error:') == -1
 
-    - name: Append to imageContentSourcePolicy
+    - name: Append pre-flight images to imageContentSourcePolicy
       blockinfile:
         block: |
           # Scorecard container
