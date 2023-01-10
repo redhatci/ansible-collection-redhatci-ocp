@@ -1,7 +1,4 @@
 ---
-# 2022/11/25: hco.kubevirt.io/v1beta1 is still not deprecated
-# v1 API is not available for HyperConverged:
-# https://github.com/kubevirt/hyperconverged-cluster-operator/blob/437ce92d4e048e5dd355e40a15094dcae73a1310/docs/cluster-configuration.md#storage-resource-configurations-example
 - name: install hco
   community.kubernetes.k8s:
     definition:
