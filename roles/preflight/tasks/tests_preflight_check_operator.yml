@@ -167,7 +167,7 @@
         work_dir: "{{ preflight_operator_artifacts.path }}"
   when: operator.create_pr | default(false) | bool
 
-- name: Unset project ID to ensure no occasionnal reuse
+- name: Unset project ID to ensure no occasional reuse
   set_fact:
     cert_project_id: ""
 
