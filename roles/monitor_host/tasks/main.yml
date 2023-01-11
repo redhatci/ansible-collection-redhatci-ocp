@@ -9,6 +9,9 @@
     return_content: True
   register: cluster
   delegate_to: bastion
+  until: cluster is successful
+  retries: 4
+  delay: 30
 
 - debug: # noqa unnamed-task
     msg: "{{ cluster.json.hosts }}"

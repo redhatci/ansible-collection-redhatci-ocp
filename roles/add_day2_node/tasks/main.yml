@@ -74,7 +74,7 @@
       import_role:
         name: monitor_host
       vars:
-        cluster_id: "{{ add_host_cluster_id }}"
+        monitor_cluster_id: "{{ add_host_cluster_id }}"
         current_host: "{{ discovered_host_reply.json }}"
         waiting_termination_states:
           - "added-to-existing-cluster"
