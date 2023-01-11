@@ -24,6 +24,7 @@
   retries: 30
   delay: 10
   until:
+    - cephrbd_pvc_status.resources is defined
     - cephrbd_pvc_status.resources != []
     - cephrbd_pvc_status.resources[0].status.phase == "Bound"
 
@@ -52,6 +53,7 @@
   retries: 30
   delay: 10
   until:
+    - cephfs_pvc_status.resources is defined
     - cephfs_pvc_status.resources != []
     - cephfs_pvc_status.resources[0].status.phase == "Bound"
 ...
