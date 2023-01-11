@@ -38,6 +38,7 @@
     namespace: "{{ acm_cluster_name }}"
   register: cluster_bmh
   until:
+    - cluster_bmh.resources is defined
     - cluster_bmh.resources | length == 0
   retries: 20
   delay: 15
@@ -81,6 +82,7 @@
     name: "{{ acm_cluster_name }}"
   register: cluster_ns
   until:
+    - cluster_ns.resources is defined
     - cluster_ns.resources | length == 0
   retries: 6
   delay: 10

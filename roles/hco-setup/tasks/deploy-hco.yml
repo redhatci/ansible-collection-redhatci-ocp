@@ -40,6 +40,7 @@
   delay: 60
   no_log: false
   until:
+    - hco_pods.resources is defined
     - "hco_pods.resources|length == 1"
     - "'status' in hco_pods.resources[0]"
     - "'containerStatuses' in hco_pods.resources[0].status"

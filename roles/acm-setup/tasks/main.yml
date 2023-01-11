@@ -26,6 +26,7 @@
   delay: 5
   no_log: true
   until:
+    - mch_packagemanifest.resources is defined
     - mch_packagemanifest.resources | length == 1
 
 - name: "Get multicluster-engine default channel and CSV"
@@ -48,6 +49,7 @@
   delay: 5
   no_log: true
   until:
+    - oadp_packagemanifest.resources is defined
     - oadp_packagemanifest.resources | length == 1
 
 - name: "Get OADP default channel and CSV"
@@ -112,6 +114,7 @@
   retries: 60
   delay: 20
   until:
+    - mch.resources is defined
     - mch.resources | length == 1
     - "'status' in mch.resources[0]"
     - "'phase' in mch.resources[0].status"

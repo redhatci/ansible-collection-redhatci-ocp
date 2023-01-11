@@ -62,6 +62,7 @@
       retries: 9
       delay: 10
       until:
+        - packagemanifest.resources is defined
         - packagemanifest.resources | length == 1
 
     - name: "Set Desired channel"
@@ -110,6 +111,7 @@
       retries: 20
       delay: 30
       until:
+        - csv.resources is defined
         - csv.resources | length == 1
         - "'status' in csv.resources[0]"
         - "'phase' in csv.resources[0].status"
