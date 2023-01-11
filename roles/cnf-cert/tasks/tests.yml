@@ -245,11 +245,11 @@
     {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
     {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
     {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
-    -i {{ tnf_image }} &> {{ test_network_function_project_name }}/execution.log
+    -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
 
     cp {{ test_network_function_project_name }}/*.xml {{ job_logs.path }}
     cp {{ test_network_function_project_name }}/*.json {{ job_logs.path }}
-    cp {{ test_network_function_project_name }}/execution.log {{ job_logs.path }}
+    cp {{ test_network_function_project_name }}/dci-tnf-execution.log {{ job_logs.path }}
     cp {{ test_network_function_project_name }}/tnf_config.yml {{ job_logs.path }}
   args:
     chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
