@@ -4,16 +4,36 @@
   tags:
     - install
 
-- name: "test_ Check inventory to match ocp cluster config"
-  community.kubernetes.k8s_info:
-    api_version: v1
-    kind: node
-    name: "{{ hostvars[item].name }}"
-  register: node
-  until: "'resources' in node and node.resources != []"
-  retries: 30
-  delay: 30
-  with_items: "{{ groups['masters'] + groups['workers'] }}"
+- name: "Validate nodes planes"
+  block:
+    - name: "Get control plane nodes"
+      community.kubernetes.k8s_info:
+        kind: Node
+        label_selectors:
+          - "node-role.kubernetes.io/master"
+      register: control_nodes
+
+    - name: "Get compute plane nodes"
+      community.kubernetes.k8s_info:
+        kind: Node
+        label_selectors:
+          - "node-role.kubernetes.io/worker"
+      register: compute_nodes
+
+    - name: "Get requested control/compute nodes"
+      vars:
+        install_config: "{{ ic.resources[0].data['install-config'] | from_yaml }}"
+        requested_control: "{{ install_config | json_query('controlPlane.replicas') }}"
+        requested_compute: "{{ install_config | json_query('compute[? name==`worker` ].replicas') | first }}"
+        control_nodes_count: "{{ control_nodes.resources | length }}"
+        compute_nodes_count: "{{ compute_nodes.resources | length }}"
+      fail:
+        msg: "The available control/compute plane nodes do not match the requested size"
+      when:
+        - ( requested_control | int != control_nodes_count | int ) or
+          ( requested_compute | int != compute_nodes_count | int)
+  when:
+    - install_type in ['ipi', 'upi', 'sno']
   tags:
     - check
 
