@@ -81,6 +81,11 @@
   delay: 30
   ignore_errors: true
 
+- name: Check cleanup
+  async_status:
+    jid: "{{ preflight_exec.ansible_job_id }}"
+    mode: cleanup
+
 - name: Upload logs for preflight check operator into DCI
   vars:
     preflight_prefix: "preflight_operator_{{ operator.name }}_{{ operator.version }}"
