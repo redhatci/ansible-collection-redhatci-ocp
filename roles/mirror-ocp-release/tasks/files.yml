@@ -2,7 +2,7 @@
 - name: "Get release digest"
   shell: >
     set -o pipefail &&
-    grep '^Digest:' {{ dir }}/release.txt
+    grep '^Digest:' {{ mor_cache_dir }}/{{ mor_version }}/release.txt
     | tr -s ' '
     | cut -d ' ' -f 2
   register: release_digest
@@ -10,7 +10,7 @@
 
 - name: "Base64 encode binary signature"
   slurp:
-    src: "{{ dir }}/signature-1"
+    src: "{{ mor_cache_dir }}/{{ mor_version }}/signature-1"
   register: signature_b64
   changed_when: false
   no_log: true
@@ -20,20 +20,20 @@
 # this file is used in the upgrade flow
 - name: "Write release digest"
   copy:
-    dest: "{{ dir }}/release.dig"
+    dest: "{{ mor_cache_dir }}/{{ mor_version }}/release.dig"
     content: "{{ release_digest.stdout }}"
-    owner: "{{ owner }}"
-    group: "{{ group }}"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
     mode: "0644"
     setype: httpd_sys_content_t
   become: true
 
 - name: "Download and refresh channel upgrade graph"
   get_url:
-    url: "https://api.openshift.com/api/upgrades_info/v1/graph?channel=fast-{{ major_version }}&arch=amd64"
-    dest: "{{ cache_dir }}/graph-{{ major_version }}"
-    owner: "{{ owner }}"
-    group: "{{ group }}"
+    url: "https://api.openshift.com/api/upgrades_info/v1/graph?channel=fast-{{ mor_base_version }}&arch=amd64"
+    dest: "{{ mor_cache_dir }}/graph-{{ mor_base_version }}"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
     mode: "0644"
     timeout: 1200
     setype: "httpd_sys_content_t"
@@ -47,16 +47,16 @@
 
 - name: "Write signature config map"
   copy:
-    dest: "{{ dir }}/signature.yaml"
-    owner: "{{ owner }}"
-    group: "{{ group }}"
+    dest: "{{ mor_cache_dir }}/{{ mor_version }}/signature.yaml"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
     mode: "0644"
     setype: httpd_sys_content_t
     content: |
       apiVersion: v1
       kind: ConfigMap
       metadata:
-        name: signature-{{ version }}
+        name: signature-{{ mor_version }}
         namespace: openshift-config-managed
         labels:
           release.openshift.io/verification-signatures: ""

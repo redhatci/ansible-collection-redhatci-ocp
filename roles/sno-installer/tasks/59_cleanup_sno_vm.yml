@@ -33,10 +33,9 @@
   become: yes
   tags: cleanup
 
-- name: Undefine old SNO VMs, if any
-  community.libvirt.virt:
-    name: "{{ item }}"
-    command: undefine
+- name: "Undefine old SNO VMs, if any"
+  shell:
+    cmd: "virsh undefine --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
   with_items: "{{ all_vms.list_vms }}"
   when: item is search(host['name'])
   become: yes

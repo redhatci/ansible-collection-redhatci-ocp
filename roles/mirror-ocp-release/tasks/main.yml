@@ -1,135 +1,85 @@
 ---
-# This role will mirror a given OpenShift release version to a given cache
-# directory.  The directory is supposed to be served behind an HTTP server
-# (e.g. apache) so the cluster to be installed can reach it.
-# The module will also require an extra container registry to mirror the OCP
-# container images.
-#
-# Parameters:
-#   * version: An OpenShift version number e.g. 4.5.21
-#   * cache_dir: Base directory that will hold the OCP version binaries and OS
-#     images
-#   * pull_url: The release image URL that contains the release artifacts
-#   * force (default False): If passed as true, the role will re-download all
-#     the OCP release resources
-#   * mirror_disk_images (default True): Download all disk images depending on
-#     which install_type and sno_install_type you provide
-#   * mirror_container_images (default True): Mirror all container images from
-#     upstream container registries to the provided registry
-#   * auths_file (optional): Path to the file containing all authentications
-#     needed for container registries e.g.  quay.io
-#   * write_custom_config (default True): Writes the OCP configuration files and
-#     sets the custom URL facts
-#   * webserver_url (optional): If provided, configuration files pointing to
-#     the mirror webserver will be created, required if you set
-#     write_custom_config to true
-#   * registry_url (required if mirror_container_images is True): Target
-#     registry where to mirror the upstream container images to
-#   * install_type (default 'ipi'): What method will be used to install this
-#     cluster, this will define what type of disk images to mirror
-#   * sno_install_type (default 'baremetal'): What method will be used to
-#     install this cluster with SNO installer, this will define what type of
-#     disk images to mirror
-#
 - name: "Validate required variables"
   assert:
     that:
-      - cache_dir | string
-      - version | string
-      - pull_url | string
+      - mor_cache_dir | string
+      - mor_version | string
+      - mor_pull_url | string
+      - mor_build | string
+      - mor_oc | string
 
 - name: "Check if authentication file exists"
   stat:
-    path: "{{ auths_file }}"
+    path: "{{ mor_auths_file }}"
     get_checksum: false
-  register: auths_file_check
+  register: mor_auths_file_check
   when:
-    - auths_file is defined
+    - mor_auths_file is defined
 
 - name: "Validate optional authentication file"
   assert:
     that:
-      - auths_file is defined
-      - auths_file_check.stat.isreg | bool
+      - mor_auths_file is defined
+      - mor_auths_file_check.stat.exists | bool
   when:
-    - mirror_container_images | bool
+    - mor_mirror_container_images | bool
 
-- name: "Validate optional webserver_url variable"
+- name: "Validate optional mor_webserver_url variable"
   assert:
     that:
-      - webserver_url | string
-      - (webserver_url | urlsplit('scheme')) in ('http', 'https',)
+      - mor_webserver_url | string
+      - (mor_webserver_url | urlsplit('scheme')) in ('http', 'https',)
   when:
-    - write_custom_config | bool
+    - mor_write_custom_config | bool
 
 - name: "Validate install type"
   assert:
     that:
-      - install_type | string
-      - install_type in ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm']
-
-- name: "Validate SNO install type"
-  assert:
-    that:
-      - sno_install_type | string
-      - sno_install_type in ('baremetal', 'virtual',)
-  when:
-    - install_type == 'sno'
+      - mor_install_type | string
+      - mor_install_type in ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm']
 
 - name: "Validate conditional registry variables"
   assert:
     that:
-      - registry_url is defined
-      - registry_url | string
-      - (registry_url | urlsplit('scheme')) == 'docker'
+      - mor_registry_url is defined
+      - mor_registry_url | string
   when:
-    - mirror_container_images | bool
+    - mor_mirror_container_images | bool
 
 - name: "Mirroring OCP"
   debug:
-    var: version
+    var: mor_version
+
+- name: "Create directory structure"
+  include_tasks: image-list.yml
 
 - name: "Create directory structure"
   include_tasks: dirs.yml
 
 - name: "Download release resources"
   include_tasks: download.yml
-  vars:
-    dir: "{{ cache_dir }}/{{ version }}"
 
 - name: "Unpack release artifacts"
   include_tasks: unpack.yml
-  vars:
-    dir: "{{ cache_dir }}/{{ version }}"
 
 - name: "Extract installer"
   include_tasks: installer.yml
-  vars:
-    dir: "{{ cache_dir }}/{{ version }}"
 
 - name: "Write webserver configuration files"
   include_tasks: files.yml
-  vars:
-    dir: "{{ cache_dir }}/{{ version }}"
   when:
-    - write_custom_config | bool
+    - mor_write_custom_config | bool
 
 - name: "Set OCP release facts"
   include_tasks: facts.yml
-  vars:
-    dir: "{{ cache_dir }}/{{ version }}"
 
 - name: "Mirror disk images"
   include_tasks: images.yml
-  vars:
-    dir: "{{ cache_dir }}"
   when:
-    - mirror_disk_images | bool
+    - mor_mirror_disk_images | bool
 
 - name: "Mirror container images"
   include_tasks: registry.yml
-  vars:
-    dir: "{{ cache_dir }}/{{ version }}"
   when:
-    - mirror_container_images | bool
+    - mor_mirror_container_images | bool
 ...

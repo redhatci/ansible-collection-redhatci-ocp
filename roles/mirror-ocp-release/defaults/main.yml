@@ -1,12 +1,28 @@
 ---
-major_version: "{{ version.split('.')[:2] | join('.') }}"
-cache_dir: /var/lib/dci-openshift-agent/releases
-install_type: ipi
-sno_install_type: baremetal
-owner: "{{ ansible_user_uid }}"
-group: "{{ ansible_user_gid }}"
-force: false
-mirror_disk_images: true
-mirror_container_images: true
-write_custom_config: true
+mor_base_version: "{{ mor_version.split('.')[:2] | join('.') }}"
+mor_cache_dir: "/var/lib/dci-openshift-agent/releases"
+mor_install_type: "ipi"
+mor_owner: "{{ ansible_user_uid }}"
+mor_group: "{{ ansible_user_gid }}"
+mor_force: false
+mor_mirror_disk_images: true
+mor_mirror_container_images: true
+mor_write_custom_config: true
+mor_registry_path: "ocp4/openshift4"
+# Required images according install type
+mor_ipi:
+ - openstack
+ - qemu
+mor_vsphere:
+ - openstack
+ - qemu
+mor_sno:
+ - metal_pxe_rootfs
+ - metal_iso
+mor_acm:
+ - metal_pxe_rootfs
+ - metal_iso
+mor_assisted_installer:
+ - metal_pxe_rootfs
+ - metal_iso
 ...
