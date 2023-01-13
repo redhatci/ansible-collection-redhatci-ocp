@@ -34,4 +34,16 @@
   when:
     - not live_img.stat.exists or force_mirroring
   tags: rhcos_live
+
+- name: "Set a public SELinux context"
+  file:
+    path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    setype: "public_content_t"
+  become: true
+  tags: rhcos_live
+
+- name: "Apply new SELinux file context"
+  command: /usr/sbin/restorecon -R "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+  become: true
+  tags: rhcos_live
 ...

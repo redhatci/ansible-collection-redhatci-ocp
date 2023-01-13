@@ -1,25 +1,25 @@
 ---
 - name: "Check if registry has already been mirrored"
   stat:
-    path: "{{ dir }}/container_images.done"
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/container_images.done"
     get_checksum: false
   register: container_images_done
   when:
-    - not force # we don't care to stat files if we're forcing
+    - not mor_force # we don't care to stat files if we're forcing
 
 - name: "Mirror release images to local registry"
   command: >
-    {{ dir }}/oc adm release mirror
-    --registry-config={{ auths_file }}
+    {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
+    --registry-config={{ mor_auths_file }}
     --from={{ ocp_release_data['container_image'] | quote }}
-    --to-release-image={{ registry_url | urlsplit('netloc') }}{{ registry_url | urlsplit('path') }}:{{ version }}
-    --to={{ registry_url | urlsplit('netloc') | quote }}{{ registry_url | urlsplit('path') | quote }}
+    --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
+    --to={{ mor_registry_url }}/{{ mor_registry_path }}
   retries: 3
   delay: 10
   register: result
   until: result.rc == 0
   when:
-    - force or not container_images_done.stat.exists
+    - mor_force or not container_images_done.stat.exists
 
 - name: Generate ImageContentSourcePolicy
   shell: >
@@ -29,23 +29,22 @@
     sed -e 's/name:.*/name: release-{{ version }}/'
   register: icsp_release
   when:
-    - force or not container_images_done.stat.exists
+    - mor_force or not container_images_done.stat.exists
 
 - name: "Write mirrored image content source policy"
   copy:
-    dest: "{{ dir }}/imagecontentsourcepolicy.yaml"
-    owner: "{{ owner }}"
-    group: "{{ group }}"
+    dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagecontentsourcepolicy.yaml"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
     mode: "0644"
     setype: httpd_sys_content_t
     content: "{{ icsp_release.stdout }}"
   become: true
   when:
-    - force or not container_images_done.stat.exists
+    - mor_force or not container_images_done.stat.exists
 
 - name: "Marker for container images mirrored"
   file:
-    dest: "{{ cache_dir }}/{{ version }}/container_images.done"
+    dest: "{{ mor_cache_dir }}/{{ mor_version }}/container_images.done"
     state: touch
-
 ...
