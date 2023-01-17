@@ -2,4 +2,6 @@
 serverport: 8000
 timeout: 600
 webserver_url: ""
+pullsecret_file: "{{ cache_dir }}/pull-secret.txt"
+provision_cache_store: "{{ cache_dir }}"
 ...

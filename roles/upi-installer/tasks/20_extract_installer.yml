@@ -28,7 +28,7 @@
 - name: "Copy openshift-install binary to {{ ocp_binary_path }}"
   copy:
     src: "{{ cache_dir }}/{{ version }}/openshift-install"
-    dest: "{{ ocp_binary_path }}/{{ item.installer_binary }}"
+    dest: "{{ ocp_binary_path }}/openshift-install"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: '0755'

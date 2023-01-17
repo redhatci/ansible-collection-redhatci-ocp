@@ -52,6 +52,8 @@
     rhcos_pxe_rootfs_sha256: "{{ rhcos_json_vars | json_query(rootfs_sha) }}"
     rhcos_live_iso_path: "{{ rhcos_json_vars | json_query(live_iso_location) }}"
     rhcos_live_iso_sha256: "{{ rhcos_json_vars | json_query(live_iso_sha) }}"
+    rhcos_vmware_ova_path: "{{ rhcos_json_vars | json_query(vmware_ova_location) }}"
+    rhcos_vmware_ova_sha256: "{{ rhcos_json_vars | json_query(vmware_ova_sha) }}"
   vars:
     kernel_location: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.location'
     kernel_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.sha256'
@@ -61,6 +63,8 @@
     rootfs_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.rootfs.sha256'
     live_iso_location: 'architectures.x86_64.artifacts.metal.formats.iso.disk.location'
     live_iso_sha: 'architectures.x86_64.artifacts.metal.formats.iso.disk.sha256'
+    vmware_ova_location: 'architectures.x86_64.artifacts.vmware.formats.ova.disk.location'
+    vmware_ova_sha: 'architectures.x86_64.artifacts.vmware.formats.ova.disk.sha256'
   tags: rhcospath
 
 - name: "Set Facts for RHCOS basenames"
@@ -69,6 +73,7 @@
     rhcos_pxe_initramfs_name: "{{ rhcos_pxe_initramfs_path | basename }}"
     rhcos_pxe_rootfs_name: "{{ rhcos_pxe_rootfs_path | basename }}"
     rhcos_live_iso_name: "{{ rhcos_live_iso_path | basename }}"
+    rhcos_vmware_ova_name: "{{ rhcos_vmware_ova_path | basename }}"
 
 - name: "Download {{ item[1] }} for cache"
   get_url:
@@ -89,15 +94,18 @@
       - ["{{ rhcos_pxe_kernel_path }}",
         "{{ rhcos_pxe_initramfs_path }}",
         "{{ rhcos_pxe_rootfs_path }}",
-        "{{ rhcos_live_iso_path }}"]
+        "{{ rhcos_live_iso_path }}",
+        "{{ rhcos_vmware_ova_path }}"]
       - ["{{ rhcos_pxe_kernel_name }}",
         "{{ rhcos_pxe_initramfs_name }}",
         "{{ rhcos_pxe_rootfs_name }}",
-        "{{ rhcos_live_iso_name }}"]
+        "{{ rhcos_live_iso_name }}",
+        "{{ rhcos_vmware_ova_name }}"]
       - ["{{ rhcos_pxe_kernel_sha256 }}",
         "{{ rhcos_pxe_initramfs_sha256 }}",
         "{{ rhcos_pxe_rootfs_sha256 }}",
-        "{{ rhcos_live_iso_sha256 }}"]
+        "{{ rhcos_live_iso_sha256 }}",
+        "{{ rhcos_vmware_ova_sha256 }}"]
   tags:
     - cache
     - rhcospxe
@@ -111,6 +119,7 @@
     rhcos_pxe_initramfs_path: "{{ webserver_url }}/{{ rhcos_pxe_initramfs_name }}"
     rhcos_pxe_rootfs_path: "{{ webserver_url }}/{{ rhcos_pxe_rootfs_name }}"
     rhcos_live_iso_path: "{{ webserver_url }}/{{ rhcos_live_iso_name }}"
+    rhcos_vmware_ova_path: "{{ webserver_url }}/{{ rhcos_vmware_ova_name }}"
   when:
     - webserver_url | length
 ...
