@@ -9,6 +9,12 @@
       --from {{ mor_pull_url }}
       --to "{{ mor_cache_dir }}/{{ mor_version }}"
 
+- name: "Apply SELinux container file context to extracted files"
+  shell: >
+    set -o pipefail &&
+    /usr/bin/chcon -R -t container_file_t "{{ mor_cache_dir }}/{{ mor_version }}"
+  become: true
+
 - name: "Get release digest"
   shell: >
     set -o pipefail &&
