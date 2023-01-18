@@ -39,6 +39,7 @@ This role only been tested in x86_64 architectures.
 | acm_bmc_user                           | None                          | Yes         | Username for the BMC|
 | acm_bmc_pass                           | None                          | Yes         | Password for the BMC|
 | acm_bmc_address                        | None                          | Yes         | IP address of the target BMC                  |
+| acm_bmc_port                           | 623                           | Yes         | BMC port                                      |
 | acm_boot_mac_address                   | None                          | Yes         | MAC Address of the interface to be used to bootstrap the node |
 | acm_machine_cidr                       | None                          | Yes         | A block of IPv4 or IPv6 addresses in CIDR notation used for the target bare-metal host external communication. Also used to determine the API and Ingress VIP addresses when provisioning Distributed Units (DU) single-node clusters|
 | acm_cluster_network_host_prefix         | 23                           | No          | Network prefix for cluster nodes|

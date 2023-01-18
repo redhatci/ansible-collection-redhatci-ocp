@@ -25,9 +25,10 @@
 - name: "Install a new cluster"
   include_tasks: create-cluster.yml
 
-- name: "Monitor: Install elapsed time"
+- name: "Monitor: Set monitoring facts"
   set_fact:
     elapsed_time: 0
+    node_rebooted: false
 
 - name: "Monitor: Installation progress"
   include_tasks: monitor-install.yml
