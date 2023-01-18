@@ -17,9 +17,13 @@ downloads_path: "{{ ansible_env.HOME }}"
 image_name_registry: ocpdiscon-registry
 
 # oc and opm install
-release_url: "https://mirror.openshift.com/pub/openshift-v{{ openshift_version_parts[0] }}/clients/ocp"
-oc_tar: openshift-client-linux.tar.gz
-opm_tar: opm-linux.tar.gz
+# - oc tar will be retrieved from the release image, needs OCP full version.
+#   Stable client is also used to extract the artifacts from release image
+# - opm tar always has to come from stable release URL, so that its name is well known
+stable_release_url: "https://mirror.openshift.com/pub/openshift-v{{ openshift_version_parts[0] }}/clients/ocp/stable"
+oc_tar: "openshift-client-linux-{{ openshift_full_version }}.tar.gz"
+stable_oc_tar: "openshift-client-linux.tar.gz"
+stable_opm_tar: "opm-linux.tar.gz"
 
 # The information for the locally created registry
 registry_fqdn: "{{ ansible_fqdn }}"

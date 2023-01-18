@@ -1,4 +1,16 @@
 ---
+- name: Check that release_url variable is not defined
+  assert:
+    that:
+      - release_url is not defined
+    fail_msg: >
+      release_url is no longer needed in this role, the
+      functionality around it has changed.
+      Now, artifacts are directly extracted from release image,
+      and they are not downloaded from release_url.
+      Please make sure not to use release_url variable and
+      to check that you are using the correct release image
+
 - name: Make sure needed packages are installed
   package:
     name: tar
@@ -16,39 +28,62 @@
     - "{{ downloads_path }}"
     - "{{ downloads_path }}/{{ openshift_full_version }}"
 
+- name: Check if artifacts from release image have already been downloaded
+  stat:
+    path: "{{ downloads_path }}/{{ openshift_full_version }}/release.txt"
+  register: downloaded_artifacts
+
+# extract artifacts from the OCP release image instead of downloading them
+# from the release URL
+# This OCP release image provides the artifacts required (OCP clients, installer,
+# release.txt, among others)
+- name: Extract artifacts from release image
+  become: true
+  block:
+    # we need to temporarily download ocp stable binary to extract the artifacts
+    - name: Create tmp directory for oc stable client
+      tempfile:
+        state: directory
+        prefix: oc.
+      register: oc_tmp_dir
+
+    - name: Download stable client
+      unarchive:
+        src: "{{ stable_release_url }}/{{ stable_oc_tar }}"
+        dest: "{{ oc_tmp_dir.path }}"
+        mode: 0755
+        remote_src: yes
+
+    - name: Extract artifacts from release image (x86_64)
+      command:
+        cmd: >
+          "{{ oc_tmp_dir.path }}/oc" adm release extract
+            --registry-config "{{ config_file_path }}/{{ pull_secret_file_name }}"
+            --tools
+            --from  "{{ release_image_item.remote | quote }}"
+            --to "{{ downloads_path }}/{{ openshift_full_version }}"
+
+    - name: Remove temporary oc stable client
+      file:
+        path: "{{ oc_tmp_dir.path }}"
+        state: absent
+  when:
+    - not downloaded_artifacts.stat.exists
+
 - name: Setup Version/Image facts
   block:
-    - name: Get Release.txt File
-      uri:
-        url: "{{ release_url }}/{{ openshift_full_version }}/release.txt"
-        return_content: yes
+    - name: "Read Release.txt downloaded file"
+      slurp:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/release.txt"
       register: result
-      until: result.status == 200
-      retries: 6 # 1 minute (10 * 6)
-      delay: 10 # Every 10 seconds
-      failed_when: result.content|length == 0 or result.status >= 400
 
     - name: Set Fact for Release Image
       set_fact:
-        release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
-        release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
+        release_version: "{{ result.content | b64decode | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
+        release_image: "{{ result.content | b64decode | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
 
 - name: Install oc
   block:
-    - name: Check if oc tarball has been previously downloaded
-      stat:
-        path: "{{ downloads_path }}/{{ openshift_full_version }}/{{ oc_tar }}"
-      register: downloaded_oc_tar
-
-    - name: Download oc tarball
-      get_url:
-        url: "{{ release_url }}/{{ openshift_full_version }}/{{ oc_tar }}"
-        dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
-        force: "{{ force }}"
-        mode: 0664
-      when:
-        - not downloaded_oc_tar.stat.exists
-
     - name: Check if oc binary has been extracted
       stat:
         path: "{{ downloads_path }}/{{ openshift_full_version }}/oc"
@@ -93,12 +128,13 @@
   block:
     - name: Check if opm tarball has been previously downloaded
       stat:
-        path: "{{ downloads_path }}/{{ openshift_full_version }}/{{ opm_tar }}"
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/{{ stable_opm_tar }}"
       register: downloaded_opm_tar
 
+    # opm needs to be downloaded from stable clients
     - name: Download opm tarball
       get_url:
-        url: "{{ release_url }}/{{ openshift_full_version }}/{{ opm_tar }}"
+        url: "{{ stable_release_url }}/{{ stable_opm_tar }}"
         dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
         mode: 0664
       when:
@@ -111,7 +147,7 @@
 
     - name: Extract binary
       unarchive:
-        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ opm_tar }}"
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ stable_opm_tar }}"
         dest: "{{ downloads_path }}/{{ openshift_full_version }}"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
