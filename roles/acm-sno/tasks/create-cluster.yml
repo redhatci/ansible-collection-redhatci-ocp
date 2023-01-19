@@ -361,7 +361,7 @@
       spec:
         automatedCleaningMode: disabled
         bmc:
-          address: "{{ acm_bmc_address }}"
+          address: "{{ acm_bmc_address }}:{{ acm_bmc_port }}"
           credentialsName: "bmc-{{ acm_cluster_name }}"
           disableCertificateVerification: true
         bootMACAddress: "{{ acm_boot_mac_address  }}"

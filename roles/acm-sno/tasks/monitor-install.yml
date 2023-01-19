@@ -21,7 +21,13 @@
       - "{{ state_info }}"
       - "Approximated elapsed time: {{ elapsed_time | int / 60  }}  mins"
 
-- name: Wait for install
+- name: "Force boot from disk"
+  include_tasks: force-disk-boot.yml
+  when:
+    - state_info == "installing-pending-user-action"
+    - not node_rebooted
+
+- name: "Wait for install completion"
   block:
     - name: "Waiting for 3 minutes"
       pause:
