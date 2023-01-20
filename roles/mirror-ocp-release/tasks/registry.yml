@@ -47,4 +47,5 @@
   file:
     dest: "{{ mor_cache_dir }}/{{ mor_version }}/container_images.done"
     state: touch
+    mode: "0644"
 ...
