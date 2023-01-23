@@ -29,6 +29,7 @@
       include_tasks: fetch.yml
       vars:
         uri: "https://raw.githubusercontent.com/openshift/installer/{{ commit_id.stdout }}/data/data/rhcos.json"
+        mor_dir: "{{ mor_cache_dir }}/{{ mor_version }}"
   when:
     - mor_version is version("4.8", "<")
 
