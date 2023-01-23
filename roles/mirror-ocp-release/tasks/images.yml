@@ -4,5 +4,6 @@
   vars:
     uri: "{{ ocp_release_data['rhcos_images'][item + '_location'] }}"
     checksum: "sha256:{{ ocp_release_data['rhcos_images'][item + '_sha256']}}"
+    mor_dir: "{{ mor_cache_dir }}"
   loop: "{{ mor_images }}"
 ...

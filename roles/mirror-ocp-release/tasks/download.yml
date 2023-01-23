@@ -30,6 +30,7 @@
   include_tasks: fetch.yml
   vars:
     uri: "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/{{ release_digest.stdout | replace(':', '=') }}/signature-1"
+    mor_dir: "{{ mor_cache_dir }}/{{ mor_version }}"
   when:
     - mor_build != "nightly"
 ...

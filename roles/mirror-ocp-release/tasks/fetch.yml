@@ -1,7 +1,7 @@
 ---
 - name: "Check if {{ uri | basename }} exists"
   stat:
-    path: "{{ mor_cache_dir }}/{{ uri | basename }}"
+    path: "{{ mor_dir }}/{{ uri | basename }}"
     get_checksum: false
   register: target
   when:
@@ -10,7 +10,7 @@
 - name: "Fetch {{ uri | basename }}"
   get_url:
     url: "{{ uri }}"
-    dest: "{{ mor_cache_dir }}"
+    dest: "{{ mor_dir }}"
     owner: "{{ mor_owner }}"
     group: "{{ mor_group }}"
     mode: "0644"
@@ -26,6 +26,6 @@
     - mor_force or not target.stat.exists
 
 - name: "Apply new SELinux file context to file"
-  command: /usr/sbin/restorecon -R "{{ mor_cache_dir }}/{{ uri | basename }}"
+  command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ uri | basename }}"
   become: true
 ...
