@@ -16,4 +16,35 @@
       retries: "{{ check_wait_retries }}"
       delay: "{{ check_wait_delay }}"
 
+  # If the last check failed, then move to the workaround
+  rescue:
+    - name: "Check MCP application failed - no workaround applied"
+      fail:
+        msg: "No workaround is defined, so the job has to fail at this point"
+      when:
+        - '"OCPBUGS-6676" not in dci_workarounds|default([])'
+
+    - name: Apply workaround
+      block:
+        # If retry_count > num_repetitions, we will not iterate more and make the job to fail
+        - name: Fail if the maximum number of retries have been reached
+          fail:
+            msg: Maximum number of retries without success have been reached ({{ num_repetitions }})
+          when: retry_count | int > num_repetitions
+
+        # If retry_count <= num_repetitions, then do the workaround - uncordon nodes that are in NotReady,SchedulingDisabled status
+        - name: Check for workers with NotReady,SchedulingDisabled status
+          include_tasks: uncordon_workers.yml
+
+        - name: Increment retry count
+          set_fact:
+            retry_count: "{{ retry_count | int + 1 }}"
+
+        - name: Try a new attempt of this check
+          include_tasks: wait-mcp.yml
+
+      when:
+        - dci_workarounds is defined
+        - '"OCPBUGS-6676" in dci_workarounds'
+
 ...

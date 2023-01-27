@@ -1,3 +1,5 @@
 ---
+num_repetitions: 5
+retry_count: 1
 resource_to_check: "MachineConfigPool"
 ...
