@@ -20,7 +20,7 @@
           - "node-role.kubernetes.io/worker"
       register: compute_nodes
 
-    - name: "Get requested control/compute nodes"
+    - name: "Validate control/compute nodes"
       vars:
         install_config: "{{ ic.resources[0].data['install-config'] | from_yaml }}"
         requested_control: "{{ install_config | json_query('controlPlane.replicas') }}"
@@ -28,12 +28,10 @@
         control_nodes_count: "{{ control_nodes.resources | length }}"
         compute_nodes_count: "{{ compute_nodes.resources | length }}"
       fail:
-        msg: "The available control/compute plane nodes do not match the requested size"
+        msg: "The available control/compute nodes are not enough for an operational cluster"
       when:
-        - ( requested_control | int != control_nodes_count | int ) or
-          ( requested_compute | int != compute_nodes_count | int)
-  when:
-    - install_type == "ipi"
+        - ( control_nodes_count | int != requested_control | int ) or
+          ( compute_nodes_count | int < requested_compute | int )
   tags:
     - check
 
