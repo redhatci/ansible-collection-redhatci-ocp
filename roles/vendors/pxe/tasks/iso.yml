@@ -4,6 +4,7 @@
     name: "{{ bmc_address }}"
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
+    port: "{{ bmc_port }}"
     state: off
 
 - name: Set server to boot from network
@@ -11,6 +12,7 @@
     name: "{{ bmc_address }}"
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
+    port: "{{ bmc_port }}"
     bootdev: network
     persistent: no
     uefiboot: yes
@@ -20,4 +22,5 @@
     name: "{{ bmc_address }}"
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
+    port: "{{ bmc_port }}"
     state: boot
