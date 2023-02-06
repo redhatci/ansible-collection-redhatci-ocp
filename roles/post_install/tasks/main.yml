@@ -46,7 +46,7 @@
 
 - name: Save credentials to file
   copy:
-    content: "{{ credentials.json | to_yaml }}"
+    content: "{{ credentials.json | to_nice_json }}"
     dest: "{{ dest_dir }}/{{ kubeadmin_vault_name }}"
     mode: 0600
 
