@@ -1,7 +1,7 @@
 - name: "Mirror image"
   vars:
     image_name: "{{ image | regex_replace('^[^/]*/', '') }}"
-    local_image_location: "{{ local_registry }}/{{ image_name }}"
+    local_image_location: "{{ dci_local_registry }}/{{ image_name }}"
   block:
     - name: "mirror_images : Mirror image {{ image_name }}"
       command:
