@@ -47,7 +47,7 @@
     authfile: "{{ pullsecret_tmp_file }}"
   when:
     - dci_disconnected | default(false) | bool
-    - local_registry | length
+    - dci_local_registry | length
 
 - name: Create temporary directory for git repos
   tempfile:
@@ -254,7 +254,7 @@
 # The task automatically append TNF_PARTNER_REPO and TNF_IMAGE environment variables to tnf_env_vars
 - name: Run the CNF Test Suite
   vars:
-    tnf_partner_repo: "{{ ( local_registry | length ) | ternary(local_registry, 'quay.io') }}/testnetworkfunction"
+    tnf_partner_repo: "{{ ( dci_local_registry | length ) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
   environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image}) }}"
   shell: |
     set -x
