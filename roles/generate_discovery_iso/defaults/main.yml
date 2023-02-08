@@ -25,7 +25,7 @@ DOWNLOAD_DEST_FILE: "{{ discovery_iso_name }}"
 DOWNLOAD_DEST_PATH: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
 
 mac_interface_default_mapping: "interfaces[?(name != null && mac != null)].{logical_nic_name: name, mac_address: mac}"
-ai_version: "{{ hostvars.assisted_installer.ai_version | default('v2.5.0') }}"
+ai_version: "{{ hostvars.assisted_installer.ai_version | default('v2.12.1') }}"
 ai_version_number: "{{ ai_version | regex_replace('v(\\d+\\.\\d+\\.\\d+)', '\\1') }}"
 
 http_proxy: ""
