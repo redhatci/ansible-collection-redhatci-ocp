@@ -10,8 +10,8 @@ mounted_iso_files:
   - "{{ mount_images_directory }}/efiboot.img"
   - "{{ mount_images_directory }}/pxeboot/vmlinuz"
   - "{{ mount_images_directory }}/pxeboot/initrd.img"
-  - "{{ mount_efiboot_directory }}/EFI/redhat/grubx64.efi"
-  - "{{ mount_efiboot_directory }}/EFI/redhat/shimx64.efi"
+  - "{{ mount_efiboot_directory }}/EFI/BOOT/grubx64.efi"
+  - "{{ mount_efiboot_directory }}/EFI/BOOT/BOOTX64.EFI"
 
 mounted_tftp_files: "http://{{ HTTPD_PXE_HOST }}/{{ pxe_directory }}"
 tftp_files_to_download:
@@ -20,7 +20,7 @@ tftp_files_to_download:
   - "{{ mounted_tftp_files }}/vmlinuz"
   - "{{ mounted_tftp_files }}/initrd.img"
   - "{{ mounted_tftp_files }}/grubx64.efi"
-  - "{{ mounted_tftp_files }}/shimx64.efi"
+  - "{{ mounted_tftp_files }}/BOOTX64.EFI"
 
 system_files_to_download:
   - "{{ mounted_tftp_files }}/lpxelinux.0" 
