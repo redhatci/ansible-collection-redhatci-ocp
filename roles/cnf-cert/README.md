@@ -10,7 +10,7 @@ Name                                    | Default                               
 --------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
 tnf\_stage                              | "tests"                                              | Stage to be run when calling the role from outside. Possible values: "tests" (default), "post-run" and "teardown".
 test\_network\_function\_repo           | https://github.com/test-network-function/cnf-certification-test | Repository to download the tnf code. However, if we are testing a pull request from cnf-certification-test repo, this variable will be pointing to the file path where the pull request code has been downloaded in the jumphost.
-test\_network\_function\_version        | v4.1.5                                               | CNF Cert Suite version downloaded. DCI App Agent supports the latest stable version, which is v4.1.5. HEAD version (in the main branch) can be also used, but it is not guaranteed a complete compatibility with the latest unstable changes. The versions prior to v4.0.0 are not compatible with the agent.
+test\_network\_function\_version        | v4.1.5                                               | CNF Cert Suite version downloaded. DCI App Agent supports the latest stable version, which is v4.1.5. HEAD version (in the main branch) can be also used, but it is not guaranteed a complete compatibility with the latest unstable changes. The versions prior to v4.0.0 are not compatible with the agent. Note that HEAD version will also launch Preflight from CNF Cert Suite (as long as `common` label is selected in `tnf_labels`).
 test\_network\_function\_project\_name  | cnf-certification-test                               | Directory name to look at on the tnf repo.
 tnf\_suites                             | ""                                                   | (Note that this variable is not the recommended option to list test suites starting from CNF Cert Suite v4.1.0. Use `tnf_labels` instead) List of [test suites](https://test-network-function.github.io/cnf-certification-test/test-spec/#available-test-specs) that are executed. In particular, `tnf_suites` content must be the list of suites to be run, space separated (can be test suites and/or individual tests), so that dci-openshift-app-agent uses this string list to run the tnf container with `-f` argument. See the [cnf-certification-test README](https://github.com/test-network-function/cnf-certification-test/tree/v4.0.2#run-the-tests) for more information.
 tnf\_skip\_suites                       | ""                                                   | (Note that this variable is not the recommended option to skip test suites starting from CNF Cert Suite v4.1.0. Use `tnf_labels` instead) List of [test suites](https://test-network-function.github.io/cnf-certification-test/test-spec/#available-test-specs) that are skipped (optional). In particular, `tnf_skip_suites` content must be the list of suites to be skipped, space separated (can be test suites and/or individual tests), so that dci-openshift-app-agent uses this string list to run the tnf container with `-s` argument. Remember that this argument is discarded if no `tnf_suites` are provided. See the [cnf-certification-test README](https://github.com/test-network-function/cnf-certification-test/tree/v4.0.2#run-the-tests) for more information.
@@ -91,11 +91,12 @@ tnf_certified_container_info:
 
 This variable must be a dictionary, where the key is the tnf environment variable to be used during execution. You have some examples of possible variables to be provided in the [tnf docs](https://test-network-function.github.io/cnf-certification-test/runtime-env) or in the [script](https://github.com/test-network-function/cnf-certification-test/blob/main/script/run-container.sh) used to run the tnf container.
 
-For example, the following configuration defines these three environment variables:
+For example, the following configuration defines these four environment variables:
 
 - `TNF_NON_INTRUSIVE_ONLY`: if set to true, skip intrusive tests which may disrupt cluster operations (default `false`).
 - `TNF_RUN_CFD_TEST`: if set to true, the test suites from [openshift-kni/cnf-feature-deploy](https://github.com/openshift-kni/cnf-features-deploy) will be run prior to the actual CNF certification test execution and the results are incorporated in the same claim (default `""`). It is usually set to `false` as it is not intended to be run under `dci-openshift-app-agent` jobs.
 - `TNF_LOG_LEVEL`: log level used to run the CNF Cert Suite (default `info`).
+- `TNF_ALLOW_PREFLIGHT_INSECURE` (can only be used with HEAD version for the moment): if set to true, allow the Preflight execution ran by CNF Cert Suite to access to insecure registries. This should be needed when accesing to private registries.
 
 ```yaml
 ---
@@ -103,6 +104,7 @@ tnf_env_vars:
   TNF_NON_INTRUSIVE_ONLY: true
   TNF_RUN_CFD_TEST: false
   TNF_LOG_LEVEL: "debug"
+  TNF_ALLOW_PREFLIGHT_INSECURE: true
 ...
 ```
 
