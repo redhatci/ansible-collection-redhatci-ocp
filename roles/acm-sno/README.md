@@ -51,7 +51,7 @@ This role only been tested in x86_64 architectures.
 |acm_fs_volume_size                      |50Gi                           |No           | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters|
 |acm_img_volume_size                     |40Gi                           |No           | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS that is running. You might need to use a higher value if there are many clusters and instances of Red Hat Enterprise Linux CoreOS|
 |acm_user_bundle                         |Undefined                      |No           |CA certificate to be injected to spoke nodes. Requires `acm_disconnected` set to true |
-|acm_user_registry                       |Undefined                      |No           |registries.conf file to be injected to the spoke nodes. Requires `acm_disconnected` set to true                |
+|acm_user_registry                       |Undefined                      |Yes, for disconnected environments | Custom entries appended to the registries.conf file inherited from the Hub cluster used in the spoke nodes.|
 
 *Important:* The values defined for the `acm_ocp_version` must match with the images provided for `acm_iso_url` and `acm_root_fs_url` variables.
 
@@ -105,25 +105,6 @@ See below for some examples of how to use the acm-setup role to configure ACM.
     acm_bmc_pass: REDACTED
     acm_iso_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/latest/rhcos-4.10.16-x86_64-live.x86_64.iso
     acm_root_fs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/latest/rhcos-installer-rootfs.x86_64.img
-    acm_user_bundle: |
-      -----BEGIN CERTIFICATE-----
-      REDACTED
-      -----END CERTIFICATE-----
-    acm_user_registry: |
-      unqualified-search-registries = ["registry.access.redhat.com", "docker.io"]
-      [[registry]]
-      prefix = ""
-      location = "jumphost.dfwt5g.lab:4443/ocp4"
-      mirror-by-digest-only = true
-
-      [[registry.mirror]]
-          location = "registry.dfwt5g.lab:4443/ocp4/openshift4"
-      [[registry]]
-      prefix = ""
-      location = "quay.io/openshift-release-dev/ocp-release"
-      mirror-by-digest-only = true
-      [[registry.mirror]]
-          location = "registry.dfwt5g.lab:4443/ocp4/openshift4"
   include_role:
     name: acm-sno
 ```
@@ -144,6 +125,26 @@ See below for some examples of how to use the acm-setup role to configure ACM.
     acm_bmc_pass: REDACTED
     acm_iso_url: https://mirror.example.comrhcos/4.10/latest/rhcos-4.10.16-x86_64-live.x86_64.iso
     acm_root_fs_url: https://mirror.example.comrhcos/4.10/latest/rhcos-installer-rootfs.x86_64.img
+    acm_user_bundle: |
+      -----BEGIN CERTIFICATE-----
+      REDACTED
+      -----END CERTIFICATE-----
+    acm_user_registry: |
+      unqualified-search-registries = ["registry.access.redhat.com", "docker.io"]
+      [[registry]]
+      prefix = ""
+      location = "jumphost.<my-lab>:4443/ocp4"
+      mirror-by-digest-only = true
+
+      [[registry.mirror]]
+          location = "registry.<my-lab>:4443/ocp4/openshift4"
+
+      [[registry]]
+      prefix = ""
+      location = "quay.io/openshift-release-dev/ocp-release"
+      mirror-by-digest-only = true
+      [[registry.mirror]]
+          location = "registry.<my-lab>:4443/ocp4/openshift4"
   include_role:
     name: acm-sno
 ```
