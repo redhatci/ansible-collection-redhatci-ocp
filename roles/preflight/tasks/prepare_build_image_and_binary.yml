@@ -18,7 +18,7 @@
 
 - name: Set location of preflight binary preflight_binary_dir and preflight_image
   set_fact:
-    preflight_image: "{{ local_registry }}/preflight/preflight:{{ preflight_branch }}"
+    preflight_image: "{{ dci_local_registry }}/preflight/preflight:{{ preflight_branch }}"
     preflight_binary: "{{ preflight_tmp_dir.path }}/preflight-source/preflight"
     preflight_binary_dir: "{{ preflight_tmp_dir.path }}/preflight-source"
 

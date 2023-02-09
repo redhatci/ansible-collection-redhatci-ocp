@@ -154,7 +154,7 @@ See below for an example of how to use the chart-verifier in a DCI pipeline.
   dci_credentials: /etc/dci-openshift-app-agent/dci_credentials.yml
   ansible_extravars:
     dci_cache_dir: /var/lib/dci-pipeline
-    local_registry: "registry.dfwt5g.lab:4443"
+    dci_local_registry: "registry.dfwt5g.lab:4443"
     partner_creds: "/opt/pull-secret.txt"
     do_chart_verifier: true
     chart_verifier_image: quay.io/redhat-certification/chart-verifier:main
