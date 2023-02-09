@@ -110,7 +110,7 @@ The idea is use one of them.
   # Mandatory for disconnected environment,
   # this registry is used for mirrored images
   # and to store an index (catalog) image.
-  local_registry: registry.local.lab:4443
+  dci_local_registry: registry.local.lab:4443
 
   # Credentials for your private registries.
   # You could have several private registries:
@@ -232,7 +232,7 @@ The idea is use one of them.
   # Mandatory for disconnected environment,
   # this registry is used for mirrored images
   # and to store an index (catalog) image.
-  local_registry: registry.local.lab:4443
+  dci_local_registry: registry.local.lab:4443
 
   # Optional, provide it if your registry is self-signed.
   preflight_custom_ca: "/var/lib/dci-openshift-agent/registry/certs/cert.ca"
@@ -281,4 +281,4 @@ The idea is use one of them.
 
 If the variable `preflight_source_dir` is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and preflight_binary (if any).
 
-Currently, Preflight CI stores the generated preflight image into a `local_registry` and hence would only work in disconnected environments with a registry attached. The plan is to remove this limitation in the next releases.
+Currently, Preflight CI stores the generated preflight image into a `dci_local_registry` and hence would only work in disconnected environments with a registry attached. The plan is to remove this limitation in the next releases.

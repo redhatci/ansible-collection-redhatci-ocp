@@ -19,7 +19,7 @@
     --authfile {{ partner_creds }}
     --dest-tls-verify=false
     docker://{{ item }}
-    docker://{{ local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+    docker://{{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
   loop: "{{ preflight_images_to_mirror }}"
 
 - name: "Define catalog tag"
@@ -28,7 +28,7 @@
 
 - name: Generate catalog path
   set_fact:
-    OO_INDEX: "{{ '/'.join([ local_registry ] + [ 'telcoci','preflight','disconnected-catalog']) }}:{{ index_tag }}"
+    OO_INDEX: "{{ '/'.join([ dci_local_registry ] + [ 'telcoci','preflight','disconnected-catalog']) }}:{{ index_tag }}"
 
 - name: "Create FBC catalog"
   include_role:
@@ -71,13 +71,13 @@
 
     - name: Redefine catalog path + SHA
       set_fact:
-        OO_INDEX: "{{ local_registry }}/telcoci/preflight/disconnected-catalog@{{ catalog_sha.stdout }}"
+        OO_INDEX: "{{ dci_local_registry }}/telcoci/preflight/disconnected-catalog@{{ catalog_sha.stdout }}"
 
     - name: Mirror the disconnected-catalog
       shell: >
         {{ oc_tool_path }} adm catalog mirror -a {{ partner_creds }}
         --max-components=3
-        {{ OO_INDEX }} {{ local_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
+        {{ OO_INDEX }} {{ dci_local_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
       register: catalog_mirror
       retries: 2
       delay: 10
@@ -88,7 +88,7 @@
         block: |
           # Scorecard container
             - mirrors:
-              - {{ local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+              - {{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
               source: {{ item.split('@')[0] }}
         marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
         path: "{{ preflight_prerun_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
