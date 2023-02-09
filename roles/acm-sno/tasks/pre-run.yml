@@ -1,4 +1,14 @@
 ---
+
+- name: "Fail when acm_user_registry is not defined"
+  fail:
+    msg:
+      - "acm_user_registry variable is required for disconnected environments
+         Please review the example of the acm_user_registry variable in the role documentation"
+  when:
+    - acm_user_registry is undefined
+    - acm_disconnected | bool
+
 - name: "Check if the ACM CRD is present"
   community.kubernetes.k8s_info:
     kind: CustomResourceDefinition
