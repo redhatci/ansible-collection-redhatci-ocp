@@ -26,6 +26,8 @@
           version: "{{ current_operator_image.split(':')[-1] }}"
           pyxis_container_identifier: "{% if c.pyxis_container_identifier is defined %}{{ c.pyxis_container_identifier }}{% endif %}"
           create_container_project: "{% if c.create_container_project is defined %}{{ c.create_container_project }}{% endif %}"
+          short_description: "{% if c.short_description is defined %}{{ c.short_description }}{% endif %}"
+          attach_product_listing: "{% if c.attach_product_listing is defined %}{{ c.attach_product_listing }}{% endif %}"
       include_tasks: test_preflight_check_container_binary.yml
       loop: "{{ preflight_containers_to_certify }}"
       loop_control:

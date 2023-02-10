@@ -1,0 +1,30 @@
+---
+- name: Validate cert_listings required to attach product listing
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required to attach product listing"
+    success_msg: "All required parameters are ok, proceeding to attach product listing"
+  with_items:
+    - cert_listings.published
+    - cert_listings.type
+    - cert_listings.pyxis_product_list_identifier
+
+- name: Set pyxis_product_list_identifier if cert product list is already here
+  set_fact:
+    pyxis_product_list_identifier: "{{ cert_listings.pyxis_product_list_identifier }}"
+
+- name: Patch product list to attach Prod-List ID to container project
+  vars:
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+    template_filename: "templates/attach_product_{{ project_type }}_listing.json.j2"
+  uri:
+    url: "{{ create_product_url }}/id/{{ pyxis_product_list_identifier }}"
+    method: PATCH
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    body: "{{ lookup('template', template_filename) }}"
+    status_code: 200
+    timeout: 120
+  register: attach_cert_product_list_status
+...
