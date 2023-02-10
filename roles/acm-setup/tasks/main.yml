@@ -120,18 +120,6 @@
     - "'phase' in mch.resources[0].status"
     - mch.resources[0].status.phase == 'Running'
 
-- name: "Get the MCH route"
-  community.kubernetes.k8s_info:
-    api: route.openshift.io/v1
-    kind: Route
-    name: multicloud-console
-    namespace: "{{ hub_namespace }}"
-  register: mch_route
-
-- name: "Advanced cluster Manager URL"
-  debug:
-    msg: "{{ mch_route.resources[0].status.ingress[0].host }}"
-
 - name: "Disable ClusterImageSets and AppSubs when disconnected"
   block:
     - name: "Disable ClusterImageSet subscription"
