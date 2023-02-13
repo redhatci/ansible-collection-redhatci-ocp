@@ -1,7 +1,5 @@
 ---
-# Only remove the local tnf image if:
-# - It's not generated from the latest, stable version (test_network_function_version)
-# - It has already been created (tnf_image and tnf_version_image would exist)
+# Only remove the local tnf image if it has already been created (tnf_image would exist)
 - name: Remove the local tnf image
   block:
     - name: Gather tnf image info
@@ -14,9 +12,7 @@
         name: "{{ tnf_image }}"
         state: absent
       when: tnf_image_info.images|length
-  when:
-    - tnf_image is defined
-    - tnf_version_image | default('') != test_network_function_version
+  when: tnf_image is defined
 
 - name: Removing PodSecurity-related labels in default namespace
   community.kubernetes.k8s:

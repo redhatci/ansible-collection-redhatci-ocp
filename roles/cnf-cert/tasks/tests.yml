@@ -125,7 +125,8 @@
 
   - name: Create variable with tnf image name
     set_fact:
-      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}"
+      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
+        {{ lookup('community.general.random_string', length=16, special=false) }}"
 
   # Steps from https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
   # Until 4.12 is officially released, consider we are using OCP 4.11 to be able to build the image.
@@ -188,7 +189,8 @@
 
   - name: Create variable with tnf image name
     set_fact:
-      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}"
+      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
+        {{ lookup('community.general.random_string', length=16, special=false) }}"
 
   - name: Clone tnf repository
     git:
@@ -204,10 +206,14 @@
     delay: 10
     until: not test_network_function_gitref.failed
 
-  - name: Pull tnf container to bring the latest changes in the selected version
+  # We need to pull the original image to tag it. Then, we remove the pulled image
+  - name: Pull and tag tnf image for the version under test
     shell: |
       set -ex
       podman pull quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }}
+      podman tag quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }} \
+      {{ tnf_image }}
+      podman image rm {{ test_network_function_project_name }}:{{ tnf_version_image }}
     register: result
     retries: 2
     delay: 10
