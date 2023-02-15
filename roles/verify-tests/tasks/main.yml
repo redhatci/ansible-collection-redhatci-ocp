@@ -1,7 +1,8 @@
 ---
 - name: Install junitparser needed to parse the tests
   pip:
-    name: junitparser
+    name:
+      - junitparser
   become: true
 
 - name: Loop over mandatory test results

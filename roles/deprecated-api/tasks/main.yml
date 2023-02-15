@@ -1,0 +1,9 @@
+---
+- name: Compute removed API
+  vars:
+    before_api: "{{ lookup('file', job_logs.path + '/apirequestcounts.before.json') }}"
+    after_api: "{{ lookup('file', job_logs.path + '/apirequestcounts.after.json') }}"
+    dump_filename: "{{ job_logs.path }}/removed_api.csv"
+  set_fact:
+    deprecated_api: "{{ before_api | dump_api(after_api, dump_filename) }}"
+...
