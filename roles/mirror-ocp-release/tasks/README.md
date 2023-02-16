@@ -22,6 +22,9 @@ If enabled, the role requires an container registry to mirror the OCP container 
 | mor_build                    | undefined     | Yes         | Build type (nightly, ga, dev, rc)  |
 | mor_oc                       | undefined     | Yes         | Path to the oc binary (stable is recommended). |
 
+## Requirements
+
+- [Skopeo](https://github.com/containers/skopeo/blob/main/install.md)
 
 ## Usage example
 
