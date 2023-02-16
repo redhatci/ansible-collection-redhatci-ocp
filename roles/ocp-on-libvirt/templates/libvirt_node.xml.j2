@@ -105,8 +105,18 @@
     <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
       <listen type='address' address='127.0.0.1'/>
     </graphics>
+{% if host['pci_passthrough'] is defined %}
+    <interface type='hostdev' managed='yes'>
+      <mac address='{{ host['pci_passthrough']['vf_mac_address'] }}'/>
+      <driver name='vfio'/>
+      <source>
+        <address type='pci' domain='{{ host['pci_passthrough']['domain'] }}' bus='{{ host['pci_passthrough']['bus'] }}' slot='{{ host['pci_passthrough']['slot'] }}' function='{{ host['pci_passthrough']['function'] }}'/>
+      </source>
+    </interface>
+{% else %}
     <video>
       <model type='cirrus' vram='16384' heads='1'/>
     </video>
+{% endif %}
   </devices>
 </domain>
