@@ -52,6 +52,11 @@
 
   delegate_to: bastion
 
+- name: "Remove temporary ssh_keys folder {{ key_pair_dir }}"
+  file:
+    path: "{{ key_pair_dir }}"
+    state: absent
+
 - name: Distribute public key to all hosts
   set_fact:
     ssh_public_key: "{{ lookup('file', fetched_dest + '/ssh_keys/' + public_key_name) }}"
