@@ -1,51 +1,47 @@
 ---
-- name: "Check if registry has already been mirrored"
-  stat:
-    path: "{{ mor_cache_dir }}/{{ mor_version }}/container_images.done"
-    get_checksum: false
-  register: container_images_done
-  when:
-    - not mor_force # we don't care to stat files if we're forcing
+- name: "OCP release mirror"
+  block:
+    - name: "Check if the release image is pullable from the local registry"
+      command: >
+        skopeo inspect
+        --no-tags
+        --authfile {{ mor_auths_file }}
+        docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
 
-- name: "Mirror release images to local registry"
-  command: >
-    {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
-    --registry-config={{ mor_auths_file }}
-    --from={{ ocp_release_data['container_image'] | quote }}
-    --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
-    --to={{ mor_registry_url }}/{{ mor_registry_path }}
-  retries: 3
-  delay: 10
-  register: result
-  until: result.rc == 0
-  when:
-    - mor_force or not container_images_done.stat.exists
+    - name: "Force mirroring is enabled"
+      fail:
+        msg: "Forcing the release mirroring"
+      when:
+        - mor_force | bool
 
-- name: Generate ImageContentSourcePolicy
-  shell: >
-    set -o pipefail &&
-    echo -e "{{ result.stdout }}" |
-    sed -n '/apiVersion/,$p' |
-    sed -e 's/name:.*/name: release-{{ version }}/'
-  register: icsp_release
-  when:
-    - mor_force or not container_images_done.stat.exists
+  rescue:
+    - name: "Mirror release images to local registry"
+      command: >
+        {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
+        --registry-config={{ mor_auths_file }}
+        --from={{ ocp_release_data['container_image'] | quote }}
+        --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
+        --to={{ mor_registry_url }}/{{ mor_registry_path }}
+      retries: 3
+      delay: 10
+      register: result
+      until: result.rc == 0
 
-- name: "Write mirrored image content source policy"
-  copy:
-    dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagecontentsourcepolicy.yaml"
-    owner: "{{ mor_owner }}"
-    group: "{{ mor_group }}"
-    mode: "0644"
-    setype: httpd_sys_content_t
-    content: "{{ icsp_release.stdout }}"
-  become: true
-  when:
-    - mor_force or not container_images_done.stat.exists
+    - name: Generate ImageContentSourcePolicy
+      shell: >
+        set -o pipefail &&
+        echo -e "{{ result.stdout }}" |
+        sed -n '/apiVersion/,$p' |
+        sed -e 's/name:.*/name: release-{{ version }}/'
+      register: icsp_release
 
-- name: "Marker for container images mirrored"
-  file:
-    dest: "{{ mor_cache_dir }}/{{ mor_version }}/container_images.done"
-    state: touch
-    mode: "0644"
+    - name: "Write mirrored image content source policy"
+      copy:
+        dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagecontentsourcepolicy.yaml"
+        owner: "{{ mor_owner }}"
+        group: "{{ mor_group }}"
+        mode: "0644"
+        setype: httpd_sys_content_t
+        content: "{{ icsp_release.stdout }}"
+      become: true
 ...
