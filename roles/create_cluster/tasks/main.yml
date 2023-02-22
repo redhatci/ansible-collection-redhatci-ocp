@@ -24,6 +24,7 @@
           "ssh_public_key": ssh_public_key,
           "vip_dhcp_allocation": (vip_dhcp_allocation | lower | bool),
           "api_vip": api_vip,
+          "ingress_vip": ingress_vip,
           "http_proxy": http_proxy,
           "https_proxy": https_proxy,
           "no_proxy": no_proxy,
