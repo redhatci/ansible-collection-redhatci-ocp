@@ -112,10 +112,9 @@
         <address domain='{{ host['pci_passthrough']['domain'] }}' bus='{{ host['pci_passthrough']['bus'] }}' slot='{{ host['pci_passthrough']['slot'] }}' function='{{ host['pci_passthrough']['function'] }}'/>
       </source>
     </hostdev>
-{% else %}
-    <video>
-      <model type='cirrus' vram='16384' heads='1'/>
-    </video>
 {% endif %}
+    <video>
+      <model type='qxl' ram='65536' vram='65536' vgamem='16384' heads='1'/>
+    </video>
   </devices>
 </domain>
