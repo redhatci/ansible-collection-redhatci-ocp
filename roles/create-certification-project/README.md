@@ -7,8 +7,11 @@ This role automatically creates a container certification project if option `cre
 Name                     | Default                                                                    | Description
 -------------------      | ------------                                                               | -------------
 connect_url              | https://connect.redhat.com/projects                                        | Mandatory; usually there is no need in redefining it. Certification UI link, you may need to change it to target UAT environment for the testing.
-create_project_url       | https://catalog.redhat.com/api/containers/v1/projects/certification        | Mandatory; usually there is no need in redefining it.Pyxis API to create certification project, you may need to change it to target UAT environment for the testing.
+create_project_url       | https://catalog.redhat.com/api/containers/v1/projects/certification        | Mandatory; usually there is no need in redefining it. Pyxis API to create certification project, you may need to change it to target UAT environment for the testing.
 github_token_path        | undefined                                                                  | Mandatory when using `create_operator_project`. Path to GitHub token to be used for the operator certification project.
+organization_id          | None                                                                       | Mandatory when using `create_container_project`. Company ID to be used for the verification of container certification project.
+page_size                | 200                                                                        | Define a page size for Pyxis API queries. Number of results to retrieve in a single page.
+
 
 
 ## Variables to define for each operator / container
@@ -35,8 +38,6 @@ os_content_type            | "Red Hat Universal Base Image (UBI)" | Base OS runn
 privileged                 | true                                 | false or true: false when the container is isolated from the host, and true when the container requires special Host level privileges.
 release_category           | "Generally Available"                | Whether the resource to certify is either GA or Beta, choose between: "Generally Available" or "Beta".
 repository_description     | "Add a description of project here"  | This will be displayed on the container catalog repository overview page.
-organization_id            | None                                 | This is required if you use cert_settings, [Company ID](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/appendix/connect-portal-api/project-creation#company-id)
-
 
 ## Variables to define for project settings under `cert_listings` main variable (Optional)
 
@@ -100,7 +101,6 @@ cert_settings:
    privileged: false
    release_category: "Generally Available"
    repository_description: "This is a test repo"
-   organization_id: 12345678
 
 # Project certification list setting (Optional)
 cert_listings:
@@ -116,6 +116,9 @@ pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
 
 # Optional; provide this token when using create_pr option
 github_token_path: "/opt/cache/dcicertbot-token.txt"
+
+# Only required when preflight_containers_to_certify.create_container_project is true
+organization_id: 12345678
 ```
 
 ## GitHub token
@@ -125,3 +128,10 @@ Please note that `github_token_path` is required when using `create_operator_pro
 Here are the required token permissions.
 
 ![pic](files/github_token.png)
+
+
+## Organization ID
+
+Variable `organization_id` is required when using `create_container_project` project. It is used to validate the existing certification projects in the organization with the same image and registry
+
+For more information of how to retrieve the organization ID see the [Connect Portal API documentation](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/appendix/connect-portal-api/project-creation#company-id)

@@ -1,14 +1,14 @@
 ---
 # Most of the current partners do not use these settings.
 ## TODO: when endpoint be available in Pyxis we should retrieve the organization_id
-## and not require it from cert_settings.
-- name: Validate cert_settings.organization_id required to check for duplicate projects
+## and not require it from settings variables.
+- name: Validate organization_id required to check for duplicate projects
   assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required to check for duplicate projects"
     success_msg: "All required parameters are ok, proceeding to check for duplicate projects"
   with_items:
-    - cert_settings.organization_id
+    - organization_id
 
 - name: Set container image facts
   set_fact:
@@ -21,7 +21,7 @@
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
   uri:
-    url: "{{ verify_project_url }}/{{ cert_settings.organization_id }}/projects/certification?page_size=200&page=0"
+    url: "{{ verify_project_url }}/{{ organization_id }}/projects/certification?page_size={{ page_size }}&page=0"
     method: GET
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"
