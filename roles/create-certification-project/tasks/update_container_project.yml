@@ -13,7 +13,6 @@
     - cert_settings.application_categories
     - cert_settings.os_content_type
     - cert_settings.privileged
-    - cert_settings.organization_id
     - cert_settings.release_category
     - cert_settings.repository_description
 
