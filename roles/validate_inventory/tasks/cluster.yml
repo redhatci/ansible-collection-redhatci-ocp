@@ -78,10 +78,10 @@
 - name: Assert mac has linux format
   assert:
     that:
-      - ( hostvars[item]['mac'] | string | regex_search('^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$')) is not none
+      - ( hostvars[item]['mac'] | string | upper | regex_search('^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$')) is not none
     quiet: true
     fail_msg: |-
-      The mac address for node {{ item }} needs to be in linx format XX:XX:XX:XX:XX:XX
+      The mac address for node {{ item }} needs to be in linux format XX:XX:XX:XX:XX:XX
       Make sure to wrap it quotes to make sure it is not being mangled
       Current value: {{ hostvars[item]['mac'] }}
   loop: "{{ groups['nodes'] }}"
