@@ -23,14 +23,20 @@
           "pull_secret": (pull_secret | to_json),
           "ssh_public_key": ssh_public_key,
           "vip_dhcp_allocation": (vip_dhcp_allocation | lower | bool),
-          "api_vip": api_vip,
-          "ingress_vip": ingress_vip,
           "http_proxy": http_proxy,
           "https_proxy": https_proxy,
           "no_proxy": no_proxy,
           "additional_ntp_source": ntp_server,
         } | to_json
       }}'
+
+- name: Assign api_vip and ingress_vip of not doing SNO
+  set_fact:
+    create_body_extras: "{{ create_body_extras | combine({
+        'api_vip': api_vip,
+        'ingress_vip': ingress_vip,
+      }) }}"
+  when: not (single_node_openshift_enabled | bool)
 
 - name: Assign schedulable_masters if cluster has workers
   set_fact:
