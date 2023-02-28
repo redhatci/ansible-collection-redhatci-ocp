@@ -114,7 +114,11 @@
     </hostdev>
 {% endif %}
     <video>
+{% if enable_legacy_vga_mode %}
+      <model type='cirrus' vram='16384' heads='1'/>
+{% else %}
       <model type='qxl' ram='16384' vram='16384' vgamem='4096' heads='1'/>
+{% endif %}
     </video>
   </devices>
 </domain>
