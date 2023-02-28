@@ -45,6 +45,7 @@
       data:
         registries.conf: |
           {{ acm_registry_conf | indent(4) }}
+          {{ acm_user_registry | indent(4) }}
         ca-bundle.crt: |
           {{ acm_user_ca_bundle | indent(4) }}
   community.kubernetes.k8s:
