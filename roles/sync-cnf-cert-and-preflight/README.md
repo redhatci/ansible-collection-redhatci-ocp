@@ -4,7 +4,7 @@ This role retrieves the operators that are autodiscovered in CNF Cert Suite exec
 
 Note that this role only appends the operators whose bundle_image does not appear in `preflight_operators_to_certify` variable. If any of them appears on that list, it will be omitted and not appended to `preflight_operators_from_cnf_cert`, to avoid duplicities.
 
-> This role can be used with CNF Cert Suite versions from v4.0.0 till v4.1.5, as next releases will directly run preflight on tnf container, so this is not longer needed there. If you are using a version different than these ones, even if you set up the variables above correctly, the role execution will be omitted.
+> This role can be used with CNF Cert Suite versions from v4.0.0 till v4.1.5, as newer releases will directly run preflight on tnf container, so this is not longer needed there. If you are using a version different than these ones, even if you set up the variables above correctly, the role execution will be omitted.
 
 ## Variables
 
