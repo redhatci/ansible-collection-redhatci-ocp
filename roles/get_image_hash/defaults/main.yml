@@ -52,14 +52,14 @@ os_images:
     version: 411.86.202210072320-0
   - openshift_version: '4.12'
     cpu_architecture: x86_64
-    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.12/4.12.0/rhcos-4.12.0-x86_64-live.x86_64.iso
-    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.12/4.12.0/rhcos-4.12.0-x86_64-live-rootfs.x86_64.img
-    version: 412.86.202301061548-0
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.12/4.12.3/rhcos-4.12.3-x86_64-live.x86_64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.12/4.12.3/rhcos-4.12.3-x86_64-live-rootfs.x86_64.img
+    version: 412.86.202302091057-0
   - openshift_version: '4.12'
     cpu_architecture: arm64
-    url: https://mirror.openshift.com/pub/openshift-v4/arm64/dependencies/rhcos/4.12/4.12.0/rhcos-4.12.0-aarch64-live.aarch64.iso
-    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/4.12/4.12.0/rhcos-4.12.0-aarch64-live-rootfs.aarch64.img
-    version: 412.86.202301061548
+    url: https://mirror.openshift.com/pub/openshift-v4/arm64/dependencies/rhcos/4.12/4.12.3/rhcos-4.12.3-aarch64-live.aarch64.iso
+    rootfs_url: https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/4.12/4.12.3/rhcos-4.12.3-aarch64-live-rootfs.aarch64.img
+    version: 412.86.202302091057-0
 
 release_images:
   - openshift_version: '4.6'
@@ -89,12 +89,12 @@ release_images:
     version: 4.11.24
   - openshift_version: '4.12'
     cpu_architecture: x86_64
-    url: quay.io/openshift-release-dev/ocp-release:4.12.0-x86_64
-    version: 4.12.0
+    url: quay.io/openshift-release-dev/ocp-release:4.12.4-x86_64
+    version: 4.12.4
   - openshift_version: '4.12'
     cpu_architecture: arm64
-    url: quay.io/openshift-release-dev/ocp-release:4.12.0-aarch64
-    version: 4.12.0
+    url: quay.io/openshift-release-dev/ocp-release:4.12.4-aarch64
+    version: 4.12.4
 
 assisted_service_image_repo_url: quay.io/edge-infrastructure
 
