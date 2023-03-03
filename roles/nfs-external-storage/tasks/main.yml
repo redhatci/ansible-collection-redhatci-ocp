@@ -1,0 +1,207 @@
+---
+- name: "Assert all required fields are present"
+  assert:
+    that:
+      - nes_nfs_server | string
+      - nes_nfs_path | string
+
+- name: "Creating {{ nes_namespace }} namespace"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ nes_namespace }}"
+        labels:
+          openshift.io/cluster-monitoring: "true"
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+
+- name: "Allow hostmount-anyuid to the {{ nes_namespace }} namespace SA"
+  community.kubernetes.k8s:
+    definition: |
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: nfs-client-provisioner
+        namespace: "{{ nes_namespace }}"
+      ---
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      metadata:
+        creationTimestamp: null
+        name: system:openshift:scc:hostmount-anyuid
+      rules:
+      - apiGroups:
+        - security.openshift.io
+        resourceNames:
+        - hostmount-anyuid
+        resources:
+        - securitycontextconstraints
+        verbs:
+        - use
+      ---
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        creationTimestamp: null
+        name: system:openshift:scc:hostmount-anyuid
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:openshift:scc:hostmount-anyuid
+      subjects:
+      - kind: ServiceAccount
+        name: nfs-client-provisioner
+        namespace: {{ nes_namespace }}
+
+- name: "Creating RBAC resources for nfs-client-provisioner"
+  community.kubernetes.k8s:
+    definition: |
+      kind: ClusterRole
+      apiVersion: rbac.authorization.k8s.io/v1
+      metadata:
+        name: nfs-client-provisioner-runner
+      rules:
+        - apiGroups: [""]
+          resources: ["persistentvolumes"]
+          verbs: ["get", "list", "watch", "create", "delete"]
+        - apiGroups: [""]
+          resources: ["persistentvolumeclaims"]
+          verbs: ["get", "list", "watch", "update"]
+        - apiGroups: ["storage.k8s.io"]
+          resources: ["storageclasses"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: [""]
+          resources: ["events"]
+          verbs: ["create", "update", "patch"]
+      ---
+      kind: ClusterRoleBinding
+      apiVersion: rbac.authorization.k8s.io/v1
+      metadata:
+        name: run-nfs-client-provisioner
+      subjects:
+        - kind: ServiceAccount
+          name: nfs-client-provisioner
+          # replace with namespace where provisioner is deployed
+          namespace: "{{ nes_namespace }}"
+      roleRef:
+        kind: ClusterRole
+        name: nfs-client-provisioner-runner
+        apiGroup: rbac.authorization.k8s.io
+      ---
+      kind: Role
+      apiVersion: rbac.authorization.k8s.io/v1
+      metadata:
+        name: leader-locking-nfs-client-provisioner
+        # replace with namespace where provisioner is deployed
+        namespace: "{{ nes_namespace }}"
+      rules:
+        - apiGroups: [""]
+          resources: ["endpoints"]
+          verbs: ["get", "list", "watch", "create", "update", "patch"]
+      ---
+      kind: RoleBinding
+      apiVersion: rbac.authorization.k8s.io/v1
+      metadata:
+        name: leader-locking-nfs-client-provisioner
+        # replace with namespace where provisioner is deployed
+        namespace: "{{ nes_namespace }}"
+      subjects:
+        - kind: ServiceAccount
+          name: nfs-client-provisioner
+          # replace with namespace where provisioner is deployed
+          namespace: "{{ nes_namespace }}"
+      roleRef:
+        kind: Role
+        name: leader-locking-nfs-client-provisioner
+        apiGroup: rbac.authorization.k8s.io
+
+- name: "Check that a default storageclass exists"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+  register: storage_class
+
+- name: "Check if there is a default Storage Class"
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"
+  set_fact:
+    nes_default_sc: true
+  when:
+    - "not('true' in query_results)"
+    - storage_class is defined
+    - storage_class.resources | length == 0
+
+- name: "Creating storage class: managed-nfs-storage"
+  vars:
+    sc_def: |-
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "{{ nes_default_sc | default('false') | string | lower }}"
+        name: managed-nfs-storage
+      provisioner: storage.io/nfs
+      parameters:
+        archiveOnDelete: "false"
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ sc_def }}"
+
+- name: "Deploy nfs-client-provisioner"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: nfs-client-provisioner
+        labels:
+          app: nfs-client-provisioner
+        namespace: "{{ nes_namespace }}"
+      spec:
+        replicas: 1
+        strategy:
+          type: Recreate
+        selector:
+          matchLabels:
+            app: nfs-client-provisioner
+        template:
+          metadata:
+            labels:
+              app: nfs-client-provisioner
+          spec:
+            serviceAccountName: nfs-client-provisioner
+            containers:
+              - name: nfs-client-provisioner
+                image: "{{ nes_provisioner_image }}"
+                volumeMounts:
+                  - name: nfs-client-root
+                    mountPath: /persistentvolumes
+                env:
+                  - name: PROVISIONER_NAME
+                    value: storage.io/nfs
+                  - name: NFS_SERVER
+                    value: "{{ nes_nfs_server }}"
+                  - name: NFS_PATH
+                    value: "{{ nes_nfs_path }}"
+            volumes:
+              - name: nfs-client-root
+                nfs:
+                  server: "{{ nes_nfs_server  }}"
+                  path: "{{ nes_nfs_path }}"
+
+- name: "Wait for nfs-client-provisioner pod to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ nes_namespace }}"
+    label_selectors:
+      - app=nfs-client-provisioner
+  register: nfs_pod
+  retries: 6
+  delay: 10
+  until: nfs_pod.resources[0].status.phase == 'Running'
+...
