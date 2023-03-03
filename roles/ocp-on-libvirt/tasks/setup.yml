@@ -80,7 +80,7 @@
   shell: /usr/sbin/restorecon -irv /var/lib/libvirt/consoles
   become: yes
 
-- name: "Add {{ ansible_user_id }} user to libvirt and qemu groups"
+- name: "Add {{ ansible_user_id }} user to libvirt, kvm, and qemu groups"
   become: true
   user:
     name: "{{ ansible_user_id }}"
@@ -88,3 +88,4 @@
     groups:
       - libvirt
       - qemu
+      - kvm
