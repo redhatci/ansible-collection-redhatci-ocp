@@ -105,6 +105,10 @@
     dest: "{{ sno_tmp_dir.path }}"
     remote_src: true
     mode: 0755
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
   delegate_to: "{{ cache_server }}"
   tags:
     - getoc
