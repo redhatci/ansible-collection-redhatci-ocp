@@ -1,0 +1,4 @@
+---
+nes_namespace: openshift-nfs-storage
+nes_provisioner_image: "registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2"
+...
