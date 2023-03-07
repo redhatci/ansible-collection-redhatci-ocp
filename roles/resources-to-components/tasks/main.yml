@@ -1,0 +1,14 @@
+---
+# If the item is not correctly build, it will be omitted.
+- name: Inspect resources from a given namespace
+  include_tasks: inspect-resources.yml
+  when:
+    - resources.resource is defined
+    - resources.resource | length
+    - resources.namespace is defined
+    - resources.namespace | length
+  loop: "{{ rtc_resources_to_components }}"
+  loop_control:
+    loop_var: resources
+
+...
