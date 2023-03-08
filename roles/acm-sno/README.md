@@ -47,6 +47,7 @@ This role only been tested in x86_64 architectures.
 | acm_service_network_cidr                | 172.30.0.0/16                 | NO          | A block of IPv4 or IPv6 addresses in CIDR notation used for internal communication of cluster services|
 | acm_iso_url                            | https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-4.9/49.84.202207192205-0/x86_64/rhcos-49.84.202207192205-0-live.x86_64.iso"                                 | No         | ISO boot Image. See: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/ |
 | acm_root_fs_url                        | https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-4.9/49.84.202207192205-0/x86_64/rhcos-49.84.202207192205-0-live-rootfs.x86_64.img                         | No                            | Root FS image. See https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/|
+|acm_sc                                  |Undefined                       | If no default StorageClass is available | Storage class to use for the `AgentServiceConfig` volumes: `acm_db_volume_size`, `acm_fs_volume_size`, and `acm_img_volume_size`. |
 |acm_db_volume_size                      |40Gi                           |No           | This value specifies how much storage it is allocated for storing files like database tables and database views for the clusters. You might need to use a higher value if there are many clusters|
 |acm_fs_volume_size                      |50Gi                           |No           | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters|
 |acm_img_volume_size                     |40Gi                           |No           | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS that is running. You might need to use a higher value if there are many clusters and instances of Red Hat Enterprise Linux CoreOS|
@@ -105,6 +106,7 @@ See below for some examples of how to use the acm-setup role to configure ACM.
     acm_bmc_pass: REDACTED
     acm_iso_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/latest/rhcos-4.10.16-x86_64-live.x86_64.iso
     acm_root_fs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/latest/rhcos-installer-rootfs.x86_64.img
+    acm_sc: "assisted-service"
   include_role:
     name: acm-sno
 ```
@@ -125,6 +127,7 @@ See below for some examples of how to use the acm-setup role to configure ACM.
     acm_bmc_pass: REDACTED
     acm_iso_url: https://mirror.example.comrhcos/4.10/latest/rhcos-4.10.16-x86_64-live.x86_64.iso
     acm_root_fs_url: https://mirror.example.comrhcos/4.10/latest/rhcos-installer-rootfs.x86_64.img
+    acm_sc: "assisted-service"
     acm_user_bundle: |
       -----BEGIN CERTIFICATE-----
       REDACTED
@@ -159,6 +162,7 @@ See below for some examples of how to use the acm-setup role to configure ACM.
     acm_machine_cidr: 192.168.16.0/25
     acm_bmc_user: REDACTED
     acm_bmc_pass: REDACTED
+    acm_sc: "assisted-service"
   include_role:
     name: acm-sno
 ```
