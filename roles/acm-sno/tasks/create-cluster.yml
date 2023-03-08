@@ -96,18 +96,27 @@
         namespace: multicluster-engine
       spec:
         databaseStorage:
+      {% if acm_sc is defined %}
+          storageClassName: {{ acm_sc }}
+      {% endif %}
           accessModes:
           - ReadWriteOnce
           resources:
             requests:
               storage: "{{ acm_db_volume_size }}"
         filesystemStorage:
+      {% if acm_sc is defined %}
+          storageClassName: {{ acm_sc }}
+      {% endif %}
           accessModes:
           - ReadWriteOnce
           resources:
             requests:
               storage: "{{ acm_fs_volume_size }}"
         imageStorage:
+      {% if acm_sc is defined %}
+          storageClassName: {{ acm_sc }}
+      {% endif %}
           accessModes:
           - ReadWriteOnce
           resources:
