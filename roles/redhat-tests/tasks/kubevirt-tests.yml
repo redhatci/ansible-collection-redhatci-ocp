@@ -12,6 +12,10 @@
         src: "https://github.com/vmware-tanzu/sonobuoy/releases/download/{{ ts_sonobuoy_version }}/sonobuoy_{{ ts_sonobuoy_version[1:] }}_linux_amd64.tar.gz"
         dest: "{{ tmp_vct_dir.path }}"
         remote_src: yes
+      register: result
+      retries: 3
+      delay: 10
+      until: result is not failed
 
     - name: "Download the kubevirt conformance manifest"
       get_url:

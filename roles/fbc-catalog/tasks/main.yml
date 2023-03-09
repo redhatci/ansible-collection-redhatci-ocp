@@ -29,6 +29,10 @@
     dest: "{{ fbc_tmp_dir }}"
     remote_src: true
     mode: 0755
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
 
 - name: "Create index build directory"
   file:
