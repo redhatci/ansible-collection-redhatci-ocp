@@ -18,6 +18,10 @@
     remote_src: true
     exclude:
       - README.md
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
   delegate_to: "{{ cache_server }}"
   when:
     - not extracted_cmd.stat.exists

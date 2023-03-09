@@ -8,6 +8,10 @@
       --tools
       --from {{ mor_pull_url }}
       --to "{{ mor_cache_dir }}/{{ mor_version }}"
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
 
 - name: "Apply SELinux container file context to extracted files"
   shell: >

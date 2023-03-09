@@ -105,6 +105,10 @@
     dest: "{{ sno_tmp_dir.path }}"
     remote_src: true
     mode: 0755
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
   delegate_to: "{{ cache_server }}"
   tags:
     - getoc
@@ -152,6 +156,10 @@
     remote_src: true
     exclude:
       - README.md
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
   delegate_to: "{{ cache_server }}"
   when:
     - not client_tools_done.stat.exists or force_mirroring
