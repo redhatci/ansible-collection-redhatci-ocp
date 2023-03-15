@@ -12,10 +12,25 @@
   become: True
   when: required_binary_check.rc != 0
 
-- name: Check required domain {item} exists
-  ansible.builtin.shell:
-    cmd: "{{ required_binary }} {{ item }} +short"
-  register: res
-  changed_when: false
-  failed_when: res.stdout | ansible.utils.ipaddr == false
-  loop: "{{ required_domains }}"
+- name: Set inital failed_domains
+  ansible.builtin.set_fact:
+    failed_domains: {}
+
+- name: Check domains
+  ansible.builtin.include_tasks: "check.yml"
+  loop: "{{ required_domains | dict2items() }}"
+
+- name: List failed_domains
+  ansible.builtin.fail:
+    msg: |
+      Failed domains:
+        {% for failed in (failed_domains | dict2items) %}
+        {{ failed.key }}:
+            expected:
+              {{ failed.value.expected | indent(14) }}
+            stdout:
+              {{ failed.value.stdout | indent(14)}}
+            stderr:
+              {{ failed.value.stderr | indent(14) }}
+        {% endfor %}
+  when: failed_domains | length > 0
