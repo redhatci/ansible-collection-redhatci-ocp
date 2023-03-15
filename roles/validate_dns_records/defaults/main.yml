@@ -1,7 +1,13 @@
 required_domains:
-  - "{{ 'api.' + domain }}"
-  - "{{ 'api-int.' + domain }}"
-  - "{{ '*.apps.' + domain }}"
+  "api": "api.{{ domain }}"
+  "api-int": "api-int.{{ domain }}"
+  "apps": "*.apps.{{ domain }}"
+
+expected_answers:
+  "api": "{{ api_vip }}"
+  "api-int": "{{ api_vip }}"
+  "apps": "{{ ingress_vip }}"
+
 required_binary: dig
 required_binary_provided_in_package: bind-utils
 domain: "{{ cluster_name }}.{{ base_dns_domain }}"
