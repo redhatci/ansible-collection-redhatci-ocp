@@ -1,0 +1,24 @@
+---
+- name: Create resource component
+  dci_component:
+    name: "{{ comp_name }}"
+    canonical_project_name: "{{ comp_canonical_project_name }}"
+    team_id: "{{ job_info['job']['team_id'] }}"
+    topic_id: "{{ job_info['job']['topic_id'] }}"
+    type: "{{ comp_type }}"
+    state: present
+  register: resource_component
+
+- name: Attach resource component to the job
+  dci_job_component:
+    component_id: " {{ resource_component.component.id }} "
+    job_id: " {{ job_id }} "
+  register: job_component_result
+  until: job_component_result is not failed
+  retries: 5
+  delay: 20
+  when:
+    - "'component' in resource_component"
+    - "'id' in resource_component.component"
+
+...
