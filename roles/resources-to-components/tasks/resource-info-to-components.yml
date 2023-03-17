@@ -1,0 +1,119 @@
+---
+# ClusterServiceVersion resource uses a different API.
+- name: "Get all {{ resources.resource }} from namespace"
+  community.kubernetes.k8s_info:
+    api_version: "\
+      {% if resources.resource == 'ClusterServiceVersion' %}\
+        operators.coreos.com/v1alpha1\
+      {% else %}\
+        v1\
+      {% endif %}"
+    namespace: "{{ resources.namespace }}"
+    kind: "{{ resources.resource }}"
+  register: resources_in_ns
+
+# We only want to handle resources without ownerReferences, just to avoid duplicating
+# components.
+- name: Check ownerReferences for the retrieved resources
+  block:
+    - name: "Getting resources details"
+      set_fact:
+        resource_details: "{{ resources_in_ns | json_query(details_query) }}"
+      vars:
+        details_query: >
+          resources[*].{ kind: kind,
+            name: metadata.name,
+            owner: metadata.ownerReferences,
+            spec: spec
+          }
+
+    - name: "Filtering resources with no ownerReferences"
+      set_fact:
+        resource_details: "{{ resource_details | json_query(filter_query) }}"
+      vars:
+        filter_query: "[?owner == null]"
+
+    - name: Print resources to be inspected
+      debug:
+        msg: "{{ resource_details }}"
+
+# Depending on the resource type, the way of extracting the images is different.
+# ReplicaSet, StatefulSet and Deployment work in the same way, so they are covered
+# with the else statement.
+- name: Extract container images from resources
+  set_fact:
+    container_images_in_ns: "\
+      {% if resources.resource == 'Pod' %}\
+        {{ resource_details | json_query('[*].spec.containers[*].image') | flatten | unique }}\
+      {% elif resources.resource == 'ClusterServiceVersion' %}\
+        {{ resource_details | json_query('[*].spec.relatedImages[*].image') | flatten | unique }}\
+      {% else %}\
+        {{ resource_details | json_query('[*].spec.template.spec.containers[*].image') | flatten | unique }}\
+      {% endif %}"
+
+# Then, create the component, and that's the same for all resources.
+# Why we do this in this way?
+#
+# * container_image_without_version
+#   if image does not use digest
+#     if image has a tag
+#       - remove tag
+#     else
+#       - use the same container_image as it does not have tag (or digest)
+#   else
+#     - remove digest
+# * container_image_name
+#   - taking container_image_without_version, remove the registry
+# * container_image_version
+#   if image does not use digest
+#     if image has a tag
+#       - take the tag
+#     else
+#       - use "latest" as tag
+#   else
+#     - take the digest
+#
+# If we try to create a component that already exists, it will not be created.
+- name: Create a component based on resource information
+  vars:
+    container_image_without_version: "\
+      {% if container_image.split('@')|length == 1 %}\
+        {% if '/' not in container_image.split(':')[-1] %}\
+          {% for image_chunk in container_image.split(':') %}\
+            {% if not loop.last %}\
+              {{ image_chunk }}{% if loop.index < loop.length-1 %}:{% endif %}\
+            {% endif %}\
+          {% endfor %}\
+        {% else %}\
+          {{ container_image }}\
+        {% endif %}\
+      {% else %}\
+        {% for image_chunk in container_image.split('@') %}\
+          {% if not loop.last %}\
+            {{ image_chunk }}{% if loop.index < loop.length-1 %}@{% endif %}\
+          {% endif %}\
+        {% endfor %}\
+      {% endif %}"
+    container_image_name: "\
+      {% for image_chunk in container_image_without_version.split('/') %}\
+        {% if loop.index > 1 %}{{ image_chunk }}{% if not loop.last %}/{% endif %}{% endif %}\
+      {% endfor %}"
+    container_image_version: "\
+      {% if container_image.split('@')|length == 1 %}\
+        {% if '/' not in container_image.split(':')[-1] %}\
+          {{ container_image.split(':')[-1] }}\
+        {% else %}\
+          latest
+        {% endif %}\
+      {% else %}\
+        {{ container_image.split('@')[-1] }}\
+      {% endif %}"
+    comp_name: "{{ container_image_version }}"
+    comp_canonical_project_name: "IMG {{ container_image_name }} {{ container_image_version }}"
+    comp_type: "{{ container_image_name }}"
+  include_tasks: create-component.yml
+  loop: "{{ container_images_in_ns }}"
+  loop_control:
+    loop_var: container_image
+
+...
