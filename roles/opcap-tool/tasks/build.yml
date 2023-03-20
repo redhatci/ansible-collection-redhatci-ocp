@@ -16,6 +16,10 @@
     rm: true
     volume:
       - "{{ opcap_dir.path }}/opcap/:/opcap:Z"
+  register: opcap_build
+  retries: 4
+  delay: 10
+  until: opcap_build is not failed
 
 - name: "Check opcap bin"
   shell:
