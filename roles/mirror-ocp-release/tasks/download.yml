@@ -1,5 +1,13 @@
 ---
 # TODO: For nightlies we could sign the artifacts with --signing-key
+- name: "Check if the release artifacts are in the cache"
+  stat:
+    path: "{{ mor_cache_dir }}/{{ mor_version }}"
+    get_checksum: false
+  register: target
+  when:
+    - not mor_force
+
 - name: "Extract artifacts from release image"
   shell:
     cmd: >
@@ -12,6 +20,8 @@
   retries: 3
   delay: 10
   until: result is not failed
+  when:
+    - mor_force or not target.stat.exists
 
 - name: "Apply SELinux container file context to extracted files"
   shell: >
