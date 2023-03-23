@@ -2,7 +2,7 @@
 # TODO: For nightlies we could sign the artifacts with --signing-key
 - name: "Check if the release artifacts are in the cache"
   stat:
-    path: "{{ mor_cache_dir }}/{{ mor_version }}"
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/release.txt"
     get_checksum: false
   register: target
   when:
