@@ -245,7 +245,6 @@
   set_fact:
     tnf_env_vars:
       TNF_NON_INTRUSIVE_ONLY: "{{ tnf_non_intrusive_only }}"
-      TNF_RUN_CFD_TEST: "{{ tnf_run_cfd_test }}"
       TNF_LOG_LEVEL: "{{ tnf_log_level }}"
   when: tnf_env_vars|length == 0
 
