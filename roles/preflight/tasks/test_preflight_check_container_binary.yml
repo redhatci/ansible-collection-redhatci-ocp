@@ -44,12 +44,20 @@
         - operator.create_container_project | default(false) | bool
         - operator.pyxis_container_identifier | default('') | length == 0
 
-    - name: Template config.yaml with Preflight setup
-      template:
-        src: templates/config_container.yaml.j2
-        dest: "{{ preflight_container_artifacts.path }}/config.yaml"
-
     - name: "Run preflight check container on operator image {{ current_operator_image }} with preflight binary"
+      vars:
+        pflt_envs: |
+          PFLT_JUNIT: "true"
+          PFLT_LOGLEVEL: trace
+          PFLT_ARTIFACTS: "{{ preflight_container_artifacts.path }}"
+          PFLT_LOGFILE: "{{ preflight_container_artifacts.path }}/preflight.log"
+          {% if partner_creds | length %}
+          PFLT_DOCKERCONFIG: "{{ preflight_tmp_dir.path }}/config.json"
+          {% endif %}
+          {% if cert_project_id | default('') | length %}
+          PFLT_PYXIS_API_TOKEN: "{{ lookup('file', pyxis_apikey_path) }}"
+          PFLT_CERTIFICATION_PROJECT_ID: "{{ cert_project_id }}"
+          {% endif %}
       shell: >
         {{ preflight_binary_dir }}/preflight
         check container
@@ -57,6 +65,7 @@
         {% if cert_project_id | default('') | length %}
         --submit
         {% endif %}
+      environment: "{{ pflt_envs | from_yaml }}"
       args:
         chdir: "{{ preflight_container_artifacts.path }}"
       ignore_errors: true
@@ -84,5 +93,4 @@
         path: "{{ preflight_container_artifacts.path }}"
         state: absent
   when: not (already_certified | default(false) | bool)
-
 ...
