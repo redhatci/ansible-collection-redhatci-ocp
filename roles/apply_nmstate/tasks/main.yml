@@ -24,14 +24,25 @@
       async: 60
       poll: 5
 
-    - name: "Check for connection wider network"
-      ansible.builtin.shell:
-        cmd: "ping -c 4 -W 1 {{ vm_network_test_ip }}"
+    - name: Check network connection when vm_host and bastion are the same
       when: vm_host_is_bastion | bool
-      register: connection_test_result
-      until: connection_test_result is succeeded
-      retries: 60
-      delay: 5
+      block:
+        - name: Assert vm_network_test_ip is defined
+          ansible.builtin.assert:
+            that:
+              - vm_network_test_ip is deinfed
+            fail_msg: |
+              Please defined vm_network_test_ip in your inventory.
+              This should be and IP external to the bastion and vm_host.
+
+        - name: "Check for connection wider network"
+          ansible.builtin.shell:
+            cmd: "ping -c 4 -W 1 {{ vm_network_test_ip }}"
+          when: vm_host_is_bastion | bool
+          register: connection_test_result
+          until: connection_test_result is succeeded
+          retries: 60
+          delay: 5
 
     - name: Commit changes
       ansible.builtin.shell:
