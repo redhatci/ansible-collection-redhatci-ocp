@@ -152,8 +152,8 @@
   # casuistic
   - name: Manually create the corresponding tnf component for DCI
     dci_component:
-      name: "{{ tnf_version_image }}"
-      canonical_project_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
+      display_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
+      version: "{{ tnf_version_image }}"
       team_id: "{{ job_info['job']['team_id'] }}"
       topic_id: "{{ job_info['job']['topic_id'] }}"
       type: "{{ test_network_function_project_name }}"

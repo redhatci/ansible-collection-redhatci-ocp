@@ -72,7 +72,9 @@
 #       - use "latest" as tag
 #   else
 #     - take the digest
-#
+# * container_image_version_short
+#   shorten container_image_version if it uses digest; just take the 7 first chars.
+#   To be used in the component displayed name.
 # If we try to create a component that already exists, it will not be created.
 - name: Create a component based on resource information
   vars:
@@ -108,8 +110,14 @@
       {% else %}\
         {{ container_image.split('@')[-1] }}\
       {% endif %}"
-    comp_name: "{{ container_image_version }}"
-    comp_canonical_project_name: "IMG {{ container_image_name }} {{ container_image_version }}"
+    container_image_version_short: "\
+      {% if container_image_version.split(':')|length == 1 %}\
+        {{ container_image_version }}\
+      {% else %}\
+        {{ container_image_version.split(':')[-1][:7] }}\
+      {% endif %}"
+    comp_display_name: "IMG {{ container_image_name }} {{ container_image_version_short }}"
+    comp_version: "{{ container_image_version }}"
     comp_type: "{{ container_image_name }}"
   include_tasks: create-component.yml
   loop: "{{ container_images_in_ns }}"
