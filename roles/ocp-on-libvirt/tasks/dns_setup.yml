@@ -5,6 +5,12 @@
   register: mac_list
   become: "{{ libvirt_become }}"
 
+- name: "register {{ net }} information "
+  shell: |
+      virsh net-dumpxml {{ net }}
+  register: net_dump
+  become: "{{ libvirt_become }}"
+
 - name: set vm_inv_info fact
   set_fact:
      vm_inv_info: "{{ vm_inv_info | default({})|combine({ item.cmd.split()[2]: { 'mac': item.stdout}}) }}"
@@ -32,7 +38,9 @@
 
 - name: make IPs persistent
   shell: "virsh net-update {{ net }} add ip-dhcp-host \"<host mac='{{ item.value.mac }}' name='{{ item.key }}.{{ cluster_domain }}' ip='{{ item.value.ip }}' />\" --live --config"
-  when: item.value.ip is defined
+  when:
+    - item.value.ip is defined
+    - "item.value.ip not in net_dump.stdout"
   with_dict: "{{ vm_inv_info }}"
   become: "{{ libvirt_become }}"
 
