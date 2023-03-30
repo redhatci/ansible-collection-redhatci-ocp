@@ -18,10 +18,10 @@ Main tasks:
 The role will pull some data from the Hub cluster (the one running ACM) and apply them to the spoke cluster. Some of the inherited details are:
 - The cluster pull_secret
 - The SSH public key assigned to the OS user called "core"
-- The CA certificate and registries.conf entries if the Hub has them available (Usually in air-gapped environments or with a local registry service)
-
+- The CA certificate (It is common in in air-gapped environments or with a local registry service)
 
 This role does not perform the mirroring of RHCOS, release images, and operators. Please see [references](#references) for roles that may help with those tasks.
+
 This role only been tested in x86_64 architectures.
 
 ## Variables
@@ -32,8 +32,8 @@ This role only been tested in x86_64 architectures.
 | acm_base_domain                        | example.com                   | No          | DNS domain for the SNO instance|
 | acm_cluster_location                   | Unknown                       | No          | SNO server location|
 | acm_force_deploy                       | false                         | No          | Force the removal of the instance if already exists |
-| acm_disconnected                       | false                         | No          | If set to `true` the registry.conf and CA from the hub are inherited to the new instance |
-| acm_ocp_version                        | 4.9.47             | No             | Full OCP version to install on the spoke cluster. <major>.<minor>.<patch> |
+| acm_disconnected                       | false                         | No          | If set to `true` the pull-secret and CA from the hub are inherited to the spoke cluster |
+| acm_ocp_version                        | 4.9.47                        | No          | Full OCP version to install on the spoke cluster. <major>.<minor>.<patch> |
 | acm_release_image                      | quay.io/openshift-release-dev/ocp-release:4.9.47-x86_64| No        |The specific release image to deploy. See https://quay.io/openshift-release-dev/ocp-release for the options to choose|
 | acm_creation_timeout                   | 90                            | No          | Timeout in minutes for a cluster to be created|
 | acm_bmc_user                           | None                          | Yes         | Username for the BMC|
@@ -52,7 +52,7 @@ This role only been tested in x86_64 architectures.
 |acm_fs_volume_size                      |50Gi                           |No           | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters|
 |acm_img_volume_size                     |40Gi                           |No           | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS that is running. You might need to use a higher value if there are many clusters and instances of Red Hat Enterprise Linux CoreOS|
 |acm_user_bundle                         |Undefined                      |No           |CA certificate to be injected to spoke nodes. Requires `acm_disconnected` set to true |
-|acm_user_registry                       |Undefined                      |Yes, for disconnected environments | Custom entries appended to the registries.conf file inherited from the Hub cluster used in the spoke nodes.|
+|acm_user_registry                       |Undefined                      |Yes, for disconnected environments | Entries added to the registries.conf file during the initial spoke cluster bootstrap. Must include entries for the OCP release and multicluster-engine images. See examples below|
 
 *Important:* The values defined for the `acm_ocp_version` must match with the images provided for `acm_iso_url` and `acm_root_fs_url` variables.
 
@@ -77,14 +77,11 @@ multicloud-console.apps.<cluster_name>.<base_domain>
 
 ## Mirroring configuration
 
-This role will pull the CA Certificate and registries.conf (if available) from the Hub cluster and affect the new launched clusters.
+In disconnected environments this role will get the CA Certificate and pull-secrets from the Hub cluster and apply them to the spoke clusters.
 
-- Spoke SNO clusters created by a Hub that is disconnected will inherit the mirroring configs from the Hub cluster.
-- Spoke SNO clusters created by a Hub that is connected will not inherit the mirroring configs from the Hub cluster.
+## Override the cluster CA certificate
 
-## Override CA certificate and registries.conf
-
-Pulling the mirroring configs from a cluster can be set by the `hub_disconnected` setting. Also, the CA and the registry.conf files can be overridden by setting values for `acm_user_bundle` and `acm_user_registry` variables as shown in the example below.
+Pulling the mirroring configs from a cluster can be set by the `acm_disconnected` setting. Also, the CA and the registry.conf files can be overridden by setting values for `acm_user_bundle` and `acm_user_registry` variables as shown in the example below.
 
 ## Usage example
 
@@ -148,6 +145,14 @@ See below for some examples of how to use the acm-setup role to configure ACM.
       mirror-by-digest-only = true
       [[registry.mirror]]
           location = "registry.<my-lab>:4443/ocp4/openshift4"
+
+      [[registry]]
+        prefix = ""
+        location = "registry.redhat.io/multicluster-engine"
+        mirror-by-digest-only = true
+
+        [[registry.mirror]]
+          location = "registry.<my-lab>:4443/multicluster-engine"
   include_role:
     name: acm-sno
 ```
