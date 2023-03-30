@@ -28,7 +28,6 @@
   set_fact:
     inherit_mirroring: true
   when:
-    - acm_registry_conf is defined
     - acm_user_ca_bundle is defined
     - acm_disconnected | bool
 
@@ -44,7 +43,6 @@
           app: assisted-service
       data:
         registries.conf: |
-          {{ acm_registry_conf | indent(4) }}
           {{ acm_user_registry | indent(4) }}
         ca-bundle.crt: |
           {{ acm_user_ca_bundle | indent(4) }}
@@ -361,6 +359,7 @@
         agentLabels:
           agentclusterinstalls.extensions.hive.openshift.io/location: "{{ acm_cluster_location }}"
         cpuArchitecture: x86_64
+        ipxeScriptType: DiscoveryImageAlways
         nmStateConfigLabelSelector:
           matchLabels:
             infraenvs.agent-install.openshift.io: "{{ acm_cluster_name }}"
