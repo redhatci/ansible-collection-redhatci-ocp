@@ -16,22 +16,7 @@
     kind: MachineConfig
     name: "{{ acm_mc }}"
   register: worker_mc
-
-- name: "Setting config facts based on Hub Cluster configs"
-  vars:
-    query: "resources[0].spec.config.storage.files[? path=='/etc/containers/registries.conf']"
-    registry_details: "{{ worker_mc | json_query(query) }}"
-    registry_encode_type: "{{ registry_details[0].contents.source.split(',')[0] }}"
-    registry_encoded: "{{ registry_details[0].contents.source.split(',')[1] }}"
-    registry_decoded: |-
-      {%- if registry_encode_type.endswith('base64') %}
-      {{ registry_encoded | b64decode }}
-      {%- else %}
-      {{ registry_encoded | urldecode }}
-      {%- endif %}
-  set_fact:
-    acm_registry_conf: "{{ registry_decoded }}"
-
+  
 - name: "Get cluster user-ca cert if exists"
   community.kubernetes.k8s_info:
     api: v1
