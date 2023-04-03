@@ -82,25 +82,33 @@
             namespace: "{{ namespace }}"
           spec:
             channel: "{{ desired_channel }}"
-            installPlanApproval: "{{ (starting_csv | default('') | length) | ternary('Manual', 'Automatic') }}"
+            installPlanApproval: "{{ starting_csv | default('') | length | ternary('Manual', 'Automatic') }}"
             config:
               resources: {}
             name: "{{ operator }}"
             source: "{{ source }}"
             sourceNamespace: "{{ source_ns }}"
-            startingCSV: "{{ starting_csv | default(omit) }}"
+            startingCSV: "{{ starting_csv | default('') | length | ternary(starting_csv, omit) }}"
 
-    - name: "Get Operator's CSV"
-      block:
-        - name: "Get operator's CSV for desired channel"
-          vars:
-            current_csv: "resources[*].status.channels[? name=='{{ desired_channel }}' ].currentCSV | [0]"
-          set_fact:
-            operator_csv: "{{ starting_csv | default(packagemanifest | json_query(current_csv) | first)  }}"
-      rescue:
-        - name: "Operator's CSV not found in the specified channel"
-          fail:
-            msg: "Operator's CSV not found in the specified channel, check if channel: {{ desired_channel }} is valid"
+    - name: Wait for subscription to be ready
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: Subscription
+        namespace: "{{ namespace }}"
+        name: "{{ operator }}"
+      register: sub
+      retries: 20
+      delay: 30
+      until:
+        - sub.resources is defined
+        - sub.resources | length == 1
+        - "'status' in sub.resources[0]"
+        - "'currentCSV' in sub.resources[0].status"
+        - sub.resources[0].status.currentCSV | length > 0
+
+    - name: "Get operator's CSV for desired channel"
+      set_fact:
+        operator_csv: "{{ starting_csv | default('') | length | ternary(starting_csv, sub.resources[0].status.currentCSV) }}"
 
     - block:
         - name: "Get Install plans"
@@ -121,15 +129,13 @@
               apiVersion: operators.coreos.com/v1alpha1
               kind: InstallPlan
               metadata:
-                name: "{{ install_plan.metadata.name }}"
+                name: "{{ install_plan }}"
                 namespace: "{{ namespace }}"
               spec:
                 approved: true
           vars:
-            query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ starting_csv }}')]"
-          loop: "{{ install_plans | json_query(query) }}"
-          loop_control:
-            loop_var: install_plan
+            query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ operator_csv }}')]"
+            install_plan: "{{ (install_plans | json_query(query) | first).metadata.name }}"
       when:
         - starting_csv | default('') | length
 
