@@ -289,6 +289,11 @@
         path: "{{ job_logs.path }}/claim.json"
       register: claim_json_present
 
+    - name: Remove local tnf image
+      containers.podman.podman_image:
+        name: "{{ tnf_image }}"
+        state: absent
+
     - name: CNF Cert Suite execution did not finish correctly
       fail:
         msg: claim.json file does not exist, so CNF Cert Suite execution did not finish correctly
