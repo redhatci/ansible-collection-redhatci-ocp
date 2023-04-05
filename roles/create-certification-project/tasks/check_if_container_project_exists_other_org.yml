@@ -1,16 +1,6 @@
 ---
-- name: "Set fact if image creation fail and the fail message points to a unique combination"
-  set_fact:
-    cert_project_exists_other_org: true
-  when:
-    - cert_project_output.failed | bool
-    - "'You cannot change container.repository and container.registry fields to specified values as the combination would no longer be unique' in cert_project_output.json.detail"
-
-- name: Print message if image might exists in another organization
-  debug:
-    msg:
-      - "Image {{ registry_name }}/{{ repo_name }}/{{ image_name }} might be present in a certification project of another organization"
-      - "Hence, certification project cannot be created. Reach out support for further information of how to proceed."
-  when:
-    - cert_project_exists_other_org | default(false) | bool
+# TODO: Create Pyxis request here
+# Instead of catching the error during the project creation
+# 'You cannot change container.repository and container.registry fields to specified
+# values as the combination would no longer be unique' in cert_project_output.json.detail
 ...

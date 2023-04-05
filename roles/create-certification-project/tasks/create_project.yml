@@ -1,10 +1,4 @@
 ---
-- name: Print JSON draft for the project to be created
-  vars:
-    template_filename: "templates/create_project_{{ project_type }}.json.j2"
-  debug:
-    msg: "{{ lookup('template', template_filename) }}"
-
 - block:
     - name: Print JSON draft for the project to be created
       vars:
@@ -26,23 +20,15 @@
         status_code: 201
         timeout: 120
       register: cert_project_output
-      ignore_errors: true
-      no_log: true
 
-- name: "Project creation failed"
-  fail:
-    msg: "The project creation failed, these are the details: {{ cert_project_output.json.detail }}"
-  when:
-    - cert_project_output.failed | bool
-    - "'You cannot change container.repository and container.registry fields to specified values as the combination would no longer be unique' not in cert_project_output.json.detail"
+    - name: Set project ID to reuse it later
+      set_fact:
+        cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"
 
-- name: Set project ID to reuse it later
-  set_fact:
-    cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"
-
-- name: Print the URL of created certification project
-  debug:
-    msg: |
-      Certification project was created and could be checked here:
-      {{ connect_url }}/{{ cert_project_id }}/overview
+    - name: Print the URL of created certification project
+      debug:
+        msg: |
+          Certification project was created and could be checked here:
+          {{ connect_url }}/{{ cert_project_id }}/overview
+  ignore_errors: "{{ ignore_project_creation_errors | bool }}"
 ...
