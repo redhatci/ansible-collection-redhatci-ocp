@@ -1,19 +1,10 @@
 ---
-## TODO: check the commented tasks to enable the logic:
-# project exists -> do not create new project -> take the id of existing project -> push the results in it.
-
-- name: Check if container project already exists
+- name: Handle the situation when cert project already exists
   include_tasks: check_if_container_project_exists.yml
+  when: check_for_existing_projects | bool
 
-- name: Create cert project if it does not exist yet
-  block:
-    - name: Create container project
-      include_tasks: create_project.yml
-
-  rescue:
-    - name: Check if container project exists in the other org
-      include_tasks: check_if_container_project_exists_other_org.yml
-  when: not cert_project_exists_own_org | default(false) | bool
+- name: Create container project
+  include_tasks: create_project.yml
 
 - name: Update the project with company info when cert_settings is defined
   include_tasks: update_container_project.yml

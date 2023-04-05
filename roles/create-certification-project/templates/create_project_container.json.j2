@@ -9,8 +9,6 @@
       "repository": "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
       "type": "container"
     },
-    "creation_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
-    "last_update_date": "{{ ansible_date_time.iso8601 }} {{ ansible_date_time.tz }}",
     "marketplace": {
       "enablement_status": "ineligible"
     },

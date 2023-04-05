@@ -11,7 +11,8 @@ create_project_url       | https://catalog.redhat.com/api/containers/v1/projects
 github_token_path        | undefined                                                                  | Mandatory when using `create_operator_project`. Path to GitHub token to be used for the operator certification project.
 organization_id          | None                                                                       | Mandatory when using `create_container_project`. Company ID to be used for the verification of container certification project.
 page_size                | 200                                                                        | Define a page size for Pyxis API queries. Number of results to retrieve in a single page.
-
+check_for_existing_projects | false                                                                   | Optional. Set this option to `true` if you want to use a custom error handling for cases where the cert project already exists within the same organization or in a different organization. Please define organization_id when using this option.
+ignore_project_creation_errors | false                                                                | Optional. Set this option to `true` if you want to ignore project creation errors.
 
 
 ## Variables to define for each operator / container
