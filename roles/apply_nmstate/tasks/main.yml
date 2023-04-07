@@ -30,9 +30,9 @@
         - name: Assert vm_network_test_ip is defined
           ansible.builtin.assert:
             that:
-              - vm_network_test_ip is deinfed
+              - vm_network_test_ip is defined
             fail_msg: |
-              Please defined vm_network_test_ip in your inventory.
+              Please define vm_network_test_ip in your inventory.
               This should be and IP external to the bastion and vm_host.
 
         - name: "Check for connection wider network"
