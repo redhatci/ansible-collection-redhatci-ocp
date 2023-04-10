@@ -1,42 +1,85 @@
 ---
-- name: "Install binaries and other packages in jumphost"
-  include_tasks: install.yml
-  tags:
-    - install
+- name: Check if directory exists
+  stat:
+    path: "{{ os_config_dir }}"
+  register: path_check
 
-- name: "Validate nodes planes"
-  block:
-    - name: "Get control plane nodes"
-      community.kubernetes.k8s_info:
-        kind: Node
-        label_selectors:
-          - "node-role.kubernetes.io/master"
-      register: control_nodes
+- name: "Fail if the configs directory does not exist"
+  fail:
+    msg: "Configs directory does not exist"
+  when: not path_check.stat.exists
 
-    - name: "Get compute plane nodes"
-      community.kubernetes.k8s_info:
-        kind: Node
-        label_selectors:
-          - "node-role.kubernetes.io/worker"
-      register: compute_nodes
+- name: "Generate Random passwords for users htpasswd IdP"
+  set_fact:
+    admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+    nonadmin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
 
-    - name: "Validate control/compute nodes"
-      vars:
-        install_config: "{{ ic.resources[0].data['install-config'] | from_yaml }}"
-        requested_control: "{{ install_config | json_query('controlPlane.replicas') }}"
-        requested_compute: "{{ install_config | json_query('compute[? name==`worker` ].replicas') | first }}"
-        control_nodes_count: "{{ control_nodes.resources | length }}"
-        compute_nodes_count: "{{ compute_nodes.resources | length }}"
-      fail:
-        msg: "The available control/compute nodes are not enough for an operational cluster"
-      when:
-        - ( control_nodes_count | int != requested_control | int ) or
-          ( compute_nodes_count | int < requested_compute | int )
-  tags:
-    - check
+- name: "Save passwords to the cluster configs directory"
+  copy:
+    content: "OCP automatically generated credentials for the API/GUI\nadmin:{{ admin_pass }} \nnonadmin:{{ nonadmin_pass }}\n"
+    dest: "{{ os_config_dir }}/ocp_creds.txt"
+    mode: '0640'
 
-- name: "Configure clients in jumphost"
-  include_tasks: config.yml
-  tags:
-    - config
+- name: "Create http auth file"
+  htpasswd:
+    path: "{{ os_config_dir }}/users.htpasswd"
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
+    mode: 0640
+  loop:
+    - user: admin
+      password: "{{ admin_pass }}"
+    - user: nonadmin
+      password: "{{ nonadmin_pass }}"
+
+- name: "Encoding the password file"
+  slurp:
+    src: "{{ os_config_dir }}/users.htpasswd"
+  register: encoded_password
+
+- name: "Set htpasswd config secret in openshift"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: htpass-secret
+        namespace: openshift-config
+      type: Opaque
+      data:
+        htpasswd: "{{ encoded_password.content }}"
+
+- name: "Setup htpasswd auth IDP backend in openshift"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: OAuth
+      metadata:
+        name: cluster
+      spec:
+        identityProviders:
+        - name: htpassidp
+          challenge: true
+          login: true
+          mappingMethod: claim
+          type: HTPasswd
+          htpasswd:
+            fileData:
+              name: htpass-secret
+
+- name: "Grant cluster-admin permissions to admin user"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-admin-admin
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: User
+          name: "admin"
 ...
