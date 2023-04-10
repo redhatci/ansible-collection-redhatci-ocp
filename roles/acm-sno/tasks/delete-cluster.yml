@@ -22,6 +22,38 @@
     name: "{{ acm_cluster_name }}"
     namespace: "{{ acm_cluster_name }}"
 
+- name: "Disable BMC credentials finalizers"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: secret
+      metadata:
+        name: "bmc-{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+        finalizers: null
+        ownerReferences: null
+  ignore_errors: true
+
+- name: "Delete BMC credentials"
+  community.kubernetes.k8s:
+    state: absent
+    api: v1
+    kind: secret
+    name: "bmc-{{ acm_cluster_name }}"
+    namespace: "{{ acm_cluster_name }}"
+  ignore_errors: true
+
+- name: "Disable BMH finalizers"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: BareMetalHost
+      metadata:
+        name: "{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+        finalizers: []
+  ignore_errors: true
+
 - name: "Delete bare-metal host"
   community.kubernetes.k8s:
     state: absent
@@ -32,7 +64,7 @@
 
 - name: "Wait for BMH to be deprovisioned"
   community.kubernetes.k8s_info:
-    api: v1
+    api: metal3.io/v1alpha1
     kind: BareMetalHost
     name: "{{ acm_cluster_name }}"
     namespace: "{{ acm_cluster_name }}"
