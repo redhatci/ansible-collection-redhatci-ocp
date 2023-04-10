@@ -1,0 +1,223 @@
+---
+- name: Fail if tnf version is lower than v4.0.0
+  fail:
+    msg: "cnf-cert role is no longer compatible with tnf versions lower than v4.0.0"
+  when:
+    - test_network_function_version is version("v4.0.0", "<")
+    - test_network_function_version != "HEAD"
+
+- name: Fail if tnf_suites is not provided in tnf versions lower or equal than v4.0.2
+  assert:
+    that: "tnf_suites|length"
+    fail_msg: "tnf_suites is required in tnf versions lower or equal than v4.0.2"
+  when:
+    - test_network_function_version is version("v4.0.2", "<=")
+    - test_network_function_version != "HEAD"
+
+# This check is included as a warning for users in case of not defining
+# partner_creds properly, as cnf-cert will include preflight starting
+# from v4.1.6 version.
+- name: (From tnf v4.1.6) Verify if partner_creds is provided
+  assert:
+    that: "partner_creds|length"
+    fail_msg: >
+      WARNING.
+      Note that, from v4.1.6 version, CNF Cert Suite includes preflight.
+      If you need credentials to pull the images under test,
+      you need to set up partner_creds variable,
+      else CNF Cert Suite execution will fail.
+  when: test_network_function_version is version("v4.1.6", ">=") or test_network_function_version == "HEAD"
+  ignore_errors: true
+
+# This is to ensure compatibility with partners that are still using tnf_suites
+# in latest tnf version. In that case, we override tnf_labels default value to "".
+- name: Redefine tnf_labels variable if tnf_suites is provided
+  set_fact:
+    tnf_labels: ""
+  when:
+    - tnf_suites|length
+
+- name: "cnf-cert : Save images in local registry"
+  include_role:
+    name: mirror_images
+  vars:
+    images:
+      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
+      - "quay.io/testnetworkfunction/debug-partner:latest"
+    authfile: "{{ pullsecret_tmp_file }}"
+  when:
+    - dci_disconnected | default(false) | bool
+    - dci_local_registry | length
+
+- name: Create temporary directory for git repos
+  tempfile:
+    state: directory
+  register: tnf_git_dir
+
+# test_network_function_repo will always be a link to the tnf Github repo
+# unless we are testing a PR from that repo, in whose case test-runner will
+# upload test_network_function_repo value to the file path in which
+# extract-dependencies script has downloaded locally the repo
+- name: Check if test_network_function_repo is a file path
+  stat:
+    path: "{{ test_network_function_repo }}"
+  register: tnf_is_file_path
+
+- name: Tasks when test_network_function_repo points to a local file path
+  block:
+
+  - name: Copy the downloaded repo in tnf_git_dir path
+    copy:
+      src: "{{ test_network_function_repo }}/{{ test_network_function_project_name }}"
+      dest: "{{ tnf_git_dir.path }}"
+
+  - name: Find .sh scripts in tnf repo
+    find:
+      paths: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+      patterns: '*.sh'
+      recurse: yes
+    register: list_sh_scripts
+
+  # This is needed since extract-dependencies script downloads the code without
+  # write permissions. With this, tnf repo would have the same permissions as if
+  # it were downloaded with git clone command.
+  - name: Set execution permission for .sh scripts
+    file:
+      path: "{{ item.path }}"
+      mode: a+x
+    with_items: "{{ list_sh_scripts.files }}"
+
+  # We need to check the SHA in this way, because extract-dependencies changes the
+  # commit id when creating the new branch based on the PR, but only if new PRs are merged 
+  # in the repo and we have not included them in our change. In these cases, the original 
+  # id is saved in .git/ORIG_HEAD file. Else, we can find it in the location called
+  # `.git/refs/heads/prXXX`
+  - name: "Check if .git/ORIG_HEAD file exists"
+    stat:
+      path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/.git/ORIG_HEAD"
+    register: orig_head_file
+
+  - name: Actions when .git/ORIG_HEAD file exists
+    block:
+      - name: Retrieve commit SHA from the downloaded repo - from ORIG_HEAD
+        shell: cat .git/ORIG_HEAD
+        register: tnf_repo_info_head
+        args:
+          chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+
+      - name: Create variable with tnf version name
+        set_fact:
+          tnf_version_image: "{{ tnf_repo_info_head.stdout }}"
+    when: orig_head_file.stat.exists
+
+  - name: Actions when .git/ORIG_HEAD file does not exist
+    block:
+      - name: Retrieve commit SHA from the downloaded repo - from refs
+        shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
+        register: tnf_repo_info_branch
+        args:
+          chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+
+      - name: Create variable with tnf version name
+        set_fact:
+          tnf_version_image: "{{ tnf_repo_info_branch.stdout }}"
+    when: not orig_head_file.stat.exists
+
+  - name: Create variable with tnf image name
+    set_fact:
+      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
+        {{ lookup('community.general.random_string', length=16, special=false) }}"
+
+  # Steps from https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
+  - name: Build the tnf image locally
+    shell: |
+      set -x
+      podman build -t {{ tnf_image }} \
+      --build-arg TNF_VERSION={{ tnf_version_image }} \
+      --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
+      --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
+    args:
+      chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+
+  # This is needed because the DCI component is not automatically created, as
+  # it is done in case the git repo is directly used, in whose case it is created.
+  # Doing this in the same way that is done in track_git_repo play but with
+  # the arguments obtained in previous tasks (e.g. commit SHA), as we cannot
+  # rely on the last commit id. For that reason, it is better to just do it
+  # here rather than changing pre-run and track_git_repo to be adapted to this
+  # casuistic
+  - name: Manually create the corresponding tnf component for DCI
+    dci_component:
+      name: "{{ tnf_version_image }}"
+      canonical_project_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
+      team_id: "{{ job_info['job']['team_id'] }}"
+      topic_id: "{{ job_info['job']['topic_id'] }}"
+      type: "{{ test_network_function_project_name }}"
+      url: "https://github.com/test-network-function/cnf-certification-test/commit/{{ tnf_version_image }}"  # noqa 204
+      state: present
+    register: tnf_git_component
+    tags: [dci]
+
+  - name: Attach tnf component to the job
+    dci_job_component:
+      component_id: "{{ tnf_git_component.component.id }}"
+      job_id: "{{ job_id }}"
+    register: job_component_result
+    until: job_component_result is not failed
+    retries: 5
+    delay: 20
+    tags: [dci]
+
+  when:
+    - tnf_is_file_path.stat.exists|bool
+    - tnf_is_file_path.stat.isdir|bool
+
+- name: Tasks when test_network_function_repo points to a Github repository
+  block:
+
+  # In https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
+  # there are two main tags to take into account:
+  # -latest: linked to the latest tnf release.
+  # -unstable: related to the HEAD version of the main branch in the tnf repository
+  # (https://github.com/test-network-function/cnf-certification-test).
+  # So, if a version is provided in test_network_function_version, that version will be
+  # used. In case we are on the master branch (HEAD version), unstable tag is used.
+  - name: Create variable with tnf version name
+    set_fact:
+      tnf_version_image: "{{ ( test_network_function_version | regex_search('HEAD') ) | ternary('unstable', test_network_function_version) }}"
+
+  - name: Create variable with tnf image name
+    set_fact:
+      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
+        {{ lookup('community.general.random_string', length=16, special=false) }}"
+
+  - name: Clone tnf repository
+    git:
+      repo: "{{ test_network_function_repo }}"
+      version: "{{ test_network_function_version }}"
+      dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+      force: yes
+    # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
+    # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
+    # multiple times.
+    register: test_network_function_gitref
+    retries: 3
+    delay: 10
+    until: not test_network_function_gitref.failed
+
+  # We need to pull the original image to tag it. Then, we remove the pulled image
+  - name: Pull and tag tnf image for the version under test
+    shell: |
+      set -ex
+      podman pull quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }}
+      podman tag quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }} \
+      {{ tnf_image }}
+      podman image rm {{ test_network_function_project_name }}:{{ tnf_version_image }}
+    register: result
+    retries: 2
+    delay: 10
+    until: result.rc == 0
+
+  when: not tnf_is_file_path.stat.exists|bool
+
+...
