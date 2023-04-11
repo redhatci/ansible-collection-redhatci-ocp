@@ -7,10 +7,6 @@
         prefix: preflight_tmp_dir.
       register: preflight_tmp_dir
 
-    - name: Download preflight binary if necessary
-      include_tasks: prepare_download_preflight_binary.yml
-      when: preflight_binary | length > 0
-
     # Use authentication file for private registry
     - name: Set authentication for registry access
       include_tasks: prepare_json_authentication.yml

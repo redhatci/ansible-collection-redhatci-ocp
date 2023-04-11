@@ -1,6 +1,6 @@
 ---
 - name: "Preflight check container for {{ operator.name }}"
-  include_tasks: test_preflight_check_container_binary.yml
+  include_tasks: test_preflight_check_container_one_image.yml
   loop: "{{ operator.operator_images }}"
   loop_control:
     loop_var: current_operator_image
