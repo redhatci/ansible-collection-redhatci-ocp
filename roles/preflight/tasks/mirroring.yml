@@ -21,6 +21,10 @@
     docker://{{ item }}
     docker://{{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
   loop: "{{ preflight_images_to_mirror }}"
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
 
 - name: "Define catalog tag"
   set_fact:
