@@ -7,10 +7,6 @@
         prefix: preflight_tmp_dir.
       register: preflight_tmp_dir
 
-    - name: Download preflight binary if necessary
-      include_tasks: prepare_download_preflight_binary.yml
-      when: preflight_binary | length > 0
-
     - name: Copy kubeconfig file into tmp config directory
       copy:
         src: "{{ kubeconfig_path }}"
@@ -42,11 +38,11 @@
       loop_control:
         loop_var: operator
     
-    # Optional: build preflight image and binary. That could be used 
-    # to test a certain branch in Preflight repository when a ready image
-    # and a ready binary are not available.
-    - name: Build preflight_image and preflight_binary
-      include_tasks: prepare_build_image_and_binary.yml
+    # Optional: build preflight image. This can be used
+    # to test a specific branch in the Preflight repository
+    # when a ready image is not available.
+    - name: Build preflight_image
+      include_tasks: prepare_build_image.yml
       # this variable is set in test-runner
       when: preflight_source_dir is defined
 
