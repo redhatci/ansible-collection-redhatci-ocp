@@ -27,12 +27,14 @@
       TNF_LOG_LEVEL: "{{ tnf_log_level }}"
   when: tnf_env_vars|length == 0
 
+# Just do this in case preflight test suite is used. This happens if:
+# - (tnf >= v4.1.6) - can be used with common label or with preflight label
+# - (tnf == HEAD) - can be used just with preflight label
 # Use authentication file for private registry
 - name: Set authentication for registry access
   include_tasks: prepare_json_authentication.yml
-  when:
-    - test_network_function_version is version("v4.1.6", ">=") or test_network_function_version == "HEAD"
-    - partner_creds|length
+  when: "((test_network_function_version is version('v4.1.6', '>=') and ('common' in tnf_labels or 'preflight' in tnf_labels))
+      or (test_network_function_version == 'HEAD' and 'preflight' in tnf_labels)) and partner_creds|length"
 
 # The task automatically append TNF_PARTNER_REPO and TNF_IMAGE environment variables to tnf_env_vars
 - name: Run the CNF Test Suite
