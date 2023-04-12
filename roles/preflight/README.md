@@ -10,13 +10,12 @@ Name                               | Default                                    
 ---------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------
 preflight_operators_to_certify  | undefined                                            | Mandatory for end-to-end operator certification. List of operators to be checked for certification with Preflight Cert Suite. Please check [example_preflight_config.yaml](#operator-end-to-end-certification) for the example.
 preflight_containers_to_certify  | undefined                                            | Mandatory for standalone container certification. List of containers to be checked for certification with Preflight Cert Suite. Please check [example_preflight_config.yaml](#certification-of-standalone-containers) for the example.
-preflight_binary                  | <https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/download/1.5.4/preflight-linux-amd64>              | Optional. [Version of Preflight Cert Suite to run check container cert suite](https://quay.io/repository/opdev/preflight?tab=tags)
 preflight_image                   | quay.io/opdev/preflight:1.5.4                                  | Optional. [Version of Preflight Cert Suite to run check operator cert suite](https://quay.io/repository/opdev/preflight?tab=tags)
 preflight_namespace               | preflight-testing                                    | Optional. Namespace to use for preflight tests
 preflight_sa                      | default                                             | Optional. Service account to use for preflight tests
 pyxis_apikey_path                | undefined                                            | Optional. This is a path to file that contains partner's token. Parner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
 preflight_custom_ca              | undefined                                            | Optional. Path of custom ca.crt. Used to test operator stored in a self signed registry
-preflight_source_dir             | undefined                                            | Optional. If this variable is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and preflight_binary (if any).
+preflight_source_dir             | undefined                                            | Optional. If this variable is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image if any.
 operator_sdk_tool_path          | undefined                                            | Optional. Path to operator-sdk binary, optional. Please check [example_preflight_config.yaml](#example-of-config-file-to-define-a-list-of-operators-to-certify) for the example.
 preflight_test_certified_image  | false                                                | Optional. Run preflight tests on already certified images.
 pyxis_url                       | https://catalog.redhat.com/api/containers/v1         | Optional. This is a Pyxis API that used during the check if the image is certified.
@@ -279,6 +278,6 @@ The idea is use one of them.
 
 ## Preflight CI
 
-If the variable `preflight_source_dir` is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and preflight_binary (if any).
+If the variable `preflight_source_dir` is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and if any.
 
 Currently, Preflight CI stores the generated preflight image into a `dci_local_registry` and hence would only work in disconnected environments with a registry attached. The plan is to remove this limitation in the next releases.
