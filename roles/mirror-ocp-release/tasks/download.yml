@@ -23,11 +23,17 @@
   when:
     - mor_force or not target.stat.exists
 
+- name: "Figure out status of SELinux"
+  command: /usr/sbin/selinuxenabled
+  ignore_errors: true
+  register: selinux_status
+
 - name: "Apply SELinux container file context to extracted files"
-  shell: >
-    set -o pipefail &&
-    /usr/bin/chcon -R -t container_file_t "{{ mor_cache_dir }}/{{ mor_version }}"
+  sefcontext:
+    target: "{{ mor_cache_dir }}/{{ mor_version }}"
+    setype: container_file_t
   become: true
+  when: selinux_status.rc == 0
 
 - name: "Get release digest"
   shell: >
