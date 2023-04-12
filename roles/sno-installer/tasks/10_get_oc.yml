@@ -43,7 +43,7 @@
     state: directory
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
-    mode: "0775"
+    mode: "0755"
   become: true
   delegate_to: "{{ cache_server }}"
   when:
@@ -67,7 +67,7 @@
     path: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
-    mode: "0775"
+    mode: "0755"
     state: directory
   become: true
   delegate_to: "{{ cache_server }}"

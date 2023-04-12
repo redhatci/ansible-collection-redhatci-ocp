@@ -28,4 +28,5 @@
 - name: "Apply new SELinux file context to file"
   command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ uri | basename }}"
   become: true
+  when: selinux_status.rc == 0
 ...
