@@ -12,7 +12,7 @@
       include_tasks: prepare_json_authentication.yml
       when: partner_creds | length
 
-    - name: "Run preflight check container on operator image for {{ operator.name }} with preflight binary"
+    - name: "Run preflight check container on operator image for {{ operator.name }}"
       # introducing operator variable to reuse the functionality
       # for e2e certification when operator is defined
       vars:
@@ -24,7 +24,7 @@
           create_container_project: "{% if c.create_container_project is defined %}{{ c.create_container_project }}{% endif %}"
           short_description: "{% if c.short_description is defined %}{{ c.short_description }}{% endif %}"
           attach_product_listing: "{% if c.attach_product_listing is defined %}{{ c.attach_product_listing }}{% endif %}"
-      include_tasks: test_preflight_check_container_binary.yml
+      include_tasks: test_preflight_check_container_one_image.yml
       loop: "{{ preflight_containers_to_certify }}"
       loop_control:
         loop_var: c
