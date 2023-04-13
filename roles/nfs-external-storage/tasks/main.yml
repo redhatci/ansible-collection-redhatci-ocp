@@ -118,7 +118,7 @@
         name: leader-locking-nfs-client-provisioner
         apiGroup: rbac.authorization.k8s.io
 
-- name: "Check that a default storageclass exists"
+- name: "Check if a default storageclass exists"
   community.kubernetes.k8s_info:
     api_version: v1
     kind: StorageClass
@@ -146,6 +146,9 @@
         name: managed-nfs-storage
       provisioner: storage.io/nfs
       parameters:
+      {% if nes_path_pattern is defined %}
+        pathPattern: "{{ nes_path_pattern }}"
+      {% endif %}
         archiveOnDelete: "false"
   community.kubernetes.k8s:
     state: present
@@ -204,4 +207,43 @@
   retries: 6
   delay: 10
   until: nfs_pod.resources[0].status.phase == 'Running'
+
+- name: "Create a test PVC"
+  community.kubernetes.k8s:
+    definition:
+      kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: test-nfs-claim
+        namespace: "{{ nes_namespace }}"
+        annotations:
+          volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"
+      spec:
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Mi
+        storageClassName: "managed-nfs-storage"
+
+- name: "Wait for PVC to be Bound"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "{{ nes_namespace }}"
+    name: test-nfs-claim
+  register: test_pvc
+  until:
+    - test_pvc.resources is defined
+    - test_pvc.resources[0].status.phase == "Bound"
+  retries: 6
+  delay: 10
+
+- name: "Delete Test PVC"
+  community.kubernetes.k8s:
+    state: absent
+    api: v1
+    kind: PersistentVolumeClaim
+    name: test-nfs-claim
+    namespace: "{{ nes_namespace }}"
 ...

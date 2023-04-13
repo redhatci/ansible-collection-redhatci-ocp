@@ -8,6 +8,7 @@ Name                        | Required  | Default                | Description
 --------------------------- |-----------|------------------------|--------------------------------------
 nes_nfs_server              | Yes       | undefined              | NFS server's FQDN or IP Address
 nes_nfs_path                | Yes       | undefined              | NFS export path
+nes_path_pattern            | No        | undefined              | Specifies a template for creating a directory path via PVC metadata's such as labels, annotations, name or namespace
 nes_namespace               | No        | openshift-nfs-storage  | Deployment namespace
 nes_provisioner_image       | No        | registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2 | Provisioner image
 
@@ -25,6 +26,7 @@ nes_provisioner_image       | No        | registry.k8s.io/sig-storage/nfs-subdir
   vars:
     nes_nfs_server: "192.168.16.11"
     nes_nfs_path: "/exports/nfs-provisioner"
+    nes_path_pattern: "pvc123_${.PVC.name}"
 ```
 
 ### Sample manifest to create a persistent volume claim
