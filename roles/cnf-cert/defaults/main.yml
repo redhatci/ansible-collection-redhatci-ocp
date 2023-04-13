@@ -5,7 +5,9 @@ test_network_function_version: v4.2.2
 test_network_function_project_name: cnf-certification-test
 tnf_suites: ""
 tnf_skip_suites: ""
-tnf_labels: "common,extended"
+# until not having the new tnf release after v4.2.2, we have to omit the usage of common test suite
+#tnf_labels: "common,extended"
+tnf_labels: "platform-alteration,networking,affiliated-certification,lifecycle,access-control,observability,operator,manageability"
 # By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
 # and set the other items as empty values. Under these conditions (i.e. no pods are discovered), no CNF Cert Suite tests are run.
 tnf_config:
