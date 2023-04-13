@@ -22,18 +22,32 @@
       fail:
         msg: "No workaround is defined, so the job has to fail at this point"
       when:
-        - '"OCPBUGS-6676" not in dci_workarounds|default([])'
+        - '"OCPBUGS-11779" not in dci_workarounds|default([])'
 
-    - name: Apply workaround
+    - name: Apply workaround for OCPBUGS-11779
       block:
+        # If nodes are NotReady, we cannot do much more than failing at this point.
+        # This is related to OCPBUGS-6676, just to avoid wasting time applying
+        # the OCPBUGS-11779 workaround in the case of having NotReady nodes.
+        - name: Check for workers with NotReady,SchedulingDisabled status
+          shell: >
+            {{ oc_tool_path }} get nodes --no-headers=true |
+            grep 'NotReady,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+          register: not_ready_disabled_nodes
+
+        - name: Fail if there is any node in NotReady,SchedulingDisabled status
+          fail:
+            msg: There is at least one node in NotReady,SchedulingDisabled status. Job has to fail in this point
+          when: not_ready_disabled_nodes.stdout | length > 0
+
         # If retry_count > num_repetitions, we will not iterate more and make the job to fail
         - name: Fail if the maximum number of retries have been reached
           fail:
             msg: Maximum number of retries without success have been reached ({{ num_repetitions }})
           when: retry_count | int > num_repetitions
 
-        # If retry_count <= num_repetitions, then do the workaround - uncordon nodes that are in NotReady,SchedulingDisabled status
-        - name: Check for workers with NotReady,SchedulingDisabled status
+        # If retry_count <= num_repetitions, then do the workaround - uncordon nodes that are in Ready,SchedulingDisabled status
+        - name: Check for workers with Ready,SchedulingDisabled status
           include_tasks: uncordon_workers.yml
 
         - name: Increment retry count
@@ -45,6 +59,6 @@
 
       when:
         - dci_workarounds is defined
-        - '"OCPBUGS-6676" in dci_workarounds'
+        - '"OCPBUGS-11779" in dci_workarounds'
 
 ...

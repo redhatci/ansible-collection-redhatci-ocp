@@ -1,8 +1,8 @@
 ---
-- name: Check for workers with NotReady,SchedulingDisabled status
+- name: Check for workers with Ready,SchedulingDisabled status
   shell: >
     {{ oc_tool_path }} get nodes --no-headers=true |
-    grep 'NotReady,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+    grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
   register: reg_disabled_nodes
 
 # The workaround should not be applied if we're dealing with a network problem here.
@@ -24,7 +24,7 @@
       register: nodes
       until:
         - '"SchedulingDisabled" not in nodes.stdout'
-        - '"NotReady" not in nodes.stdout'
+        - '"Ready" not in nodes.stdout'
       retries: 60
       delay: 10
   when: reg_disabled_nodes.stdout | length > 0
