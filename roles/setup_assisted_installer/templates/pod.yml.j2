@@ -33,6 +33,10 @@ spec:
       volumeMounts:
         - mountPath: "/data:z"
           name: image-data-volume
+{% for vol_name, vol_data in assisted_installer_pod_volumes.items() %}
+        - mountPath: "{{ vol_data.mount_path }}"
+          name: "{{ vol_name }}"
+{% endfor %}
     - image: "{{ assisted_service_image }}"
       name: service
       ports:
@@ -49,6 +53,12 @@ spec:
       hostPath:
         path:  "{{ assisted_installer_data_dir }}/image_service"
         type: Directory
+{% for vol_name, vol_data in assisted_installer_pod_volumes.items() %}
+    - name: "{{ vol_name }}"
+      hostPath:
+        path: "{{ vol_data.host_path }}"
+        type: "{{ vol_data.type | default('Directory') }}"
+{% endfor %}
   restartPolicy: OnFailure
   {% if (dns_servers | length) > 0 %}
   dnsConfig:

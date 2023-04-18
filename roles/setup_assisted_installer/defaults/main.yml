@@ -12,6 +12,19 @@ assisted_postgres_image: quay.io/centos7/postgresql-12-centos7:latest
 assisted_installer_dir: /opt/assisted-installer
 assisted_installer_data_dir: "{{ assisted_installer_dir }}/data"
 
+assisted_installer_pod_volumes: {}
+# Useful if you want to e.g. install extra certificate chains in the pods prior
+# to setting up the AI service, e.g. you built your own AI images and pushed
+# to a private registry. Example:
+# assisted_installer_pod_volumes:
+#   local-certs:
+#     host_path: /etc/pki/ca-trust/extracted/pem  # path in the host
+#     mount_path: "/etc/pki/ca-trust/extracted/pem:z"  # path inside container
+#   root-bin:
+#     host_path: /root/mybin
+#     mount_path: /usr/local/bin/mybin
+#     type: File  # default is Directory
+
 assisted_installer_hardware_validation:
 - version: default
   master:
