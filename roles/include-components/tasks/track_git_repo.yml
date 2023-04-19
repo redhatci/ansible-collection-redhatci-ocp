@@ -13,8 +13,9 @@
 # dci-ansible/action_plugins/git.py
 - name: Create git repo component
   dci_component:
-    name: "{{ last_commit_id.stdout }}"
-    canonical_project_name: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }} {{ last_commit_id.stdout[:7] }}"
+    display_name: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }} {{ last_commit_id.stdout[:7] }}"
+    version: "{{ last_commit_id.stdout[:7] }}"
+    uid: "{{ last_commit_id.stdout }}"
     team_id: "{{ job_info['job']['team_id'] }}"
     topic_id: "{{ job_info['job']['topic_id'] }}"
     type: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }}"

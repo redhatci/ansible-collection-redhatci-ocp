@@ -2,8 +2,8 @@
 
 - name: Create package component
   dci_component:
-    name: "{{ item }} {{ ansible_facts.packages[item][0].version }}-{{ ansible_facts.packages[item][0].release }}"
-    canonical_project_name: "{{ item }} {{ ansible_facts.packages[item][0].version }}-{{ ansible_facts.packages[item][0].release }}"
+    display_name: "{{ item }} {{ ansible_facts.packages[item][0].version }}-{{ ansible_facts.packages[item][0].release }}"
+    version: "{{ ansible_facts.packages[item][0].version }}-{{ ansible_facts.packages[item][0].release }}"
     team_id: "{{ job_info['job']['team_id'] }}"
     topic_id: "{{ job_info['job']['topic_id'] }}"
     type: rpm
