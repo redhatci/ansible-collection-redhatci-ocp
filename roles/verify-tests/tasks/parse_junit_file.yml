@@ -9,18 +9,23 @@
 - name: "Fail if {{ t.filename }} is not present in the log folder"
   fail:
     msg: "Could not verify test results: {{ t.filename }} is not present"
-  when: not junit_file.stat.exists
+  failed_when:
+    - not junit_file.stat.exists
+    # Do not fail when the option to skip missing files is on
+    - not skip_absent_testfiles | bool
 
-- name: "Retrieve the actual test results from {{ t.filename }}"
-  vars:
-    junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
-  set_fact:
-    actual_results: "{{ junit_filename | junit2dict }}"
+- block:
+    - name: "Retrieve the actual test results from {{ t.filename }}"
+      vars:
+        junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
+      set_fact:
+        actual_results: "{{ junit_filename | junit2dict }}"
 
-- name: "Fail if not all test results are as expected for {{ t.filename }}"
-  vars:
-    expectation_failed: "{{ t.expected_results | regex_diff(actual_results) }}"
-  fail:
-    msg: "The following expectations failed: {{ expectation_failed }}"
-  when: expectation_failed | length > 0
+    - name: "Fail if not all test results are as expected for {{ t.filename }}"
+      vars:
+        expectation_failed: "{{ t.expected_results | regex_diff(actual_results) }}"
+      fail:
+        msg: "The following expectations failed: {{ expectation_failed }}"
+      when: expectation_failed | length > 0
+  when: junit_file.stat.exists
 ...
