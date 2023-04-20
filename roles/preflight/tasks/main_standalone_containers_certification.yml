@@ -7,9 +7,10 @@
         prefix: preflight_tmp_dir.
       register: preflight_tmp_dir
 
-    # Use authentication file for private registry
-    - name: Set authentication for registry access
-      include_tasks: prepare_json_authentication.yml
+    - name: Copy registry authentication into config folder
+      copy:
+        src: "{{ partner_creds }}"
+        dest: "{{ preflight_tmp_dir.path }}/config.json"
       when: partner_creds | length
 
     - name: "Run preflight check container on operator image for {{ operator.name }}"
