@@ -65,8 +65,9 @@
     -e PFLT_ARTIFACTS=/artifacts
     -e PFLT_LOGFILE=/artifacts/preflight.log
     -e PFLT_LOGLEVEL=trace
-    -e DOCKER_CONFIG=/opt
-    {{ preflight_PFLT_dockerconfig | default('') }}
+    {% if partner_creds | length %}
+    -e PFLT_DOCKERCONFIG=/opt/config.json
+    {% endif %}
     -e KUBECONFIG=/kubeconfig
     -e PFLT_INDEXIMAGE={{ OO_INDEX }}
     -e PFLT_NAMESPACE={{ preflight_namespace }}
@@ -74,7 +75,9 @@
     -e PFLT_SCORECARD_IMAGE={{ preflight_assets_images[0] }}
     -v {{ preflight_tmp_dir.path }}/kubeconfig:/kubeconfig
     -v {{ preflight_operator_artifacts.path }}:/artifacts
-    {{ preflight_podman_auth | default('') }}
+    {% if partner_creds | length %}
+    -v {{ preflight_tmp_dir.path }}/config.json:/opt/config.json
+    {% endif %}
     {{ preflight_podman_ca }}
     {{ preflight_image }}
     check operator
