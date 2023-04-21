@@ -16,4 +16,5 @@ acm_root_fs_url: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-
 acm_db_volume_size: 40Gi
 acm_fs_volume_size: 50Gi
 acm_img_volume_size: 40Gi
+acm_vm_external_network: true
 ...
