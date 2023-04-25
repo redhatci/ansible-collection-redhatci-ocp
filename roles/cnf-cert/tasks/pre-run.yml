@@ -15,12 +15,12 @@
     - test_network_function_version != "HEAD"
 
 # Just do this in case preflight test suite is used. This happens if:
-# - (tnf >= v4.1.6) - can be used with common label or with preflight label
-# - (tnf == HEAD) - can be used just with preflight label
+# - (tnf >= v4.1.6 and tnf <= 4.2.2) - can be used with common label or with preflight label
+# - (tnf >= v4.2.3 or tnf == HEAD) - can be used just with preflight label
 # This check is included as a warning for users in case of not defining
 # partner_creds properly, as cnf-cert will include preflight starting
 # from v4.1.6 version.
-- name: (From tnf v4.1.6) Verify if partner_creds is provided
+- name: (From tnf v4.1.6) Verify if partner_creds is provided when running preflight on tnf
   assert:
     that: "partner_creds|length"
     fail_msg: >
@@ -29,8 +29,10 @@
       If you need credentials to pull the images under test,
       you need to set up partner_creds variable,
       else CNF Cert Suite execution will fail.
-  when: "((test_network_function_version is version('v4.1.6', '>=') and ('common' in tnf_labels or 'preflight' in tnf_labels))
-      or (test_network_function_version == 'HEAD' and 'preflight' in tnf_labels))"
+  when: "((test_network_function_version is version('v4.1.6', '>=') and test_network_function_version is version('v4.2.2', '<=')
+      and ('common' in tnf_labels or 'preflight' in tnf_labels))
+      or ((test_network_function_version is version('v4.2.3', '>=') or test_network_function_version == 'HEAD')
+      and 'preflight' in tnf_labels))"
   ignore_errors: true
 
 # This is to ensure compatibility with partners that are still using tnf_suites

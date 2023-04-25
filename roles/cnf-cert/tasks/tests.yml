@@ -6,6 +6,8 @@
 
 # Doing this just before running tnf, just to spend the enough time changing PodSecurity constraints
 # in default namespace.
+# Remember debug daemonset is launched on default namespace until tnf v4.2.0, where it's moved
+# to a new namespace
 - name: Labeling default namespace, so that tnf debug daemonset covers PodSecurity requirements
   community.kubernetes.k8s:
     definition:
@@ -18,6 +20,9 @@
           pod-security.kubernetes.io/enforce: privileged
           pod-security.kubernetes.io/enforce-version: latest
     wait: yes
+  when:
+    - test_network_function_version is version("v4.2.0", "<")
+    - test_network_function_version != "HEAD"
 
 # Task to be deleted when removing backwards compatibility with env vars usage.
 - name: Redefine tnf_env_vars if empty using default environment variables
@@ -28,13 +33,16 @@
   when: tnf_env_vars|length == 0
 
 # Just do this in case preflight test suite is used. This happens if:
-# - (tnf >= v4.1.6) - can be used with common label or with preflight label
-# - (tnf == HEAD) - can be used just with preflight label
+# - (tnf >= v4.1.6 and tnf <= v4.2.2) - can be used with common label or with preflight label
+# - (tnf >= v4.2.3 or tnf == HEAD) - can be used just with preflight label
 # Use authentication file for private registry
 - name: Set authentication for registry access
   include_tasks: prepare_json_authentication.yml
-  when: "((test_network_function_version is version('v4.1.6', '>=') and ('common' in tnf_labels or 'preflight' in tnf_labels))
-      or (test_network_function_version == 'HEAD' and 'preflight' in tnf_labels)) and partner_creds|length"
+  when: "((test_network_function_version is version('v4.1.6', '>=') and test_network_function_version is version('v4.2.2', '<=')
+      and ('common' in tnf_labels or 'preflight' in tnf_labels))
+      or ((test_network_function_version is version('v4.2.3', '>=') or test_network_function_version == 'HEAD')
+      and 'preflight' in tnf_labels))
+      and partner_creds|length"
 
 # The task automatically append TNF_PARTNER_REPO and TNF_IMAGE environment variables to tnf_env_vars
 - name: Run the CNF Test Suite

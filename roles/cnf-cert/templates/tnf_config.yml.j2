@@ -6,6 +6,34 @@ targetNameSpaces:
 {% endif %}
 {% endfor %}
 
+{% if test_network_function_version is version('v4.2.3', '>=') or test_network_function_version == 'HEAD' %}
+podsUnderTestLabels:
+{% for item in tnf_config %}
+{% if item.targetpodlabels is defined and item.targetpodlabels is iterable %}
+{% for label in item.targetpodlabels %}
+{% if label|length %}
+  - "{{ label|regex_search('.+?=')|regex_replace('=', '') }}: {{ label|regex_search('=.*')|regex_replace('=', '') }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+operatorsUnderTestLabels:
+{% if tnf_use_legacy_operator_label|bool %}
+  - "test-network-function.com/operator: target"
+{% else %}
+{% for item in tnf_config %}
+{% if item.targetoperatorlabels is defined and item.targetoperatorlabels is iterable %}
+{% for label in item.targetoperatorlabels %}
+{% if label|length %}
+  - "{{ label|regex_search('.+?=')|regex_replace('=', '') }}: {{ label|regex_search('=.*')|regex_replace('=', '') }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% else %}
+
 targetPodLabels:
 {% for item in tnf_config %}
 {% if item.targetpodlabels is defined and item.targetpodlabels is iterable %}
@@ -25,6 +53,7 @@ targetPodLabels:
 {% endfor %}
 {% endif %}
 {% endfor %}
+{% endif %}
 
 targetCrdFilters:
 {% for item in tnf_config %}
