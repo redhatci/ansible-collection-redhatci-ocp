@@ -3,7 +3,7 @@
   block:
 
     - name: Lenovo Power On the System {{ target_host }}
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ bmc_address }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
         user: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -11,17 +11,17 @@
         body_format: json
         body: {"ResetType": "On"}
         status_code: [200, 204]
-        force_basic_auth: yes
-        validate_certs: no
-        return_content: yes
+        force_basic_auth: true
+        validate_certs: false
+        return_content: true
       register: redfish_reply
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: redfish_reply
         verbosity: 1
 
     - name: Lenovo Eject Virtual Media {{ target_host }}
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
         user: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -29,17 +29,17 @@
         body_format: json
         body: {"Image": null, "Inserted": false}
         status_code: [200, 204]
-        force_basic_auth: yes
-        validate_certs: no
-        return_content: yes
+        force_basic_auth: true
+        validate_certs: false
+        return_content: true
       register: redfish_reply
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: redfish_reply
         verbosity: 1
 
     - name: Lenovo Insert Virtual Media {{ target_host }}
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
         user: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -47,17 +47,17 @@
         body_format: json
         body: {"Image":"{{ boot_iso_url }}", "Inserted": true}
         status_code: [200, 204]
-        force_basic_auth: yes
-        validate_certs: no
-        return_content: yes
+        force_basic_auth: true
+        validate_certs: false
+        return_content: true
       register: redfish_reply
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: redfish_reply
         verbosity: 1
 
     - name: Lenovo Set Boot from Hard Disk {{ target_host }}
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ bmc_address }}/redfish/v1/Systems/1"
         user: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -65,24 +65,24 @@
         body_format: json
         body: {
           "Boot": {
-              "BootSourceOverrideEnabled": "Disabled",
-              "BootSourceOverrideMode": "UEFI",
-              "BootSourceOverrideTarget": "Hdd",
-              "UefiTargetBootSourceOverride": null
-              }
+            "BootSourceOverrideEnabled": "Disabled",
+            "BootSourceOverrideMode": "UEFI",
+            "BootSourceOverrideTarget": "Hdd",
+            "UefiTargetBootSourceOverride": null
           }
+        }
         status_code: [200, 204]
-        force_basic_auth: yes
-        validate_certs: no
-        return_content: yes
+        force_basic_auth: true
+        validate_certs: false
+        return_content: true
       register: redfish_reply
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: redfish_reply
         verbosity: 1
 
     - name: Lenovo Set Boot Once from Virtual Media {{ target_host }}
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ bmc_address }}/redfish/v1/Systems/1"
         user: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -90,24 +90,24 @@
         body_format: json
         body: {
           "Boot": {
-              "BootSourceOverrideEnabled": "Once",
-              "BootSourceOverrideMode": "UEFI",
-              "BootSourceOverrideTarget": "UefiTarget",
-              "UefiTargetBootSourceOverride": "EXT1"
-              }
+            "BootSourceOverrideEnabled": "Once",
+            "BootSourceOverrideMode": "UEFI",
+            "BootSourceOverrideTarget": "UefiTarget",
+            "UefiTargetBootSourceOverride": "EXT1"
           }
+        }
         status_code: [200, 204]
-        force_basic_auth: yes
-        validate_certs: no
-        return_content: yes
+        force_basic_auth: true
+        validate_certs: false
+        return_content: true
       register: redfish_reply
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: redfish_reply
         verbosity: 1
 
     - name: Lenovo Restart the System {{ target_host }}
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ bmc_address }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
         user: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -115,11 +115,11 @@
         body_format: json
         body: {"ResetType": "ForceRestart"}
         status_code: [200, 204]
-        force_basic_auth: yes
-        validate_certs: no
-        return_content: yes
+        force_basic_auth: true
+        validate_certs: false
+        return_content: true
       register: redfish_reply
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: redfish_reply
         verbosity: 1
