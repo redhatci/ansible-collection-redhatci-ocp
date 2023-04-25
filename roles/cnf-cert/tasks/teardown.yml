@@ -1,4 +1,7 @@
 ---
+
+# Remember debug daemonset is launched on default namespace until tnf v4.2.0, where it's moved
+# to a new namespace
 - name: Removing PodSecurity-related labels in default namespace
   community.kubernetes.k8s:
     definition:
@@ -9,5 +12,8 @@
         labels:
           pod-security.kubernetes.io/enforce: null
           pod-security.kubernetes.io/enforce-version: null
-  when: ocp_version is version("4.12", ">=")
+  when:
+    - test_network_function_version is version("v4.2.0", "<")
+    - test_network_function_version != "HEAD"
+
 ...

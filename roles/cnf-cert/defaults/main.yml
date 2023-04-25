@@ -1,20 +1,18 @@
 ---
 tnf_stage: "tests"
 test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
-test_network_function_version: v4.2.2
+test_network_function_version: v4.2.4
 test_network_function_project_name: cnf-certification-test
 tnf_suites: ""
 tnf_skip_suites: ""
-# until not having the new tnf release after v4.2.2, we have to omit the usage of common test suite
-#tnf_labels: "common,extended"
-tnf_labels: "platform-alteration,networking,affiliated-certification,lifecycle,access-control,observability,operator,manageability"
+tnf_labels: "common,extended"
 # By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
 # and set the other items as empty values. Under these conditions (i.e. no pods are discovered), no CNF Cert Suite tests are run.
 tnf_config:
   - namespace: "{{ dci_openshift_app_ns }}"
     targetpodlabels: []
+    targetoperatorlabels: []
     target_crds: []
-    operators_regexp: ""
     exclude_connectivity_regexp: ""
 accepted_kernel_taints: []
 tnf_postrun_delete_resources: true
@@ -23,3 +21,4 @@ tnf_env_vars: {}
 # Next two variables to be deleted when removing backwards compatibility with env vars usage. Also review cnf-cert README.
 tnf_non_intrusive_only: false
 tnf_log_level: "debug"
+tnf_use_legacy_operator_label: false
