@@ -7,14 +7,14 @@
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
 
-- block:
+- block: # noqa unnamed-task
     - name: Wait for machine to DELL Shutdown
       community.general.redfish_info:
         category: Systems
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
-      register: system_inventory  
+      register: system_inventory
       until: (system_inventory |  json_query(filter_str) | length) == 0
       retries: 10
       delay: 30
@@ -29,7 +29,7 @@
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
 
-- block:
+- block: # noqa unnamed-task
     - name: Set Dell OneTimeBoot VirtualCD (VCD-DVD)
       community.general.redfish_command:
         category: Systems
@@ -48,7 +48,7 @@
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
 
-- block:
+- block: # noqa unnamed-task
     - name: DELL Eject Virtual Media (if any)
       community.general.redfish_command:
         category: Manager
@@ -70,8 +70,8 @@
       register: result
 
     - name: Get blocking virtual_media
-      set_fact:
-        blocking_virtual_media:  "{{ result.redfish_facts.virtual_media.entries
+      ansible.builtin.set_fact:
+        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
             | flatten(levels=2)
             | selectattr('ConnectedVia', 'defined') | list
             | json_query('[?(
@@ -86,7 +86,7 @@
             ) | from_yaml
           }}"
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: blocking_virtual_media
         verbosity: 1
 
@@ -101,7 +101,7 @@
           image_url: "{{ item.Image }}"
         resource_id: iDRAC.Embedded.1
       loop: "{{ blocking_virtual_media }}"
-      no_log: True
+      no_log: true
 
 - name: DELL Insert Virtual Media
   community.general.redfish_command:

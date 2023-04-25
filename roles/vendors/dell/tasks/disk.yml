@@ -18,11 +18,11 @@
       ]
   register: drac_version
 
-- name: "Found iDrac {{ drac_version.stdout }} | Using iDrac ISO method" 
-  fail:
+- name: "Using iDrac ISO method | Found iDrac {{ drac_version.stdout }}"
+  ansible.builtin.fail:
     msg: "Not implemented"
   when: drac_version.stdout | int <= 13
 
-- name: "Found iDrac {{ drac_version.stdout }} | Using RedFish ISO method" 
-  include_tasks: ./disk_redfish.yml
+- name: "Using RedFish ISO method | Found iDrac {{ drac_version.stdout }}"
+  ansible.builtin.include_tasks: ./disk_redfish.yml
   when: drac_version.stdout | int > 13
