@@ -6,7 +6,7 @@
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
 
-- block:
+- block: # noqa unnamed-task
     - name: Wait for machine to ZT Shutdown
       community.general.redfish_info:
         category: Systems

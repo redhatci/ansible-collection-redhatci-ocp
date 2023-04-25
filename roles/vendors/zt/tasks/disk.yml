@@ -17,7 +17,7 @@
     virtual_media:
       image_url: "{{ boot_iso_url }}"
     resource_id: "{{ resource_id }}"
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Set ZT OneTimeBoot Hdd
   community.general.redfish_command:
