@@ -1,8 +1,4 @@
 ---
-- name: Set qemu user
-  set_fact: 
-    qemu_user: "{{ ansible_user | default(ansible_env.USER) }}"
-
 - name: Setup host environment
   become: true
   block:
