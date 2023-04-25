@@ -9,8 +9,8 @@
         state: started
         rm: true
         command: [
-          "-r", "{{ bmc_address }}", 
-          "-u", "{{ bmc_user }}", 
-          "-p", "{{ bmc_password }}", 
+          "-r", "{{ bmc_address }}",
+          "-u", "{{ bmc_user }}",
+          "-p", "{{ bmc_password }}",
           "-i", "{{ boot_iso_url }}"
         ]
