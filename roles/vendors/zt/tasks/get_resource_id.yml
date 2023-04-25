@@ -7,30 +7,30 @@
     password: "{{ bmc_password }}"
   register: result
 
-- debug: # noqa unnamed-task
+- ansible.builtin.debug: # noqa unnamed-task
     var: result
     verbosity: 1
 
 - name: Get blocking virtual_media
-  set_fact:
-    resources:  "{{ result.redfish_facts.virtual_media.entries
+  ansible.builtin.set_fact:
+    resources: "{{ result.redfish_facts.virtual_media.entries
         | flatten(levels=2) | selectattr('resource_uri', 'defined') | list
       }}"
 
-- debug: # noqa unnamed-task
+- ansible.builtin.debug: # noqa unnamed-task
     var: resources
     verbosity: 1
 
 - name: Check resource is unambiguous
-  assert:
+  ansible.builtin.assert:
     that:
       - (resources | length)  == 1
     fail_msg: None or more than 1 resources found for vitual media please define bmc_resource_id in your inventory.
 
 - name: Set resource id
-  set_fact:
+  ansible.builtin.set_fact:
     resource_id: "{{ resources[0].resource_uri.split('/')[-1] }}"
 
-- debug: # noqa unnamed-task
+- ansible.builtin.debug: # noqa unnamed-task
     var: resource_id
     verbosity: 1

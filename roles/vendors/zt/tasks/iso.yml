@@ -16,7 +16,7 @@
   ansible.builtin.import_tasks:
     file: "./set_resource_id.yml"
 
-- block:
+- block: # noqa unnamed-task
     - name: ZT Eject Virtual Media (if any)
       community.general.redfish_command:
         category: Manager
@@ -38,8 +38,8 @@
       register: result
 
     - name: Get blocking virtual_media
-      set_fact:
-        blocking_virtual_media:  "{{ result.redfish_facts.virtual_media.entries
+      ansible.builtin.set_fact:
+        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
             | flatten(levels=2)
             | selectattr('ConnectedVia', 'defined') | list
             | json_query('[?(
@@ -50,7 +50,7 @@
             ) | from_yaml
           }}"
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug: # noqa unnamed-task
         var: blocking_virtual_media
         verbosity: 1
 
@@ -65,7 +65,7 @@
           image_url: "{{ item.Image }}"
         resource_id: "{{ resource_id }}"
       loop: "{{ blocking_virtual_media }}"
-      no_log: True
+      no_log: true
 
 - name: ZT Insert Virtual Media
   community.general.redfish_command:
