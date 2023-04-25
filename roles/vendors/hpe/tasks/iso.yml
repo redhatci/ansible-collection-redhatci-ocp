@@ -7,7 +7,7 @@
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
 
-- block:
+- block: # noqa unnamed-task
     - name: HPE Eject Virtual Media (if any)
       community.general.redfish_command:
         category: Manager
@@ -29,8 +29,8 @@
       register: result
 
     - name: Get blocking virtual_media
-      set_fact:
-        blocking_virtual_media:  "{{ result.redfish_facts.virtual_media.entries
+      ansible.builtin.set_fact:
+        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
             | flatten(levels=2)
             | selectattr('ConnectedVia', 'defined') | list
             | json_query('[?(
@@ -57,9 +57,9 @@
           image_url: "{{ item.Image }}"
         resource_id: 1
       loop: "{{ blocking_virtual_media }}"
-      no_log: True
+      no_log: true
 
-- block:
+- block: # noqa unnamed-task
     - name: HPE Insert Virtual Media
       community.general.redfish_command:
         category: Manager
