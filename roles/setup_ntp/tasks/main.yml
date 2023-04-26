@@ -1,5 +1,6 @@
 ---
 - name: Setup Chrony
+  become: true
   block:
     - name: Install Chrony
       ansible.builtin.package:
@@ -25,7 +26,6 @@
       ansible.posix.firewalld:
         zone: public
         service: ntp
-        permanent: yes
+        permanent: true
         state: enabled
-        immediate: yes
-  become: true
+        immediate: true
