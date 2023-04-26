@@ -12,7 +12,7 @@ cert_country: "{{ hostvars[host_var_key]['cert_country'] }}"
 cert_state: "{{ hostvars[host_var_key]['cert_state'] }}"
 cert_locality: "{{ hostvars[host_var_key]['cert_locality'] }}"
 cert_organization: "{{ hostvars[host_var_key]['cert_organization'] }}"
-cert_organizational_unit: "{{  hostvars[host_var_key]['cert_organizational_unit'] }}"
+cert_organizational_unit: "{{ hostvars[host_var_key]['cert_organizational_unit'] }}"
 
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
