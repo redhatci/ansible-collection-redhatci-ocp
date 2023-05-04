@@ -24,7 +24,7 @@
       register: nodes
       until:
         - '"SchedulingDisabled" not in nodes.stdout'
-        - '"Ready" not in nodes.stdout'
+        - '"NotReady" not in nodes.stdout'
       retries: 60
       delay: 10
   when: reg_disabled_nodes.stdout | length > 0
