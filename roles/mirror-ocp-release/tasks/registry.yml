@@ -8,13 +8,13 @@
         --authfile {{ mor_auths_file }}
         docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
 
-    - name: "Check for cached imagecontentsourcepolicy file"
+    - name: "Check for cached Image Source file"
       stat:
-        path: "{{ mor_cache_dir }}/{{ mor_version }}/imagecontentsourcepolicy.yaml"
+        path: "{{ mor_cache_dir }}/{{ mor_version }}/imagesource.yaml"
         get_checksum: false
       register: target
 
-    - name: "Force mirroring if imagecontentsourcepolicy does not exist"
+    - name: "Force mirroring if image source does not exist"
       fail:
         msg: "Cached image contents does not exits, forcing mirroring"
       when: not target.stat.exists
@@ -38,21 +38,21 @@
       register: result
       until: result.rc == 0
 
-    - name: Generate ImageContentSourcePolicy
+    - name: Generate Image Source manifest
       shell: >
         set -o pipefail &&
         echo -e "{{ result.stdout }}" |
         sed -n '/apiVersion/,$p' |
         sed -e 's/name:.*/name: release-{{ version }}/'
-      register: icsp_release
+      register: is_release
 
-    - name: "Write mirrored image content source policy"
+    - name: Write Image Source manifest
       copy:
-        dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagecontentsourcepolicy.yaml"
+        dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagesource.yaml"
         owner: "{{ mor_owner }}"
         group: "{{ mor_group }}"
         mode: "0644"
         setype: httpd_sys_content_t
-        content: "{{ icsp_release.stdout }}"
+        content: "{{ is_release.stdout }}"
       become: true
 ...

@@ -7,20 +7,33 @@
       - mc_catalog is defined
       - mc_catalog | length
 
-- name: Get catalog Digest
-  shell:
-    cmd: >
-      skopeo inspect
-      {% if mc_pullsecret is defined %}
-      --authfile {{ mc_pullsecret }}
-      {% endif %}
-      docker://{{ mc_catalog }} |
-      jq -r '.Digest'
-  register: image_digest
-  retries: 5
-  delay: 5
-  until:
-    - image_digest.stdout | regex_search('^sha')
+- name: Set catalog fact
+  set_fact:
+    mc_catalog_digest: "{{ mc_catalog }}"
+
+- name: Set Digest in catalog
+  when: not mc_catalog | regex_search('@sha256sum:')
+  block:
+    - name: Get catalog Digest
+      shell:
+        cmd: >
+          skopeo inspect
+          {% if mc_pullsecret is defined %}
+          --authfile {{ mc_pullsecret }}
+          {% endif %}
+          docker://{{ mc_catalog }} |
+          jq -r '.Digest'
+      register: image_digest
+      retries: 5
+      delay: 5
+      until:
+        - image_digest.stdout | regex_search('^sha')
+
+    - name: Set catalog with digest
+      vars:
+        mc_base_catalog: "{{ mc_catalog | regex_search('(^.+):', '\\1') | first }}"
+      set_fact:
+        mc_catalog_digest: "{{ mc_base_catalog }}@{{ image_digest.stdout }}"
 
 - name: Create tmp directory
   tempfile:
@@ -28,13 +41,11 @@
   register: mc_tmp
 
 - name: Mirror catalog manifests
-  vars:
-    mc_base_catalog: "{{ mc_catalog | regex_search('(^.+):', '\\1') | first }}"
   shell:
     cmd: >
       set -x;
       {{ mc_oc_tool_path }} adm catalog mirror
-      {{ mc_base_catalog }}@{{ image_digest.stdout }}
+      {{ mc_catalog_digest }}
       {{ mc_registry }}
       --index-filter-by-os="linux/amd64"
       --insecure
@@ -45,16 +56,42 @@
       --to-manifests={{ mc_tmp.path }}/manifests
   register: catalog_manifests_output
 
-- name: Set the icsp file
+- name: Set the Image Source file
   tempfile:
     state: file
-    prefix: "icsp_{{ (mc_catalog | basename).split(':')[0] }}."
-  register: mc_icsp_file
+    prefix: "imagesource_{{ (mc_catalog_digest | basename).split('@')[0] }}."
+  register: mc_is_file
 
-- name: Copy the generated icsp file
+- name: Migrate ICSP to IDMS
+  when:
+    - mc_is_type | lower == "idms"
+  block:
+    - name: Transform ICSP to IDMS
+      shell:
+        cmd: >
+          {{ mc_oc_tool_path }} adm migrate icsp
+          {{ mc_tmp.path }}/manifests/imageContentSourcePolicy.yaml
+          --dest-dir {{ mc_tmp.path }}
+      register: migrate_result
+
+    - name: Set new image source file
+      set_fact:
+        is_manifest_file: "{{ migrate_result.stdout_lines[0].split(' ')[-1] }}"
+
+    - name: Read the image source file
+      include_vars:
+        file: "{{ is_manifest_file }}"
+        name: mc_is_content
+
+    - name: Regenerate image source with expected indentation
+      copy:
+        dest: "{{ is_manifest_file }}"
+        content: "{{ mc_is_content | to_yaml }}"
+
+- name: Copy the generated Image Source file
   copy:
-    src: "{{ mc_tmp.path }}/manifests/imageContentSourcePolicy.yaml"
-    dest: "{{ mc_icsp_file.path }}"
+    src: "{{ is_manifest_file | default(mc_tmp.path + '/manifests/imageContentSourcePolicy.yaml') }}"
+    dest: "{{ mc_is_file.path }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0644"

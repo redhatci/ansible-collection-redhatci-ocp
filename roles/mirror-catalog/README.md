@@ -1,6 +1,6 @@
 # Mirror Catalog
 
-Mirrors a catalog and its related images. Produces two files that can be used to set mirroring in an OCP cluster.
+Mirrors a catalog and its related images. Produces a file that can be used to set mirroring in an OCP cluster.
 
 ## Role Variables
 
@@ -10,6 +10,7 @@ mc_oc_tool_path | Yes      |         | The path to the oc<sup>1</sup> binary, e.
 mc_catalog      | Yes      |         | The Fully Qualified Artifact Reference, e.g. 'example.com/namespace/web:v1.0'
 mc_registry     | Yes      | ""      | The registry where the catalog will be mirrored, e.g. 'registry.example.com' or 'reg.example.com:4443'
 mc_pullsecret   | No       |         | The credential file to pull and/or push the images, e.g. '/path/to/pullsecret.json'
+mc_is_type      | No       | icsp    | The type of image source to use, choose between icsp (imageContentsourcePolicy) (default) or idms (imageDigestMirrorSet).
 
 <sup>1</sup> It's recommended to use a [stable version of oc](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/)
 
@@ -22,11 +23,16 @@ The following applications must be already present in the system.
 
 ## Outputs
 
-The role copies the ImageContentSourcePolicy file generated into a temporary file with `icsp_<image-name>.` prefix.
+The role copies a generated Image Sources manifest file into a temporary file with `imagesource_<image-name>.` prefix.
 
-The `icsp` file can be used directly to apply the image content source policies into a running cluster. Or, it could also be used by extracting the `repositoryDigestMirrors` from it, and combining it with [the install-config.yml from an IPI installation](https://openshift-kni.github.io/baremetal-deploy/4.8/Deployment.html#_modify_the_install_config_yaml_file_to_use_the_disconnected_registry_optional)
+If a `KUBECONFIG` environment variable is set, the role will look into the cluster to determine the type of Image Source file to generate, for OCP 4.14 and above the Image Source file will contain `ImageDigestManifestSet` when such resource is in use, otherwise will use `ImageContentSourcePolicies`. OCP 4.13 and earlier will always contain `ImageContentSourcePolicies`.
 
-The role also sets a variable with the path to the file: `mc_icsp_file.path`
+The Image Source file can be used directly to apply the image source into a running cluster.
+
+The role also sets a couple of variables
+
+- `mc_is_file.path`: The path to the Image Source file produced.
+- `mc_catalog_digest`: The catalog image using its digest.
 
 ## Example Playbook
 
@@ -40,6 +46,7 @@ As a role:
          mc_oc_tool_path: /path/to/oc
          mc_catalog: my.example.com/my-org/my-image:latest
          mc_registry: my-registry.example.com
+         mc_is_type: "idms"
 ```
 
 As a task:
