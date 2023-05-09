@@ -202,4 +202,5 @@
         name: provisioning-configuration
       spec:
         watchAllNamespaces: true
+        provisioningNetwork: Managed
 ...
