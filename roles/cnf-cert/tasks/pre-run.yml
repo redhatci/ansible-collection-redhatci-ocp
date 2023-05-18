@@ -132,7 +132,7 @@
   - name: Create variable with tnf image name
     set_fact:
       tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
-        {{ lookup('community.general.random_string', length=16, special=false) }}"
+        {{ tnf_image_suffix }}"
 
   # Steps from https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
   - name: Build the tnf image locally
@@ -195,7 +195,7 @@
   - name: Create variable with tnf image name
     set_fact:
       tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
-        {{ lookup('community.general.random_string', length=16, special=false) }}"
+      {{ tnf_image_suffix }}"
 
   - name: Clone tnf repository
     git:

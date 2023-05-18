@@ -22,3 +22,4 @@ tnf_env_vars: {}
 tnf_non_intrusive_only: false
 tnf_log_level: "debug"
 tnf_use_legacy_operator_label: false
+tnf_image_suffix: "{{ lookup('community.general.random_string', length=16, special=false) }}"
