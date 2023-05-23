@@ -20,6 +20,11 @@
   set_fact:
     preflight_image: "{{ dci_local_registry }}/preflight/preflight:{{ preflight_branch }}"
 
+- name: "Append to image name the job id"
+  set_fact:
+    preflight_image: "{{ preflight_image +'-'+ job_id }}"
+  when: job_id is defined
+
 - name: Build Preflight image
   shell:
     cmd: >
