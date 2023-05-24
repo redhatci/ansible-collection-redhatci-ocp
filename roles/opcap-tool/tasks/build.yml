@@ -11,6 +11,8 @@
   containers.podman.podman_container:
     name: go-builder
     image: "golang:1.19"
+    debug: true
+    log_level: "info"
     command: make -C /opcap build OPCAP_VERSION={{ opcap_version }}
     detach: false
     rm: true
