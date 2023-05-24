@@ -39,7 +39,7 @@
   loop_control:
     label: "{{ item._id }}"
   when:
-    - cert_project_data != []
+    - cert_project_data | default([]) | length > 0
     - item.container.registry == registry_name
     - item.container.repository.split('/')[0] == repo_name
     - item.name == image_name
@@ -68,4 +68,5 @@
     query_data: "[?name == '{{ image_name }}']._id"
   when:
     - cert_project_exists_own_org | default(false) | bool
+    - cert_project_data | default([]) | length > 0
 ...
