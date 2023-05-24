@@ -24,11 +24,13 @@
     - name: Set project ID to reuse it later
       set_fact:
         cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"
+      when: not cert_project_output.failed
 
     - name: Print the URL of created certification project
       debug:
         msg: |
           Certification project was created and could be checked here:
           {{ connect_url }}/{{ cert_project_id }}/overview
+      when: not cert_project_output.failed
   ignore_errors: "{{ ignore_project_creation_errors | bool }}"
 ...
