@@ -30,7 +30,7 @@
   set_fact:
     cert_project_data: "{{ cert_project_list_output.json.data | json_query(query_data) }}"
   vars:
-    query_data: "[?name == '{{ image_name }}']"
+    query_data: "[?container.repository == '{{ repository_name }}']"
 
 - name: "Set fact if {{ image_name }} is already in an active certification project"
   set_fact:
@@ -42,7 +42,6 @@
     - cert_project_data | default([]) | length > 0
     - item.container.registry == registry_name
     - item.container.repository.split('/')[0] == repo_name
-    - item.name == image_name
     - item.project_status == "active"
 
 - name: "Notify if image {{ image_name }} is already in an active certification project"
@@ -58,14 +57,13 @@
     - cert_project_exists_own_org | default(false) | bool
     - item.container.registry == registry_name
     - item.container.repository.split('/')[0] == repo_name
-    - item.name == image_name
     - item.project_status == "active"
 
 - name: Set project ID to reuse it later
   set_fact:
     cert_project_id: "{{ cert_project_data | json_query(query_data) | flatten | last }}"
   vars:
-    query_data: "[?name == '{{ image_name }}']._id"
+    query_data: "[]._id"
   when:
     - cert_project_exists_own_org | default(false) | bool
     - cert_project_data | default([]) | length > 0
