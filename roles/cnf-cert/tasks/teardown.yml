@@ -1,4 +1,70 @@
 ---
+# Deleting resources created by the CNF Cert Suite to support the execution
+- name: Clean CNF Cert Suite resources
+  block:
+  - name: Define tnf-debug daemonset namespace
+    set_fact:
+      tnf_debug_ds_ns: "{{ ( test_network_function_version is version('v4.2.0', '>=') or
+      test_network_function_version == 'HEAD' ) | ternary('cnf-suite', 'default') }}"
+
+  - name: Check if tnf-debug daemonset exists
+    community.kubernetes.k8s_info:
+      api_version: v1
+      kind: DaemonSet
+      name: tnf-debug
+      namespace: "{{ tnf_debug_ds_ns }}"
+    register: debug_daemonset
+
+  - name: Delete the tnf-debug daemonSet
+    community.kubernetes.k8s:
+      api_version: v1
+      kind: DaemonSet
+      name: tnf-debug
+      namespace: "{{ tnf_debug_ds_ns }}"
+      state: absent
+    when: debug_daemonset.resources|length > 0
+
+  - name: Check if tnf default namespace exists
+    community.kubernetes.k8s_info:
+      api_version: v1
+      kind: Namespace
+      name: tnf
+    register: tnf_namespace
+
+  - name: Delete tnf namespace
+    community.kubernetes.k8s:
+      api_version: v1
+      kind: Namespace
+      name: tnf
+      state: absent
+    when: tnf_namespace.resources|length > 0
+
+  - name: Check if cnf-suite default namespace exists
+    community.kubernetes.k8s_info:
+      api_version: v1
+      kind: Namespace
+      name: cnf-suite
+    register: cnf_suite_namespace
+
+  - name: Delete tnf namespace
+    community.kubernetes.k8s:
+      api_version: v1
+      kind: Namespace
+      name: cnf-suite
+      state: absent
+    when: cnf_suite_namespace.resources|length > 0
+  when: tnf_postrun_delete_resources|bool
+
+# When tnf_git_dir contains a folder from the PR, it is not a problem to
+# remove the content from there because it is also present under the PR
+# directory, which is removed after finishing the job thanks to test-runner
+- name: Delete temporary directory for git repos
+  file:
+    path: "{{ tnf_git_dir.path }}"
+    state: absent
+  when:
+    - tnf_git_dir is defined
+    - tnf_git_dir.path is defined
 
 # Remember debug daemonset is launched on default namespace until tnf v4.2.0, where it's moved
 # to a new namespace
@@ -15,5 +81,4 @@
   when:
     - test_network_function_version is version("v4.2.0", "<")
     - test_network_function_version != "HEAD"
-
 ...
