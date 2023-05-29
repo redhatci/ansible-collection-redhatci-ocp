@@ -1,18 +1,13 @@
 ---
 - name: Execute cnf-cert pre-run stage
   include_tasks: pre-run.yml
-  when: tnf_stage == "pre-run"
 
 - name: Execute cnf-cert tests stage
   include_tasks: tests.yml
-  when: tnf_stage == "tests"
 
 - name: Execute cnf-cert post-run stage
   include_tasks: post-run.yml
-  when: tnf_stage == "post-run"
 
 - name: Execute cnf-cert teardown stage
   include_tasks: teardown.yml
-  when: tnf_stage == "teardown"
-
 ...
