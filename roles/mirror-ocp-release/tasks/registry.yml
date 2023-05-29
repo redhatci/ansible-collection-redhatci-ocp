@@ -8,6 +8,17 @@
         --authfile {{ mor_auths_file }}
         docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
 
+    - name: "Check for cached imagecontentsourcepolicy file"
+      stat:
+        path: "{{ mor_cache_dir }}/{{ mor_version }}/imagecontentsourcepolicy.yaml"
+        get_checksum: false
+      register: target
+
+    - name: "Force mirroring if imagecontentsourcepolicy does not exist"
+      fail:
+        msg: "Cached image contents does not exits, forcing mirroring"
+      when: not target.stat.exists
+
     - name: "Force mirroring is enabled"
       fail:
         msg: "Forcing the release mirroring"
