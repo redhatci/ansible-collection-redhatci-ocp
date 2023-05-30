@@ -5,9 +5,6 @@
 - name: Execute cnf-cert tests stage
   include_tasks: tests.yml
 
-- name: Execute cnf-cert post-run stage
-  include_tasks: post-run.yml
-
 - name: Execute cnf-cert teardown stage
   include_tasks: teardown.yml
 ...
