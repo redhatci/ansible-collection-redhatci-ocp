@@ -47,9 +47,10 @@
   include_role:
     name: mirror_images
   vars:
+    support_image_version: "{{ ( test_network_function_version is version('v4.3.0', '>=') or test_network_function_version == 'HEAD' ) | ternary('4.3.0', 'latest') }}"
     images:
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"
-      - "quay.io/testnetworkfunction/debug-partner:latest"
+      - "quay.io/testnetworkfunction/debug-partner:{{ support_image_version }}"
     authfile: "{{ pullsecret_tmp_file }}"
   when:
     - dci_disconnected | default(false) | bool
