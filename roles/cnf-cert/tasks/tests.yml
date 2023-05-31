@@ -44,11 +44,16 @@
       and 'preflight' in tnf_labels))
       and partner_creds|length"
 
-# The task automatically append TNF_PARTNER_REPO and TNF_IMAGE environment variables to tnf_env_vars
+# The task automatically append these environment variables to tnf_env_vars:
+# - TNF_PARTNER_REPO
+# - TNF_IMAGE
+# - SUPPORT_IMAGE
 - name: Run the CNF Test Suite
   vars:
     tnf_partner_repo: "{{ ( dci_local_registry | length ) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
-  environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image}) }}"
+    support_image_version: "{{ ( test_network_function_version is version('v4.3.0', '>=') or test_network_function_version == 'HEAD' ) | ternary('4.3.0', 'latest') }}"
+    support_image: "debug-partner:{{ support_image_version }}"
+  environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image, 'SUPPORT_IMAGE': support_image}) }}"
   shell: |
     set -x
 
@@ -67,6 +72,8 @@
     cp {{ test_network_function_project_name }}/*.json {{ job_logs.path }}
     cp {{ test_network_function_project_name }}/dci-tnf-execution.log {{ job_logs.path }}
     cp {{ test_network_function_project_name }}/tnf_config.yml {{ job_logs.path }}
+
+    cp {{ test_network_function_project_name }}/*.js script/
   args:
     chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
@@ -87,4 +94,15 @@
       fail:
         msg: claim.json file does not exist, so CNF Cert Suite execution did not finish correctly
       when: not claim_json_present.stat.exists|bool
+
+- name: Compress HTML results web page to upload it to DCI
+  archive:
+    path:
+      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/classification.js"
+      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/claimjson.js"
+      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/results-embed.html"
+      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/results.html"
+    dest: "{{ job_logs.path }}/tnf-results-web-page.tar.gz"
+  when: test_network_function_version is version("v4.3.0", ">=") or test_network_function_version == "HEAD"
+
 ...
