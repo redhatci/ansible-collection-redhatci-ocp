@@ -1,3 +1,4 @@
+#jinja2: trim_blocks:False
 [all:vars]
 prov_nic={{ prov_nic }}
 pub_nic={{ pub_nic }}
@@ -25,11 +26,11 @@ lso_label='{"cluster.ocs.openshift.io/openshift-storage": ""}'
 
 # Master nodes
 [masters]
-{% for key, value in ironic_nodes.items() %}
-{% if 'master' in key %}
-{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=master ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=default socket_console={{ enable_conserver }}
+{% for key, value in ironic_nodes.items() -%}
+{% if 'master' in key -%}
+{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=master ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=default socket_console={{ enable_conserver }}{% if value.root_device_hint is defined %} root_device_hint={{ value.root_device_hint }}{% endif %}{% if value.root_device_hint_value is defined %} root_device_hint_value={{ value.root_device_hint_value }}{% endif %}
 {% endif %}
-{% endfor %}
+{%- endfor %}
 
 [masters:vars]
 ansible_user=core
@@ -37,11 +38,11 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 
 # Worker nodes
 [workers]
-{% for key, value in ironic_nodes.items() %}
-{% if 'worker' in key %}
-{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=worker ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=unknown socket_console={{ enable_conserver }}
+{% for key, value in ironic_nodes.items() -%}
+{% if 'worker' in key -%}
+{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=worker ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=unknown socket_console={{ enable_conserver }}{% if value.root_device_hint is defined %} root_device_hint={{ value.root_device_hint }}{% endif %}{% if value.root_device_hint_value is defined %} root_device_hint_value={{ value.root_device_hint_value }}{% endif %}
 {% endif %}
-{% endfor %}
+{%- endfor %}
 
 [workers:vars]
 ansible_user=core
@@ -49,11 +50,11 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 
 # Provision Host
 [provisioner]
-{% for key, value in ironic_nodes.items() %}
-{% if 'provision' in key %}
+{% for key, value in ironic_nodes.items() -%}
+{% if 'provision' in key -%}
 {{ key }}{{ "." + ansible_fqdn if not do_dns_config|bool else "" }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} ansible_user={{ provisionhost_user }} prov_nic=eth0 pub_nic=eth1 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 {% endif %}
-{% endfor %}
+{%- endfor %}
 
 # Registry Host
 #   Define a host here to create or use a local copy of the installation registry
