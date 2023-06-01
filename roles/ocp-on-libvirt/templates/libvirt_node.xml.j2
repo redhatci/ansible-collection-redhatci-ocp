@@ -42,6 +42,9 @@
       {% else %}
       <target dev='sda' bus='scsi'/>
       {% endif %}
+      {% if host['root_device_hint'] is defined and host['root_device_hint'] == 'serial' %}
+      <serial>{{ host['root_device_hint_value'] | default(host['name']) }}</serial>
+      {% endif %}
     </disk>
     {% if host['disk2_size'] is defined %}
     <disk type='file' device='disk'>

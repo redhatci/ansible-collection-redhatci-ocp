@@ -85,6 +85,7 @@
         'memory_kibs': '`echo "$NODE_XML" | grep currentMemory | cut -d\< -f2 | cut -d\> -f2`',
         'mac': '`echo "$NODE_XML" | grep provisioning -B 1 | grep mac | cut -d\' -f2`',
         'cpu': '`echo "$NODE_XML" | grep vcpu | cut -d\< -f2 | cut -d\> -f2`',
+        'hint_serial': '`echo "$NODE_XML" | grep "<serial>" | cut -d\< -f2 | cut -d\> -f2`',
         'disk_bytes': '`virsh domblkinfo {{ item }} vda | grep -e Capacity | cut -d\: -f2 | xargs`',
         'disks': '${disks_list}',
     }"
