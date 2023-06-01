@@ -1,26 +1,27 @@
 ---
 - name: Retrieve all images to mirror
   vars:
-    busybox_images: "{{ (lookup('file', 'files/scorecard-busybox-ubi.yaml') | from_yaml)['images'] }}"
+    scorecard_images: "{{ (lookup('file', 'files/scorecard-images.yml') | from_yaml)['images'] }}"
     preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
   set_fact:
-    preflight_images: "{{ (preflight_assets_images + busybox_images + preflight_bundle_images) | unique }}"
+    preflight_images: "{{ (preflight_assets_images + scorecard_images + preflight_bundle_images) | unique }}"
+    # TODO: to delete the old images once preflight release with 1.29.0 integration is cut
+    old_images: "{{ (lookup('file', 'files/scorecard-old-images.yml') | from_yaml)['images'] }}"
+
 
 - name: Mirror preflight images
-  # Deactivate mirroring of busybox images to workaround docker pull limits.
-  # TODO: to delete vars section here and mirror preflight_images.
   vars:
-    preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
-    preflight_images_to_mirror: "{{ (preflight_assets_images + preflight_bundle_images) | unique }}"
+    local_image_location: "{{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}"
   shell: >
     skopeo copy
     --all
+    --preserve-digests
     --remove-signatures
     --authfile {{ partner_creds }}
     --dest-tls-verify=false
     docker://{{ item }}
-    docker://{{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
-  loop: "{{ preflight_images_to_mirror }}"
+    docker://{{ local_image_location }}
+  loop: "{{ preflight_images }}"
   register: result
   retries: 3
   delay: 10
@@ -96,7 +97,8 @@
               source: {{ item.split('@')[0] }}
         marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
         path: "{{ preflight_prerun_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
-      loop: "{{ preflight_images }}"
+      # TODO: to delete the old images once preflight release with 1.29.0 integration is cut
+      loop: "{{ (preflight_images + old_images) | unique }}"
 
     - name: Apply Image Content Source Policy
       community.kubernetes.k8s:
