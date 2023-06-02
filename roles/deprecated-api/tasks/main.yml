@@ -1,10 +1,4 @@
 ---
-- name: Install required packages
-  pip:
-    name:
-      - junitparser
-      - semver
-
 - name: Compute removed API
   vars:
     before_api: "{{ lookup('file', job_logs.path + '/apirequestcounts.before.json') }}"
