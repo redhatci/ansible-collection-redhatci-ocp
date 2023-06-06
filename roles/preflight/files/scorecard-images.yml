@@ -1,0 +1,7 @@
+---
+# 1/ scorecard-storage: https://github.com/operator-framework/operator-sdk/pull/6425/files
+# 2/ scorecard-untar: https://github.com/operator-framework/operator-sdk/pull/6425/files
+images:
+  - quay.io/operator-framework/scorecard-storage@sha256:a3bfda71281393c7794cabdd39c563fb050d3020fd0b642ea164646bdd39a0e2
+  - quay.io/operator-framework/scorecard-untar@sha256:2e728c5e67a7f4dec0df157a322dd5671212e8ae60f69137463bd4fdfbff8747
+...
