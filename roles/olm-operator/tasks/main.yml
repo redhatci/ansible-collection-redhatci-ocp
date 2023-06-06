@@ -52,23 +52,31 @@
 
 - name: "Operator installation"
   block:
-    - name: Get operator's package manifest
+
+    - name: "Get operator's package manifests"
       community.kubernetes.k8s_info:
         api: packages.operators.coreos.com/v1
         kind: PackageManifest
-        name: "{{ operator }}"
         namespace: default
-      register: packagemanifest
+      register: packagemanifest_all
       retries: 9
       delay: 10
       until:
-        - packagemanifest.resources is defined
-        - packagemanifest.resources | length == 1
+        - packagemanifest_all.resources is defined
+        - packagemanifest_all.resources | length > 0
+      no_log: true
 
-    - name: "Set Desired channel"
+    - name: "Set operator's channel to use"
       vars:
-        channels: "resources[*].status.defaultChannel"
-        default_channel: "{{ packagemanifest | json_query(channels) | join('') | string }}"
+        pkg_details: >
+          resources[*].{ packageName: metadata.name,
+            packageSource: status.catalogSource,
+            packageDefaultChannel: status.defaultChannel
+          }
+        packagemanifests: "{{ packagemanifest_all | json_query(pkg_details) }}"
+        package_query: "[? packageName=='{{ operator }}' &&
+                           packageSource=='{{ source }}' ].packageDefaultChannel"
+        default_channel: "{{ packagemanifests | json_query(package_query) | first }}"
       set_fact:
         desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
 
