@@ -53,7 +53,20 @@
 - name: "Operator installation"
   block:
 
-    - name: "Get operator's package manifests"
+    - name: "Check that the PackageServer has the Operator"
+      community.kubernetes.k8s_info:
+        api: packages.operators.coreos.com/v1
+        kind: PackageManifest
+        name: "{{ operator }}"
+        namespace: default
+      register: pgm
+      retries: 9
+      delay: 10
+      until:
+        - pgm.resources is defined
+        - pgm.resources | length == 1
+
+    - name: "Get fresh operator's package manifests"
       community.kubernetes.k8s_info:
         api: packages.operators.coreos.com/v1
         kind: PackageManifest
@@ -66,7 +79,7 @@
         - packagemanifest_all.resources | length > 0
       no_log: true
 
-    - name: "Set operator's channel to use"
+    - name: "Set operator's channel to use from the specified CatalogSource"
       vars:
         pkg_details: >
           resources[*].{ packageName: metadata.name,
