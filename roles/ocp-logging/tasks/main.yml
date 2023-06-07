@@ -1,0 +1,21 @@
+---
+- name: "Install the cluster Logging stack"
+  block:
+    - name: "Pre-run validations"
+      include_tasks: pre-run.yml
+
+    - name: "Set up the cluster logging subsystem"
+      include_tasks: setup-logging.yml
+
+    - name: "Validate cluster logging subsystem"
+      include_tasks: validate-stack.yml
+  when:
+    - ol_action == 'install'
+
+- name: "Cleanup Logging stack resources"
+  block:
+    - name: "Cleanup Logging stack resources"
+      include_tasks: clean-resources.yml
+  when:
+    - ol_action == 'cleanup'
+...

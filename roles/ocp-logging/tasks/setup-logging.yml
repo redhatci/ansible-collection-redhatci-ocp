@@ -1,0 +1,169 @@
+---
+- name: "Setting Object Storage authentication"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: logging-loki
+        namespace: "{{ ol_namespace }}"
+      stringData:
+        access_key_id: "{{ ol_access_key_id }}"
+        access_key_secret: "{{ ol_access_key_secret }}"
+        bucketnames: "{{ ol_bucket }}"
+        endpoint: "{{ ol_endpoint }}"
+        region: "{{ ol_region }}"
+
+- name: "Create a Loki Stack"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: loki.grafana.com/v1
+      kind: LokiStack
+      metadata:
+        name: logging-loki
+        namespace: "{{ ol_namespace }}"
+      spec:
+        size: "{{ ol_loki_size }}"
+        storage:
+          schemas:
+            - version: v12
+              effectiveDate: "{{ ansible_date_time.date }}"
+          secret:
+            name: logging-loki
+            type: s3
+        storageClassName: "{{ ol_storage_class }}"
+        tenants:
+          mode: "{{ ol_namespace }}"
+
+- name: "Create ClusterLogging instance"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: logging.openshift.io/v1
+      kind: ClusterLogging
+      metadata:
+        name: instance
+        namespace: "{{ ol_namespace }}"
+      spec:
+        managementState: Managed
+        logStore:
+          type: lokistack
+          lokistack:
+            name: logging-loki
+        collection:
+          type: vector
+
+- name: "Configuring RBACs"
+  community.kubernetes.k8s:
+    definition: |
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: eventrouter
+        namespace: "{{ ol_namespace }}"
+      ---
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      metadata:
+        name: event-reader
+      rules:
+        - apiGroups: [""]
+          resources: ["events"]
+          verbs: ["get", "watch", "list"]
+      ---
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: event-reader-binding
+      subjects:
+        - kind: ServiceAccount
+          name: eventrouter
+          namespace: "{{ ol_namespace }}"
+      roleRef:
+        kind: ClusterRole
+        name: event-reader
+      ---
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: eventrouter
+        namespace: "{{ ol_namespace }}"
+      data:
+        config.json: |-
+          {
+            "sink": "stdout"
+          }
+
+- name: "Create event router deployment"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        labels:
+          component: eventrouter
+          logging-infra: eventrouter
+          provider: openshift
+        name: eventrouter
+        namespace: "{{ ol_namespace }}"
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            component: eventrouter
+            logging-infra: eventrouter
+            provider: openshift
+        template:
+          metadata:
+            labels:
+              component: eventrouter
+              logging-infra: eventrouter
+              provider: openshift
+            name: eventrouter
+          spec:
+            containers:
+              - image: "{{ ol_event_router_image }}"
+                imagePullPolicy: IfNotPresent
+                name: kube-eventrouter
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                volumeMounts:
+                  - mountPath: "/etc/eventrouter"
+                    name: config-volume
+            serviceAccount: eventrouter
+            volumes:
+              - configMap:
+                  name: eventrouter
+                name: config-volume
+
+- name: "Configure ClusterLogForwarder instance"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: logging.openshift.io/v1
+      kind: ClusterLogForwarder
+      metadata:
+        name: instance
+        namespace: "{{ ol_namespace }}"
+      spec:
+        pipelines:
+          - name: all-to-default
+            inputRefs:
+              - infrastructure
+              - application
+              - audit
+            outputRefs:
+              - default
+
+- name: "Enable the Console logging-view-plugin"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: operator.openshift.io/v1
+      kind: Console
+      metadata:
+        name: cluster
+      spec:
+        plugins:
+          - logging-view-plugin
+
+...
