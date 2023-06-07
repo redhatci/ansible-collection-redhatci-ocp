@@ -8,24 +8,12 @@
     # TODO: to delete the old images once preflight release with 1.29.0 integration is cut
     old_images: "{{ (lookup('file', 'files/scorecard-old-images.yml') | from_yaml)['images'] }}"
 
-
 - name: Mirror preflight images
+  include_role:
+    name: mirror_images
   vars:
-    local_image_location: "{{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}"
-  shell: >
-    skopeo copy
-    --all
-    --preserve-digests
-    --remove-signatures
-    --authfile {{ partner_creds }}
-    --dest-tls-verify=false
-    docker://{{ item }}
-    docker://{{ local_image_location }}
-  loop: "{{ preflight_images }}"
-  register: result
-  retries: 3
-  delay: 10
-  until: result is not failed
+    images: "{{ preflight_images }}"
+    authfile: "{{ partner_creds }}"
 
 - name: "Define catalog tag"
   set_fact:
