@@ -27,7 +27,7 @@
     - name: Mirror remote ocpmetal image registry to local
       command:
         cmd: >
-          /usr/local/bin/oc image mirror
+          "{{ binaries_tool_path }}"/oc image mirror
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
             {{ item.remote }}
             {{ item.local }}:{{ item.local_tag }}
@@ -36,7 +36,7 @@
     - name: Mirror release image to local (x86_64)
       command:
         cmd: >
-          /usr/local/bin/oc adm release mirror 
+          "{{ binaries_tool_path }}"/oc adm release mirror
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
             --from="{{ release_image_item.remote | quote }}"
             --to-release-image="{{ release_image_item.local | quote }}:{{ release_image_item.local_tag | quote }}"
@@ -45,7 +45,7 @@
     - name: Mirror release image to local (arm64)
       command:
         cmd: >
-          /usr/local/bin/oc adm release mirror
+          "{{ binaries_tool_path }}"/oc adm release mirror
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
             --from="{{ release_image_item_arm.remote | quote }}"
             --to-release-image="{{ release_image_item_arm.local | quote }}:{{ release_image_item_arm.local_tag | quote }}"
@@ -62,7 +62,7 @@
     - name: Build pruned OLM index
       command:
         cmd: >
-          /usr/local/bin/opm index prune 
+          "{{ binaries_tool_path }}"/opm index prune 
             --from-index "{{ olm_index_item.remote }}"
             --packages "{{ mirror_packages | join(',') }}"
             --tag "{{ olm_index_item.local }}:{{ olm_index_item.local_tag }}"
@@ -80,7 +80,7 @@
     - name: Mirror Catalog to local registry 
       command:
         cmd: >
-          oc adm catalog mirror 
+          "{{ binaries_tool_path }}"/oc adm catalog mirror 
             {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
             {{ olm_item.local }}:{{ olm_item.local_tag }}
             --registry-config="{{ config_file_path }}/{{ pull_secret_file_name }}"

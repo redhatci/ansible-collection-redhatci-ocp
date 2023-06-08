@@ -11,3 +11,7 @@
 - import_tasks: populate_registry.yml
   tags:
     - populate_registry
+
+- import_tasks: cleanup.yml
+  tags:
+    - populate_registry
