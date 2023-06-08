@@ -82,6 +82,16 @@
         release_version: "{{ result.content | b64decode | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
         release_image: "{{ result.content | b64decode | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
 
+- name: Create tmp directory for all binaries
+  tempfile:
+    state: directory
+    prefix: binaries.
+  register: binaries_tmp_dir
+
+- name: Set binaries_tool_path based on the tmp directory path
+  set_fact:
+    binaries_tool_path: "{{ binaries_tmp_dir.path }}"
+
 - name: Install oc
   block:
     - name: Check if oc binary has been extracted
@@ -100,6 +110,27 @@
       when:
         - not extracted_oc.stat.exists
 
+    - name: Copy binary to binaries_tool_path
+      copy:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ item }}"
+        dest: "{{ binaries_tool_path }}/{{ item }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        remote_src: yes
+      become: true
+      with_items:
+        - kubectl
+        - oc
+
+    - name: Check binary installed
+      command: 
+        cmd: "{{ binaries_tool_path }}/{{ item }} help"
+      with_items:
+        - kubectl
+        - oc
+
+    # Also keep the binary in /usr/local/bin, since "oc" is used in other roles.
     - name: Copy binary to /usr/local/bin
       copy:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ item }}"
@@ -156,10 +187,10 @@
       when:
         - not extracted_opm.stat.exists
 
-    - name: Copy opm to /usr/local/bin
+    - name: Copy opm to binaries_tool_path
       copy:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/opm"
-        dest: /usr/local/bin/opm
+        dest: "{{ binaries_tool_path }}/opm"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
         mode: 0775
@@ -168,7 +199,7 @@
 
     - name: Check opm installed
       command:  
-        cmd: /usr/local/bin/opm version
+        cmd: "{{ binaries_tool_path }}/opm" version
   tags:
     - create_registry
     - fetch_opm
