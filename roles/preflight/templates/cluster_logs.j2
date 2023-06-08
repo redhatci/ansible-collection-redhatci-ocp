@@ -1,3 +1,13 @@
+Scorecard pods ===========================================================
+{% if scorecard_pods.resources %}
+{{ scorecard_pods | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
+Scorecard events =========================================================
+{% if scorecard_events.resources %}
+{{ scorecard_events | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
 Subscription =============================================================
 {% if preflight_subs.resources %}
 {{ preflight_subs | json_query('resources[*]') | join('\n') }}
