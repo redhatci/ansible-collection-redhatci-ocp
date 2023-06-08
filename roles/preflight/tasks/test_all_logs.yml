@@ -1,31 +1,43 @@
 ---
-- name: Retrieve installed Subscription
+- name: Get Scorecard pods
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ preflight_namespace }}"
+  register: scorecard_pods
+
+- name: Get scorecard-related events
+  community.kubernetes.k8s_info:
+    kind: Event
+    namespace: "{{ preflight_namespace }}"
+  register: scorecard_events
+
+- name: "Retrieve installed Subscription for {{ operator.name }}"
   community.kubernetes.k8s_info:
     api_version: operators.coreos.com/v1alpha1
     kind: Subscription
     namespace: "{{ operator.name }}"
   register: preflight_subs
 
-- name: Check CSV with k8s_info
+- name: "Check CSV for {{ operator.name }}"
   community.kubernetes.k8s_info:
     api_version: operators.coreos.com/v1alpha1
     kind: ClusterServiceVersion
     namespace: "{{ operator.name }}"
   register: preflight_csv
 
-- name: Get events
+- name: "Get events for {{ operator.name }}"
   community.kubernetes.k8s_info:
     kind: Event
     namespace: "{{ operator.name }}"
   register: preflight_events
 
-- name: Get pods
+- name: "Get pods for {{ operator.name }}"
   community.kubernetes.k8s_info:
     kind: Pod
     namespace: "{{ operator.name }}"
   register: preflight_pods
 
-- name: Get CatalogSource
+- name: "Get CatalogSource for {{ operator.name }}"
   community.kubernetes.k8s_info:
     api_version: operators.coreos.com/v1alpha1
     kind: CatalogSource
