@@ -74,3 +74,7 @@
   tags:
     - clusterconfigs
     - cleanup
+
+- include_tasks: 95_check_pull_secret.yml
+  tags:
+    - pullsecret
