@@ -1,33 +1,4 @@
 ---
-- name: "Get release digest"
-  shell: >
-    set -o pipefail &&
-    grep '^Digest:' {{ mor_cache_dir }}/{{ mor_version }}/release.txt
-    | tr -s ' '
-    | cut -d ' ' -f 2
-  register: release_digest
-  changed_when: false
-
-- name: "Base64 encode binary signature"
-  slurp:
-    src: "{{ mor_cache_dir }}/{{ mor_version }}/signature-1"
-  register: signature_b64
-  changed_when: false
-  no_log: true
-  when:
-    - build != "nightly"
-
-# this file is used in the upgrade flow
-- name: "Write release digest"
-  copy:
-    dest: "{{ mor_cache_dir }}/{{ mor_version }}/release.dig"
-    content: "{{ release_digest.stdout }}"
-    owner: "{{ mor_owner }}"
-    group: "{{ mor_group }}"
-    mode: "0644"
-    setype: httpd_sys_content_t
-  become: true
-
 - name: "Download and refresh channel upgrade graph"
   get_url:
     url: "https://api.openshift.com/api/upgrades_info/v1/graph?channel=fast-{{ mor_base_version }}&arch=amd64"
@@ -44,26 +15,4 @@
   delay: 20
   register: downloaded
   until: downloaded is not failed
-
-- name: "Write signature config map"
-  copy:
-    dest: "{{ mor_cache_dir }}/{{ mor_version }}/signature.yaml"
-    owner: "{{ mor_owner }}"
-    group: "{{ mor_group }}"
-    mode: "0644"
-    setype: httpd_sys_content_t
-    content: |
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: signature-{{ mor_version }}
-        namespace: openshift-config-managed
-        labels:
-          release.openshift.io/verification-signatures: ""
-      binaryData:
-        {{ release_digest.stdout | replace(':', '-') }}-1 : {{ signature_b64.content }}
-  become: true
-  when:
-    - build != "nightly"
-
 ...
