@@ -34,23 +34,4 @@
     setype: container_file_t
   become: true
   when: selinux_status.rc == 0
-
-- name: "Get release digest"
-  shell: >
-    set -o pipefail &&
-    grep '^Digest:' {{ mor_cache_dir }}/{{ mor_version }}/release.txt
-    | tr -s ' '
-    | cut -d ' ' -f 2
-  register: release_digest
-  changed_when: false
-  when:
-    - mor_build != "nightly"
-
-- name: "Download release signature"
-  include_tasks: fetch.yml
-  vars:
-    uri: "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/{{ release_digest.stdout | replace(':', '=') }}/signature-1"
-    mor_dir: "{{ mor_cache_dir }}/{{ mor_version }}"
-  when:
-    - mor_build != "nightly"
 ...
