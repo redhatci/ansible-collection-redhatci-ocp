@@ -12,10 +12,11 @@
     name: go-builder
     image: "golang:1.19"
     debug: true
-    privileged: true
+    pids_limit: -1
     log_level: "info"
     command: make -C /opcap build OPCAP_VERSION={{ opcap_version }}
     detach: false
+    tty: true
     rm: true
     volume:
       - "{{ opcap_dir.path }}/opcap/:/opcap:Z"
