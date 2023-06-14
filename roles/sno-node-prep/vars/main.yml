@@ -24,3 +24,5 @@ snobm_pkg_list:
   - grub2-efi-x64
   - shim-x64
   - dnsmasq
+
+pullsecret_file: "{{ cache_dir }}/pull-secret.txt"
