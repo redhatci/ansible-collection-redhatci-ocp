@@ -59,7 +59,8 @@ targetCrdFilters:
 {% for item in tnf_config %}
 {% if item.target_crds is defined and item.target_crds is iterable %}
 {% for crd in item.target_crds %}
-  - nameSuffix: {{ crd }}
+  - nameSuffix: {{ crd.nameSuffix }}
+    scalable: {{ crd.scalable }}
 {% endfor %}
 {% endif %}
 {% endfor %}
@@ -84,6 +85,10 @@ acceptedKernelTaints:
 {% endfor %}
 
 # fields below are not currently used, leaving placeholder in case they were needed in the future
+managedDeployments:
+
+managedStatefulsets:
+
 skipScalingTestDeployments:
 
 skipScalingTestStatefulSetNames:
@@ -91,5 +96,7 @@ skipScalingTestStatefulSetNames:
 skipHelmChartList:
 
 validProtocolNames:
+
+servicesignorelist:
 
 ...
