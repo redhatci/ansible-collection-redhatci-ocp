@@ -145,4 +145,13 @@
   tags:
   - always
   - validation
+
+- name: "Ensure cache_dir is created"
+  file:
+    path: "{{ cache_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+  become: true
 ...
