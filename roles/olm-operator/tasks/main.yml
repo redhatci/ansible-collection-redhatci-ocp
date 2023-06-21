@@ -71,13 +71,14 @@
         api: packages.operators.coreos.com/v1
         kind: PackageManifest
         namespace: default
+        wait_timeout: 60
       register: packagemanifest_all
       retries: 9
       delay: 10
-      until:
-        - packagemanifest_all.resources is defined
-        - packagemanifest_all.resources | length > 0
-      no_log: true
+      until: packagemanifest_all is succeeded
+      failed_when: packagemanifest_all is skipped
+        or packagemanifest_all.resources is undefined
+        or packagemanifest_all.resources | length == 0
 
     - name: "Set operator's channel to use from the specified CatalogSource"
       vars:
