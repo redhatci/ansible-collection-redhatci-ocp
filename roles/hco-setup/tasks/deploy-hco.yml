@@ -31,8 +31,9 @@
 
 - name: test_ Check for hyperconverged operator
   community.kubernetes.k8s_info:
+    api_version: v1
     namespace: "{{ cnv_ns }}"
-    kind: pods
+    kind: Pod
     label_selectors:
       - name=hyperconverged-cluster-operator
   register: hco_pods
