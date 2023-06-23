@@ -1,10 +1,13 @@
 ---
-- name: Execute cnf-cert pre-run stage
-  include_tasks: pre-run.yml
+- name: Run tnf stages
+  block:
+    - name: Execute cnf-cert pre-run stage
+      include_tasks: pre-run.yml
 
-- name: Execute cnf-cert tests stage
-  include_tasks: tests.yml
+    - name: Execute cnf-cert tests stage
+      include_tasks: tests.yml
 
-- name: Execute cnf-cert teardown stage
-  include_tasks: teardown.yml
+  always:
+    - name: Execute cnf-cert teardown stage
+      include_tasks: teardown.yml
 ...
