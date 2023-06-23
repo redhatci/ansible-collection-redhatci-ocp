@@ -44,10 +44,23 @@
       and 'preflight' in tnf_labels))
       and partner_creds|length"
 
+- name: Check if there are XML JUnit results in the CNF Cert directory
+  stat:
+    path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
+  register: junit_present
+
+- name: Remove XML JUnit results if they exist
+  file:
+    path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
+    state: absent
+  when: junit_present.stat.exists|bool
+
 # The task automatically append these environment variables to tnf_env_vars:
 # - TNF_PARTNER_REPO
 # - TNF_IMAGE
 # - SUPPORT_IMAGE
+# We have to set ignore_errors to true because, if any tnf test fails, the result of the execution will be failed.
+# We will check log files afterwards to really determine if there were errors in the execution or not.
 - name: Run the CNF Test Suite
   vars:
     tnf_partner_repo: "{{ ( dci_local_registry | length ) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
@@ -57,8 +70,6 @@
   shell: |
     set -x
 
-    rm -f {{ test_network_function_project_name }}/*.xml
-
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
     -t {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
     -o {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
@@ -67,42 +78,17 @@
     {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
     {% if tnf_dockercfg_path is defined %}-c {{ tnf_dockercfg_path }} \{% endif %}
     -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
-
-    cp {{ test_network_function_project_name }}/*.xml {{ job_logs.path }}
-    cp {{ test_network_function_project_name }}/*.json {{ job_logs.path }}
-    cp {{ test_network_function_project_name }}/dci-tnf-execution.log {{ job_logs.path }}
-    cp {{ test_network_function_project_name }}/tnf_config.yml {{ job_logs.path }}
-
-    cp {{ test_network_function_project_name }}/*.js script/
   args:
     chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+  ignore_errors: true
 
-# claim.json file must be present if the execution finished correctly, else make the job to fail
-- name: Fail if execution did not finish correctly
-  block:
-    - name: Check if the execution finished correctly
-      stat:
-        path: "{{ job_logs.path }}/claim.json"
-      register: claim_json_present
+# Clean images just after finishing the execution
+- name: Remove local tnf image
+  containers.podman.podman_image:
+    name: "{{ tnf_image }}"
+    state: absent
 
-    - name: Remove local tnf image
-      containers.podman.podman_image:
-        name: "{{ tnf_image }}"
-        state: absent
-
-    - name: CNF Cert Suite execution did not finish correctly
-      fail:
-        msg: claim.json file does not exist, so CNF Cert Suite execution did not finish correctly
-      when: not claim_json_present.stat.exists|bool
-
-- name: Compress HTML results web page to upload it to DCI
-  archive:
-    path:
-      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/classification.js"
-      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/claimjson.js"
-      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/results-embed.html"
-      - "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script/results.html"
-    dest: "{{ job_logs.path }}/tnf-results-web-page.tar.gz"
-  when: test_network_function_version is version("v4.3.0", ">=") or test_network_function_version == "HEAD"
+- name: Logging tasks after finishing the execution of CNF Cert
+  include_tasks: logging.yml
 
 ...
