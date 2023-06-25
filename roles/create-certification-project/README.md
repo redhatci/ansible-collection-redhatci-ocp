@@ -22,7 +22,6 @@ Name                     | Default                                              
 create_container_project | false                                                                      | If set to true, it would create a new container certification project.
 create_operator_project  | false                                                                      | If set to true, it would create a new operator certification project.
 
-
 ## Variables to define for project settings under `cert_settings` main variable (Optional)
 
 Below an example of variables used for container image certification project, more variables are available depending is created for operator or helmchart certifications. All sub-variables are optional.
@@ -87,6 +86,8 @@ preflight_operators_to_certify:
 preflight_containers_to_certify:
   - container_image: "quay.io/my-container/bla-bla-image:v0.0.1"
     create_container_project: true
+    #attach_product_listing is optional when doing recertification
+    attach_product_listing: true
     # Optional; use it to pass an image description to the created project
     short_description: "Add description here"
 
@@ -121,7 +122,6 @@ github_token_path: "/opt/cache/dcicertbot-token.txt"
 # Only required when preflight_containers_to_certify.create_container_project is true
 organization_id: 12345678
 ```
-
 ## GitHub token
 
 Please note that `github_token_path` is required when using `create_operator_project` project. It is used to setup proper permissions in the certification project.
