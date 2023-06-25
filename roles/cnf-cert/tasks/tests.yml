@@ -44,16 +44,10 @@
       and 'preflight' in tnf_labels))
       and partner_creds|length"
 
-- name: Check if there are XML JUnit results in the CNF Cert directory
-  stat:
-    path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
-  register: junit_present
-
 - name: Remove XML JUnit results if they exist
   file:
     path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
     state: absent
-  when: junit_present.stat.exists|bool
 
 # The task automatically append these environment variables to tnf_env_vars:
 # - TNF_PARTNER_REPO
