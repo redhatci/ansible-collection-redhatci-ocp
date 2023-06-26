@@ -53,44 +53,23 @@
 - name: "Operator installation"
   block:
 
-    - name: "Check that the PackageServer has the Operator"
+    - name: "Get operator's package manifests"
       community.kubernetes.k8s_info:
         api: packages.operators.coreos.com/v1
         kind: PackageManifest
+        namespace: default
         name: "{{ operator }}"
-        namespace: default
-      register: pgm
-      retries: 9
-      delay: 10
-      until:
-        - pgm.resources is defined
-        - pgm.resources | length == 1
+      register: operator_packagemanifest
+      retries: 10
+      delay: 5
+      until: operator_packagemanifest.resources[0].status.catalogSource == source
+      failed_when: operator_packagemanifest is skipped
+        or operator_packagemanifest.resources is undefined
+        or operator_packagemanifest.resources | length != 1
 
-    - name: "Get fresh operator's package manifests"
-      community.kubernetes.k8s_info:
-        api: packages.operators.coreos.com/v1
-        kind: PackageManifest
-        namespace: default
-        wait_timeout: 60
-      register: packagemanifest_all
-      retries: 9
-      delay: 10
-      until: packagemanifest_all is succeeded
-      failed_when: packagemanifest_all is skipped
-        or packagemanifest_all.resources is undefined
-        or packagemanifest_all.resources | length == 0
-
-    - name: "Set operator's channel to use from the specified CatalogSource"
+    - name: "Set operator's channel"
       vars:
-        pkg_details: >
-          resources[*].{ packageName: metadata.name,
-            packageSource: status.catalogSource,
-            packageDefaultChannel: status.defaultChannel
-          }
-        packagemanifests: "{{ packagemanifest_all | json_query(pkg_details) }}"
-        package_query: "[? packageName=='{{ operator }}' &&
-                           packageSource=='{{ source }}' ].packageDefaultChannel"
-        default_channel: "{{ packagemanifests | json_query(package_query) | first }}"
+        default_channel: "{{ operator_packagemanifest.resources[0].status.defaultChannel }}"
       set_fact:
         desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
 
