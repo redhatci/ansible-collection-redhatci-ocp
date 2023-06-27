@@ -15,6 +15,21 @@
     - not skip_absent_testfiles | bool
 
 - block:
+    - name: Verify JUnit format and fix wrapping testsuites tags if required
+      block:
+        - name: "Insert opening <testsuites> tag"
+          lineinfile:
+            path: "{{ junit_filename }}"
+            insertbefore: '<testsuite'
+            line: '<testsuites>'
+
+        - name: "Insert closing </testsuites> tag"
+          lineinfile:
+            path: "{{ junit_filename }}"
+            insertafter: EOF
+            line: '</testsuites>'
+      when: junit_fix_tags | default(false) | bool
+
     - name: "Retrieve the actual test results from {{ t.filename }}"
       vars:
         junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
