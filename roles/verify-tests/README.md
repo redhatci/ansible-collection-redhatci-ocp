@@ -9,6 +9,7 @@ Name                  | Default      | Description
 --------------------- | ------------ | -------------
 tests_to_verify       | undefined    | There is a complex list of expected results, where each element contains a JUnit filename and a corresponding list of expected results. A sublist of expected results could include one or more pairs of 'testcase name' and 'passed'/'failed'.
 skip_absent_testfiles | false        | Use this option to prevent the verification process from failing if the JUnit file listed in the expected results is not present.
+junit_fix_tags        | false        | Please use this option to add the missing <testsuites></testsuites> tags to the JUnit file in order to fix the formatting.
 
 ```yaml
 # Example of the list of expected results per file.
