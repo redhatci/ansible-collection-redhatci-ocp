@@ -1,0 +1,39 @@
+---
+
+- name: Add gitlab ssh key to argoCD
+  k8s:
+    api_version: v1
+    kind: ConfigMap
+    name: argocd-ssh-known-hosts-cm
+    namespace: openshift-gitops
+    resource_definition:
+      labels:
+        app.kubernetes.io/name: argocd-cm
+        app.kubernetes.io/part-of: argocd
+      data:
+        ssh_known_hosts: |
+          {{ gitlab_ssh_known_hosts }}
+
+- name: Register key
+  command: cat "{{ gitlab_key_path }}"
+  register: gitlab_key
+
+- name: Create temporary template directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: temp_dir
+
+- name: Template the private repo resource for Argo
+  template:
+    src: ssh_private_repo.yml.j2
+    dest: "{{ temp_dir.path }}/ssh_private_repo.yml"
+    mode: '0644'
+
+- name: Apply ssh private repo
+  command: oc apply -f "{{ temp_dir.path }}/ssh_private_repo.yml"
+
+- name: Remove temporary directory
+  ansible.builtin.file:
+    path: "{{ temp_dir.path }}"
+    state: absent

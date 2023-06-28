@@ -1,0 +1,5 @@
+---
+metallb: True
+database_storage_request: 20Gi
+filesystem_storage_request: 20Gi
+image_storage_request: 100Gi
