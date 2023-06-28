@@ -6,6 +6,13 @@
       - namespace | string
       - source | string
 
+- name: "Print install parameters"
+  debug:
+    msg:
+      - "Operator: {{ operator }}"
+      - "Target namespace: {{ namespace }}"
+      - "Catalog: {{ source }}"
+
 - name: "Check that {{ source }} CatalogSource is Ready"
   community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
@@ -18,7 +25,7 @@
   retries: 60
   delay: 10
 
-- name: Create Namespace for OLM operator
+- name: "Create Namespace for OLM operator {{ operator }}"
   community.kubernetes.k8s:
     definition:
       apiVersion: v1
@@ -39,7 +46,7 @@
           pod-security.kubernetes.io/enforce-version: latest
           security.openshift.io/scc.podSecurityLabelSync: "false"
 
-- name: Create OperatorGroup for OLM operator
+- name: "Create OperatorGroup for OLM operator {{ operator }}"
   community.kubernetes.k8s:
     definition:
       apiVersion: operators.coreos.com/v1
@@ -50,7 +57,7 @@
         namespace: "{{ namespace }}"
       spec: "{{ operator_group_spec | default(omit) }}"
 
-- name: "Operator installation"
+- name: "Operator {{ operator }} installation"
   block:
 
     - name: "Get operator's package manifests"
@@ -62,18 +69,22 @@
       register: operator_packagemanifest
       retries: 10
       delay: 5
-      until: operator_packagemanifest.resources[0].status.catalogSource == source
+      until:
+        - operator_packagemanifest.resources is defined
+        - operator_packagemanifest.resources | length
+        - operator_packagemanifest.resources[0].status is defined
+        - operator_packagemanifest.resources[0].status.catalogSource == source
       failed_when: operator_packagemanifest is skipped
         or operator_packagemanifest.resources is undefined
         or operator_packagemanifest.resources | length != 1
 
-    - name: "Set operator's channel"
+    - name: "Set operator's channel for {{ operator }}"
       vars:
         default_channel: "{{ operator_packagemanifest.resources[0].status.defaultChannel }}"
       set_fact:
         desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
 
-    - name: Create subscription for OLM operator
+    - name: "Create subscription for OLM operator {{ operator }}"
       community.kubernetes.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
@@ -91,7 +102,7 @@
             sourceNamespace: "{{ source_ns }}"
             startingCSV: "{{ starting_csv | default('') | length | ternary(starting_csv, omit) }}"
 
-    - name: Wait for subscription to be ready
+    - name: "Wait for subscription for {{ operator }} to be ready"
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: Subscription
@@ -107,12 +118,12 @@
         - "'currentCSV' in sub.resources[0].status"
         - sub.resources[0].status.currentCSV | length > 0
 
-    - name: "Get operator's CSV for desired channel"
+    - name: "Get operator's {{ operator }} CSV for desired channel"
       set_fact:
         operator_csv: "{{ starting_csv | default('') | length | ternary(starting_csv, sub.resources[0].status.currentCSV) }}"
 
     - block:
-        - name: "Get Install plans"
+        - name: "Get Install plans for {{ operator }}"
           community.kubernetes.k8s_info:
             api: operators.coreos.com/v1alpha1
             kind: InstallPlan
@@ -124,7 +135,7 @@
             - install_plans.resources is defined
             - install_plans.resources | length
 
-        - name: Approve install plan for specific CSV
+        - name: "Approve install plan for specific CSV for {{ operator }}"
           community.kubernetes.k8s:
             definition:
               apiVersion: operators.coreos.com/v1alpha1
@@ -157,39 +168,39 @@
         - csv.resources[0].status.phase == 'Succeeded' or
           csv.resources[0].status.phase == 'Present'
   rescue:
-    - name: "Catalog sources information"
+    - name: "Catalog sources information for {{ operator }}"
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: CatalogSource
       register: catalog_info
 
-    - name: "Subscriptions information"
+    - name: "Subscriptions information for {{ operator }}"
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: Subscription
         namespace: "{{ namespace }}"
       register: subs_info
 
-    - name: "Install plans information"
+    - name: "Install plans information for {{ operator }}"
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: InstallPlan
         namespace: "{{ namespace }}"
       register: ip_info
 
-    - name: "Print catalog information"
+    - name: "Print catalog information for {{ operator }}"
       debug:
         msg: "{{ catalog_info.resources }}"
 
-    - name: "Print Subscription information"
+    - name: "Print Subscription information for {{ operator }}"
       debug:
         msg: "{{ subs_info.resources }}"
 
-    - name: "Print InstallPlan information"
+    - name: "Print InstallPlan information for {{ operator }}"
       debug:
         msg: "{{ ip_info.resources }}"
 
-    - name: "Issues during operator installation"
+    - name: "Issues during operator {{ operator }} installation"
       fail:
         msg: "There where issues during the operator deployment. See debug info in the above tasks"
 
