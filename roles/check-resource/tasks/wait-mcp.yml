@@ -33,16 +33,16 @@
         # If nodes are NotReady, we cannot do much more than failing at this point.
         # This is related to OCPBUGS-6676, just to avoid wasting time applying
         # the OCPBUGS-11779/13278 workaround in the case of having NotReady nodes.
+        # There may be cases where it takes some time to move from NotReady to Ready,
+        # so retrying this task 5 minutes maximum.
         - name: Check for workers with NotReady,SchedulingDisabled status
           shell: >
             {{ oc_tool_path }} get nodes --no-headers=true |
             grep 'NotReady,SchedulingDisabled' | grep worker | awk '{ print $1 }'
           register: not_ready_disabled_nodes
-
-        - name: Fail if there is any node in NotReady,SchedulingDisabled status
-          fail:
-            msg: There is at least one node in NotReady,SchedulingDisabled status. Job has to fail in this point
-          when: not_ready_disabled_nodes.stdout | length > 0
+          until: not_ready_disabled_nodes.stdout | length == 0
+          retries: 30
+          delay: 10
 
         # If retry_count > num_repetitions, we will not iterate more and make the job to fail
         - name: Fail if the maximum number of retries have been reached
