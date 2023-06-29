@@ -1,4 +1,37 @@
 ---
+- name: "Get Storage Classes"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+  register: storage_class
+
+- name: "Fail when there is no storage class available"
+  fail:
+    msg: "A storage class does not exists"
+  when:
+    - storage_class.resources | length == 0
+
+- name: "Fail when defined storage class does not exists"
+  vars:
+    query_sc_name: 'resources[*].metadata.name'
+    query_results: "{{ storage_class | json_query(query_sc_name) }}"
+  fail:
+    msg: "Defined storage class do not exists"
+  when:
+    - hub_sc is defined
+    - hub_sc not in query_results
+
+- name: "Fail when no default storage class"
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"
+  fail:
+    msg: "No default storage class was found"
+  when:
+    - storage_class is defined
+    - "not('true' in query_results)"
+    - hub_sc is undefined
+
 - name: "Get available CSVs"
   community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
@@ -203,4 +236,55 @@
       spec:
         watchAllNamespaces: true
         provisioningNetwork: Managed
+
+- name: "Get cluster version"
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: cluster_version
+
+- name: "Enable Hypershift if supported"
+  vars:
+    current_ver_query: "history[?state=='Completed'] | [0].version"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    current_ver: "{{ full_ver.split('-')[0] }}"
+    ocp_version: "{{  current_ver }}"
+  block:
+    - name: "Enable Hypershift component"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: multicluster.openshift.io/v1
+          kind: MultiClusterEngine
+          metadata:
+            name: multiclusterengine
+          spec:
+            overrides:
+              components:
+                - enabled: true
+                  name: hypershift-preview
+
+    - name: "Enable hypershift Cluster-Addon"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: addon.open-cluster-management.io/v1alpha1
+          kind: ManagedClusterAddOn
+          metadata:
+            name: hypershift-addon
+            namespace: local-cluster
+          spec:
+            installNamespace: open-cluster-management-agent-addon
+
+    - name: "Enable Ingress Wildcards for Hosted Clusters subdomains"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: operator.openshift.io/v1
+          kind: IngressController
+          metadata:
+            name: default
+            namespace: openshift-ingress-operator
+          spec:
+            routeAdmission:
+              wildcardPolicy: WildcardsAllowed
+  when: ocp_version is version( hub_hypershift_supported , ">=")
 ...
