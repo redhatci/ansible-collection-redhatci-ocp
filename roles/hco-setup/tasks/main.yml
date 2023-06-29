@@ -1,17 +1,14 @@
 ---
-- name: "cnv-setup : deploy Hyperconverged Operator"
+- name: "hco-setup : deploy Hyperconverged Operator"
   include_tasks: deploy-hco.yml
   when:
-    - cnv_deploy_hco| bool
+    - hs_deploy | bool
   tags:
     - install
 
-- name: "cnv-setup : deploy test Virtual Machine"
-  vars:
-    kubevirt_api_version: "{% if ocp_version is version('4.8', '<') %}v1alpha3{% else %}v1{% endif %}"
+- name: "hco-setup : deploy test Virtual Machine"
   include_tasks: test-deploy-vm.yml
   when:
-    - test_deploy_vm| bool
+    - hs_test_vm | bool
   tags:
     - install
-...
