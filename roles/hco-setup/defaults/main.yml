@@ -1,8 +1,9 @@
 ---
-cnv_deploy_hco: true
-test_deploy_vm: false
-cnv_ns: openshift-cnv
-cnv_vm_yaml: vm.yaml.j2
-cirros_vm_image: kubevirt/cirros-container-disk-demo:v0.40.0
-cnv_hco_api_check_count: 60
+hs_deploy: true
+hs_test_vm: false
+hs_ns: openshift-cnv
+hs_vm_file: vm.yaml.j2
+hs_test_vm_image: quay.io/kubevirt/cirros-container-disk-demo:v0.59.2
+hs_retries: 60
+hs_kubevirt_api_version: v1
 ...

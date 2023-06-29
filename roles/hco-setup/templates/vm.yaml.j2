@@ -1,17 +1,17 @@
-apiVersion: kubevirt.io/{{ kubevirt_api_version }}
+apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
 kind: VirtualMachine
 metadata:
   labels:
-    kubevirt.io/vm: vm-cirros
+    kubevirt.io/vm: test-vm
     cnv: demo
-  name: vm-cirros
+  name: test-vm
   namespace: default
 spec:
   running: false
   template:
     metadata:
       labels:
-        kubevirt.io/vm: vm-cirros
+        kubevirt.io/vm: test-vm
     spec:
       domain:
         devices:
@@ -30,7 +30,7 @@ spec:
       terminationGracePeriodSeconds: 0
       volumes:
       - containerDisk:
-          image: {{ cirros_vm_image }}
+          image: {{ hs_test_vm_image }}
         name: containerdisk
       - cloudInitNoCloud:
           userData: |

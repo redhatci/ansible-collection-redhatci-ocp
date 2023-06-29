@@ -2,11 +2,11 @@
 - name: install hco
   community.kubernetes.k8s:
     definition:
-      apiVersion: "hco.kubevirt.io/{{ cnv_api_version | default('v1beta1') }}"
+      apiVersion: "hco.kubevirt.io/v1beta1"
       kind: HyperConverged
       metadata:
         name: kubevirt-hyperconverged
-        namespace: "{{ cnv_ns }}"
+        namespace: "{{ hs_ns }}"
       spec:
         BareMetalPlatform: true
   register: result
@@ -16,8 +16,8 @@
 
 - name: test_ Check for hyperconverged
   community.kubernetes.k8s_info:
-    api_version: "hco.kubevirt.io/{{ cnv_api_version | default('v1beta1') }}"
-    namespace: "{{ cnv_ns }}"
+    api_version: "hco.kubevirt.io/v1beta1"
+    namespace: "{{ hs_ns }}"
     kind: HyperConverged
     wait: true
     wait_condition:
@@ -32,12 +32,12 @@
 - name: test_ Check for hyperconverged operator
   community.kubernetes.k8s_info:
     api_version: v1
-    namespace: "{{ cnv_ns }}"
+    namespace: "{{ hs_ns }}"
     kind: Pod
     label_selectors:
       - name=hyperconverged-cluster-operator
   register: hco_pods
-  retries: "{{ cnv_hco_api_check_count }}"
+  retries: "{{ hs_retries }}"
   delay: 60
   no_log: false
   until:
