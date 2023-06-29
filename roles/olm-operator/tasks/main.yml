@@ -6,6 +6,13 @@
       - namespace | string
       - source | string
 
+- name: "Print install parameters"
+  debug:
+    msg:
+      - "Operator: {{ operator }}"
+      - "Target namespace: {{ namespace }}"
+      - "Catalog: {{ source }}"
+
 - name: "Check that {{ source }} CatalogSource is Ready"
   community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
@@ -62,7 +69,11 @@
       register: operator_packagemanifest
       retries: 10
       delay: 5
-      until: operator_packagemanifest.resources[0].status.catalogSource == source
+      until:
+        - operator_packagemanifest.resources is defined
+        - operator_packagemanifest.resources | length
+        - operator_packagemanifest.resources[0].status is defined
+        - operator_packagemanifest.resources[0].status.catalogSource == source
       failed_when: operator_packagemanifest is skipped
         or operator_packagemanifest.resources is undefined
         or operator_packagemanifest.resources | length != 1
