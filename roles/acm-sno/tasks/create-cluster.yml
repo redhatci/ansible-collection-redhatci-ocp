@@ -426,5 +426,5 @@
   register: bmh_status
   until: bmh_status | json_query('resources[0].status.provisioning.state') == 'provisioned'
   retries: 10
-  delay: 30
+  delay: 60
 ...
