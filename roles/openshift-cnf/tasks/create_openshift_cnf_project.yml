@@ -1,0 +1,23 @@
+---
+- name: Handle the situation when cert project already exists
+  include_role:
+    name: create-certification-project
+    tasks_from: check_if_container_project_exists
+  when: check_for_existing_projects | bool
+
+- name: Create openshift-cnf project
+  include_role:
+    name: create-certification-project
+    tasks_from: create_project
+  when: cnf.create_cnf_project | default(false) | bool
+
+#Update mandatory params are not needed for now
+
+- name: Attach Product List ID to openshift-cnf project when cert_listings is defined
+  include_role:
+    name: create-certification-project
+    tasks_from: attach_product_listing
+  when:
+    - cnf.attach_product_listing | default(false) | bool
+    - cnf.create_cnf_project | default(false) | bool
+...
