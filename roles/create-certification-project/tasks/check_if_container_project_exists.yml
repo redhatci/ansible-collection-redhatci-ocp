@@ -2,6 +2,10 @@
 - name: Check if container project exists in the same org
   include_tasks: check_if_container_project_exists_same_org.yml
 
+- name: Check if CNF  project exists in the same org
+  include_tasks: check_if_cnf_project_exists_same_org.yml
+  when: cnf_to_certify is defined
+
 - name: Check if container project exists in the other org
   include_tasks: check_if_container_project_exists_other_org.yml
 ...
