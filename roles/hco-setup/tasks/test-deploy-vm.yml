@@ -1,46 +1,48 @@
 ---
-### tasks in disconnected environment
-- block:
-  - name: "Mirror Cirros-VM image for test"
-    shell:
-      cmd: >
-         skopeo copy --authfile {{ dci_pullsecret_file }}
-         --dest-tls-verify=false docker://quay.io/{{ cirros_vm_image }}
-         docker://{{ dci_local_registry }}/{{ cirros_vm_image }}
-    register: copy
-    retries: 5
-    delay: 5
-    until:
-      - copy is not failed
+- name: Mirroring VM image in disconnected mode
+  block:
+    - name: "Mirror Test VM image to local registry"
+      shell:
+        cmd: >
+          skopeo copy
+          --authfile {{ hs_pullsecret_file }}
+          --dest-tls-verify=false
+          docker://{{ hs_test_vm_image }}
+          docker://{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}
+      register: copy
+      retries: 5
+      delay: 5
+      until:
+        - copy is not failed
 
-  - name: "Cirros VM image definition (disconnected mode)"
-    set_fact:
-      cirros_vm_image: "{{ dci_local_registry }}/{{ cirros_vm_image }}"
+    - name: "Set VM image in disconnected mode"
+      set_fact:
+        hs_test_vm_image: "{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}"
   when:
-    - dci_local_registry | length
-###
+    - hs_registry | length
+    - hs_pullsecret_file | length
 
 - name: "Create the test VirtualMachine"
   community.kubernetes.k8s:
-    definition: "{{ lookup('template', cnv_vm_yaml) }}"
+    definition: "{{ lookup('template', hs_vm_file) }}"
 
 - name: "test_ Create the test VirtualMachineInstance"
   community.kubernetes.k8s:
     state: present
     definition:
-      apiVersion: kubevirt.io/{{ kubevirt_api_version }}
+      apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
       kind: VirtualMachine
       metadata:
-        name: vm-cirros
+        name: test-vm
         namespace: default
       spec:
         running: true
 
 - name: "test_ Get VMI status"
   community.kubernetes.k8s_info:
-    api: kubevirt.io/{{ kubevirt_api_version }}
+    api: kubevirt.io/{{ hs_kubevirt_api_version }}
     kind: VirtualMachineInstance
-    name: vm-cirros
+    name: test-vm
     namespace: default
   register: vmi_test
   retries: 10
@@ -51,20 +53,19 @@
   community.kubernetes.k8s:
     definition:
       kind: VirtualMachine
-      apiVersion: kubevirt.io/{{ kubevirt_api_version }}
+      apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
       metadata:
-        name: vm-cirros
+        name: test-vm
         namespace: default
       spec:
         running: false
 
-- name: "Deleting the Cirros VMI"
+- name: "Deleting the test VMI"
   community.kubernetes.k8s:
     state: absent
     definition:
-      apiVersion: kubevirt.io/{{ kubevirt_api_version }}
+      apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
       kind: VirtualMachine
       metadata:
-        name: vm-cirros
+        name: test-vm
         namespace: default
-...
