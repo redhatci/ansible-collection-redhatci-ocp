@@ -1,0 +1,8 @@
+---
+- name: Delete cluster
+  shell:
+    cmd: >
+      {{ ah_cli_path }} destroy cluster {{ ah_cluster_type }}
+      --name={{ ah_cluster_name }}
+      --namespace={{ ah_clusters_ns }}
+      --infra-id={{ ah_cluster_name }}

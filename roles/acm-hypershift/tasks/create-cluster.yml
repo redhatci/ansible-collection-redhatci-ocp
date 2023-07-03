@@ -1,0 +1,44 @@
+---
+- name: Deploy a "none" hypershift cluster
+  shell:
+    cmd: >
+      set -e;
+      {{ ah_cli_path }} create cluster {{ ah_cluster_type }}
+      --name={{ ah_cluster_name }}
+      {% if ah_pullsecret_file | length %}
+      --pull-secret={{ ah_pullsecret_file }}
+      {% endif %}
+      --namespace={{ ah_clusters_ns }}
+      --base-domain={{ ah_base_domain }}
+      --cluster-cidr={{ ah_cluster_network_cidr }}
+      --release-image={{ ah_release_image }}
+  when: ah_cluster_type == "none"
+  notify: Remove working directory
+
+- name: Monitor Hosted Cluster availability
+  community.kubernetes.k8s_info:
+    api_version: hypershift.openshift.io/v1beta1
+    kind: HostedCluster
+    namespace: "{{ ah_clusters_ns }}"
+    name: "{{ ah_cluster_name }}"
+  register: ah_hc_info
+  until:
+    - ah_hc_info.resources is defined
+    - ah_hc_info.resources | length
+    - ah_hc_info | json_query('resources[0].status.conditions[? type==`Available`]') | length
+    - ah_hc_info | json_query('resources[0].status.conditions[? type==`Available`].status') | first | bool
+  retries: 90
+  delay: 10
+
+- name: Get hosted cluster credentials
+  include_tasks: get-credentials.yml
+#
+# TODOs:
+# For Baremetal:
+# - Create InfraEnv
+# - Create Agents
+# - Add NodePools
+# - Add nodes to the cluster
+# Add disconnected support
+# - "Get the user_ca_bundle content"
+# - Pullsecrets from within? or from the agent?
