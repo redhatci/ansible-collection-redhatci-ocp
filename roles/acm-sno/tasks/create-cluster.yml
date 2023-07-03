@@ -425,6 +425,6 @@
     namespace: "{{ acm_cluster_name }}"
   register: bmh_status
   until: bmh_status | json_query('resources[0].status.provisioning.state') == 'provisioned'
-  retries: 10
+  retries: 30
   delay: 60
 ...
