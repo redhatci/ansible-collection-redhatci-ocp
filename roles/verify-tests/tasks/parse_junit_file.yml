@@ -1,7 +1,9 @@
 ---
-- name: "Verify the presence of {{ t.filename }} in the log folder"
-  vars:
+- name: "Set the complete path to JUnit file {{ t.filename }}"
+  set_fact:
     junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
+
+- name: "Verify the presence of {{ t.filename }} in the log folder"
   stat:
     path: "{{ junit_filename }}"
   register: junit_file
@@ -31,8 +33,6 @@
       when: junit_fix_tags | default(false) | bool
 
     - name: "Retrieve the actual test results from {{ t.filename }}"
-      vars:
-        junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
       set_fact:
         actual_results: "{{ junit_filename | junit2dict }}"
 
