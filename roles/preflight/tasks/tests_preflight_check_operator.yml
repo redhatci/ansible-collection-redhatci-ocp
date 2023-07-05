@@ -106,7 +106,7 @@
 
 - name: Upload logs for preflight check operator into DCI
   vars:
-    preflight_prefix: "preflight_operator_{{ operator.name }}_{{ operator.version }}"
+    preflight_prefix: "preflight_operator_{{ operator.name }}"
   copy:
     src: "{{ item }}"
     dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
@@ -140,14 +140,14 @@
 
 - name: Check the presence of junit file with test results
   vars:
-    preflight_junit: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_{{ operator.version }}_results-junit.xml"
+    preflight_junit: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_results-junit.xml"
   stat:
     path: "{{ preflight_junit }}"
   register: preflight_junit_exists
 
 - name: Fail if junit file is absent
   vars:
-    preflight_junit: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_{{ operator.version }}_results-junit.xml"
+    preflight_junit: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_results-junit.xml"
   fail:
     msg: "results-junit file is absent, it seems like the tests failed: {{ preflight_junit }}"
   when: not preflight_junit_exists.stat.exists

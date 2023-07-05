@@ -87,7 +87,7 @@
         - name: Upload logs for preflight check container into DCI
           vars:
             image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
-            preflight_prefix: "preflight_container_{{ operator.name }}_{{ operator.version }}_{{ image_name }}"
+            preflight_prefix: "preflight_container_{{ operator.name }}_{{ image_name }}"
           copy:
             src: "{{ item }}"
             dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"

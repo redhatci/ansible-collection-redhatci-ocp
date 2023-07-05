@@ -1,7 +1,7 @@
 ---
 - name: Retrieve results of the preflight tests
   vars:
-    preflight_prefix: "preflight_operator_{{ operator.name }}_{{ operator.version }}"
+    preflight_prefix: "preflight_operator_{{ operator.name }}"
     preflight_results_file: "{{ job_logs.path }}/{{ preflight_prefix }}_results.json"
     preflight_log_file: "{{ job_logs.path }}/{{ preflight_prefix }}_preflight.log"
   set_fact:
@@ -11,7 +11,7 @@
 
 - name: Get info of artifact file
   stat:
-    path: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_{{ operator.version }}_preflight.log"
+    path: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_preflight.log"
   register: artifact_info
 
 - name: Print Test JSON to be submitted
