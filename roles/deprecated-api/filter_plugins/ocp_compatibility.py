@@ -8,7 +8,7 @@ class FilterModule(object):
         '''
         Parse the deprecated and to-be-deprecated API after the workload installation.
         '''
-        from junitparser import JUnitXml, TestCase, TestSuite, Failure
+        from junit_xml import TestCase, TestSuite
         from semver import VersionInfo
 
         # convert k8s version to ocp version
@@ -22,13 +22,10 @@ class FilterModule(object):
         semver2ocp = lambda x : '.'.join(str(x).split('.')[:-1])
         # Find max version in the set of incompatible versions.
         # If the set is empty, bump the current version.
-        # Set min version to the current version or min failed version.
         max_version = max(failed_versions + [semver2ocp(ocp2semver(curr_version).bump_minor())], \
                           key=lambda x: ocp2semver(x))
-        min_version = min(failed_versions + [curr_version], \
-                          key=lambda x: ocp2semver(x))
 
-        # build a continuous list from min_version to max_version
+        # build a continuous list from curr_version to max_version
         version = ocp2semver(curr_version)
         max_version_semver = ocp2semver(max_version)
         ocp_versions = {}
@@ -42,18 +39,18 @@ class FilterModule(object):
             version = version.bump_minor()
 
         # convert the dictionary to JUnit test suite
-        test_suite = TestSuite('Workload compatibility with OCP versions')
+        test_cases = []
         for version, status in ocp_versions.items():
-            test_case = TestCase(f'Compatibility with OCP-{version}', classname=f'Compatibility with OCP-{version}')
+            test_case = TestCase(f'Compatible with OCP-{version}', classname=f'Compatibility with OCP-{version}')
 
             if status == 'not_compatible':
-                failure_message = f'The workload is not compatible with OCP-{version}'
-                test_case.result = [Failure(failure_message)]
+                test_case.add_failure_info(f'The workload is not compatible with OCP-{version}')
+                test_case.add_error_info(f'The workload utilizes an API that has been deprecated for OCP-{version}')
 
-            test_suite.add_testcase(test_case)
+            test_cases.append(test_case)
+        test_suite = TestSuite('Workload compatibility with OCP versions', test_cases)
 
-        junit_xml = JUnitXml()
-        junit_xml.add_testsuite(test_suite)
-        junit_xml.write(junit_ocp_file)
+        with open(junit_ocp_file, 'w') as f:
+            TestSuite.to_file(f, [test_suite])
 
         return ocp_versions
