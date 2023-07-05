@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+
+{{ downloads_path }}/{{ openshift_full_version }}/opm render {{ olm_index_item.remote }} | jq -s > {{ temp_dir.path }}/configs/raw-index.json
+
+for val in {{ mirror_packages | join(" ") }}; do
+    jq ".[] | select(.name == \"${val}\" or .package == \"${val}\")" {{ temp_dir.path }}/configs/raw-index.json >> {{ temp_dir.path }}/configs/index.json
+done
+
+rm {{ temp_dir.path }}/configs/raw-index.json
