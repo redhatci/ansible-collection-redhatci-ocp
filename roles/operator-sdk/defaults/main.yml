@@ -1,0 +1,13 @@
+---
+# main image with the binary, latest v1.30.0 https://quay.io/repository/operator-framework/operator-sdk?tab=tags
+operator_sdk_img: "quay.io/operator-framework/operator-sdk@sha256:bbf540202645b1e24b02803b22618df7c16e414ac8e12ee0fb77c8a19b1ec780"
+
+# image for the test pod, latest v1.30.0: https://quay.io/repository/operator-framework/scorecard-test?tab=tags
+scorecard_test_img: "quay.io/operator-framework/scorecard-test@sha256:9b527bcd4f6e5cd879dc36beb1dd700491eacc68762dc75ebea590f53c4a56ee"
+# storage image, latest 1.28.1 https://quay.io/repository/operator-framework/scorecard-storage?tab=tags
+scorecard_storage_img: "quay.io/operator-framework/scorecard-storage@sha256:a3bfda71281393c7794cabdd39c563fb050d3020fd0b642ea164646bdd39a0e2"
+# untar image, latest 1.28.1 https://quay.io/repository/operator-framework/scorecard-untar?tab=tags
+scorecard_untar_img: "quay.io/operator-framework/scorecard-untar@sha256:2e728c5e67a7f4dec0df157a322dd5671212e8ae60f69137463bd4fdfbff8747"
+
+# parameters to run standalone scorecard test suite
+scorecard_namespace: "scorecard-testing"

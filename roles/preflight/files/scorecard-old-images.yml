@@ -1,6 +1,6 @@
 ---
-# These images are to be deleted when we move to Preflight release
-# containing the following PR: https://github.com/redhat-openshift-ecosystem/openshift-preflight/pull/995
+# TODO: Open an issue to Operator-SDK because 1.30.0 release still requires docker.io/busybox:1.33.0
+# to start scorecard pod
 images:
   - registry.access.redhat.com/ubi8@sha256:910f6bc0b5ae9b555eb91b88d28d568099b060088616eba2867b07ab6ea457c7
   - docker.io/library/busybox@sha256:c71cb4f7e8ececaffb34037c2637dc86820e4185100e18b4d02d613a9bd772af

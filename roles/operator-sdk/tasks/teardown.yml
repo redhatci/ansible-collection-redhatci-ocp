@@ -1,0 +1,27 @@
+---
+- name: Delete Image Content Source Policy
+  community.kubernetes.k8s:
+    state: absent
+    definition: "{{ lookup('file', scorecard_prerun_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
+
+- name: Wait for MCP status
+  include_role:
+    name: check-resource
+  vars:
+    resource_to_check: "MachineConfigPool"
+    check_wait_retries: 30
+    check_wait_delay: 10
+    check_reason: "Delete ICSP in operator-sdk role"
+
+- name: Remove tmp directory
+  file:
+    path: "{{ scorecard_tmp_dir.path }}"
+    state: absent
+  when: scorecard_tmp_dir is defined
+
+- name: Remove pre-run tmp directory
+  file:
+    path: "{{ scorecard_prerun_tmp_dir.path }}"
+    state: absent
+  when: scorecard_prerun_tmp_dir is defined
+...
