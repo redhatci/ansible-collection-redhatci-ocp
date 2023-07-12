@@ -58,7 +58,6 @@
 - name: Run the CNF Test Suite
   vars:
     tnf_partner_repo: "{{ ( dci_local_registry | length ) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
-    support_image_version: "{{ ( test_network_function_version is version('v4.3.0', '>=') or test_network_function_version == 'HEAD' ) | ternary('4.3.0', 'latest') }}"
     support_image: "debug-partner:{{ support_image_version }}"
   environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image, 'SUPPORT_IMAGE': support_image}) }}"
   shell: |

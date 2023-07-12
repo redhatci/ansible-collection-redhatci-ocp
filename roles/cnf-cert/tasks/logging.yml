@@ -10,7 +10,7 @@
 # - Results of the execution - (these are only generated if the tnf execution was correct) - JUnit XML report and
 # claim.json file
 # - HTML report (this is only generated if the tnf execution was correct) - tar.gz containing the files needed to
-# generate the HTML report. This is only loaded for tnf HEAD version
+# generate the HTML report. This is only loaded for tnf v4.3.1 and above
 - name: Copy files related to CNF Cert Suite
   copy:
     src: "{{ item }}"
