@@ -1,0 +1,38 @@
+---
+- name: Get route
+  community.kubernetes.k8s_info:
+    kind: Route
+    name: hypershift-cli-download
+    namespace: multicluster-engine
+  register: ah_route
+  until: ah_route.resources | length
+  retries: 10
+  delay: 10
+
+- name: Download hypershift cli tarball, ignoring the certificate
+  vars:
+    ah_arch: amd64
+  unarchive:
+    src: "https://{{ ah_route.resources[0].spec.host }}/linux/{{ ah_arch }}/hypershift.tar.gz"
+    dest: "{{ ah_tmp_dir.path }}"
+    mode: 0755
+    remote_src: true
+    validate_certs: false
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
+
+- name: Get hypershift cli version
+  shell:
+    cmd: >
+      {{ ah_tmp_dir.path }}/hypershift version
+  register: result
+
+- name: Print hypershift cli version
+  debug:
+    var: result.stdout
+
+- name: Set hypershift cli path
+  set_fact:
+    ah_cli_path: "{{ ah_tmp_dir.path }}/hypershift"

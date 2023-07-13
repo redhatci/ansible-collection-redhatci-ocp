@@ -1,0 +1,6 @@
+---
+- name: Remove working directory
+  file:
+    path: "{{ hs_tmp_dir.path }}"
+    state: absent
+  when: hs_tmp_dir is defined
