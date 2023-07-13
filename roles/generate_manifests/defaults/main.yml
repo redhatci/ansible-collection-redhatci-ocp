@@ -16,3 +16,5 @@ single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | defau
 manifests: true
 extra_manifests: []
 manifest_templates: "{{ extra_manifests }}"
+
+fetched_dest: "{{ repo_root_path }}/fetched"

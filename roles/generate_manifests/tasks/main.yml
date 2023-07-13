@@ -38,6 +38,17 @@
     - agent-config.yaml.j2
     - install-config.yaml.j2
 
+# The agent-config files are eventually deleted after its usage, just
+# save them in a safe place in case of needing to check them
+- name: Save a backup of agent-config files
+  fetch:
+    src: "{{ manifests_dir }}/{{ item }}"
+    dest: "{{ fetched_dest }}/{{ item }}"
+    flat: true
+  loop:
+    - agent-config.yaml
+    - install-config.yaml
+
 - name: Create extra_manifest_dir dir
   ansible.builtin.file:
     name: "{{ extra_manifest_dir }}"
