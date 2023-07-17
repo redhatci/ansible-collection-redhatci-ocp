@@ -26,6 +26,7 @@
   shell:
     cmd: >
       skopeo inspect
+      --tls-verify=false
       docker://{{ bundle }}
   register: bundle_inspect
   retries: 2
@@ -37,7 +38,7 @@
     query_channel: "Labels.\"operators.operatorframework.io.bundle.channels.v1\""
     bundle_channel: "{{ bundle_inspect.stdout | from_json | json_query(query_channel) }}"
   set_fact:
-    fbc_default_channel: "{{  bundle_channel | length | ternary(bundle_channel, 'latest')}}"
+    fbc_default_channel: "{{  bundle_channel | length | ternary(bundle_channel.split(',')[0], 'latest')}}"
 
 - name: "Initialize operators index"
   shell: >
@@ -65,9 +66,9 @@
     content: |
       ---
       schema: olm.channel
-      package: {{ fbc_short_name }}
-      name: {{ fbc_default_channel }}
+      package: "{{ fbc_short_name }}"
+      name: "{{ fbc_default_channel }}"
       entries:
-        - name: {{ fbc_operator_name }}
+        - name: "{{ fbc_operator_name }}"
     marker: "# {{ fbc_operator_name }}-channel"
 ...
