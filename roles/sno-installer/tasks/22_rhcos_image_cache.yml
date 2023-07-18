@@ -26,7 +26,7 @@
 - name: "Start RHCOS image cache container"
   containers.podman.podman_container:
     name: sno_image_cache
-    image: registry.centos.org/centos/httpd-24-centos7:latest
+    image: "{{ webserver_caching_image }}"
     state: stopped
     publish:
       - "{{ webserver_caching_port_container }}:8080"

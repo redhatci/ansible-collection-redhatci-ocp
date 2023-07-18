@@ -2,6 +2,7 @@
 # defaults file for sno-installer
 cache_enabled: true
 provision_cache_store: "{{ cache_dir }}"
+webserver_caching_image: "quay.io/centos7/httpd-24-centos7:latest"
 webserver_caching_port_container: 8080
 webserver_caching_port: "{{ webserver_caching_port_container }}"
 url_passed: false
