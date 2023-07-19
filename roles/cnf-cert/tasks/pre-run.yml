@@ -46,7 +46,7 @@
 # For both versions before than 4.3.0 and the HEAD of the git repo, the support_image_version should be 'latest'
 - name: Set support_image_version variable
   set_fact:
-    support_image_version: "{% if test_network_function_version is version('v4.3.0', '==') %}4.3.0{% elif test_network_function_version is version('v4.3.1', '==') %}4.3.1{% else %}latest{% endif %}"
+    support_image_version: "{% if test_network_function_version is version('v4.3.0', '>=') %}{{test_network_function_version[1:]}}{% else %}latest{% endif %}"
 
 - name: "cnf-cert : Save images in local registry"
   include_role:
