@@ -19,7 +19,7 @@ org=redhatci
 repo=ocp
 name="ansible-collection-${org}-${repo}"
 gittop="$(git rev-parse --show-toplevel)"
-version="$(grep ^Version ${gittop}/ansible-collection-redhat-ocp.spec | tr -s ' ' | cut -d' ' -f 2)"
+version="$(grep ^Version ${gittop}/${name}.spec | tr -s ' ' | cut -d' ' -f 2)"
 prefix="${name}-${version}"
 tarball="${gittop}/${name}-${version}.tar.gz"
 
