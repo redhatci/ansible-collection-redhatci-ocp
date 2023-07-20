@@ -1,0 +1,25 @@
+---
+- project:
+    queue: dci
+
+    check:
+      jobs:
+        - dci-rpm-build-el8
+        - dci-rpm-build-el9:
+            voting: false
+
+    gate:
+      jobs:
+        - dci-rpm-build-el8
+        - dci-rpm-build-el9:
+            voting: false
+
+    dci-post:
+      jobs:
+        - dci-rpm-build-el8
+        - dci-rpm-build-el9:
+            voting: false
+        - dci-rpm-publish:
+            dependencies:
+              - dci-rpm-build-el8
+...

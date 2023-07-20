@@ -2,7 +2,7 @@ diff --git a/galaxy.yml b/galaxy.yml
 index 0b37162..acd029a 100644
 --- a/galaxy.yml
 +++ b/galaxy.yml
-@@ -100,4 +100,9 @@
+@@ -100,4 +100,10 @@
  # uses 'fnmatch' to match the files or directories. Some directories and files
  # like 'galaxy.yml', '*.pyc', '*.retry', and '.git' are always filtered.
  # Mutually exclusive with 'manifest'
@@ -12,4 +12,5 @@ index 0b37162..acd029a 100644
 +  - .gitignore
 +  - .github
 +  - rpm
++  - 'zuul.*'
 +  - README.md
