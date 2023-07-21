@@ -1,7 +1,7 @@
 ---
 
 - name: Modify the HiveConfig resource to enable the feature gate for Assisted Installer
-  shell: |
+  ansible.builtin.shell: |
     oc patch hiveconfig hive \
        --type merge \
        -p '{"spec":{"targetNamespace":"hive",
@@ -10,19 +10,19 @@
                                  "featureSet":"Custom"}}}'
 
 - name: Modify the Provisioning resource to allow the Bare Metal Operator to watch all namespaces
-  shell: |
+  ansible.builtin.shell: |
     oc patch provisioning provisioning-configuration \
        --type merge -p '{"spec":{"watchAllNamespaces": true }}'
   when: metallb
 
 - name: Create namespace for GitOps
-  k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
     name: openshift-gitops
 
 - name: Create operator group for GitOps
-  k8s:
+  kubernetes.core.k8s:
     api_version: operators.coreos.com/v1
     kind: OperatorGroup
     name: gitops-operator-group
@@ -35,7 +35,7 @@
   when: gitops_channel is not defined
   block:
     - name: Find recommended version of GitOps
-      k8s_info:
+      kubernetes.core.k8s_info:
         api_version: packages.operators.coreos.com/v1
         kind: PackageManifest
         name: openshift-gitops-operator
@@ -43,12 +43,12 @@
       register: gitops_info
 
     - name: Set GitOps channel as the default one
-      set_fact:
+      ansible.builtin.set_fact:
         gitops_channel: "{{ gitops_info.resources[0].status.defaultChannel }}"
 
 
 - name: Create Agent Service config
-  k8s:
+  kubernetes.core.k8s:
     api_version: agent-install.openshift.io/v1beta1
     kind: AgentServiceConfig
     name: agent
@@ -74,11 +74,11 @@
               storage: "{{ image_storage_request }}"
 
 - name: Sanity wait of 120 seconds
-  pause:  # TBD: Replace by proper check
+  ansible.builtin.pause:  # TBD: Replace by proper check
     seconds: 120
 
 - name: Subscribe to GitOps
-  k8s:
+  kubernetes.core.k8s:
     api_version: operators.coreos.com/v1alpha1
     kind: Subscription
     name: openshift-gitops-operator
