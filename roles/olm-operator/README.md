@@ -46,6 +46,8 @@ Installing an operator's specific version:
     operator: ocs-operator
     source: "{{ opm_catalog_source_name }}"
     namespace: redhat-operators
+    channel: stable
+    operator_group_name: ocs-operator
     ns_labels:
       openshift.io/cluster-monitoring: "true"
     operator_group_spec:

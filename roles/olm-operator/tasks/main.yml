@@ -52,8 +52,7 @@
       apiVersion: operators.coreos.com/v1
       kind: OperatorGroup
       metadata:
-        # setting the operator_group_name allows re-using OGs between operators
-        name: "{{ operator_group_name | default(operator) }}"
+        name: "{{ operator_group_name }}"
         namespace: "{{ namespace }}"
       spec: "{{ operator_group_spec | default(omit) }}"
 
