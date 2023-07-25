@@ -13,6 +13,7 @@ organization_id          | None                                                 
 page_size                | 200                                                                        | Define a page size for Pyxis API queries. Number of results to retrieve in a single page.
 check_for_existing_projects | false                                                                   | Optional. Set this option to `true` if you want to use a custom error handling for cases where the cert project already exists within the same organization or in a different organization. Please define organization_id when using this option.
 ignore_project_creation_errors | false                                                                | Optional. Set this option to `true` if you want to ignore project creation errors.
+custom_project_name | None                                                                     | Optional. Define if you want to create your own custom certification project name instead of using image name.
 
 
 ## Variables to define for each operator / container
@@ -86,6 +87,8 @@ preflight_operators_to_certify:
 preflight_containers_to_certify:
   - container_image: "quay.io/my-container/bla-bla-image:v0.0.1"
     create_container_project: true
+    #custom_project_name is optional when not wanted to customize the container project name
+    custom_project_name: "my-custom-container-project-name"
     #attach_product_listing is optional when doing recertification
     attach_product_listing: true
     # Optional; use it to pass an image description to the created project
