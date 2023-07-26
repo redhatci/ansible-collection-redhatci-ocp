@@ -54,7 +54,7 @@
       metadata:
         name: "{{ operator_group_name }}"
         namespace: "{{ namespace }}"
-      spec: "{{ operator_group_spec | default(omit) }}"
+      spec: "{{ operator_group_spec | default(omit, true) }}"
 
 - name: "Operator {{ operator }} installation"
   block:
