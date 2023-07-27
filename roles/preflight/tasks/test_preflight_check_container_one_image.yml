@@ -84,7 +84,7 @@
           include_tasks: test_run_health_check.yml
           when: preflight_run_health_check | bool
 
-        - name: Upload logs for preflight check container into DCI
+        - name: "Copy execution artifacts of {{ current_operator_image }} to DCI logs directory"
           vars:
             image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
             preflight_prefix: "preflight_container_{{ operator.name }}_{{ image_name }}"
@@ -93,6 +93,7 @@
             dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
           with_fileglob:
             - "{{ preflight_container_artifacts.path }}/*"
+            - "{{ preflight_container_artifacts.path }}/amd64/*"
 
         - name: Remove tmp dir
           file:
