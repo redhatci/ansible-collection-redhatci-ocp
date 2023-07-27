@@ -1,4 +1,8 @@
 ---
+- name: "Pause 60 seconds to wait for MC to be triggered by a resource change"
+  pause:
+    seconds: 60
+
 - name: "Check MCP application"
   block:
     # MachineConfigPool check
