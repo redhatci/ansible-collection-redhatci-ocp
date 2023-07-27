@@ -75,7 +75,7 @@
       shell:
         cmd: >
           ./operator-sdk scorecard
-          --output json
+          --output xunit
           --selector=test=basic-check-spec-test
           --kubeconfig "{{ scorecard_kubeconfig_path }}"
           --namespace {{ scorecard_namespace }}
@@ -105,9 +105,9 @@
         dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_errors_basic_check_spec_test.json"
 
 - name: Copy scorecard basic-check-spec-test output into logs
-  template:
-    src: templates/scorecard-basic-check-spec-test.j2
-    dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_basic_check_spec_test.json"
+  copy:
+    content: "{{ scorecard_exec.stdout }}"
+    dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_basic_check_spec_test.xml"
 
 - name: Run operator-sdk scorecard --selector=suite=olm
   environment:
@@ -118,7 +118,7 @@
   shell:
     cmd: >
       ./operator-sdk scorecard
-      --output json
+      --output xunit
       --selector=suite=olm
       --kubeconfig "{{ scorecard_kubeconfig_path }}"
       --namespace {{ scorecard_namespace }}
@@ -132,9 +132,9 @@
   ignore_errors: true
 
 - name: Copy scorecard basic-check-spec-test output into logs
-  template:
-    src: templates/scorecard-basic-check-spec-test.j2
-    dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_suite_olm.json"
+  copy:
+    content: "{{ scorecard_exec.stdout }}"
+    dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_suite_olm.xml"
 
 - name: Delete namespace used for scorecard testing
   community.kubernetes.k8s:

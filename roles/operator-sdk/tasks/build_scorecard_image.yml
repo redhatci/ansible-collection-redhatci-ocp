@@ -1,0 +1,45 @@
+---
+- name: Retrieve branch name
+  shell:
+    cmd: >
+      git branch --show-current
+    chdir: "{{ operator_sdk_source_dir }}"
+  register: operator_sdk_branch_name
+
+- name: Set scorecard_branch
+  set_fact:
+    scorecard_branch: "{{ operator_sdk_branch_name.stdout }}"
+
+- name: Copy read-only source folder to set 0755 mode
+  copy:
+    src: "{{ operator_sdk_source_dir }}/"
+    dest: "{{ scorecard_tmp_dir.path }}/operator-sdk-source/"
+    mode: "0755"
+
+- name: Set operator_sdk_img name
+  set_fact:
+    operator_sdk_img: "{{ scorecard_dci_local_registry }}/operator-framework/operator-sdk:{{ scorecard_branch }}"
+
+- name: Append the job id if defined to simplify cleanup
+  set_fact:
+    operator_sdk_img: "{{ operator_sdk_img +'-'+ job_id }}"
+  when: job_id is defined
+
+- name: Build Operator-SDK image
+  shell:
+    cmd: >
+      podman buildx build
+      -t {{ operator_sdk_img }}
+      -f ./images/operator-sdk/Dockerfile
+      --load . &&
+      podman push
+      --authfile {{ scorecard_partner_creds }}
+      {{ operator_sdk_img }}
+    chdir: "{{ scorecard_tmp_dir.path }}/operator-sdk-source/"
+  notify:
+    - Remove operator_sdk_img built from the source
+
+- name: Display Operator-SDK version to ensure that the image build went fine
+  shell: >
+    podman run --rm {{ operator_sdk_img }} version
+...
