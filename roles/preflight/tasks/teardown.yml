@@ -3,8 +3,7 @@
   file:
     path: "{{ preflight_tmp_dir.path }}"
     state: absent
-  when:
-    - preflight_tmp_dir is defined
+  when: preflight_tmp_dir is defined
 
 - name: Remove certificate used by preflight from the CA-Trust database
   block:

@@ -5,7 +5,7 @@
     preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
   set_fact:
     preflight_images: "{{ (preflight_assets_images + scorecard_images + preflight_bundle_images) | unique }}"
-    # TODO: to delete the old images once preflight release with 1.29.0 integration is cut
+    # TODO: these old images are still required by the operator-sdk 1.30.0
     old_images: "{{ (lookup('file', 'files/scorecard-old-images.yml') | from_yaml)['images'] }}"
 
 - name: Mirror preflight images
@@ -85,7 +85,7 @@
               source: {{ item.split('@')[0] }}
         marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
         path: "{{ preflight_prerun_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
-      # TODO: to delete the old images once preflight release with 1.29.0 integration is cut
+      # TODO: these old images are still required by the operator-sdk 1.30.0
       loop: "{{ (preflight_images + old_images) | unique }}"
 
     - name: Apply Image Content Source Policy

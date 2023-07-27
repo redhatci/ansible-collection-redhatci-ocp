@@ -1,0 +1,108 @@
+---
+- name: Retrieve all images to mirror
+  vars:
+    scorecard_basic_images: "{{ [ scorecard_test_img, scorecard_storage_img, scorecard_untar_img ] }}"
+    bundle_images: "{{ scorecard_operators | map(attribute='bundle_image') | list }}"
+  set_fact:
+    scorecard_images: "{{ scorecard_basic_images + bundle_images }}"
+
+- name: Mirror Operator-SDK images
+  include_role:
+    name: mirror_images
+  vars:
+    images: "{{ scorecard_images }}"
+    authfile: "{{ scorecard_partner_creds }}"
+
+- name: Generate catalog path
+  vars:
+    index_tag: "{{ ansible_date_time.iso8601_basic }}"
+  set_fact:
+    OO_INDEX: "{{ '/'.join([ scorecard_dci_local_registry ] + [ 'telcoci','scorecard','disconnected-catalog']) }}:{{ index_tag }}"
+
+- name: Create FBC catalog
+  include_role:
+    name: fbc-catalog
+    apply:
+      environment:
+        - DOCKER_CONFIG: "{{ scorecard_tmp_dir.path }}"
+  vars:
+    fbc_index_image:  "{{ OO_INDEX }}"
+    fbc_bundles: "{{ scorecard_operators | map(attribute='bundle_image') | list }}"
+    fbc_opm_args: "--skip-tls-verify=false"
+
+- name: Push index image into local registry
+  shell: >
+    podman push
+    --authfile {{ scorecard_partner_creds }}
+    {{ OO_INDEX }}
+
+- name: Create temporary directory
+  tempfile:
+    state: directory
+    prefix: scorecard_prerun_tmp_dir.
+  register: scorecard_prerun_tmp_dir
+
+- name: Manage ImageContentSourcePolicy update
+  block:
+    - name: "Get catalog SHA256"
+      shell:
+        cmd: |
+          skopeo inspect --authfile {{ scorecard_pullsecret_tmp_file }} \
+          docker://{{ OO_INDEX }} | jq -r '.Digest'
+      register: catalog_sha
+      retries: 2
+      delay: 10
+      until: not catalog_sha.failed
+
+    - name: "Remove local catalog image"
+      shell: |
+        podman rmi "{{ OO_INDEX }}"
+
+    - name: Redefine catalog path + SHA
+      set_fact:
+        OO_INDEX: "{{ scorecard_dci_local_registry }}/telcoci/scorecard/disconnected-catalog@{{ catalog_sha.stdout }}"
+
+    - name: Mirror the disconnected-catalog
+      shell: >
+        {{ scorecard_oc_tool_path }} adm catalog mirror -a {{ scorecard_partner_creds }}
+        --max-components=3
+        {{ OO_INDEX }} {{ scorecard_dci_local_registry }} --to-manifests={{ scorecard_prerun_tmp_dir.path }}/tmp_oc
+      register: catalog_mirror
+      retries: 2
+      delay: 10
+      until: catalog_mirror.stderr.find('error:') == -1
+
+    # TODO: Double-check this role during migration to ITMS to prevent
+    # duplication of bundle images within the mirroring object.
+    # Replacing scorecard_images with scorecard_basic_images directly caused
+    # operator-sdk scorecard tests to timeout, so we need to ensure the functionality as well.
+    - name: Append operator-sdk images to imageContentSourcePolicy
+      blockinfile:
+        block: |
+          # Scorecard container
+            - mirrors:
+              - {{ scorecard_dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+              source: {{ item.split('@')[0] }}
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
+        path: "{{ scorecard_prerun_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
+      loop: "{{ scorecard_images }}"
+
+    - name: Display new ICSP to be applied
+      vars:
+        icsp_path: "{{ scorecard_prerun_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
+      debug:
+        msg: "{{ lookup('file', icsp_path) }}"
+
+    - name: Apply Image Content Source Policy
+      community.kubernetes.k8s:
+        definition: "{{ lookup('file', scorecard_prerun_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
+
+    - name: Wait for MCP status
+      include_role:
+        name: check-resource
+      vars:
+        resource_to_check: "MachineConfigPool"
+        check_wait_retries: 30
+        check_wait_delay: 10
+        check_reason: "ICSP update in operator-sdk role"
+...

@@ -36,59 +36,38 @@
       loop: "{{ preflight_operators_to_certify }}"
       loop_control:
         loop_var: operator
-    
+
     # Optional: build preflight image. This can be used
     # to test a specific branch in the Preflight repository
     # when a ready image is not available.
     - name: Build preflight_image
-      include_tasks: prepare_build_image.yml
+      include_tasks: prepare_preflight_image.yml
       # this variable is set in test-runner
       when: preflight_source_dir is defined
 
-    # This task is used both in connected and disconnected env.
-    # In disconnected environment, it helps to mirror scorecard-test image
-    # in advance, to allow the execution of Preflight tests in the disconnected cluster.
-    # In connected environment, that's to retrieve scorecard-test image to run
-    # independent scorecard tests later on.
+    # Retrieve scorecard-test image in advance,
+    # to allow its mirroring in the disconnected cluster.
     - name: Run preflight runtime-assets to get scorecard-test image
       include_tasks: prepare_runtime_assets.yml
+      when: dci_disconnected | default(false) | bool
 
     - name: Manage images mirroring for Preflight cert suite
       include_tasks: mirroring.yml
       when: dci_disconnected | default(false) | bool
 
-    # The main tests
+    # The main tests: containers
     - name: Check container - Preflight check operator images with check container one by one
       include_tasks: test_preflight_check_container.yml
       loop: "{{ preflight_operators_to_check }}"
       loop_control:
         loop_var: operator
 
+    # The main tests: operators
     - name: Check operator - Preflight check operators one by one
       include_tasks: tests_preflight_check_operator.yml
       loop: "{{ preflight_operators_to_check }}"
       loop_control:
         loop_var: operator
-
-    # If you want to run operator-sdk scorecard tests,
-    # operator_sdk_tool_path variable should be provided
-    # in the config file -e @path/to/preflight_config.yaml
-    - name: Display fail message if the path to operator-sdk binary is not provided
-      fail:
-        msg: Impossible to run operator-sdk tests. Please provide operator_sdk_tool_path variable in config file.
-      when: operator_sdk_tool_path is undefined
-      ignore_errors: true
-
-    # These tests are here to retrieve the logs,
-    # which are not displayed by preflight.
-    # TODO: remove them once the issue is fixed
-    # https://github.com/redhat-openshift-ecosystem/openshift-preflight/issues/169
-    - name: Scorecard tests
-      include_tasks: tests_scorecard_check_operator.yml
-      loop: "{{ preflight_operators_to_check }}"
-      loop_control:
-        loop_var: operator
-      when: operator_sdk_tool_path is defined
   always:
     - name: Teardown
       include_tasks: teardown.yml

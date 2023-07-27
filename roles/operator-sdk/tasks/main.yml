@@ -1,0 +1,37 @@
+---
+- name: Run Operator-SDK Scorecard suite
+  block:
+    - name: Create temporary directory for config and scorecard binary
+      tempfile:
+        state: directory
+        prefix: scorecard_tmp_dir.
+      register: scorecard_tmp_dir
+
+    - name: Copy registry authentication into config folder
+      copy:
+        src: "{{ scorecard_partner_creds }}"
+        dest: "{{ scorecard_tmp_dir.path }}/config.json"
+      when: scorecard_partner_creds | length
+
+    - name: Retrieve operator-sdk binary from provided image
+      shell:
+        cmd: >
+          podman cp
+          $(podman create --rm {{ operator_sdk_img }}):/usr/local/bin/operator-sdk
+          operator-sdk
+        chdir: "{{ scorecard_tmp_dir.path }}"
+
+    - name: Manage images mirroring for Operator-sdk scorecard test suite
+      include_tasks: mirroring.yml
+      when: scorecard_dci_disconnected | default(false) | bool
+
+    # Main tests
+    - name: Scorecard tests
+      include_tasks: tests_scorecard_check_operator.yml
+      loop: "{{ scorecard_operators }}"
+      loop_control:
+        loop_var: operator
+  always:
+    - name: Teardown
+      include_tasks: teardown.yml
+...
