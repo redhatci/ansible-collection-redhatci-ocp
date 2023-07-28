@@ -1,7 +1,9 @@
 - name: "Mirror image"
   vars:
+    image_tag: "{{ image | regex_search('(?<=sha256)(.{12})') | default('', True) }}"
     image_name: "{{ '/'.join(image.split('@')[0].split('/')[1:]) }}"
-    local_image_location: "{{ dci_local_registry }}/{{ image_name }}"
+    local_image_location: "{{ dci_local_registry }}/{{ image_name }}
+                           {%- if image_tag | length %}{{ image_tag }}{% endif %}"
   block:
     - name: "mirror_images : Mirror image {{ image_name }}"
       command:
