@@ -14,6 +14,7 @@
   vars:
     images: "{{ preflight_images }}"
     authfile: "{{ partner_creds }}"
+    mi_option: "--preserve-digests"
 
 - name: "Define catalog tag"
   set_fact:

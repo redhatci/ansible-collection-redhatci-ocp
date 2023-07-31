@@ -12,6 +12,7 @@
   vars:
     images: "{{ scorecard_images }}"
     authfile: "{{ scorecard_partner_creds }}"
+    mi_options: "--preserve-digests"
 
 - name: Generate catalog path
   vars:
