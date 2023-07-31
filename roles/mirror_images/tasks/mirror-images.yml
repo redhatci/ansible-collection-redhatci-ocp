@@ -10,7 +10,9 @@
         cmd: >
           skopeo copy
           --all
-          --preserve-digests
+          {% if mi_options is defined %}
+          {{ mi_options }}
+          {% endif %}
           --remove-signatures
           {% if authfile is defined %}
           --authfile {{ authfile }}
