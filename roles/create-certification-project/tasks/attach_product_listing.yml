@@ -20,6 +20,13 @@
     - cnf_to_certify is defined
     - cert_project_id is defined
 
+- name: Set and save project IDs to use with product listing attach for Helm Chart
+  set_fact:
+    helmchart_projects: "{{ helmchart_projects | default([]) + [ cert_project_id ] }}"
+  when:
+    - cert_project_id is defined
+    - helmchart_to_certify is defined
+
 - name: Patch product list to attach Prod-List ID to container project
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"

@@ -1,0 +1,34 @@
+---
+- name: Handle the situation when cert project already exists
+  include_role:
+    name: create-certification-project
+    tasks_from: check_if_container_project_exists
+  when: check_for_existing_projects | bool
+
+- name: Helm Chart Certification Project
+  include_role:
+    name: create-certification-project
+    tasks_from: create_project
+  when: helmchart.create_helmchart_project | default(false) | bool
+
+- name: Update the Helm Chart project with company info when cert_settings is defined
+  include_role:
+    name: create-certification-project
+    tasks_from: update_helmchart_project
+  when:
+    - cert_settings is defined
+    - cert_project_id is defined
+
+- name: Attach Product List ID to Helm Chart project when cert_listings is defined
+  include_role:
+    name: create-certification-project
+    tasks_from: attach_product_listing
+  when:
+    - helmchart.attach_product_listing | default(false) | bool
+    - helmchart.create_helmchart_project | default(false) | bool
+    - not helmchart_cert_project_exists_own_org | default(false) | bool
+
+- name: Unset Helm Chart project ID to ensure no occasional reuse
+  set_fact:
+    cert_project_id: ""
+...
