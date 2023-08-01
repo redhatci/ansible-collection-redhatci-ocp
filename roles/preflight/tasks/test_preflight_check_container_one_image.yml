@@ -89,11 +89,12 @@
             image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
             preflight_prefix: "preflight_container_{{ operator.name }}_{{ image_name }}"
           copy:
-            src: "{{ item }}"
-            dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
-          with_fileglob:
-            - "{{ preflight_container_artifacts.path }}/*"
-            - "{{ preflight_container_artifacts.path }}/amd64/*"
+            src: "{{ item.src }}"
+            dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item.path | regex_replace('/', '_') }}"
+          with_filetree:
+            - "{{ preflight_container_artifacts.path }}"
+          when:
+            -  item.state == "file"
 
         - name: Remove tmp dir
           file:
