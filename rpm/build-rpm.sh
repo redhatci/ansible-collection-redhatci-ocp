@@ -8,12 +8,12 @@ srpmdir="$(rpm --eval "%{_srcrpmdir}")"
 version="$(rpmspec -P ${gittop}/${name}.spec | grep ^Version | tr -s ' ' | cut -d' ' -f 2)"
 release="$(rpmspec -P ${gittop}/${name}.spec | grep ^Release | tr -s ' ' | cut -d' ' -f 2)"
 
-branch="main"
+branch=""
 mockconfig="centos-stream+epel-8-x86_64"
 while getopts ':hb:r:' OPTION; do
     case "$OPTION" in
         b)
-            branch="$OPTARG"
+            branch="-b $OPTARG"
             ;;
         r)
             mockconfig="$OPTARG"
@@ -28,7 +28,7 @@ while getopts ':hb:r:' OPTION; do
     esac
 done
 
-$(dirname $0)/build-tarball.sh -b ${branch}
+$(dirname $0)/build-tarball.sh ${branch}
 $(dirname $0)/build-srpm.sh
 
 set -ex
