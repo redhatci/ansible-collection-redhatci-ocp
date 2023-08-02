@@ -1,17 +1,20 @@
-#!/bin/bash -x
+#!/bin/bash
 
-dirty=false
+dirty=true
 branch="main"
-while getopts ':db:' OPTION; do
+while getopts ':hb:' OPTION; do
     case "$OPTION" in
-        d)
-            dirty=true
-            ;;
         b)
             branch="$OPTARG"
+            dirty=true
+            ;;
+        h)
+            echo "Usage: $(basename $0) [-d] [-b BRANCH]"
+            exit 0
             ;;
         ?)
             echo "Usage: $(basename $0) [-d] [-b BRANCH]"
+            exit 1
     esac
 done
 
@@ -19,10 +22,12 @@ org=redhatci
 repo=ocp
 name="ansible-collection-${org}-${repo}"
 gittop="$(git rev-parse --show-toplevel)"
-version="$(grep ^Version ${gittop}/${name}.spec | tr -s ' ' | cut -d' ' -f 2)"
+version="$(rpmspec -P ${gittop}/${name}.spec | grep ^Version  | tr -s ' ' | cut -d' ' -f 2)"
 prefix="${name}-${version}"
 tarball="${gittop}/${name}-${version}.tar.gz"
 
+set -ex
+rm -fv ${tarball}
 if $dirty; then
     cd $gittop && \
     tar \
