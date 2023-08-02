@@ -28,8 +28,9 @@ while getopts ':hb:r:' OPTION; do
     esac
 done
 
+set -ex
+
 $(dirname $0)/build-tarball.sh ${branch}
 $(dirname $0)/build-srpm.sh
 
-set -ex
 mock -r "${mockconfig}" --rebuild "${srpmdir}/${name}-${version}-${release}.src.rpm"

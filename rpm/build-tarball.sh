@@ -6,7 +6,7 @@ while getopts ':hb:' OPTION; do
     case "$OPTION" in
         b)
             branch="$OPTARG"
-            dirty=true
+            dirty=false
             ;;
         h)
             echo "Usage: $(basename $0) [-d] [-b BRANCH]"
