@@ -72,7 +72,9 @@
     -e PFLT_INDEXIMAGE={{ OO_INDEX }}
     -e PFLT_NAMESPACE={{ preflight_namespace }}
     -e PFLT_SERVICEACCOUNT={{ preflight_sa }}
+    {% if preflight_assets_images | default('') | length %}
     -e PFLT_SCORECARD_IMAGE={{ preflight_assets_images[0] }}
+    {% endif %}
     -v {{ preflight_tmp_dir.path }}/kubeconfig:/kubeconfig
     -v {{ preflight_operator_artifacts.path }}:/artifacts
     {% if partner_creds | length %}
