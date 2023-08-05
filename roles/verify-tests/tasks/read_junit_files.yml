@@ -1,0 +1,5 @@
+---
+- name: Loop through the the given JUnit files
+  include_tasks: parse_junit_file.yml
+  with_fileglob:
+    - "{{ job_logs.path }}/{{ t.filename }}"
