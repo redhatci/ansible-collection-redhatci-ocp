@@ -18,6 +18,7 @@
   when:
     - cert_settings is defined
     - cert_project_id is defined
+    - cert_project_id | length > 0
 
 - name: Attach Product List ID to Helm Chart project when cert_listings is defined
   include_role:
