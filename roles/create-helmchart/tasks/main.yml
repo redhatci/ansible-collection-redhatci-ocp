@@ -1,0 +1,15 @@
+---
+- name: Helm Chart Certification Project
+  block:
+    - name: "Create Helm Chart Certification Project"
+      vars:
+        current_chart_name: "{{ hc.chart_name }}"
+        helmchart:
+          create_helmchart_project: "{{ hc.create_helmchart_project | default('') }}"
+          attach_product_listing: "{{ hc.attach_product_listing | default('') }}"
+          short_description: "{{ hc.short_description | default('') }}"
+      include_tasks: create_helmchart_project.yml
+      loop: "{{ helmchart_to_certify }}"
+      loop_control:
+        loop_var: hc
+...
