@@ -2,7 +2,7 @@
 
 - name: Set tnf_logs_location variable
   set_fact:
-    tnf_logs_location: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}"
+    tnf_logs_location: "{{ tnf_dir }}/{{ test_network_function_project_name }}"
 
 # There are three types of files to be submitted:
 # - Configuration files - tnf_config.yml
@@ -40,7 +40,7 @@
   block:
     - name: set tnf_js_logs_location variable
       set_fact:
-        tnf_js_logs_location: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/script"
+        tnf_js_logs_location: "{{ tnf_dir }}/script"
 
     - name: Copy Javascript files in an auxiliary folder before compressing them with HTML report
       copy:

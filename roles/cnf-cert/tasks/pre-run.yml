@@ -60,52 +60,37 @@
     - dci_disconnected | default(false) | bool
     - dci_local_registry | length
 
-- name: Create temporary directory for git repos
-  tempfile:
-    state: directory
-  register: tnf_git_dir
-
-# test_network_function_repo will always be a link to the tnf Github repo
-# unless we are testing a PR from that repo, in whose case test-runner will
-# upload test_network_function_repo value to the file path in which
-# extract-dependencies script has downloaded locally the repo
-- name: Check if test_network_function_repo is a file path
-  stat:
-    path: "{{ test_network_function_repo }}"
-  register: tnf_is_file_path
-
-- name: Tasks when test_network_function_repo points to a local file path
+# Depending on the presence or not of `test_network_function_src_dir` variable,
+# defined by test-runner script when testing a PR from cnf-certification-test
+# repository, we will use a custom tnf image or not.
+- name: Tasks when testing a PR from cnf-certification-test repository
   block:
 
-  - name: Copy the downloaded repo in tnf_git_dir path
-    copy:
-      src: "{{ test_network_function_repo }}/{{ test_network_function_project_name }}"
-      dest: "{{ tnf_git_dir.path }}"
+  # In this case, test_network_function_src_dir already points to cnf-certification-test
+  - name: Define variable to refer to the directory where tnf code is placed
+    set_fact:
+      tnf_dir: "{{ test_network_function_src_dir }}"
 
-  - name: Find .sh scripts in tnf repo
-    find:
-      paths: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
-      patterns: '*.sh'
-      recurse: yes
-    register: list_sh_scripts
-
+  # Add proper permissions to the folder recursively.
   # This is needed since extract-dependencies script downloads the code without
-  # write permissions. With this, tnf repo would have the same permissions as if
-  # it were downloaded with git clone command.
-  - name: Set execution permission for .sh scripts
+  # write permissions/exec permissions, and they are required for creating new files
+  # (e.g. the output from tnf execution) or execute scripts (e.g. the script that runs
+  # the certification suites).
+  - name: Set proper permissions to the tnf folder
     file:
-      path: "{{ item.path }}"
-      mode: a+x
-    with_items: "{{ list_sh_scripts.files }}"
+      path: "{{ tnf_dir }}"
+      state: directory
+      mode: u+wx,g+wx
+      recurse: true
 
   # We need to check the SHA in this way, because extract-dependencies changes the
-  # commit id when creating the new branch based on the PR, but only if new PRs are merged 
-  # in the repo and we have not included them in our change. In these cases, the original 
+  # commit id when creating the new branch based on the PR, but only if new PRs are merged
+  # in the repo and we have not included them in our change. In these cases, the original
   # id is saved in .git/ORIG_HEAD file. Else, we can find it in the location called
   # `.git/refs/heads/prXXX`
   - name: "Check if .git/ORIG_HEAD file exists"
     stat:
-      path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/.git/ORIG_HEAD"
+      path: "{{ tnf_dir }}/.git/ORIG_HEAD"
     register: orig_head_file
 
   - name: Actions when .git/ORIG_HEAD file exists
@@ -114,7 +99,7 @@
         shell: cat .git/ORIG_HEAD
         register: tnf_repo_info_head
         args:
-          chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+          chdir: "{{ tnf_dir }}"
 
       - name: Create variable with tnf version name
         set_fact:
@@ -127,7 +112,7 @@
         shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
         register: tnf_repo_info_branch
         args:
-          chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+          chdir: "{{ tnf_dir }}"
 
       - name: Create variable with tnf version name
         set_fact:
@@ -148,7 +133,7 @@
       --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
       --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
     args:
-      chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+      chdir: "{{ tnf_dir }}"
 
   # This is needed because the DCI component is not automatically created, as
   # it is done in case the git repo is directly used, in whose case it is created.
@@ -180,11 +165,20 @@
     tags: [dci]
 
   when:
-    - tnf_is_file_path.stat.exists|bool
-    - tnf_is_file_path.stat.isdir|bool
+    - test_network_function_src_dir is defined
+    - test_network_function_src_dir | length > 0
 
-- name: Tasks when test_network_function_repo points to a Github repository
+- name: Tasks when testing a cnf-certification-test stable version
   block:
+
+  - name: Create temporary directory for tnf repository
+    tempfile:
+      state: directory
+    register: tnf_git_dir
+
+  - name: Define variable to refer to the directory where tnf code is placed
+    set_fact:
+      tnf_dir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
   # In https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
   # there are two main tags to take into account:
@@ -206,7 +200,7 @@
     git:
       repo: "{{ test_network_function_repo }}"
       version: "{{ test_network_function_version }}"
-      dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+      dest: "{{ tnf_dir }}"
       force: yes
     # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
     # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
@@ -229,6 +223,7 @@
     delay: 10
     until: result.rc == 0
 
-  when: not tnf_is_file_path.stat.exists|bool
+  when:
+    - test_network_function_src_dir is not defined
 
 ...
