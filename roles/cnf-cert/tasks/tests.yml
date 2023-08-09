@@ -2,7 +2,7 @@
 - name: Template tnf_config.yml
   template:
     src: templates/tnf_config.yml.j2
-    dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/tnf_config.yml"
+    dest: "{{ tnf_dir }}/{{ test_network_function_project_name }}/tnf_config.yml"
 
 # Doing this just before running tnf, just to spend the enough time changing PodSecurity constraints
 # in default namespace.
@@ -46,7 +46,7 @@
 
 - name: Remove XML JUnit results if they exist
   file:
-    path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
+    path: "{{ tnf_dir }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
     state: absent
 
 # The task automatically append these environment variables to tnf_env_vars:
@@ -64,15 +64,15 @@
     set -x
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
-    -t {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
-    -o {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
+    -t {{ tnf_dir }}/{{ test_network_function_project_name }} \
+    -o {{ tnf_dir }}/{{ test_network_function_project_name }} \
     {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
     {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
     {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
     {% if tnf_dockercfg_path is defined %}-c {{ tnf_dockercfg_path }} \{% endif %}
     -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
   args:
-    chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+    chdir: "{{ tnf_dir }}"
   ignore_errors: true
 
 # Clean images just after finishing the execution

@@ -55,9 +55,7 @@
     when: cnf_suite_namespace.resources|length > 0
   when: tnf_postrun_delete_resources|bool
 
-# When tnf_git_dir contains a folder from the PR, it is not a problem to
-# remove the content from there because it is also present under the PR
-# directory, which is removed after finishing the job thanks to test-runner
+# This is just done when testing a cnf-certification-test stable version
 - name: Delete temporary directory for git repos
   file:
     path: "{{ tnf_git_dir.path }}"
