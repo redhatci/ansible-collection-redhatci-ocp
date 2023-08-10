@@ -13,7 +13,7 @@
   register: hc_req
   until: hc_req.changed
   retries: 3
-  delay: 10
+  delay: 20
 
 # Unarchive module can not be used: https://github.com/ansible/community/wiki/Module:-unarchive
 # Files that are only compressed such as foo.bz2 and bar.gz
