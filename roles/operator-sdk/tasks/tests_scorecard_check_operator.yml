@@ -131,7 +131,7 @@
   register: scorecard_exec
   ignore_errors: true
 
-- name: Copy scorecard basic-check-spec-test output into logs
+- name: Copy scorecard olm-suite output into logs
   copy:
     content: "{{ scorecard_exec.stdout }}"
     dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_suite_olm.xml"
@@ -152,4 +152,32 @@
     - "{{ scorecard_operator_dir }}"
   loop_control:
     loop_var: scorecard_dir_to_del
+
+- block: 
+    - name: "Wait until namespace {{ scorecard_namespace }} is unstuck"
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ scorecard_namespace }}"
+      register: stuck_namespace
+      until: stuck_namespace.resources | length == 0
+      retries: 6
+      delay: 10
+  rescue:
+    - name: Get scorecard-related events
+      community.kubernetes.k8s_info:
+        kind: Event
+        namespace: "{{ scorecard_namespace }}"
+      register: scorecard_events
+
+    - name: Get pods from the scorecard namespace
+      community.kubernetes.k8s_info:
+        kind: Pod
+        namespace: "{{ scorecard_namespace }}"
+      register: scorecard_pods
+
+    - name: Upload the logs for stuck pod into DCI
+      template:
+        src: "templates/scorecard-debug-pod-logs.j2"
+        dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_logs_for_stuck_pod.log"
 ...

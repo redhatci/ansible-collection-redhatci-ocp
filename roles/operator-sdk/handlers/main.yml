@@ -1,6 +1,0 @@
----
-- name: Remove operator_sdk_img built from the source
-  containers.podman.podman_image:
-    name: "{{ operator_sdk_img }}"
-    state: absent
-...
