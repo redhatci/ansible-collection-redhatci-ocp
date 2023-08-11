@@ -100,7 +100,7 @@
         name: check-resource
       vars:
         resource_to_check: "MachineConfigPool"
-        check_wait_retries: 30
-        check_wait_delay: 10
+        check_wait_retries: 45
+        check_wait_delay: 20
         check_reason: "ICSP update in preflight role"
 ...
