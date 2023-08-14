@@ -18,3 +18,6 @@ extra_manifests: []
 manifest_templates: "{{ extra_manifests }}"
 
 fetched_dest: "{{ repo_root_path }}/fetched"
+
+api_vips: "{% if extra_api_vip is defined %}{{ [api_vip] + [extra_api_vip] }}{% else %}{{ [api_vip] }}{% endif %}"
+ingress_vips: "{% if extra_ingress_vip is defined %}{{ [ingress_vip] + [extra_ingress_vip] }}{% else %}{{ [ingress_vip] }}{% endif %}"

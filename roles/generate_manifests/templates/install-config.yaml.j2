@@ -37,9 +37,13 @@ platform:
   {% else %}
   baremetal:
     apiVips:
-      - {{ api_vip }}
+      {% for vip in api_vips %}
+      - {{ vip }}
+      {% endfor %}
     ingressVips:
-      - {{ ingress_vip }}
+      {% for vip in ingress_vips %}
+      - {{ vip }}
+      {% endfor %}
   {% endif %}
 sshKey: {{ ssh_public_key }}
 pullSecret: '{{ pull_secret | to_json }}'
