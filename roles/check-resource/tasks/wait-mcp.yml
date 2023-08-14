@@ -28,54 +28,47 @@
       when:
         - '"OCPBUGS-17112" not in dci_workarounds|default([])'
 
-    # This is related to OCPBUGS-17112.
-    - name: Apply workaround for OCPBUGS-17112
-      block:
-        # If nodes are NotReady, we cannot do much more than failing at this point.
-        # There may be cases where it takes some time to move from NotReady to Ready,
-        # so retrying this task during 10 minutes maximum.
-        - name: Check for workers with NotReady,SchedulingDisabled status
-          shell: >
-            {{ oc_tool_path }} get nodes --no-headers=true |
-            grep 'NotReady,SchedulingDisabled' | grep worker | awk '{ print $1 }'
-          register: not_ready_disabled_nodes
-          until: not_ready_disabled_nodes.stdout | length == 0
-          retries: 30
-          delay: 20
+    # If nodes are NotReady, we cannot do much more than failing at this point.
+    # There may be cases where it takes some time to move from NotReady to Ready,
+    # so retrying this task during 10 minutes maximum.
+    - name: Check for workers with NotReady,SchedulingDisabled status
+      shell: >
+        {{ oc_tool_path }} get nodes --no-headers=true |
+        grep 'NotReady,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+      register: not_ready_disabled_nodes
+      until: not_ready_disabled_nodes.stdout | length == 0
+      retries: 30
+      delay: 20
 
-        # If there is any node in SchedulingDisabled status, make the job to fail
-        # Run this check during 3 minutes maximum.
-        - name: Check for workers with Ready,SchedulingDisabled status
-          shell: >
-            {{ oc_tool_path }} get nodes --no-headers=true |
-            grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
-          register: reg_disabled_nodes
-          until: reg_disabled_nodes.stdout | length == 0
-          retries: 9
-          delay: 20
+    # If there is any node in SchedulingDisabled status, make the job to fail
+    # Run this check during 3 minutes maximum.
+    - name: Check for workers with Ready,SchedulingDisabled status
+      shell: >
+        {{ oc_tool_path }} get nodes --no-headers=true |
+        grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+      register: reg_disabled_nodes
+      until: reg_disabled_nodes.stdout | length == 0
+      retries: 9
+      delay: 20
 
-        # If the previous checks passed because there were no nodes in NotReady or SchedulngDisabled
-        # status, then let's retry the check.
-        # For OCPBUGS-17112, we will only allow one more attempt (num_repetitions = 2 by default)
-        - name: Fail if the maximum number of retries have been reached
-          fail:
-            msg: Maximum number of retries without success have been reached ({{ num_repetitions }})
-          when: retry_count | int > num_repetitions
+    # If the previous checks passed because there were no nodes in NotReady or SchedulngDisabled
+    # status, then let's retry the check.
+    # For OCPBUGS-17112, we will only allow one more attempt (num_repetitions = 2 by default)
+    - name: Fail if the maximum number of retries have been reached
+      fail:
+        msg: Maximum number of retries without success have been reached ({{ num_repetitions }})
+      when: retry_count | int > num_repetitions
 
-        # Keeping this call to uncordon_workers just in case this issue appears again in the near future.
-        # TODO. Remove it if this issue is no longer appearing.
-        #- name: Check for workers with Ready,SchedulingDisabled status
-        #  include_tasks: uncordon_workers.yml
+    # Keeping this call to uncordon_workers just in case this issue appears again in the near future.
+    # TODO. Remove it if this issue is no longer appearing.
+    #- name: Check for workers with Ready,SchedulingDisabled status
+    #  include_tasks: uncordon_workers.yml
 
-        - name: Increment retry count
-          set_fact:
-            retry_count: "{{ retry_count | int + 1 }}"
+    - name: Increment retry count
+      set_fact:
+        retry_count: "{{ retry_count | int + 1 }}"
 
-        - name: Try a new attempt of this check
-          include_tasks: wait-mcp.yml
-
-      when:
-        - dci_workarounds is defined
-        - '"OCPBUGS-17112" in dci_workarounds'
+    - name: Try a new attempt of this check
+      include_tasks: wait-mcp.yml
 
 ...
