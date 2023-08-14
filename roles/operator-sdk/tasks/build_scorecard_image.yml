@@ -36,8 +36,6 @@
       --authfile {{ scorecard_partner_creds }}
       {{ operator_sdk_img }}
     chdir: "{{ scorecard_tmp_dir.path }}/operator-sdk-source/"
-  notify:
-    - Remove operator_sdk_img built from the source
 
 - name: Display Operator-SDK version to ensure that the image build went fine
   shell: >
