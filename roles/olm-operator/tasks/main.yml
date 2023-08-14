@@ -195,6 +195,18 @@
         - "'phase' in csv.resources[0].status"
         - csv.resources[0].status.phase == 'Succeeded' or
           csv.resources[0].status.phase == 'Present'
+
+    - name: "Fail if not all {{ operator }} pods reach a successful state"
+      community.kubernetes.k8s_info:
+        kind: Pod
+        namespace: "{{ namespace }}"
+      register: olm_pod
+      retries: 12
+      delay: 10
+      until:
+        olm_pod.resources | map(attribute='status.phase') | difference(['Succeeded', 'Running']) | length == 0
+      no_log: true
+
   rescue:
     - name: "Catalog sources information for {{ operator }}"
       community.kubernetes.k8s_info:
