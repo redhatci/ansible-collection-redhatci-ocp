@@ -47,6 +47,7 @@ dependencies:
   - role: mirror_images
   - role: fbc-catalog
   - role: check-resource
+  - role: mirror-catalog
 ...
 ```
 

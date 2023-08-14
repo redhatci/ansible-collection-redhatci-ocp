@@ -37,70 +37,55 @@
 
 - name: Push index image into local registry
   shell: >
+    set -ex;
     podman push
     --authfile {{ partner_creds }}
-    {{ OO_INDEX }}
+    {{ OO_INDEX }};
+    podman rmi {{ OO_INDEX }}
 
-- name: Create temporary directory
-  tempfile:
-    state: directory
-    prefix: preflight_prerun_tmp_dir.
-  register: preflight_prerun_tmp_dir
+- name: Find ImageDigestMirrorSet in the cluster
+  community.kubernetes.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: ImageDigestMirrorSet
+  register: idms_res
 
-- name: Manage imageContentSourcePolicy update
-  block:
-    - name: "Get catalog SHA256"
-      shell:
-        cmd: |
-          skopeo inspect --authfile {{ pullsecret_tmp_file }} \
-          docker://{{ OO_INDEX }} | jq -r '.Digest'
-      register: catalog_sha
-      retries: 2
-      delay: 10
-      until: not catalog_sha.failed
+- name: Mirror generated catalog
+  include_role:
+    name: mirror-catalog
+  vars:
+    mc_oc_tool_path: "{{ oc_tool_path }}"
+    mc_catalog: "{{ OO_INDEX }}"
+    mc_registry: "{{ dci_local_registry }}"
+    mc_pullsecret: "{{ pullsecret_tmp_file }}"
+    mc_is_type: "{{ idms_res.resources is defined and idms_res.resources | length | ternary('idms', 'icsp') }}"
 
-    - name: "Remove local catalog image"
-      shell: |
-        podman rmi "{{ OO_INDEX }}"
+- name: Set catalog and Image Source file
+  set_fact:
+    preflight_is_file: "{{ mc_is_file.path }}"
+    OO_INDEX: "{{ mc_catalog_digest }}"
 
-    - name: Redefine catalog path + SHA
-      set_fact:
-        OO_INDEX: "{{ dci_local_registry }}/telcoci/preflight/disconnected-catalog@{{ catalog_sha.stdout }}"
+- name: Append pre-flight images to Image Sources
+  blockinfile:
+    block: |
+      # Scorecard container
+        - mirrors:
+          - {{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+          source: {{ item.split('@')[0] }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
+    path: "{{ preflight_is_file }}"
+  # TODO: these old images are still required by the operator-sdk 1.30.0
+  loop: "{{ (preflight_images + old_images) | unique }}"
 
-    - name: Mirror the disconnected-catalog
-      shell: >
-        {{ oc_tool_path }} adm catalog mirror -a {{ partner_creds }}
-        --max-components=3
-        {{ OO_INDEX }} {{ dci_local_registry }} --to-manifests={{ preflight_prerun_tmp_dir.path }}/tmp_oc
-      register: catalog_mirror
-      retries: 2
-      delay: 10
-      until: catalog_mirror.stderr.find('error:') == -1
+- name: Apply Image Source file
+  community.kubernetes.k8s:
+    definition: "{{ lookup('file', preflight_is_file) }}"
 
-    - name: Append pre-flight images to imageContentSourcePolicy
-      blockinfile:
-        block: |
-          # Scorecard container
-            - mirrors:
-              - {{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
-              source: {{ item.split('@')[0] }}
-        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
-        path: "{{ preflight_prerun_tmp_dir.path }}/tmp_oc/imageContentSourcePolicy.yaml"
-      # TODO: these old images are still required by the operator-sdk 1.30.0
-      loop: "{{ (preflight_images + old_images) | unique }}"
-
-    - name: Apply Image Content Source Policy
-      community.kubernetes.k8s:
-        definition: "{{ lookup('file', preflight_prerun_tmp_dir.path + '/tmp_oc/imageContentSourcePolicy.yaml') }}"
-      notify:
-        - Remove tmp dir
-
-    - name: Wait for MCP status
-      include_role:
-        name: check-resource
-      vars:
-        resource_to_check: "MachineConfigPool"
-        check_wait_retries: 45
-        check_wait_delay: 20
-        check_reason: "ICSP update in preflight role"
+- name: Wait for MCP status
+  include_role:
+    name: check-resource
+  vars:
+    resource_to_check: "MachineConfigPool"
+    check_wait_retries: 45
+    check_wait_delay: 20
+    check_reason: "Image Source update in preflight role"
 ...
