@@ -1,7 +1,7 @@
 ---
 - name: Openshift-cnf Project Creation Test Vendor Validation
   block:
-    - name: "Create Openshift-cnf Certifcation Project"
+    - name: "Create Openshift-cnf Certification Project"
       vars:
         current_cnf_name: "{{ cc.cnf_name }}"
         cnf:

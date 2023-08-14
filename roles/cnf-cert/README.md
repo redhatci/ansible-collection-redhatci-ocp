@@ -2,7 +2,7 @@
 
 This role encapulates the logic for the [Test Network Function (TNF)](https://github.com/test-network-function/cnf-certification-test). It is responsible for deploying the TNF framework and running the tests in DCI.
 
-Before executing the CNF (Cloud-native network function) Cert Suite, it's important to label the pods to test using the autodiscovery feature. You can do it manually or programatically. An example of this can be found in [tnf_test_example](../../samples/tnf_test_example/README.md).
+Before executing the CNF (Cloud-native network function) Cert Suite, it's important to label the pods to test using the autodiscovery feature. You can do it manually or programmatically. An example of this can be found in [tnf_test_example](../../samples/tnf_test_example/README.md).
 
 ## Variables
 
@@ -127,7 +127,7 @@ For example, the following configuration defines these four environment variable
 
 - `TNF_NON_INTRUSIVE_ONLY`: if set to true, skip intrusive tests which may disrupt cluster operations (default `false`).
 - `TNF_LOG_LEVEL`: log level used to run the CNF Cert Suite (default `info`).
-- `TNF_ALLOW_PREFLIGHT_INSECURE`: (required when running preflight on CNF Cert Suite) if set to true, allow the Preflight execution ran by CNF Cert Suite to access to insecure registries. This should be needed when accesing to private registries. Remember this feature is only valuable for tnf versions from v4.1.6 in advance. Remember also to turn on preflight test suite with `preflight` label.
+- `TNF_ALLOW_PREFLIGHT_INSECURE`: (required when running preflight on CNF Cert Suite) if set to true, allow the Preflight execution ran by CNF Cert Suite to access to insecure registries. This should be needed when accessing to private registries. Remember this feature is only valuable for tnf versions from v4.1.6 in advance. Remember also to turn on preflight test suite with `preflight` label.
 
 ```yaml
 ---

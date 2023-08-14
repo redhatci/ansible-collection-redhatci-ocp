@@ -55,7 +55,7 @@ Naming convention followed for the components created is the following: `IMG <co
 
 Regarding the component fields:
 
-- Component name will be the image version, being either image tag (`latest` if ommited) or digest.
+- Component name will be the image version, being either image tag (`latest` if omitted) or digest.
 - Component type will be the image name, so that we can use that name to retrieve the different components related to the same image name but changing the version (i.e. component name).
 - The component canonical project name is formed with the following structure: `IMG <container_image_name> <container_image_version>`.
 
