@@ -66,9 +66,11 @@
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
     -t {{ tnf_dir }}/{{ test_network_function_project_name }} \
     -o {{ tnf_dir }}/{{ test_network_function_project_name }} \
+    {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
+    {% if test_network_function_version is version("v4.3.3", "<=") and test_network_function_version != "HEAD" %}
     {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
     {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
-    {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
+    {% endif %}
     {% if tnf_dockercfg_path is defined %}-c {{ tnf_dockercfg_path }} \{% endif %}
     -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
   args:
