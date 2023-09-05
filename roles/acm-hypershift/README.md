@@ -8,6 +8,7 @@ To execute the acm-hypershift role a running OpenShift cluster and its credentia
 
 - OpenShift Cluster with ACM operator. Please see [acm-setup](../acm-setup/README.md) role to deploy ACM through a role.
 - A default storage class
+- A metalLB instance on baremetal environments
 - DNS configuration
 
 ### DNS configuration
@@ -34,7 +35,7 @@ apps.<ah_cluster_name>.<ah_base_domain>
 | ah_force_deploy         | false                                     | No        | Force redeploy of a cluster                                                    |
 | ah_no_log               | true                                      | No        | Allow logging on sensitive tasks                                               |
 | ah_ocp_version          | 4.13.4                                    | No        | Full OCP version to install on the hypershift cluster. <major>.<minor>.<patch> |
-| ah_pullsecret_file      | ""                                        | Yes*      | Required to pull and/or push images to public and/or disconnected repositories |
+| ah_pullsecret_file      | ""                                        | Yes       | Required to pull the hosted cluster release image                              |
 | ah_release_image        | quay.io/openshift-release-dev/ocp-release | No        | The release image to install, from the specified OCP version                   |
 
 ## Usage Example

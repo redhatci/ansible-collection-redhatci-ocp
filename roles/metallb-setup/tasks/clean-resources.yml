@@ -6,9 +6,11 @@
     kind: BGPPeer
     name: "{{ peer.name }}"
     namespace: "{{ mlb_namespace }}"
-  loop: "{{ metallb_bgp_peers }}"
+  loop: "{{ mlb_bgp_peers }}"
   loop_control:
     loop_var: peer
+  when:
+    - mlb_bgp_peers is defined
 
 - name: "Delete MetalLB resources"
   community.kubernetes.k8s:

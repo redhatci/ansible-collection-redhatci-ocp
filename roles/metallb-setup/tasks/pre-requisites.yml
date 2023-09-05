@@ -1,4 +1,29 @@
 ---
+- name: "Check if the main MetalLB CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: metallbs.metallb.io
+  register: metal_crd
+  no_log: true
+
+- name: "Fail if MetalLB CRD is not present"
+  fail:
+    msg: "MetalLB CRD are not present, please install the MetalLB operator in the ACM hub"
+  when: metal_crd.resources | list | count == 0
+
+- name: "Check for metallb instances"
+  community.kubernetes.k8s_info:
+    api_version: metallb.io/v1beta1
+    kind: MetalLB
+  register: mlb_instance
+
+- name: "Check if a metallb instance already exists"
+  debug:
+    msg:
+      - "A MetalLB instance already exists in this cluster, it will be updated accordingly"
+  when:
+  - mlb_instance.resources | length == 1
+
 - name: "Check mlb_settings file exits"
   stat:
     path: "{{ mlb_settings }}"
@@ -20,9 +45,20 @@
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required. See README.md for more details"
   loop:
-    - mlb_setup_name
     - mlb_ipaddr_pool
-    - mlb_bgp_peers
+
+- name: "Confirm that MetalLB controller pods are Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ mlb_namespace }}"
+    label_selectors:
+      - control-plane = controller-manager
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 9
+  delay: 10
+  no_log: true
 
 - name: "Validate parameter mlb_ipaddr_pool is a list"
   assert:
@@ -40,6 +76,8 @@
   loop: "{{ mlb_bgp_peers }}"
   loop_control:
     loop_var: peer
+  when:
+    - mlb_bgp_peers is defined
 
 - name: "Get cluster version"
   community.kubernetes.k8s_info:
@@ -47,6 +85,7 @@
     kind: ClusterVersion
     name: version
   register: cluster_version
+  no_log: true
 
 - name: "Fail when OCP version is not supported"
   vars:
@@ -57,28 +96,4 @@
   fail:
     msg: "OCP version must be >= {{ mlb_ocp_supported }}"
   when: ocp_version is version( mlb_ocp_supported , "<")
-
-- name: "Check if the main MetalLB CRD is present"
-  community.kubernetes.k8s_info:
-    kind: CustomResourceDefinition
-    name: metallbs.metallb.io
-  register: metal_crd
-  no_log: true
-
-- name: "Fail if MetalLB CRD is not present"
-  fail:
-    msg: "MetalLB CRD are not present"
-  when: metal_crd.resources | list | count == 0
-
-- name: "Confirm that MetalLB controller pods are Running"
-  community.kubernetes.k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: "{{ mlb_namespace }}"
-    label_selectors:
-      - control-plane = controller-manager
-  register: pod_list
-  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 9
-  delay: 10
 ...

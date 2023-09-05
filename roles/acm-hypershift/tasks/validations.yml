@@ -1,4 +1,22 @@
 ---
+- name: "Check for metallb instances"
+  community.kubernetes.k8s_info:
+    api_version: metallb.io/v1beta1
+    kind: MetalLB
+  register: mlb_instance
+
+- name: "Check if a metallb instance exists"
+  fail:
+    msg:
+      - "A MetalLB instance is required to configure hypershift on baremetal environments"
+  when:
+  - mlb_instance.resources | length == 0
+
+- name: "Validate that a pull secret file is defined"
+  fail:
+    msg: "A pull secret file is required"
+  when: ah_pullsecret_file is undefined
+
 - name: Check pull secret file
   stat:
     path: "{{ ah_pullsecret_file }}"

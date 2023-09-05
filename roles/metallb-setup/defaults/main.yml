@@ -4,4 +4,5 @@ mlb_namespace: metallb-system
 mlb_bfd_profile: bfd-fastest
 mlb_ipv4_enabled: true
 mlb_ipv6_enabled: false
+mlb_action: install
 ...

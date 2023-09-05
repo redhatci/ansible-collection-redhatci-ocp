@@ -6,6 +6,6 @@ ah_clusters_ns: clusters
 ah_cluster_type: "none"
 ah_force_deploy: false
 ah_no_log: true
-ah_ocp_version: 4.13.4
+ah_ocp_version: 4.13.13
 ah_pullsecret_file: ""
 ah_release_image: quay.io/openshift-release-dev/ocp-release:{{ ah_ocp_version }}-x86_64
