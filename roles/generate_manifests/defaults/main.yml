@@ -8,6 +8,9 @@ arch: x86_64
 version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
 release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
 mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['registry_host']['registry_port'] }}"
+ocp_registry_namespace: "{{ hostvars['registry_host']['registry_namespace'] | default('ocp4') }}"
+ocp_registry_image: "{{ hostvars['registry_host']['registry_image'] | default('openshift4') }}"
+registry_repository: "{{ ocp_registry_namespace }}/{{ ocp_registry_image }}"
 agent_based_installer_bootstrap_node: "{{ groups['masters'][0] }}"
 host_ip_keyword: ansible_host
 use_local_mirror_registry: "{{ setup_registry_service | default(true) }}"
