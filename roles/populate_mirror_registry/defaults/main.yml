@@ -29,6 +29,9 @@ stable_opm_tar: "opm-linux.tar.gz"
 registry_fqdn: "{{ ansible_fqdn }}"
 local_registry: "{{ registry_fqdn }}:{{ registry_port }}"
 registry_port: 5000
+ocp_registry_namespace: "{{ hostvars['registry_host']['registry_namespace'] | default('ocp4') }}"
+ocp_registry_image: "{{ hostvars['registry_host']['registry_image'] | default('openshift4') }}"
+registry_repository: "{{ ocp_registry_namespace }}/{{ ocp_registry_image }} "
 
 installer_agent_image:
   remote: "quay.io/edge-infrastructure/assisted-installer-agent@{{ image_hashes.installer_agent }}"
@@ -49,14 +52,14 @@ release_image_remote: "quay.io/openshift-release-dev/ocp-release"
 
 release_image_item:
   remote: "{{ release_image_remote }}@{{ image_hashes['release_' + (openshift_full_version | string) + '_x86_64'] }}"
-  local: "{{ local_registry }}/ocp4/openshift4"
+  local: "{{ local_registry }}/{{ registry_repository }}"
   local_tag: "{{ openshift_full_version }}-x86_64"
 
 arm_release_image_key: "release_{{ openshift_full_version | string }}_arm64"
 
 release_image_item_arm:
   remote: "{{ release_image_remote }}@{{ image_hashes[arm_release_image_key] }}"
-  local: "{{ local_registry }}/ocp4/openshift4"
+  local: "{{ local_registry }}/{{ registry_repository }}"
   local_tag: "{{ openshift_full_version }}-aarch64"
 
 olm_index_item:

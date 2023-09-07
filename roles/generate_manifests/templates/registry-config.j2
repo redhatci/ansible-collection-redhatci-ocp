@@ -1,10 +1,13 @@
 imageContentSources:
   - source: quay.io/openshift-release-dev/ocp-release
     mirrors:
-      - {{ mirror_registry }}/ocp4/openshift4
+      - {{ mirror_registry }}/{{ registry_repository }}
   - source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
     mirrors:
-      - {{ mirror_registry }}/ocp4/openshift4
+      - {{ mirror_registry }}/{{ registry_repository }}
+  - source: registry.ci.openshift.org/ocp/release
+    mirrors:
+      - {{ mirror_registry }}/{{ registry_repository }}
   - source: quay.io/edge-infrastructure
     mirrors:
       - {{ mirror_registry }}/ocpmetal
