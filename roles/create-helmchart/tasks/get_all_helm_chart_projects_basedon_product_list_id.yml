@@ -1,0 +1,34 @@
+---
+- name: Check that organization_id is defined
+  assert:
+    that: "{{ organization_id }} is defined"
+
+- name: "Get certification Helm Chart projects for the organization {{ organization_id }}"
+  vars:
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+  uri:
+    url: "{{ verify_project_url }}/{{ organization_id }}/projects/certification?page_size={{ page_size }}&page=0"
+    method: GET
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    status_code: 200
+    timeout: 120
+  register: cert_project_list_output
+  retries: 20
+  delay: 3
+  until: not cert_project_list_output.failed
+
+- name: Merge all existing cert projects that used the same Product Listing ID with the new Helm Chart projects
+  set_fact:
+    all_helmchart_projects: "{{ cert_project_list_output.json.data | json_query(query) + [new_helmchart_projects] | flatten }}"
+  vars:
+    query: "[?product_listings[0] == '{{ cert_listings.pyxis_product_list_identifier }}'] | []._id"
+  when:
+    - cert_project_list_output | length > 0
+    - new_helmchart_projects is defined
+
+- name: Print All Helm Chart projects
+  debug:
+    var: all_helmchart_projects
+...

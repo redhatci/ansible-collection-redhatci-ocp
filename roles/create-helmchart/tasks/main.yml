@@ -6,10 +6,25 @@
         current_chart_name: "{{ hc.chart_name }}"
         helmchart:
           create_helmchart_project: "{{ hc.create_helmchart_project | default('') }}"
-          attach_product_listing: "{{ hc.attach_product_listing | default('') }}"
           short_description: "{{ hc.short_description | default('') }}"
       include_tasks: create_helmchart_project.yml
       loop: "{{ helmchart_to_certify }}"
       loop_control:
         loop_var: hc
+
+    - name: Get All Helm Chart certification projects based on Product Listing ID {{ cert_listings.pyxis_product_list_identifier }}
+      include_tasks: get_all_helm_chart_projects_basedon_product_list_id.yml
+      when: cert_listings.attach_product_listing | default(false) | bool
+
+    - name: Attach Product List ID {{ cert_listings.pyxis_product_list_identifier }} to all projects using same Product-Listing ID
+      include_role:
+        name: create-certification-project
+        tasks_from: attach_product_listing
+      when:
+        - cert_listings.attach_product_listing | default(false) | bool
+        - all_helmchart_projects is defined
+
+- name: Unset Helm Chart cert project ID to ensure no occasional reuse
+  set_fact:
+    cert_project_id: ""
 ...

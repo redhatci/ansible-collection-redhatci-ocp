@@ -4,6 +4,10 @@ This new role `create-helmchart` leverages some existing tasks from the create-c
 
 The associated templates, like create_project_helmchart.json.j2, update_project_helmchart_setting.json.j2 and attach_product_helmchart_listing.json.j2, are now stored within the create-certification-project role instead of being duplicated in the new role create-helmchart. This design ensures efficiency, maintainability, and consistency across the roles.
 
+The current backend behavior for attaching a product listing to newly created cert projects requires that the <old_certs_list> and <new_cert_list> be included. This is because the product listing ID may have been used in both the old and new projects. To address this, we implemented an enhancement to query all old cert projects based on the product listing ID that was used in both lists. We then merged the results into a single array and attached the product listing ID to all of the cert projects.
+
+Note: Previously, users could decide whether to attach a product listing to each cert project. However, this is no longer possible since the `attach_product_listing` parameter is now part of the `cert_listings`.
+
 
 ## Global Variables
 As the new role `create-helmchart` reuses some existing tasks such as check_for_existing_projects, create_project and attach_product_listing. Please refer to the description in the `create-certification-project` role for information on the shared global variables.
@@ -24,7 +28,6 @@ Note: Some variables are not mentioned since they are same as explained in `crea
 
 Name                     | Default                                                                    | Description
 -------------------      | ------------                                                               | -------------
-attach_product_listing   | false                                                                      | If set to true, it would attach product-listing to Helm Chart certification project.
 create_helmchart_project | false                                                                      | If set to true, it would create a new Helm Chart certification project.
 chart_name               | None                                                                       | If defined, it would create Helm Chart certification project, chart_name will be used as project and chart name
 repository               | None                                                                       | If defined, it will be used for chart_name, the value for this `repository` variable can be dummy but please give more meaningful as chart_name
@@ -38,6 +41,8 @@ Name                          | Default                              | Descripti
 pyxis_product_list_identifier | None                                 | Product-listing ID, it has to be created before. [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing)
 published                     | false                                | Boolean to enable publishing list of products
 type                          | "container stack"                    | String. Type of product list
+attach_product_listing        | false                                | If set to true, it would attach product-listing to all old + new cert projects that used same product-listing ID.
+
 
 
 ## Example Configuration of Helm Chart certification project creation
@@ -57,12 +62,10 @@ helmchart_to_certify:
     short_description: "This is a short description demochart1"
     chart_name: "demochart1"
     create_helmchart_project: true
-    attach_product_listing: true
   - repository: "https://github.com/xxxx/demochart2"
     short_description: "This is a short description demochart2"
     chart_name: "demochart2"
     create_helmchart_project: true
-    attach_product_listing: true
 
 cert_settings:
    email_address: "mail@example.com"
@@ -77,6 +80,7 @@ cert_listings:
   published: false
   type: "container stack"
   pyxis_product_list_identifier: "yyyyyyyyyyyyyyy"  # product list id for helmchart projects
+  attach_product_listing: true
 
 pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/demo-pyxis-apikey.txt"
 dci_gits_to_components: []

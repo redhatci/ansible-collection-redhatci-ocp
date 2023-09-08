@@ -20,16 +20,8 @@
     - cert_project_id is defined
     - cert_project_id | length > 0
 
-- name: Attach Product List ID to Helm Chart project when cert_listings is defined
-  include_role:
-    name: create-certification-project
-    tasks_from: attach_product_listing
-  when:
-    - helmchart.attach_product_listing | default(false) | bool
-    - helmchart.create_helmchart_project | default(false) | bool
-    - not helmchart_cert_project_exists_own_org | default(false) | bool
-
-- name: Unset Helm Chart project ID to ensure no occasional reuse
+- name: Set Helm Chart project to store new projects for later merging with existing IDs
   set_fact:
-    cert_project_id: ""
+    new_helmchart_projects: "{{ new_helmchart_projects | default([]) + [cert_project_id] }}"
+  when: cert_project_id is defined
 ...
