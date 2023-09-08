@@ -1,6 +1,7 @@
 ---
 - name: "Render bundle operator image"
   shell: >
+    {{ fbc_opm_auths }}
     {{ fbc_opm_cmd }} render {{ bundle }}
   args:
     chdir: "{{ fbc_tmp_dir }}"
@@ -50,7 +51,7 @@
 
 - name: "Render bundle for {{ fbc_short_name }}"
   shell: >
-    {{ ansible_env.DOCKER_CONFIG|default('') }}
+    {{ fbc_opm_auths }}
     {{ fbc_opm_cmd }} render {{ bundle }}
     --output=yaml >> {{ fbc_tmp_dir }}/catalog/index.yml
   args:

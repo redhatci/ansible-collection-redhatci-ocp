@@ -8,13 +8,14 @@ By default, the catalog image sets a label "quay.expires-after" to define an exp
 
 ## Parameters
 
-Name             | Required | Default        | Description
------------------|----------| ---------------|-------------
-fbc_opm_args     | No       | ""             | Arguments for opm command. Those will be applied globally for all opm calls
-fbc_bundles      | Yes      | undefined      | A list of bundles to be included in the catalog
-fbc_expire       | No       | true           | Whether or not to set an expiration label on the catalog
-fbc_expire_time  | No       | 5h             | The amount of time to set for the expiration label
-fbc_index_image  | Yes      | undefined      | Full reference for the image <registry>/namespace/image:tag
+Name             | Required | Default                                        | Description
+-----------------|----------| ---------------------------------------------- |-------------
+fbc_opm_args     | No       | ""                                             | Arguments for opm command. Those will be applied globally for all opm calls
+fbc_bundles      | Yes      | undefined                                      | A list of bundles to be included in the catalog
+fbc_expire       | No       | true                                           | Whether or not to set an expiration label on the catalog
+fbc_expire_time  | No       | 5h                                             | The amount of time to set for the expiration label
+fbc_index_image  | Yes      | undefined                                      | Full reference for the image <registry>/namespace/image:tag
+fbc_opm_auths    | No       | /usr/share/dci-openshift-agent/utils/opm-auths | Path to opm-auths a wrapper script to allow multi-regitsry auths in opm
 
 ## Requirements
 
