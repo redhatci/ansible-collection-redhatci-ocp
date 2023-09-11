@@ -1,5 +1,5 @@
 {
-  "cert_projects": {{ cert_projects }},
+  "cert_projects": {{ all_openshift_cnf_projects | to_nice_json(indent=2) }},
   "published": {{ cert_listings.published }},
   "target_platforms": [
     "Red Hat OpenShift"
