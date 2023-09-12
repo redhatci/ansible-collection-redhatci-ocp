@@ -2,7 +2,7 @@
 targetNameSpaces:
 {% for item in tnf_config %}
 {% if item.namespace is defined and item.namespace|length %}
-  - name: {{ item.namespace }}
+  - {% if test_network_function_version != 'HEAD' %}name: {% endif %}{{ item.namespace }}
 {% endif %}
 {% endfor %}
 
