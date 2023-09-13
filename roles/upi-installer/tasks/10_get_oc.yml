@@ -108,15 +108,35 @@
     - getoc
     - cache
 
+- name: "Create temporary pull secret at cache server"
+  tempfile:
+    state: file
+    prefix: "upi_auth_"
+  register: upi_creds_file
+  delegate_to: "{{ cache_server }}"
+
+- name: "Copy PullSecret into a temp file"
+  copy:
+    content: "{{ upi_pullsecret }}"
+    dest: "{{ upi_creds_file.path }}"
+    mode: '0644'
+  delegate_to: "{{ cache_server }}"
+  no_log: true
+  tags:
+    - getoc
+    - cache
+
 - name: "Extract artifacts from release image"
   shell:
     cmd: >
       {{ upi_tmp_dir.path }}/oc adm release extract
-      --registry-config {{ pullsecret_file }}
+      --registry-config "{{ upi_creds_file.path }}"
       --tools
       --from {{ pull_url }}
       --to "{{ cache_dir }}/{{ version }}"
   delegate_to: "{{ cache_server }}"
+  notify:
+    - "Delete tmp file"
   tags:
     - getoc
     - cache

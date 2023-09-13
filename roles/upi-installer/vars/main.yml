@@ -1,5 +1,4 @@
 ---
 # vars file for upi-installer
-cache_dir: "/opt/cache"
 force_mirroring: false
 ocp_binary_path: "/usr/local/bin"
