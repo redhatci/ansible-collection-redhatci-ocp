@@ -9,7 +9,7 @@
     msg: "Could not verify test results: {{ item | basename }} is not present"
   failed_when:
     - not junit_file.stat.exists
-    # Do not fail when the option to skip mikssing files is on
+    # Do not fail when the option to skip missing files is on
     - not skip_absent_testfiles | bool
 
 - block:

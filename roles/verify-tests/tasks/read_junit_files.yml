@@ -3,3 +3,12 @@
   include_tasks: parse_junit_file.yml
   with_fileglob:
     - "{{ job_logs.path }}/{{ t.filename }}"
+  register: junit_file
+
+- name: "Fail if {{ t.filename }} does not match any junit file"
+  fail:
+    msg: "{{ t.filename }} does not match any junit file"
+  when:
+    - junit_file.skipped is defined
+    # Do not fail when the option to skip missing files is on
+    - not skip_absent_testfiles | bool
