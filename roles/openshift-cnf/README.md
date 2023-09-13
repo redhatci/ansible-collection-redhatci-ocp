@@ -4,6 +4,10 @@ This role will automatically generate an Openshift-cnf certification project whe
 
 Please note that the role `openshift-cnf` is currently a basic automation setup. It will undergo further updates once additional options are available by the backend REST API, such as automatic start/continue parameters for starting `Certify the functionality of your CNF on Red Hat OpenShift` step inside the project.
 
+The current backend behavior for attaching a product listing to newly created cert projects requires to include the <old_certs_list> and <new_cert_list>. This is because the product listing ID may have been used in both the old and new projects. To address this, we implemented an enhancement to query all old cert projects based on the product listing ID that was used in both lists. We then merge the results into a single array and attach the product listing ID to to all cert projects.
+
+Note: Previously, users could decide whether to attach a product listing to each cert project. However, this is no longer possible since the `attach_product_listing` parameter is now part of the `cert_listings`
+
 ## Global Variables
 As the new role openshift-cnf reuses some existing tasks, please refer to the description in the `create-certification-project` role for information on the shared global variables.
 
@@ -12,7 +16,6 @@ As the new role openshift-cnf reuses some existing tasks, please refer to the de
 
 Name                     | Default                                                                    | Description
 -------------------      | ------------                                                               | -------------
-attach_product_listing   | false                                                                      | If set to true, it would attach product-listing to Openshift-cnf certification project.
 create_cnf_project       | false                                                                      | If set to true, it would create a new Openshift-cnf certification project.
 cnf_name                 | None                                                                       | If defined, it would create Openshift-cnf certification project for vendor validated, cnf_name format: `CNF25.8 + OCP4.12`
 
@@ -25,7 +28,7 @@ pyxis_product_list_identifier | None                                 | Product-l
 published                     | false                                | Boolean to enable publishing list of products
 type                          | "container stack"                    | String. Type of product list
 email_address                 | "mail@example.com"                   | String. Email address is needed for creating openshift-cnf project
-
+attach_product_listing        | false                                | If set to true, it would attach product-listing to all old + new cert projects that used same product-listing ID
 
 
 ## Example Configuration of Openshift-cnf certification project creation
@@ -43,11 +46,9 @@ organization_id: 12345678
 cnf_to_certify:
   - cnf_name: "test-smf23.5 OCP4.11.5"
     create_cnf_project: true
-    attach_product_listing: true
 
   - cnf_name: "test-upf23.5 OCP4.11.5"
     create_cnf_project: true
-    attach_product_listing: true
 
 cert_listings:
   #email_address is mandatory when creating openshift-cnf for vendor validation but does not hurt to define it
@@ -55,6 +56,7 @@ cert_listings:
   published: false
   type: "container stack"
   pyxis_product_list_identifier: "yyyyyyyyyyyyyyyyy" #7GC UDM
+  attach_product_listing: true
 
 pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/pyxis-apikey.txt"
 dci_gits_to_components: []
