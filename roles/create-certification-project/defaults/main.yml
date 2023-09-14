@@ -7,5 +7,8 @@ verify_project_url: "https://catalog.redhat.com/api/containers/v1/vendors/org-id
 # Define a page size for API queries
 page_size: 200
 check_for_existing_projects: false
-ignore_project_creation_errors: false
+attach_product_listing: false
+privileged: false
+auto_publish: false
+published: false
 ...

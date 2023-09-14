@@ -67,5 +67,6 @@
       merge_pr: "{{ operator.merge_pr | default(omit) }}"
       short_description: "{{ operator.short_description | default(omit) }}"
       attach_product_listing: "{{ operator.attach_product_listing | default(omit) }}"
+      custom_project_name: "{{ operator.custom_project_name | default(omit) }}"
   set_fact:
     preflight_operators_to_check: "{{ preflight_operators_to_check + [ operator_to_check ] }}"

@@ -52,7 +52,6 @@ dci_topic: OCP-4.11
 dci_name: Automatic to create,update and attach certification Project for Helm Chart with DCI
 dci_configuration: Use DCI to Automate Helm Chart Project Creation
 check_for_existing_projects: true
-ignore_project_creation_errors: true
 dci_config_dirs: [/etc/dci-openshift-agent]
 organization_id: 12345678
 do_must_gather: false

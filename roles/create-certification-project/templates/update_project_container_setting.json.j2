@@ -7,9 +7,9 @@
       }
     ],
     "container": {
-      "auto_publish": {{ cert_settings.auto_publish }},
+      "auto_publish": {{ cert_settings.auto_publish | default(auto_publish) }},
       "os_content_type": "{{ cert_settings.os_content_type }}",
-      "privileged": {{ cert_settings.privileged }},
+      "privileged": {{ cert_settings.privileged | default(privileged) }},
       "application_categories": [
       "{{ cert_settings.application_categories }}"
       ],
@@ -23,7 +23,7 @@
     "marketplace": {
       "enablement_status": "ineligible"
     },
-    "name": "{{ operator.custom_project_name }}",
+    "name": "{{ operator.custom_project_name | default(operator.name) }}",
     "project_status": "active",
     "type": "Containers"
 }

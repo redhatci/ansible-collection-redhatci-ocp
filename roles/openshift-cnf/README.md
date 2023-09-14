@@ -38,7 +38,6 @@ dci_topic: OCP-4.11
 dci_name: Testing Openshift-cnf auto creation and attach
 dci_configuration: Using DCI create cnf project and attach product-list
 check_for_existing_projects: true
-ignore_project_creation_errors: true
 dci_config_dirs: [/etc/dci-openshift-agent]
 partner_creds: "/var/lib/dci-openshift-app-agent/auth.json"
 organization_id: 12345678

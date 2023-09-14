@@ -12,7 +12,22 @@
     - cert_settings is defined
     - cert_project_id is defined
 
-- name: Attach Product List ID to container project when cert_listings is defined
-  include_tasks: attach_product_listing.yml
-  when: cert_listings is defined
+- block:
+  - name: "Get All container certification projects based on Product Listing ID {{ cert_listings.pyxis_product_list_identifier }}"
+    include_role:
+      name: create-certification-project
+      tasks_from: get_all_container_projects_basedon_product_list_id.yml
+
+  - name: "Check all_container_projects variable"
+    assert:
+      that:
+        - all_container_projects is defined
+        - all_container_projects | length > 0
+      fail_msg: "The all_container_projects variable is not properly defined or is empty."
+
+  - name: "Attach Product List ID {{ cert_listings.pyxis_product_list_identifier }} to all projects using the same Product-Listing ID"
+    include_role:
+      name: create-certification-project
+      tasks_from: attach_product_listing
+  when: cert_listings.attach_product_listing | default(attach_product_listing) | bool
 ...

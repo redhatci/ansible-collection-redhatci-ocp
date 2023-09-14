@@ -2,6 +2,9 @@
 
 This role automatically creates a container certification project if option `create_container_project: true` is provided, and operator certification project if `create_operator_project: true`.
 
+Note: For the latest information on how the container product listing attachment works, please click [here](https://github.com/redhat-cip/dci-openshift-app-agent/blob/master/roles/openshift-cnf/README.md#automate-creation-of-the-openshift-cnf-project-for-vendor-validated)
+
+
 ## Global Variables
 
 Name                     | Default                                                                    | Description
@@ -12,8 +15,7 @@ github_token_path        | undefined                                            
 organization_id          | None                                                                       | Mandatory when using `create_container_project`. Company ID to be used for the verification of container certification project.
 page_size                | 200                                                                        | Define a page size for Pyxis API queries. Number of results to retrieve in a single page.
 check_for_existing_projects | false                                                                   | Optional. Set this option to `true` if you want to use a custom error handling for cases where the cert project already exists within the same organization or in a different organization. Please define organization_id when using this option.
-ignore_project_creation_errors | false                                                                | Optional. Set this option to `true` if you want to ignore project creation errors.
-custom_project_name | None                                                                     | Optional. Define if you want to create your own custom certification project name instead of using image name.
+custom_project_name      | None                                                                       | Optional. Define if you want to create your own custom certification project name instead of using image name.
 
 
 ## Variables to define for each operator / container
@@ -47,6 +49,7 @@ Name                          | Default                              | Descripti
 pyxis_product_list_identifier | None                                 | Product-listing ID, it has to be created before [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing)
 published                     | false                                | Boolean to enable publishing list of products
 type                          | "container stack"                    | String. Type of product list
+attach_product_listing        | false                                | If set to true, it would attach product-listing to all old + new cert projects that used same product-listing ID
 
 
 ## Example of configuration file
@@ -89,8 +92,6 @@ preflight_containers_to_certify:
     create_container_project: true
     #custom_project_name is optional when not wanted to customize the container project name
     custom_project_name: "my-custom-container-project-name"
-    #attach_product_listing is optional when doing recertification
-    attach_product_listing: true
     # Optional; use it to pass an image description to the created project
     short_description: "Add description here"
 
@@ -112,6 +113,7 @@ cert_listings:
   published: false
   type: "container stack"
   pyxis_product_list_identifier: "yyyyyyyyyyyyyyyyy"
+  attach_product_listing: false
 
 # Optional; provide it when you need to submit test results.
 # This token is shared between all your projects.
