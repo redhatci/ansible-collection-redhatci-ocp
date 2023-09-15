@@ -4,7 +4,7 @@
 
 Name:           ansible-collection-%{org}-%{repo}
 Version:        0.1.0
-Release:        1.VERS%{?dist}
+Release:        2.VERS%{?dist}
 Summary:        Redhat OCP Collection for ansible
 
 License:        GPL-2.0-or-later and Apache-2.0
@@ -37,5 +37,8 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Jul 18 2023 Jorge Gallegos <jgallego@redhat.com> - 0.1.0-2
+- Testing zuul build process
+
 * Tue Jul 18 2023 Jorge Gallegos <jgallego@redhat.com> - 0.1.0-1
 - Initial RPM Spec
