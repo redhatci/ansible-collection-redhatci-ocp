@@ -68,8 +68,13 @@ targetCrdFilters:
 certifiedcontainerinfo:
 {% for container in tnf_certified_container_info %}
 {% if container.name is defined and container.name|length and container.repository is defined and container.repository|length %}
+{% if test_network_function_version is version('v4.3.4', '>=') or test_network_function_version == 'HEAD' %}
+  - repository: {{ container.name }}
+    registry: {{ container.repository }}
+{% else %}
   - name: {{ container.name }}
     repository: {{ container.repository }}
+{% endif %}
     tag: {{ container.tag | default('latest') }}
     digest: {{ container.digest | default('') }}
 {% endif %}
