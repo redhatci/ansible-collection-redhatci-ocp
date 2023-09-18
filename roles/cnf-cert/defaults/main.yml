@@ -1,7 +1,7 @@
 ---
 tnf_stage: "tests"
 test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
-test_network_function_version: v4.3.5
+test_network_function_version: v4.4.0
 test_network_function_project_name: cnf-certification-test
 tnf_suites: ""
 tnf_skip_suites: ""
@@ -26,7 +26,9 @@ tnf_image_suffix: "{{ lookup('community.general.random_string', length=16, speci
 # Provide feedback for each tnf test launched. Just copy this template in your pipeline file and fill the value for the
 # tests you want to provide feedback. You don't need to include the tests that you don't want to provide feedback.
 # To insert line breaks, use \\n (you need to escape it). Same for quotes and so on.
+# List of tests updated until tnf v4.4.0
 tnf_feedback:
+  access-control-bpf-capability-check: ""
   access-control-cluster-role-bindings: ""
   access-control-container-host-port: ""
   access-control-crd-roles: ""
@@ -44,7 +46,6 @@ tnf_feedback:
   access-control-pod-host-pid: ""
   access-control-pod-role-bindings: ""
   access-control-pod-service-account: ""
-  access-control-projected-volume-service-account-token: ""
   access-control-requests-and-limits: ""
   access-control-security-context: ""
   access-control-security-context-non-root-user-check: ""
@@ -101,6 +102,7 @@ tnf_feedback:
   performance-exclusive-cpu-pool: ""
   performance-exclusive-cpu-pool-rt-scheduling-policy: ""
   performance-isolated-cpu-pool-rt-scheduling-policy: ""
+  performance-max-resources-exec-probes: ""
   performance-rt-apps-no-exec-probes: ""
   performance-shared-cpu-pool-non-rt-scheduling-policy: ""
   platform-alteration-base-image: ""
@@ -108,6 +110,7 @@ tnf_feedback:
   platform-alteration-hugepages-1g-only: ""
   platform-alteration-hugepages-2m-only: ""
   platform-alteration-hugepages-config: ""
+  platform-alteration-hyperthread-enable: ""
   platform-alteration-is-selinux-enforcing: ""
   platform-alteration-isredhat-release: ""
   platform-alteration-ocp-lifecycle: ""
