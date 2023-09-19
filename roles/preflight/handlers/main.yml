@@ -4,8 +4,4 @@
     cmd: >
       podman rmi -f {{ preflight_image }}
 
-- name: Remove tmp dir
-  file:
-    path: "{{ preflight_prerun_tmp_dir.path }}"
-    state: absent
 ...
