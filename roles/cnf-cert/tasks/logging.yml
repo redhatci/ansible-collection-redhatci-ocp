@@ -82,7 +82,7 @@
   when: test_network_function_version is version('v4.3.3', '>=') or test_network_function_version == 'HEAD'
 
 # claim.json file must be present if the execution finished correctly
-# This is needed for the next block.
+# This is needed for the next blocks.
 - name: Check the presence of claim.json
   stat:
     path: "{{ tnf_logs_location }}/claim.json"
@@ -97,7 +97,7 @@
 # - When removing backwards compatibility, it would be as simple as removing this block.
 - name: (tnf v4.3.0) Manually build the compressed file containing the HTML report
   block:
-    - name: set tnf_js_logs_location variable
+    - name: Set tnf_js_logs_location variable
       set_fact:
         tnf_js_logs_location: "{{ tnf_dir }}/script"
 
@@ -119,4 +119,24 @@
   when:
     - test_network_function_version is version("v4.3.0", "==")
     - claim_json_present.stat.exists|bool
+
+# This must be done after executing tnf, since tnf logs allows us to retrieve the commit SHA from
+# cnf-certification-test repo in which the image is based, so that we can compare it with the one
+# extracted from the cloned repo.
+# Make the job to fail if the commit SHA is not found in the proper place in the logs, and if
+# this feature is enabled (disabled by default).
+# This check can only be done if CNF Cert was executed correctly (so claim.json file exists).
+- name: Confirm we are testing the correct CNF Cert code
+  lineinfile:
+    path: "{{ tnf_logs_location }}/dci-tnf-execution.log"
+    regex: '.*\(\ {{ tnf_commit_sha }}\ \)'
+    state: absent
+  changed_when: false
+  check_mode: true
+  register: commit_check
+  failed_when: commit_check.found != 1
+  when:
+    - claim_json_present.stat.exists|bool
+    - tnf_commit_sha is defined
+    - tnf_check_commit_sha|bool
 ...

@@ -223,6 +223,20 @@
     delay: 10
     until: result.rc == 0
 
+  # This is used to lately check if we are really testing the version we are cloning
+  # from the cnf-certification-test repo, checking in tnf logs if the commit SHA is
+  # present. This is only useful to lately compare with the output from a downloaded
+  # cnf-certification-test repo, so this is not meant to be used with images built
+  # from a PR
+  - name: Retrieve last commit SHA
+    shell: git rev-parse HEAD
+    register: tnf_commit_sha_cmd
+    args:
+      chdir: "{{ tnf_dir }}"
+
+  - name: Create variable with tnf commit SHA
+    set_fact:
+      tnf_commit_sha: "{{ tnf_commit_sha_cmd.stdout }}"
   when:
     - test_network_function_src_dir is not defined
 
