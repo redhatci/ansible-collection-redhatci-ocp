@@ -46,19 +46,8 @@
           pod-security.kubernetes.io/enforce-version: latest
           security.openshift.io/scc.podSecurityLabelSync: "false"
 
-- name: "Create OperatorGroup for OLM operator {{ operator }}"
-  community.kubernetes.k8s:
-    definition:
-      apiVersion: operators.coreos.com/v1
-      kind: OperatorGroup
-      metadata:
-        name: "{{ operator_group_name }}"
-        namespace: "{{ namespace }}"
-      spec: "{{ operator_group_spec | default(omit, true) }}"
-
 - name: "Operator {{ operator }} installation"
   block:
-
     - name: "Get operator's package manifests"
       community.kubernetes.k8s_info:
         api: packages.operators.coreos.com/v1
@@ -76,6 +65,22 @@
       failed_when: operator_packagemanifest is skipped
         or operator_packagemanifest.resources is undefined
         or operator_packagemanifest.resources | length != 1
+
+    - name: "Create OperatorGroup for OLM operator {{ operator }}"
+      vars:
+        allNamespaces: "{{ operator_packagemanifest |
+                        json_query('resources[*].status.channels[0].currentCSVDesc.installModes[3].supported') |
+                        first }}"
+        group_spec: "{{  {'targetNamespaces': []} if allNamespaces |
+                     default(false) else {'targetNamespaces': [namespace]} }}"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: operators.coreos.com/v1
+          kind: OperatorGroup
+          metadata:
+            name: "{{ operator_group_name }}"
+            namespace: "{{ namespace }}"
+          spec: "{{ operator_group_spec | default(group_spec, true) }}"
 
     - name: "Set operator's channel for {{ operator }}"
       vars:

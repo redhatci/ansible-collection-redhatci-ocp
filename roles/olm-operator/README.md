@@ -12,7 +12,7 @@ namespace                   | Yes       | undefined              | Namespace whe
 ns_labels                   | No        | {}                     | Dictionary of labels (name: value) to be assigned to the operator namespace
 operator                    | Yes       | undefined              | Name of the operator to install
 operator_group_name         | No        | {{ operator }}         | Name to be given to the operator group. If none is defined, the operator name will be used.
-operator_group_spec         | No        | {}                     | OperatorGroupSpec is the spec for an OperatorGroup resource. e.g. make operator available in all namespaces)
+operator_group_spec         | No        | {}                     | The operator group definition according the installation modes supported by the operator. If undefined, the role will deploy the operator in all namespaces by default and fallback to OwnNamespace if AllNamespaces is not supported
 source                      | No        | redhat-operators       | CatalogSource where to pull operator from
 source_ns                   | No        | openshift-marketplace  | Namespace where the CatalogSource is (default: )
 starting_csv                | No        | \<latest\>             | Operator version to install different than the latest published in the catalog.
