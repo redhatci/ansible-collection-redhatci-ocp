@@ -14,9 +14,9 @@ class FilterModule(object):
         # convert k8s version to ocp version
         k8s2ocp = lambda x : f"{int(x.split('.')[0]) + 3}.{int(x.split('.')[1]) - 13}"
         # parse the API after the workload installation and write down incompatible OCP versions
-        failed_versions = { k8s2ocp(api['status']['removedInRelease']) for api in after_api }
+        failed_versions = { k8s2ocp(api['removedInRelease']) for api in after_api }
         version_to_removed_apis = {
-            version: {api['metadata']['name'] for api in after_api if k8s2ocp(api['status']['removedInRelease']) == version}
+            version: {api['name'] for api in after_api if k8s2ocp(api['removedInRelease']) == version}
             for version in failed_versions
         }
 
