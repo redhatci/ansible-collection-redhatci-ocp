@@ -1,0 +1,78 @@
+---
+- name: Install openscap-utils
+  package:
+    name: "openscap-utils"
+    state: present
+  become: true
+
+- name: Download health check requirements
+  get_url:
+    url: https://www.redhat.com/security/data/oval/v2/RHEL{{ ansible_distribution_major_version }}/rhel-{{ ansible_distribution_major_version }}.oval.xml.bz2
+    dest: "{{ preflight_container_artifacts.path }}"
+  become: true
+  register: hc_req
+  until: hc_req.changed
+  retries: 3
+  delay: 20
+
+# Unarchive module can not be used: https://github.com/ansible/community/wiki/Module:-unarchive
+# Files that are only compressed such as foo.bz2 and bar.gz
+# are not currently supported since they are technically only compressed.
+- name: Unarchive the file
+  shell:
+    cmd: >
+      bzip2 --decompress
+      {{ preflight_container_artifacts.path }}/rhel-{{ ansible_distribution_major_version }}.oval.xml.bz2
+  args:
+    chdir: "{{ preflight_container_artifacts.path }}"
+  become: true
+
+- name: Get the image available for the root user
+  shell:
+    cmd: >
+      podman pull
+      {% if partner_creds | length %}
+      --authfile {{ partner_creds }}
+      {% endif %}
+      {{ current_operator_image }}
+  become: true
+  register: health_check
+  retries: 2
+  delay: 10
+  until: not health_check.failed
+
+- name: Run health check
+  shell:
+    cmd: >
+      oscap-podman {{ health_check.stdout }} oval eval
+      --results oval-report.xml
+      --report oval-report.html
+      rhel-{{ ansible_distribution_major_version }}.oval.xml
+  args:
+    chdir: "{{ preflight_container_artifacts.path }}"
+  become: true
+
+- name: Change the ownership of oval report
+  file:
+    path: "{{ file }}"
+    owner: "{{ ansible_user_id }}"
+  loop:
+    - "{{ preflight_container_artifacts.path }}/oval-report.xml"
+    - "{{ preflight_container_artifacts.path }}/oval-report.html"
+  loop_control:
+    loop_var: file
+  become: true
+
+- name: Convert Oval file to Junit
+  dci_oval_to_junit:
+    oval_result_src: "{{ preflight_container_artifacts.path }}/oval-report.xml"
+    junit_dest: "{{ preflight_container_artifacts.path }}/oval-report.junit.xml"
+
+- name: Remove garbage files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ preflight_container_artifacts.path }}/rhel-{{ ansible_distribution_major_version }}.oval.xml"
+    - "{{ preflight_container_artifacts.path }}/oval-report.xml"
+...

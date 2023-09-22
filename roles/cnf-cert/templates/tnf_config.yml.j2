@@ -1,0 +1,107 @@
+---
+targetNameSpaces:
+{% for item in tnf_config %}
+{% if item.namespace is defined and item.namespace|length %}
+  - name: {{ item.namespace }}
+{% endif %}
+{% endfor %}
+
+{% if test_network_function_version is version('v4.2.3', '>=') or test_network_function_version == 'HEAD' %}
+podsUnderTestLabels:
+{% for item in tnf_config %}
+{% if item.targetpodlabels is defined and item.targetpodlabels is iterable %}
+{% for label in item.targetpodlabels %}
+{% if label|length %}
+  - "{{ label|regex_search('.+?=')|regex_replace('=', '') }}: {{ label|regex_search('=.*')|regex_replace('=', '') }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+operatorsUnderTestLabels:
+{% if tnf_use_legacy_operator_label|bool %}
+  - "test-network-function.com/operator: target"
+{% else %}
+{% for item in tnf_config %}
+{% if item.targetoperatorlabels is defined and item.targetoperatorlabels is iterable %}
+{% for label in item.targetoperatorlabels %}
+{% if label|length %}
+  - "{{ label|regex_search('.+?=')|regex_replace('=', '') }}: {{ label|regex_search('=.*')|regex_replace('=', '') }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% else %}
+
+targetPodLabels:
+{% for item in tnf_config %}
+{% if item.targetpodlabels is defined and item.targetpodlabels is iterable %}
+{% for label in item.targetpodlabels %}
+{% if label|length %}
+{% if not (label|regex_search('.+?/')) %}
+## Matches "<name>=<value>", where prefix: , name: <name>
+  - prefix:
+    name: {{ label|regex_search('.+?=')|regex_replace('=', '') }}
+{% else %}
+## Matches "<prefix>/<name>=<value>", where prefix: <prefix>, name: <name>
+  - prefix: {{ label|regex_search('.+?/')|regex_replace('/', '') }}
+    name: {{ label|regex_search('/.+?=')|regex_replace('/', '')|regex_replace('=', '') }}
+{% endif %}
+    value: {{ label|regex_search('=.*')|regex_replace('=', '') }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+targetCrdFilters:
+{% for item in tnf_config %}
+{% if item.target_crds is defined and item.target_crds is iterable %}
+{% for crd in item.target_crds %}
+  - nameSuffix: {{ crd.nameSuffix }}
+    scalable: {{ crd.scalable }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+certifiedcontainerinfo:
+{% for container in tnf_certified_container_info %}
+{% if container.name is defined and container.name|length and container.repository is defined and container.repository|length %}
+{% if test_network_function_version is version('v4.3.4', '>=') or test_network_function_version == 'HEAD' %}
+  - repository: {{ container.name }}
+    registry: {{ container.repository }}
+{% else %}
+  - name: {{ container.name }}
+    repository: {{ container.repository }}
+{% endif %}
+    tag: {{ container.tag | default('latest') }}
+    digest: {{ container.digest | default('') }}
+{% endif %}
+{% endfor %}
+
+checkDiscoveredContainerCertificationStatus: false
+
+acceptedKernelTaints:
+{% for item in accepted_kernel_taints %}
+{% if item.module is defined and item.module|length %}
+  - module: {{ item.module }}
+{% endif %}
+{% endfor %}
+
+# fields below are not currently used, leaving placeholder in case they were needed in the future
+managedDeployments:
+
+managedStatefulsets:
+
+skipScalingTestDeployments:
+
+skipScalingTestStatefulSetNames:
+
+skipHelmChartList:
+
+validProtocolNames:
+
+servicesignorelist:
+
+...

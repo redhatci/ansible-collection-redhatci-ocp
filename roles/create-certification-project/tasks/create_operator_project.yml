@@ -1,0 +1,7 @@
+---
+- name: Get GitHub username from provided token
+  include_tasks: get-gh-username.yml
+
+- name: Create operator project
+  include_tasks: create_project.yml
+...

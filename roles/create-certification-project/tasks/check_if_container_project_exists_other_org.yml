@@ -1,0 +1,6 @@
+---
+# TODO: Create Pyxis request here
+# Instead of catching the error during the project creation
+# 'You cannot change container.repository and container.registry fields to specified
+# values as the combination would no longer be unique' in cert_project_output.json.detail
+...

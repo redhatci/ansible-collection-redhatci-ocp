@@ -1,0 +1,18 @@
+---
+- name: Handle the situation when cert project already exists
+  include_tasks: check_if_container_project_exists.yml
+  when: check_for_existing_projects | bool
+
+- name: Create container project
+  include_tasks: create_project.yml
+
+- name: Update the project with company info when cert_settings is defined
+  include_tasks: update_container_project.yml
+  when:
+    - cert_settings is defined
+    - cert_project_id is defined
+
+- name: Attach Product List ID to container project when cert_listings is defined
+  include_tasks: attach_product_listing.yml
+  when: cert_listings is defined
+...
