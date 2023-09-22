@@ -1,0 +1,19 @@
+---
+ol_resources:
+  - { kind: 'ClusterLogForwarder', name: 'instance', apiVer: 'logging.openshift.io/v1' }
+  - { kind: 'ConfigMap', name: 'eventrouter', apiVer: 'v1' }
+  - { kind: 'ClusterRole', name: 'event-reader', apiVer: 'rbac.authorization.k8s.io/v1' }
+  - { kind: 'ServiceAccount', name: 'eventrouter', apiVer: 'v1' }
+  - { kind: 'ClusterLogging', name: 'instance', apiVer: 'logging.openshift.io/v1' }
+  - { kind: 'Secret', name: 'logging-loki', apiVer: 'v1' }
+  - { kind: 'Deployment', name: 'eventrouter', apiVer: 'apps/v1' }
+  - { kind: 'LokiStack', name: 'logging-loki', apiVer: 'loki.grafana.com/v1' }
+
+ol_pvc:
+  - { kind: 'PersistentVolumeClaim', name: 'storage-logging-loki-compactor-0', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'storage-logging-loki-index-gateway-0', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'storage-logging-loki-ingester-0', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'wal-logging-loki-ingester-0', apiVer: 'v1' }
+
+# Minimal OCP version supported by the role
+ol_ocp_supported: 4.10

@@ -1,0 +1,9 @@
+---
+- name: Enable and start service
+  become: true
+  systemd:
+    name: "conserver.service"
+    state: restarted
+    enabled: true
+    daemon_reload: true
+...

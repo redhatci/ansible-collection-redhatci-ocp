@@ -1,0 +1,83 @@
+---
+- name: Define OCS Storage Cluster settings
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'openshift-storage-cluster.yml.j2') }}"
+  register: intocsresult
+  when:
+    - ocs_install_type == 'internal'
+
+- name: Tasks for External OCS/ODF Integration
+  block:
+    - name: Define External RHCS Cluster Settings in a secret
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: rook-ceph-external-cluster-details
+            namespace: "{{ ocs_storage_namespace }}"
+          data:
+            external_cluster_details: >-
+              {{ external_ceph_data | string | b64encode }}
+          type: Opaque
+
+    - name: Enable External OCS Storage Cluster
+      community.kubernetes.k8s:
+        definition: "{{ lookup('template', 'openshift-storage-cluster.yml.j2') }}"
+      register: extocsresult
+
+    - name: "Give a delay for OCS to deploy pods"
+      pause:
+        seconds: 60
+      when:
+        - extocsresult.changed | bool
+  when:
+    - ocs_install_type == 'external'
+
+- name: Get OCS health status
+  community.kubernetes.k8s_info:
+    kind: CephCluster
+    namespace: "{{ ocs_storage_namespace }}"
+    name: "{{ ocs_storagecluster_name }}-cephcluster"
+  register: ocs_health_status
+  retries: 30
+  delay: 20
+  until:
+    - ocs_health_status.resources is defined
+    - ocs_health_status.resources[0].status is defined
+    - ("'Connected' in ocs_health_status.resources[0].status.state") or ("'Ready' in ocs_health_status.resources[0].status.state")
+    - ocs_health_status.resources[0].status.ceph is defined
+    - "'HEALTH_ERR' not in ocs_health_status.resources[0].status.ceph.health"
+
+- name: Deploy the Rook-Ceph toolbox pod
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: ocs.openshift.io/v1
+      kind: OCSInitialization
+      metadata:
+        name: ocsinit
+        namespace: "{{ ocs_storage_namespace }}"
+      spec:
+        enableCephTools: true
+  when:
+    - ocs_install_type == 'internal'
+
+- name: Check OCS Storage Class exists
+  community.kubernetes.k8s_info:
+    kind: StorageClass
+    name: "{{ ocs_default_storage_class }}"
+  register: ocs_storage_class
+  retries: 30
+  delay: 10
+  until: ocs_storage_class.resources != []
+
+- name: Set Default Openshift Storage Class
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: "{{ ocs_default_storage_class }}"
+        annotations:
+          "{{ default_storageclass_annotation }}"
+...

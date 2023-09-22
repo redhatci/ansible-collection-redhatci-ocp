@@ -1,0 +1,36 @@
+---
+- name: Check for workers with Ready,SchedulingDisabled status
+  shell: >
+    {{ oc_tool_path }} get nodes --no-headers=true |
+    grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+  register: reg_disabled_nodes
+
+# The workaround should not be applied if we're dealing with a network problem here.
+# To verify that network is doing fine, we check that all ovnkube-node-XXXX pods are running.
+- name: Verify the network state
+  include_tasks: verify_network_state.yml
+
+- name: Uncordon workers if needed
+  block:
+    - name: Workaround - uncordon all ready workers with disabled scheduling
+      shell: >
+        {{ oc_tool_path }} adm uncordon {{ item }}
+      loop: "{{ reg_disabled_nodes.stdout.split('\n') }}"
+
+    # If nodes are not ready after this time, then the whole role will fail
+    - name: "Wait for workers to be ready - {{ check_reason | default('To define the location') }}"
+      shell: >
+        {{ oc_tool_path }} get nodes --no-headers=true | grep worker
+      register: nodes
+      until:
+        - '"SchedulingDisabled" not in nodes.stdout'
+        - '"NotReady" not in nodes.stdout'
+      retries: 60
+      delay: 10
+  when: reg_disabled_nodes.stdout | length > 0
+
+- name: Print current iteration
+  debug:
+    msg: Iteration number {{ retry_count }}, let's try a new attempt
+
+...

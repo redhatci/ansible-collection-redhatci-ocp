@@ -1,0 +1,27 @@
+---
+
+- name: "Wait for the vm to shut down"
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    command: status
+  register: vmstatus
+  until: vmstatus.status == 'shutdown'
+  retries: 1500
+  delay: 10
+  when: node_exists.failed
+
+- name: "Remove cdrom (cloud-init)"
+  command: virsh change-media {{ host['name'] }} hda --eject --config
+  become: "{{ libvirt_become }}"
+  when: node_exists.failed
+
+- name: sync memory data to disk
+  command: sync
+
+- name: "Start VM again"
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    state: "running"
+  when: node_exists.failed
+
+...

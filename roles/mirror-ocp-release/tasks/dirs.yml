@@ -1,0 +1,19 @@
+---
+- name: "Create master cache directory"
+  file:
+    path: "{{ mor_cache_dir }}"
+    state: directory
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
+    mode: "0755"
+  become: true
+
+- name: "Create cache directory for release"
+  file:
+    path: "{{ mor_cache_dir }}/{{ mor_version }}"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
+    mode: "0755"
+    state: directory
+  become: true
+...

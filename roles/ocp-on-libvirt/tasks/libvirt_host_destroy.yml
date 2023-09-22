@@ -1,0 +1,18 @@
+- name: "Does node exist"
+  ignore_errors: yes
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    command: status
+  register: node_exists
+
+- name: "destroy node"
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    command: destroy
+  when: node_exists['status'] is defined and node_exists['status'] == 'running'
+
+- name: "undefine node"
+  become: true
+  shell:
+    cmd: "virsh undefine --remove-all-storage --nvram {{ host['name'] }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
+  when: not node_exists.failed

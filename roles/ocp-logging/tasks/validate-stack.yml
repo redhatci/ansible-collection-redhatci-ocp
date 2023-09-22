@@ -1,0 +1,36 @@
+
+---
+- name: "Confirm that console pods are Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "openshift-console"
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 9
+  delay: 10
+
+- name: "Confirm that Logging pods are Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ ol_namespace }}"
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 9
+  delay: 10
+
+- name: "Confirm that PVCs are bound"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "{{ ol_namespace }}"
+    name: "{{ item.name }}"
+  register: ol_pvc
+  until:
+    - ol_pvc.resources is defined
+    - ol_pvc.resources[0].status.phase == "Bound"
+  retries: 9
+  delay: 10
+  loop: "{{ ol_pvc }}"
+...

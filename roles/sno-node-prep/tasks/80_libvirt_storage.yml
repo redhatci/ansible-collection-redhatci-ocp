@@ -1,0 +1,20 @@
+---
+- name: Define, Start, Autostart Storage Pool
+  block:
+    - name: Define Storage Pool for default
+      community.libvirt.virt_pool:
+        command: define
+        name: "{{ vm_pool_name }}"
+        xml: '{{ lookup("template", "dir.xml.j2") }}'
+
+    - name: Start Storage Pool for default
+      community.libvirt.virt_pool:
+        state: active
+        name: "{{ vm_pool_name }}"
+
+    - name: Autostart Storage Pool for default
+      community.libvirt.virt_pool:
+        autostart: yes
+        name: "{{ vm_pool_name }}"
+  become: yes
+  tags: storagepool

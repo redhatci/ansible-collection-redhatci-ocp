@@ -1,0 +1,268 @@
+---
+- name: Assert all required fields are present
+  assert:
+    that:
+      - operator | string
+      - namespace | string
+      - source | string
+
+- name: "Print install parameters"
+  debug:
+    msg:
+      - "Operator: {{ operator }}"
+      - "Target namespace: {{ namespace }}"
+      - "Catalog: {{ source }}"
+
+- name: "Check that {{ source }} CatalogSource is Ready"
+  community.kubernetes.k8s_info:
+    api: operators.coreos.com/v1alpha1
+    kind: CatalogSource
+    name: "{{ source }}"
+    namespace: "{{ source_ns }}"
+  register: source_status
+  until:
+    - source_status | json_query('resources[0].status.connectionState.lastObservedState') == 'READY'
+  retries: 60
+  delay: 10
+
+- name: "Create Namespace for OLM operator {{ operator }}"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ namespace }}"
+        labels: "{{ ns_labels | default(omit) }}"
+
+- name: "Labeling namespace to cover PodSecurity requirements"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ namespace }}"
+        labels:
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+
+- name: "Operator {{ operator }} installation"
+  block:
+    - name: "Get operator's package manifests"
+      community.kubernetes.k8s_info:
+        api: packages.operators.coreos.com/v1
+        kind: PackageManifest
+        namespace: default
+        name: "{{ operator }}"
+      register: operator_packagemanifest
+      retries: 10
+      delay: 5
+      until:
+        - operator_packagemanifest.resources is defined
+        - operator_packagemanifest.resources | length
+        - operator_packagemanifest.resources[0].status is defined
+        - operator_packagemanifest.resources[0].status.catalogSource == source
+      failed_when: operator_packagemanifest is skipped
+        or operator_packagemanifest.resources is undefined
+        or operator_packagemanifest.resources | length != 1
+
+    - name: "Create OperatorGroup for OLM operator {{ operator }}"
+      vars:
+        allNamespaces: "{{ operator_packagemanifest |
+                        json_query('resources[*].status.channels[0].currentCSVDesc.installModes[3].supported') |
+                        first }}"
+        group_spec: "{{  {'targetNamespaces': []} if allNamespaces |
+                     default(false) else {'targetNamespaces': [namespace]} }}"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: operators.coreos.com/v1
+          kind: OperatorGroup
+          metadata:
+            name: "{{ operator_group_name }}"
+            namespace: "{{ namespace }}"
+          spec: "{{ operator_group_spec | default(group_spec, true) }}"
+
+    - name: "Set operator's channel for {{ operator }}"
+      vars:
+        default_channel: "{{ operator_packagemanifest.resources[0].status.defaultChannel }}"
+      set_fact:
+        desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
+
+    - name: "Create subscription for OLM operator {{ operator }}"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: operators.coreos.com/v1alpha1
+          kind: Subscription
+          metadata:
+            name: "{{ operator }}"
+            namespace: "{{ namespace }}"
+          spec:
+            channel: "{{ desired_channel }}"
+            installPlanApproval: "{{ starting_csv | default('') | length | ternary('Manual', 'Automatic') }}"
+            config:
+              resources: {}
+            name: "{{ operator }}"
+            source: "{{ source }}"
+            sourceNamespace: "{{ source_ns }}"
+            startingCSV: "{{ starting_csv | default('') | length | ternary(starting_csv, omit) }}"
+
+    - block:
+        - name: "Wait for subscription for {{ operator }} to be ready"
+          community.kubernetes.k8s_info:
+            api: operators.coreos.com/v1alpha1
+            kind: Subscription
+            namespace: "{{ namespace }}"
+            name: "{{ operator }}"
+          register: sub
+          retries: 20
+          delay: 30
+          until:
+            - sub.resources is defined
+            - sub.resources | length == 1
+            - "'status' in sub.resources[0]"
+            - "'currentCSV' in sub.resources[0].status"
+            - sub.resources[0].status.currentCSV | length > 0
+      rescue:
+        - name: Fail when no workaround for OCPBUGS-13286 is defined
+          fail:
+            msg: "Please add OCPBUGS-13286 in dci_workarounds to use workaround"
+          when:
+            - '"OCPBUGS-13286" not in dci_workarounds | default([])'
+
+        # The issue is with the OLM pod, which is searching for an old CatalogSource.
+        # The workaround could involve restarting it.
+        - name: Restart OLM pod catalog-operator
+          community.kubernetes.k8s:
+            api_version: v1
+            kind: Pod
+            namespace: openshift-operator-lifecycle-manager
+            label_selectors:
+              - app=catalog-operator
+            state: absent
+
+        - name: Wait for OLM pod catalog-operator to be running
+          community.kubernetes.k8s_info:
+            kind: Pod
+            namespace: openshift-operator-lifecycle-manager
+            label_selectors:
+              - app=catalog-operator
+          register: olm_pod
+          until: olm_pod | json_query('resources[*].status.phase') | unique == ["Running"]
+          retries: 6
+          delay: 10
+
+    - name: "Get operator's {{ operator }} CSV for desired channel"
+      set_fact:
+        operator_csv: "{{ starting_csv | default('') | length | ternary(starting_csv, sub.resources[0].status.currentCSV) }}"
+
+    - block:
+        - name: "Get Install plans for {{ operator }}"
+          community.kubernetes.k8s_info:
+            api: operators.coreos.com/v1alpha1
+            kind: InstallPlan
+            namespace: "{{ namespace }}"
+          register: install_plans
+          retries: 5
+          delay: 5
+          until:
+            - install_plans.resources is defined
+            - install_plans.resources | length
+
+        - name: "Approve install plan for specific CSV for {{ operator }}"
+          community.kubernetes.k8s:
+            definition:
+              apiVersion: operators.coreos.com/v1alpha1
+              kind: InstallPlan
+              metadata:
+                name: "{{ install_plan }}"
+                namespace: "{{ namespace }}"
+              spec:
+                approved: true
+          vars:
+            query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ operator_csv }}')]"
+            install_plan: "{{ (install_plans | json_query(query) | first).metadata.name }}"
+      when:
+        - starting_csv | default('') | length
+
+    - name: "{{ ocp_version }} - {{ operator_csv }} - wait for CSV to be ready"
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        namespace: "{{ namespace }}"
+        kind: ClusterServiceVersion
+        name: "{{ operator_csv }}"
+      register: csv
+      retries: 20
+      delay: 30
+      until:
+        - csv.resources is defined
+        - csv.resources | length == 1
+        - "'status' in csv.resources[0]"
+        - "'phase' in csv.resources[0].status"
+        - csv.resources[0].status.phase == 'Succeeded' or
+          csv.resources[0].status.phase == 'Present'
+
+    - name: "Fail if not all {{ operator }} pods reach a successful state"
+      community.kubernetes.k8s_info:
+        kind: Pod
+        namespace: "{{ namespace }}"
+      register: olm_pod
+      retries: 12
+      delay: 10
+      until:
+        olm_pod.resources | map(attribute='status.phase') | difference(['Succeeded', 'Running']) | length == 0
+      no_log: true
+
+  rescue:
+    - name: "Catalog sources information for {{ operator }}"
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+      register: catalog_info
+
+    - name: "Subscriptions information for {{ operator }}"
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: Subscription
+        namespace: "{{ namespace }}"
+      register: subs_info
+
+    - name: "Install plans information for {{ operator }}"
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: InstallPlan
+        namespace: "{{ namespace }}"
+      register: ip_info
+
+    - name: "Print catalog information for {{ operator }}"
+      debug:
+        msg: "{{ catalog_info.resources }}"
+
+    - name: "Print Subscription information for {{ operator }}"
+      debug:
+        msg: "{{ subs_info.resources }}"
+
+    - name: "Print InstallPlan information for {{ operator }}"
+      debug:
+        msg: "{{ ip_info.resources }}"
+
+    - name: "Issues during operator {{ operator }} installation"
+      fail:
+        msg: "There where issues during the operator deployment. See debug info in the above tasks"
+
+- name: "Patch subscription according to install_approval - Default: Manual"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: "{{ operator }}"
+        namespace: "{{ namespace }}"
+      spec:
+        installPlanApproval: "{{ install_approval | default('Manual') }}"
+        channel: "{{ desired_channel }}"
+        config:
+          resources: {}
+        name: "{{ operator }}"
+        source: "{{ source }}"
+        sourceNamespace: "{{ source_ns }}"
+...

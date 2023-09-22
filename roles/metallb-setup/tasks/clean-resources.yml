@@ -1,0 +1,24 @@
+---
+- name: "Delete MetalLB BGP Peers"
+  community.kubernetes.k8s:
+    state: absent
+    api: metallb.io/v1beta2
+    kind: BGPPeer
+    name: "{{ peer.name }}"
+    namespace: "{{ mlb_namespace }}"
+  loop: "{{ metallb_bgp_peers }}"
+  loop_control:
+    loop_var: peer
+
+- name: "Delete MetalLB resources"
+  community.kubernetes.k8s:
+    state: absent
+    api: "{{ resource.apiVer }}"
+    kind: "{{ resource.kind }}"
+    name: "{{ resource.name }}"
+    namespace: "{{ mlb_namespace }}"
+  ignore_errors: true
+  loop: "{{ mlb_resources }}"
+  loop_control:
+    loop_var: resource
+...

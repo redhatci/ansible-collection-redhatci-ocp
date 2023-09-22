@@ -1,0 +1,14 @@
+---
+- name: "hco-setup : deploy Hyperconverged Operator"
+  include_tasks: deploy-hco.yml
+  when:
+    - hs_deploy | bool
+  tags:
+    - install
+
+- name: "hco-setup : deploy test Virtual Machine"
+  include_tasks: test-deploy-vm.yml
+  when:
+    - hs_test_vm | bool
+  tags:
+    - install

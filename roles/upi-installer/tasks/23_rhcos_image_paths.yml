@@ -1,0 +1,134 @@
+---
+- name: "Check if rhcos.json exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/rhcos.json"
+    get_checksum: false
+  register: rhcos_json
+  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  tags: rhcospath
+
+- name: "Fetch rhcos.json File"
+  shell: >
+    set -o pipefail &&
+    {{ cache_dir }}/{{ version }}/openshift-install coreos print-stream-json |
+    tee {{ cache_dir }}/{{ version }}/rhcos.json
+  register: rhcos_json_file
+  retries: 3
+  delay: 10
+  until: rhcos_json_file is not failed
+  changed_when: false
+  no_log: true
+  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  when:
+    - not rhcos_json.stat.exists or force_mirroring
+  tags: rhcospath
+
+- name: "Get the rhcos.json from cache server into temp file on control machine"
+  fetch:
+    dest: /tmp/
+    flat: true
+    src: "{{ cache_dir }}/{{ version }}/rhcos.json"
+  delegate_to: "{{ cache_server }}"
+
+- name: "Load variables from rhcos.json"
+  include_vars:
+    file: "/tmp/rhcos.json"
+    name: rhcos_json_vars
+  tags: rhcospath
+
+- name: "Remove the temporary copy of rhcos.json on control machine"
+  file:
+    path: "/tmp/rhcos.json"
+    state: absent
+  delegate_to: localhost
+
+- name: "Set Facts for RHCOS PXE"
+  set_fact:
+    rhcos_pxe_kernel_path: "{{ rhcos_json_vars | json_query(kernel_location) }}"
+    rhcos_pxe_kernel_sha256: "{{ rhcos_json_vars | json_query(kernel_sha) }}"
+    rhcos_pxe_initramfs_path: "{{ rhcos_json_vars | json_query(initramfs_location) }}"
+    rhcos_pxe_initramfs_sha256: "{{ rhcos_json_vars | json_query(initramfs_sha) }}"
+    rhcos_pxe_rootfs_path: "{{ rhcos_json_vars | json_query(rootfs_location) }}"
+    rhcos_pxe_rootfs_sha256: "{{ rhcos_json_vars | json_query(rootfs_sha) }}"
+    rhcos_live_iso_path: "{{ rhcos_json_vars | json_query(live_iso_location) }}"
+    rhcos_live_iso_sha256: "{{ rhcos_json_vars | json_query(live_iso_sha) }}"
+    rhcos_vmware_ova_path: "{{ rhcos_json_vars | json_query(vmware_ova_location) }}"
+    rhcos_vmware_ova_sha256: "{{ rhcos_json_vars | json_query(vmware_ova_sha) }}"
+    rhcos_openstack_qcow2_path: "{{ rhcos_json_vars | json_query(openstack_qcow2_location) }}"
+    rhcos_openstack_qcow2_sha256: "{{ rhcos_json_vars | json_query(openstack_qcow2_sha) }}"
+  vars:
+    kernel_location: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.location'
+    kernel_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.kernel.sha256'
+    initramfs_location: 'architectures.x86_64.artifacts.metal.formats.pxe.initramfs.location'
+    initramfs_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.initramfs.sha256'
+    rootfs_location: 'architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location'
+    rootfs_sha: 'architectures.x86_64.artifacts.metal.formats.pxe.rootfs.sha256'
+    live_iso_location: 'architectures.x86_64.artifacts.metal.formats.iso.disk.location'
+    live_iso_sha: 'architectures.x86_64.artifacts.metal.formats.iso.disk.sha256'
+    vmware_ova_location: 'architectures.x86_64.artifacts.vmware.formats.ova.disk.location'
+    vmware_ova_sha: 'architectures.x86_64.artifacts.vmware.formats.ova.disk.sha256'
+    openstack_qcow2_location: 'architectures.x86_64.artifacts.openstack.formats."qcow2.gz".disk.location'
+    openstack_qcow2_sha: 'architectures.x86_64.artifacts.openstack.formats."qcow2.gz".disk.sha256'
+  tags: rhcospath
+
+- name: "Set Facts for RHCOS basenames"
+  set_fact:
+    rhcos_pxe_kernel_name: "{{ rhcos_pxe_kernel_path | basename }}"
+    rhcos_pxe_initramfs_name: "{{ rhcos_pxe_initramfs_path | basename }}"
+    rhcos_pxe_rootfs_name: "{{ rhcos_pxe_rootfs_path | basename }}"
+    rhcos_live_iso_name: "{{ rhcos_live_iso_path | basename }}"
+    rhcos_vmware_ova_name: "{{ rhcos_vmware_ova_path | basename }}"
+    rhcos_openstack_qcow2_name: "{{ rhcos_openstack_qcow2_path | basename }}"
+
+- name: "Download {{ item[1] }} for cache"
+  get_url:
+    url: "{{ item[0] }}"
+    dest: "{{ provision_cache_store }}/{{ item[1] }}"
+    mode: '0644'
+    setype: httpd_sys_content_t
+    checksum: "sha256:{{ item[2] }}"
+    timeout: 600
+  register: rootfs_img_file
+  retries: 3
+  delay: 10
+  until: rootfs_img_file is not failed
+  become: true
+  loop: "{{ data[0]|zip(*data[1:])|list }}"
+  vars:
+    data:
+      - ["{{ rhcos_pxe_kernel_path }}",
+        "{{ rhcos_pxe_initramfs_path }}",
+        "{{ rhcos_pxe_rootfs_path }}",
+        "{{ rhcos_live_iso_path }}",
+        "{{ rhcos_vmware_ova_path }}",
+        "{{ rhcos_openstack_qcow2_path }}"]
+      - ["{{ rhcos_pxe_kernel_name }}",
+        "{{ rhcos_pxe_initramfs_name }}",
+        "{{ rhcos_pxe_rootfs_name }}",
+        "{{ rhcos_live_iso_name }}",
+        "{{ rhcos_vmware_ova_name }}",
+        "{{ rhcos_openstack_qcow2_name }}"]
+      - ["{{ rhcos_pxe_kernel_sha256 }}",
+        "{{ rhcos_pxe_initramfs_sha256 }}",
+        "{{ rhcos_pxe_rootfs_sha256 }}",
+        "{{ rhcos_live_iso_sha256 }}",
+        "{{ rhcos_vmware_ova_sha256 }}",
+        "{{ rhcos_openstack_qcow2_sha256 }}"]
+  tags:
+    - cache
+    - rhcospxe
+  when:
+    - webserver_url | length
+  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+
+- name: "Set Facts for RHCOS cache"
+  set_fact:
+    rhcos_pxe_kernel_path: "{{ webserver_url }}/{{ rhcos_pxe_kernel_name }}"
+    rhcos_pxe_initramfs_path: "{{ webserver_url }}/{{ rhcos_pxe_initramfs_name }}"
+    rhcos_pxe_rootfs_path: "{{ webserver_url }}/{{ rhcos_pxe_rootfs_name }}"
+    rhcos_live_iso_path: "{{ webserver_url }}/{{ rhcos_live_iso_name }}"
+    rhcos_vmware_ova_path: "{{ webserver_url }}/{{ rhcos_vmware_ova_name }}"
+    rhcos_openstack_qcow2_path: "{{ webserver_url }}/{{ rhcos_openstack_qcow2_name }}"
+  when:
+    - webserver_url | length
+...

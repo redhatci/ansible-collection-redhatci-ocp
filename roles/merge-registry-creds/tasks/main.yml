@@ -1,0 +1,35 @@
+---
+- name: "Check if the list has items"
+  assert:
+    that:
+      - "{{ mrc_auths is defined }}"
+      - "{{ mrc_auths | length > 0 }}"
+    fail_msg: "A list of JSON auth files is required"
+
+- name: "Combine auths"
+  set_fact:
+    mrc_auth_data: "{{ mrc_auth_data | default({}) |
+                   combine(auth | default({}), recursive=True) }}"
+  no_log: true
+  loop: "{{ mrc_auths }}"
+  loop_control:
+    loop_var: auth
+
+- name: "Set the combined auth file"
+  tempfile:
+    state: file
+    prefix: "auth_"
+  register: mrc_auth_file
+
+- name: "Write consolidated auth file"
+  copy:
+    content: "{{ mrc_auth_data | to_json }}"
+    dest: "{{ mrc_auth_file.path }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0400"
+
+- name: "Set path for combined auths file"
+  set_fact:
+    mrc_auth_file: "{{ mrc_auth_file.path }}"
+...

@@ -1,0 +1,18 @@
+instance-id: {{ host['name'] }}
+{% set static_network = 0 %}
+{% for network in host['networks'] %}
+{% if static_network == 0 and network['address'] is defined %}
+network-interfaces: |
+{% endif %}
+{% if network['address'] is defined %}
+{% set static_network = 1 %}
+  auto eth{{ loop.index0 }}
+  iface eth{{ loop.index0 }} inet static
+  address {{ network['address'] }}
+  network {{ network['network'] }}
+  netmask {{ network['netmask'] }}
+  broadcast {{ network['broadcast'] }}
+  gateway {{ network['gateway'] }}
+{% endif %}
+{% endfor %}
+local-hostname: {{ host['name'] }}.{{ host['domain'] }}

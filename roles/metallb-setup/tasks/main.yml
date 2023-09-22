@@ -1,0 +1,18 @@
+---
+- name: "Configure MetalLB resources"
+  block:
+    - name: "Validate required variables"
+      include_tasks: pre-requisites.yml
+
+    - name: "Set up MetalLB resources"
+      include_tasks: setup-metallb.yml
+  when:
+    - mlb_action == 'install'
+
+- name: "Cleanup MetalLB resources"
+  block:
+    - name: "Delete MetalLB resources"
+      include_tasks: clean-resources.yml
+  when:
+    - mlb_action == 'cleanup'
+...

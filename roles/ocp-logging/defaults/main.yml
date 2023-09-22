@@ -1,0 +1,6 @@
+---
+ol_namespace: openshift-logging
+ol_event_router_image: registry.redhat.io/openshift-logging/eventrouter-rhel8:v5.2.1-1
+ol_action: 'install'
+ol_settings: ""
+...

@@ -1,0 +1,14 @@
+---
+- name: Create conserver-ipmi.cf
+  become: true
+  template:
+    dest: "/etc/conserver-ipmi-{{ cluster }}.cf"
+    src: conserver-ipmi.cf
+    owner: "root"
+    group: "root"
+    mode: 0644
+
+- name: Add conserver-ipmi.cf to conserver.cf
+  lineinfile:
+    path: /etc/conserver.cf
+    line: '#include /etc/conserver-ipmi-{{ cluster }}.cf'

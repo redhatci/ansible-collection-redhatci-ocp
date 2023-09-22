@@ -1,0 +1,17 @@
+---
+# defaults file for sno-node-prep
+network_type: "OVNKubernetes"
+firewall: "firewalld"
+ipv4_enabled: true
+ipv6_enabled: false
+no_proxy_list: ""
+http_proxy: ""
+https_proxy: ""
+ipv4_baremetal: false
+ipv4_provisioning: false
+ipv6_baremetal: false
+dualstack_baremetal: false
+tftp_dir: "/var/lib/tftpboot"
+dnsmasq_enabled: true
+webserver_url: ""
+registry_host_exists: false

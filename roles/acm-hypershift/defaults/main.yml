@@ -1,0 +1,11 @@
+---
+ah_base_domain: example.com
+ah_cluster_name: hypershift
+ah_cluster_network_cidr: 10.132.0.0/14
+ah_clusters_ns: clusters
+ah_cluster_type: "none"
+ah_force_deploy: false
+ah_no_log: true
+ah_ocp_version: 4.13.4
+ah_pullsecret_file: ""
+ah_release_image: quay.io/openshift-release-dev/ocp-release:{{ ah_ocp_version }}-x86_64
