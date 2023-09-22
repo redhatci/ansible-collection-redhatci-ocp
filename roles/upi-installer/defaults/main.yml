@@ -2,6 +2,11 @@
 serverport: 8000
 timeout: 600
 webserver_url: ""
+<<<<<<< HEAD
 pullsecret_file: "{{ cache_dir }}/pull-secret.txt"
+=======
+cache_dir: "/opt/cache"
+upi_pullsecret: "{{ cache_dir }}/pull-secret.txt"
+>>>>>>> mixin/main
 provision_cache_store: "{{ cache_dir }}"
 ...

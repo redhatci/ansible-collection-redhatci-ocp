@@ -6,6 +6,7 @@ If enabled, the role requires an container registry to mirror the OCP container 
 
 ## Variables
 
+<<<<<<< HEAD
 | Variable                    | Default       | Required    | Description                                                                                                                  |
 | ----------------------------| ------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | mor_version                  | undefined     | Yes         | An OpenShift version number e.g. 4.10.45                                                                                     |
@@ -21,6 +22,24 @@ If enabled, the role requires an container registry to mirror the OCP container 
 | mor_registry_path            | ocp-\<version>/\<full_version\>| No        | Path in registry where the the release images will be stored. By default it is in the format of ocp-\<version>/\<full_version\>. For example: ocp-4.10/4.10.0-0.nightly-2023-02-16-193851 |
 | mor_build                    | undefined     | Yes         | Build type (nightly, ga, dev, rc)  |
 | mor_oc                       | undefined     | Yes         | Path to the oc binary (stable is recommended). |
+=======
+| Variable                     | Default                               | Required | Description                                                                                    |
+| ---------------------------- | ------------------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| mor_auths_file               | undefined                             | Yes      | Path to the authentication file used for container registries e.g. $HOME/.docker/config.json   |
+| mor_build                    | undefined                             | Yes      | Build type (nightly, ga, dev, rc)                                                              |
+| mor_cache_dir                | /var/lib/dci-openshift-agent/releases | No       | Base directory that will hold the OCP version binaries and OS images                           |
+| mor_force                    | false                                 | No       | If passed as true, the role will re-download all the OCP release resources                     |
+| mor_install_type             | "ipi"                                 | No       | Mirrors image required for the install type (ipi, acm, assisted, sno, upi, vsphere)            |
+| mor_mirror_container_images  | true                                  | No       | Mirror all container images from upstream container registries to the provided registry        |
+| mor_mirror_disk_images       | true                                  | No       | Download all disk images depending on which install type                                       |
+| mor_oc                       | undefined                             | Yes      | Path to the oc binary (stable is recommended).                                                 |
+| mor_pull_url                 | undefined                             | Yes      | The ocp release image URL for the release                                                      |
+| mor_registry_path            | ocp-\<version>/\<full_version\>       | No       | Repository to mirror release images. For example: ocp-4.10/4.10.0-0.nightly-2023-02-16-193851  |
+| mor_registry_url             | undefined                             | No*      | Required when `mor_mirror_container_images` is True. Registry to mirror the release images to  |
+| mor_version                  | undefined                             | Yes      | An OpenShift version number e.g. 4.10.45                                                       |
+| mor_webserver_url            | undefined                             | Yes      | URL of the web server where the installation artifact are stored                               |
+| mor_write_custom_config      | true                                  | No       | Writes the OCP configuration files and sets the custom URL facts                               |
+>>>>>>> mixin/main
 
 ## Requirements
 

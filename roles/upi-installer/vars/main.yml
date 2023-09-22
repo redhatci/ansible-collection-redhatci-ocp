@@ -1,5 +1,8 @@
 ---
 # vars file for upi-installer
+<<<<<<< HEAD
 cache_dir: "/opt/cache"
+=======
+>>>>>>> mixin/main
 force_mirroring: false
 ocp_binary_path: "/usr/local/bin"

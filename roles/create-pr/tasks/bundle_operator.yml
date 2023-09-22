@@ -20,7 +20,14 @@
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}"
 
 - name: "Render bundle operator image"
+<<<<<<< HEAD
   shell: >
+=======
+  vars:
+    opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
+  shell: >
+    {{ opm_auths }}
+>>>>>>> mixin/main
     {{ opm_tool_path }} render {{ operator.bundle_image }}
   register: rendered_bundle
   retries: 2

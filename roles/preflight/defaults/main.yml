@@ -1,5 +1,9 @@
 ---
+<<<<<<< HEAD
 preflight_image: "quay.io/opdev/preflight:1.6.9"
+=======
+preflight_image: "quay.io/opdev/preflight:1.6.11"
+>>>>>>> mixin/main
 preflight_namespace: preflight-testing
 preflight_sa: default
 preflight_custom_ca: ""

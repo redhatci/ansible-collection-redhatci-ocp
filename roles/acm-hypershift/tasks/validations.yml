@@ -1,0 +1,44 @@
+---
+- name: Check pull secret file
+  stat:
+    path: "{{ ah_pullsecret_file }}"
+  register: ah_ps_file
+  failed_when: not ah_ps_file.stat.exists
+  when: ah_pullsecret_file | length
+
+- name: Check hypershift namespace is present
+  community.kubernetes.k8s_info:
+    kind: Namespace
+    name: hypershift
+  register: ah_ns
+  retries: 12
+  delay: 10
+  until: ah_ns.resources | length
+
+- name: Get hypershift supported versions
+  community.kubernetes.k8s_info:
+    kind: ConfigMap
+    name: supported-versions
+    namespace: hypershift
+  register: ah_supported_versions
+
+- name: Check for unsupported hypershift versions
+  vars:
+    short_ver: "{{ '.'.join(ah_ocp_version.split('-')[0].split('.')[:2]) }}"
+  fail:
+    msg: "{{ ah_ocp_version }} is not supported in hypershift"
+  failed_when: >
+    not short_ver in (
+    ( ah_supported_versions.resources[0].data |
+      from_yaml)['supported-versions'] |
+    from_yaml)['versions']
+
+- name: Check for a default storage class
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ ah_sc | json_query(query_default_sc) }}"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+  register: ah_sc
+  failed_when: not 'true' in query_results

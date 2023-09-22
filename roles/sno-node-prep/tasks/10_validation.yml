@@ -67,7 +67,11 @@
 - name: Confirm whether or not internet connectivity on provisioner host
   uri:
     url: https://www.redhat.com
+<<<<<<< HEAD
     status_code: [-1,200]
+=======
+    status_code: [-1,200,301]
+>>>>>>> mixin/main
     timeout: 1
   register: check_url
   tags:
@@ -80,7 +84,11 @@
       msg: |
            A host with online access is required. For disconnected mode include registry_host group in the inventory
 
+<<<<<<< HEAD
   - name: Set fact when url status is different than 200
+=======
+  - name: Set fact when could not reach web server
+>>>>>>> mixin/main
     set_fact:
       cache_provisioner: false
   when:
@@ -89,11 +97,19 @@
     - validation
     - cache
 
+<<<<<<< HEAD
 - name: Check if url status is 200 is true
   set_fact:
     cache_provisioner: true
   when:
     - check_url.status == 200
+=======
+- name: Check if web server responded with status code
+  set_fact:
+    cache_provisioner: true
+  when:
+    - check_url.status in [200, 301]
+>>>>>>> mixin/main
   tags:
     - validation
     - cache

@@ -1,8 +1,16 @@
 {
+<<<<<<< HEAD
   "cert_projects": {{ cert_projects }},
+=======
+  "cert_projects": {{ all_openshift_cnf_projects | to_nice_json(indent=2) }},
+>>>>>>> mixin/main
   "published": {{ cert_listings.published }},
   "target_platforms": [
     "Red Hat OpenShift"
   ],
   "type": "{{ cert_listings.type }}"
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> mixin/main

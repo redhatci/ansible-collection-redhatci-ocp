@@ -14,7 +14,15 @@ class FilterModule(object):
         # convert k8s version to ocp version
         k8s2ocp = lambda x : f"{int(x.split('.')[0]) + 3}.{int(x.split('.')[1]) - 13}"
         # parse the API after the workload installation and write down incompatible OCP versions
+<<<<<<< HEAD
         failed_versions = [ k8s2ocp(api['status']['removedInRelease']) for api in after_api ]
+=======
+        failed_versions = { k8s2ocp(api['status']['removedInRelease']) for api in after_api }
+        version_to_removed_apis = {
+            version: {api['metadata']['name'] for api in after_api if k8s2ocp(api['status']['removedInRelease']) == version}
+            for version in failed_versions
+        }
+>>>>>>> mixin/main
 
         # convert major.minor version to semvers' major.minor.patch
         ocp2semver = lambda x : VersionInfo.parse(x + ".0")
@@ -22,7 +30,11 @@ class FilterModule(object):
         semver2ocp = lambda x : '.'.join(str(x).split('.')[:-1])
         # Find max version in the set of incompatible versions.
         # If the set is empty, bump the current version.
+<<<<<<< HEAD
         max_version = max(failed_versions + [semver2ocp(ocp2semver(curr_version).bump_minor())], \
+=======
+        max_version = max(failed_versions | {semver2ocp(ocp2semver(curr_version).bump_minor())}, \
+>>>>>>> mixin/main
                           key=lambda x: ocp2semver(x))
 
         # build a continuous list from curr_version to max_version
@@ -31,16 +43,29 @@ class FilterModule(object):
         ocp_versions = {}
         status = 'compatible'
         while version <= max_version_semver:
+<<<<<<< HEAD
             if semver2ocp(version) in failed_versions or status == 'not_compatible':
                 ocp_versions[semver2ocp(version)] = "not_compatible"
                 status = "not_compatible"
             else:
                 ocp_versions[semver2ocp(version)] = "compatible"
+=======
+            ocp_version = semver2ocp(version)
+            if ocp_version in failed_versions:
+                deprecated_apis = ", ".join(version_to_removed_apis[ocp_version])
+                ocp_versions[ocp_version] = status + ", " + deprecated_apis if status != 'compatible' else deprecated_apis
+                status = deprecated_apis
+            elif status != 'compatible':
+                ocp_versions[ocp_version] = status
+            else:
+                ocp_versions[ocp_version] = "compatible"
+>>>>>>> mixin/main
             version = version.bump_minor()
 
         # convert the dictionary to JUnit test suite
         test_cases = []
         for version, status in ocp_versions.items():
+<<<<<<< HEAD
             test_case = TestCase(f'Compatible with OCP-{version}', classname=f'Compatibility with OCP-{version}')
 
             if status == 'not_compatible':
@@ -49,6 +74,15 @@ class FilterModule(object):
 
             test_cases.append(test_case)
         test_suite = TestSuite('Workload compatibility with OCP versions', test_cases)
+=======
+            test_case = TestCase(f'Compatibility with OCP-{version}', classname=f'Workload Compatibility with OCP-{version}')
+
+            if status != 'compatible':
+                test_case.add_failure_info(f'Workload utilizes APIs deprecated for OCP-{version}: {ocp_versions[version]}')
+
+            test_cases.append(test_case)
+        test_suite = TestSuite('Workload Compatibility with OCP Versions', test_cases)
+>>>>>>> mixin/main
 
         with open(junit_ocp_file, 'w') as f:
             TestSuite.to_file(f, [test_suite])

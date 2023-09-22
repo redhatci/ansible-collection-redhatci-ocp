@@ -42,12 +42,23 @@
     tnf_labels: ""
   when:
     - tnf_suites|length
+<<<<<<< HEAD
+=======
+    -
+# For both versions before than 4.3.0 and the HEAD of the git repo, the support_image_version should be 'latest'
+- name: Set support_image_version variable
+  set_fact:
+    support_image_version: "{% if test_network_function_version is version('v4.3.0', '>=') %}{{test_network_function_version[1:]}}{% else %}latest{% endif %}"
+>>>>>>> mixin/main
 
 - name: "cnf-cert : Save images in local registry"
   include_role:
     name: mirror_images
   vars:
+<<<<<<< HEAD
     support_image_version: "{{ ( test_network_function_version is version('v4.3.0', '>=') or test_network_function_version == 'HEAD' ) | ternary('4.3.0', 'latest') }}"
+=======
+>>>>>>> mixin/main
     images:
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"
       - "quay.io/testnetworkfunction/debug-partner:{{ support_image_version }}"
@@ -56,6 +67,7 @@
     - dci_disconnected | default(false) | bool
     - dci_local_registry | length
 
+<<<<<<< HEAD
 - name: Create temporary directory for git repos
   tempfile:
     state: directory
@@ -97,11 +109,43 @@
   # We need to check the SHA in this way, because extract-dependencies changes the
   # commit id when creating the new branch based on the PR, but only if new PRs are merged 
   # in the repo and we have not included them in our change. In these cases, the original 
+=======
+# Depending on the presence or not of `test_network_function_src_dir` variable,
+# defined by test-runner script when testing a PR from cnf-certification-test
+# repository, we will use a custom tnf image or not.
+- name: Tasks when testing a PR from cnf-certification-test repository
+  block:
+
+  # In this case, test_network_function_src_dir already points to cnf-certification-test
+  - name: Define variable to refer to the directory where tnf code is placed
+    set_fact:
+      tnf_dir: "{{ test_network_function_src_dir }}"
+
+  # Add proper permissions to the folder recursively.
+  # This is needed since extract-dependencies script downloads the code without
+  # write permissions/exec permissions, and they are required for creating new files
+  # (e.g. the output from tnf execution) or execute scripts (e.g. the script that runs
+  # the certification suites).
+  - name: Set proper permissions to the tnf folder
+    file:
+      path: "{{ tnf_dir }}"
+      state: directory
+      mode: u+wx,g+wx
+      recurse: true
+
+  # We need to check the SHA in this way, because extract-dependencies changes the
+  # commit id when creating the new branch based on the PR, but only if new PRs are merged
+  # in the repo and we have not included them in our change. In these cases, the original
+>>>>>>> mixin/main
   # id is saved in .git/ORIG_HEAD file. Else, we can find it in the location called
   # `.git/refs/heads/prXXX`
   - name: "Check if .git/ORIG_HEAD file exists"
     stat:
+<<<<<<< HEAD
       path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/.git/ORIG_HEAD"
+=======
+      path: "{{ tnf_dir }}/.git/ORIG_HEAD"
+>>>>>>> mixin/main
     register: orig_head_file
 
   - name: Actions when .git/ORIG_HEAD file exists
@@ -110,7 +154,11 @@
         shell: cat .git/ORIG_HEAD
         register: tnf_repo_info_head
         args:
+<<<<<<< HEAD
           chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+=======
+          chdir: "{{ tnf_dir }}"
+>>>>>>> mixin/main
 
       - name: Create variable with tnf version name
         set_fact:
@@ -123,7 +171,11 @@
         shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
         register: tnf_repo_info_branch
         args:
+<<<<<<< HEAD
           chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+=======
+          chdir: "{{ tnf_dir }}"
+>>>>>>> mixin/main
 
       - name: Create variable with tnf version name
         set_fact:
@@ -144,7 +196,11 @@
       --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
       --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
     args:
+<<<<<<< HEAD
       chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+=======
+      chdir: "{{ tnf_dir }}"
+>>>>>>> mixin/main
 
   # This is needed because the DCI component is not automatically created, as
   # it is done in case the git repo is directly used, in whose case it is created.
@@ -176,12 +232,30 @@
     tags: [dci]
 
   when:
+<<<<<<< HEAD
     - tnf_is_file_path.stat.exists|bool
     - tnf_is_file_path.stat.isdir|bool
 
 - name: Tasks when test_network_function_repo points to a Github repository
   block:
 
+=======
+    - test_network_function_src_dir is defined
+    - test_network_function_src_dir | length > 0
+
+- name: Tasks when testing a cnf-certification-test stable version
+  block:
+
+  - name: Create temporary directory for tnf repository
+    tempfile:
+      state: directory
+    register: tnf_git_dir
+
+  - name: Define variable to refer to the directory where tnf code is placed
+    set_fact:
+      tnf_dir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+
+>>>>>>> mixin/main
   # In https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
   # there are two main tags to take into account:
   # -latest: linked to the latest tnf release.
@@ -202,7 +276,11 @@
     git:
       repo: "{{ test_network_function_repo }}"
       version: "{{ test_network_function_version }}"
+<<<<<<< HEAD
       dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+=======
+      dest: "{{ tnf_dir }}"
+>>>>>>> mixin/main
       force: yes
     # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
     # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
@@ -225,6 +303,25 @@
     delay: 10
     until: result.rc == 0
 
+<<<<<<< HEAD
   when: not tnf_is_file_path.stat.exists|bool
+=======
+  # This is used to lately check if we are really testing the version we are cloning
+  # from the cnf-certification-test repo, checking in tnf logs if the commit SHA is
+  # present. This is only useful to lately compare with the output from a downloaded
+  # cnf-certification-test repo, so this is not meant to be used with images built
+  # from a PR
+  - name: Retrieve last commit SHA
+    shell: git rev-parse HEAD
+    register: tnf_commit_sha_cmd
+    args:
+      chdir: "{{ tnf_dir }}"
+
+  - name: Create variable with tnf commit SHA
+    set_fact:
+      tnf_commit_sha: "{{ tnf_commit_sha_cmd.stdout }}"
+  when:
+    - test_network_function_src_dir is not defined
+>>>>>>> mixin/main
 
 ...

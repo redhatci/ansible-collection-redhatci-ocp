@@ -59,7 +59,12 @@ targetCrdFilters:
 {% for item in tnf_config %}
 {% if item.target_crds is defined and item.target_crds is iterable %}
 {% for crd in item.target_crds %}
+<<<<<<< HEAD
   - nameSuffix: {{ crd }}
+=======
+  - nameSuffix: {{ crd.nameSuffix }}
+    scalable: {{ crd.scalable }}
+>>>>>>> mixin/main
 {% endfor %}
 {% endif %}
 {% endfor %}
@@ -67,8 +72,18 @@ targetCrdFilters:
 certifiedcontainerinfo:
 {% for container in tnf_certified_container_info %}
 {% if container.name is defined and container.name|length and container.repository is defined and container.repository|length %}
+<<<<<<< HEAD
   - name: {{ container.name }}
     repository: {{ container.repository }}
+=======
+{% if test_network_function_version is version('v4.3.4', '>=') or test_network_function_version == 'HEAD' %}
+  - repository: {{ container.name }}
+    registry: {{ container.repository }}
+{% else %}
+  - name: {{ container.name }}
+    repository: {{ container.repository }}
+{% endif %}
+>>>>>>> mixin/main
     tag: {{ container.tag | default('latest') }}
     digest: {{ container.digest | default('') }}
 {% endif %}
@@ -84,6 +99,13 @@ acceptedKernelTaints:
 {% endfor %}
 
 # fields below are not currently used, leaving placeholder in case they were needed in the future
+<<<<<<< HEAD
+=======
+managedDeployments:
+
+managedStatefulsets:
+
+>>>>>>> mixin/main
 skipScalingTestDeployments:
 
 skipScalingTestStatefulSetNames:
@@ -92,4 +114,9 @@ skipHelmChartList:
 
 validProtocolNames:
 
+<<<<<<< HEAD
+=======
+servicesignorelist:
+
+>>>>>>> mixin/main
 ...

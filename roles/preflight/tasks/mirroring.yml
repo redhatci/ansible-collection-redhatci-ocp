@@ -5,7 +5,11 @@
     preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
   set_fact:
     preflight_images: "{{ (preflight_assets_images + scorecard_images + preflight_bundle_images) | unique }}"
+<<<<<<< HEAD
     # TODO: to delete the old images once preflight release with 1.29.0 integration is cut
+=======
+    # TODO: these old images are still required by the operator-sdk 1.30.0
+>>>>>>> mixin/main
     old_images: "{{ (lookup('file', 'files/scorecard-old-images.yml') | from_yaml)['images'] }}"
 
 - name: Mirror preflight images
@@ -14,6 +18,10 @@
   vars:
     images: "{{ preflight_images }}"
     authfile: "{{ partner_creds }}"
+<<<<<<< HEAD
+=======
+    mi_options: "--preserve-digests"
+>>>>>>> mixin/main
 
 - name: "Define catalog tag"
   set_fact:
@@ -36,6 +44,7 @@
 
 - name: Push index image into local registry
   shell: >
+<<<<<<< HEAD
     podman push
     --authfile {{ partner_creds }}
     {{ OO_INDEX }}
@@ -102,4 +111,57 @@
         check_wait_retries: 30
         check_wait_delay: 10
         check_reason: "ICSP update in preflight role"
+=======
+    set -ex;
+    podman push
+    --authfile {{ partner_creds }}
+    {{ OO_INDEX }};
+    podman rmi {{ OO_INDEX }}
+
+- name: Find ImageDigestMirrorSet in the cluster
+  community.kubernetes.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: ImageDigestMirrorSet
+  register: idms_res
+
+- name: Mirror generated catalog
+  include_role:
+    name: mirror-catalog
+  vars:
+    mc_oc_tool_path: "{{ oc_tool_path }}"
+    mc_catalog: "{{ OO_INDEX }}"
+    mc_registry: "{{ dci_local_registry }}"
+    mc_pullsecret: "{{ pullsecret_tmp_file }}"
+    mc_is_type: "{{ idms_res.resources is defined and idms_res.resources | length | ternary('idms', 'icsp') }}"
+
+- name: Set catalog and Image Source file
+  set_fact:
+    preflight_is_file: "{{ mc_is_file.path }}"
+    OO_INDEX: "{{ mc_catalog_digest }}"
+
+- name: Append pre-flight images to Image Sources
+  blockinfile:
+    block: |
+      # Scorecard container
+        - mirrors:
+          - {{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
+          source: {{ item.split('@')[0] }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
+    path: "{{ preflight_is_file }}"
+  # TODO: these old images are still required by the operator-sdk 1.30.0
+  loop: "{{ (preflight_images + old_images) | unique }}"
+
+- name: Apply Image Source file
+  community.kubernetes.k8s:
+    definition: "{{ lookup('file', preflight_is_file) }}"
+
+- name: Wait for MCP status
+  include_role:
+    name: check-resource
+  vars:
+    resource_to_check: "MachineConfigPool"
+    check_wait_retries: 45
+    check_wait_delay: 20
+    check_reason: "Image Source update in preflight role"
+>>>>>>> mixin/main
 ...

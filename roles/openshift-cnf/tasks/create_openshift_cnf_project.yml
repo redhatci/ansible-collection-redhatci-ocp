@@ -5,7 +5,11 @@
     tasks_from: check_if_container_project_exists
   when: check_for_existing_projects | bool
 
+<<<<<<< HEAD
 - name: Create openshift-cnf project
+=======
+- name: Create Openshift-cnf project
+>>>>>>> mixin/main
   include_role:
     name: create-certification-project
     tasks_from: create_project
@@ -13,6 +17,7 @@
 
 #Update mandatory params are not needed for now
 
+<<<<<<< HEAD
 - name: Attach Product List ID to openshift-cnf project when cert_listings is defined
   include_role:
     name: create-certification-project
@@ -21,3 +26,10 @@
     - cnf.attach_product_listing | default(false) | bool
     - cnf.create_cnf_project | default(false) | bool
 ...
+=======
+- name: Set Openshift-cnf project to store new projects for later merging with existing IDs
+  set_fact:
+    new_openshift_cnf_projects: "{{ new_openshift_cnf_projects | default([]) + [cert_project_id] }}"
+  when: cert_project_id is defined
+...
+>>>>>>> mixin/main

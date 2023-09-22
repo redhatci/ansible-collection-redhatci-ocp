@@ -7,12 +7,20 @@ For example, you could provide just two tests to verify against a JUnit file wit
 
 Name                  | Default      | Description
 --------------------- | ------------ | -------------
+<<<<<<< HEAD
 tests_to_verify       | undefined    | There is a complex list of expected results, where each element contains a JUnit filename and a corresponding list of expected results. A sublist of expected results could include one or more pairs of 'testcase name' and 'passed'/'failed'.
+=======
+tests_to_verify       | undefined    | There is a complex list of expected results, where each element contains a JUnit filename (supports globbing) and a corresponding list of expected results. A sublist of expected results could include one or more pairs of 'testcase name' and 'passed'/'failed'.
+>>>>>>> mixin/main
 skip_absent_testfiles | false        | Use this option to prevent the verification process from failing if the JUnit file listed in the expected results is not present.
 junit_fix_tags        | false        | Please use this option to add the missing <testsuites></testsuites> tags to the JUnit file in order to fix the formatting.
 
 ```yaml
+<<<<<<< HEAD
 # Example of the list of expected results per file.
+=======
+# Example of the list of expected results per file (supports globbing).
+>>>>>>> mixin/main
 # expected_results/testcase could contain Python regex.
 # Please use single quotes with regex to avoid Python/Ansible syntax interference.
 tests_to_verify:
@@ -24,7 +32,11 @@ tests_to_verify:
         passed: True
       - testcase: 'RunAsNonRoot'
         passed: True
+<<<<<<< HEAD
   - filename: "preflight_container_simple-demo-operator_0.0.6_simple-demo-operator_results-junit.xml"
+=======
+  - filename: "preflight_container_simple-demo-operator_0.0.6_simple-demo-operator_*_results-junit.xml"
+>>>>>>> mixin/main
     expected_results:
       - testcase: '[a-zA-Z]+'
         passed: True

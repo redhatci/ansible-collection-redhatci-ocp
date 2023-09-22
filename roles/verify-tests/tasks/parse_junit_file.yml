@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 - name: "Set the complete path to JUnit file {{ t.filename }}"
   set_fact:
     junit_filename: "{{ job_logs.path }}/{{ t.filename }}"
@@ -11,6 +12,16 @@
 - name: "Fail if {{ t.filename }} is not present in the log folder"
   fail:
     msg: "Could not verify test results: {{ t.filename }} is not present"
+=======
+- name: "Verify the presence of {{ item | basename }} in the log folder"
+  stat:
+    path: "{{ item }}"
+  register: junit_file
+
+- name: "Fail if {{ item | basename }} is not present in the log folder"
+  fail:
+    msg: "Could not verify test results: {{ item | basename }} is not present"
+>>>>>>> mixin/main
   failed_when:
     - not junit_file.stat.exists
     # Do not fail when the option to skip missing files is on
@@ -21,22 +32,38 @@
       block:
         - name: "Insert opening <testsuites> tag"
           lineinfile:
+<<<<<<< HEAD
             path: "{{ junit_filename }}"
+=======
+            path: "{{ item }}"
+>>>>>>> mixin/main
             insertbefore: '<testsuite'
             line: '<testsuites>'
 
         - name: "Insert closing </testsuites> tag"
           lineinfile:
+<<<<<<< HEAD
             path: "{{ junit_filename }}"
+=======
+            path: "{{ item }}"
+>>>>>>> mixin/main
             insertafter: EOF
             line: '</testsuites>'
       when: junit_fix_tags | default(false) | bool
 
+<<<<<<< HEAD
     - name: "Retrieve the actual test results from {{ t.filename }}"
       set_fact:
         actual_results: "{{ junit_filename | junit2dict }}"
 
     - name: "Fail if not all test results are as expected for {{ t.filename }}"
+=======
+    - name: "Retrieve the actual test results from {{ item | basename }}"
+      set_fact:
+        actual_results: "{{ item | junit2dict }}"
+
+    - name: "Fail if not all test results are as expected for {{ item | basename }}"
+>>>>>>> mixin/main
       vars:
         expectation_failed: "{{ t.expected_results | regex_diff(actual_results) }}"
       fail:

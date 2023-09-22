@@ -52,6 +52,12 @@
 
   - name: "Certification Skip for {{ current_operator_image }}"
     debug:
+<<<<<<< HEAD
       msg: "Certfication for the image {{ current_operator_image }} has been skipped because it has already been certified"
   when: (pyxis_image_info.json.data[0] is defined and pyxis_image_info.json.data[0].certified == true and preflight_test_certified_image)
         or "registry.redhat" in image_repository
+=======
+      msg: "Certification for the image {{ current_operator_image }} has been skipped because it has already been certified"
+  when: (pyxis_image_info.json.data[0] is defined and pyxis_image_info.json.data[0].certified == true and preflight_test_certified_image)
+        or "registry.redhat" in image_repository
+>>>>>>> mixin/main
