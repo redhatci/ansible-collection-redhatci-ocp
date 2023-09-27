@@ -106,50 +106,21 @@
             sourceNamespace: "{{ source_ns }}"
             startingCSV: "{{ starting_csv | default('') | length | ternary(starting_csv, omit) }}"
 
-    - block:
-        - name: "Wait for subscription for {{ operator }} to be ready"
-          community.kubernetes.k8s_info:
-            api: operators.coreos.com/v1alpha1
-            kind: Subscription
-            namespace: "{{ namespace }}"
-            name: "{{ operator }}"
-          register: sub
-          retries: 20
-          delay: 30
-          until:
-            - sub.resources is defined
-            - sub.resources | length == 1
-            - "'status' in sub.resources[0]"
-            - "'currentCSV' in sub.resources[0].status"
-            - sub.resources[0].status.currentCSV | length > 0
-      rescue:
-        - name: Fail when no workaround for OCPBUGS-13286 is defined
-          fail:
-            msg: "Please add OCPBUGS-13286 in dci_workarounds to use workaround"
-          when:
-            - '"OCPBUGS-13286" not in dci_workarounds | default([])'
-
-        # The issue is with the OLM pod, which is searching for an old CatalogSource.
-        # The workaround could involve restarting it.
-        - name: Restart OLM pod catalog-operator
-          community.kubernetes.k8s:
-            api_version: v1
-            kind: Pod
-            namespace: openshift-operator-lifecycle-manager
-            label_selectors:
-              - app=catalog-operator
-            state: absent
-
-        - name: Wait for OLM pod catalog-operator to be running
-          community.kubernetes.k8s_info:
-            kind: Pod
-            namespace: openshift-operator-lifecycle-manager
-            label_selectors:
-              - app=catalog-operator
-          register: olm_pod
-          until: olm_pod | json_query('resources[*].status.phase') | unique == ["Running"]
-          retries: 6
-          delay: 10
+    - name: "Wait for subscription for {{ operator }} to be ready"
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: Subscription
+        namespace: "{{ namespace }}"
+        name: "{{ operator }}"
+      register: sub
+      retries: 20
+      delay: 30
+      until:
+        - sub.resources is defined
+        - sub.resources | length == 1
+        - "'status' in sub.resources[0]"
+        - "'currentCSV' in sub.resources[0].status"
+        - sub.resources[0].status.currentCSV | length > 0
 
     - name: "Get operator's {{ operator }} CSV for desired channel"
       set_fact:
