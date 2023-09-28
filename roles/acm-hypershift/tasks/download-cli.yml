@@ -1,5 +1,5 @@
 ---
-- name: Get route
+- name: Get route for hypershift-cli
   community.kubernetes.k8s_info:
     kind: Route
     name: hypershift-cli-download

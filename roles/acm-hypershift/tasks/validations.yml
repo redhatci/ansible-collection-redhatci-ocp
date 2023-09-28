@@ -1,4 +1,10 @@
 ---
+- name: "Check for role allowed providers"
+  fail:
+    msg: "{{ ah_cluster_type }} provider is not supported by this role"
+  when:
+    - ah_cluster_type | lower not in ah_cluster_types
+
 - name: "Check for metallb instances"
   community.kubernetes.k8s_info:
     api_version: metallb.io/v1beta1
@@ -10,7 +16,8 @@
     msg:
       - "A MetalLB instance is required to configure hypershift on baremetal environments"
   when:
-  - mlb_instance.resources | length == 0
+    - mlb_instance.resources | length == 0
+    - ah_cluster_type != "none"
 
 - name: "Validate that a pull secret file is defined"
   fail:
@@ -60,3 +67,4 @@
     kind: StorageClass
   register: ah_sc
   failed_when: not 'true' in query_results
+...
