@@ -13,6 +13,12 @@
         fail_msg: "Cannot run preflight check container: automatically generated config is missing"
         success_msg: "All required parameters are ok, proceeding to run preflight check container"
 
+    - name: Dump operator parameters for the debug
+      debug:
+        msg: |
+          operator.name = {{ operator.name }}
+          operator.version = {{ operator.version }}
+
     - name: "Fail if both create_container_project and pyxis_container_identifier are provided for {{ current_operator_image }}"
       fail:
         msg: |
