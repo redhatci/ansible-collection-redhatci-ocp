@@ -1,4 +1,9 @@
 ---
+- name: Set cluster name
+  set_fact:
+   ah_cluster_generated_name: "{{ ah_cluster_name | default(lookup('password', '/dev/null length=10 chars=ascii_lowercase,digits'), true) }}"
+  run_once: true
+
 - name: Hypershift validations
   include_tasks: validations.yml
 

@@ -92,6 +92,21 @@
   when:
     - mlb_bgp_peers is defined
 
+- name: "Create MetalLB L2 Advertisements"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: L2Advertisement
+      metadata:
+        name: "{{ mlb_setup_name | default('metallb') }}"
+        namespace: "{{ mlb_namespace }}"
+      spec:
+        ipAddressPools:
+          - "{{ mlb_setup_name | default('metallb') }}"
+  when:
+    - mlb_bgp_peers is undefined
+
 - name: "Confirm that all MetalLB pods are Running"
   community.kubernetes.k8s_info:
     api_version: v1
