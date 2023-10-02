@@ -31,7 +31,7 @@ local_registry: "{{ registry_fqdn }}:{{ registry_port }}"
 registry_port: 5000
 ocp_registry_namespace: "{{ hostvars['registry_host']['registry_namespace'] | default('ocp4') }}"
 ocp_registry_image: "{{ hostvars['registry_host']['registry_image'] | default('openshift4') }}"
-registry_repository: "{{ ocp_registry_namespace }}/{{ ocp_registry_image }} "
+registry_repository: "{{ ocp_registry_namespace }}/{{ ocp_registry_image }}"
 
 installer_agent_image:
   remote: "quay.io/edge-infrastructure/assisted-installer-agent@{{ image_hashes.installer_agent }}"
