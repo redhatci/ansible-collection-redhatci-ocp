@@ -1,4 +1,0 @@
----
-# vars file for upi-installer
-force_mirroring: false
-ocp_binary_path: "/usr/local/bin"

@@ -1,0 +1,28 @@
+---
+# vars file for sno_node_prep
+default_pkg_list:
+  - "{{ firewall }}"
+  - jq
+  - python3-devel
+  - python3-libvirt
+  - python3-lxml
+  - python3-yaml
+  - python3-netaddr
+  - python3-jmespath
+  - libsemanage-python3
+  - policycoreutils-python3
+  - podman
+  - tar
+  - ipmitool
+    
+snovm_pkg_list:
+  - libvirt
+  - qemu-kvm
+  - virt-install
+
+snobm_pkg_list:
+  - grub2-efi-x64
+  - shim-x64
+  - dnsmasq
+
+pullsecret_file: "{{ cache_dir }}/pull-secret.txt"
