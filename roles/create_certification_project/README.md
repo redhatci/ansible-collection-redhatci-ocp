@@ -26,8 +26,11 @@ create_operator_project  | false                                                
 
 ## Variables to define for project settings under `cert_settings` main variable (Optional)
 
-Below an example of variables used for container image certification project, more variables are available depending is created for operator or helmchart certifications. All sub-variables are optional.
+Below an example of variables used for container and operator image certification project, more variables are available depending is created for operator or helmchart certifications. All sub-variables are optional.
+
 For more details see full [API schema](https://catalog.redhat.com/api/containers/v1/ui/#/Certification%20projects/pyxis.rest.legacy.cert_projects.patch_certification_project)
+
+### Container `cert_settings`
 
 Name                       | Default                              | Description
 -------------------        | ------------------------------------ | -------------
@@ -39,6 +42,16 @@ application_categories     | "Networking"                         | (String) Up 
 os_content_type            | "Red Hat Universal Base Image (UBI)" | Base OS running in the image. Either "Red Hat Enterprise Linux" for RHEL or "Red Hat Universal Base Image (UBI)" for UBI.
 privileged                 | true                                 | false or true: false when the container is isolated from the host, and true when the container requires special Host level privileges.
 release_category           | "Generally Available"                | Whether the resource to certify is either GA or Beta, choose between: "Generally Available" or "Beta".
+repository_description     | "Add a description of project here"  | This will be displayed on the container catalog repository overview page.
+
+### Operator `cert_settings`
+Name                       | Default                              | Description
+-------------------        | ------------------------------------ | -------------
+auto_publish               | false                                | false or true: boolean to enable auto publish
+registry_override_instruct | "Add override instructions"          | (String) Additional instructions to get image.
+email_address              | None                                 | Maintainer email addresses separated by a comma.
+application_categories     | "Networking"                         | (String) Up to three categories related to the function of the image/operator. Examples: "Networking", "Storage", "Security".
+privileged                 | false                                | false or true: false when the container is isolated from the host, and true when the container requires special Host level privileges.
 repository_description     | "Add a description of project here"  | This will be displayed on the container catalog repository overview page.
 
 ## Variables to define for project settings under `cert_listings` main variable (Optional)
@@ -80,6 +93,8 @@ preflight_operators_to_certify:
     # Optional; provide it when you need to create
     # a new "Operator Bundle Image" and submit test results in it.
     create_operator_project: true
+    # Optional; use it to pass an image description to the created project
+    short_description: "Add operator image description here"
     # Optional; use it to automatically open cert PR
     # at the certified-operators repository
     create_pr: true
@@ -94,8 +109,9 @@ preflight_containers_to_certify:
 
 # Project certification setting (Optional)
 # This allows to fill the rest of the project settings after project creation
-# Any project for containers images or operators certifications can use them
+# Any project for containers images certifications can use them
 cert_settings:
+   auto_publish: false
    build_categories: "Standalone image"
    registry_override_instruct: "This are instructions of how to override settings"
    email_address: "email@example.com"
@@ -103,6 +119,15 @@ cert_settings:
    os_content_type: "Red Hat Universal Base Image (UBI)"
    privileged: false
    release_category: "Generally Available"
+   repository_description: "This is a test repo"
+
+# Any project for operators bundle certifications can use them
+cert_settings:
+   auto_publish: false
+   registry_override_instruct: "This are instructions of how to override settings"
+   email_address: "email@example.com"
+   application_categories: "Networking"
+   privileged: false
    repository_description: "This is a test repo"
 
 # Project certification list setting (Optional)
