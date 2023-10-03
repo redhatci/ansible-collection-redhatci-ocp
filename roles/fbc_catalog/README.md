@@ -1,4 +1,4 @@
-# fbc-catalog role
+# fbc_catalog role
 
 A Role to create File Base Catalogs (FBC) for Operator Lifecycle Manager (OLM). A list of operator bundles will be added to a catalog index using the FBC format.
 
@@ -29,7 +29,7 @@ The following application must be already present on the system.
 ```yaml
 - name: "Create an FBC catalog"
   include_role:
-    name: fbc-catalog
+    name: fbc_catalog
     apply:
       environment:
         - DOCKER_CONFIG: "/path_docker_conf_dir/"

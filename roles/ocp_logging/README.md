@@ -104,6 +104,6 @@ The following are some recommended actions in case there are issues during the d
 # References
 
 * [Cluster Logging Loki documentation](https://docs.openshift.com/container-platform/4.13/logging/cluster-logging-loki.html)
-* [olm-operator](../olm-operator/README.md): A role that installs OLM based operators.
+* [olm_operator](../olm_operator/README.md): A role that installs OLM based operators.
 * [dci-openshfit-agent](https://github.com/redhat-cip/dci-openshift-agent/): An agent that allows the deployment of OCP clusters, it is integrated with DCI (Red Hat Distributed CI).
 * [dci-openshfit-app-agent](https://github.com/redhat-cip/dci-openshift-app-agent/): An agent that allows the deployment of workloads and certification testing on top OCP clusters, it is integrated with DCI (Red Hat Distributed CI).

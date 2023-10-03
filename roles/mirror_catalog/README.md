@@ -41,7 +41,7 @@ As a role:
 ```yaml
 - hosts: localhost
   roles:
-     - role: mirror-catalog
+     - role: mirror_catalog
        vars:
          mc_oc_tool_path: /path/to/oc
          mc_catalog: my.example.com/my-org/my-image:latest
@@ -54,7 +54,7 @@ As a task:
 ```yaml
 - name: Mirror catalog
   include_role:
-    name: mirror-catalog
+    name: mirror_catalog
   vars:
     mc_oc_tool_path: "{{ path_to_oc }}"
     mc_catalog: my.example.com/my-org/my-image:latest

@@ -1,4 +1,4 @@
-# merge-registry-creds role
+# merge_registry_creds role
 
 A Role to combine multiple registry credentials in JSON format passed as dictionaries. The list of credentials is processed in order, in case of duplicated entries the last one processed will take precedence.
 
@@ -19,7 +19,7 @@ The `mrc_auth_data` variable contains the result of combining all the authentica
 ```yaml
 - name: "Combine registry auth secrets"
   include_role:
-    name: merge-registry-creds
+    name: merge_registry_creds
   vars:
     mrc_auths:
       - auths:

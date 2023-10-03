@@ -1,4 +1,4 @@
-# OLM-operator role
+# OLM_operator role
 
 Role to deploy an OLM-based operator.
 
@@ -24,7 +24,7 @@ Installing an operator:
 ```yaml
 - name: "deploy-operators : Install OCS Operator"
   include_role:
-    name: olm-operator
+    name: olm_operator
   vars:
     operator: ocs-operator
     source: "{{ opm_catalog_source_name }}"
@@ -41,7 +41,7 @@ Installing an operator's specific version:
 ```yaml
 - name: "deploy-operators : Install OCS Operator"
   include_role:
-    name: olm-operator
+    name: olm_operator
   vars:
     operator: ocs-operator
     source: "{{ opm_catalog_source_name }}"

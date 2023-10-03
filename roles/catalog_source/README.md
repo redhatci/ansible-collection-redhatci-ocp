@@ -1,4 +1,4 @@
-# catalog-source role
+# catalog_source role
 
 A Role to deploy an OLM-based CatalogSource
 
@@ -15,7 +15,7 @@ cs_type          | No       | grpc           | CatalogSource type
 ```yaml
 - name: "Create a CatalogSource"
   include_role:
-    name: catalog-source
+    name: catalog_source
   vars:
     cs_name: "redhat-catalog"
     cs_namespace: "openshift-marketplace"

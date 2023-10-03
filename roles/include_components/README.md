@@ -1,6 +1,6 @@
-#include-components role
+# include_components role
 
-The `include-components` role adds components in the DCI jobs from software resources available in the ansible controller node, for example: rpm packages, and git repositories used during the job execution.
+The `include_components` role adds components in the DCI jobs from software resources available in the ansible controller node, for example: rpm packages, and git repositories used during the job execution.
 
 Follow this post to know more about [components](https://blog.distributed-ci.io/automate-dci-components.html).
 
