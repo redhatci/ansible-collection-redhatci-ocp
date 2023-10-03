@@ -42,7 +42,7 @@
 
     - name: "Create certification project for {{ current_operator_image }}"
       include_role:
-        name: create-certification-project
+        name: create_certification_project
       vars:
         project_type: "container"
       when:

@@ -1,0 +1,192 @@
+---
+- name: "Assert the chart has the required parameters"
+  assert:
+    that:
+      - chart.chart_file is defined
+    fail_msg: "The chart_file parameter is missing"
+    success_msg: "All chart required parameters are defined"
+
+- name: "Set chart location"
+  set_fact:
+    chart_location: "{{ chart.chart_file.startswith('http') | ternary ('remote', 'local') }}"
+
+- name: "Create working directory"
+  tempfile:
+    state: directory
+  register: tmp_dir
+
+- name: "Set working directory path"
+  set_fact:
+    work_chart_dir: "{{ tmp_dir.path }}"
+
+- name: "Process remote chart artifacts for {{ chart.chart_file }}"
+  block:
+    - name: "Check if the chart file exists"
+      uri:
+        url: "{{ chart.chart_file }}"
+      register: file_response
+      ignore_errors: true
+      run_once: true
+
+    - name: "Chart file cannot be downloaded"
+      fail:
+        msg: "chart_file cannot be downloaded - {{ chart.chart_file }}"
+      when:
+        - file_response.status | int != 200
+
+    - name: "Check if the chart values file exists"
+      uri:
+        url: "{{ chart.values_file }}"
+        return_content: yes
+      register: values_response
+      ignore_errors: true
+      run_once: true
+      when:
+        - chart.values_file is defined
+
+    - name: "Chart values cannot be downloaded"
+      fail:
+        msg: "chart_values cannot be downloaded - {{ chart.values_file }}"
+      when:
+        - chart.values_file is defined
+        - values_response is defined
+        - values_response.status | int != 200
+
+    - name: "Download chart file"
+      get_url:
+        url: "{{ chart.chart_file }}"
+        dest: "{{ work_chart_dir }}/"
+        mode: "0750"
+
+    - name: "Download values file"
+      get_url:
+        url: "{{ chart.values_file }}"
+        dest: "{{ work_chart_dir }}/"
+        mode: "0750"
+      when:
+        - chart.values_file is defined
+  when:
+    - chart_location == "remote"
+
+- name: "Process local chart artifacts for {{ chart.chart_file }}"
+  block:
+
+    - name: "Check chart_file stat"
+      stat:
+        path: "{{ chart.chart_file }}"
+      register: chart_stat
+
+    - name: "Chart file path not found"
+      fail:
+        msg: "chart_file cannot be found - {{ chart.chart_file }}"
+      when:
+        - not chart_stat.stat.exists
+
+    - name: "Copy chart_file to working directory"
+      copy:
+        src: "{{ chart.chart_file }}"
+        dest: "{{ work_chart_dir }}/"
+      when:
+        - chart_stat is defined
+        - chart_stat.stat.exists
+
+    - name: "Check values_file stat"
+      stat:
+        path: "{{ chart.values_file }}"
+      register: values_stat
+      when:
+        - chart.values_file is defined
+
+    - name: "Chart values file path not found"
+      fail:
+        msg: "values_file cannot be found - {{ chart.values_file }}"
+      when:
+        - values_stat is defined
+        - chart.values_file is defined
+        - values_stat.stat.exists | bool == false
+
+    - name: "Copy values_file to working directory"
+      copy:
+        src: "{{ chart.values_file }}"
+        dest: "{{ work_chart_dir }}/"
+      when:
+        - chart.values_file is defined
+        - values_stat is defined
+        - values_stat.stat.exists
+  when:
+    - chart_location == "local"
+
+- name: "Run chart show to get chart details"
+  shell:
+    cmd: >
+      {{ helm_tool_path }} show chart {{ work_chart_dir }}/{{ chart.chart_file | basename }} |
+      {{ yq_tool_path }} e -o json -
+  register: chart_show
+
+- name: "Set charts details"
+  vars:
+    chart_info: "{{ chart_show.stdout | from_json }}"
+  set_fact:
+    chart_name: "{{ chart_info.name }}"
+    chart_version: "{{ chart_info.version }}"
+    chart_description: "{{ chart_info.description }}"
+
+- name: "Running Chart Verifier"
+  shell:
+    cmd: >
+      podman run --rm
+      -e KUBECONFIG=/kubeconfig
+      -v {{ kubeconfig_path }}:/kubeconfig:Z
+      -v {{ work_chart_dir }}:/app/chartverifier:Z
+      {{ chart_verifier_image }}
+      verify --set profile.vendorType=partner
+      {% if chart.values_file is defined %} -F /app/chartverifier/{{ chart.values_file | basename }} {% endif %}
+      {% if chart.deploy_chart is defined and chart.deploy_chart is sameas false %}
+      --disable chart-testing
+      {% endif %}
+      {% if chart.flags is defined %}{{ chart.flags }}{% endif %}
+      --openshift-version {{ ocp_version_full }}
+      /app/chartverifier/{{ chart.chart_file | basename }}
+      --write-to-file
+  args:
+    chdir: "{{ work_chart_dir }}"
+  ignore_errors: true
+
+- name: "Copy the report to the Job's log_dir"
+  copy:
+    src: "{{ work_chart_dir }}/report.yaml"
+    dest: "{{ logs_dir }}/{{ chart_name }}_{{ index }}_report.yaml"
+    remote_src: yes
+  delegate_to: localhost
+
+- name: "Validate all tests have passed"
+  shell:
+    cmd: >
+      grep -c FAIL <( {{ yq_tool_path }} e "..|.outcome? | select(.)" report.yaml )
+  register: cv_fail_count
+  args:
+    chdir: "{{ work_chart_dir }}"
+    executable: /bin/bash
+  failed_when: "cv_fail_count.rc not in [ 0, 1 ]"
+
+- name: "Submit CV and create pull request"
+  include_role:
+    name: create_pr
+  vars:
+    product_name: "{{ chart_name }}"
+    product_version: "{{ chart_version }}"
+    fork_name: "charts-{{ chart_name }}-{{ chart_version }}"
+    work_dir: "{{ work_chart_dir }}"
+  when:
+    - chart.create_pr | default(false) | bool
+    - cv_fail_count.stdout | int == 0
+
+- name: "Get PR submission details"
+  debug:
+    msg: "{{ pr_details.stdout_lines[2] }}"
+  when:
+    - pr_details is defined
+    - pr_details.rc == 0
+  notify:
+    - "helm-chart-verifier cleanup"
+...

@@ -26,7 +26,7 @@
 
 - name: "Create FBC catalog"
   include_role:
-    name: fbc-catalog
+    name: fbc_catalog
     apply:
       environment:
         - DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
@@ -51,7 +51,7 @@
 
 - name: Mirror generated catalog
   include_role:
-    name: mirror-catalog
+    name: mirror_catalog
   vars:
     mc_oc_tool_path: "{{ oc_tool_path }}"
     mc_catalog: "{{ OO_INDEX }}"
@@ -82,7 +82,7 @@
 
 - name: Wait for MCP status
   include_role:
-    name: check-resource
+    name: check_resource
   vars:
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 45

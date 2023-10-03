@@ -156,7 +156,7 @@
 
 - name: "Create certification project for {{ operator.name }}"
   include_role:
-    name: create-certification-project
+    name: create_certification_project
   vars:
     project_type: "operator"
   when:
@@ -181,7 +181,7 @@
 
     - name: Create a PR for certification
       include_role:
-        name: create-pr
+        name: create_pr
         apply:
           environment:
             - DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"

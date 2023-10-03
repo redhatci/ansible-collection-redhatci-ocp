@@ -9,7 +9,7 @@
 
     - name: Wait for MCP status
       include_role:
-        name: check-resource
+        name: check_resource
       vars:
         resource_to_check: "MachineConfigPool"
         check_wait_retries: 60
