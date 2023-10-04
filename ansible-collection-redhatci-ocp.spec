@@ -1,10 +1,10 @@
 %global org redhatci
-%global repo ocp
+%global repo ansible-collection-redhatci-ocp
 %global forgeurl https://github.com/%{org}/%{repo}
 
-Name:           ansible-collection-%{org}-%{repo}
+Name:           %{repo}
 Version:        0.1.0
-Release:        1.VERS%{?dist}
+Release:        2.VERS%{?dist}
 Summary:        Redhat OCP Collection for ansible
 
 License:        GPL-2.0-or-later and Apache-2.0
@@ -37,5 +37,8 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Wed Oct 04 2023 Jorge A Gallegos <jgallego@redhat.com> - 0.1.0-2
+- rebuilt
+
 * Tue Jul 18 2023 Jorge Gallegos <jgallego@redhat.com> - 0.1.0-1
 - Initial RPM Spec

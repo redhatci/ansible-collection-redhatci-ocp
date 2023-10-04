@@ -83,16 +83,16 @@ tags:
 dependencies: {}
 
 # The URL of the originating SCM repository
-repository: https://github.com/redhatci/ocp
+repository: https://github.com/redhatci/ansible-collection-redhatci-ocp
 
 # The URL to any online docs
-documentation: https://github.com/redhatci/ocp
+documentation: https://github.com/redhatci/ansible-collection-redhatci-ocp
 
 # The URL to the homepage of the collection/project
-homepage: https://github.com/redhatci/ocp
+homepage: https://github.com/redhatci/ansible-collection-redhatci-ocp
 
 # The URL to the collection issue tracker
-issues: https://github.com/redhatci/ocp/issues
+issues: https://github.com/redhatci/ansible-collection-redhatci-ocp/issues
 
 # A list of file glob-like patterns used to filter any files or directories
 # that should not be included in the build artifact. A pattern is matched from
