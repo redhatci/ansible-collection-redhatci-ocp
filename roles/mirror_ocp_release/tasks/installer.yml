@@ -1,0 +1,28 @@
+---
+- name: "Check if installer has been extracted"
+  stat:
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-baremetal-install"
+    get_checksum: false
+  register: target
+  when:
+    - not mor_force  # we don't care to stat files if we're forcing
+
+- name: "Extract installer command from release image"
+  command: >
+    {{ oc_tool_path }} adm release extract
+    --registry-config={{ mor_auths_file }}
+    --command=openshift-baremetal-install
+    --from {{ mor_pull_url }}
+    --to "{{ mor_cache_dir }}/{{ mor_version }}"
+  when:
+    - mor_force or not target.stat.exists
+
+- name: "Make installer command readable from HTTP"
+  file:
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-baremetal-install"
+    state: file
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
+    mode: "0755"
+    setype: "httpd_sys_content_t"
+...

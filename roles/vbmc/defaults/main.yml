@@ -1,0 +1,14 @@
+# choice from hypervisor or undercloud
+vbmc_user: "root"
+vbmc_pass: "password"
+vbmc_home: "/root"
+vbmc_host: "hypervisor"
+vbmc_start_port: 6230
+action: install
+vbmc_virtualenv: "/root/.virtualenvs/vbmc"
+vbmc_config_dir: "{{ vbmc_home }}/.vbmc"
+vbmc_systemd_unit: "/etc/systemd/system/virtualbmc.service"
+vbmc_version: '1.4.0'
+vbmc_bin: "{{ vbmc_virtualenv }}/bin/vbmc"
+vbmcd_bin: "{{ vbmc_virtualenv }}/bin/vbmcd"
+zone: "libvirt"

@@ -1,0 +1,14 @@
+---
+mlb_resources:
+  - kind: 'MetalLB'
+    name: 'metallb'
+    apiVer: 'metallb.io/v1beta1'
+  - kind: 'BFDProfile'
+    name: '{{ mlb_bfd_profile }}'
+    apiVer: 'metallb.io/v1beta1'
+  - kind: 'BGPAdvertisement'
+    name: '{{ mlb_setup_name }}'
+    apiVer: 'metallb.io/v1beta1'
+  - kind: 'IPAddressPool'
+    name: '{{ mlb_setup_name }}'
+    apiVer: 'metallb.io/v1beta1'

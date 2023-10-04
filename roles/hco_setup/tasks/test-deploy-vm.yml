@@ -1,0 +1,71 @@
+---
+- name: Mirroring VM image in disconnected mode
+  block:
+    - name: "Mirror Test VM image to local registry"
+      shell:
+        cmd: >
+          skopeo copy
+          --authfile {{ hs_pullsecret_file }}
+          --dest-tls-verify=false
+          docker://{{ hs_test_vm_image }}
+          docker://{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}
+      register: copy
+      retries: 5
+      delay: 5
+      until:
+        - copy is not failed
+
+    - name: "Set VM image in disconnected mode"
+      set_fact:
+        hs_test_vm_image: "{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}"
+  when:
+    - hs_registry | length
+    - hs_pullsecret_file | length
+
+- name: "Create the test VirtualMachine"
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', hs_vm_file) }}"
+
+- name: "test_ Create the test VirtualMachineInstance"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
+      kind: VirtualMachine
+      metadata:
+        name: test-vm
+        namespace: default
+      spec:
+        running: true
+
+- name: "test_ Get VMI status"
+  community.kubernetes.k8s_info:
+    api: kubevirt.io/{{ hs_kubevirt_api_version }}
+    kind: VirtualMachineInstance
+    name: test-vm
+    namespace: default
+  register: vmi_test
+  retries: 10
+  delay: 5
+  until: vmi_test.resources[0].status.phase == "Running"
+
+- name: "Stopping the test VMI"
+  community.kubernetes.k8s:
+    definition:
+      kind: VirtualMachine
+      apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
+      metadata:
+        name: test-vm
+        namespace: default
+      spec:
+        running: false
+
+- name: "Deleting the test VMI"
+  community.kubernetes.k8s:
+    state: absent
+    definition:
+      apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
+      kind: VirtualMachine
+      metadata:
+        name: test-vm
+        namespace: default

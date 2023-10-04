@@ -1,0 +1,46 @@
+---
+- name: Set fact disconnected_registry_auths_file
+  set_fact:
+    disconnected_registry_auths_file: "{{ hostvars[groups['registry_host'][0]]['disconnected_registry_auths_file'] }}"
+  when:
+    - hostvars[groups['registry_host'][0]]['disconnected_registry_auths_file'] is defined
+  tags:
+    - use_registry
+
+- name: Set fact disconnected_registry_mirrors_file
+  set_fact:
+    disconnected_registry_mirrors_file: "{{ hostvars[groups['registry_host'][0]]['disconnected_registry_mirrors_file'] }}"
+  when:
+    - hostvars[groups['registry_host'][0]]['disconnected_registry_mirrors_file'] is defined
+  tags:
+    - use_registry
+
+- name: Check if disconnected_registry_auths_file is set
+  set_fact:
+    dra_set: true
+  when:
+    - disconnected_registry_auths_file is defined
+    - disconnected_registry_auths_file | length != 0
+  tags:
+    - use_registry
+
+- name: Check if disconnected_registry_mirrors_file is set
+  set_fact:
+    drm_set: true
+  when:
+    - disconnected_registry_mirrors_file is defined
+    - disconnected_registry_mirrors_file | length != 0
+  tags:
+    - use_registry
+
+- name: Check if using existing disconnected registry.
+  set_fact:
+    disconnected_registry: existing
+  when:
+    - dra_set is defined
+    - drm_set is defined
+    - dra_set | bool
+    - drm_set | bool
+  tags:
+    - use_registry
+...

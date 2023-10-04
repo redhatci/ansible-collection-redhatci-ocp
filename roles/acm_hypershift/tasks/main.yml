@@ -1,0 +1,24 @@
+---
+- name: Set cluster name
+  set_fact:
+   ah_cluster_generated_name: "{{ ah_cluster_name | default(lookup('password', '/dev/null length=10 chars=ascii_lowercase,digits'), true) }}"
+  run_once: true
+
+- name: Hypershift validations
+  include_tasks: validations.yml
+
+- name: Create working directory
+  tempfile:
+    state: directory
+  register: ah_tmp_dir
+
+- name: Hypershift cli
+  include_tasks: download-cli.yml
+
+- name: Delete existent cluster
+  include_tasks: delete-cluster.yml
+  when:
+    - ah_force_deploy | bool
+
+- name: Hypershift cluster creation
+  include_tasks: create-cluster.yml

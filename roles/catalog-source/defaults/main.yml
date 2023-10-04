@@ -1,0 +1,5 @@
+---
+cs_namespace: openshift-marketplace
+cs_publisher: "Third party"
+cs_type: grpc
+...

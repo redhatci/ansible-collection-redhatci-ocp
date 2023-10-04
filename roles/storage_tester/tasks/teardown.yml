@@ -1,0 +1,24 @@
+- name: "Delete PVC used for upgrade tests"
+  community.kubernetes.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: "{{ pvc_to_be_deleted }}"
+    namespace: storage-tester
+    state: absent
+    wait: yes
+  loop:
+    - storage-upgrade-tester-rwo
+    - storage-upgrade-tester-rwx
+    - storage-upgrade-tester-rox
+  loop_control:
+    loop_var: pvc_to_be_deleted
+
+- name: "Delete storage-tester Namespace"
+  community.kubernetes.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    api_version: v1
+    kind: Namespace
+    name: storage-tester
+    state: absent
+    wait: yes

@@ -1,0 +1,99 @@
+---
+- name: "Check if the main MetalLB CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: metallbs.metallb.io
+  register: metal_crd
+  no_log: true
+
+- name: "Fail if MetalLB CRD is not present"
+  fail:
+    msg: "MetalLB CRD are not present, please install the MetalLB operator in the ACM hub"
+  when: metal_crd.resources | list | count == 0
+
+- name: "Check for metallb instances"
+  community.kubernetes.k8s_info:
+    api_version: metallb.io/v1beta1
+    kind: MetalLB
+  register: mlb_instance
+
+- name: "Check if a metallb instance already exists"
+  debug:
+    msg:
+      - "A MetalLB instance already exists in this cluster, it will be updated accordingly"
+  when:
+  - mlb_instance.resources | length == 1
+
+- name: "Check mlb_settings file exits"
+  stat:
+    path: "{{ mlb_settings }}"
+  register: file_stat
+  when:
+    - mlb_settings is defined
+    - mlb_settings | default("") | length
+
+- name: "Load mlb_settings from vars file"
+  include_vars:
+    file: "{{ mlb_settings }}"
+  when:
+    - file_stat is defined
+    - file_stat.stat is defined
+    - file_stat.stat.exists | bool
+
+- name: "Validate parameters are defined"
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required. See README.md for more details"
+  loop:
+    - mlb_ipaddr_pool
+
+- name: "Confirm that MetalLB controller pods are Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ mlb_namespace }}"
+    label_selectors:
+      - control-plane = controller-manager
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 9
+  delay: 10
+  no_log: true
+
+- name: "Validate parameter mlb_ipaddr_pool is a list"
+  assert:
+    that: "{{ mlb_ipaddr_pool }} is iterable"
+    fail_msg: "The parameter {{ mlb_ipaddr_pool }} is required to be a list"
+
+- name: "Validate values of mlb_bgp_peers are defined"
+  assert:
+    that:
+      - peer.name is defined
+      - peer.address is defined
+      - peer.remote_asn is defined
+      - peer.local_asn is defined
+    fail_msg: "A value in the mlb_bgp_peers list is missing. See role README.md for details"
+  loop: "{{ mlb_bgp_peers }}"
+  loop_control:
+    loop_var: peer
+  when:
+    - mlb_bgp_peers is defined
+
+- name: "Get cluster version"
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: cluster_version
+  no_log: true
+
+- name: "Fail when OCP version is not supported"
+  vars:
+    current_ver_query: "history[?state=='Completed'] | [0].version"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    current_ver: "{{ full_ver.split('-')[0] }}"
+    ocp_version: "{{  current_ver }}"
+  fail:
+    msg: "OCP version must be >= {{ mlb_ocp_supported }}"
+  when: ocp_version is version( mlb_ocp_supported , "<")
+...

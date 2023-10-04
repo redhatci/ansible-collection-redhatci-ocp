@@ -1,0 +1,38 @@
+---
+- name: "Pre-run validations"
+  include_tasks: pre-run.yml
+
+- name: "Check cluster namespace"
+  community.kubernetes.k8s_info:
+    kind: namespace
+    name: "{{ acm_cluster_name }}"
+  register: acm_cluster_ns
+
+- name: "Fail if a cluster namespace already exists"
+  fail:
+   msg:
+     - "A namespace for the specified cluster name {{ acm_cluster_name }} already exist"
+     - "Set acm_force_deploy:true to delete it"
+  when:
+   - acm_cluster_ns.resources | length == 1
+   - not acm_force_deploy | bool
+
+- name: "Delete current cluster"
+  include_tasks: delete-cluster.yml
+  when:
+    - acm_force_deploy | bool
+
+- name: "Install a new cluster"
+  include_tasks: create-cluster.yml
+
+- name: "Monitor: Set monitoring facts"
+  set_fact:
+    elapsed_time: 0
+    node_rebooted: false
+
+- name: "Monitor: Installation progress"
+  include_tasks: monitor-install.yml
+
+- name: "Get spoke cluster credentials"
+  include_tasks: get-credentials.yml
+...

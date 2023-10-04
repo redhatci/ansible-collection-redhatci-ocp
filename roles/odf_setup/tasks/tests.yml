@@ -1,0 +1,59 @@
+---
+- name: Test CephRBD PVC
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: rbd-pvc
+        namespace: default
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: "{{ ocs_sc_rbd_name }}"
+
+- name: Get CephRBD PVC status
+  community.kubernetes.k8s_info:
+    kind: PersistentVolumeClaim
+    namespace: default
+    name: rbd-pvc
+  register: cephrbd_pvc_status
+  retries: 30
+  delay: 10
+  until:
+    - cephrbd_pvc_status.resources is defined
+    - cephrbd_pvc_status.resources != []
+    - cephrbd_pvc_status.resources[0].status.phase == "Bound"
+
+- name: Test CephFS PVC
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: cephfs-pvc
+        namespace: default
+      spec:
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: "{{ ocs_sc_cephfs_name }}"
+
+- name: Get CephFS PVC status
+  community.kubernetes.k8s_info:
+    kind: PersistentVolumeClaim
+    namespace: default
+    name: cephfs-pvc
+  register: cephfs_pvc_status
+  retries: 30
+  delay: 10
+  until:
+    - cephfs_pvc_status.resources is defined
+    - cephfs_pvc_status.resources != []
+    - cephfs_pvc_status.resources[0].status.phase == "Bound"
+...

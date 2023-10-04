@@ -1,0 +1,8 @@
+apiversion: v1
+kind: Node
+metadata:
+  name: {{ label_item[item].name }}
+  labels:
+  {% for key, value in label_item[item].labels.items() %}
+    {{ key }}: "{{ value}}"
+  {% endfor %}

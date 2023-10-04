@@ -1,0 +1,20 @@
+---
+- name: Define, Start, Libvirt Network
+  block:
+    - name: Define network
+      community.libvirt.virt_net:
+        command: define
+        name: "{{ network['name'] }}"
+        xml: '{{ lookup("template", "network.xml.j2") }}'
+
+    - name: Start network
+      community.libvirt.virt_net:
+        state: active
+        name: "{{ network['name'] }}"
+
+    - name: Autostart network
+      community.libvirt.virt_net:
+        autostart: yes
+        name: "{{ network['name'] }}"
+  become: yes
+  tags: virtnetwork

@@ -1,0 +1,19 @@
+---
+- name: "Does node exist"
+  ignore_errors: yes
+  community.libvirt.virt_net:
+    name: "{{ network['name'] }}"
+    command: status
+  register: node_exists
+
+- name: "destroy network"
+  community.libvirt.virt_net:
+    name: "{{ network['name'] }}"
+    command: destroy
+  when: not node_exists.failed
+
+- name: "undefine network"
+  community.libvirt.virt_net:
+    name: "{{ network['name'] }}"
+    command: undefine
+  when: not node_exists.failed
