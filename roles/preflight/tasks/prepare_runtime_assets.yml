@@ -1,0 +1,20 @@
+---
+- name: Run preflight runtime-assets
+  shell:
+    cmd: >
+      podman run
+      --rm
+      --pull=always
+      -e PFLT_LOGLEVEL=error
+      {{ preflight_image }}
+      runtime-assets
+    chdir: "{{ preflight_tmp_dir.path }}"
+  register: preflight_assets
+  retries: 2
+  delay: 10
+  until: not preflight_assets.failed
+
+- name: Get scorecard config images
+  set_fact:
+    preflight_assets_images: "{{ preflight_assets.stdout | from_json | json_query('images') | list | unique }}"
+...

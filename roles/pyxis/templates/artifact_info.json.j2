@@ -1,0 +1,18 @@
+{
+  "_links": {
+    "cert_project": {
+      "href": "{{ cert_project_id }}"
+    },
+    "container_image": {
+      "href": "{{ operator.bundle_image }}"
+    }
+  },
+  "cert_project": "{{ cert_project_id }}",
+  "certification_hash": "{{ preflight_output.certification_hash }}",
+  "content": "{{ preflight_artifact | b64encode }}",
+  "file_size": {{ artifact_info.stat.size | int }},
+  "content_type": "text/plain",
+  "filename": "preflight.log",
+  "operator_package_name": "{{ operator.name }}",
+  "version": "{{ operator.version }}"
+}
