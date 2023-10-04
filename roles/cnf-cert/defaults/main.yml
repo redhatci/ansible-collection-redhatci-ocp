@@ -2,7 +2,7 @@
 tnf_stage: "tests"
 tnf_check_commit_sha: false
 test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
-test_network_function_version: v4.4.0
+test_network_function_version: v4.5.0
 test_network_function_project_name: cnf-certification-test
 tnf_suites: ""
 tnf_skip_suites: ""
@@ -27,7 +27,7 @@ tnf_image_suffix: "{{ lookup('community.general.random_string', length=16, speci
 # Provide feedback for each tnf test launched. Just copy this template in your pipeline file and fill the value for the
 # tests you want to provide feedback. You don't need to include the tests that you don't want to provide feedback.
 # To insert line breaks, use \\n (you need to escape it). Same for quotes and so on.
-# List of tests updated until tnf v4.4.0
+# List of tests updated until tnf v4.5.0
 tnf_feedback:
   access-control-bpf-capability-check: ""
   access-control-cluster-role-bindings: ""
@@ -56,12 +56,10 @@ tnf_feedback:
   access-control-sys-admin-capability-check: ""
   access-control-sys-nice-realtime-capability: ""
   access-control-sys-ptrace-capability: ""
-  affiliated-certification-container-is-certified: ""
   affiliated-certification-container-is-certified-digest: ""
   affiliated-certification-helm-version: ""
   affiliated-certification-helmchart-is-certified: ""
   affiliated-certification-operator-is-certified: ""
-  chaostesting-pod-delete: ""
   lifecycle-affinity-required-pods: ""
   lifecycle-container-shutdown: ""
   lifecycle-container-startup: ""

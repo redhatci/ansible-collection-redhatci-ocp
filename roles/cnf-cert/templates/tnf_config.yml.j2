@@ -65,10 +65,11 @@ targetCrdFilters:
 {% endif %}
 {% endfor %}
 
+{% if test_network_function_version is version('v4.4.0', '<=') %}
 certifiedcontainerinfo:
 {% for container in tnf_certified_container_info %}
 {% if container.name is defined and container.name|length and container.repository is defined and container.repository|length %}
-{% if test_network_function_version is version('v4.3.4', '>=') or test_network_function_version == 'HEAD' %}
+{% if test_network_function_version is version('v4.3.4', '>=') %}
   - repository: {{ container.name }}
     registry: {{ container.repository }}
 {% else %}
@@ -79,8 +80,7 @@ certifiedcontainerinfo:
     digest: {{ container.digest | default('') }}
 {% endif %}
 {% endfor %}
-
-checkDiscoveredContainerCertificationStatus: false
+{% endif %}
 
 acceptedKernelTaints:
 {% for item in accepted_kernel_taints %}
@@ -89,19 +89,26 @@ acceptedKernelTaints:
 {% endif %}
 {% endfor %}
 
-# fields below are not currently used, leaving placeholder in case they were needed in the future
-managedDeployments:
+## fields below are not currently used, leaving placeholder in case they were needed in the future
+#managedDeployments:
 
-managedStatefulsets:
+#managedStatefulsets:
 
-skipScalingTestDeployments:
+#skipScalingTestDeployments:
 
-skipScalingTestStatefulSetNames:
+#skipScalingTestStatefulSetNames:
 
-skipHelmChartList:
+#skipHelmChartList:
 
-validProtocolNames:
+#validProtocolNames:
 
-servicesignorelist:
+#servicesignorelist:
 
+#collectorAppEndPoint: ""
+
+#executedBy: ""
+
+#partnerName: ""
+
+#collectorAppPassword: ""
 ...
