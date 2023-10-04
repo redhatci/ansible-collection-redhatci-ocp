@@ -1,0 +1,22 @@
+---
+- name: "Check if OpenShift client tools have been unpacked"
+  stat:
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/oc"
+    get_checksum: false
+  register: unpacked
+  when:
+    - not mor_force  # we don't care to stat files if we're forcing
+
+- name: "Unarchive client tarball"
+  unarchive:
+    src: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-{{ mor_version }}.tar.gz"
+    dest: "{{ mor_cache_dir }}/{{ mor_version }}"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
+    mode: "0755"
+    remote_src: true
+    exclude:
+      - README.md
+  when:
+    - mor_force or not unpacked.stat.exists
+...

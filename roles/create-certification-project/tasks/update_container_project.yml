@@ -16,10 +16,13 @@
     - cert_settings.release_category
     - cert_settings.repository_description
 
+<<<<<<< HEAD
 - name: Set and save project IDs to use with Product-Listing PATCH and Attachment
   set_fact:
     cert_projects: "{{ cert_projects | default([]) + [ cert_project_id ] }}"
 
+=======
+>>>>>>> mixin/main
 - name: Print JSON draft for the project to be updated
   vars:
     template_filename: "templates/update_project_{{ project_type }}_setting.json.j2"

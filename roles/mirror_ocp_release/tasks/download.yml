@@ -1,0 +1,37 @@
+---
+# TODO: For nightlies we could sign the artifacts with --signing-key
+- name: "Check if the release artifacts are in the cache"
+  stat:
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/release.txt"
+    get_checksum: false
+  register: target
+  when:
+    - not mor_force
+
+- name: "Extract artifacts from release image"
+  shell:
+    cmd: >
+      {{ oc_tool_path }} adm release extract
+      --registry-config {{ mor_auths_file }}
+      --tools
+      --from {{ mor_pull_url }}
+      --to "{{ mor_cache_dir }}/{{ mor_version }}"
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
+  when:
+    - mor_force or not target.stat.exists
+
+- name: "Figure out status of SELinux"
+  command: /usr/sbin/selinuxenabled
+  ignore_errors: true
+  register: selinux_status
+
+- name: "Apply SELinux container file context to extracted files"
+  sefcontext:
+    target: "{{ mor_cache_dir }}/{{ mor_version }}"
+    setype: container_file_t
+  become: true
+  when: selinux_status.rc == 0
+...

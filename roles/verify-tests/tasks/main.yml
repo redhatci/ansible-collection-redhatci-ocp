@@ -6,7 +6,11 @@
   become: true
 
 - name: Loop over mandatory test results
+<<<<<<< HEAD
   include_tasks: parse_junit_file.yml
+=======
+  include_tasks: read_junit_files.yml
+>>>>>>> mixin/main
   loop: "{{ tests_to_verify }}"
   loop_control:
     loop_var: t

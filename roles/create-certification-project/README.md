@@ -2,6 +2,12 @@
 
 This role automatically creates a container certification project if option `create_container_project: true` is provided, and operator certification project if `create_operator_project: true`.
 
+<<<<<<< HEAD
+=======
+Note: For the latest information on how the container product listing attachment works, please click [here](https://github.com/redhat-cip/dci-openshift-app-agent/blob/master/roles/openshift-cnf/README.md#automate-creation-of-the-openshift-cnf-project-for-vendor-validated)
+
+
+>>>>>>> mixin/main
 ## Global Variables
 
 Name                     | Default                                                                    | Description
@@ -12,7 +18,10 @@ github_token_path        | undefined                                            
 organization_id          | None                                                                       | Mandatory when using `create_container_project`. Company ID to be used for the verification of container certification project.
 page_size                | 200                                                                        | Define a page size for Pyxis API queries. Number of results to retrieve in a single page.
 check_for_existing_projects | false                                                                   | Optional. Set this option to `true` if you want to use a custom error handling for cases where the cert project already exists within the same organization or in a different organization. Please define organization_id when using this option.
+<<<<<<< HEAD
 ignore_project_creation_errors | false                                                                | Optional. Set this option to `true` if you want to ignore project creation errors.
+=======
+>>>>>>> mixin/main
 
 
 ## Variables to define for each operator / container
@@ -46,6 +55,10 @@ Name                          | Default                              | Descripti
 pyxis_product_list_identifier | None                                 | Product-listing ID, it has to be created before [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing)
 published                     | false                                | Boolean to enable publishing list of products
 type                          | "container stack"                    | String. Type of product list
+<<<<<<< HEAD
+=======
+attach_product_listing        | false                                | If set to true, it would attach product-listing to all old + new cert projects that used same product-listing ID
+>>>>>>> mixin/main
 
 
 ## Example of configuration file
@@ -86,8 +99,11 @@ preflight_operators_to_certify:
 preflight_containers_to_certify:
   - container_image: "quay.io/my-container/bla-bla-image:v0.0.1"
     create_container_project: true
+<<<<<<< HEAD
     #attach_product_listing is optional when doing recertification
     attach_product_listing: true
+=======
+>>>>>>> mixin/main
     # Optional; use it to pass an image description to the created project
     short_description: "Add description here"
 
@@ -109,6 +125,10 @@ cert_listings:
   published: false
   type: "container stack"
   pyxis_product_list_identifier: "yyyyyyyyyyyyyyyyy"
+<<<<<<< HEAD
+=======
+  attach_product_listing: false
+>>>>>>> mixin/main
 
 # Optional; provide it when you need to submit test results.
 # This token is shared between all your projects.
@@ -135,4 +155,8 @@ Here are the required token permissions.
 
 Variable `organization_id` is required when using `create_container_project` project. It is used to validate the existing certification projects in the organization with the same image and registry
 
+<<<<<<< HEAD
 For more information of how to retrieve the organization ID see the [Connect Portal API documentation](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/appendix/connect-portal-api/project-creation#company-id)
+=======
+For more information of how to retrieve the organization ID see the [Connect Portal API documentation](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/appendix/connect-portal-api/project-creation#company-id)
+>>>>>>> mixin/main

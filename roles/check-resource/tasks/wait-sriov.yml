@@ -1,0 +1,16 @@
+---
+- name: "Check SriovNetworkNodeState application"
+  block:
+    # SriovNetworkNodeState check
+    # Let's give it 60*10=600 seconds (10 minutes), SriovNetworkNodeState should be
+    # stable before that time under normal circumstances
+    - name: Wait till sriovnetworknodestate becomes ready
+      community.kubernetes.k8s_info:
+        api_version: sriovnetwork.openshift.io/v1
+        kind: SriovNetworkNodeState
+      register: sriovnetnode
+      until: sriovnetnode.resources is defined and sriovnetnode.resources | selectattr('status.syncStatus', 'defined') | list | rejectattr('status.syncStatus', 'equalto', 'Succeeded') | list | count == 0
+      retries: "{{ check_wait_retries }}"
+      delay: "{{ check_wait_delay }}"
+
+...

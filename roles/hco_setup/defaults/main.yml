@@ -1,0 +1,9 @@
+---
+hs_deploy: true
+hs_test_vm: false
+hs_ns: openshift-cnv
+hs_vm_file: vm.yaml.j2
+hs_test_vm_image: quay.io/kubevirt/cirros-container-disk-demo:v0.59.2
+hs_retries: 60
+hs_kubevirt_api_version: v1
+...

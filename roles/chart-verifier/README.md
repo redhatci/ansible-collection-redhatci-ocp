@@ -84,9 +84,15 @@ If the tests are executed by DCI, the results will be stored in the DCI job file
 
 ## Using the sandbox environment
 
+<<<<<<< HEAD
 Testing without submitting the results to the [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) repository is possible by setting the `sandbox_respository` variable to a repository with a fork of [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) already available. The pull request will be done to the this repository. Having the `create_pr` variable set to true will create a pull request against the sandbox or the official openshift repository. Defining create_pr as false will save the test results in the `log_directory` or the DCI file section.
 
 ## Chart certificaton and submission to openshift-charts/charts
+=======
+Testing without submitting the results to the [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) repository is possible by setting the `sandbox_repository` variable to a repository with a fork of [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) already available. The pull request will be done to the this repository. Having the `create_pr` variable set to true will create a pull request against the sandbox or the official openshift repository. Defining create_pr as false will save the test results in the `log_directory` or the DCI file section.
+
+## Chart certification and submission to openshift-charts/charts
+>>>>>>> mixin/main
 
 Partners who want to certify a Helm chart must create the corresponding project in [Red Hat Partner Connect](https://connect.redhat.com/). Please follow the [Partner Connect documentation](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/helm-chart-certification/creating-a-helm-chart-certification-project) to create a Helm the project.
 
@@ -118,7 +124,11 @@ where the config file looks like this:
 ---
 partner_name: telcoci
 partner_email: telcoci@redhat.com
+<<<<<<< HEAD
 sandbox_respository: my-repo/charts
+=======
+sandbox_repository: my-repo/charts
+>>>>>>> mixin/main
 dci_charts:
   - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.2.tgz
     flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"

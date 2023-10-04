@@ -2,7 +2,11 @@
 - name: Template tnf_config.yml
   template:
     src: templates/tnf_config.yml.j2
+<<<<<<< HEAD
     dest: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/tnf_config.yml"
+=======
+    dest: "{{ tnf_dir }}/{{ test_network_function_project_name }}/tnf_config.yml"
+>>>>>>> mixin/main
 
 # Doing this just before running tnf, just to spend the enough time changing PodSecurity constraints
 # in default namespace.
@@ -46,7 +50,11 @@
 
 - name: Remove XML JUnit results if they exist
   file:
+<<<<<<< HEAD
     path: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
+=======
+    path: "{{ tnf_dir }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
+>>>>>>> mixin/main
     state: absent
 
 # The task automatically append these environment variables to tnf_env_vars:
@@ -58,13 +66,17 @@
 - name: Run the CNF Test Suite
   vars:
     tnf_partner_repo: "{{ ( dci_local_registry | length ) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
+<<<<<<< HEAD
     support_image_version: "{{ ( test_network_function_version is version('v4.3.0', '>=') or test_network_function_version == 'HEAD' ) | ternary('4.3.0', 'latest') }}"
+=======
+>>>>>>> mixin/main
     support_image: "debug-partner:{{ support_image_version }}"
   environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image, 'SUPPORT_IMAGE': support_image}) }}"
   shell: |
     set -x
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
+<<<<<<< HEAD
     -t {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
     -o {{ tnf_git_dir.path }}/{{ test_network_function_project_name }}/{{ test_network_function_project_name }} \
     {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
@@ -74,6 +86,19 @@
     -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
   args:
     chdir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+=======
+    -t {{ tnf_dir }}/{{ test_network_function_project_name }} \
+    -o {{ tnf_dir }}/{{ test_network_function_project_name }} \
+    {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
+    {% if test_network_function_version is version("v4.3.3", "<=") and test_network_function_version != "HEAD" %}
+    {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
+    {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
+    {% endif %}
+    {% if tnf_dockercfg_path is defined %}-c {{ tnf_dockercfg_path }} \{% endif %}
+    -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
+  args:
+    chdir: "{{ tnf_dir }}"
+>>>>>>> mixin/main
   ignore_errors: true
 
 # Clean images just after finishing the execution

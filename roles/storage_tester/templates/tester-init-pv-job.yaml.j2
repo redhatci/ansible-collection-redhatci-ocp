@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-pv
+  namespace: storage-tester
+spec:
+  parallelism: 1
+  completions: 1
+  activeDeadlineSeconds: 360
+  backoffLimit: 6
+  template:
+    metadata:
+      name: init-pv
+    spec:
+      containers:
+      - name: init-pv
+{% if dci_disconnected | default(false) %}
+        image: "{{ dci_local_registry }}/rhel8/support-tools"
+{% else %}
+        image: "registry.redhat.io/rhel8/support-tools"
+{% endif %}
+        command: ["bin/sh"]
+        args: ["-c", "echo \"Read from shared volume!\" >> /data-tester/yes.txt"]
+        volumeMounts:
+         - name: volume-to-be-initialzed
+           mountPath: /data-tester
+      volumes:
+      - name: volume-to-be-initialzed
+        persistentVolumeClaim:
+           claimName: storage-upgrade-init-rox
+      restartPolicy: OnFailure

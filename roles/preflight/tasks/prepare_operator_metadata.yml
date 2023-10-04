@@ -1,9 +1,18 @@
 ---
 - name: "Render bundle operator image"
+<<<<<<< HEAD
+=======
+  vars:
+    opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
+>>>>>>> mixin/main
   shell: >
     {% if partner_creds | length %}
     DOCKER_CONFIG={{ preflight_tmp_dir.path }}
     {% endif %}
+<<<<<<< HEAD
+=======
+    {{ opm_auths }}
+>>>>>>> mixin/main
     {{ opm_tool_path }} render {{ operator.bundle_image }}
   register: rendered_bundle
   retries: 2

@@ -1,15 +1,42 @@
 ---
 - name: Openshift-cnf Project Creation Test Vendor Validation
   block:
+<<<<<<< HEAD
     - name: "Create Openshift-cnf Certifcation Project"
       vars:
         current_cnf_name: "{{ cc.cnf_name }}"
         cnf:
           create_cnf_project: "{% if cc.create_cnf_project is defined %}{{ cc.create_cnf_project }}{% endif %}"
           attach_product_listing: "{% if cc.attach_product_listing is defined %}{{ cc.attach_product_listing }}{% endif %}"
+=======
+    - name: "Create Openshift-cnf Certification Project"
+      vars:
+        current_cnf_name: "{{ cc.cnf_name }}"
+        cnf:
+          create_cnf_project: "{{ cc.create_cnf_project | default('') }}"
+>>>>>>> mixin/main
       include_tasks: create_openshift_cnf_project.yml
       loop: "{{ cnf_to_certify }}"
       loop_control:
         loop_var: cc
+<<<<<<< HEAD
   when: project_type == 'openshift_cnf'
+=======
+
+    - name: "Get All Openshift-cnf certification projects based on Product Listing ID {{ cert_listings.pyxis_product_list_identifier }}"
+      include_tasks: get_all_openshift_cnf_projects_basedon_product_list_id.yml
+      when: cert_listings.attach_product_listing | default(false) | bool
+
+    - name: "Attach Product List ID {{ cert_listings.pyxis_product_list_identifier }} to all projects using same Product-Listing ID"
+      include_role:
+        name: create-certification-project
+        tasks_from: attach_product_listing
+      when:
+        - cert_listings.attach_product_listing | default(false) | bool
+        - all_openshift_cnf_projects is defined
+
+- name: Unset Openshift-cnf cert project ID to ensure no occasional reuse
+  set_fact:
+    cert_project_id: ""
+>>>>>>> mixin/main
 ...

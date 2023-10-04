@@ -36,11 +36,16 @@
       loop: "{{ preflight_operators_to_certify }}"
       loop_control:
         loop_var: operator
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> mixin/main
     # Optional: build preflight image. This can be used
     # to test a specific branch in the Preflight repository
     # when a ready image is not available.
     - name: Build preflight_image
+<<<<<<< HEAD
       include_tasks: prepare_build_image.yml
       # this variable is set in test-runner
       when: preflight_source_dir is defined
@@ -52,23 +57,43 @@
     # independent scorecard tests later on.
     - name: Run preflight runtime-assets to get scorecard-test image
       include_tasks: prepare_runtime_assets.yml
+=======
+      include_tasks: prepare_preflight_image.yml
+      # this variable is set in test-runner
+      when: preflight_source_dir is defined
+
+    # Retrieve scorecard-test image in advance,
+    # to allow its mirroring in the disconnected cluster.
+    - name: Run preflight runtime-assets to get scorecard-test image
+      include_tasks: prepare_runtime_assets.yml
+      when: dci_disconnected | default(false) | bool
+>>>>>>> mixin/main
 
     - name: Manage images mirroring for Preflight cert suite
       include_tasks: mirroring.yml
       when: dci_disconnected | default(false) | bool
 
+<<<<<<< HEAD
     # The main tests
+=======
+    # The main tests: containers
+>>>>>>> mixin/main
     - name: Check container - Preflight check operator images with check container one by one
       include_tasks: test_preflight_check_container.yml
       loop: "{{ preflight_operators_to_check }}"
       loop_control:
         loop_var: operator
 
+<<<<<<< HEAD
+=======
+    # The main tests: operators
+>>>>>>> mixin/main
     - name: Check operator - Preflight check operators one by one
       include_tasks: tests_preflight_check_operator.yml
       loop: "{{ preflight_operators_to_check }}"
       loop_control:
         loop_var: operator
+<<<<<<< HEAD
 
     # If you want to run operator-sdk scorecard tests,
     # operator_sdk_tool_path variable should be provided
@@ -89,6 +114,8 @@
       loop_control:
         loop_var: operator
       when: operator_sdk_tool_path is defined
+=======
+>>>>>>> mixin/main
   always:
     - name: Teardown
       include_tasks: teardown.yml

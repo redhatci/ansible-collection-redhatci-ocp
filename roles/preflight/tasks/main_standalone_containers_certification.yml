@@ -7,24 +7,39 @@
         prefix: preflight_tmp_dir.
       register: preflight_tmp_dir
 
+<<<<<<< HEAD
     - name: Copy registry authentication into config folder
+=======
+    - name: Copy registry authentication into config folder for standalone flow
+>>>>>>> mixin/main
       copy:
         src: "{{ partner_creds }}"
         dest: "{{ preflight_tmp_dir.path }}/config.json"
       when: partner_creds | length
 
+<<<<<<< HEAD
     - name: "Run preflight check container on operator image for {{ operator.name }}"
       # introducing operator variable to reuse the functionality
       # for e2e certification when operator is defined
+=======
+    # To reuse the functionality for e2e certification when operator is defined
+    - name: Run preflight check container in a loop for the standalone container flow
+>>>>>>> mixin/main
       vars:
         current_operator_image: "{{ c.container_image }}"
         operator:
           name: "{{ current_operator_image.split('/')[-1].split(':')[0].split('@')[0] }}"
           version: "{{ current_operator_image.split(':')[-1] }}"
+<<<<<<< HEAD
           pyxis_container_identifier: "{% if c.pyxis_container_identifier is defined %}{{ c.pyxis_container_identifier }}{% endif %}"
           create_container_project: "{% if c.create_container_project is defined %}{{ c.create_container_project }}{% endif %}"
           short_description: "{% if c.short_description is defined %}{{ c.short_description }}{% endif %}"
           attach_product_listing: "{% if c.attach_product_listing is defined %}{{ c.attach_product_listing }}{% endif %}"
+=======
+          pyxis_container_identifier: "{{ c.pyxis_container_identifier | default('') }}"
+          create_container_project: "{{ c.create_container_project | default('') }}"
+          short_description: "{{ c.short_description | default('') }}"
+>>>>>>> mixin/main
       include_tasks: test_preflight_check_container_one_image.yml
       loop: "{{ preflight_containers_to_certify }}"
       loop_control:
@@ -32,4 +47,8 @@
   always:
     - name: Teardown
       include_tasks: teardown.yml
+<<<<<<< HEAD
 ...
+=======
+...
+>>>>>>> mixin/main

@@ -1,0 +1,27 @@
+---
+- name: Handle the situation when cert project already exists
+  include_role:
+    name: create-certification-project
+    tasks_from: check_if_container_project_exists
+  when: check_for_existing_projects | bool
+
+- name: Helm Chart Certification Project
+  include_role:
+    name: create-certification-project
+    tasks_from: create_project
+  when: helmchart.create_helmchart_project | default(false) | bool
+
+- name: Update the Helm Chart project with company info when cert_settings is defined
+  include_role:
+    name: create-certification-project
+    tasks_from: update_helmchart_project
+  when:
+    - cert_settings is defined
+    - cert_project_id is defined
+    - cert_project_id | length > 0
+
+- name: Set Helm Chart project to store new projects for later merging with existing IDs
+  set_fact:
+    new_helmchart_projects: "{{ new_helmchart_projects | default([]) + [cert_project_id] }}"
+  when: cert_project_id is defined
+...

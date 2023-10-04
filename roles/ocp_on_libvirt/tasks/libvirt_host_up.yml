@@ -1,0 +1,67 @@
+- name: "Does node already exist"
+  ignore_errors: yes
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    command: status
+  register: node_exists
+
+- name: "set qemu_path"
+  set_fact:
+    qemu_path: "{{ (ansible_distribution in ['CentOS','RedHat']) | ternary('/usr/libexec/', '/usr/bin/') }}"
+
+- name: "Copy image_src:"
+  include: copy_image_src.yml
+  when: node_exists.failed
+
+- name: "Resize OS disk"
+  command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
+  become: "{{ libvirt_become }}"
+  when: host['disk_size'] is defined and node_exists.failed
+
+- name: "Create an additional disk"
+  command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }} "
+  become: "{{ libvirt_become }}"
+  when:
+    - host['disk2_size'] is defined and node_exists.failed
+    - '"worker" in host["name"]'
+
+- name: "Create directories"
+  file:
+    path: "/tmp/vm-{{ host['name'] }}"
+    state: "directory"
+  when: node_exists.failed
+
+- name: "Prepare cloud-config/user-data-local"
+  template:
+    src: "templates/cloud-config/user-data"
+    dest: "/tmp/vm-{{ host['name'] }}/user-data"
+  when: node_exists.failed
+
+- name: "Prepare cloud-config/meta-data"
+  template:
+    src: "templates/cloud-config/meta-data"
+    dest: "/tmp/vm-{{ host['name'] }}/meta-data"
+  when: node_exists.failed
+
+- name: "Generate ci data cd image for cloud-init when cloud config is defined"
+  command: |
+    mkisofs -o /tmp/vm-{{ host['name'] }}.iso -V cidata -r -J
+            --quiet /tmp/vm-{{ host['name'] }}/user-data
+            /tmp/vm-{{ host['name'] }}/meta-data
+  become: "{{ libvirt_become }}"
+  when: node_exists.failed
+
+- name: "define node"
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    command: define
+    xml: "{{ lookup('template', 'libvirt_node.xml.j2') }}"
+  when: node_exists.failed
+
+- name: sync memory data to disk
+  command: sync
+
+- name: "Start VM"
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    state: "running"

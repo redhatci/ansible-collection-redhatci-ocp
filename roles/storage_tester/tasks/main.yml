@@ -1,0 +1,162 @@
+---
+- name: "Mirroring the image needed for the Storage tests"
+  include_role:
+    name: mirror_images
+  vars:
+    images: ['registry.redhat.io/rhel8/support-tools']
+    authfile: "{{ dci_pullsecret_file }}"
+  when:
+    - dci_disconnected | default(false) | bool
+
+- name: "Create storage-tester Namespace"
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Namespace
+    name: storage-tester
+    kubeconfig: "{{ kubeconfig_path }}"
+
+- name: "Get oc version output"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  shell: |
+    {{ oc_tool_path }} version
+  register: oc_version_str
+
+- name: "Get OCP version"
+  set_fact:
+    ocp_version_storage: "{{ '.'.join(item.split(':')[1].strip().split('.')[0:2]) }}"
+  when: "'Server Version' in item"
+  loop: "{{ oc_version_str.stdout_lines }}"
+
+- name: "Create tmp Working Directory"
+  tempfile:
+    state: directory
+  register: pre_work_directory
+
+- name: "Render Tester Cronjob From Template"
+  template:
+    src: "{{ item }}.yaml.j2"
+    dest: "{{ pre_work_directory.path }}/{{ item }}.yaml"
+  with_items:
+    - "tester-cronjob-rox"
+    - "tester-cronjob-rwo"
+    - "tester-cronjob-rwx"
+    - "tester-init-pv-job"
+
+- name: "Create PVC for Tester Cronjob RWO"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: storage-upgrade-tester-rwo
+        namespace: storage-tester
+      spec:
+        storageClassName: "{{ storage_class | default(omit)}}"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
+- name: "Create a RWO PVC for filling ROX PVC"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: storage-upgrade-init-rox
+        namespace: storage-tester
+      spec:
+        storageClassName: "{{ storage_class | default(omit)}}"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
+- name: "Initializing PV for ROX by writing a file in it"
+  community.kubernetes.k8s:
+    state: present
+    src: "{{ pre_work_directory.path }}/tester-init-pv-job.yaml"
+
+- name: "Wait for init job to be completed"
+  community.kubernetes.k8s_info:
+    kind: job
+    api_version: batch/v1
+    namespace: storage-tester
+    name: init-pv
+  register: init
+  retries: 10
+  delay: 6
+  until:
+    - init.resources is defined
+    - init.resources | length >= 1
+    - init.resources[0].status.succeeded is defined
+    - init.resources[0].status.succeeded == 1
+
+- name: "Create ROX PVC from previous PVC"
+  community.kubernetes.k8s:
+    state: present
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: storage-upgrade-tester-rox
+        namespace: storage-tester
+      spec:
+        storageClassName: "{{ storage_class | default(omit)}}"
+        dataSource:
+          name: storage-upgrade-init-rox
+          kind: PersistentVolumeClaim
+        accessModes:
+          - ReadOnlyMany
+        resources:
+          requests:
+            storage: 1Gi
+
+- name: "Create PVC for Tester Cronjob RWX"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: storage-upgrade-tester-rwx
+        namespace: storage-tester
+      spec:
+        storageClassName: "{{ storage_class | default(omit)}}"
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Gi
+
+- name: "Deploy Tester Cronjob RWO"
+  community.kubernetes.k8s:
+    src: "{{ pre_work_directory.path }}/tester-cronjob-rwo.yaml"
+    apply: yes
+    state: present
+    wait: yes
+
+- name: "Deploy Tester Cronjob ROX"
+  community.kubernetes.k8s:
+    src: "{{ pre_work_directory.path }}/tester-cronjob-rox.yaml"
+    apply: yes
+    state: present
+    wait: yes
+
+- name: "Deploy Tester Cronjob RWX"
+  community.kubernetes.k8s:
+    src: "{{ pre_work_directory.path }}/tester-cronjob-rwx.yaml"
+    apply: yes
+    state: present
+    wait: yes
+
+- name: "Deleting temporary files"
+  file:
+    state: absent
+    path: "{{ pre_work_directory.path }}"

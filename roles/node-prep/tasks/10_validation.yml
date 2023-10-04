@@ -212,7 +212,11 @@
 - name: Confirm whether or not internet connectivity on provisioner host
   uri:
     url: https://www.redhat.com
+<<<<<<< HEAD
     status_code: [-1, 200]
+=======
+    status_code: [-1, 200, 301]
+>>>>>>> mixin/main
     timeout: 1
   register: check_url
   tags:
@@ -525,6 +529,10 @@
   when:
     - enable_virtualmedia|bool
     - provisioningHostIP is undefined
+<<<<<<< HEAD
+=======
+    - release_version.split('.')[0]|int == 4 and release_version.split('.')[1]|int == 6
+>>>>>>> mixin/main
   tags:
     - always
     - validation

@@ -1,0 +1,64 @@
+{% if network['dnsmasq_options'] is defined %}
+<network ipv6='yes' xmlns:dnsmasq='http://libvirt.org/schemas/network/dnsmasq/1.0'>
+  <dnsmasq:options>
+  {% for dns_opt in network['dnsmasq_options'] %}
+    <dnsmasq:option value='{{ dns_opt }}'/>
+  {% endfor %}
+  </dnsmasq:options>
+{% else %}
+<network ipv6='yes'>
+{% endif %}
+  <name>{{ network['res_name'] | default(network['name']) }}</name>
+  {% if network['bridge'] is defined %}
+  <bridge name="{{ network['bridge'] }}" {% if network['forward_mode'] is not defined or network['forward_mode'] != 'bridge' %}stp='on' delay='0'{% endif %}/>
+  {% endif %}
+
+{% if network['dns'] is defined %}
+  <dns>
+ {% if network['dns']['texts'] is defined %}
+  {% for text in network['dns']['texts'] %}
+   <txt {% if text['name'] is defined %}name={{ '\"' + text['name'] + '\"' }}{% endif %}{% if text['value'] is defined %} value={{ '\"' + text['value'] + '\"' }}{% endif %}/>
+  {% endfor %}
+ {% endif %}
+
+ {% if network['dns']['forwarders'] is defined %}
+  {% for fwd in network['dns']['forwarders'] %}
+   <forwarder {% if fwd['addr'] is defined %}addr={{ '\'' + fwd['addr'] + '\'' }}{% endif %}{% if fwd['domain'] is defined %} domain={{ '\'' + fwd['domain'] + '\'' }}{% endif %}/>
+  {% endfor %}
+ {% endif %}
+
+ {% if network['dns']['services'] is defined %}
+  {% for srv in network['dns']['services'] %}
+  <srv {% if srv['name'] is defined %}service={{ '\'' + srv['name'] + '\'' }}{% endif %}{% if srv['protocol'] is defined %} protocol={{ '\'' + srv['protocol'] + '\'' }}{% endif %}{% if srv['domain'] is defined %} domain={{ '\'' + srv['domain'] + '\'' }}{% endif %} {% if srv['target'] is defined %}target={{ '\'' + srv['target'] + '\'' }}{% endif %} {% if srv['port'] is defined %}port={{ '\'' }}{{ srv['port'] }}{{ '\'' }}{% endif %} {% if srv['priority'] is defined %}priority={{ '\'' }}{{ srv['priority'] }}{{ '\'' }}{% endif %} {% if srv['weight'] is defined %}weight={{ '\'' }}{{ srv['weight'] }}{{ '\'' }}{% endif %}/>
+  {% endfor %}
+ {% endif %}
+
+{% if network['dns']['hosts'] is defined %}
+  {% for host in network['dns']['hosts'] %}
+  <host {% if host['ip'] is defined %}ip={{ '\'' + host['ip'] + '\'' }}{% endif %}>
+{% if host['hostnames'] is defined %}
+  {% for hname in host['hostnames'] %}
+    <hostname>{{ hname }}</hostname>
+  {% endfor %}
+{% endif %}
+    </host>
+  {% endfor %}
+{% endif %}
+</dns>
+  {% endif %}
+{% if network['forward_mode'] is defined %}
+<forward mode="{{ network['forward_mode'] }}"{% if network['forward_dev'] is defined %} dev="{{ network['forward_dev'] }}"{% endif %}/>
+{% endif %}
+{% if network['domain'] is defined %}
+  <domain name="{{ network['domain'] }}" localOnly="yes"/>
+{% endif %}
+{% if network['ip'] is defined %}
+  <ip address="{{ network['ip'] }}" {% if network['netmask'] is defined %} netmask="{{ network['netmask'] }}" {% endif %} {% if network['family'] is defined %}family="{{ network['family'] }}"{% endif %} {% if network['prefix'] is defined %}prefix="{{ network['prefix'] }}"{% endif %}>
+{% if network['dhcp_start'] is defined %}
+    <dhcp>
+      <range start="{{ network['dhcp_start'] }}" end="{{ network['dhcp_end'] }}"/>
+    </dhcp>
+{% endif %}
+  </ip>
+{% endif %}
+</network>

@@ -13,6 +13,15 @@
         fail_msg: "Cannot run preflight check container: automatically generated config is missing"
         success_msg: "All required parameters are ok, proceeding to run preflight check container"
 
+<<<<<<< HEAD
+=======
+    - name: Dump operator parameters for the debug
+      debug:
+        msg: |
+          operator.name = {{ operator.name }}
+          operator.version = {{ operator.version }}
+
+>>>>>>> mixin/main
     - name: "Fail if both create_container_project and pyxis_container_identifier are provided for {{ current_operator_image }}"
       fail:
         msg: |
@@ -84,6 +93,7 @@
           include_tasks: test_run_health_check.yml
           when: preflight_run_health_check | bool
 
+<<<<<<< HEAD
         - name: Upload logs for preflight check container into DCI
           vars:
             image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
@@ -93,6 +103,19 @@
             dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
           with_fileglob:
             - "{{ preflight_container_artifacts.path }}/*"
+=======
+        - name: "Copy execution artifacts of {{ current_operator_image }} to DCI logs directory"
+          vars:
+            image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
+            preflight_prefix: "preflight_container_{{ operator.name }}_{{ image_name }}"
+          copy:
+            src: "{{ item.src }}"
+            dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item.path | regex_replace('/', '_') }}"
+          with_filetree:
+            - "{{ preflight_container_artifacts.path }}"
+          when:
+            -  item.state == "file"
+>>>>>>> mixin/main
 
         - name: Remove tmp dir
           file:
