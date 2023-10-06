@@ -1,0 +1,40 @@
+---
+- name: "Wait for API to be available"
+  uri:
+    url: 'https://api.{{ cluster }}.{{ domain }}:6443/readyz'
+    validate_certs: no
+    return_content: yes
+  register: api_ready
+  until:
+    - "'ok' in api_ready.content"
+    - api_ready.status == 200
+  retries: 180
+  delay: 10
+  tags: waitdeploy
+
+- name: "Wait for Node to become Ready"
+  command:
+    cmd: |
+      {{ ocp_binary_path }}/oc get nodes
+  register: node_status
+  changed_when: false
+  until:
+    - "' Ready' in node_status.stdout"
+  retries: 180
+  delay: 10
+  environment:
+    KUBECONFIG: "{{ dir }}/auth/kubeconfig"
+  tags: waitdeploy
+
+- name: "Wait for installation until completion"
+  shell:
+    cmd: >
+      {{ ocp_binary_path }}/oc get clusterversion/version -o json
+      | jq -r '.status.history[] | select(.version == "{{ version }}").state'
+  register: installation_progress
+  until: installation_progress.stdout.find("Completed") > -1
+  retries: 50
+  delay: 60
+  environment:
+    KUBECONFIG: "{{ dir }}/auth/kubeconfig"
+  tags: waitdeploy

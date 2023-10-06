@@ -1,0 +1,85 @@
+---
+- name: Check if directory exists
+  stat:
+    path: "{{ os_config_dir }}"
+  register: path_check
+
+- name: "Fail if the configs directory does not exist"
+  fail:
+    msg: "Configs directory does not exist"
+  when: not path_check.stat.exists
+
+- name: "Generate Random passwords for users htpasswd IdP"
+  set_fact:
+    admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+    nonadmin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+
+- name: "Save passwords to the cluster configs directory"
+  copy:
+    content: "OCP automatically generated credentials for the API/GUI\nadmin:{{ admin_pass }} \nnonadmin:{{ nonadmin_pass }}\n"
+    dest: "{{ os_config_dir }}/ocp_creds.txt"
+    mode: '0640'
+
+- name: "Create http auth file"
+  htpasswd:
+    path: "{{ os_config_dir }}/users.htpasswd"
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
+    mode: 0640
+  loop:
+    - user: admin
+      password: "{{ admin_pass }}"
+    - user: nonadmin
+      password: "{{ nonadmin_pass }}"
+
+- name: "Encoding the password file"
+  slurp:
+    src: "{{ os_config_dir }}/users.htpasswd"
+  register: encoded_password
+
+- name: "Set htpasswd config secret in openshift"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: htpass-secret
+        namespace: openshift-config
+      type: Opaque
+      data:
+        htpasswd: "{{ encoded_password.content }}"
+
+- name: "Setup htpasswd auth IDP backend in openshift"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: OAuth
+      metadata:
+        name: cluster
+      spec:
+        identityProviders:
+        - name: htpassidp
+          challenge: true
+          login: true
+          mappingMethod: claim
+          type: HTPasswd
+          htpasswd:
+            fileData:
+              name: htpass-secret
+
+- name: "Grant cluster-admin permissions to admin user"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-admin-admin
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: User
+          name: "admin"
+...

@@ -1,0 +1,5 @@
+- name: "Delete temp directory"
+  file:
+    state: absent
+    path: "{{ fbc_tmp_dir }}"
+...

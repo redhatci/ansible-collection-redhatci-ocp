@@ -1,0 +1,85 @@
+---
+- name: Set the tftp server name
+  set_fact:
+    tftp_server: "{{ groups['tftp_host'] is defined | ternary(groups['tftp_host'][0], groups['provisioner'][0]) }}"
+  tags: tftp
+
+- name: "Delegate tasks to tftp_server"
+  block:
+    - name: "Install packages to boostrap SNO baremetal"
+      yum:
+        name: "{{ snobm_pkg_list }}"
+        state: present
+        update_cache: true
+        disable_gpg_check: yes
+      tags:
+        - packages
+        - tftp
+
+    - name: "Create TFTP directory"
+      file:
+        path: "{{ tftp_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: u=rwx,g=rx,o=rx
+        setype: tftpdir_rw_t
+
+    - name: "Collect efi files"
+      find:
+        paths: /boot/efi/EFI/
+        recurse: true
+        patterns: "*.efi,*.EFI"
+      register: efi_files
+
+    - name: "Copy efi files"
+      copy:
+        remote_src: true
+        src: "{{ item.path }}"
+        dest: "{{ tftp_dir }}"
+        setype: tftpdir_rw_t
+      loop: "{{ efi_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: Define TFTP settings for dnsmasq
+      template:
+        src: dnsmasq.conf.j2
+        dest: /etc/dnsmasq.d/{{ cluster }}.conf
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+
+    - name: Restart dnsmasq
+      service:
+        name: dnsmasq
+        state: restarted
+
+    - name: "Create TFTP images directory"
+      file:
+        path: "{{ tftp_dir }}/images"
+        state: directory
+        owner: root
+        group: root
+        mode: u=rwx,g=rx,o=rx
+        setype: tftpdir_rw_t
+
+    - name: "Allow DHCP traffic"
+      firewalld:
+        service: dhcp
+        permanent: yes
+        immediate: true
+        state: enabled
+      when: firewall == "firewalld"
+
+    - name: "Allow TFTP traffic"
+      firewalld:
+        service: tftp
+        permanent: yes
+        immediate: true
+        state: enabled
+      when: firewall == "firewalld"
+  become: true
+  delegate_to: "{{ tftp_server }}"
+  tags: tftp
+...

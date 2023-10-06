@@ -1,0 +1,49 @@
+---
+# rhcos_json_vars fact already set in 21_rhcos_image_paths.yml
+- name: "Set Facts for RHCOS LIVE"
+  set_fact:
+    rhcos_live_iso_name: "{{ rhcos_json_vars | json_query(iso_name) | basename }}"
+    rhcos_live_iso_sha256: "{{ rhcos_json_vars | json_query(iso_sha) }}"
+    rhcos_path: "{{ rhcos_json_vars | json_query(iso_name) }}"
+  vars:
+    iso_name: 'architectures.x86_64.artifacts.metal.formats.iso.disk.location'
+    iso_sha: 'architectures.x86_64.artifacts.metal.formats.iso.disk.sha256'
+  tags: rhcos_live
+
+- name: "Check if LIVE image exists"
+  stat:
+    path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    get_checksum: false
+  register: live_img
+  tags: rhcos_live
+
+- name: "Download LIVE image"
+  get_url:
+    url: "{{ rhcos_path }}"
+    dest: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0644"
+    setype: virt_content_t
+    checksum: "sha256:{{ rhcos_live_iso_sha256 }}"
+    timeout: 1200
+  register: live_img_file
+  retries: 3
+  delay: 10
+  until: live_img_file is not failed
+  when:
+    - not live_img.stat.exists or force_mirroring
+  tags: rhcos_live
+
+- name: "Set a public SELinux context"
+  file:
+    path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    setype: "public_content_t"
+  become: true
+  tags: rhcos_live
+
+- name: "Apply new SELinux file context"
+  command: /usr/sbin/restorecon -R "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+  become: true
+  tags: rhcos_live
+...
