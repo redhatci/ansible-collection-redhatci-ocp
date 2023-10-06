@@ -4,7 +4,7 @@
 
 Name:           %{repo}
 Version:        0.1.1
-Release:        1.VERS%{?dist}
+Release:        2.VERS%{?dist}
 Summary:        Redhat OCP Collection for ansible
 
 License:        GPL-2.0-or-later and Apache-2.0
@@ -37,6 +37,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Oct 06 2023 Jorge A Gallegos <jgallego@redhat.com> - 0.1.1-2
+- rebuilt
+
 * Fri Oct 06 2023 Jorge A Gallegos <jgallego@redhat.com> - 0.1.1-1
 - Force-pushed build to start from a clean slate
 
