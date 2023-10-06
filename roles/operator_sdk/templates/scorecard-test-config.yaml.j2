@@ -1,0 +1,51 @@
+---
+apiVersion: scorecard.operatorframework.io/v1alpha3
+kind: Configuration
+metadata:
+  name: config
+stages:
+- parallel: true
+  tests:
+  - entrypoint:
+    - scorecard-test
+    - basic-check-spec
+    image: {{ scorecard_test_img }}
+    labels:
+      suite: basic
+      test: basic-check-spec-test
+  - entrypoint:
+    - scorecard-test
+    - olm-bundle-validation
+    image: {{ scorecard_test_img }}
+    labels:
+      suite: olm
+      test: olm-bundle-validation-test
+  - entrypoint:
+    - scorecard-test
+    - olm-crds-have-validation
+    image: {{ scorecard_test_img }}
+    labels:
+      suite: olm
+      test: olm-crds-have-validation-test
+  - entrypoint:
+    - scorecard-test
+    - olm-crds-have-resources
+    image: {{ scorecard_test_img }}
+    labels:
+      suite: olm
+      test: olm-crds-have-resources-test
+  - entrypoint:
+    - scorecard-test
+    - olm-spec-descriptors
+    image: {{ scorecard_test_img }}
+    labels:
+      suite: olm
+      test: olm-spec-descriptors-test
+  - entrypoint:
+    - scorecard-test
+    - olm-status-descriptors
+    image: {{ scorecard_test_img }}
+    labels:
+      suite: olm
+      test: olm-status-descriptors-test
+...

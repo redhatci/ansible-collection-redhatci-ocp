@@ -1,0 +1,89 @@
+---
+- name: Template tnf_config.yml
+  template:
+    src: templates/tnf_config.yml.j2
+    dest: "{{ tnf_dir }}/{{ test_network_function_project_name }}/tnf_config.yml"
+
+# Doing this just before running tnf, just to spend the enough time changing PodSecurity constraints
+# in default namespace.
+# Remember debug daemonset is launched on default namespace until tnf v4.2.0, where it's moved
+# to a new namespace
+- name: Labeling default namespace, so that tnf debug daemonset covers PodSecurity requirements
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: default
+        labels:
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+    wait: yes
+  when:
+    - test_network_function_version is version("v4.2.0", "<")
+    - test_network_function_version != "HEAD"
+
+# Task to be deleted when removing backwards compatibility with env vars usage.
+- name: Redefine tnf_env_vars if empty using default environment variables
+  set_fact:
+    tnf_env_vars:
+      TNF_NON_INTRUSIVE_ONLY: "{{ tnf_non_intrusive_only }}"
+      TNF_LOG_LEVEL: "{{ tnf_log_level }}"
+  when: tnf_env_vars|length == 0
+
+# Just do this in case preflight test suite is used. This happens if:
+# - (tnf >= v4.1.6 and tnf <= v4.2.2) - can be used with common label or with preflight label
+# - (tnf >= v4.2.3 or tnf == HEAD) - can be used just with preflight label
+# Use authentication file for private registry
+- name: Set authentication for registry access
+  include_tasks: prepare_json_authentication.yml
+  when: "((test_network_function_version is version('v4.1.6', '>=') and test_network_function_version is version('v4.2.2', '<=')
+      and ('common' in tnf_labels or 'preflight' in tnf_labels))
+      or ((test_network_function_version is version('v4.2.3', '>=') or test_network_function_version == 'HEAD')
+      and 'preflight' in tnf_labels))
+      and partner_creds|length"
+
+- name: Remove XML JUnit results if they exist
+  file:
+    path: "{{ tnf_dir }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
+    state: absent
+
+# The task automatically append these environment variables to tnf_env_vars:
+# - TNF_PARTNER_REPO
+# - TNF_IMAGE
+# - SUPPORT_IMAGE
+# We have to set ignore_errors to true because, if any tnf test fails, the result of the execution will be failed.
+# We will check log files afterwards to really determine if there were errors in the execution or not.
+- name: Run the CNF Test Suite
+  vars:
+    tnf_partner_repo: "{{ ( dci_local_registry | length ) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
+    support_image: "debug-partner:{{ support_image_version }}"
+  environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image, 'SUPPORT_IMAGE': support_image}) }}"
+  shell: |
+    set -x
+
+    ./run-tnf-container.sh -k {{ kubeconfig_path }} \
+    -t {{ tnf_dir }}/{{ test_network_function_project_name }} \
+    -o {{ tnf_dir }}/{{ test_network_function_project_name }} \
+    {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
+    {% if test_network_function_version is version("v4.3.3", "<=") and test_network_function_version != "HEAD" %}
+    {% if tnf_suites|length %}-f '{{ tnf_suites }}' \{% endif %}
+    {% if tnf_skip_suites|length %}-s '{{ tnf_skip_suites }}' \{% endif %}
+    {% endif %}
+    {% if tnf_dockercfg_path is defined %}-c {{ tnf_dockercfg_path }} \{% endif %}
+    -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
+  args:
+    chdir: "{{ tnf_dir }}"
+  ignore_errors: true
+
+# Clean images just after finishing the execution
+- name: Remove local tnf image
+  containers.podman.podman_image:
+    name: "{{ tnf_image }}"
+    state: absent
+
+- name: Logging tasks after finishing the execution of CNF Cert
+  include_tasks: logging.yml
+
+...

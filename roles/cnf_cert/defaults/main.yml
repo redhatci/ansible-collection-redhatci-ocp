@@ -1,0 +1,119 @@
+---
+tnf_stage: "tests"
+tnf_check_commit_sha: false
+test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
+test_network_function_version: v4.5.0
+test_network_function_project_name: cnf-certification-test
+tnf_suites: ""
+tnf_skip_suites: ""
+tnf_labels: "common,telco,extended"
+# By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
+# and set the other items as empty values. Under these conditions (i.e. no pods are discovered), no CNF Cert Suite tests are run.
+tnf_config:
+  - namespace: "{{ dci_openshift_app_ns }}"
+    targetpodlabels: []
+    targetoperatorlabels: []
+    target_crds: []
+    exclude_connectivity_regexp: ""
+accepted_kernel_taints: []
+tnf_postrun_delete_resources: true
+tnf_certified_container_info: []
+tnf_env_vars: {}
+# Next two variables to be deleted when removing backwards compatibility with env vars usage. Also review cnf_cert README.
+tnf_non_intrusive_only: false
+tnf_log_level: "debug"
+tnf_use_legacy_operator_label: false
+tnf_image_suffix: "{{ lookup('community.general.random_string', length=16, special=false) }}"
+# Provide feedback for each tnf test launched. Just copy this template in your pipeline file and fill the value for the
+# tests you want to provide feedback. You don't need to include the tests that you don't want to provide feedback.
+# To insert line breaks, use \\n (you need to escape it). Same for quotes and so on.
+# List of tests updated until tnf v4.5.0
+tnf_feedback:
+  access-control-bpf-capability-check: ""
+  access-control-cluster-role-bindings: ""
+  access-control-container-host-port: ""
+  access-control-crd-roles: ""
+  access-control-ipc-lock-capability-check: ""
+  access-control-namespace: ""
+  access-control-namespace-resource-quota: ""
+  access-control-net-admin-capability-check: ""
+  access-control-net-raw-capability-check: ""
+  access-control-no-1337-uid: ""
+  access-control-one-process-per-container: ""
+  access-control-pod-automount-service-account-token: ""
+  access-control-pod-host-ipc: ""
+  access-control-pod-host-network: ""
+  access-control-pod-host-path: ""
+  access-control-pod-host-pid: ""
+  access-control-pod-role-bindings: ""
+  access-control-pod-service-account: ""
+  access-control-requests-and-limits: ""
+  access-control-security-context: ""
+  access-control-security-context-non-root-user-check: ""
+  access-control-security-context-privilege-escalation: ""
+  access-control-service-type: ""
+  access-control-ssh-daemons: ""
+  access-control-sys-admin-capability-check: ""
+  access-control-sys-nice-realtime-capability: ""
+  access-control-sys-ptrace-capability: ""
+  affiliated-certification-container-is-certified-digest: ""
+  affiliated-certification-helm-version: ""
+  affiliated-certification-helmchart-is-certified: ""
+  affiliated-certification-operator-is-certified: ""
+  lifecycle-affinity-required-pods: ""
+  lifecycle-container-shutdown: ""
+  lifecycle-container-startup: ""
+  lifecycle-cpu-isolation: ""
+  lifecycle-crd-scaling: ""
+  lifecycle-deployment-scaling: ""
+  lifecycle-image-pull-policy: ""
+  lifecycle-liveness-probe: ""
+  lifecycle-persistent-volume-reclaim-policy: ""
+  lifecycle-pod-high-availability: ""
+  lifecycle-pod-owner-type: ""
+  lifecycle-pod-recreation: ""
+  lifecycle-pod-scheduling: ""
+  lifecycle-pod-toleration-bypass: ""
+  lifecycle-readiness-probe: ""
+  lifecycle-startup-probe: ""
+  lifecycle-statefulset-scaling: ""
+  lifecycle-storage-required-pods: ""
+  manageability-container-port-name-format: ""
+  manageability-containers-image-tag: ""
+  networking-dpdk-cpu-pinning-exec-probe: ""
+  networking-dual-stack-service: ""
+  networking-icmpv4-connectivity: ""
+  networking-icmpv4-connectivity-multus: ""
+  networking-icmpv6-connectivity: ""
+  networking-icmpv6-connectivity-multus: ""
+  networking-network-policy-deny-all: ""
+  networking-ocp-reserved-ports-usage: ""
+  networking-reserved-partner-ports: ""
+  networking-restart-on-reboot-sriov-pod: ""
+  networking-undeclared-container-ports-usage: ""
+  observability-container-logging: ""
+  observability-crd-status: ""
+  observability-pod-disruption-budget: ""
+  observability-termination-policy: ""
+  operator-install-source: ""
+  operator-install-status-no-privileges: ""
+  operator-install-status-succeeded: ""
+  performance-exclusive-cpu-pool: ""
+  performance-exclusive-cpu-pool-rt-scheduling-policy: ""
+  performance-isolated-cpu-pool-rt-scheduling-policy: ""
+  performance-max-resources-exec-probes: ""
+  performance-rt-apps-no-exec-probes: ""
+  performance-shared-cpu-pool-non-rt-scheduling-policy: ""
+  platform-alteration-base-image: ""
+  platform-alteration-boot-params: ""
+  platform-alteration-hugepages-1g-only: ""
+  platform-alteration-hugepages-2m-only: ""
+  platform-alteration-hugepages-config: ""
+  platform-alteration-hyperthread-enable: ""
+  platform-alteration-is-selinux-enforcing: ""
+  platform-alteration-isredhat-release: ""
+  platform-alteration-ocp-lifecycle: ""
+  platform-alteration-ocp-node-os-lifecycle: ""
+  platform-alteration-service-mesh-usage: ""
+  platform-alteration-sysctl-config: ""
+  platform-alteration-tainted-node-kernel: ""

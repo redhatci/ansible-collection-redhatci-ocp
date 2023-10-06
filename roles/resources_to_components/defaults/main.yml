@@ -1,0 +1,7 @@
+---
+rtc_supported_resources:
+  - "Pod"
+  - "Deployment"
+  - "ReplicaSet"
+  - "StatefulSet"
+  - "ClusterServiceVersion"

@@ -1,0 +1,22 @@
+{
+    "certification_status": "Started",
+    "contacts": [
+      {
+        "email_address": "{{ cert_settings.email_address }}",
+        "type": "Technical contact"
+      }
+    ],
+    "helm_chart": {
+      "chart_name": "{{ current_chart_name }}",
+      "distribution_method": "{{ cert_settings.distribution_method }}",
+      "github_usernames": [
+        "{{ cert_settings.github_usernames }}"
+      ]
+    },
+    "marketplace": {
+      "enablement_status": "ineligible"
+    },
+    "name": "{{ current_chart_name }}",
+    "project_status": "active",
+    "type": "Helm Chart"
+}
