@@ -2,11 +2,10 @@
 - name: Install additional packages
   become: true
   package:
-    name: "{{ item }}"
+    name:
+      - conserver
+      - conserver-client
+      - ipmitool
+      - socat
     state: present
-  with_items:
-    - conserver
-    - conserver-client
-    - ipmitool
-    - socat
 ...
