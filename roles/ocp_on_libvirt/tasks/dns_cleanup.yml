@@ -1,0 +1,12 @@
+---
+- name: Cleanup openshift dnsmasq settings
+  file:
+    path: /etc/NetworkManager/dnsmasq.d/openshift.conf
+    state: absent
+  become: "{{ libvirt_become }}"
+
+- name: Restart NetworkManager
+  service:
+    name: NetworkManager
+    state: restarted
+  become: "{{ libvirt_become }}"

@@ -1,0 +1,71 @@
+---
+- name: "Create OpenShift Ignition File"
+  shell: |
+    {{ ocp_binary_path }}/openshift-install --dir {{ dir }} create single-node-ignition-config
+  tags:
+    - ignition
+
+- name: "Set coreos sno ignition facts"
+  set_fact:
+    coreos_sno_ignition: "{{ cache_dir }}/{{ cluster }}.ign"
+
+- name: "Extra tasks to get ignition file for baremetal SNO in disconnected mode"
+  block:
+    - name: "Get the ignition file from the provisione host into temp file on control machine"
+      fetch:
+        dest: /tmp/
+        flat: true
+        src: "{{ dir }}/bootstrap-in-place-for-live-iso.ign"
+
+    - name: "Copy the ignition file from control machine to the registry host"
+      copy:
+        src: "/tmp/bootstrap-in-place-for-live-iso.ign"
+        dest: "{{ coreos_sno_ignition }}"
+        mode: 0644
+        setype: httpd_sys_content_t
+      become: true
+      delegate_to: "{{ groups['registry_host'][0] }}"
+
+    - name: "Remove the temporary copy of ignition file on control machine"
+      file:
+        path: "/tmp/bootstrap-in-place-for-live-iso.ign"
+        state: absent
+      delegate_to: localhost
+  when:
+    - not cache_provisioner | bool
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
+  tags:
+    - ignition
+
+- name: "Extra tasks to get ignition file for baremetal SNO"
+  block:
+    - name: "Copy OpenShift Ignition File"
+      copy:
+        src: "{{ dir }}/bootstrap-in-place-for-live-iso.ign"
+        dest: "{{ coreos_sno_ignition }}"
+        remote_src: true
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: '0644'
+        setype: httpd_sys_content_t
+      become: true
+  when:
+    - cache_provisioner | bool
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
+  tags:
+    - ignition
+    - cache
+
+- name: "Set coreos_sno_ignition_url fact"
+  set_fact:
+    coreos_sno_ignition_url: "http://{{ cache_server }}:{{ webserver_caching_port }}/{{ cluster }}.ign"
+  when:
+    - (coreos_sno_ignition_url is not defined or coreos_sno_ignition_url|length < 1)
+    - sno_install_type is defined
+    - sno_install_type == "baremetal"
+  tags:
+    - ignition
+    - cache
+...

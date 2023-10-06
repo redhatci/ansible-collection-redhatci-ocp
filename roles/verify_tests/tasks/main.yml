@@ -1,0 +1,14 @@
+---
+- name: Install junitparser needed to parse the tests
+  pip:
+    name:
+      - junitparser
+  become: true
+
+- name: Loop over mandatory test results
+  include_tasks: read_junit_files.yml
+  loop: "{{ tests_to_verify }}"
+  loop_control:
+    loop_var: t
+
+...

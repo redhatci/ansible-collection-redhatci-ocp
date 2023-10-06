@@ -1,0 +1,43 @@
+<network>
+  <name>{{ network['name'] }}</name>
+
+{% if network['forward_mode'] == "nat" %}
+
+{# 
+  Adapted to sno_on_libvirt sample, where we only have one VM.
+  Other deployments that also include provisionhost VM will be modelled under the 
+  "bridge" forward mode.
+#}
+
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <domain name='{{ cluster }}.{{ domain }}'/>
+  <dns enable='yes'>
+    <host ip='{{ sno_extnet_ip }}'>
+      <hostname>api.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>api-int.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>console-openshift-console.apps.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>oauth-openshift.apps.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>canary-openshift-ingress-canary.apps.{{ cluster }}.{{ domain }}</hostname>
+      <hostname>{{ hosts[0]['host_name'] }}.{{ cluster }}.{{ domain }}</hostname>
+    </host>
+  </dns>
+  <ip address='{{ extcidrnet | ipaddr('first_usable') }}' prefix='{{ extcidrnet | ipaddr('prefix') }}'>
+    <dhcp>
+      <host mac='{{ hosts[0]['networks'][0]['mac'] }}' name='{{ hosts[0]['host_name'] }}' ip='{{ sno_extnet_ip }}'/>
+    </dhcp>
+  </ip>
+
+{% elif network['forward_mode'] == "bridge" %}
+
+  <forward mode='bridge'{% if network['forward_dev'] is defined %} dev="{{ network['forward_dev'] }}"{% endif %}/>
+  {% if network['bridge'] is defined %}
+  <bridge name="{{ network['bridge'] }}" {% if network['forward_mode'] is not defined or network['forward_mode'] != 'bridge' %}stp='on' delay='0'{% endif %}/>
+  {% endif %}
+
+{% endif %}
+
+</network>

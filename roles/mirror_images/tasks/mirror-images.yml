@@ -1,0 +1,48 @@
+- name: "Mirror image"
+  vars:
+    image_tag: "{{ image | regex_search('(?<=sha256)(.{12})') | default('', True) }}"
+    image_name: "{{ '/'.join(image.split('@')[0].split('/')[1:]) }}"
+    local_image_location: "{{ dci_local_registry }}/{{ image_name }}
+                           {%- if image_tag | length %}{{ image_tag }}{% endif %}"
+  block:
+    - name: "mirror_images : Mirror image {{ image_name }}"
+      command:
+        cmd: >
+          skopeo copy
+          --all
+          {% if mi_options is defined %}
+          {{ mi_options }}
+          {% endif %}
+          --remove-signatures
+          {% if authfile is defined %}
+          --authfile {{ authfile }}
+          {% endif %}
+          {% if src_authfile is defined %}
+          --src-authfile {{ src_authfile }}
+          {% endif %}
+          {% if dest_authfile is defined %}
+          --dest-authfile {{ dest_authfile }}
+          {% endif %}
+          --dest-tls-verify=false
+          docker://{{ image }}
+          docker://{{ local_image_location }}
+      register: skopeo_copy
+      retries: 5
+      delay: 5
+      until: skopeo_copy is not failed
+
+  rescue:
+    - name: "mirror_images : {{ image_name }} already mirrored"
+      command: >
+        skopeo inspect
+        {% if authfile is defined %}
+        --authfile {{ authfile }}
+        {% endif %}
+        {% if dest_authfile is defined %}
+        --authfile {{ dest_authfile }}
+        {% endif %}
+        --tls-verify=false
+        docker://{{ local_image_location }}
+      register: mg_inspect
+      failed_when: mg_inspect.rc != 0
+...

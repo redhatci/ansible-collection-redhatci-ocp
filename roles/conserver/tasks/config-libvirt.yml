@@ -1,0 +1,24 @@
+---
+- name: Create conserver-libvirt.cf
+  become: true
+  template:
+    dest: "/etc/conserver-libvirt-{{ cluster }}.cf"
+    src: conserver-libvirt.cf
+    owner: "root"
+    group: "root"
+    mode: 0644
+
+- name: Copy socat_retry/sh to /usr/local/bin
+  become: true
+  copy:
+    dest: /usr/local/bin/socat_retry.sh
+    src: socat_retry.sh
+    owner: "root"
+    group: "root"
+    mode: 0755
+
+- name: Add conserver-libvirt.cf to conserver.cf
+  become: true
+  lineinfile:
+    path: /etc/conserver.cf
+    line: '#include /etc/conserver-libvirt-{{ cluster }}.cf'

@@ -1,0 +1,18 @@
+default {{ cluster }} {
+	# The '&' character is substituted with the console name
+	logfile /var/consoles/{{ cluster }}/&;
+	timestamp 5mab;
+	master localhost;
+}
+
+{% for host in ipmi_sol_hosts %}
+console {{ cluster }}-{{ hostvars[host].name }} {
+  include {{ cluster }};
+  type exec;
+  exec "/usr/bin/ipmitool -I lanplus -H {{ hostvars[host].ipmi_address }} -U {{ hostvars[host].ipmi_user }} -P {{ hostvars[host].ipmi_password }}  sol deactivate && echo 'Disconnected' ; ulimit -v 31720 ; /usr/bin/ipmitool -I lanplus -H {{ hostvars[host].ipmi_address }} -U {{ hostvars[host].ipmi_user }} -P {{ hostvars[host].ipmi_password }}  sol activate";
+}
+{% endfor %}
+
+access * {
+        trusted 127.0.0.1;
+}

@@ -1,0 +1,6 @@
+---
+- name: Delete tmp directory
+  file:
+    path: "{{ mc_tmp.path }}"
+    state: absent
+  when: mc_tmp is defined

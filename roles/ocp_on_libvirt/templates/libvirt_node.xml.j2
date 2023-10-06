@@ -1,0 +1,127 @@
+<domain type='{{ host['driver'] }}'>
+  <name>{{ host['name'] }}</name>
+  <memory unit='KiB'>{{ host['memory'] * 1024 | int }}</memory>
+  <vcpu placement='static'>{{ host['vcpus'] }}</vcpu>
+  <os>
+    <type arch='{{ host['arch'] }}'>hvm</type>
+    <boot dev='{{ host['boot_dev'] }}'/>
+{% if enable_conserver %}
+    <bios useserial='yes' rebootTimeout='0'/>
+{% endif %}
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <cpu mode='{{ host['cpu_mode'] }}'>
+    <model fallback='allow' />
+  </cpu>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+{% if host['driver'] == 'qemu' %}
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+{% else %}
+    <emulator>{{ qemu_path }}qemu-kvm</emulator>
+{% endif %}
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/tmp/vm-{{ host['name'] }}.iso'/>
+      <backingStore/>
+      <target dev='hda' bus='ide'/>
+      <readonly/>
+    </disk>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='{{ host['disk_cache'] }}'/>
+      <source file='{{ libvirt_image_path }}/{{ host['name'] }}.qcow2'/>
+      {% if host['disk_bus'] == 'virtio_blk' %}
+      <target dev='vda' bus='virtio'/>
+      {% else %}
+      <target dev='sda' bus='scsi'/>
+      {% endif %}
+      {% if host['root_device_hint'] is defined and host['root_device_hint'] == 'serial' %}
+      <serial>{{ host['root_device_hint_value'] | default(host['name']) }}</serial>
+      {% endif %}
+    </disk>
+    {% if host['disk2_size'] is defined %}
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='{{ host['disk_cache'] }}'/>
+      <source file='{{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2'/>
+      {% if host['disk_bus'] == 'virtio_blk' %}
+      <target dev='vdb' bus='virtio'/>
+      {% else %}
+      <target dev='sdb' bus='scsi'/>
+      {% endif %}
+    </disk>
+    {% endif %}
+    {% if host['disk_bus'] == 'virtio_scsi' %}
+      <controller type='scsi' model='virtio-scsi' />
+    {% endif %}
+{% for network in host['networks'] %}
+  {% if network['type'] is defined %}
+    <interface type='{{ network['type'] }}'>
+  {% else %}
+    <interface type='bridge'>
+  {% endif %}
+      <model type='virtio'/>
+  {% if network['type'] is defined %}
+      <source {{ network['type'] }}='{{ network['name'] }}'/>
+  {% else %}
+      <source bridge='{{ network['name'] }}'/>
+  {% endif %}
+      <guest dev='eth{{ loop.index0 }}'/>
+  {% if network['mac'] is defined %}
+    <mac address='{{ network['mac'] }}'/>
+  {% endif %}
+    </interface>
+{% endfor %}
+    <controller type='usb' index='0'/>
+    <controller type='pci' index='0' model='pci-root'/>
+{% if enable_conserver %}
+    <serial type='unix'>
+      <source mode='bind' path='/var/lib/libvirt/consoles/{{ host['name'] }}.console'/>
+      <target type='isa-serial' port='0'>
+        <model name='isa-serial'/>
+      </target>
+      <alias name='serial0'/>
+    </serial>
+    <console type='unix'>
+      <source mode='bind' path='/var/lib/libvirt/consoles/{{ host['name'] }}.console'/>
+      <target type='serial' port='0'/>
+      <alias name='serial0'/>
+    </console>
+{% else %}
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty' tty='/dev/pts/6'>
+      <source path='/dev/pts/6'/>
+      <target type='serial' port='0'/>
+      <alias name='serial0'/>
+    </console>
+{% endif %}
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
+      <listen type='address' address='127.0.0.1'/>
+    </graphics>
+{% if host['pci_passthrough'] is defined %}
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <driver name='vfio'/>
+      <source>
+        <address domain='{{ host['pci_passthrough']['domain'] }}' bus='{{ host['pci_passthrough']['bus'] }}' slot='{{ host['pci_passthrough']['slot'] }}' function='{{ host['pci_passthrough']['function'] }}'/>
+      </source>
+    </hostdev>
+{% endif %}
+    <video>
+{% if enable_legacy_vga_mode %}
+      <model type='cirrus' vram='16384' heads='1'/>
+{% else %}
+      <model type='qxl' ram='16384' vram='16384' vgamem='4096' heads='1'/>
+{% endif %}
+    </video>
+  </devices>
+</domain>

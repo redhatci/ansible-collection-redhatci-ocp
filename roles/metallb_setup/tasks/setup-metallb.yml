@@ -1,0 +1,120 @@
+---
+- name: "Set the MetalLB Instance"
+  vars:
+    instance: |-
+      apiVersion: metallb.io/v1beta1
+      kind: MetalLB
+      metadata:
+        name: "metallb"
+        namespace: "{{ mlb_namespace }}"
+      spec:
+      {% if mlb_workers_only | default (true) | bool %}
+        nodeSelector:
+          node-role.kubernetes.io/worker: ""
+      {%- endif %}
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ instance }}"
+
+- name: "Confirm that MetalLB speaker pods are Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ mlb_namespace }}"
+    label_selectors:
+      - component = speaker
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 9
+  delay: 10
+  no_log: true
+
+- name: "Create MetalLB IP Address Pool"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: IPAddressPool
+      metadata:
+        name: "{{ mlb_setup_name | default('metallb') }}"
+        namespace: "{{ mlb_namespace }}"
+      spec:
+        addresses: "{{ mlb_ipaddr_pool }}"
+
+- name: "Setup BGP mode objects"
+  block:
+    - name: "Create MetalLB BFD Profile"
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: metallb.io/v1beta1
+          kind: BFDProfile
+          metadata:
+            name: "{{ mlb_bfd_profile }}"
+            namespace: "{{ mlb_namespace }}"
+          spec:
+            receiveInterval: 300
+            transmitInterval: 300
+            detectMultiplier: 3
+            echoInterval: 50
+            echoMode: false
+            passiveMode: true
+            minimumTtl: 254
+
+    - name: "Create MetalLB BGP Peers"
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', 'bgppeers.yml.j2') }}"
+      loop: "{{ mlb_bgp_peers }}"
+      loop_control:
+        loop_var: peer
+
+    - name: "Create MetalLB BGP Advertisements"
+      vars:
+        bgpadvert: |-
+          apiVersion: metallb.io/v1beta1
+          kind: BGPAdvertisement
+          metadata:
+            name: "{{ mlb_setup_name | default('metallb') }}"
+            namespace: "{{ mlb_namespace }}"
+          spec:
+            ipAddressPools:
+              - "{{ mlb_setup_name | default('metallb') }}"
+          {% if mlb_bgp_peers is defined %}
+            peers:
+          {% for peer in mlb_bgp_peers %}
+              - "{{ peer.name }}"
+          {% endfor %}
+          {% endif %}
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ bgpadvert }}"
+  when:
+    - mlb_bgp_peers is defined
+
+- name: "Create MetalLB L2 Advertisements"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: L2Advertisement
+      metadata:
+        name: "{{ mlb_setup_name | default('metallb') }}"
+        namespace: "{{ mlb_namespace }}"
+      spec:
+        ipAddressPools:
+          - "{{ mlb_setup_name | default('metallb') }}"
+  when:
+    - mlb_bgp_peers is undefined
+
+- name: "Confirm that all MetalLB pods are Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ mlb_namespace }}"
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 9
+  delay: 10
+  no_log: true
+...

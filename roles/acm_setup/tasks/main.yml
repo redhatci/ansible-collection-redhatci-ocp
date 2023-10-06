@@ -1,0 +1,259 @@
+---
+- name: "Get Storage Classes"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+  register: storage_class
+
+- name: "Fail when there is no storage class available"
+  fail:
+    msg: "A storage class does not exists"
+  when:
+    - storage_class.resources | length == 0
+
+- name: "Fail when defined storage class does not exists"
+  vars:
+    query_sc_name: 'resources[*].metadata.name'
+    query_results: "{{ storage_class | json_query(query_sc_name) }}"
+  fail:
+    msg: "Defined storage class do not exists"
+  when:
+    - hub_sc is defined
+    - hub_sc not in query_results
+
+- name: "Fail when no default storage class"
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"
+  fail:
+    msg: "No default storage class was found"
+  when:
+    - storage_class is defined
+    - "not('true' in query_results)"
+    - hub_sc is undefined
+
+- name: "Get available CSVs"
+  community.kubernetes.k8s_info:
+    api: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+  register: current_csvs
+  retries: 5
+  delay: 5
+
+- name: "Fail if ACM csv is not present"
+  vars:
+    csv_details: "resources[*].metadata.name"
+    csvs: "{{ current_csvs | json_query(csv_details) }}"
+  fail:
+    msg: "No CSV for advanced-cluster-management are present"
+  when: not csvs is search('advanced-cluster-management')
+
+- name: Get multicluster-engine package manifest
+  community.kubernetes.k8s_info:
+    api: packages.operators.coreos.com/v1
+    kind: PackageManifest
+    name: "multicluster-engine"
+    namespace:  default
+  register: mce_packagemanifest
+  retries: 5
+  delay: 5
+  no_log: true
+  until:
+    - mce_packagemanifest.resources is defined
+    - mce_packagemanifest.resources | length == 1
+
+- name: "Get multicluster-engine default channel and CSV"
+  vars:
+    channels: "resources[*].status.defaultChannel"
+    me_channels: "{{ mce_packagemanifest | json_query(channels) | join('') | string }}"
+    current_csv: "resources[*].status.channels[? name=='{{ me_channels }}' ].currentCSV | [0]"
+  set_fact:
+    me_channel: "{{ mce_packagemanifest | json_query(channels) | join('') | string }}"
+    me_csv: "{{ mce_packagemanifest | json_query(current_csv) | first }}"
+
+# Deploy Multicluster Hub. It will trigger the install of multicluster-engine operator
+- name: "Deploy Multicluster Hub CR"
+  vars:
+    catalog_query: "resources[*].status.catalogSource"
+    catalog_source: "{{ mce_packagemanifest | json_query(catalog_query) | join('') | string }}"
+    me_annotation:
+      channel: "{{ me_channel }}"
+      installPlanApproval: "Automatic"
+      name: "multicluster-engine"
+      source: "{{ catalog_source }}"
+      sourceNamespace: "openshift-marketplace"
+      startingCSV: "{{ me_csv }}"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: operator.open-cluster-management.io/v1
+      kind: MultiClusterHub
+      metadata:
+        annotations:
+          installer.open-cluster-management.io/mce-subscription-spec: "{{ me_annotation | to_json }}"
+        name: "{{ hub_instance }}"
+        namespace: "{{ hub_namespace }}"
+      spec:
+        availabilityConfig: "{{ hub_availability }}"
+        disableHubSelfManagement: "{{ hub_disable_selfmanagement }}"
+
+- name: "Wait for pods to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ hub_namespace }}"
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 20
+  delay: 15
+
+- name: "Wait up to 20 mins for MCH to be ready"
+  community.kubernetes.k8s_info:
+    api: operator.open-cluster-management.io/v1
+    kind: MultiClusterHub
+    name: "{{ hub_instance }}"
+    namespace: "{{ hub_namespace }}"
+  register: mch
+  retries: 60
+  delay: 20
+  until:
+    - mch.resources is defined
+    - mch.resources | length == 1
+    - "'status' in mch.resources[0]"
+    - "'phase' in mch.resources[0].status"
+    - mch.resources[0].status.phase == 'Running'
+
+- name: "Disable ClusterImageSets and AppSubs when disconnected"
+  block:
+    - name: "Disable ClusterImageSet subscription"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: operator.open-cluster-management.io/v1
+          kind: MultiClusterHub
+          metadata:
+            name: multiclusterhub
+            namespace: open-cluster-management
+          spec:
+            disableUpdateClusterImageSets: true
+
+    - name: "Delete AppSub to fast channel"
+      community.kubernetes.k8s:
+        api: apps.open-cluster-management.io/v1
+        state: absent
+        kind: Subscription
+        name: hive-clusterimagesets-subscription-fast-0
+        definition:
+        namespace: "{{ hub_namespace }}"
+
+    - name: "Get available ClusterImageSets"
+      community.kubernetes.k8s_info:
+        api_version: hive.openshift.io/v1
+        kind: ClusterImageSet
+      register: cis_list
+
+    - name: "Delete all ClusterImageSets"
+      vars:
+        subs_details: "resources[*].{ app_subs_name: metadata.name }"
+        app_subs: "{{ cis_list | json_query(subs_details) }}"
+      community.kubernetes.k8s:
+        api: hive.openshift.io/v1
+        state: absent
+        kind: ClusterImageSet
+        name: "{{ sub.app_subs_name }}"
+      loop: "{{ app_subs | default([]) | list }}"
+      loop_control:
+        loop_var: sub
+        label: "{{ sub.app_subs_name }}"
+      when:
+        - cis_list is defined
+        - cis_list | length
+  when:
+    - hub_disconnected | bool
+
+- name: "Enable feature gate for Central Infrastructure Management service"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: hive.openshift.io/v1
+      kind: HiveConfig
+      metadata:
+        name: hive
+      spec:
+        targetNamespace: hive
+        logLevel: debug
+        featureGates:
+          custom:
+            enabled:
+            - AlphaAgentInstallStrategy
+          featureSet: Custom
+
+- name: "Wait for Hive pods to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "hive"
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 20
+  delay: 15
+
+- name: "Update the provisioning resource to watch all Namespaces"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: Provisioning
+      metadata:
+        name: provisioning-configuration
+      spec:
+        watchAllNamespaces: true
+        provisioningNetwork: Managed
+
+- name: "Get cluster version"
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: cluster_version
+
+- name: "Enable Hypershift if supported"
+  vars:
+    current_ver_query: "history[?state=='Completed'] | [0].version"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    current_ver: "{{ full_ver.split('-')[0] }}"
+    ocp_version: "{{  current_ver }}"
+  block:
+    - name: "Enable Hypershift component"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: multicluster.openshift.io/v1
+          kind: MultiClusterEngine
+          metadata:
+            name: multiclusterengine
+          spec:
+            overrides:
+              components:
+                - enabled: true
+                  name: hypershift-preview
+
+    - name: "Enable hypershift Cluster-Addon"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: addon.open-cluster-management.io/v1alpha1
+          kind: ManagedClusterAddOn
+          metadata:
+            name: hypershift-addon
+            namespace: local-cluster
+          spec:
+            installNamespace: open-cluster-management-agent-addon
+
+    - name: "Enable Ingress Wildcards for Hosted Clusters subdomains"
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: operator.openshift.io/v1
+          kind: IngressController
+          metadata:
+            name: default
+            namespace: openshift-ingress-operator
+          spec:
+            routeAdmission:
+              wildcardPolicy: WildcardsAllowed
+  when: ocp_version is version( hub_hypershift_supported , ">=")
+...

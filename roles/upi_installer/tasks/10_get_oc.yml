@@ -1,0 +1,263 @@
+---
+- name: "Find any existing {{ ocp_binary_path }} OpenShift binaries"
+  find:
+    paths: "{{ ocp_binary_path }}"
+    patterns: 'oc,openshift-install,kubectl'
+  register: binary_results
+  tags:
+  - cleanup
+  - getoc
+
+- name: "Remove any existing {{ ocp_binary_path }} OpenShift binaries"
+  file:
+    path: "{{ item['path'] }}"
+    state: absent
+  loop: "{{ binary_results['files'] }}"
+  become: yes
+  tags:
+  - cleanup
+  - getoc
+
+- name: "Set fact with the host providing the webserver"
+  set_fact:
+    cache_server: "{{ cache_provisioner | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Validate that master cache directory exists"
+  stat:
+    path: "{{ cache_dir }}"
+    get_checksum: false
+  register: cachedir
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Create master cache directory"
+  file:
+    path: "{{ cache_dir }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+  become: true
+  delegate_to: "{{ cache_server }}"
+  when:
+    - not cachedir.stat.exists | bool
+  tags:
+    - getoc
+    - cache
+
+- name: "Validate if cache dir for release exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}"
+    get_checksum: false
+  register: cachedir_rel
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Create cache directory for release"
+  file:
+    path: "{{ cache_dir }}/{{ version }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    state: directory
+  become: true
+  delegate_to: "{{ cache_server }}"
+  when:
+    - not cachedir_rel.stat.exists | bool
+  tags:
+    - getoc
+    - cache
+
+- name: "Check if release.txt exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/release.txt"
+    get_checksum: false
+  register: release_txt
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Create tmp directory for stable client"
+  tempfile:
+    state: directory
+    prefix: upi_oc.
+  register: upi_tmp_dir
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Download stable client"
+  vars:
+    ocp_stable_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
+  unarchive:
+    src: "{{ ocp_stable_url }}/stable/openshift-client-linux.tar.gz"
+    dest: "{{ upi_tmp_dir.path }}"
+    remote_src: true
+    mode: 0755
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Create temporary pull secret at cache server"
+  tempfile:
+    state: file
+    prefix: "upi_auth_"
+  register: upi_creds_file
+  delegate_to: "{{ cache_server }}"
+
+- name: "Copy PullSecret into a temp file"
+  copy:
+    content: "{{ upi_pullsecret }}"
+    dest: "{{ upi_creds_file.path }}"
+    mode: '0644'
+  delegate_to: "{{ cache_server }}"
+  no_log: true
+  tags:
+    - getoc
+    - cache
+
+- name: "Extract artifacts from release image"
+  shell:
+    cmd: >
+      {{ upi_tmp_dir.path }}/oc adm release extract
+      --registry-config "{{ upi_creds_file.path }}"
+      --tools
+      --from {{ pull_url }}
+      --to "{{ cache_dir }}/{{ version }}"
+  delegate_to: "{{ cache_server }}"
+  notify:
+    - "Delete tmp file"
+  tags:
+    - getoc
+    - cache
+
+- name: "Remove temporary oc client"
+  file:
+    path: "{{ upi_tmp_dir.path }}"
+    state: absent
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Check if clients exists"
+  stat:
+    path: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    get_checksum: false
+  register: client_tools_done
+  delegate_to: "{{ cache_server }}"
+  tags:
+    - getoc
+    - cache
+
+- name: "Unarchive client tarball"
+  unarchive:
+    src: "{{ cache_dir }}/{{ version }}/openshift-client-linux-{{ version }}.tar.gz"
+    dest: "{{ cache_dir }}/{{ version }}"
+    mode: "0755"
+    remote_src: true
+  delegate_to: "{{ cache_server }}"
+  when:
+    - not client_tools_done.stat.exists or force_mirroring
+  tags:
+    - getoc
+    - cache
+
+# If the registry host got the oc tools, lets just copy it to the prov host
+- name: "Copy the openshift client tools from control machine to the provisioner host"
+  block:
+    - name: "Get the openshift client tools from registry host into temp file on control machine"
+      fetch:
+        dest: /tmp/
+        flat: true
+        src: "{{ cache_dir }}/{{ version }}/{{ item }}"
+      loop:
+        - kubectl
+        - oc
+      delegate_to: "{{ groups['registry_host'][0] }}"
+
+    - name: "Copy the openshift client tools from control machine to the provisioner host"
+      copy:
+        src: "/tmp/{{ item }}"
+        dest: "{{ dir }}/{{ item }}"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: 0755
+      loop:
+        - kubectl
+        - oc
+      become: true
+
+    - name: "Remove the temporary copy of the openshift clients on control machine"
+      file:
+        path: "/tmp/{{ item }}"
+        state: absent
+      loop:
+        - kubectl
+        - oc
+      delegate_to: localhost
+
+    - name: "Copy oc and kubectl binaries to {{ ocp_binary_path }} provisioner"
+      copy:
+        src: "{{ dir }}/{{ item }}"
+        dest: "{{ ocp_binary_path }}/{{ item }}"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: "0755"
+        remote_src: true
+      become: true
+      loop:
+        - kubectl
+        - oc
+  when:
+    - not cache_provisioner | bool
+  tags:
+    - getoc
+    - cache
+
+# if provisioner node hosts the cache directory then copy locally
+- name: "Copy oc and kubectl binaries to {{ ocp_binary_path }} and {{ config }}"
+  vars:
+    files:
+      - kubectl
+      - oc
+    dest:
+      - "{{ ocp_binary_path }}"
+      - "{{ dir }}"
+  copy:
+    src: "{{ cache_dir }}/{{ version }}/{{ item[0] }}"
+    dest: "{{ item[1] }}/{{ item[0] }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    remote_src: true
+  become: true
+  loop: "{{ files|product(dest)|list }}"
+  when:
+    - cache_provisioner | bool
+  tags:
+    - getoc
+    - cache
+
+- name: "Marker for client tools downloaded"
+  file:
+    dest: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    state: touch
+    mode: "0644"
+  delegate_to: "{{ cache_server }}"
+  when:
+    - not client_tools_done.stat.exists or force_mirroring
+  tags:
+    - getoc
+    - cache
+...

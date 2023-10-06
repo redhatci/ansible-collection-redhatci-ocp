@@ -1,0 +1,19 @@
+---
+- name: Add "{{ ansible_user }}" user to libvirt and qemu group and get ssh key setup
+  user:
+    name: "{{ ansible_user }}"
+    groups: libvirt,qemu
+    append: yes
+    state: present
+    generate_ssh_key: yes
+  become: yes
+  tags: user
+
+- name: Grant "{{ ansible_user }}" user execute access to "{{ ansible_user_dir }}"
+  acl:
+    path: "{{ ansible_user_dir }}"
+    entity: qemu
+    etype: user
+    permissions: x
+    state: present
+  tags: user

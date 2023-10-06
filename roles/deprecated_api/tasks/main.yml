@@ -1,0 +1,33 @@
+---
+- name: Discover all namespaces
+  community.kubernetes.k8s_info:
+    kind: Namespace
+  register: cluster_namespaces
+
+- name: Build namespace list excluding namespaces starting with openshift and kube
+  set_fact:
+    all_namespaces: "{{ cluster_namespaces.resources
+                      | map(attribute='metadata.name')
+                      | select('match', '^(?!openshift|kube-).*')
+                      | list }}"
+
+- name: Get API request counts for all custom namespaces
+  k8s_info:
+    kind: APIRequestCount
+    namespace: "{{ item }}"
+  # Check all namespaces by default unless otherwise requested
+  with_items: "{{ deprecated_namespaces | default(all_namespaces) }}"
+  register: api_request_counts
+
+- name: Extract deprecated and to-be-deprecated API
+  vars:
+    query: "results[*].resources[*].{name: metadata.name, removedInRelease: status.removedInRelease}[?removedInRelease != null]"
+  set_fact:
+    removed_in_release_api: "{{ api_request_counts | json_query(query) | flatten }}"
+
+- name: Compute OCP compatibility of the workload API
+  vars:
+    ocp_filename: "{{ job_logs.path }}/apirequestcounts_ocp_compatibility.xml"
+  set_fact:
+    ocp_compatibility: "{{ removed_in_release_api | ocp_compatibility(ocp_version, ocp_filename) }}"
+...

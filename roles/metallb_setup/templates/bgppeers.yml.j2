@@ -1,0 +1,10 @@
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: "{{ peer.name }}"
+  namespace: "{{ mlb_namespace }}"
+spec:
+  peerAddress: "{{ peer.address }}"
+  peerASN: {{ peer.remote_asn }}
+  myASN: {{ peer.local_asn }}
+  bfdProfile: "{{ mlb_bfd_profile }}"

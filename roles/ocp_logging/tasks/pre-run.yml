@@ -1,0 +1,86 @@
+---
+
+- name: "Check logs_settings file"
+  stat:
+    path: "{{ ol_settings }}"
+  register: file_stat
+  when:
+    - ol_settings is defined
+    - ol_settings | default("") | length
+
+- name: "Load logs_settings from vars file"
+  include_vars:
+    file: "{{ ol_settings }}"
+  when:
+    - ol_settings is defined
+    - ol_settings | default("") | length
+    - file_stat is defined
+    - file_stat.stat.exists
+
+- name: "Validate parameters"
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required"
+  with_items:
+    - ol_access_key_id
+    - ol_access_key_secret
+    - ol_bucket
+    - ol_endpoint
+    - ol_region
+    - ol_loki_size
+    - ol_storage_class
+
+- name: "Get cluster version"
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: cluster_version
+
+- name: "Fail when OCP version is not supported"
+  vars:
+    current_ver_query: "history[?state=='Completed'] | [0].version"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    current_ver: "{{ full_ver.split('-')[0] }}"
+    ocp_version: "{{  current_ver }}"
+  fail:
+    msg: "OCP version must be >= {{ ol_ocp_supported }}"
+  when: ocp_version is version( ol_ocp_supported , "<")
+
+- name: "Check if the Loki CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: lokistacks.loki.grafana.com
+  register: loki_crd
+  no_log: true
+
+- name: "Fail if Loki CRD is not present"
+  fail:
+    msg: "Loki CRD are not present"
+  when: loki_crd.resources | list | count == 0
+
+- name: "Check if the ClusterLogging CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: clusterloggings.logging.openshift.io
+  register: cl_crd
+  no_log: true
+
+- name: "Fail if ClusterLogging CRD is not present"
+  fail:
+    msg: "ClusterLogging CRD is not present"
+  when: cl_crd.resources | list | count == 0
+
+- name: "Get Storage Classes"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+    name: "{{ ol_storage_class }}"
+  register: storage_class
+
+- name: "Fail when the storage class does not exit"
+  fail:
+    msg: "The defined storage class does not exist"
+  when:
+    - storage_class.resources | length == 0
+...

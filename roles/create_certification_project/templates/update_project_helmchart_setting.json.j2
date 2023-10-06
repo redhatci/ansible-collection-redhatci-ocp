@@ -1,0 +1,27 @@
+{
+  "contacts": [
+    {
+      "email_address": "{{ cert_settings.email_address }}",
+      "type": "Technical contact"
+    }
+  ],
+  "helm_chart": {
+    "application_categories": [
+    "{{ cert_settings.application_categories }}"
+    ],
+    "chart_name": "{{ current_chart_name }}",
+    "distribution_instructions": "{{ cert_settings.distribution_instructions }}",
+    "distribution_method": "{{ cert_settings.distribution_method }}",
+    "github_usernames": [
+    "{{ cert_settings.github_usernames }}"
+    ],
+    "long_description": "{{ cert_settings.long_description }}",
+    "short_description": "{{ helmchart.short_description }}"
+  },
+  "marketplace": {
+    "enablement_status": "ineligible"
+  },
+  "name": "{{ current_chart_name }}",
+  "project_status": "active",
+  "type": "Helm Chart",
+}

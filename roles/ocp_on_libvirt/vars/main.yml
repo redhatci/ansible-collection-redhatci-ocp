@@ -1,0 +1,5 @@
+---
+ssh_key: id_rsa
+libvirt_become: yes
+net: baremetal
+...

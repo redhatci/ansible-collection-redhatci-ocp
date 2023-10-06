@@ -1,0 +1,8 @@
+{
+  "cert_projects": {{ all_container_projects | to_nice_json(indent=2) }},
+  "published": {{ cert_listings.published | default(published) }},
+  "target_platforms": [
+    "Red Hat OpenShift"
+  ],
+  "type": "{{ cert_listings.type }}"
+}
