@@ -1,7 +1,7 @@
 ---
 
 - name: Create package component
-  dci_component:
+  ansible.legacy.dci_component:
     display_name: "{{ item }} {{ ansible_facts.packages[item][0].version }}-{{ ansible_facts.packages[item][0].release }}"
     version: "{{ ansible_facts.packages[item][0].version }}-{{ ansible_facts.packages[item][0].release }}"
     team_id: "{{ job_info['job']['team_id'] }}"
@@ -11,7 +11,7 @@
   register: package_component
 
 - name: Attach package component to the job
-  dci_job_component:
+  ansible.legacy.dci_job_component:
     component_id: " {{ package_component.component.id }} "
     job_id: " {{ job_id }} "
   register: job_component_result

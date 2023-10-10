@@ -143,7 +143,7 @@
   # here rather than changing pre-run and track_git_repo to be adapted to this
   # casuistic
   - name: Manually create the corresponding tnf component for DCI
-    dci_component:
+    ansible.legacy.dci_component:
       display_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
       version: "{{ tnf_version_image }}"
       team_id: "{{ job_info['job']['team_id'] }}"
@@ -155,7 +155,7 @@
     tags: [dci]
 
   - name: Attach tnf component to the job
-    dci_job_component:
+    ansible.legacy.dci_job_component:
       component_id: "{{ tnf_git_component.component.id }}"
       job_id: "{{ job_id }}"
     register: job_component_result

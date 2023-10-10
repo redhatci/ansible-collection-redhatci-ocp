@@ -12,7 +12,7 @@
 # create the component the same way as in
 # dci-ansible/action_plugins/git.py
 - name: Create git repo component
-  dci_component:
+  ansible.legacy.dci_component:
     display_name: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }} {{ last_commit_id.stdout[:7] }}"
     version: "{{ last_commit_id.stdout[:7] }}"
     uid: "{{ last_commit_id.stdout }}"
@@ -25,7 +25,7 @@
   when: last_commit_id.rc == 0
 
 - name: 'Attach git component to the job'
-  dci_job_component:
+  ansible.legacy.dci_job_component:
     component_id: "{{ git_component.component.id }}"
     job_id: " {{ job_id }} "
   register : job_component_result

@@ -64,7 +64,7 @@
   become: true
 
 - name: Convert Oval file to Junit
-  dci_oval_to_junit:
+  ansible.legacy.dci_oval_to_junit:
     oval_result_src: "{{ preflight_container_artifacts.path }}/oval-report.xml"
     junit_dest: "{{ preflight_container_artifacts.path }}/oval-report.junit.xml"
 
