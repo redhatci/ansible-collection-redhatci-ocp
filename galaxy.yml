@@ -6,7 +6,7 @@ namespace: redhatci
 name: ocp
 
 # The version of the collection. Must be compatible with semantic versioning
-version: 0.1.1
+version: 0.2.0
 
 # The path to the Markdown (.md) readme file.
 readme: README.md
