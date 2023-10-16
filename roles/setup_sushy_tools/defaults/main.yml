@@ -5,6 +5,7 @@ sushy_auth_dir: "{{ sushy_dir }}/auth"
 sushy_cert_dir: "{{ sushy_dir }}/cert"
 sushy_auth_file: "{{ sushy_auth_dir }}/htpasswd"
 sushy_data_dir: "{{ sushy_dir }}/data"
+sushy_ignore_boot_device: true
 sushy_packages_rhel9:
   - python3-devel
   - python3-pip

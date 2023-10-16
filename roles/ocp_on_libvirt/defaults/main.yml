@@ -1,9 +1,22 @@
 ---
 libvirt_image_path: /var/lib/libvirt/images
-enable_conserver: false
+bootmode: "{{ 'uefi' if enable_redfish else 'legacy' }}"
+enable_conserver: true
 enable_legacy_vga_mode: false
 do_dns_config: true
 apps_ip_address: 192.168.123.10
 api_ip_address: 192.168.123.5
 dns_vip_address: 192.168.123.6
+
+# REDFISH
+enable_redfish: false
+enable_virtualmedia: false
+redfish_port: 8082
+cert_country: US
+cert_state: MA
+cert_locality: Westford
+cert_organization: DCI
+cert_organizational_unit: Lab
+sushy_ignore_boot_device: false
+
 ...
