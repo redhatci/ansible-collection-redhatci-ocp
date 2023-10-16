@@ -3,8 +3,12 @@
   <memory unit='KiB'>{{ host['memory'] * 1024 | int }}</memory>
   <vcpu placement='static'>{{ host['vcpus'] }}</vcpu>
   <os>
-    <type arch='{{ host['arch'] }}'>hvm</type>
+    <type arch='{{ host['arch'] }}'{{ " machine='pc-q35-rhel8.6.0'" if bootmode == "uefi" else "" }}>hvm</type>
     <boot dev='{{ host['boot_dev'] }}'/>
+{% if bootmode == "uefi" %}
+    <loader readonly='yes' secure='yes' type='pflash'>/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd</loader>
+    <nvram template='/usr/share/edk2/ovmf/OVMF_VARS.secboot.fd'>/var/lib/libvirt/qemu/nvram/{{ host['name'] }}_VARS.fd</nvram>
+{% endif %}
 {% if enable_conserver %}
     <bios useserial='yes' rebootTimeout='0'/>
 {% endif %}
@@ -13,6 +17,9 @@
     <acpi/>
     <apic/>
     <pae/>
+{% if bootmode == "uefi" %}
+    <smm state="on"/>
+{% endif %}
   </features>
   <cpu mode='{{ host['cpu_mode'] }}'>
     <model fallback='allow' />
@@ -31,7 +38,7 @@
       <driver name='qemu' type='raw'/>
       <source file='/tmp/vm-{{ host['name'] }}.iso'/>
       <backingStore/>
-      <target dev='hda' bus='ide'/>
+      <target dev='hda' bus='{{ "sata" if bootmode == "uefi" else "ide" }}'/>
       <readonly/>
     </disk>
     <disk type='file' device='disk'>
@@ -79,7 +86,7 @@
     </interface>
 {% endfor %}
     <controller type='usb' index='0'/>
-    <controller type='pci' index='0' model='pci-root'/>
+    <controller type='pci' index='0' model='{{ "pcie-root" if bootmode == "uefi" else "pci-root" }}'/>
 {% if enable_conserver %}
     <serial type='unix'>
       <source mode='bind' path='/var/lib/libvirt/consoles/{{ host['name'] }}.console'/>

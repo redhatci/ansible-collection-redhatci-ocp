@@ -1,9 +1,18 @@
 ---
 libvirt_image_path: /var/lib/libvirt/images
+bootmode: uefi
 enable_conserver: false
 enable_legacy_vga_mode: false
 do_dns_config: true
 apps_ip_address: 192.168.123.10
 api_ip_address: 192.168.123.5
 dns_vip_address: 192.168.123.6
+
+# REDFISH
+enable_redfish: false
+enable_virtualmedia: false
+redfish_cache_dir: /var/lib/dci-openshift-agent
+redfish_assisted_deploy_repo: https://github.com/redhat-partner-solutions/crucible.git
+redfish_assisted_deploy_version: 92864fc8be3f83a80666d3c1e98d1740f17dfc30
+
 ...
