@@ -30,6 +30,9 @@
       vars:
         vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
+    - name: Redfish Setup
+      ansible.builtin.include_tasks: redfish_setup.yml
+      when: enable_redfish | bool
     - name: DCI Setup
       ansible.builtin.include_tasks: dci_setup.yml
     - name: Setup conserver
