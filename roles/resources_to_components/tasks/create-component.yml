@@ -1,6 +1,6 @@
 ---
 - name: Create resource component
-  dci_component:
+  ansible.legacy.dci_component:
     display_name: "{{ comp_display_name }}"
     version: "{{ comp_version }}"
     team_id: "{{ job_info['job']['team_id'] }}"
@@ -10,7 +10,7 @@
   register: resource_component
 
 - name: Attach resource component to the job
-  dci_job_component:
+  ansible.legacy.dci_job_component:
     component_id: " {{ resource_component.component.id }} "
     job_id: " {{ job_id }} "
   register: job_component_result

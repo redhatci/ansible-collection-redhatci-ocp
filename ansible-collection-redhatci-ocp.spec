@@ -3,8 +3,8 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.1.1
-Release:        4.VERS%{?dist}
+Version:        0.2.0
+Release:        1.VERS%{?dist}
 Summary:        Redhat OCP Collection for ansible
 
 License:        GPL-2.0-or-later and Apache-2.0
@@ -37,6 +37,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Oct 16 2023 Tony Garcia <tonyg@redhat.com> - 0.2.0-1
+- To be consumed by agents
+
 * Mon Oct 16 2023 Jorge A Gallegos <jgallego@redhat.com> - 0.1.1-4
 - rebuilt
 

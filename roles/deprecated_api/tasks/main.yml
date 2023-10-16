@@ -29,5 +29,5 @@
   vars:
     ocp_filename: "{{ job_logs.path }}/apirequestcounts_ocp_compatibility.xml"
   set_fact:
-    ocp_compatibility: "{{ removed_in_release_api | ocp_compatibility(ocp_version, ocp_filename) }}"
+    ocp_compatibility: "{{ removed_in_release_api | redhatci.ocp.ocp_compatibility(ocp_version, ocp_filename) }}"
 ...
