@@ -1,0 +1,10 @@
+---
+- name: "Delete Minio Namespace"
+  community.kubernetes.k8s:
+    state: absent
+    api: "v1"
+    kind: "Namespace"
+    name: "{{ sm_namespace }}"
+  notify:
+    - "Delete temp directory"
+...

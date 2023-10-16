@@ -1,0 +1,174 @@
+---
+- name: Create namespace for Minio
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ sm_namespace }}"
+        labels:
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+
+- name: Create Minio PVC
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: "{{ pvc_name }}"
+        namespace: "{{ sm_namespace }}"
+      spec:
+        storageClassName:  "{{ sm_storage_class }}"
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: "{{ sm_claim_size }}"
+
+- name: Wait for Minio PVC to be Bound
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "{{ sm_namespace }}"
+    name: "{{ pvc_name }}"
+  register: minio_pvc
+  until:
+    - minio_pvc.resources is defined
+    - minio_pvc.resources[0].status.phase == "Bound"
+  retries: 6
+  delay: 10
+
+- name: Create the minio deployment
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: "{{ deployment_name }}"
+        namespace: "{{ sm_namespace }}"
+      spec:
+        selector:
+          matchLabels:
+            app: minio
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: minio
+          spec:
+            volumes:
+              - name: data
+                persistentVolumeClaim:
+                  claimName: minio-pvc-claim
+            containers:
+            - name: minio
+              volumeMounts:
+                - name: data 
+                  mountPath: /data
+              image: "{{ sm_minio_image }}"
+              args:
+              - server
+              - /data
+              env:
+                - name: MINIO_ACCESS_KEY
+                  value: "{{ sm_access_key_id }}"
+                - name: MINIO_SECRET_KEY
+                  value: "{{ sm_access_key_secret }}"
+              ports:
+              - containerPort: 9000
+              readinessProbe:
+                httpGet:
+                  path: /minio/health/ready
+                  port: 9000
+                initialDelaySeconds: 120
+                periodSeconds: 20
+              livenessProbe:
+                httpGet:
+                  path: /minio/health/live
+                  port: 9000
+                initialDelaySeconds: 120
+                periodSeconds: 20
+
+- name: Create the minio service
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: "{{ service_name }}"
+        namespace: "{{ sm_namespace }}"
+      spec:
+        type: LoadBalancer
+        ports:
+          - name: http
+            port: 9000
+            targetPort: 9000
+            protocol: TCP
+        selector:
+          app: minio
+
+- name: Get service info
+  community.kubernetes.k8s_info:
+    kind: Service
+    name: minio-service
+    namespace: "{{ sm_namespace }}"
+  register: service_info
+
+- name: Get worker node info
+  community.kubernetes.k8s_info:
+    kind: Node
+    label_selectors:
+      - "node-role.kubernetes.io/worker"
+  register: node_info
+
+- name: Check minio service availability
+  vars:
+    random_worker_ip: "{{ node_info.resources | json_query('[].status.addresses[?type==`InternalIP`].address') | random | first }}"
+    node_port: "{{ service_info.resources[0].spec.ports[0].nodePort }}"
+  uri:
+    url: "http://{{ random_worker_ip }}:{{ node_port }}/minio/health/ready"
+    return_content: no
+    status_code: 200
+  register: response
+  retries: 50
+  delay: 5
+  until: response.status == 200
+
+- name: Create working directory
+  tempfile:
+    state: directory
+    prefix: minio_
+  register: minio_dir
+
+- name: Set working directory path
+  set_fact:
+    minio_dir: "{{ minio_dir.path }}"
+
+- name: Get Minio CLI
+  vars:
+    minio_cli: "https://dl.min.io/client/mc/release/linux-amd64/mc"
+  get_url:
+    url: "{{ minio_cli }}"
+    dest: "{{ minio_dir }}/"
+    mode: "0750"
+
+- name: Create an initial bucket
+  vars:
+    random_worker_ip: "{{ node_info.resources | json_query('[].status.addresses[?type==`InternalIP`].address') | random | first }}"
+    node_port: "{{ service_info.resources[0].spec.ports[0].nodePort }}"
+    instance: local
+  shell: |
+    {{ minio_dir }}/mc alias set {{ instance }} \ 
+    http://{{ random_worker_ip }}:{{ node_port }} \ 
+    {{ sm_access_key_id }} {{ sm_access_key_secret }} --api S3v4;
+    {{ minio_dir }}/mc mb --ignore-existing {{ instance }}/{{ sm_bucket_name }}
+  register: minio_cmd 
+  retries: 18
+  delay: 5
+  until: minio_cmd is not failed
+  notify:
+    - "Delete temp directory"
+...

@@ -1,0 +1,9 @@
+---
+sm_claim_size: 10Gi
+sm_namespace: minio
+sm_access_key_id: minioadmin
+sm_access_key_secret: minioadmin
+sm_bucket_name: minio
+sm_action: install
+sm_minio_image: quay.io/minio/minio:latest
+...
