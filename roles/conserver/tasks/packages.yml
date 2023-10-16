@@ -1,0 +1,11 @@
+---
+- name: Install additional packages
+  become: true
+  package:
+    name:
+      - conserver
+      - conserver-client
+      - ipmitool
+      - socat
+    state: present
+...

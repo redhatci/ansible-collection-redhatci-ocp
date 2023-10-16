@@ -1,0 +1,85 @@
+---
+- name: "Validate required variables"
+  assert:
+    that:
+      - mor_cache_dir | string
+      - mor_version | string
+      - mor_pull_url | string
+      - mor_build | string
+      - mor_oc | string
+
+- name: "Check if authentication file exists"
+  stat:
+    path: "{{ mor_auths_file }}"
+    get_checksum: false
+  register: mor_auths_file_check
+  when:
+    - mor_auths_file is defined
+
+- name: "Validate optional authentication file"
+  assert:
+    that:
+      - mor_auths_file is defined
+      - mor_auths_file_check.stat.exists | bool
+  when:
+    - mor_mirror_container_images | bool
+
+- name: "Validate optional mor_webserver_url variable"
+  assert:
+    that:
+      - mor_webserver_url | string
+      - (mor_webserver_url | urlsplit('scheme')) in ('http', 'https',)
+  when:
+    - mor_write_custom_config | bool
+
+- name: "Validate install type"
+  assert:
+    that:
+      - mor_install_type | string
+      - mor_install_type in ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm']
+
+- name: "Validate conditional registry variables"
+  assert:
+    that:
+      - mor_registry_url is defined
+      - mor_registry_url | string
+  when:
+    - mor_mirror_container_images | bool
+
+- name: "Mirroring OCP"
+  debug:
+    var: mor_version
+
+- name: "Create directory structure"
+  include_tasks: image-list.yml
+
+- name: "Create directory structure"
+  include_tasks: dirs.yml
+
+- name: "Download release resources"
+  include_tasks: download.yml
+
+- name: "Unpack release artifacts"
+  include_tasks: unpack.yml
+
+- name: "Extract installer"
+  include_tasks: installer.yml
+
+- name: "Write webserver configuration files"
+  include_tasks: files.yml
+  when:
+    - mor_write_custom_config | bool
+
+- name: "Set OCP release facts"
+  include_tasks: facts.yml
+
+- name: "Mirror disk images"
+  include_tasks: images.yml
+  when:
+    - mor_mirror_disk_images | bool
+
+- name: "Mirror container images"
+  include_tasks: registry.yml
+  when:
+    - mor_mirror_container_images | bool
+...

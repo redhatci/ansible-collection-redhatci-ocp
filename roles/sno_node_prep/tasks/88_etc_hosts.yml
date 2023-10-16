@@ -1,0 +1,7 @@
+---
+- name: Add DNS /etc/hosts entries (Fedora)
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ sno_extnet_ip }} api.{{ cluster }}.{{ domain }}"
+  become: yes
+  tags: dnsredirect

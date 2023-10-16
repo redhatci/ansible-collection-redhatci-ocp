@@ -1,0 +1,19 @@
+---
+- block:
+      - include_tasks: install.yml
+      - include_tasks: configure.yml
+      - name: Register vars for instackenv template
+        set_fact:
+            vbmc_ports: "{{ vbmc_ports }}"
+            vbmc_management_address: "{{ vbmc_management_address }}"
+  when: hook_action == 'install'
+  become: true
+
+- block:
+      - include_tasks: check.yml
+        when: hook_action == 'check'
+      - include_tasks: cleanup.yml
+        when: hook_action == 'cleanup'
+      - include_tasks: remove.yml
+        when: hook_action == 'remove'
+  become: true

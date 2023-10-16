@@ -1,0 +1,80 @@
+---
+- name: "Add Kubeconfig to Ansible User .bashrc"
+  lineinfile:
+    path: "{{ ansible_user_dir }}/.bashrc"
+    line: "export KUBECONFIG={{ dir }}/auth/kubeconfig"
+  tags: install_bm
+
+- name: "Disable PXE Timeout"
+  shell: >
+    ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
+    -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
+    -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
+    -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
+    raw 0x00 0x08 0x03 0x08
+  tags: install_bm
+
+- name: "Set PXE - UEFI Temporally on next boot"
+  shell: >
+    ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
+    -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
+    -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
+    -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
+    raw 0x00 0x08 0x05 0xa0 0x04 0x00 0x00 0x00
+  when:
+    - (bootmode is not defined or bootmode != "legacy")
+  tags: install_bm
+
+- name: "Set PXE - BIOS Temporally on next boot"
+  shell: >
+    ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
+    -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
+    -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
+    -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
+    raw 0x00 0x08 0x05 0x80 0x04 0x00 0x00 0x00
+  when:
+    - bootmode is defined
+    - bootmode == "legacy"
+  tags: install_bm
+
+- name: "Recover power status of baremetal node"
+  shell: >
+    ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
+    -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
+    -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
+    -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
+    power status
+  register: node_power
+  tags: install_bm
+
+- name: "Start the baremetal node"
+  shell: >
+    ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
+    -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
+    -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
+    -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
+    power on
+  when:
+    - "'Chassis Power is off' in node_power.stdout"
+  tags: install_bm
+
+- name: "Reset the baremetal node"
+  shell: >
+    ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
+    -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
+    -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
+    -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
+    power reset
+  when:
+    - "'Chassis Power is on' in node_power.stdout"
+  tags: install_bm
+
+- name: Show How to monitor for installation status
+  debug:
+    msg:
+      - "Next step will provision SNO Baremetal. It might take a few minutes for the API to respond"
+      - "Once the api gets available you can run the following in another shell session"
+      - "to monitor the installation progress:  export KUBECONFIG={{ dir }}/auth/kubeconfig"
+      - "watch -n5 -d 'oc get nodes ; oc get co ; oc get clusterversion'"
+  tags: install_bm
+...

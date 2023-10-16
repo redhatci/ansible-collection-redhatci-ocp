@@ -1,0 +1,65 @@
+---
+- name: "Power off node using ipmitool"
+  shell: >
+    ipmitool -I lanplus -U {{ acm_bmc_user }}
+    -P {{ acm_bmc_pass }}
+    -H {{ acm_bmc_address }}
+    -p {{ acm_bmc_port }}
+    chassis power off
+  register: command_result
+  until: command_result.rc == 0
+  retries: 5
+  delay: 5
+
+- name: "Wait for power off"
+  shell: >
+    ipmitool -I lanplus -U {{ acm_bmc_user }}
+    -P {{ acm_bmc_pass }}
+    -H {{ acm_bmc_address }}
+    -p {{ acm_bmc_port }}
+    chassis power status
+  register: command_result
+  until: "'Chassis Power is off' in command_result.stdout"
+  retries: 10
+  delay: 60
+
+- name: "Change boot device using ipmitool"
+  shell: >
+    ipmitool -I lanplus -U {{ acm_bmc_user }}
+    -P {{ acm_bmc_pass }}
+    -H {{ acm_bmc_address }}
+    -p {{ acm_bmc_port }}
+    chassis bootdev disk
+  register: command_result
+  until: command_result.rc == 0
+  retries: 5
+  delay: 5
+
+- name: "Power on node using ipmitool"
+  shell: >
+    ipmitool -I lanplus -U {{ acm_bmc_user }}
+    -P {{ acm_bmc_pass }}
+    -H {{ acm_bmc_address }}
+    -p {{ acm_bmc_port }}
+    chassis power on
+  register: command_result
+  until: command_result.rc == 0
+  retries: 5
+  delay: 5
+
+- name: "Wait for power on"
+  shell: >
+    ipmitool -I lanplus -U {{ acm_bmc_user }}
+    -P {{ acm_bmc_pass }}
+    -H {{ acm_bmc_address }}
+    -p {{ acm_bmc_port }}
+    chassis power status
+  register: command_result
+  until: "'Chassis Power is on' in command_result.stdout"
+  retries: 10
+  delay: 60
+
+- name: "Set node as rebooted"
+  set_fact:
+    node_rebooted: true
+...

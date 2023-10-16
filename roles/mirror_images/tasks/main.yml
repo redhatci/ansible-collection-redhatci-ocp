@@ -1,0 +1,9 @@
+---
+- name: "mirror_images : Mirror images"
+  include_tasks: mirror-images.yml
+  loop: "{{ images }}"
+  loop_control:
+    loop_var: image
+  when:
+    - images is defined
+    - images | length

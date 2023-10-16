@@ -1,0 +1,32 @@
+---
+- name: "Check if {{ uri | basename }} exists"
+  stat:
+    path: "{{ mor_dir }}/{{ uri | basename }}"
+    get_checksum: false
+  register: target
+  when:
+    - not mor_force  # we don't care to stat files if we're forcing
+
+- name: "Fetch {{ uri | basename }}"
+  get_url:
+    url: "{{ uri }}"
+    dest: "{{ mor_dir }}"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
+    mode: "0644"
+    timeout: 1200
+    setype: "{{ setype | default('httpd_sys_content_t') }}"
+    checksum: "{{ checksum | default(omit) }}"
+  become: true
+  retries: 3
+  delay: 10
+  register: downloaded
+  until: downloaded is not failed
+  when:
+    - mor_force or not target.stat.exists
+
+- name: "Apply new SELinux file context to file"
+  command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ uri | basename }}"
+  become: true
+  when: selinux_status.rc == 0
+...

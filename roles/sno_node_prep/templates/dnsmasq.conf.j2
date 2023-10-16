@@ -1,0 +1,18 @@
+address=/api.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
+address=/apps.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
+address=/api-int.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
+enable-tftp
+tftp-root={{ tftp_dir }}
+dhcp-match=set:efi,option:client-arch,7
+dhcp-match=set:efi,option:client-arch,9
+dhcp-match=set:efi,option:client-arch,11
+dhcp-boot=shimx64.efi
+{% if bootmode is defined and bootmode == "legacy" %}
+dhcp-boot=pxelinux.0
+{% endif %}
+domain={{ cluster }}.{{ domain }},{{ extcidrnet }}
+dhcp-range={{ sno_extnet_ip }},{{ sno_extnet_ip }},2h
+dhcp-option=option:netmask,{{ extcidrnet | ipaddr('netmask') }}
+dhcp-option=option:router,{{ extcidrrouter | default(extcidrnet|ipaddr('first_usable')) }}
+dhcp-option=option:dns-server,{{ extcidrdns | default(extcidrnet|ipaddr('first_usable')) }}
+dhcp-host={{ hostvars[groups['masters'][0]]['baremetal_mac'] }},{{ sno_extnet_ip }},{{ hostvars[groups['masters'][0]]['name'] }}.{{ cluster }}.{{ domain }}

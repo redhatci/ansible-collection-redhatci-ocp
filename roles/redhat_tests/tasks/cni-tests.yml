@@ -1,0 +1,37 @@
+---
+
+- name: "test_ redhat_tests: Run the openshift CNI tests (connected)"
+  shell:
+    cmd: >
+      podman run --pull=always --rm
+      -v {{ ts_configs_dir }}:/tests:Z
+      -v {{ ts_log_dir }}:/logs:Z
+      -e KUBECONFIG=/tests/kubeconfig
+      {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
+      /bin/bash -c "openshift-tests run openshift/network/third-party --junit-dir /logs > /logs/cni_tests_results.log"
+  ignore_errors: yes
+  when:
+    - not (dci_disconnected | default(false) | bool)
+    - ts_ocp_version_maj|int == 4
+    - ts_ocp_version_min|int >= 7
+
+
+- name: "test_ redhat_tests: Run the openshift CNI tests (disconnected) only for OCP 4.8+"
+  shell:
+    cmd: >
+     podman run --pull=always --rm
+     -v {{ ts_configs_dir }}:/tests:Z
+     -v {{ ts_log_dir }}:/logs:Z
+     -v {{ ts_registry_auth }}:/auths.json:z
+     -e KUBECONFIG=/tests/kubeconfig
+     {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
+     /bin/bash -c "openshift-tests images --to-repository {{ ts_registry }}/conformance-test
+     | oc image mirror --insecure=true -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
+     && openshift-tests run openshift/network/third-party --from-repository {{ ts_registry }}/conformance-test
+     --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /logs > /logs/cni_tests_results.log"
+  ignore_errors: yes
+  when:
+    - dci_disconnected | default(false) | bool
+    - ts_ocp_version_maj|int == 4
+    - ts_ocp_version_min|int >= 8
+...

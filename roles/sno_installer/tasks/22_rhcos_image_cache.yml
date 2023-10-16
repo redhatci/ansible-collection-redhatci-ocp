@@ -1,0 +1,109 @@
+---
+# If we're executing these plays, then:
+# 1. cache_enabled is true
+# 2. Access to www.redhat.com has been confirmed
+
+# SELinux when already has httpd_sys_content_t giving issues changing,thus leaving it the same
+# for the provision_cache_store to prevent issues. Also removing ":z" from podman_container for
+# provision_cache_store in the later task.
+- name: "Create {{ provision_cache_store }} on host with online access"
+  file:
+    path: "{{ item[0] }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    setype: "{{ item[1] }}"
+    mode: '755'
+  with_nested:
+    - ["{{ provision_cache_store }}"]
+    - ['httpd_sys_content_t']
+  tags: cache
+
+# Leaving SELinux details alone and not using ":z"
+# for the provision_cache_store due to issues attempting
+# to revert context. Leaving behavior as it was previously
+# to avoid breaking other user environments.
+- name: "Start RHCOS image cache container"
+  containers.podman.podman_container:
+    name: sno_image_cache
+    image: "{{ webserver_caching_image }}"
+    state: stopped
+    publish:
+      - "{{ webserver_caching_port_container }}:8080"
+    volumes:
+      - "{{ provision_cache_store }}:/var/www/html"
+  register: rhcos_image_cache_info
+  tags: cache
+
+- name: "Setting facts about container"
+  set_fact:
+    rhcos_image_cache_name: "{{ rhcos_image_cache_info.container.Name }}"
+    rhcos_image_cache_pidfile: "{{ rhcos_image_cache_info.container.ConmonPidFile }}"
+  tags: cache
+
+- name: "Ensuring container restarts upon reboot"
+  block:
+    - name: "Ensure user specific systemd instance are persistent"
+      command: |
+        /usr/bin/loginctl enable-linger {{ ansible_user }}
+
+    - name: "Create systemd user directory"
+      file:
+        path: "{{ ansible_user_dir }}/.config/systemd/user"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0775'
+
+    - name: "Copy the systemd service file"
+      copy:
+        content: |
+          [Unit]
+          Description=Podman container-cache.service
+          [Service]
+          Restart=on-failure
+          ExecStart=/usr/bin/podman start {{ rhcos_image_cache_name }}
+          ExecStop=/usr/bin/podman stop -t 10 {{ rhcos_image_cache_name }}
+          KillMode=none
+          Type=forking
+          PIDFile={{ rhcos_image_cache_pidfile }}
+          [Install]
+          WantedBy=default.target
+        dest: "{{ ansible_user_dir }}/.config/systemd/user/container-cache.service"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+
+    - name: "Reload systemd service"
+      systemd:
+        daemon_reexec: yes
+        scope: user
+      environment:
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+
+    - name: "Enable container-cache.service"
+      systemd:
+        name: container-cache.service
+        enabled: yes
+        scope: user
+      environment:
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+
+    - name: "Start container-cache.service"
+      systemd:
+        name: container-cache.service
+        state: restarted
+        scope: user
+      environment:
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+
+    - name: "Allow HTTP cache traffic"
+      firewalld:
+        port: "{{ webserver_caching_port_container }}/tcp"
+        permanent: yes
+        immediate: true
+        state: enabled
+      become: true
+      when: firewall == "firewalld"
+  tags: cache
+...

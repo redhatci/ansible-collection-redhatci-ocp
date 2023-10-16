@@ -1,0 +1,51 @@
+---
+- name: install hco
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: "hco.kubevirt.io/v1beta1"
+      kind: HyperConverged
+      metadata:
+        name: kubevirt-hyperconverged
+        namespace: "{{ hs_ns }}"
+      spec:
+        BareMetalPlatform: true
+  register: result
+  retries: 5
+  delay: 60
+  until: result is not failed
+
+- name: test_ Check for hyperconverged
+  community.kubernetes.k8s_info:
+    api_version: "hco.kubevirt.io/v1beta1"
+    namespace: "{{ hs_ns }}"
+    kind: HyperConverged
+    wait: true
+    wait_condition:
+      type: Available
+      status: "True"
+    wait_timeout: 300
+  register: result
+  retries: 5
+  delay: 60
+  until: result is not failed
+
+- name: test_ Check for hyperconverged operator
+  community.kubernetes.k8s_info:
+    api_version: v1
+    namespace: "{{ hs_ns }}"
+    kind: Pod
+    label_selectors:
+      - name=hyperconverged-cluster-operator
+  register: hco_pods
+  retries: "{{ hs_retries }}"
+  delay: 60
+  no_log: false
+  until:
+    - hco_pods.resources is defined
+    - "hco_pods.resources|length == 1"
+    - "'status' in hco_pods.resources[0]"
+    - "'containerStatuses' in hco_pods.resources[0].status"
+    - "hco_pods.resources[0].status.containerStatuses|length == 1"
+    - "'ready' in hco_pods.resources[0].status.containerStatuses[0]"
+    - "hco_pods.resources[0].status.containerStatuses[0].ready|bool"
+...
