@@ -49,10 +49,10 @@ class FilterModule(object):
         # convert the dictionary to JUnit test suite
         test_cases = []
         for version, status in ocp_versions.items():
-            test_case = TestCase(f'Compatibility with OCP-{version}', classname=f'Workload Compatibility with OCP-{version}')
+            test_case = TestCase(f'Check compatibility with OCP-{version}', classname=f'Workload Compatibility with OCP-{version}')
 
             if status != 'compatible':
-                test_case.add_failure_info(f'Workload utilizes APIs deprecated for OCP-{version}: {ocp_versions[version]}')
+                test_case.add_failure_info(f'Workload uses APIs that are no longer available in OCP-{version}: {ocp_versions[version]}')
 
             test_cases.append(test_case)
         test_suite = TestSuite('Workload Compatibility with OCP Versions', test_cases)
