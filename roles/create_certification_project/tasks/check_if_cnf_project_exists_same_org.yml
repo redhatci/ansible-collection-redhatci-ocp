@@ -1,0 +1,65 @@
+---
+- name: Check that organization_id is defined
+  assert:
+    that: "{{ organization_id }} is defined"
+
+- name: Set CNF project facts
+  set_fact:
+    cnf_name: "{{ current_cnf_name }}"
+
+- name: "Get certification cnf projects for the organization {{ organization_id }}"
+  vars:
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+  uri:
+    url: "{{ verify_project_url }}/{{ organization_id }}/projects/certification?page_size={{ page_size }}&page=0"
+    method: GET
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    status_code: 200
+    timeout: 120
+  register: cert_project_list_output
+  retries: 20
+  delay: 3
+  until: not cert_project_list_output.failed
+
+- name: "Get certification projects information from the organization using CNF Name {{ cnf_name }} if exists"
+  set_fact:
+    cert_project_data: "{{ cert_project_list_output.json.data | json_query(query_data) }}"
+  vars:
+    query_data: "[?name == '{{ cnf_name }}']"
+
+- name: "Set fact if {{ cnf_name }} is already in an active certification project"
+  set_fact:
+    cert_project_exists_own_org: true
+  loop: "{{ cert_project_data }}"
+  loop_control:
+    label: "{{ item._id }}"
+  when:
+    - cert_project_data | default([]) | length > 0
+    - item.name == cnf_name
+    - item.project_status == "active"
+
+- name: "Notify if CNF {{ cnf_name }} is already in an active certification project"
+  debug:
+    msg:
+      - "CNF Name {{ cnf_name }} is in process to get certify in another project of this organization"
+      - "Review the following projects: {{ item._id }}"
+      - "To continue archive the project or reach out to support to delete it."
+  loop: "{{ cert_project_data }}"
+  loop_control:
+    label: "{{ item._id }}"
+  when:
+    - cert_project_exists_own_org | default(false) | bool
+    - item.name == cnf_name
+    - item.project_status == "active"
+
+- name: Set project ID to reuse it later
+  set_fact:
+    cert_project_id: "{{ cert_project_data | json_query(query_data) | flatten | last }}"
+  vars:
+    query_data: "[]._id"
+  when:
+    - cert_project_exists_own_org | default(false) | bool
+    - cert_project_data | default([]) | length > 0
+...

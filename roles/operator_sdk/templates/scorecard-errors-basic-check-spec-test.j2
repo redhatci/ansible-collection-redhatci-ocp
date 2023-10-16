@@ -1,0 +1,10 @@
+Scorecard pods ===========================================================
+{% if scorecard_pods.resources %}
+{{ scorecard_pods | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
+Scorecard events =========================================================
+{% if scorecard_events.resources %}
+{{ scorecard_events | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}

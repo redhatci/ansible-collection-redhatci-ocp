@@ -1,0 +1,40 @@
+---
+- name: Validate cert_settings required to update the Helm Chart project
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required to update cert project"
+    success_msg: "All required parameters are ok, proceeding to update Helm Chart certification project"
+  with_items:
+    - helmchart.short_description
+    - cert_settings.long_description
+    - cert_settings.email_address
+    - cert_settings.distribution_method
+    - cert_settings.application_categories
+    - cert_settings.distribution_instructions
+    - cert_settings.github_usernames
+
+- name: Set and save project IDs to use with Product-Listing PATCH and Attachment
+  set_fact:
+    helmchart_projects: "{{ helmchart_projects | default([]) + [ cert_project_id ] }}"
+
+- name: Print JSON draft for the project to be updated
+  vars:
+    template_filename: "templates/update_project_{{ project_type }}_setting.json.j2"
+  debug:
+    msg: "{{ lookup('template', template_filename) }}"
+
+- name: Update certification Helm Chart project Settings
+  vars:
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+    template_filename: "templates/update_project_{{ project_type }}_setting.json.j2"
+  uri:
+    url: "{{ create_project_url }}/id/{{ cert_project_id }}"
+    method: PATCH
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    body: "{{ lookup('template', template_filename) }}"
+    status_code: 200
+    timeout: 120
+  register: update_cert_project_output
+...

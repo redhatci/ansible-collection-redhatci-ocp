@@ -1,0 +1,42 @@
+Scorecard pods ===========================================================
+{% if scorecard_pods.resources %}
+{{ scorecard_pods | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
+Scorecard events =========================================================
+{% if scorecard_events.resources %}
+{{ scorecard_events | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
+Subscription =============================================================
+{% if preflight_subs.resources %}
+{{ preflight_subs | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
+CSV ======================================================================
+{% if preflight_csv.resources %}
+{{ preflight_csv | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
+Events ===================================================================
+{% if preflight_events.resources %}
+{{ preflight_events | json_query('resources[*]') | join('\n') }}
+{% else %}
+{% endif %}
+Pods =====================================================================
+{% if preflight_pods.resources %}
+{{ preflight_pods | json_query('resources[*]') | join('\n') }}
+Pod images ===============================================================
+{{ preflight_pods | json_query('resources[*].spec.containers[*].image') | join('\n') }}
+{% else %}
+{% endif %}
+Subscription message =====================================================
+{% if preflight_subs.resources %}
+{{ preflight_subs | json_query('resources[*].status.conditions') | join('\n') }}
+{% else %}
+{% endif %}
+Catalog message =====================================================
+{% if catalog_info.resources %}
+{{ catalog_info | json_query('resources[*].status.conditions') | join('\n') }}
+{% else %}
+{% endif %}
