@@ -17,6 +17,23 @@
     state: present
   become: true
 
+# The pullsecret is copied in config_file_path in setup_mirror_registry, and this copy can
+# be modified in that role. This role is usually executed prior to populate_mirror_registry,
+# so we need to check if the pullsecret is present there or not.
+- name: "Check if {{ pull_secret_file_name }} has already been copied in {{ config_file_path }}"
+  stat:
+    path: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+  register: copied_pull_secret
+
+# If not present, let's copy it for the next tasks that require it.
+- name: Copy pull_secret
+  copy:
+    src: "{{ local_pull_secret_path }}"
+    dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+    mode: 0644
+  when:
+    - not copied_pull_secret.stat.exists
+
 - name: Create download dirs
   ansible.builtin.file:
     path: "{{ item }}"
