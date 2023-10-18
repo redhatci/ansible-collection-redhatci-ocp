@@ -26,12 +26,12 @@
 
 - name: Template the private repo resource for Argo
   ansible.builtin.template:
-    src: ssh_private_repo.yml.j2
-    dest: "{{ temp_dir.path }}/ssh_private_repo.yml"
+    src: ssh_private_repo.yaml.j2
+    dest: "{{ temp_dir.path }}/ssh_private_repo.yaml"
     mode: '0644'
 
 - name: Apply ssh private repo
-  ansible.builtin.command: oc apply -f "{{ temp_dir.path }}/ssh_private_repo.yml"
+  ansible.builtin.command: oc apply -f "{{ temp_dir.path }}/ssh_private_repo.yaml"
 
 - name: Remove temporary directory
   ansible.builtin.file:
