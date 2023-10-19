@@ -26,7 +26,7 @@
   when: scorecard_is_file is defined
 
 - name: Remove operator_sdk_img built from the source
-  containers.podman.podman_image:
-    name: "{{ operator_sdk_img }}"
-    state: absent
+  shell:
+    cmd: >
+      podman rmi -f {{ operator_sdk_img }}
 ...
