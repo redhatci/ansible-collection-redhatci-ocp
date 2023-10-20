@@ -13,11 +13,8 @@
     api_version: v1
     kind: Namespace
     name: storage-tester
-    kubeconfig: "{{ kubeconfig_path }}"
 
 - name: "Get oc version output"
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
   shell: |
     {{ oc_tool_path }} version
   register: oc_version_str

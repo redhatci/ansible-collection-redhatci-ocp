@@ -1,7 +1,10 @@
 # Storage Service Tests During Upgrade
 ### Requirements
-A default storage class must be defined before running these tests. If the variable `tester_storage_class` is defined, it will use this one instead.
-Also, the provisioner associated with this storage class must implement the CSI `CLONE_VOLUME` [capability](https://kubernetes-csi.github.io/docs/developing.html).
+
+* A default storage class must be defined before running these tests. If the variable `tester_storage_class` is defined, it will use this one instead.
+* the provisioner associated with the storage class must implement the CSI `CLONE_VOLUME` [capability](https://kubernetes-csi.github.io/docs/developing.html).
+* A running OpenShift cluster with the proper credentials is required, credentials must be passed as by setting the KUBECONFIG environment.
+
 For more information on storage classes, see [the OCP documentation](https://docs.openshift.com/container-platform/4.11/post_installation_configuration/storage-configuration.html#defining-storage-classes_post-install-storage-configuration).
 
 ### Three scenarios of tests
@@ -36,4 +39,16 @@ job.batch/storage-volume-reader-rox-27742365            2/1 of 2      16s       
 > Time of the test: 124m
 > Number of failures during this time: 1            # Because of the gathering method, this is just an estimation, specially on the last tests could be seens as a failure whereas it was working fine
 > Estimated percentage of failure: .800             # 0.8% of down time during the 2h the upgrade was running
+```
+
+## Example of usage
+```
+- name: "Gathering results for storage service tester"
+  include_role:
+    name: redhatci.ocp.storage_tester
+    apply:
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+        REGISTRY: "registry.redhat.io"
+        OC_PATH: "/usr/bin/oc"
 ```
