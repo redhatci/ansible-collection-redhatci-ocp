@@ -43,5 +43,5 @@ Confirm that OVN pods are running
     resource_to_check: "SriovNetworkNodeState"
     check_wait_retries: 120
     check_wait_delay: 10
-    check_reason: "Apply ICSPs for mirrored catalogs"
+    check_reason: "Apply SRIOV policies"
 ```
