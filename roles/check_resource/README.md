@@ -34,7 +34,7 @@ Confirm that Machine Config Pools are not updating
     check_reason: "Apply ICSPs for mirrored catalogs"
 ```
 
-Confirm that OVN pods are running
+Confirming SRIOV node state
 ```
 - name: "Wait for updated MCP after applying ICSP"
   include_role:

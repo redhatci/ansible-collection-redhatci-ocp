@@ -48,7 +48,6 @@ job.batch/storage-volume-reader-rox-27742365            2/1 of 2      16s       
     name: redhatci.ocp.storage_tester
     apply:
       environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
         REGISTRY: "registry.redhat.io"
         OC_PATH: "/usr/bin/oc"
 ```
