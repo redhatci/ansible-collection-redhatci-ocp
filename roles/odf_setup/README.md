@@ -52,14 +52,6 @@ Inventory Groups and Variables
 
 ```YAML
 [all:vars]
-# (Required) whether to enable or not Local Storage Operator, true or false
-# required when using enable_ocs=true and ocs_install_type=internal
-enable_lso=
-
-# (Required) whether to enable or not OCS, true or false
-enable_ocs=
-
-# (Required) when enable_ocs=true to specify the integration type with ODF/OCS
 # Two possible options: internal or external
 ocs_install_type=
 
@@ -72,7 +64,7 @@ external_ceph_data='JSON_PAYLOAD'
 # comma separated, all servers must have the same
 local_storage_devices=["/dev/sdX", "/dev/sdY", "/dev/sdZ"]
 
-# (Optional) when enable_ocs=true name of the storageclass to set as default
+# (Optional) Default storage class name
 ocs_default_storage_class=ocs-storagecluster-cephfs
 
 # (Required) Group of nodes where to install OCS
@@ -99,8 +91,6 @@ File: /etc/dci-openshift-agent/hosts
 ```YAML
 [all:vars]
 ...
-enable_lso=true
-enable_ocs=true
 ocs_install_type=internal
 local_storage_devices=["/dev/sdb", "/dev/sdc", "/dev/sdd"]
 

@@ -1,0 +1,51 @@
+---
+- name: "Check if the OCS CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: storageclusters.ocs.openshift.io
+  register: req_crd
+  no_log: true
+
+- name: "Fail if OCS CRD is not present"
+  fail:
+    msg: "OCS CRDs are not present, please install the Openshift Cluster Storage Operator"
+  when: req_crd.resources | list | count == 0
+
+- name: "Check if the main LSO CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: localvolumes.local.storage.openshift.io
+  register: req_crd
+  no_log: true
+
+- name: "Fail if Local Storage CRD is not present"
+  fail:
+    msg: "LSO CRD are not present, please install the Local Storage Operator"
+  when: 
+    - req_crd.resources | list | count == 0
+    - ocs_install_type == 'internal'
+
+- name: "Validate OCS external variables"
+  assert:
+    that:
+      - external_ceph_data is defined
+  when:
+    - ocs_install_type == 'external'
+
+- name: "Check minimal number of nodes for replicas for LSO"
+  block:
+    - name: Get node information from Kubernetes
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Node
+        label_selectors:
+          - "node-role.kubernetes.io/master"
+      register: nodes_info
+
+    - name: "Fail if there are not at least 3 nodes for OCS"
+      fail:
+        msg: "There are less than 3 nodes with the label cluster.ocs.openshift.io/openshift-storage"
+      when: nodes_info.resources | length < 3
+  when:
+    - ocs_install_type == 'internal'
+...

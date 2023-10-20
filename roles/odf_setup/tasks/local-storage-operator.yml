@@ -73,5 +73,5 @@
             annotations:
               "{{ default_storageclass_annotation }}"
   when:
-    - not enable_ocs | default(false) | bool
+    - ocs_install_type == 'internal'
 ...
