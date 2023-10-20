@@ -6,6 +6,11 @@
     kind: BGPPeer
     name: "{{ peer.name }}"
     namespace: "{{ mlb_namespace }}"
+    wait: true
+    wait_condition:
+      status: False
+    wait_sleep: 2
+    wait_timeout: 300
   loop: "{{ mlb_bgp_peers }}"
   loop_control:
     loop_var: peer
@@ -19,6 +24,12 @@
     kind: "{{ resource.kind }}"
     name: "{{ resource.name }}"
     namespace: "{{ mlb_namespace }}"
+    wait: true
+    wait_condition:
+      status: False
+    wait_sleep: 2
+    wait_timeout: 300
+  loop: "{{ mlb_bgp_peers }}"
   ignore_errors: true
   loop: "{{ mlb_resources }}"
   loop_control:
