@@ -39,7 +39,7 @@
         api_version: v1
         kind: Node
         label_selectors:
-          - "node-role.kubernetes.io/master"
+          - "cluster.ocs.openshift.io/openshift-storage"
       register: nodes_info
 
     - name: "Fail if there are not at least 3 nodes for OCS"
