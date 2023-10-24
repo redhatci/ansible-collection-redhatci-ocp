@@ -2,9 +2,9 @@
 
 This role applies labels defined at inventory level to the OCP cluster nodes.
 
-NOTES:
- - This role has been tested on on IPI, UPI and SNO installers
- - Other installers that are require an hosts file should work
+> NOTE:
+- This role has been tested only in IPI, UPI and SNO installers
+- Other installers that require a hosts file should work
 
 ## Variables
 
