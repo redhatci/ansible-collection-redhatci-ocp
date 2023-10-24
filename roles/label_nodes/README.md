@@ -16,13 +16,12 @@ NOTES:
   - An Openshift cluster.
   - Access to the kubeconfig file via the `KUBECONFIG` environment variable
   - The inventory host should have the labels needed in JSON format
-    ```json
-    [workers:vars]
-    labels={"Location": "Boston", "owner": "OCP operators", "cost_center", "IT"} 
+```toml
+[workers:vars]
+labels={"Location": "Boston", "owner": "OCP operators", "cost_center", "IT"} 
 
-    [ocs_nodes:vars]
-    labels={"cluster.ocs.openshift.io/openshift-storage": ""}    
-    ```
+[ocs_nodes:vars]
+labels={"cluster.ocs.openshift.io/openshift-storage": ""}    
 
 ## Usage example
 
