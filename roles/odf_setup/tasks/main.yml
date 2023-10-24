@@ -1,52 +1,18 @@
 ---
-# tasks file for odf_setup
-
-- name: Validate main variables are defined
-  assert:
-    that:
-      - enable_ocs is defined
-      - enable_lso is defined
-
-- name: Validate LSO variables
-  assert:
-    that:
-      - hostvars[groups['ocs_nodes'][0]]['lso_label'] is defined
-  when:
-    - enable_lso | bool
-
-- name: Validate OCS install type
-  assert:
-    that:
-      - ocs_install_type | string
-      - ocs_install_type in ['internal', 'external']
-  when:
-    - enable_ocs | bool
-
-- name: Validate OCS external variables
-  assert:
-    that:
-      - external_ceph_data is defined
-  when:
-    - enable_ocs | bool
-    - ocs_install_type == 'external'
+- name: Validate requirements
+  include_tasks: validation.yml
 
 - name: Set Facts
   include_tasks: set-facts.yml
-  when:
-    - enable_ocs | bool
 
 - name: Setup Local Storage operator
   include_tasks: local-storage-operator.yml
   when:
-    - enable_lso | bool
+    - ocs_install_type == 'internal'
 
 - name: Setup Openshift Storage Operator
   include_tasks: openshift-storage-operator.yml
-  when:
-    - enable_ocs | bool
  
 - name: Perform OCS Tests
   include_tasks: tests.yml
-  when:
-    - enable_ocs | bool
 ...

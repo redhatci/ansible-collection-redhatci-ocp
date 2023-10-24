@@ -1,8 +1,4 @@
 [all:vars]
-
-enable_ocs=true
-internal_ocs=true
-
 local_storage_devices=["/dev/sdb"]
 
 [ocs_nodes:children]

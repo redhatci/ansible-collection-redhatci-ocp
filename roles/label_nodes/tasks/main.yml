@@ -2,7 +2,9 @@
 - name: Label nodes
   community.kubernetes.k8s:
     definition: "{{ lookup('template', 'node_label.yml') | from_yaml }}"
-  loop: "{{ label_loop }}"
+  loop: "{{ hosts_list }}"
+  loop_control:
+    loop_var: inv_host
   when:
-    - label_item[item].labels is defined
+    - host_item[inv_host]['labels'] is defined
 ...

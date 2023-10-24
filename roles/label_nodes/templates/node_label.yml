@@ -1,8 +1,8 @@
 apiversion: v1
 kind: Node
 metadata:
-  name: {{ label_item[item].name }}
+  name: {{ host_item[inv_host].name }}
   labels:
-  {% for key, value in label_item[item].labels.items() %}
-    {{ key }}: "{{ value}}"
+  {% for key, value in host_item[inv_host].labels.items() %}
+    {{ key }}: "{{ value }}"
   {% endfor %}

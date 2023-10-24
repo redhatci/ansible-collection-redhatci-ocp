@@ -1,0 +1,4 @@
+---
+hosts_list: []
+host_item: "{{ hostvars }}"
+...

@@ -51,27 +51,23 @@
     state: absent
     wait: true
 
-- name: Set Default Storage Class for LSO
-  block:
-    - name: Check LSO Storage Class exists
-      community.kubernetes.k8s_info:
-        kind: StorageClass
-        name: "{{ local_storage_class }}"
-      register: lso_storage_class
-      retries: 30
-      delay: 10
-      until: lso_storage_class.resources != []
+- name: Check LSO Storage Class exists
+  community.kubernetes.k8s_info:
+    kind: StorageClass
+    name: "{{ local_storage_class }}"
+  register: lso_storage_class
+  retries: 30
+  delay: 10
+  until: lso_storage_class.resources != []
 
-    - name: Set Default Local Storage Class
-      community.kubernetes.k8s:
-        state: present
-        definition:
-          apiVersion: storage.k8s.io/v1
-          kind: StorageClass
-          metadata:
-            name: "{{ local_storage_class }}"
-            annotations:
-              "{{ default_storageclass_annotation }}"
-  when:
-    - not enable_ocs | default(false) | bool
+- name: Set Default Local Storage Class
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: "{{ local_storage_class }}"
+        annotations:
+          "{{ default_storageclass_annotation }}"
 ...
