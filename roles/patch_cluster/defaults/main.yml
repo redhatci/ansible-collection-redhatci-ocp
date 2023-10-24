@@ -38,3 +38,5 @@ manifest_templates_for_mode:
 default_manifests: "{{ manifest_templates_for_mode[high_availability_mode] }}"
 extra_manifests: []
 manifest_templates: "{{ default_manifests + extra_manifests }}"
+
+ocp_version_major: "{{ openshift_version }}"
