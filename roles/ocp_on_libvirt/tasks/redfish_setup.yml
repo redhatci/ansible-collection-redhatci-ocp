@@ -15,7 +15,7 @@
     version: "{{ git_ref }}"
     repo: "{{ git_repo }}"
     dest: "{{ redfish_cache_dir }}/assisted_deploy_repo"
-    #force: true
+    force: true
   # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
   # SSL_ERROR_SYSCALL, errno 104.
   delegate_to: localhost
