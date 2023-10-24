@@ -1,10 +1,7 @@
 Role Name
 =========
 
-Role to setup Openshift Container Storage (OCS)
-and integrate with Internal Local Storage operators in OCP 4.X
-or integrate with External RHCS cluster (ODF External Mode)
-
+Role to setup Openshift Container Storage (OCS) and integrate with Internal Local Storage operators in OCP 4.X or integrate with External RHCS cluster (ODF External Mode)
 
 Requirements
 ------------
@@ -18,34 +15,21 @@ Requirements
 Role Variables
 --------------
 
-```YAML
-# defaults variables for ocs-setup
-
-### Local Storage Operator variables
-# (Required) Channel versions to use, namespace and operators names
-local_storage_operator: local-storage-operator
-local_storage_namespace: openshift-local-storage
-
-# (Required) Name of the LSO Storage Class
-local_storage_class: localblock
-
-# (Required) Type of LSO Volume Mode, either filesystem or block
-local_volume_mode: block
-
-# (Required) Replica size
-replica_size: 3
-
-### OCS Storage Operator variables
-# (Required) Channel versions to use, namespace and operators names
-ocs_storage_operator: ocs-operator
-ocs_storage_namespace: openshift-storage
-
-# (Optional) Whether to enable Multicloud Object Gateway (nooba)
-enable_object_gateway: false
-
-# (Required) default storageclass annotation
-default_storageclass_annotation: '{"storageclass.kubernetes.io/is-default-class": "true"}'
-```
+| Variable                         | Default                       | Type         | Required    | Description                                                              |
+| -------------------------------- | ----------------------------- |------------- | ----------- | -------------------------------------------------------------------------|
+| local_storage_operator           | local-storage-operator        | String       | No          | LSO operator name                                                        |
+| openshift-local-storage          | openshift-local-storage       | String       | No          | LSO namespace                                                            |
+| local_storage_class              | localblock                    | String       | No          | Type of LSO Volume Mode, either filesystem or block                      |
+| local_volume_mode                | localblock                    | String       | No          | Type of LSO Volume Mode, either filesystem or block                      |
+| replica_size                     | 3                             | String       | No          | Replica size                                                             |
+| ocs_storage_operator             | ocs-operator                  | String       | No          | OCS operator name                                                        |
+| ocs_storage_namespace            | openshift-storage             | String       | No          | OCS namespace                                                            |
+| default_storageclass_annotation  | '{"storageclass.kubernetes.io/is-default-class": "true"}'  | String       | No          | Default storageclass annotation             |
+| external_ceph_data               |                               | JSON         | No          | A JSON payload generated from RHCS                                       |
+| ocs_install_type                 |                               | String       | Yes         | `internal` for LSO, `external` for Ceph/RHCS                             |
+| local_storage_devices            |                               | List         | No          | For LSO, a list of local devices that will be use as backend             |
+| ocs_default_storage_class        | storagecluster-cephfs         | String       | No          | Default storage class name                                               |
+| gatherer_image                   | registry.access.redhat.com/ubi8/ubi | String | No          | Image for disk-gatherer deployment                                       |
 
 Inventory Groups and Variables
 --------------

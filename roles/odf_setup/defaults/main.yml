@@ -27,3 +27,6 @@ enable_object_gateway: false
 
 # (Required) default storageclass annotation
 default_storageclass_annotation: '{"storageclass.kubernetes.io/is-default-class": "true"}'
+
+# OCS gatherer_image
+gatherer_image: registry.access.redhat.com/ubi8/ubi
