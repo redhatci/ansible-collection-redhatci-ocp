@@ -14,5 +14,13 @@ enable_virtualmedia: false
 redfish_cache_dir: /var/lib/dci-openshift-agent
 redfish_assisted_deploy_repo: https://github.com/redhat-partner-solutions/crucible.git
 redfish_assisted_deploy_version: 92864fc8be3f83a80666d3c1e98d1740f17dfc30
+repo_root_path: "{{ playbook_dir | dirname }}"
+cert_country: US
+cert_state: MA
+cert_locality: Westford
+cert_organization: DCI
+cert_organizational_unit: Lab
+sushy_ignore_boot_device: false
+inventory_validated: yes
 
 ...

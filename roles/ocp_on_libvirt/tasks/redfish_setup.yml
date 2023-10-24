@@ -36,14 +36,6 @@
 
 - name: Install sushy-tools
   vars:
-    repo_root_path: "{{ playbook_dir | dirname }}"
-    cert_country: US
-    cert_state: MA
-    cert_locality: Westford
-    cert_organization: DCI
-    cert_organizational_unit: Lab
-    sushy_ignore_boot_device: false
-    inventory_validated: yes
   include_role:
     name: setup_sushy_tools
 
