@@ -69,36 +69,38 @@ ocs_default_storage_class=ocs-storagecluster-cephfs
 
 # (Required) Group of nodes where to install OCS
 [ocs_nodes:children]
-masters
+workers
 
 # (Required) Label to identify the Storage Nodes
 [ocs_nodes:vars]
-lso_label='{"cluster.ocs.openshift.io/openshift-storage": ""}'
+labels={"cluster.ocs.openshift.io/openshift-storage": ""}
 ```
 
 Dependencies
 ------------
 - olm_operator
-
 This role does not installs the operators, it depends on olm_operator.
 See [olm_operator readme](https://github.com/redhatci/ansible-collections-redhatci-ocp/blob/master/common-roles/olm_operator/README.md) for more details.
 
+- label_node
+This role can help to apply the inventory defined label to the OCP cluster nodes.
+See [olm_operator readme](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/master/common-roles/label_nodes/README.md) for more details
 
 Example Inventory
 ----------------
 
 File: /etc/dci-openshift-agent/hosts
-```YAML
+```toml
 [all:vars]
 ...
 ocs_install_type=internal
 local_storage_devices=["/dev/sdb", "/dev/sdc", "/dev/sdd"]
 
 [ocs_nodes:children]
-masters
+workers
 
 [ocs_nodes:vars]
-lso_label='{"cluster.ocs.openshift.io/openshift-storage": ""}'
+labels={"cluster.ocs.openshift.io/openshift-storage": ""}
 ```
 
 Example Playbook
