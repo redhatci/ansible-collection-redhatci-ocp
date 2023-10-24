@@ -37,6 +37,7 @@
     cert_organization: DCI
     cert_organizational_unit: Lab
     sushy_ignore_boot_device: false
+    inventory_validated: yes
   include_role:
     name: setup_sushy_tools
 
