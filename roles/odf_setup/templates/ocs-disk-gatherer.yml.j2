@@ -71,11 +71,7 @@ spec:
         value: "true"
       containers:
       - name: collector
-{% if dci_disconnected | default(false) | bool %}
-        image: {{ dci_local_registry }}/ubi8/ubi
-{% else %}
-        image: registry.access.redhat.com/ubi8/ubi
-{% endif %}
+        image: {{ gatherer_image }}
         imagePullPolicy: IfNotPresent
         command:
         - /bin/sh

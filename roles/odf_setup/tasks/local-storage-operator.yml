@@ -1,14 +1,4 @@
 ---
-- name: Mirroring the image needed for gathering info
-  include_role:
-    name: mirror_images
-  vars:
-    images: ['registry.access.redhat.com/ubi8/ubi']
-    local_registry: "{{ dci_local_registry }}"
-    authfile: "{{ dci_pullsecret_file }}"
-  when:
-    - dci_disconnected | default(false) | bool
-
 - name: Add Storage node labels
   community.kubernetes.k8s:
     state: present
