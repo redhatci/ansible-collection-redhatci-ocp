@@ -16,6 +16,7 @@ This role applies labels defined at inventory level to the OCP cluster nodes.
   - An Openshift cluster.
   - Access to the kubeconfig file via the `KUBECONFIG` environment variable
   - The inventory host should have the labels needed in JSON format
+
 ```toml
 [workers:vars]
 labels={"Location": "Boston", "owner": "OCP operators", "cost_center", "IT"} 
