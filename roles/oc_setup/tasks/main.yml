@@ -1,31 +1,31 @@
 ---
 - name: Check if directory exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ os_config_dir }}"
   register: path_check
 
 - name: "Fail if the configs directory does not exist"
-  fail:
+  ansible.builtin.fail:
     msg: "Configs directory does not exist"
   when: not path_check.stat.exists
 
 - name: "Generate Random passwords for users htpasswd IdP"
-  set_fact:
+  ansible.builtin.set_fact:
     admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
     nonadmin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
 
 - name: "Save passwords to the cluster configs directory"
-  copy:
+  ansible.builtin.copy:
     content: "OCP automatically generated credentials for the API/GUI\nadmin:{{ admin_pass }} \nnonadmin:{{ nonadmin_pass }}\n"
     dest: "{{ os_config_dir }}/ocp_creds.txt"
     mode: '0640'
 
 - name: "Create http auth file"
-  htpasswd:
+  ansible.builtin.htpasswd:
     path: "{{ os_config_dir }}/users.htpasswd"
     name: "{{ item.user }}"
     password: "{{ item.password }}"
-    mode: 0640
+    mode: "0640"
   loop:
     - user: admin
       password: "{{ admin_pass }}"
@@ -33,7 +33,7 @@
       password: "{{ nonadmin_pass }}"
 
 - name: "Encoding the password file"
-  slurp:
+  ansible.builtin.slurp:
     src: "{{ os_config_dir }}/users.htpasswd"
   register: encoded_password
 
@@ -58,14 +58,14 @@
         name: cluster
       spec:
         identityProviders:
-        - name: htpassidp
-          challenge: true
-          login: true
-          mappingMethod: claim
-          type: HTPasswd
-          htpasswd:
-            fileData:
-              name: htpass-secret
+          - name: htpassidp
+            challenge: true
+            login: true
+            mappingMethod: claim
+            type: HTPasswd
+            htpasswd:
+              fileData:
+                name: htpass-secret
 
 - name: "Grant cluster-admin permissions to admin user"
   community.kubernetes.k8s:

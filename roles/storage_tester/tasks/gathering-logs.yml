@@ -1,15 +1,12 @@
 ---
-- name: "Setup job_logs directory"
-  include_tasks: log-dir.yml
-  when: job_logs is undefined
-
 - name: "Copy Junit template report"
-  copy:
+  ansible.builtin.copy:
     src: "junit-report.xml"
     dest: "{{ job_logs.path }}/junit-storage-upgrade.xml"
+    mode: "0644"
 
 - name: "Run gather-storage-upgrade-RWO script"
-  script:
+  ansible.builtin.script:
     cmd: >
       {{ role_path }}/scripts/storage-tester-RWO.sh {{ job_logs.path }}/junit-storage-upgrade.xml
       | tee {{ job_logs.path }}/gather-storage-upgrade-tester-RWO.log
@@ -20,7 +17,7 @@
   delegate_to: localhost
 
 - name: "Run gather-storage-upgrade-ROX script"
-  script:
+  ansible.builtin.script:
     cmd: >
       {{ role_path }}/scripts/storage-tester-ROX.sh {{ job_logs.path }}/junit-storage-upgrade.xml
       | tee {{ job_logs.path }}/gather-storage-upgrade-tester-ROX.log
@@ -31,7 +28,7 @@
   delegate_to: localhost
 
 - name: "Run gather-storage-upgrade-RWX script"
-  script:
+  ansible.builtin.script:
     cmd: >
       {{ role_path }}/scripts/storage-tester-RWX.sh {{ job_logs.path }}/junit-storage-upgrade.xml
       | tee {{ job_logs.path }}/gather-storage-upgrade-tester-RWX.log

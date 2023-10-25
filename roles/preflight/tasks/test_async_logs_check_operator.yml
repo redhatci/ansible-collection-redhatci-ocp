@@ -1,10 +1,10 @@
 ---
-- name: "Retrieve logs for {{ operator.name }} each 50 seconds (global Preflight timeout = 180 seconds)"
+- name: Retrieve operator logs (global Preflight timeout = 180 seconds)
   vars:
     attempts:
       - one
       - two
       - three
-  include_tasks: test_all_logs.yml
+  ansible.builtin.include_tasks: test_all_logs.yml
   loop: "{{ attempts }}"
 ...

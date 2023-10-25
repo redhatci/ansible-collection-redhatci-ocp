@@ -1,24 +1,26 @@
-- name: register mac addresses
-  shell: |
-      virsh domiflist {{ item }} | awk '/{{ net }}/ {print $5}'
+---
+- name: Register mac addresses
+  ansible.builtin.shell: |
+    set -eo pipefail;
+    virsh domiflist {{ item }} | awk '/{{ net }}/ {print $5}'
   with_items: "{{ resources }}"
   register: mac_list
   become: "{{ libvirt_become }}"
 
-- name: "register {{ net }} information "
-  shell: |
-      virsh net-dumpxml {{ net }}
+- name: Register net information
+  ansible.builtin.command: "virsh net-dumpxml {{ net }}"
   register: net_dump
   become: "{{ libvirt_become }}"
 
-- name: set vm_inv_info fact
-  set_fact:
-     vm_inv_info: "{{ vm_inv_info | default({})|combine({ item.cmd.split()[2]: { 'mac': item.stdout}}) }}"
+- name: Set vm_inv_info fact
+  ansible.builtin.set_fact:
+    vm_inv_info: "{{ vm_inv_info | default({}) | combine({item.cmd.split()[2]: {'mac': item.stdout}}) }}"
   with_items: "{{ mac_list.results }}"
 
-- name: wait for VMs IPs
-  shell: |
-      virsh net-dhcp-leases {{ net }} | awk '($4 == "ipv4")  && ($3 == "{{ item.value.mac }}") {print $5}'
+- name: Wait for VMs IPs
+  ansible.builtin.shell: |
+    set -eo pipefail;
+    virsh net-dhcp-leases {{ net }} | awk '($4 == "ipv4")  && ($3 == "{{ item.value.mac }}") {print $5}'
   register: ip_list
   until: "ip_list.stdout != ''"
   retries: 40
@@ -26,18 +28,18 @@
   with_dict: "{{ vm_inv_info }}"
   become: "{{ libvirt_become }}"
 
-- name: construct dict with node name as key and with ip as value
-  set_fact:
-      vm_ip_dict: "{{ vm_ip_dict | default({}) | combine({ item.item.key: { 'ip': item.stdout|ipaddr('address') }}) }}"
+- name: Construct dict with node name as key and with ip as value
+  ansible.builtin.set_fact:
+    vm_ip_dict: "{{ vm_ip_dict | default({}) | combine({item.item.key: {'ip': item.stdout | ipaddr('address')}}) }}"  # noqa: jinja[invalid]
   when: item.stdout|default(False)
   with_items: "{{ ip_list.results }}"
 
-- name: merge ip addresses to the vm_inv_info dict
-  set_fact:
-      vm_inv_info: "{{ vm_inv_info | default({}) | combine(vm_ip_dict|default({}), recursive=True) }}"
+- name: Merge ip addresses to the vm_inv_info dict
+  ansible.builtin.set_fact:
+    vm_inv_info: "{{ vm_inv_info | default({}) | combine(vm_ip_dict | default({}), recursive=True) }}"
 
-- name: make IPs persistent
-  shell: "virsh net-update {{ net }} add ip-dhcp-host \"<host mac='{{ item.value.mac }}' name='{{ item.key }}.{{ cluster_domain }}' ip='{{ item.value.ip }}' />\" --live --config"
+- name: Make IPs persistent
+  ansible.builtin.shell: "virsh net-update {{ net }} add ip-dhcp-host \"<host mac='{{ item.value.mac }}' name='{{ item.key }}.{{ cluster_domain }}' ip='{{ item.value.ip }}' />\" --live --config"
   when:
     - item.value.ip is defined
     - "item.value.ip not in net_dump.stdout"
@@ -45,30 +47,33 @@
   become: "{{ libvirt_become }}"
 
 - name: Use local dnsmasq for name resolution
-  ini_file:
+  ansible.builtin.ini_file:
     path: /etc/NetworkManager/conf.d/dnsmasq.conf
     section: main
     option: dns
     value: dnsmasq
+    mode: "0644"
   become: "{{ libvirt_become }}"
 
 - name: Set up local dnsmasq for apps and api name resolution
-  copy:
+  ansible.builtin.copy:
     content: |
        address=/.apps.{{ cluster_domain }}/{{ apps_ip_address }}
        address=/api.{{ cluster_domain }}/{{ api_ip_address }}
     dest: /etc/NetworkManager/dnsmasq.d/dnsmasq.{{ cluster }}.conf
+    mode: "0644"
   become: "{{ libvirt_become }}"
 
 - name: Add nodes name resolution to local dnsmasq
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/NetworkManager/dnsmasq.d/dnsmasq.{{ cluster }}.conf
     line: "address=/{{ item.key }}/{{ item.value.ip }}"
+    mode: "0644"
   with_dict: "{{ vm_inv_info }}"
   become: "{{ libvirt_become }}"
 
 - name: Reload NetworkManager
-  service:
+  ansible.builtin.service:
     name: NetworkManager
     state: reloaded
   become: "{{ libvirt_become }}"

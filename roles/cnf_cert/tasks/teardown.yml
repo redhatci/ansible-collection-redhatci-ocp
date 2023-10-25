@@ -1,62 +1,37 @@
 ---
 # Deleting resources created by the CNF Cert Suite to support the execution
 - name: Clean CNF Cert Suite resources
-  block:
-  - name: Define tnf-debug daemonset namespace
-    set_fact:
-      tnf_debug_ds_ns: "cnf-suite"
-
-  - name: Check if tnf-debug daemonset exists
-    community.kubernetes.k8s_info:
-      api_version: v1
-      kind: DaemonSet
-      name: tnf-debug
-      namespace: "{{ tnf_debug_ds_ns }}"
-    register: debug_daemonset
-
-  - name: Delete the tnf-debug daemonSet
-    community.kubernetes.k8s:
-      api_version: v1
-      kind: DaemonSet
-      name: tnf-debug
-      namespace: "{{ tnf_debug_ds_ns }}"
-      state: absent
-    when: debug_daemonset.resources|length > 0
-
-  - name: Check if tnf default namespace exists
-    community.kubernetes.k8s_info:
-      api_version: v1
-      kind: Namespace
-      name: tnf
-    register: tnf_namespace
-
-  - name: Delete tnf namespace
-    community.kubernetes.k8s:
-      api_version: v1
-      kind: Namespace
-      name: tnf
-      state: absent
-    when: tnf_namespace.resources|length > 0
-
-  - name: "Check if {{ tnf_debug_ds_ns }} default namespace exists"
-    community.kubernetes.k8s_info:
-      api_version: v1
-      kind: Namespace
-      name: "{{ tnf_debug_ds_ns }}"
-    register: cnf_suite_namespace
-
-  - name: "Delete {{ tnf_debug_ds_ns }} namespace"
-    community.kubernetes.k8s:
-      api_version: v1
-      kind: Namespace
-      name: "{{ tnf_debug_ds_ns }}"
-      state: absent
-    when: cnf_suite_namespace.resources|length > 0
   when: tnf_postrun_delete_resources|bool
+  block:
+    - name: Define tnf-debug daemonset namespace
+      ansible.builtin.set_fact:
+        tnf_debug_ds_ns: "cnf-suite"
+
+    - name: Ensure tnf-debug DaemonSet is absent
+      community.kubernetes.k8s:
+        api_version: v1
+        kind: DaemonSet
+        name: tnf-debug
+        namespace: "{{ tnf_debug_ds_ns }}"
+        state: absent
+
+    - name: Ensure tnf namespace is absent
+      community.kubernetes.k8s:
+        api_version: v1
+        kind: Namespace
+        name: tnf
+        state: absent
+
+    - name: Ensure tnf debug namespace is absent
+      community.kubernetes.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ tnf_debug_ds_ns }}"
+        state: absent
 
 # This is just done when testing a cnf-certification-test stable version
 - name: Delete temporary directory for git repos
-  file:
+  ansible.builtin.file:
     path: "{{ tnf_git_dir.path }}"
     state: absent
   when:

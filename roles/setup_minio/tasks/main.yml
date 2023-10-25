@@ -1,18 +1,17 @@
 ---
-
 - name: Validate that a storageclass is provided
-  assert:
+  ansible.builtin.assert:
     that:
       - sm_storage_class is defined
     fail_msg: "A storage classname is required"
 
 - name: Create Minio deployment
-  include_tasks: install.yml
+  ansible.builtin.include_tasks: install.yml
   when:
     - sm_action == 'install'
 
 - name: Create Minio deployment
-  include_tasks: cleanup.yml
+  ansible.builtin.include_tasks: cleanup.yml
   when:
     - sm_action == 'cleanup'
 ...

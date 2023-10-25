@@ -1,3 +1,4 @@
+---
 - name: "Get cluster install status"
   community.kubernetes.k8s_info:
     api: extensions.hive.openshift.io/v1beta1
@@ -19,7 +20,7 @@
     msg:
       - "Cluster install completed at {{ completion_percentage }} %"
       - "{{ state_info }}"
-      - "Approximated elapsed time: {{ elapsed_time | int / 60  }}  mins"
+      - "Approximated elapsed time: {{ elapsed_time | int / 60 }}  mins"
 
 - name: "Force boot from disk"
   include_tasks: force-disk-boot.yml
@@ -28,6 +29,8 @@
     - not node_rebooted
 
 - name: "Wait for install completion"
+  when:
+    - completion_percentage | int != 100
   block:
     - name: "Waiting for 3 minutes"
       pause:
@@ -49,6 +52,4 @@
       when:
         - completion_percentage | int != 100
         - elapsed_time | int < ( acm_creation_timeout | int * 60 )
-  when:
-    - completion_percentage | int != 100
 ...

@@ -1,12 +1,13 @@
 ---
 - name: Check if container has already been certified
-  include_tasks: test_check_if_container_certified.yml
+  ansible.builtin.include_tasks: test_check_if_container_certified.yml
   when: not preflight_test_certified_image
 
-- name: "Non-certified image or force test run for {{ current_operator_image }}"
+- name: Non-certified image or force test run
+  when: not (already_certified | default(false) | bool)
   block:
-    - name: "Validate parameters for check container run on {{ current_operator_image }}"
-      assert:
+    - name: Validate parameters for check container run
+      ansible.builtin.assert:
         that:
           - operator.name is defined
           - operator.version is defined
@@ -14,13 +15,13 @@
         success_msg: "All required parameters are ok, proceeding to run preflight check container"
 
     - name: Dump operator parameters for the debug
-      debug:
+      ansible.builtin.debug:
         msg: |
           operator.name = {{ operator.name }}
           operator.version = {{ operator.version }}
 
-    - name: "Fail if both create_container_project and pyxis_container_identifier are provided for {{ current_operator_image }}"
-      fail:
+    - name: Fail if both create_container_project and pyxis_container_identifier are provided
+      ansible.builtin.fail:
         msg: |
           If you want to reuse the existing cert project, provide its ID pyxis_container_identifier.
           If you want to create a new cert project for container, set create_container_project to true.
@@ -30,28 +31,29 @@
         - operator.pyxis_container_identifier | default('') | length
 
     - name: Create temporary (container) preflight artifacts directory
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         prefix: preflight_container_artifacts.
       register: preflight_container_artifacts
 
     - name: Set cert_project_id if cert project is already here
-      set_fact:
+      ansible.builtin.set_fact:
         cert_project_id: "{{ operator.pyxis_container_identifier }}"
       when: operator.pyxis_container_identifier | default('') | length
 
     - name: "Create certification project for {{ current_operator_image }}"
-      include_role:
-        name: create_certification_project
+      ansible.builtin.include_role:
+        name: redhatci.ocp.create_certification_project
       vars:
         project_type: "container"
       when:
         - operator.create_container_project | default(false) | bool
         - operator.pyxis_container_identifier | default('') | length == 0
 
-    - block:
-        - name: "Run preflight check container on operator image {{ current_operator_image }} with podman"
-          shell: >
+    - name: Run preflight check
+      block:
+        - name: Run preflight check container on operator image with podman
+          ansible.builtin.command: >
             podman run
             --rm
             --privileged
@@ -79,32 +81,32 @@
             {% endif %}
       rescue:
         - name: Do not fail when preflight check container throws an error
-          debug:
+          ansible.builtin.debug:
             msg: "Do not fail when preflight check container throws an error"
       always:
         - name: Unset pyxis auth to not reuse by following containers
-          set_fact:
+          ansible.builtin.set_fact:
             cert_project_id: ""
 
         - name: "Run health check on {{ current_operator_image }}"
-          include_tasks: test_run_health_check.yml
+          ansible.builtin.include_tasks: test_run_health_check.yml
           when: preflight_run_health_check | bool
 
-        - name: "Copy execution artifacts of {{ current_operator_image }} to DCI logs directory"
+        - name: Copy execution artifacts from image to DCI logs directory
           vars:
             image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
             preflight_prefix: "preflight_container_{{ operator.name }}_{{ image_name }}"
-          copy:
+          ansible.builtin.copy:
             src: "{{ item.src }}"
             dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item.path | regex_replace('/', '_') }}"
-          with_filetree:
+            mode: "0644"
+          with_filetree:  # noqa: schema[moves]
             - "{{ preflight_container_artifacts.path }}"
           when:
-            -  item.state == "file"
+            - item.state == "file"
 
         - name: Remove tmp dir
-          file:
+          ansible.builtin.file:
             path: "{{ preflight_container_artifacts.path }}"
             state: absent
-  when: not (already_certified | default(false) | bool)
 ...

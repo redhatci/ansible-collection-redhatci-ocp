@@ -1,7 +1,7 @@
 ---
 # rhcos_json_vars fact already set in 21_rhcos_image_paths.yml
-- name: "Set Facts for RHCOS LIVE"
-  set_fact:
+- name: "Set Facts for RHCOS LIVE"  # noqa: jinja[invalid]
+  ansible.builtin.set_fact:
     rhcos_live_iso_name: "{{ rhcos_json_vars | json_query(iso_name) | basename }}"
     rhcos_live_iso_sha256: "{{ rhcos_json_vars | json_query(iso_sha) }}"
     rhcos_path: "{{ rhcos_json_vars | json_query(iso_name) }}"
@@ -11,14 +11,14 @@
   tags: rhcos_live
 
 - name: "Check if LIVE image exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
     get_checksum: false
   register: live_img
   tags: rhcos_live
 
 - name: "Download LIVE image"
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ rhcos_path }}"
     dest: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
     owner: "{{ ansible_user_id }}"
@@ -36,14 +36,15 @@
   tags: rhcos_live
 
 - name: "Set a public SELinux context"
-  file:
+  ansible.builtin.file:
     path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
     setype: "public_content_t"
   become: true
   tags: rhcos_live
 
 - name: "Apply new SELinux file context"
-  command: /usr/sbin/restorecon -R "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+  ansible.builtin.command: >
+    /usr/sbin/restorecon -R "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
   become: true
   tags: rhcos_live
 ...

@@ -1,9 +1,9 @@
 ---
 - name: "Create directory {{ get_logs_folder }}"
-  file:
+  ansible.builtin.file:
     path: "{{ get_logs_folder }}"
     state: directory
-    mode: 0700
+    mode: "0700"
 
 - name: "Get a list of all pods from {{ get_logs_ns }}"
   community.kubernetes.k8s_info:
@@ -13,11 +13,11 @@
   register: pod_list
 
 - name: "Print pods names"
-  debug:
-    msg: "pod_list: {{ pod_list | json_query('resources[*].metadata.name') }}"
+  ansible.builtin.debug:
+    msg: "pod_list: {{ pod_list | json_query('resources[*].metadata.name') }}"  # noqa: jinja[invalid]
 
-- name: "Get logs from each pods"
-  shell: >
+- name: "Get logs from each pods"  # noqa: jinja[invalid]
+  ansible.builtin.shell: >
     timeout 1m
     {{ oc_tool_path }} logs
     --since=8h
@@ -29,7 +29,7 @@
   loop: "{{ pod_list | json_query('resources[*].metadata.name') }}"
 
 - name: "Get pods status from namespace"
-  shell: >
+  ansible.builtin.shell: >
     {{ oc_tool_path }} get pods
     --namespace={{ get_logs_ns }}
     --show-labels
@@ -38,7 +38,7 @@
     [ -s {{ get_logs_folder }}/{{ get_logs_ns }}_status.log ] || rm -f {{ get_logs_folder }}/{{ get_logs_ns }}_status.log
 
 - name: "Get events from from namespace"
-  shell: >
+  ansible.builtin.shell: >
     {{ oc_tool_path }} get events
     --namespace={{ get_logs_ns }}
     > {{ get_logs_folder }}/{{ get_logs_ns }}_events.log ;

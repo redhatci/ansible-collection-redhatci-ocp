@@ -1,81 +1,83 @@
 ---
-- name: "set local_image_path"
-  set_fact:
+- name: "Set local_image_path"
+  ansible.builtin.set_fact:
     local_image_path: "{{ libvirt_image_path | expanduser }}"
 
-- name: "delegate_to localhost :ensure local_image_path directory exists"
-  file:
+- name: "Ensure local_image_path directory exists"
+  ansible.builtin.file:
     path: "{{ local_image_path }}"
     state: directory
-    mode: 0755
+    mode: "0755"
   become: "{{ libvirt_become }}"
 
-- name: "set image_src_basename"
-  set_fact:
+- name: "Set image_src_basename"
+  ansible.builtin.set_fact:
     image_src_basename: "{{ host['image_src'] | basename }}"
 
 - name: "Register local_image_src absolute path"
-  set_fact:
+  ansible.builtin.set_fact:
     local_image_src: "{{ local_image_path }}/{{ image_src_basename }}"
 
 
-- name: "does a local copy of image_src exist?"
-  stat:
+- name: "Does a local copy of image_src exist?"
+  ansible.builtin.stat:
     path: "{{ local_image_src }}"
   register: lis
 
-- name: "download image_src"
-  get_url:
+- name: "Download image_src"
+  ansible.builtin.get_url:
     url: "{{ host['image_src'] }}"
     dest: "{{ local_image_src }}"
+    mode: "0750"
   become: "{{ libvirt_become }}"
-  when: lis.stat.exists == false
+  when: not (lis.stat.exists | bool)
 
-- name: "determine image_src mime_type"
+- name: "Determine image_src mime_type"
   # identify file type
-  stat:
+  ansible.builtin.stat:
     path: "{{ local_image_src }}"
     mime: true
   become: "{{ libvirt_become }}"
   register: lismt
 
-- name: "set image_src for uncompressed files"
-  set_fact:
+- name: "Set image_src for uncompressed files"
+  ansible.builtin.set_fact:
     img_src: "{{ local_image_src }}"
   when: lismt.stat.mimetype == "application/octet-stream"
 
-- name: "set image_src basename to remove .xz extension"
-  set_fact:
+- name: "Set image_src basename to remove .xz extension"
+  ansible.builtin.set_fact:
     img_src_basename: "{{ host['image_src'].split('.xz')[0] | basename }}"
   when: lismt.stat.mimetype == "application/x-xz"
 
-- name: "set img_src for xz compressed files"
-  set_fact:
+- name: "Set img_src for xz compressed files"
+  ansible.builtin.set_fact:
     img_src: "{{ local_image_path }}{{ img_src_basename }}"
   when: lismt.stat.mimetype == "application/x-xz"
 
-- name: "get img_src_basename extension"
-  set_fact:
+- name: "Get img_src_basename extension"
+  ansible.builtin.set_fact:
     img_src_ext: "{{ image_src_basename.split('.')[-1] }}"
   when: lismt.stat.mimetype != "application/x-xz"
 
-- name: "get img_src_basename extension"
-  set_fact:
+- name: "Get img_src_basename extension"
+  ansible.builtin.set_fact:
     img_src_ext: "{{ image_src_basename.split('.')[-2] }}"
   when: lismt.stat.mimetype == "application/x-xz"
 
-- name: "does img_src exist at local_image_path?"
-  stat:
+- name: "Does img_src exist at local_image_path?"
+  ansible.builtin.stat:
     path: "{{ img_src }}"
   become: "{{ libvirt_become }}"
   register: ismt
   when: lismt.stat.mimetype == "application/x-xz"
 
-- name: "uncompress xz local_image_src"
-  command: "xz -d --keep --force {{ local_image_src }}"
+- name: "Uncompress xz local_image_src"
+  ansible.builtin.command: "xz -d --keep --force {{ local_image_src }}"
   become: "{{ libvirt_become }}"
-  when: lismt.stat.mimetype == "application/x-xz" and ismt.stat.exists == false
+  when: lismt.stat.mimetype == "application/x-xz" and not (ismt.stat.exists | bool)
 
-- name: "cp img_src to match node name"
-  command: "cp --sparse=always {{ img_src }} {{ local_image_path }}/{{ host['name'] }}.qcow2"
+- name: "Copy img_src to match node name"
+  ansible.builtin.command: "cp --sparse=always {{ img_src }} {{ local_image_path }}/{{ host['name'] }}.qcow2"
   become: "{{ libvirt_become }}"
+...

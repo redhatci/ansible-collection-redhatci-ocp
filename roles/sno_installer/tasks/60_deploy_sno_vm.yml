@@ -1,13 +1,13 @@
 ---
-- name: Add Kubeconfig to Ansible User .bashrc
-  lineinfile:
+- name: Add Kubeconfig to Ansible User .bashrc  # noqa: risky-file-permissions
+  ansible.builtin.lineinfile:
     path: "{{ ansible_user_dir }}/.bashrc"
     line: "export KUBECONFIG={{ dir }}/auth/kubeconfig"
-    create: yes
+    create: true
   tags: install
 
 - name: Show How to monitor for installation status
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Next step will provision SNO server. It might take a few minutes for the API to respond"
       - "Once the api gets available you can run the following in another shell session"
@@ -16,7 +16,7 @@
   tags: install
 
 - name: Installing Single Node OpenShift VM
-  shell: |
+  ansible.builtin.command: >
     virt-install \
     --connect qemu:///system \
     -n "{{ host['name'] }}" \

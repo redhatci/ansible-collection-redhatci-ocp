@@ -1,5 +1,7 @@
 ---
 - name: Define, Start, Libvirt Network
+  become: true
+  tags: virtnetwork
   block:
     - name: Define network
       community.libvirt.virt_net:
@@ -14,7 +16,5 @@
 
     - name: Autostart network
       community.libvirt.virt_net:
-        autostart: yes
+        autostart: true
         name: "{{ network['name'] }}"
-  become: yes
-  tags: virtnetwork

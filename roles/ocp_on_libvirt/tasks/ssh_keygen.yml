@@ -1,35 +1,31 @@
 ---
 - name: "Set_ssh_key_name"
-  set_fact:
-    ssh_key_path: "{{ default_ssh_key_path | default('~/.ssh') }}/{{ ssh_key }}"
+  ansible.builtin.set_fact:
+    ssh_key_path: "{{ default_ssh_key_path | default('~/.ssh') | expanduser }}/{{ ssh_key }}"
   delegate_to: localhost
 
 - name: "Does ssh key already exists ?"
-  stat:
+  ansible.builtin.stat:
     path: "{{ ssh_key_path }}"
   register: ssh_key_stat_local
   delegate_to: localhost
 
 - name: "Generate ssh keys when they don't exist"
-  shell: "ssh-keygen -t rsa -f {{ ssh_key_path }} -N '';cat {{ ssh_key_path }}.pub >> ~/.ssh/authorized_keys"
+  ansible.builtin.shell: |
+    ssh-keygen -t rsa -f {{ ssh_key_path }} -N ''
+    cat {{ ssh_key_path }}.pub >> ~/.ssh/authorized_keys
   args:
     creates: "{{ ssh_key_path }}"
-  when: ssh_key_stat_local.stat.exists == false
+  when: not (ssh_key_stat_local.stat.exists | bool)
   delegate_to: localhost
 
-  #- name: "Get remote user home directory"
-  #user:
-    #name: "{{ ansible_user }}"
-    #register: user_home
-
 - name: "Ensure correct permissions on ~/.ssh/authorized_keys"
-  file:
+  ansible.builtin.file:
     path: "{{ '~' | expanduser }}/.ssh/authorized_keys"
-    #path: "{{ user_home.home }}/.ssh/authorized_keys"
-    mode: 0644
+    mode: "0644"
   delegate_to: localhost
 
 - name: "Cat out contents of public key"
-  shell: "cat {{ ssh_key_path }}.pub"
+  ansible.builtin.slurp: "{{ ssh_key_path }}"
   register: pubkey
   delegate_to: localhost

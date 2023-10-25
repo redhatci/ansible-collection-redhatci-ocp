@@ -1,6 +1,6 @@
 ---
 - name: "Create config dir"
-  file:
+  ansible.builtin.file:
     path: "{{ dir }}"
     state: directory
     owner: "{{ ansible_user }}"
@@ -9,7 +9,7 @@
   tags: extract
 
 - name: "Check if commands were extracted"
-  stat:
+  ansible.builtin.stat:
     path: "{{ cache_dir }}/{{ version }}/openshift-install"
     get_checksum: false
   register: extracted_cmd
@@ -17,7 +17,7 @@
   tags: extract
 
 - name: "Unarchive installer tarball"
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ cache_dir }}/{{ version }}/openshift-install-linux-{{ version }}.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
@@ -33,8 +33,8 @@
     - extract
 
 # If the provisioner host got the installer, lets just copy it to /usr/local/bin
-- name: "Copy openshift-install binary to {{ ocp_binary_path }}"
-  copy:
+- name: "Copy openshift-install binary to binary path"
+  ansible.builtin.copy:
     src: "{{ cache_dir }}/{{ version }}/openshift-install"
     dest: "{{ ocp_binary_path }}/openshift-install"
     owner: "{{ ansible_user_id }}"
@@ -49,31 +49,35 @@
 
 # If the registry host got the installer, lets just copy it to the prov host
 - name: "Copy PullSecret and extract/copy openshit installer in disconnected mode"
+  when:
+    - not cache_provisioner | bool
+  tags:
+    - extract
   block:
     - name: "Get the openshift install from registry host into temp file on control machine"
-      fetch:
+      ansible.builtin.fetch:
         dest: /tmp/
         flat: true
         src: "{{ cache_dir }}/{{ version }}/openshift-install"
       delegate_to: "{{ groups['registry_host'][0] }}"
 
     - name: "Copy the openshift installer from control machine to the provisioner host"
-      copy:
+      ansible.builtin.copy:
         src: "/tmp/openshift-install"
         dest: "{{ dir }}/openshift-install"
         owner: "{{ ansible_user_id }}"
         group: "{{ ansible_user_gid }}"
-        mode: 0755
+        mode: "0755"
       become: true
 
     - name: "Remove the temporary copy of the openshift installer on control machine"
-      file:
+      ansible.builtin.file:
         path: "/tmp/openshift-install"
         state: absent
       delegate_to: localhost
 
-    - name: "Copy openshift installer binary to {{ ocp_binary_path }} provisioner"
-      copy:
+    - name: "Copy openshift installer binary to binary path on provisioner"
+      ansible.builtin.copy:
         src: "{{ dir }}/openshift-install"
         dest: "{{ ocp_binary_path }}/openshift-install"
         owner: "{{ ansible_user_id }}"
@@ -81,8 +85,4 @@
         mode: "0755"
         remote_src: true
       become: true
-  when:
-    - not cache_provisioner | bool
-  tags:
-    - extract
 ...

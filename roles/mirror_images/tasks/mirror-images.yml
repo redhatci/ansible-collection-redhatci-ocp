@@ -1,12 +1,12 @@
+---
 - name: "Mirror image"
   vars:
     image_tag: "{{ image | regex_search('(?<=sha256)(.{12})') | default('', True) }}"
     image_name: "{{ '/'.join(image.split('@')[0].split('/')[1:]) }}"
-    local_image_location: "{{ dci_local_registry }}/{{ image_name }}
-                           {%- if image_tag | length %}{{ image_tag }}{% endif %}"
+    local_image_location: "{{ dci_local_registry }}/{{ image_name }}{%- if image_tag | length %}{{ image_tag }}{% endif %}"
   block:
-    - name: "mirror_images : Mirror image {{ image_name }}"
-      command:
+    - name: "Mirror image"
+      ansible.builtin.command:
         cmd: >
           skopeo copy
           --all
@@ -32,8 +32,8 @@
       until: skopeo_copy is not failed
 
   rescue:
-    - name: "mirror_images : {{ image_name }} already mirrored"
-      command: >
+    - name: "Image already mirrored"
+      ansible.builtin.command: >
         skopeo inspect
         {% if authfile is defined %}
         --authfile {{ authfile }}

@@ -1,23 +1,23 @@
 - name: Install firewalld
   become: true
-  package:
+  ansible.builtin.package:
     name:
       - firewalld
     state: installed
 
 - name: Set firewall zone to public
-  set_fact:
+  ansible.builtin.set_fact:
     zone: public
   when: ansible_distribution_version|int < 8
 
-- name: allow access to port vbmc from baremetal network
+- name: Allow access to port vbmc from baremetal network
   ignore_errors: true
   become: true
-  firewalld:
+  ansible.posix.firewalld:
     zone: "{{ zone }}"
     port: "{{ item.value }}/udp"
-    permanent: yes
+    permanent: true
     state: enabled
-    immediate: yes
+    immediate: true
   with_dict:
     - "{{ vbmc_ports }}"

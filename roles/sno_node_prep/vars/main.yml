@@ -14,7 +14,7 @@ default_pkg_list:
   - podman
   - tar
   - ipmitool
-    
+
 snovm_pkg_list:
   - libvirt
   - qemu-kvm

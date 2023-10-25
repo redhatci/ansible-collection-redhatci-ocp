@@ -1,19 +1,21 @@
 ---
-- include_vars:
+- name: Include IPMI nodes variables
+  ansible.builtin.include_vars:
     file: ipmi_nodes.json
     name: ironic_nodes
 
 - name: Generating hosts inventory file
-  template:
+  ansible.builtin.template:
     src: hosts.j2
-    dest: "{{ inventory_prefix}}hosts"
+    dest: "{{ inventory_prefix }}hosts"
+    mode: "0750"
   vars:
     input_prefix: "{{ lookup('env', 'PREFIX') }}"
     inventory_prefix: "{{ (input_prefix | replace('-p ', '')) + '-' if input_prefix != '' else '' }}"
   delegate_to: localhost
 
 - name: Update running inventory of masters
-  add_host:
+  ansible.builtin.add_host:
     name: "{{ item.key }}"
     groups:
       - masters
@@ -26,7 +28,7 @@
   loop: "{{ ironic_nodes | dict2items }}"
 
 - name: Update running inventory of workers
-  add_host:
+  ansible.builtin.add_host:
     name: "{{ item.key }}"
     groups:
       - workers

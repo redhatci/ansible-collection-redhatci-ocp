@@ -1,25 +1,27 @@
 ---
 - name: Verify that Github token to open PR is provided
-  assert:
+  ansible.builtin.assert:
     that:
       - github_token_path is defined
     fail_msg: "Please provide github_token_path as described in the documentation"
 
 - name: Get Github Binary
-  include_role:
+  ansible.builtin.include_role:
     name: create_pr
     tasks_from: get-gh-bin.yml
 
 - name: Login to Github
-  shell: "{{ gh_tool_path }} auth login --with-token < {{ github_token_path }}"
+  ansible.builtin.shell:
+    cmd: >
+      {{ gh_tool_path }} auth login --with-token < {{ github_token_path }}
   register: gh_login
   failed_when: gh_login.rc != 0
 
 - name: "Get GitHub status details"
-  shell: "{{ gh_tool_path }} api user --jq .login"
+  ansible.builtin.command: "{{ gh_tool_path }} api user --jq .login"
   register: github_status
 
 - name: "Set the GitHub username"
-  set_fact:
+  ansible.builtin.set_fact:
     github_username: "{{ github_status.stdout }}"
 ...

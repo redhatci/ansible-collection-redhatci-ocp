@@ -45,12 +45,12 @@
   register: catalog_info
 
 - name: Upload logs into DCI
-  template:
+  ansible.builtin.template:
     src: "templates/cluster_logs.j2"
     dest: "{{ job_logs.path }}/preflight_operator_async_{{ operator.name }}_{{ item }}.log"
+    mode: "0644"
 
 - name: Wait 50 seconds
-  pause:
+  ansible.builtin.pause:
     seconds: 50
-
 ...

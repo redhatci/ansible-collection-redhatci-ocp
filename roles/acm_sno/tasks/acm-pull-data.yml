@@ -7,7 +7,7 @@
   register: worker_mcp
 
 - name: "Get current worker's Machine config Pools"
-  set_fact:
+  ansible.builtin.set_fact:
     acm_mc: "{{ worker_mcp.resources[0].spec.configuration.name }}"
 
 - name: "Get current worker's Machine configs"
@@ -16,7 +16,7 @@
     kind: MachineConfig
     name: "{{ acm_mc }}"
   register: worker_mc
-  
+
 - name: "Get cluster user-ca cert if exists"
   community.kubernetes.k8s_info:
     api: v1
@@ -26,7 +26,7 @@
   register: user_ca_bundle
 
 - name: "Get the user_ca_bundle content"
-  set_fact:
+  ansible.builtin.set_fact:
     acm_user_ca_bundle: '{{ acm_user_bundle | default(user_ca_bundle.resources[0].data["ca-bundle.crt"]) }}'
   when:
     - user_bundle is defined or
@@ -41,7 +41,7 @@
   register: acm_pull_secret
 
 - name: "Setting config facts based on Hub Cluster configs"
-  set_fact:
+  ansible.builtin.set_fact:
     acm_ssh_key: "{{ worker_mc.resources[0].spec.config.passwd.users[0].sshAuthorizedKeys[0] }}"
     acm_pull_secret: '{{ acm_pull_secret.resources[0].data[".dockerconfigjson"] }}'
 ...

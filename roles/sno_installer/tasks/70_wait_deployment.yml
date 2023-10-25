@@ -1,9 +1,9 @@
 ---
 - name: "Wait for API to be available"
-  uri:
+  ansible.builtin.uri:
     url: 'https://api.{{ cluster }}.{{ domain }}:6443/readyz'
-    validate_certs: no
-    return_content: yes
+    validate_certs: false
+    return_content: true
   register: api_ready
   until:
     - "'ok' in api_ready.content"
@@ -13,8 +13,8 @@
   tags: waitdeploy
 
 - name: "Wait for Node to become Ready"
-  command:
-    cmd: |
+  ansible.builtin.command:
+    cmd: >
       {{ ocp_binary_path }}/oc get nodes
   register: node_status
   changed_when: false
@@ -27,7 +27,7 @@
   tags: waitdeploy
 
 - name: "Wait for installation until completion"
-  shell:
+  ansible.builtin.shell:
     cmd: >
       {{ ocp_binary_path }}/oc get clusterversion/version -o json
       | jq -r '.status.history[] | select(.version == "{{ version }}").state'

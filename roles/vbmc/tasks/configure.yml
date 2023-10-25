@@ -1,46 +1,61 @@
 ---
 - name: Stop and remove existing Virtual BMCs
-  shell: |
+  ansible.builtin.shell: |
     {{ vbmc_bin }} stop {{ item }}
     {{ vbmc_bin }} delete {{ item }}
   ignore_errors: true
   with_items: "{{ vbmc_nodes }}"
 
 - name: Get current count of used vbmc ports
-  shell: "{{ vbmc_bin | quote }} list | grep 62 | wc -l"
+  ansible.builtin.shell: |
+    set -eo pipefail
+    {{ vbmc_bin | quote }} list | grep 62 | wc -l
   register: vbmc_used_ports
 
 - name: Define vbmc_port for each VM
-  set_fact:
+  ansible.builtin.set_fact:
     vbmc_ports: "{{ vbmc_ports|default({})|combine({ item.1: vbmc_start_port + vbmc_used_ports.stdout|int + item.0 }) }}"
   with_indexed_items: "{{ vbmc_nodes }}"
   vars:
     vbmc_start_port: 6230
 
 - name: Set ipv4 management bmc address
-  set_fact:
+  ansible.builtin.set_fact:
     vbmc_management_address: "{{ hostvars[vbmc_host].ansible_default_ipv4.address }}"
   when: not baremetal_net_ipv6|bool
 
 - name: Set ipv6 management bmc address
-  set_fact:
+  ansible.builtin.set_fact:
     vbmc_management_address: "{{ hostvars[vbmc_host].ansible_default_ipv6.address }}"
   when: baremetal_net_ipv6|bool
 
-- include_tasks: firewalld.yml
+- name: Setup firewall
+  ansible.builtin.include_tasks: firewalld.yml
 
 - name: Add nodes to vbmc
-  command: "{{ vbmc_bin }} add {{ item.key }} --port {{ item.value }} --username {{ vbmc_user }} --password {{ vbmc_pass }} --address {% if not baremetal_net_ipv6|bool %}::ffff:{% endif %}{{ vbmc_management_address }}"
+  ansible.builtin.command: >
+    {{ vbmc_bin }} add {{ item.key }}
+      --port {{ item.value }}
+      --username {{ vbmc_user }}
+      --password {{ vbmc_pass }}
+      --address {% if not baremetal_net_ipv6 | bool %}::ffff:{% endif %}{{ vbmc_management_address }}
   with_dict: "{{ vbmc_ports }}"
 
 - name: Start nodes using vbmc
-  include_tasks: start_node.yml
-  loop: "{{ vbmc_ports|dict2items }}"
+  ansible.builtin.include_tasks: start_node.yml
+  loop: "{{ vbmc_ports | dict2items }}"
   loop_control:
     loop_var: node
 
 - name: Setting nodes power status using ipmitool
-  command: "ipmitool -I lanplus -U {{ vbmc_user }} -P {{ vbmc_pass }} -H {{ vbmc_management_address }} -p {{ item.value }} chassis power on"
+  ansible.builtin.command: >
+    ipmitool
+      -I lanplus
+      -U {{ vbmc_user }}
+      -P {{ vbmc_pass }}
+      -H {{ vbmc_management_address }}
+      -p {{ item.value }}
+      chassis power on
   with_dict: "{{ vbmc_ports }}"
   register: command_result
   until: command_result.rc == 0
@@ -48,7 +63,14 @@
   delay: 5
 
 - name: Get vbmc VMs power status using ipmitool
-  command: "ipmitool -I lanplus -U {{ vbmc_user }} -P {{ vbmc_pass }} -H {{ vbmc_management_address }} -p {{ item.value }} power status"
+  ansible.builtin.command: >
+    ipmitool
+      -I lanplus
+      -U {{ vbmc_user }}
+      -P {{ vbmc_pass }}
+      -H {{ vbmc_management_address }}
+      -p {{ item.value }}
+      power status
   register: ipmitool_results
   with_dict: "{{ vbmc_ports }}"
   until: ipmitool_results.rc == 0
@@ -56,13 +78,20 @@
   delay: 5
 
 - name: Validate that all VMs are powered on
-  fail:
+  ansible.builtin.fail:
     msg: "Node is not powered on! (ipmitool stdout: '{{ item.stdout }}')"
   when: "item.stdout != 'Chassis Power is on'"
   with_items: "{{ ipmitool_results.results }}"
 
 - name: Power off nodes with ipmitool
-  command: "ipmitool -I lanplus -U {{ vbmc_user }} -P {{ vbmc_pass }} -H {{ vbmc_management_address }} -p {{ item.value }} chassis power off"
+  ansible.builtin.command: >
+    ipmitool
+      -I lanplus
+      -U {{ vbmc_user }}
+      -P {{ vbmc_pass }}
+      -H {{ vbmc_management_address }}
+      -p {{ item.value }}
+      chassis power off
   with_dict: "{{ vbmc_ports }}"
   register: command_result
   until: command_result.rc == 0
@@ -71,7 +100,8 @@
 
 - name: Get information about vm from hypervisor
   delegate_to: "{{ vbmc_host }}"
-  shell: |
+  ansible.builtin.shell: |
+    set -eo pipefail
     NODE_XML=`virsh dumpxml {{ item }}`
     disks_list="["
     for dsk in $(virsh domblklist {{ item }} | tail -n +3 | awk '{print $1}'); do
@@ -89,12 +119,13 @@
         'disk_bytes': '`virsh domblkinfo {{ item }} vda | grep -e Capacity | cut -d\: -f2 | xargs`',
         'disks': '${disks_list}',
     }"
-  with_items: "{{ vbmc_nodes|sort }}"
+  with_items: "{{ vbmc_nodes | sort }}"
   register: nodes_info
 
 - name: Generate file containing install-scripts vbmc details
-  template:
+  ansible.builtin.template:
     src: nodes_dict.json.j2
     dest: ipmi_nodes.json
+    mode: "0644"
   delegate_to: localhost
   become: false

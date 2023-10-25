@@ -2,12 +2,12 @@
 - name: Run tnf stages
   block:
     - name: Execute cnf_cert pre-run stage
-      include_tasks: pre-run.yml
+      ansible.builtin.include_tasks: pre-run.yml
 
     - name: Execute cnf_cert tests stage
-      include_tasks: tests.yml
+      ansible.builtin.include_tasks: tests.yml
 
   always:
     - name: Execute cnf_cert teardown stage
-      include_tasks: teardown.yml
+      ansible.builtin.include_tasks: teardown.yml
 ...

@@ -2,16 +2,16 @@
 - name: Start each node using vbmc
   block:
     - name: Trying to start the node
-      command: "{{ vbmc_bin }} start {{ node.key }}"
+      ansible.builtin.command: "{{ vbmc_bin }} start {{ node.key }}"
       register: command_result
       until: command_result.rc == 0
       retries: 5
       delay: 5
   rescue:
     - name: Check log message
-      debug:
+      ansible.builtin.debug:
         msg: "{{ command_result.stderr }}"
-    - name: Fail if the BMC instance is not running yet
-      fail:
+    - name: Fail if the BMC instance is not running yet  # noqa: no-jinja-when
+      ansible.builtin.fail:
         msg: Fail if the BMC instance is not running yet
       when: not "BMC instance {{ node.key }} already running" in command_result.stderr

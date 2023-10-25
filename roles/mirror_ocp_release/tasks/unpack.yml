@@ -1,6 +1,6 @@
 ---
 - name: "Check if OpenShift client tools have been unpacked"
-  stat:
+  ansible.builtin.stat:
     path: "{{ mor_cache_dir }}/{{ mor_version }}/oc"
     get_checksum: false
   register: unpacked
@@ -8,7 +8,7 @@
     - not mor_force  # we don't care to stat files if we're forcing
 
 - name: "Unarchive client tarball"
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-{{ mor_version }}.tar.gz"
     dest: "{{ mor_cache_dir }}/{{ mor_version }}"
     owner: "{{ mor_owner }}"

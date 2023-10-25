@@ -1,6 +1,6 @@
 ---
 - name: "Check for role allowed providers"
-  fail:
+  ansible.builtin.fail:
     msg: "{{ ah_cluster_type }} provider is not supported by this role"
   when:
     - ah_cluster_type | lower not in ah_cluster_types
@@ -12,19 +12,19 @@
   register: mlb_instance
 
 - name: "Check if a metallb instance exists"
-  fail:
+  ansible.builtin.fail:
     msg:
       - "A MetalLB instance is required to configure hypershift on baremetal environments"
   when:
     - mlb_instance.resources | length == 0
 
 - name: "Validate that a pull secret file is defined"
-  fail:
+  ansible.builtin.fail:
     msg: "A pull secret file is required"
   when: ah_pullsecret_file is undefined
 
 - name: Check pull secret file
-  stat:
+  ansible.builtin.stat:
     path: "{{ ah_pullsecret_file }}"
   register: ah_ps_file
   failed_when: not ah_ps_file.stat.exists
@@ -49,7 +49,7 @@
 - name: Check for unsupported hypershift versions
   vars:
     short_ver: "{{ '.'.join(ah_ocp_version.split('-')[0].split('.')[:2]) }}"
-  fail:
+  ansible.builtin.fail:
     msg: "{{ ah_ocp_version }} is not supported in hypershift"
   failed_when: >
     not short_ver in (
@@ -60,7 +60,7 @@
 - name: Check for a default storage class
   vars:
     query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
-    query_results: "{{ ah_sc | json_query(query_default_sc) }}"
+    query_results: "{{ ah_sc | json_query(query_default_sc) }}"  # noqa: jinja[invalid]
   community.kubernetes.k8s_info:
     api_version: v1
     kind: StorageClass

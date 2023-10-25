@@ -1,48 +1,61 @@
 ---
-- block:
-    - include_tasks: setup.yml
-    - include_tasks: ssh_keygen.yml
-    - include_tasks: libvirt_network_up.yml
+- name: Install
+  when: hook_action == 'install'
+  block:
+    - name: Setup
+      ansible.builtin.include_tasks: setup.yml
+    - name: Generate SSH keys
+      ansible.builtin.include_tasks: ssh_keygen.yml
+    - name: Create networks
+      ansible.builtin.include_tasks: libvirt_network_up.yml
       loop: "{{ networks }}"
       loop_control:
         loop_var: network
-    - include_tasks: libvirt_host_up.yml
+    - name: Create hosts
+      ansible.builtin.include_tasks: libvirt_host_up.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
-    - include_tasks: libvirt_host_up2.yml
+    - name: Create hosts 2
+      ansible.builtin.include_tasks: libvirt_host_up2.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
-    - include_tasks: dns_setup.yml
-      when: do_dns_config|bool
-    - include_role:
-        name: vbmc
+    - name: Setup DNS
+      ansible.builtin.include_tasks: dns_setup.yml
+      when: do_dns_config | bool
+    - name: Setup VBMC
+      ansible.builtin.include_role: redhatci.ocp.vbmc
       vars:
         vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
-    - include_tasks: dci_setup.yml
-    - include_role:
-        name: conserver
+    - name: DCI Setup
+      ansible.builtin.include_tasks: dci_setup.yml
+    - name: Setup conserver
+      ansible.builtin.include_role: redhatci.ocp.conserver
       vars:
         cluster_nodes: "{{ groups['masters'] + ('workers' in groups) | ternary(groups['workers'], []) }}"
       when: enable_conserver
-  when: hook_action == 'install'
 
-- block:
-    - include_tasks: libvirt_host_destroy.yml
+- name: Cleanup
+  when: hook_action == 'cleanup'
+  block:
+    - name: Destroy hosts
+      ansible.builtin.include_tasks: libvirt_host_destroy.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
-    - include_tasks: libvirt_network_destroy.yml
+    - name: Destroy network
+      ansible.builtin.include_tasks: libvirt_network_destroy.yml
       loop: "{{ networks }}"
       loop_control:
         loop_var: network
-    - include_tasks: dns_cleanup.yml
+    - name: DNS cleanup
+      ansible.builtin.include_tasks: dns_cleanup.yml
       when: do_dns_config|bool
-    - include_role:
+    - name: Cleanup VBMC
+      ansible.builtin.include_role:
         name: vbmc
       vars:
         vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
-  when: hook_action == 'cleanup'

@@ -1,13 +1,13 @@
 ---
 - name: "Validate parameters"
-  assert:
+  ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"
   with_items:
-      - acm_bmc_user
-      - acm_bmc_address
-      - acm_boot_mac_address
-      - acm_machine_cidr
+    - acm_bmc_user
+    - acm_bmc_address
+    - acm_boot_mac_address
+    - acm_machine_cidr
 
 - name: "Create a managed cluster namespace"
   community.kubernetes.k8s:
@@ -22,10 +22,10 @@
           pod-security.kubernetes.io/enforce-version: "latest"
 
 - name: "Pull data from Hub cluster"
-  include_tasks: acm-pull-data.yml
+  ansible.builtin.include_tasks: acm-pull-data.yml
 
 - name: "Inherit mirroring from hub"
-  set_fact:
+  ansible.builtin.set_fact:
     inherit_mirroring: true
   when:
     - acm_user_ca_bundle is defined
@@ -126,7 +126,7 @@
             url: "{{ acm_iso_url }}"
             rootFSUrl: "{{ acm_root_fs_url }}"
             cpuArchitecture: x86_64
-        {% if inherit_mirroring is defined and inherit_mirroring | bool  %}
+        {% if inherit_mirroring is defined and inherit_mirroring | bool %}
       mirrorRegistryRef:
           name: mirror-registry-config-map
         {% endif %}
@@ -144,7 +144,7 @@
     field_selectors:
       - status.phase=Running
     namespace: multicluster-engine
-    wait: yes
+    wait: true
   register: pod_list
   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
   retries: 20
@@ -160,7 +160,7 @@
     field_selectors:
       - status.phase=Running
     namespace: multicluster-engine
-    wait: yes
+    wait: true
   register: pod_list
   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
   retries: 20
@@ -190,7 +190,7 @@
       type: kubernetes.io/dockerconfigjson
 
 - name: "Define Random ClusterImageSet name"
-  set_fact:
+  ansible.builtin.set_fact:
     img_release: "{{ lookup('password', '/dev/null length=15 chars=ascii_lowercase,digits') }}"
 
 - name: "Create the ClusterImageSet"
@@ -320,7 +320,7 @@
           }
         }
       }
-  set_fact:
+  ansible.builtin.set_fact:
     ignition_config: '
       {
         "ignition": {
@@ -332,7 +332,7 @@
               "overwrite": true,
               "path": "/etc/containers/policy.json",
               "contents": {
-                "source": "data:text/plain;base64,{{ podman_policy | b64encode  }}"
+                "source": "data:text/plain;base64,{{ podman_policy | b64encode }}"
               }
             }
           ]
@@ -414,7 +414,7 @@
           address: "{{ acm_bmc_address }}"
           credentialsName: "bmc-{{ acm_cluster_name }}"
           disableCertificateVerification: true
-        bootMACAddress: "{{ acm_boot_mac_address  }}"
+        bootMACAddress: "{{ acm_boot_mac_address }}"
         online: true
 
 - name: "Wait for the Host Provisioning"

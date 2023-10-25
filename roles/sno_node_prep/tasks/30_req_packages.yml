@@ -1,21 +1,20 @@
 ---
 - name: "Install required packages"
-  yum:
+  ansible.builtin.yum:
     name: "{{ default_pkg_list }}"
     state: present
     update_cache: true
-    disable_gpg_check: yes
-  become: yes
+    disable_gpg_check: true
+  become: true
   tags: packages
 
 - name: "Install specific packages for SNO virtual"
-  yum:
+  ansible.builtin.yum:
     name: "{{ snovm_pkg_list }}"
     state: present
-    disable_gpg_check: yes
-  become: yes
-  when: |
-    - (sno_install_type is undefined) or
-      (sno_install_type == "virtual")
+    disable_gpg_check: true
+  become: true
+  when:
+    - (sno_install_type is undefined) or (sno_install_type == "virtual")
   tags: packages
 ...

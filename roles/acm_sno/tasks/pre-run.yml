@@ -2,9 +2,10 @@
 
 - name: "Fail when acm_user_registry is not defined"
   fail:
-    msg:
-      - "acm_user_registry variable is required for disconnected environments
-         Please review the example of the acm_user_registry variable in the role documentation"
+    msg: >
+      acm_user_registry variable is required for disconnected environments
+      Please review the example of the acm_user_registry variable in the role
+      documentation
   when:
     - acm_user_registry is undefined
     - acm_disconnected | bool
@@ -35,7 +36,7 @@
 - name: "Fail when defined storage class do not exists"
   vars:
     query_sc_name: 'resources[*].metadata.name'
-    query_results: "{{ storage_class | json_query(query_sc_name) }}"
+    query_results: "{{ storage_class | json_query(query_sc_name) }}"  # noqa: jinja[invalid]
   fail:
     msg: "Defined storage class do not exists"
   when:
@@ -45,7 +46,7 @@
 - name: "Fail when no default storage class"
   vars:
     query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
-    query_results: "{{ storage_class | json_query(query_default_sc) }}"
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"  # noqa: jinja[invalid]
   fail:
     msg: "No default storage class was found"
   when:
@@ -54,6 +55,8 @@
     - acm_sc is not defined
 
 - name: "Disable provisioning"
+  when:
+    - acm_vm_external_network | bool
   block:
     - name: "Get provisioning configuration"
       community.kubernetes.k8s_info:
@@ -73,6 +76,4 @@
             virtualMediaViaExternalNetwork: true
       when:
         - provisioning_cr.resources | length
-  when:
-    - acm_vm_external_network | bool
 ...

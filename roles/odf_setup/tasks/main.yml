@@ -1,18 +1,18 @@
 ---
 - name: Validate requirements
-  include_tasks: validation.yml
+  ansible.builtin.include_tasks: validation.yml
 
 - name: Set Facts
-  include_tasks: set-facts.yml
+  ansible.builtin.include_tasks: set-facts.yml
 
 - name: Setup Local Storage operator
-  include_tasks: local-storage-operator.yml
+  ansible.builtin.include_tasks: local-storage-operator.yml
   when:
     - ocs_install_type == 'internal'
 
 - name: Setup Openshift Storage Operator
-  include_tasks: openshift-storage-operator.yml
- 
+  ansible.builtin.include_tasks: openshift-storage-operator.yml
+
 - name: Perform OCS Tests
-  include_tasks: tests.yml
+  ansible.builtin.include_tasks: tests.yml
 ...

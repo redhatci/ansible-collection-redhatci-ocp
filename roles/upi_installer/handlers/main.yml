@@ -1,6 +1,6 @@
 ---
 - name: "Delete tmp file"
-  file:
+  ansible.builtin.file:
     path: "{{ upi_creds_file.path }}"
     state: absent
   when:

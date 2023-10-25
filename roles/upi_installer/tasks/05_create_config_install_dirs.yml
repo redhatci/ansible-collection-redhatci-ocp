@@ -1,6 +1,6 @@
 ---
 - name: Create clusterconfigs dir
-  file:
+  ansible.builtin.file:
     path: "{{ dir }}"
     state: directory
     owner: "{{ ansible_user }}"

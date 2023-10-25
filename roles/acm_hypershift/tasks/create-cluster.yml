@@ -1,6 +1,6 @@
 ---
-- name: Deploy an hypershift cluster using {{ ah_cluster_type }} provider
-  shell:
+- name: Deploy hypershift cluster
+  ansible.buintin.shell:
     cmd: >
       set -e;
       {{ ah_cli_path }} create cluster {{ ah_cluster_type }}
@@ -15,7 +15,7 @@
   notify: Remove working directory
 
 - name: Wait for cluster Hosted Cluster initialization
-  pause:
+  ansible.builtin.pause:
     seconds: 10
 
 - name: Monitor Hosted Cluster Control plane availability
@@ -34,7 +34,7 @@
   delay: 10
 
 - name: Get hosted cluster credentials
-  include_tasks: get-credentials.yml
+  ansible.builtin.include_tasks: get-credentials.yml
 
 - name: Monitor Hosted Cluster Nodes availability
   community.kubernetes.k8s_info:

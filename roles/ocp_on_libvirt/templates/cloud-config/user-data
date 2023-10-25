@@ -3,7 +3,7 @@
 #chpasswd: {expire: False}
 #ssh_pwauth: True
 ssh_authorized_keys:
-  - "{{ pubkey['stdout'] }}"
+  - "{{ pubkey['content'] | b64decode }}"
 
 # Add users to the system. Users are added after groups are added.
 users:
@@ -16,7 +16,7 @@ users:
     lock_passwd: {{ item['lock_passwd'] | default('true') }}
     passwd: {{ item['password'] | default('None') }}
     ssh-authorized-keys:
-      - {{ pubkey['stdout'] }}
+      - {{ pubkey['content'] | b64decode }}
 {% endfor %}
 
 timezone: UTC

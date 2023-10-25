@@ -1,6 +1,6 @@
 ---
 - name: "Remove opcap dir"
-  file:
+  ansible.builtin.file:
     path: "{{ opcap_dir.path }}"
     state: absent
 ...

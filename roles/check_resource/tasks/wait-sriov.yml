@@ -1,9 +1,9 @@
 ---
 - name: "Check SriovNetworkNodeState application"
   block:
-    # SriovNetworkNodeState check
-    # Let's give it 60*10=600 seconds (10 minutes), SriovNetworkNodeState should be
-    # stable before that time under normal circumstances
+    # SriovNetworkNodeState check Let's give it 60*10=600 seconds (10 minutes),
+    # SriovNetworkNodeState should be stable before that time under normal
+    # circumstances
     - name: Wait till sriovnetworknodestate becomes ready
       community.kubernetes.k8s_info:
         api_version: sriovnetwork.openshift.io/v1

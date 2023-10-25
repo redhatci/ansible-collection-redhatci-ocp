@@ -1,5 +1,8 @@
 ---
 - name: Define, Start, Autostart Storage Pool
+  become: true
+  tags:
+    - storagepool
   block:
     - name: Define Storage Pool for default
       community.libvirt.virt_pool:
@@ -14,7 +17,5 @@
 
     - name: Autostart Storage Pool for default
       community.libvirt.virt_pool:
-        autostart: yes
+        autostart: true
         name: "{{ vm_pool_name }}"
-  become: yes
-  tags: storagepool

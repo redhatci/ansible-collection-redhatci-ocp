@@ -1,17 +1,18 @@
 ---
 - name: Template tnf_config.yml
-  template:
+  ansible.builtin.template:
     src: templates/tnf_config.yml.j2
     dest: "{{ tnf_dir }}/{{ test_network_function_project_name }}/tnf_config.yml"
+    mode: "750"
 
 # Just do this in case preflight test suite is used.
 # Use authentication file for private registry
 - name: Set authentication for registry access
-  include_tasks: prepare_json_authentication.yml
-  when: "'preflight' in tnf_labels and partner_creds|length"
+  when: "'preflight' in tnf_labels and partner_creds | length > 0"
+  ansible.builtin.include_tasks: prepare_json_authentication.yml
 
 - name: Remove XML JUnit results if they exist
-  file:
+  ansible.builtin.file:
     path: "{{ tnf_dir }}/{{ test_network_function_project_name }}/cnf-certification-tests_junit.xml"
     state: absent
 
@@ -19,20 +20,21 @@
 # - TNF_PARTNER_REPO
 # - TNF_IMAGE
 # - SUPPORT_IMAGE
-# We have to set ignore_errors to true because, if any tnf test fails, the result of the execution will be failed.
-# We will check log files afterwards to really determine if there were errors in the execution or not.
+# We have to set ignore_errors to true because, if any tnf test fails, the
+# result of the execution will be failed.  We will check log files afterwards
+# to really determine if there were errors in the execution or not.
 - name: Run the CNF Test Suite
   vars:
-    tnf_partner_repo: "{{ ( dci_local_registry | length ) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
+    tnf_partner_repo: "{{ (dci_local_registry | length) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
     support_image: "debug-partner:{{ support_image_version }}"
   environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image, 'SUPPORT_IMAGE': support_image}) }}"
-  shell: |
+  ansible.builtin.shell: |
     set -x
 
     ./run-tnf-container.sh -k {{ kubeconfig_path }} \
     -t {{ tnf_dir }}/{{ test_network_function_project_name }} \
     -o {{ tnf_dir }}/{{ test_network_function_project_name }} \
-    {% if tnf_labels|length %}-l '{{ tnf_labels }}' \{% endif %}
+    {% if tnf_labels | length > 0 %}-l '{{ tnf_labels }}' \{% endif %}
     {% if tnf_dockercfg_path is defined %}-c {{ tnf_dockercfg_path }} \{% endif %}
     -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
   args:
@@ -46,6 +48,5 @@
     state: absent
 
 - name: Logging tasks after finishing the execution of CNF Cert
-  include_tasks: logging.yml
-
+  ansible.builtin.include_tasks: logging.yml
 ...

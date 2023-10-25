@@ -1,6 +1,6 @@
 ---
 - name: Requirements validation for the mirror catalog role
-  assert:
+  ansible.builtin.assert:
     that:
       - mc_registry | default("") | length
       - mc_oc_tool_path is defined
@@ -8,14 +8,14 @@
       - mc_catalog | length
 
 - name: Set catalog fact
-  set_fact:
+  ansible.builtin.set_fact:
     mc_catalog_digest: "{{ mc_catalog }}"
 
 - name: Set Digest in catalog
   when: not mc_catalog | regex_search('@sha256sum:')
   block:
     - name: Get catalog Digest
-      shell:
+      ansible.builtin.shell:
         cmd: >
           skopeo inspect
           {% if mc_pullsecret is defined %}
@@ -32,16 +32,16 @@
     - name: Set catalog with digest
       vars:
         mc_base_catalog: "{{ mc_catalog | regex_search('(^.+):', '\\1') | first }}"
-      set_fact:
+      ansible.builtin.set_fact:
         mc_catalog_digest: "{{ mc_base_catalog }}@{{ image_digest.stdout }}"
 
 - name: Create tmp directory
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
   register: mc_tmp
 
 - name: Mirror operators
-  shell:
+  ansible.builtin.shell:
     cmd: >
       set -x;
       {{ mc_oc_tool_path }} adm catalog mirror
@@ -61,7 +61,7 @@
   until: catalog_manifests_output.rc == 0
 
 - name: Set the Image Source file
-  tempfile:
+  ansible.builtin.tempfile:
     state: file
     prefix: "imagesource_{{ (mc_catalog_digest | basename).split('@')[0] }}."
   register: mc_is_file
@@ -71,7 +71,7 @@
     - mc_is_type | lower == "idms"
   block:
     - name: Transform ICSP to IDMS
-      shell:
+      ansible.builtin.command:
         cmd: >
           {{ mc_oc_tool_path }} adm migrate icsp
           {{ mc_tmp.path }}/manifests/imageContentSourcePolicy.yaml
@@ -79,21 +79,22 @@
       register: migrate_result
 
     - name: Set new image source file
-      set_fact:
+      ansible.builtin.set_fact:
         is_manifest_file: "{{ migrate_result.stdout_lines[0].split(' ')[-1] }}"
 
     - name: Read the image source file
-      include_vars:
+      ansible.builtin.include_vars:
         file: "{{ is_manifest_file }}"
         name: mc_is_content
 
     - name: Regenerate image source with expected indentation
-      copy:
+      ansible.builtin.copy:
         dest: "{{ is_manifest_file }}"
-        content: "{{ mc_is_content | to_yaml }}"
+        content: "{{ mc_is_content | to_yaml }}"  # noqa: jinja[invalid]
+        mode: "0750"
 
 - name: Copy the generated Image Source file
-  copy:
+  ansible.builtin.copy:
     src: "{{ is_manifest_file | default(mc_tmp.path + '/manifests/imageContentSourcePolicy.yaml') }}"
     dest: "{{ mc_is_file.path }}"
     owner: "{{ ansible_user_id }}"

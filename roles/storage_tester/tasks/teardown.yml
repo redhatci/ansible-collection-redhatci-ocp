@@ -5,7 +5,7 @@
     name: "{{ pvc_to_be_deleted }}"
     namespace: storage-tester
     state: absent
-    wait: yes
+    wait: true
   loop:
     - storage-upgrade-tester-rwo
     - storage-upgrade-tester-rwx
@@ -19,4 +19,4 @@
     kind: Namespace
     name: storage-tester
     state: absent
-    wait: yes
+    wait: true

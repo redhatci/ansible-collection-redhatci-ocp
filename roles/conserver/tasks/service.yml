@@ -1,7 +1,7 @@
 ---
 - name: Enable and start service
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: "conserver.service"
     state: restarted
     enabled: true

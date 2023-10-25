@@ -1,18 +1,16 @@
 ---
 - name: "Configure MetalLB resources"
-  block:
-    - name: "Validate required variables"
-      include_tasks: pre-requisites.yml
-
-    - name: "Set up MetalLB resources"
-      include_tasks: setup-metallb.yml
   when:
     - mlb_action == 'install'
+  block:
+    - name: "Validate required variables"
+      ansible.builtin.include_tasks: pre-requisites.yml
+
+    - name: "Set up MetalLB resources"
+      ansible.builtin.include_tasks: setup-metallb.yml
 
 - name: "Cleanup MetalLB resources"
-  block:
-    - name: "Delete MetalLB resources"
-      include_tasks: clean-resources.yml
+  ansible.builtin.include_tasks: clean-resources.yml
   when:
     - mlb_action == 'cleanup'
 ...

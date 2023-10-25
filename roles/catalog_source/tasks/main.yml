@@ -1,13 +1,17 @@
 ---
 - name: Assert required fields exist
-  assert:
+  ansible.builtin.assert:
     that:
       - cs_name is defined
       - cs_name | string
       - cs_image is defined
       - cs_image | string
 
-- name: Create {{ cs_name }} CatalogSource
+- name: Print CatalogSource Name
+  ansible.builtin.debug:
+    msg: CatalogSource {{ cs_name }}
+
+- name: Create CatalogSource
   community.kubernetes.k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1
@@ -21,7 +25,7 @@
         publisher: "{{ cs_publisher }}"
         sourceType: "{{ cs_type }}"
 
-- name: Wait for {{ cs_name }} CatalogSource to be Ready
+- name: Wait for CatalogSource to be Ready
   community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
     kind: CatalogSource

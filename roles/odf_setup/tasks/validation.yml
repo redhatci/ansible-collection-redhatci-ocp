@@ -7,8 +7,10 @@
   no_log: true
 
 - name: "Fail if OCS CRD is not present"
-  fail:
-    msg: "OCS CRDs are not present, please install the Openshift Cluster Storage Operator"
+  ansible.builtin.fail:
+    msg: >
+      OCS CRDs are not present, please install the Openshift Cluster Storage
+      Operator
   when: req_crd.resources | list | count == 0
 
 - name: "Check if the main LSO CRD is present"
@@ -19,20 +21,22 @@
   no_log: true
 
 - name: "Fail if Local Storage CRD is not present"
-  fail:
+  ansible.builtin.fail:
     msg: "LSO CRD are not present, please install the Local Storage Operator"
-  when: 
+  when:
     - req_crd.resources | list | count == 0
     - ocs_install_type == 'internal'
 
 - name: "Validate OCS external variables"
-  assert:
+  ansible.builtin.assert:
     that:
       - external_ceph_data is defined
   when:
     - ocs_install_type == 'external'
 
 - name: "Check minimal number of nodes for replicas for LSO"
+  when:
+    - ocs_install_type == 'internal'
   block:
     - name: Get node information from Kubernetes
       community.kubernetes.k8s_info:
@@ -42,10 +46,10 @@
           - "cluster.ocs.openshift.io/openshift-storage"
       register: nodes_info
 
-    - name: "Fail if there are not at least 3 nodes for OCS"
-      fail:
-        msg: "There are less than 3 nodes with the label cluster.ocs.openshift.io/openshift-storage"
+    - name: Fail if there are not at least 3 nodes for OCS
+      ansible.builtin.fail:
+        msg: >
+          There are less than 3 nodes with the label
+          cluster.ocs.openshift.io/openshift-storage
       when: nodes_info.resources | length < 3
-  when:
-    - ocs_install_type == 'internal'
 ...

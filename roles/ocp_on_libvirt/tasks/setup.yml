@@ -1,16 +1,16 @@
 ---
-- name: "reset ssh connection to allow user changes to affect {{ ansible_user_id }}"
-  meta: reset_connection
+- name: "Reset ssh connection to allow user changes to affect"
+  ansible.builtin.meta: reset_connection
 
 - name: Enable EPEL
   become: true
-  package:
+  ansible.builtin.package:
     name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   when: ansible_distribution_major_version == '7'
 
 - name: Install packages required for libvirt
   become: true
-  package:
+  ansible.builtin.package:
     name:
       - libvirt-daemon-kvm
       - git
@@ -27,66 +27,66 @@
       - "python{% if ansible_python.version.major == 3 %}3{% endif %}-virtualenv"
 
 - name: Get processor family
-  set_fact:
-    proc_family: >-
-      {{ ('AMD' in (ansible_processor | join()))|
-      ternary ('amd','intel') }}
+  ansible.builtin.set_fact:
+    proc_family: >
+      {{ ('AMD' in (ansible_processor | join)) | ternary('amd', 'intel') }}
 
 - name: Check on nested KVM status
-  command: |
+  ansible.builtin.command: |
     cat /sys/module/kvm_{{ proc_family }}/parameters/nested
   ignore_errors: true
   register: nested_kvm
 
 - name: Enable nested Virt
   become: true
-  copy:
+  ansible.builtin.copy:
     content: |
       options kvm-{{ proc_family }} nested=1
       options kvm-{{ proc_family }} enable_shadow_vmcs=1
       options kvm-{{ proc_family }} enable_apicv=1
       options kvm-{{ proc_family }} ept=1
     dest: /etc/modprobe.d/kvm_nested.conf
+    mode: "0644"
   when: nested_kvm.stdout != 'Y'
 
 - name: Reload KVM module
   become: true
-  shell: |
+  ansible.builtin.shell: |
     modprobe -r kvm_{{ proc_family }}
     modprobe -a kvm_{{ proc_family }}
   when: nested_kvm.stdout != 'Y'
 
 - name: Enable and Start libvirtd
   become: true
-  service:
+  ansible.builtin.service:
     name: libvirtd
-    enabled: yes
+    enabled: true
     state: started
 
 - name: Create the consoles directory
   become: true
-  file:
+  ansible.builtin.file:
     path: /var/lib/libvirt/consoles
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
 
 - name: Set SELinux context under the consoles directory
-  sefcontext:
+  ansible.builtin.sefcontext:
     target: '/var/lib/libvirt/consoles(/.*)?'
     setype: svirt_home_t
-  become: yes
+  become: true
 
 - name: Restore the contexts under the consoles directory
-  shell: /usr/sbin/restorecon -irv /var/lib/libvirt/consoles
-  become: yes
-
-- name: "Add {{ ansible_user_id }} user to libvirt, kvm, and qemu groups"
+  ansible.builtin.command: /usr/sbin/restorecon -irv /var/lib/libvirt/consoles
   become: true
-  user:
+
+- name: "Add user to libvirt, kvm, and qemu groups"
+  become: true
+  ansible.builtin.user:
     name: "{{ ansible_user_id }}"
-    append: yes
+    append: true
     groups:
       - libvirt
       - qemu

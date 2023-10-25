@@ -24,10 +24,14 @@
     wait: true
 
 - name: Gathering result from DaemonSet
-  shell:
+  ansible.builtin.shell:
     cmd: >
-      sleep 90 ;
-      {{ oc_tool_path }} logs --selector name=ocs-disk-gatherer --tail=-1 --since=10m --namespace ocs-disk-gatherer
+      sleep 90;
+      {{ oc_tool_path }} logs
+      --selector name=ocs-disk-gatherer
+      --tail=-1
+      --since=10m
+      --namespace ocs-disk-gatherer
   register: disk_id
 
 - name: Configure Local Storage Volumes

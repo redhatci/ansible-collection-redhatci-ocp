@@ -20,7 +20,7 @@
         name: "{{ pvc_name }}"
         namespace: "{{ sm_namespace }}"
       spec:
-        storageClassName:  "{{ sm_storage_class }}"
+        storageClassName: "{{ sm_storage_class }}"
         accessModes:
           - ReadWriteMany
         resources:
@@ -64,33 +64,33 @@
                 persistentVolumeClaim:
                   claimName: minio-pvc-claim
             containers:
-            - name: minio
-              volumeMounts:
-                - name: data 
-                  mountPath: /data
-              image: "{{ sm_minio_image }}"
-              args:
-              - server
-              - /data
-              env:
-                - name: MINIO_ACCESS_KEY
-                  value: "{{ sm_access_key_id }}"
-                - name: MINIO_SECRET_KEY
-                  value: "{{ sm_access_key_secret }}"
-              ports:
-              - containerPort: 9000
-              readinessProbe:
-                httpGet:
-                  path: /minio/health/ready
-                  port: 9000
-                initialDelaySeconds: 120
-                periodSeconds: 20
-              livenessProbe:
-                httpGet:
-                  path: /minio/health/live
-                  port: 9000
-                initialDelaySeconds: 120
-                periodSeconds: 20
+              - name: minio
+                volumeMounts:
+                  - name: data
+                    mountPath: /data
+                image: "{{ sm_minio_image }}"
+                args:
+                  - server
+                  - /data
+                env:
+                  - name: MINIO_ACCESS_KEY
+                    value: "{{ sm_access_key_id }}"
+                  - name: MINIO_SECRET_KEY
+                    value: "{{ sm_access_key_secret }}"
+                ports:
+                  - containerPort: 9000
+                readinessProbe:
+                  httpGet:
+                    path: /minio/health/ready
+                    port: 9000
+                  initialDelaySeconds: 120
+                  periodSeconds: 20
+                livenessProbe:
+                  httpGet:
+                    path: /minio/health/live
+                    port: 9000
+                  initialDelaySeconds: 120
+                  periodSeconds: 20
 
 - name: Create the minio service
   community.kubernetes.k8s:
@@ -137,10 +137,15 @@
                 command:
                   - "/bin/sh"
                   - "-c"
-                  - |
-                    mc --config-dir /tmp/ alias set local http://minio-service.{{ sm_namespace }}:9000 \
-                    {{ sm_access_key_id }} {{ sm_access_key_secret }} --api S3v4;
-                    mc --config-dir /tmp/ mb --ignore-existing local/{{ sm_bucket_name }}
+                  - >
+                    mc --config-dir /tmp/
+                    alias set
+                    local http://minio-service.{{ sm_namespace }}:9000
+                    {{ sm_access_key_id }} {{ sm_access_key_secret }}
+                    --api S3v4;
+                    mc --config-dir /tmp/
+                    mb --ignore-existing
+                    local/{{ sm_bucket_name }}
             restartPolicy: Never
     wait: true
     wait_sleep: 10

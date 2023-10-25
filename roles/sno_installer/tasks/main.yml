@@ -1,91 +1,106 @@
 ---
 # tasks file for sno_installer
-- include_tasks: 10_get_oc.yml
+- name: Get OCP client
+  ansible.builtin.include_tasks: 10_get_oc.yml
   tags:
-  - cleanup
-  - getoc
+    - cleanup
+    - getoc
 
-- include_tasks: 15_disconnected_registry_existing.yml
+- name: Use disconnected registry
+  ansible.builtin.include_tasks: 15_disconnected_registry_existing.yml
   when:
     - disconnected_registry is defined
     - disconnected_registry == "existing"
   tags: disconnected
 
-- include_tasks: 20_extract_installer.yml
+- name: Extract installer
+  ansible.builtin.include_tasks: 20_extract_installer.yml
   tags:
     - pullsecret
     - extract
 
-- include_tasks: 21_rhcos_image_paths.yml
+- name: Set RHCOS image paths
+  ansible.builtin.include_tasks: 21_rhcos_image_paths.yml
   tags: rhcospath
 
-- block:
-    - include_tasks: 22_rhcos_image_cache.yml
-      tags: cache
+- name: Setup RHCOS image cache
+  ansible.builtin.include_tasks: 22_rhcos_image_cache.yml
+  tags:
+    - cache
   delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
   when:
     - sno_install_type is defined
     - sno_install_type == "baremetal"
     - cache_enabled | bool
 
-- include_tasks: 23_rhcos_image_pxetftp.yml
+- name: Set RHCOS PXE images
+  ansible.builtin.include_tasks: 23_rhcos_image_pxetftp.yml
   tags: rhcospxe
   when:
     - sno_install_type is defined
     - sno_install_type == "baremetal"
 
-- include_tasks: 24_rhcos_image_live.yml
+- name: Set RHCOS image live
+  ansible.builtin.include_tasks: 24_rhcos_image_live.yml
   tags: rhcos_live
-  when: |
-    - (sno_install_type is undefined) or
-      (sno_install_type == "virtual")
+  when:
+    - (sno_install_type is undefined) or (sno_install_type == "virtual")
 
-- include_tasks: 25_create_install_config.yml
+- name: Create install config
+  ansible.builtin.include_tasks: 25_create_install_config.yml
   tags: installconfig
 
-- include_tasks: 40_create_manifest.yml
+- name: Create manifest
+  ansible.builtin.include_tasks: 40_create_manifest.yml
   tags: manifests
 
-- include_tasks: 50_extramanifests.yml
+- name: Create extra manifest
+  ansible.builtin.include_tasks: 50_extramanifests.yml
   tags: extramanifests
 
-- include_tasks: 55_create_ignition.yml
+- name: Create ignition config
+  ansible.builtin.include_tasks: 55_create_ignition.yml
   tags: ignition
 
-- include_tasks: 56_create_grubpxe.yml
+- name: Create GRUB for PXE
+  ansible.builtin.include_tasks: 56_create_grubpxe.yml
   tags: rhcos_grub
   when:
     - dnsmasq_enabled | bool
     - sno_install_type is defined
     - sno_install_type == "baremetal"
 
-- include_tasks: 57_embed_ignition_into_iso.yml
-  when: |
-    - (sno_install_type is undefined) or
-      (sno_install_type == "virtual")
+- name: Embed ignition config in ISO file
+  ansible.builtin.include_tasks: 57_embed_ignition_into_iso.yml
+  when:
+    - (sno_install_type is undefined) or (sno_install_type == "virtual")
   tags: embedded
 
-- block:
-    - include_tasks: 59_cleanup_sno_vm.yml
+- name: Deploy SNO on Virtual Machine
+  when:
+    - (sno_install_type is undefined) or (sno_install_type == "virtual")
+  block:
+    - name: Cleanup VM
+      ansible.builtin.include_tasks: 59_cleanup_sno_vm.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
       tags: cleanup
 
-    - include_tasks: 60_deploy_sno_vm.yml
+    - name: Deploy VM
+      ansible.builtin.include_tasks: 60_deploy_sno_vm.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
       tags: install
-  when: |
-    - (sno_install_type is undefined) or
-      (sno_install_type == "virtual")
 
-- include_tasks: 60_deploy_sno_bm.yml
+- name: Deploy SNO on bare metal
+  ansible.builtin.include_tasks: 60_deploy_sno_bm.yml
   tags: install_bm
   when:
     - sno_install_type is defined
     - sno_install_type == "baremetal"
 
-- include_tasks: 70_wait_deployment.yml
+- name: Wait for deployment to complete
+  ansible.builtin.include_tasks: 70_wait_deployment.yml
   tags: waitdeploy

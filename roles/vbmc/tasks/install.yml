@@ -1,7 +1,9 @@
 ---
-- block:
-  - name: Install packages required for virtualbmc pip package
-    package:
+- name: Root install
+  become: true
+  block:
+    - name: Install packages required for virtualbmc pip package  # noqa: package-latest
+      ansible.builtin.package:
         name:
           - gcc
           - libvirt
@@ -12,35 +14,34 @@
           - ipmitool
           - psmisc
         state: latest
-        disable_gpg_check: yes
+        disable_gpg_check: true
 
-  - name: Get packages info
-    package_facts:
-      manager: auto
+    - name: Get packages info
+      ansible.builtin.package_facts:
+        manager: auto
 
-  - name: Get libvirt installed version
-    set_fact:
-      libvirt_version: "{{ ansible_facts.packages['libvirt'][0].version }}"
-    when: "'libvirt' in ansible_facts.packages"
+    - name: Get libvirt installed version
+      ansible.builtin.set_fact:
+        libvirt_version: "{{ ansible_facts.packages['libvirt'][0].version }}"
+      when: "'libvirt' in ansible_facts.packages"
 
-  - name: "check if there's a virtualenv already installed (i.e.: a system-wide RPM package)"
-    command: virtualenv --version
-    changed_when: false
-    failed_when: false
-    register: virtualenv_installed_check
+    - name: Check if there's a virtualenv already installed
+      ansible.builtin.command: virtualenv --version
+      changed_when: false
+      failed_when: false
+      register: virtualenv_installed_check
 
-  - name: install virtualenv pip module
-    pip:
+    - name: Install virtualenv pip module
+      ansible.builtin.pip:
         name: virtualenv
         extra_args: "--user"
-    when: virtualenv_installed_check.rc != 0
-  become: yes
+      when: virtualenv_installed_check.rc != 0
 
-- name: gather info about PATH/env variables
-  setup:
+- name: Gather info about PATH/env variables
+  ansible.builtin.setup:
 
-- name: Prepare venv for vbmc
-  pip:
+- name: Prepare venv for vbmc  # noqa: package-latest
+  ansible.builtin.pip:
     virtualenv: "{{ vbmc_virtualenv }}"
     virtualenv_command: "virtualenv{% if ansible_distribution_major_version | int < 9 %}-{{ ansible_python.version.major }}{% endif %}"
     name:
@@ -51,18 +52,22 @@
     state: latest
 
 - name: Install python-virtualbmc with pip
-  pip:
+  ansible.builtin.pip:
     virtualenv: "{{ vbmc_virtualenv }}"
     virtualenv_command: "virtualenv{% if ansible_distribution_major_version | int < 9 %}-{{ ansible_python.version.major }}{% endif %}"
     name: virtualbmc
     version: "{{ vbmc_version }}"
   environment:
-      PATH: "{{ vbmc_home }}/.local/bin:{{ ansible_env.PATH }}" # to find 'virtualenv' command if available in user's ~/.local/bin, otherwise will find a system-wide one
+    # to find 'virtualenv' command if available in user's ~/.local/bin,
+    # otherwise will find a system-wide one
+    PATH: "{{ vbmc_home }}/.local/bin:{{ ansible_env.PATH }}"
 
-- block:
-    - name: adds VirtualBMC as systemd service
-      copy:
-        mode: 0664
+- name: Root service
+  become: true
+  block:
+    - name: Adds VirtualBMC as systemd service
+      ansible.builtin.copy:
+        mode: "0664"
         dest: "{{ vbmc_systemd_unit }}"
         content: |
           [Unit]
@@ -80,10 +85,10 @@
           WantedBy=multi-user.target
 
     - name: Create VirtualBMC directories
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        mode: 0640
+        mode: "0640"
         owner: root
         group: root
       with_items:
@@ -91,8 +96,8 @@
         - "/var/log/virtualbmc"
 
     - name: Create VirtualBMC configuration file
-      copy:
-        mode: 0640
+      ansible.builtin.copy:
+        mode: "0640"
         dest: "/etc/virtualbmc/virtualbmc.conf"
         content: |
           [default]
@@ -103,28 +108,27 @@
           [ipmi]
           session_timout=20
 
-    - name: reload systemd
-      systemd:
-          daemon_reload: yes
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
 
     - name: Allow platform-python to be executed by systemd
-      sefcontext:
+      ansible.builtin.sefcontext:
         target: "{{ vbmc_virtualenv }}/bin/platform-python"
         setype: bin_t
         state: present
 
     - name: Apply new SELinux file context for platform-python
-      command: "restorecon -irv {{ vbmc_virtualenv }}/bin/platform-python"
+      ansible.builtin.command: "restorecon -irv {{ vbmc_virtualenv }}/bin/platform-python"
 
-    - name: restart virtualbmc
-      service:
-          name: virtualbmc
-          state: restarted
-  become: true
+    - name: Restart virtualbmc
+      ansible.builtin.service:
+        name: virtualbmc
+        state: restarted
 
 - name: Start the Virtual BMCs
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: virtualbmc
     state: started
-    enabled: yes
+    enabled: true

@@ -1,7 +1,8 @@
 ---
 - name: Remove Kubeconfig from Ansible User .bashrc
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ ansible_user_dir }}/.bashrc"
     state: absent
     regex: "^export KUBECONFIG={{ dir }}/auth/kubeconfig"
-  tags: cleanup
+  tags:
+    - cleanup

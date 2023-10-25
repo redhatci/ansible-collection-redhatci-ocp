@@ -2,15 +2,16 @@
 - name: Standalone containers tests
   block:
     - name: Create tmp directory for custom configurations and preflight binary
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         prefix: preflight_tmp_dir.
       register: preflight_tmp_dir
 
     - name: Copy registry authentication into config folder for standalone flow
-      copy:
+      ansible.builtin.copy:
         src: "{{ partner_creds }}"
         dest: "{{ preflight_tmp_dir.path }}/config.json"
+        mode: "0644"
       when: partner_creds | length
 
     # To reuse the functionality for e2e certification when operator is defined
@@ -23,11 +24,11 @@
           pyxis_container_identifier: "{{ c.pyxis_container_identifier | default('') }}"
           create_container_project: "{{ c.create_container_project | default('') }}"
           short_description: "{{ c.short_description | default('') }}"
-      include_tasks: test_preflight_check_container_one_image.yml
+      ansible.builtin.include_tasks: test_preflight_check_container_one_image.yml
       loop: "{{ preflight_containers_to_certify }}"
       loop_control:
         loop_var: c
   always:
     - name: Teardown
-      include_tasks: teardown.yml
+      ansible.builtin.include_tasks: teardown.yml
 ...

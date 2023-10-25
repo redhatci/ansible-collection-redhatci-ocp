@@ -1,18 +1,18 @@
 ---
-- name: Verify that SSH key for {{ ansible_user }} exists
-  stat:
+- name: Verify that SSH key for ansible_user exists
+  ansible.builtin.stat:
     path: "{{ ansible_user_dir }}/.ssh/id_rsa.pub"
   register: sshkeypath
   tags: sshconfig
 
-- name: Get the contents of the ssh key for {{ ansible_user }}
-  slurp:
+- name: Get the contents of the ssh key for ansible_user
+  ansible.builtin.slurp:
     src: "{{ ansible_user_dir }}/.ssh/id_rsa.pub"
   register: sshkey
   when: sshkeypath.stat.exists | bool
   tags: sshconfig
 
-- name: Set Fact for the ssh key of {{ ansible_user }}
-  set_fact:
+- name: Set Fact for the ssh key of ansible_user
+  ansible.builtin.set_fact:
     key: "{{ sshkey['content'] | b64decode }}"
   tags: sshconfig
