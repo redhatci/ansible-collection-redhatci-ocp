@@ -153,7 +153,7 @@
                 - name: search-postgres
                   resources:
                     limits:
-                      hugepages-2Mi: 1024Mi
+                      hugepages-2Mi: "{{ hub_hugepages_2Mi }}"
   when:
       - node_info.resources | length > 0
       - has_hugepages | bool

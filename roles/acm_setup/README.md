@@ -19,12 +19,15 @@ The configuration of the ACM hub can be customized by using the following variab
 |hub_instance                        |multiclusterhub                |No           |Name of the multiclusterhub instance to be created (fail if already exists) |
 |hub_disconnected                    |false                          |No           |If true, it will create custom ClusterImageSets and remove the Channel subscriptions |
 |hub_sc                              |Undefined                      |If no default StorageClass is available | Desired storage class for ACM resources. If undefined, the default SC will be used |
+|hub_hugepages_2Mi                   |1024Mi                         |No           |Request of `hugepages-2Mi` to be configured for Postgres search pods|
 
 ## Requirements
 1. An Openshift Cluster with a subscription for the ACM operator.
 1. On air-gapped environments, the multicluster-engine operator must be available in the mirrored catalog
 
 It is highly recommended to provision a storage class with enough space available for volumes of the Assisted Service Config before starting deploying clusters. See [acm_sno](../acm_sno/README.md) for more details.
+
+In clusters configured with hugepages, the Postgres deployment requires hugepages to be configured too. Please allocate `hugepages-2Mi` to cover the Postgres' search requirement and other workload needs.
 
 ## Usage example
 
