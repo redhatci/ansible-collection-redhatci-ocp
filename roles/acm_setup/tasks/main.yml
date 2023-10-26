@@ -112,8 +112,6 @@
 - name: "Get workers information"
   community.kubernetes.k8s_info:
     kind: Node
-    label_selectors:
-      - "node-role.kubernetes.io/worker"
   register: node_info
   no_log: true
 
@@ -157,11 +155,10 @@
                     limits:
                       hugepages-2Mi: 1024Mi
   when:
-      - node_info is defined
       - node_info.resources | length > 0
       - has_hugepages | bool
 
-- name: "Wait ACM pods to be Running"
+- name: "Wait for ACM pods to be Running"
   community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
