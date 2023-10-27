@@ -36,9 +36,11 @@ interfaces:
     link-aggregation:
       mode: {{ interface.link_aggregation.mode | default('active-backup') }}
       options: {{ interface.link_aggregation.options | default([]) | to_json  }}
-      slaves:
-        {% for slave in interface.link_aggregation.slaves %}
-        - {{ slave }}
+      port:
+        {% set old_ports = ((interface.link_aggregation.slaves | default([])) | list) %}
+        {% set ports = ((interface.link_aggregation.ports | default([])) | list) + old_ports %}
+        {% for port in ports %}
+        - {{ port }}
         {% endfor %}
     {% endif %}
     {% if (interface.type | default('ethernet')) == 'vlan' %}
