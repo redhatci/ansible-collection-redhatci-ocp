@@ -27,6 +27,9 @@
   shell:
     cmd: >
       skopeo inspect
+      {% if partner_creds | length %}
+      --authfile {{ partner_creds }}
+      {% else %}
       --tls-verify=false
       docker://{{ bundle }}
   register: bundle_inspect
