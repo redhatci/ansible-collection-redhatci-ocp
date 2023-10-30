@@ -27,6 +27,7 @@
         msg: "No workaround is defined, so the job has to fail at this point"
       when:
         - '"OCPBUGS-17112" not in dci_workarounds|default([])'
+	- '"OCPBUGS-22677" not in dci_workarounds|default([])'
 
     # If nodes are NotReady, we cannot do much more than failing at this point.
     # There may be cases where it takes some time to move from NotReady to Ready,
@@ -53,7 +54,7 @@
 
     # If the previous checks passed because there were no nodes in NotReady or SchedulngDisabled
     # status, then let's retry the check.
-    # For OCPBUGS-17112, we will only allow one more attempt (num_repetitions = 2 by default)
+    # For OCPBUGS-17112 and OCPBUGS-22677, we will only allow one more attempt (num_repetitions = 2 by default)
     - name: Fail if the maximum number of retries have been reached
       fail:
         msg: Maximum number of retries without success have been reached ({{ num_repetitions }})
