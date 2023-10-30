@@ -25,9 +25,9 @@
 
 - name: "Inspect the bundle image"
   shell: >
-    AUTH_DIR=$(env | grep DOCKER_CONFIG | cut -d= -f2);
-    if [ -n "$AUTH_DIR" ]; then
-      skopeo inspect --authfile $AUTH_DIR/config.json --tls-verify=false docker://{{ bundle }};
+    if [ -n "$DOCKER_CONFIG" ]; then
+      skopeo inspect --authfile $DOCKER_CONFIG/config.json \
+      --tls-verify=false docker://{{ bundle }};
     else
       skopeo inspect --tls-verify=false docker://{{ bundle }};
     fi
