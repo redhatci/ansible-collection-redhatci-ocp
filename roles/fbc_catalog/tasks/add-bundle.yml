@@ -23,12 +23,14 @@
     fbc_operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     fbc_short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
 
-- name: "Get default bundle channel"
-  shell:
-    cmd: >
-      skopeo inspect
-      --tls-verify=false
-      docker://{{ bundle }}
+- name: "Inspect the bundle image"
+  shell: >
+    if [ -n "$DOCKER_CONFIG" ]; then
+      skopeo inspect --authfile $DOCKER_CONFIG/config.json \
+      --tls-verify=false docker://{{ bundle }};
+    else
+      skopeo inspect --tls-verify=false docker://{{ bundle }};
+    fi
   register: bundle_inspect
   retries: 2
   delay: 10
