@@ -12,7 +12,7 @@
 # Actions when .git/ORIG_HEAD file exists
 - name: Retrieve commit SHA from the downloaded repo - from ORIG_HEAD
   shell: cat .git/ORIG_HEAD
-  register: last_commit_id
+  register: last_commit_id_orig
   args:
     chdir: "{{ item }}"
   when: orig_head_file.stat.exists
@@ -20,10 +20,17 @@
 # Actions when .git/ORIG_HEAD file does not exist
 - name: Retrieve commit SHA from the downloaded repo - from refs
   shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
-  register: last_commit_id
+  register: last_commit_id_refs
   args:
     chdir: "{{ item }}"
   when: not orig_head_file.stat.exists
+
+# We need to do this because, if .git/ORIG_HEAD file exists, first task
+# checking commitId works and second one is skipped, but the registered
+# variable is unset, causing an error in the execution of next tasks.
+- name: Set commit SHA retrieval result
+  set_fact:
+    last_commit_id: "{{ orig_head_file.stat.exists | ternary(last_commit_id_orig, last_commit_id_refs) }}"
 
 - name: get repo url
   command: git -C {{ item }} config --get remote.origin.url
