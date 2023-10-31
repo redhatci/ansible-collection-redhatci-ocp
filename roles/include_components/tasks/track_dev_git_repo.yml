@@ -36,6 +36,7 @@
   command: git -C {{ item }} config --get remote.origin.url
   register: repo_url
   when: last_commit_id.rc == 0
+  no_log: true
 
 # create the component the same way as in
 # dci-ansible/action_plugins/git.py
@@ -47,7 +48,7 @@
     team_id: "{{ job_info['job']['team_id'] }}"
     topic_id: "{{ job_info['job']['topic_id'] }}"
     type: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }}"
-    url: "{{ repo_url.stdout | regex_replace('^(.*)@(.*):(.*)', 'https://\\2/\\3') | regex_replace('^ssh://(.*)@(.*)', 'https://\\2') | regex_replace('[.]git$', '') }}/commit/{{ last_commit_id.stdout }}"
+    url: "{{ repo_url.stdout | regex_replace('^(.*):(.*)@(.*)', 'https://\\3') | regex_replace('^ssh://(.*)@(.*)', 'https://\\2') | regex_replace('[.]git$', '') }}/commit/{{ last_commit_id.stdout }}"
     state: present
   register: git_component
   when: last_commit_id.rc == 0
