@@ -19,7 +19,8 @@ The configuration of the ACM hub can be customized by using the following variab
 |hub_instance                        |multiclusterhub                |No           |Name of the multiclusterhub instance to be created (fail if already exists) |
 |hub_disconnected                    |false                          |No           |If true, it will create custom ClusterImageSets and remove the Channel subscriptions |
 |hub_sc                              |Undefined                      |If no default StorageClass is available | Desired storage class for ACM resources. If undefined, the default SC will be used |
-|hub_hugepages_2Mi                   |1024Mi                         |No           |Request of `hugepages-2Mi` to be configured for Postgres search pods|
+|hub_hugepages_type                  |hugepages-2Mi                  |No           |Hugepages type to be configured for Postgres search pods. x86_64 support hugepages-2Mi and hugepages-1Gi |
+|hub_hugepages_size                  |1024Mi                         |No           |Hugepages `hub_hugepages_type` size              |
 
 ## Requirements
 1. An Openshift Cluster with a subscription for the ACM operator.
