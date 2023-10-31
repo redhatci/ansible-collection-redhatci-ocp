@@ -27,7 +27,7 @@
         msg: "No workaround is defined, so the job has to fail at this point"
       when:
         - '"OCPBUGS-17112" not in dci_workarounds|default([])'
-	- '"OCPBUGS-22677" not in dci_workarounds|default([])'
+        - '"OCPBUGS-22677" not in dci_workarounds|default([])'
 
     # If nodes are NotReady, we cannot do much more than failing at this point.
     # There may be cases where it takes some time to move from NotReady to Ready,
