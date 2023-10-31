@@ -28,7 +28,7 @@ The configuration of the ACM hub can be customized by using the following variab
 
 It is highly recommended to provision a storage class with enough space available for volumes of the Assisted Service Config before starting deploying clusters. See [acm_sno](../acm_sno/README.md) for more details.
 
-In clusters configured with hugepages, the Postgres deployment requires hugepages to be configured too. Please allocate `hugepages-2Mi` to cover the Postgres' search requirement and other workload needs.
+In clusters configured with hugepages, the Postgres deployment requires hugepages to be configured too. Please allocate `hub_hugepages_type` and hub_hugepages_size according to the your cluster configuration.
 
 ## Usage example
 
