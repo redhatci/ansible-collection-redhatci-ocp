@@ -83,11 +83,12 @@
       mode: u+wx,g+wx
       recurse: true
 
-  # We need to check the SHA in this way, because extract-dependencies changes the
-  # commit id when creating the new branch based on the PR, but only if new PRs are merged
-  # in the repo and we have not included them in our change. In these cases, the original
-  # id is saved in .git/ORIG_HEAD file. Else, we can find it in the location called
-  # `.git/refs/heads/prXXX`
+  # Retrieve the SHA to use it when building the tnf image locally.
+  # Following the same method it is defined in include_components role,
+  # track_dev_git_repo.yml playbook.
+  # However, in this case, we don't need to create the component in this
+  # role, since it is already done in dci-openshift-app-agent through
+  # dev_gits_to_components variable.
   - name: "Check if .git/ORIG_HEAD file exists"
     stat:
       path: "{{ tnf_dir }}/.git/ORIG_HEAD"
@@ -134,35 +135,6 @@
       --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
     args:
       chdir: "{{ tnf_dir }}"
-
-  # This is needed because the DCI component is not automatically created, as
-  # it is done in case the git repo is directly used, in whose case it is created.
-  # Doing this in the same way that is done in track_git_repo play but with
-  # the arguments obtained in previous tasks (e.g. commit SHA), as we cannot
-  # rely on the last commit id. For that reason, it is better to just do it
-  # here rather than changing pre-run and track_git_repo to be adapted to this
-  # casuistic
-  - name: Manually create the corresponding tnf component for DCI
-    ansible.legacy.dci_component:
-      display_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
-      version: "{{ tnf_version_image }}"
-      team_id: "{{ job_info['job']['team_id'] }}"
-      topic_id: "{{ job_info['job']['topic_id'] }}"
-      type: "{{ test_network_function_project_name }}"
-      url: "https://github.com/test-network-function/cnf-certification-test/commit/{{ tnf_version_image }}"  # noqa 204
-      state: present
-    register: tnf_git_component
-    tags: [dci]
-
-  - name: Attach tnf component to the job
-    ansible.legacy.dci_job_component:
-      component_id: "{{ tnf_git_component.component.id }}"
-      job_id: "{{ job_id }}"
-    register: job_component_result
-    until: job_component_result is not failed
-    retries: 5
-    delay: 20
-    tags: [dci]
 
   when:
     - test_network_function_src_dir is defined
@@ -237,6 +209,17 @@
   - name: Create variable with tnf commit SHA
     set_fact:
       tnf_commit_sha: "{{ tnf_commit_sha_cmd.stdout }}"
+
+  - name: Create cnf-certification-test component calling to include_components role
+    vars:
+      gits_list:
+        - "{{ tnf_dir }}"
+      ic_gits: "{{ gits_list|flatten }}"
+      ic_rpms: []
+      ic_dev_gits: []
+    include_role:
+      name: redhatci.ocp.include_components
+
   when:
     - test_network_function_src_dir is not defined
 

@@ -1,6 +1,6 @@
 ---
 
-- include_tasks: track_git_repo.yml
+- include_tasks: track_dev_git_repo.yml
   loop: "{{ ic_dev_gits }}"
 
 - include_tasks: track_git_repo.yml
