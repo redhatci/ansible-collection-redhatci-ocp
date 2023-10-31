@@ -54,7 +54,7 @@
   register: node_info
   no_log: true
 
-- name: "Check if nodes has allocatable hugepages"
+- name: "Setting hugepages facts"
   set_fact:
     has_hugepages: "{{ node_info.resources |
                     selectattr('status.allocatable.hugepages-1Gi', 'ne', '0') |
@@ -62,9 +62,6 @@
                     node_info.resources |
                     selectattr('status.allocatable.hugepages-2Mi', 'ne', '0') |
                     list | length > 0 }}"
-
-- name: "Check if the hugepage type set is available"
-  set_fact:
     has_defined_hugepage: "{{ node_info.resources |
                             map(attribute='status.allocatable') |
                             map('dict2items') | flatten |

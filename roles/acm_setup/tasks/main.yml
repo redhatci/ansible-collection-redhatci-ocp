@@ -1,5 +1,5 @@
 ---
-- name: "Build index image in temporary directory"
+- name: "Validate requirements"
   include_tasks: validation.yml
 
 - name: Get multicluster-engine package manifest
