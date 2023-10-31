@@ -63,18 +63,7 @@
   retries: 180
   delay: 10
 
-- name: "Get workers information"
-  community.kubernetes.k8s_info:
-    kind: Node
-  register: node_info
-  no_log: true
-
 - name: "Configure hugepages on postgres containers"
-  vars:
-    has_hugepages: "{{ node_info.resources |
-                    selectattr('status.allocatable.hugepages-1Gi', 'match', '^[1-9]') |
-                    selectattr('status.allocatable.hugepages-2Mi', 'match', '^[1-9]') |
-                    list | length > 0 }}"
   block:
     - name: "Annotate the Search Object"
       community.kubernetes.k8s:
