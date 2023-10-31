@@ -115,15 +115,15 @@
     - has_hugepages | default(false) | bool
     - has_defined_hugepage | default(false) | bool
 
-# - name: "Wait for ACM pods to be Running"
-#   community.kubernetes.k8s_info:
-#     api_version: v1
-#     kind: Pod
-#     namespace: "{{ hub_namespace }}"
-#   register: pod_list
-#   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-#   retries: 20
-#   delay: 15
+- name: "Wait for ACM pods to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ hub_namespace }}"
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 20
+  delay: 15
 
 - name: "Wait up to 20 mins for MCH to be ready"
   community.kubernetes.k8s_info:
