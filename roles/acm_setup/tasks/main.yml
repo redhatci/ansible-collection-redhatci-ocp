@@ -1,52 +1,6 @@
 ---
-- name: "Get Storage Classes"
-  community.kubernetes.k8s_info:
-    api_version: v1
-    kind: StorageClass
-  register: storage_class
-
-- name: "Fail when there is no storage class available"
-  fail:
-    msg: "A storage class does not exists"
-  when:
-    - storage_class.resources | length == 0
-
-- name: "Fail when defined storage class does not exists"
-  vars:
-    query_sc_name: 'resources[*].metadata.name'
-    query_results: "{{ storage_class | json_query(query_sc_name) }}"
-  fail:
-    msg: "Defined storage class do not exists"
-  when:
-    - hub_sc is defined
-    - hub_sc not in query_results
-
-- name: "Fail when no default storage class"
-  vars:
-    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
-    query_results: "{{ storage_class | json_query(query_default_sc) }}"
-  fail:
-    msg: "No default storage class was found"
-  when:
-    - storage_class is defined
-    - "not('true' in query_results)"
-    - hub_sc is undefined
-
-- name: "Get available CSVs"
-  community.kubernetes.k8s_info:
-    api: operators.coreos.com/v1alpha1
-    kind: ClusterServiceVersion
-  register: current_csvs
-  retries: 5
-  delay: 5
-
-- name: "Fail if ACM csv is not present"
-  vars:
-    csv_details: "resources[*].metadata.name"
-    csvs: "{{ current_csvs | json_query(csv_details) }}"
-  fail:
-    msg: "No CSV for advanced-cluster-management are present"
-  when: not csvs is search('advanced-cluster-management')
+- name: "Validate requirements"
+  include_tasks: validation.yml
 
 - name: Get multicluster-engine package manifest
   community.kubernetes.k8s_info:
@@ -96,7 +50,61 @@
         availabilityConfig: "{{ hub_availability }}"
         disableHubSelfManagement: "{{ hub_disable_selfmanagement }}"
 
-- name: "Wait for pods to be Running"
+- name: "Wait for search-postgres deployment"
+  k8s_info:
+    kind: Deployment
+    namespace: "{{ hub_namespace }}"
+    name: search-postgres
+  register: deployment_info
+  until:
+    - deployment_info is defined
+    - deployment_info.resources is defined
+    - deployment_info.resources | length > 0
+  retries: 180
+  delay: 10
+
+- name: "Configure hugepages on postgres containers"
+  block:
+    - name: "Annotate the Search Object"
+      community.kubernetes.k8s:
+        definition:
+          kind: Search
+          apiVersion: search.open-cluster-management.io/v1alpha1
+          metadata:
+            name: search-v2-operator
+            namespace: "{{ hub_namespace }}"
+            annotations:
+              search-pause: "true"
+
+    - name: "Patch postgres deployment"
+      vars:
+        dep_definition: |
+          kind: Deployment
+          apiVersion: apps/v1
+          metadata:
+            name: search-postgres
+            namespace: "{{ hub_namespace }}"
+          spec:
+            template:
+              metadata:
+                labels:
+                  app: search
+                  component: search-v2-operator
+                  name: search-postgres
+              spec:
+                containers:
+                - name: search-postgres
+                  resources:
+                    limits:
+                      {{ hub_hugepages_type }}: {{ hub_hugepages_size }}
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ dep_definition }}"
+  when:
+    - has_hugepages | default(false) | bool
+    - has_defined_hugepage | default(false) | bool
+
+- name: "Wait for ACM pods to be Running"
   community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
@@ -131,7 +139,7 @@
           kind: MultiClusterHub
           metadata:
             name: multiclusterhub
-            namespace: open-cluster-management
+            namespace: "{{ hub_namespace }}"
           spec:
             disableUpdateClusterImageSets: true
 

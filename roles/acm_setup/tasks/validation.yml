@@ -1,0 +1,80 @@
+---
+- name: "Get Storage Classes"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+  register: storage_class
+
+- name: "Fail when there is no storage class available"
+  fail:
+    msg: "A storage class does not exists"
+  when:
+    - storage_class.resources | length == 0
+
+- name: "Fail when defined storage class does not exists"
+  vars:
+    query_sc_name: 'resources[*].metadata.name'
+    query_results: "{{ storage_class | json_query(query_sc_name) }}"
+  fail:
+    msg: "Defined storage class do not exists"
+  when:
+    - hub_sc is defined
+    - hub_sc not in query_results
+
+- name: "Fail when no default storage class"
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"
+  fail:
+    msg: "No default storage class was found"
+  when:
+    - storage_class is defined
+    - "not('true' in query_results)"
+    - hub_sc is undefined
+
+- name: "Get available CSVs"
+  community.kubernetes.k8s_info:
+    api: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+  register: current_csvs
+  retries: 5
+  delay: 5
+
+- name: "Fail if ACM csv is not present"
+  vars:
+    csv_details: "resources[*].metadata.name"
+    csvs: "{{ current_csvs | json_query(csv_details) }}"
+  fail:
+    msg: "No CSV for advanced-cluster-management are present"
+  when: not csvs is search('advanced-cluster-management')
+
+- name: "Get workers information"
+  community.kubernetes.k8s_info:
+    kind: Node
+  register: node_info
+  no_log: true
+
+- name: "Setting hugepages facts"
+  set_fact:
+    has_hugepages: "{{ node_info.resources |
+                    selectattr('status.allocatable.hugepages-1Gi', 'ne', '0') |
+                    list | length > 0 or
+                    node_info.resources |
+                    selectattr('status.allocatable.hugepages-2Mi', 'ne', '0') |
+                    list | length > 0 }}"
+    has_defined_hugepage: "{{ node_info.resources |
+                            map(attribute='status.allocatable') |
+                            map('dict2items') | flatten |
+                            list | unique |
+                            selectattr('key', 'equalto', hub_hugepages_type) |
+                            selectattr('value', 'match', '^[1-9]') |
+                            list |
+                            length > 0 }}"
+
+- name: "Fail if the Hugepages set is not available"
+  fail:
+    msg: "Nodes have hugepages enabled, but the type defined for postgres is not available"
+  when:
+    - has_hugepages | default(false) | bool
+    - not has_defined_hugepage | default(false) | bool
+...

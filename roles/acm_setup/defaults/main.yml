@@ -4,4 +4,6 @@ hub_availability: High
 hub_instance: multiclusterhub
 hub_namespace: open-cluster-management
 hub_disconnected: false
+hub_hugepages_type: hugepages-2Mi
+hub_hugepages_size: 1024Mi
 ...
