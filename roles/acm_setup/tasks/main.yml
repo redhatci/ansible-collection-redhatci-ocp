@@ -212,7 +212,6 @@
         name: provisioning-configuration
       spec:
         watchAllNamespaces: true
-        provisioningNetwork: Managed
 
 - name: "Get cluster version"
   community.kubernetes.k8s_info:
