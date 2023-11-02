@@ -23,7 +23,7 @@
 
 - name: "Download stable opm client"
   vars:
-    ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.13/opm-linux.tar.gz"
+    ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz"
   unarchive:
     src: "{{ ocp_clients_url }}"
     dest: "{{ fbc_tmp_dir }}"
