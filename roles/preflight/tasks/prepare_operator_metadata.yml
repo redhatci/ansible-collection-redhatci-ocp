@@ -21,24 +21,12 @@
   vars:
     name_query: "properties[? type==`olm.package`].value.packageName"
     version_query: "properties[? type==`olm.package`].value.version"
-    data_query: "properties[? type==`olm.bundle.object`].value.data"
+    related_images: "{{ bundle_data | json_query('relatedImages[*].image') }}"
   set_fact:
     operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
     operator_version: "{{ bundle_data | json_query(version_query) | join('') }}"
-    data_blobs: "{{ bundle_data | json_query(data_query) }}"
-
-- name: "Get operator image(s)"
-  vars:
-    image_query: "spec.install.spec.deployments[].spec.template.spec.containers[].image"
-    image_name: "{{ blob | b64decode | from_json | json_query(image_query) }}"
-  set_fact:
-    operator_images: "{{ image_name }}"
-  when: image_name | length
-  loop: "{{ data_blobs | reverse | list }}"
-  loop_control:
-    loop_var: blob
-    label: ""
+    operator_images: "{{ related_images | reject('search', operator.bundle_image) | list }}"
 
 - name: "Fail when cluster is disconnected and operator images are not using a digest"
   fail:
