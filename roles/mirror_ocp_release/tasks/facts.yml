@@ -76,36 +76,39 @@
 
 # TODO: Remove this task when 4.7 is no longer supported
 - name: "Set image facts (< 4.8)"
+  vars:
+    rhcos_ver: "{{ rhcos.stdout | from_json | json_query('buildid') }}"
+    base_uri: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-{{ mor_base_version }}/{{ rhcos_ver }}/x86_64/"
   set_fact:
     ocp_release_data:
       container_image: "{{ release_image.stdout }}"
-      rhcos_version: "{{ rhcos.stdout | from_json | json_query('buildid') }}"
+      rhcos_version: "{{ rhcos_ver }}"
       rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (item.baseURI | default('')) + (rhcos.stdout | from_json | json_query('images.' + item.path))}) }}"
   with_items:
-    - {'key': 'aws_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'aws.path'}
+    - {'key': 'aws_location', 'baseURI': "{{ base_uri }}", 'path': 'aws.path'}
     - {'key': 'aws_sha256', 'path': 'aws.sha256'}
-    - {'key': 'azure_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'azure.path'}
+    - {'key': 'azure_location', 'baseURI': "{{ base_uri }}", 'path': 'azure.path'}
     - {'key': 'azure_sha256', 'path': 'azure.sha256'}
-    - {'key': 'gcp_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'gcp.path'}
+    - {'key': 'gcp_location', 'baseURI': "{{ base_uri }}", 'path': 'gcp.path'}
     - {'key': 'gcp_sha256', 'path': 'gcp.sha256'}
-    - {'key': 'ibmcloud_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'ibmcloud.path'}
+    - {'key': 'ibmcloud_location', 'baseURI': "{{ base_uri }}", 'path': 'ibmcloud.path'}
     - {'key': 'ibmcloud_sha256', 'path': 'ibmcloud.sha256'}
-    - {'key': 'metal_iso_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': '"live-iso".path'}
+    - {'key': 'metal_iso_location', 'baseURI': "{{ base_uri }}", 'path': '"live-iso".path'}
     - {'key': 'metal_iso_sha256', 'path': '"live-iso".sha256'}
-    - {'key': 'metal_pxe_kernel_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': '"live-kernel".path'}
+    - {'key': 'metal_pxe_kernel_location', 'baseURI': "{{ base_uri }}", 'path': '"live-kernel".path'}
     - {'key': 'metal_pxe_kernel_sha256', 'path': '"live-kernel".sha256'}
-    - {'key': 'metal_pxe_initramfs_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': '"live-initramfs".path'}
+    - {'key': 'metal_pxe_initramfs_location', 'baseURI': "{{ base_uri }}", 'path': '"live-initramfs".path'}
     - {'key': 'metal_pxe_initramfs_sha256', 'path': '"live-initramfs".sha256'}
-    - {'key': 'metal_pxe_rootfs_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': '"live-rootfs".path'}
+    - {'key': 'metal_pxe_rootfs_location', 'baseURI': "{{ base_uri }}", 'path': '"live-rootfs".path'}
     - {'key': 'metal_pxe_rootfs_sha256', 'path': '"live-rootfs".sha256'}
-    - {'key': 'metal_rawgz_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'metal.path'}
+    - {'key': 'metal_rawgz_location', 'baseURI': "{{ base_uri }}", 'path': 'metal.path'}
     - {'key': 'metal_rawgz_sha256', 'path': 'metal.sha256'}
-    - {'key': 'openstack_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'openstack.path'}
+    - {'key': 'openstack_location', 'baseURI': "{{ base_uri }}", 'path': 'openstack.path'}
     - {'key': 'openstack_sha256', 'path': 'openstack.sha256'}
-    - {'key': 'qemu_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'qemu.path'}
+    - {'key': 'qemu_location', 'baseURI': "{{ base_uri }}", 'path': 'qemu.path'}
     - {'key': 'qemu_sha256', 'path': 'qemu.sha256'}
     - {'key': 'qemu_uncompressed_sha256', 'path': 'qemu."uncompressed-sha256"'}  # only needed for bootstraposimage fact
-    - {'key': 'vmware_location', 'baseURI': "{{ rhcos.stdout | from_json | json_query('baseURI') }}", 'path': 'vmware.path'}
+    - {'key': 'vmware_location', 'baseURI': "{{ base_uri }}", 'path': 'vmware.path'}
     - {'key': 'vmware_sha256', 'path': 'vmware.sha256'}
   when:
     - mor_version is version("4.8", "<")
