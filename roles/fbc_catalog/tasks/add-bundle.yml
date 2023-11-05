@@ -18,7 +18,6 @@
   vars:
     name_query: "properties[? type==`olm.package`].value.packageName"
     version_query: "properties[? type==`olm.package`].value.version"
-    data_query: "properties[? type==`olm.bundle.object`].value.data"
   set_fact:
     fbc_operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     fbc_short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
