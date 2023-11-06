@@ -77,8 +77,10 @@
             {% if cert_project_id | default('') | length %}
             --submit
             {% endif %}
+          register: podman_rc
           retries: 2
           delay: 120
+          until: podman_rc.rc == 0
       rescue:
         - name: Do not fail when preflight check container throws an error
           debug:
