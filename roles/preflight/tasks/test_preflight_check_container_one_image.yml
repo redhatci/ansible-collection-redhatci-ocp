@@ -77,6 +77,8 @@
             {% if cert_project_id | default('') | length %}
             --submit
             {% endif %}
+          retries: 2
+          delay: 120
       rescue:
         - name: Do not fail when preflight check container throws an error
           debug:
