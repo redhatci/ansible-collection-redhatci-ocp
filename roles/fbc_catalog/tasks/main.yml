@@ -67,7 +67,6 @@
   shell: >
     podman build .
     --no-cache
-    --pull=always
     -f catalog.Dockerfile
     -t {{ fbc_index_image }}
   args:
