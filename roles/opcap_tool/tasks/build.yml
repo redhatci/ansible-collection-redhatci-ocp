@@ -5,9 +5,7 @@
     repo: "{{ opcap_repo }}"
     dest: "{{ opcap_dir.path }}/opcap"
 
-# Launching a container to build the GO bin
-# Dir where the repo has been cloned is bound as a volume (with option Z for SELinux compatibility)
-- name: "run podman build"
+- name: "Use Golang container to build opcap"
   containers.podman.podman_container:
     name: go-builder
     image: "golang:1.19"

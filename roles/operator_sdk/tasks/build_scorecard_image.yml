@@ -31,6 +31,7 @@
       podman buildx build
       -t {{ operator_sdk_img }}
       --label quay.expires-after=1d
+      --no-cache
       -f ./images/operator-sdk/Dockerfile
       --load . &&
       podman push
