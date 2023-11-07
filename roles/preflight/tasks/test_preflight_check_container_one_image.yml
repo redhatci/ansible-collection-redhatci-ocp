@@ -80,7 +80,7 @@
           register: podman_rc
           retries: 2
           delay: 120
-          until: podman_rc.rc == 0
+          until: podman_rc is succeeded
       rescue:
         - name: Do not fail when preflight check container throws an error
           debug:
