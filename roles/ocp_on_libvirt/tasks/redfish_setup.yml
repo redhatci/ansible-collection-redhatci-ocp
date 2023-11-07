@@ -28,12 +28,6 @@
   tags:
     - clone_upstream_repos
 
-- name: Set hardware vendor to "kvm"
-  set_fact:
-    vendor: kvm
-  loop: "{{ groups['nodes'] }}"
-  delegate_to: "{{ item }}"
-
 - name: Install sushy-tools
   include_role:
     name: setup_sushy_tools

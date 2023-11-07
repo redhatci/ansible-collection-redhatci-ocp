@@ -12,4 +12,7 @@ cert_organization: DCI
 cert_organizational_unit: Lab
 sushy_ignore_boot_device: false
 inventory_validated: True
+vendor: kvm
+bmc_user: "{{ vbmc_user }}"
+bmc_password: "{{ vbmc_pass }}"
 ...
