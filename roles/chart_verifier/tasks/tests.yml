@@ -90,29 +90,25 @@
         - chart_stat is defined
         - chart_stat.stat.exists
 
-    - name: "Check values_file stat"
+    - name: "Check if chart.values_file exist"
       stat:
-        path: "{{ chart.values_file }}"
-      register: values_stat
-      when:
-        - chart.values_file is defined
+        path: "{{ item }}"
+      loop: "{{ chart.values_file }}"
+      register: file_stats
 
-    - name: "Chart values file path not found"
+    - name: "Fail if any values file is missing"
       fail:
-        msg: "values_file cannot be found - {{ chart.values_file }}"
-      when:
-        - values_stat is defined
-        - chart.values_file is defined
-        - values_stat.stat.exists | bool == false
+        msg: "File {{ item.item }} does not exist."
+      loop: "{{ file_stats.results }}"
+      when: item.stat.exists == false
 
     - name: "Copy values_file to working directory"
       copy:
-        src: "{{ chart.values_file }}"
+        src: "{{ item }}"
         dest: "{{ work_chart_dir }}/"
+      loop: "{{ chart.values_file }}"
       when:
         - chart.values_file is defined
-        - values_stat is defined
-        - values_stat.stat.exists
   when:
     - chart_location == "local"
 
@@ -140,7 +136,11 @@
       -v {{ work_chart_dir }}:/app/chartverifier:Z
       {{ chart_verifier_image }}
       verify --set profile.vendorType=partner
-      {% if chart.values_file is defined %} -F /app/chartverifier/{{ chart.values_file | basename }} {% endif %}
+      {%- if chart.values_file is defined %}
+        {%- for vf in chart.values_file %}
+        -F /app/chartverifier/{{ vf | basename }}
+        {%- endfor %}
+      {%- endif %}
       {% if chart.deploy_chart is defined and chart.deploy_chart is sameas false %}
       --disable chart-testing
       {% endif %}

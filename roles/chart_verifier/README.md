@@ -46,7 +46,7 @@ The `dci_charts` variable is a list of charts that supports the following parame
 | chart_file        | string         | undefined         | URL or local path to the chart to be tested         |
 | flags             | string         | undefined         | Values to be overridden in the chart or setting to be passed to the chart verifier tool. See: [Run helm chart checks](https://github.com/redhat-certification/chart-verifier/blob/main/docs/helm-chart-checks.md#run-helm-chart-checks). This field is optional |
 | create_pr         | boolean        | false             | Creates a pull request on the defined repository (sandbox/openshfit-repo).   |
-| values_file       | string         | undefined         | URL or local path to file with the values to be overridden in the chart. This field is optional |
+| values_file       | list           | undefined         | A list of URL or local paths to files with the values to be overridden in the chart. This field is optional |
 | deploy_chart      | boolean        | true              | Deploys the chart to the cluster. This step is mandatory for the certification |
 
 * Other metadata like the chart name, and the chart version are automatically obtained from the chart's metadata.
@@ -58,12 +58,16 @@ dci_charts:
   - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.1.tgz
     flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
     create_pr: false
-    values_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/values.yaml
+    values_file:
+      - https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/values1.yaml
+      - https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/values2.yaml
     deploy_chart: false
   - chart_file: /home/<user>/charts/samplechart-0.1.1.tgz
     flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
     create_pr: false
-    values_file: /home/<user>/charts/values.yaml
+    values_file: 
+      - /home/<user>/charts/values1.yaml
+      - /home/<user>/charts/values2.yaml
     deploy_chart: false
   - chart_file: /home/<user>/charts/samplechart-0.1.1.tgz
 ```
