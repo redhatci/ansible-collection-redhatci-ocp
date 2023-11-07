@@ -1,6 +1,6 @@
 ---
 - name: Deploy hypershift cluster
-  ansible.buintin.shell:
+  ansible.builtin.shell:
     cmd: >
       set -e;
       {{ ah_cli_path }} create cluster {{ ah_cluster_type }}

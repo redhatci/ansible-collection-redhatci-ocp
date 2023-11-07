@@ -29,7 +29,7 @@
     name: redhatci.ocp.fbc_catalog
     apply:
       environment:
-        - DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
+        DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
   vars:
     fbc_index_image: "{{ oo_index }}"
     fbc_bundles: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"

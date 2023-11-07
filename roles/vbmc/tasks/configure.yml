@@ -6,15 +6,13 @@
   ignore_errors: true
   with_items: "{{ vbmc_nodes }}"
 
-- name: Get current count of used vbmc ports
-  ansible.builtin.shell: |
-    set -eo pipefail
-    {{ vbmc_bin | quote }} list | grep 62 | wc -l
+- name: Get current count of used vbmc ports  # noqa: risky-shell-pipe
+  ansible.builtin.shell: "{{ vbmc_bin | quote }} list | grep 62 | wc -l"
   register: vbmc_used_ports
 
 - name: Define vbmc_port for each VM
   ansible.builtin.set_fact:
-    vbmc_ports: "{{ vbmc_ports|default({})|combine({ item.1: vbmc_start_port + vbmc_used_ports.stdout|int + item.0 }) }}"
+    vbmc_ports: "{{ vbmc_ports|default({})|combine({ item.1: vbmc_start_port + vbmc_used_ports.stdout | int + item.0 }) }}"
   with_indexed_items: "{{ vbmc_nodes }}"
   vars:
     vbmc_start_port: 6230

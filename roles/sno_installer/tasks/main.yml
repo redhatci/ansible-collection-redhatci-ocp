@@ -24,14 +24,16 @@
   tags: rhcospath
 
 - name: Setup RHCOS image cache
-  ansible.builtin.include_tasks: 22_rhcos_image_cache.yml
-  tags:
-    - cache
-  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  delegate_to: "{{ cache_server }}"  # This fact was defined in 10_get_oc.yml
   when:
     - sno_install_type is defined
     - sno_install_type == "baremetal"
     - cache_enabled | bool
+  block:
+    - name: RHCOS Image Cache
+      ansible.builtin.include_tasks: 22_rhcos_image_cache.yml
+      tags:
+        - cache
 
 - name: Set RHCOS PXE images
   ansible.builtin.include_tasks: 23_rhcos_image_pxetftp.yml

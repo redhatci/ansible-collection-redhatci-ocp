@@ -1,13 +1,13 @@
 ---
 - name: Handle the situation when cert project already exists
   ansible.builtin.include_role:
-    name: create_certification_project
+    name: redhatci.ocp.create_certification_project
     tasks_from: check_if_container_project_exists
   when: check_for_existing_projects | bool
 
 - name: Create Openshift-cnf project
   ansible.builtin.include_role:
-    name: create_certification_project
+    name: redhatci.ocp.create_certification_project
     tasks_from: create_project
   when: cnf.create_cnf_project | default(false) | bool
 

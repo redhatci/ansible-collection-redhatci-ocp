@@ -7,7 +7,7 @@
 
 - name: Get Github Binary
   ansible.builtin.include_role:
-    name: create_pr
+    name: redhatci.ocp.create_pr
     tasks_from: get-gh-bin.yml
 
 - name: Login to Github

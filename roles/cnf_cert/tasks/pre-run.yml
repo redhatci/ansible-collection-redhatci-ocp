@@ -28,7 +28,7 @@
 
 - name: "Save images in local registry"
   ansible.builtin.include_role:
-    name: mirror_images
+    name: redhatci.ocp.mirror_images
   vars:
     images:
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"

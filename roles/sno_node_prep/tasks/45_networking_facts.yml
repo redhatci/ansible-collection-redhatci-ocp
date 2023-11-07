@@ -24,7 +24,7 @@
   vars:
     ip: "{{ ansible_default_ipv6.address }}/64"
   when:
-    - extcidrnet | default([]) | length < 1)
+    - extcidrnet | default([]) | length < 1
     - ipv6_enabled | bool
     - not ipv4_baremetal | bool
   tags:

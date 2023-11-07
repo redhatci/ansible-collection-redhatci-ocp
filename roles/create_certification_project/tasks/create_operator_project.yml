@@ -15,9 +15,7 @@
   when: cert_listings.attach_product_listing | default(attach_product_listing) | bool
   block:
     - name: "Get All operator certification projects based on Product Listing ID"
-      ansible.builtin.include_role:
-        name: create_certification_project
-        tasks_from: get_all_operator_projects_basedon_product_list_id.yml
+      ansible.builtin.include_tasks: get_all_operator_projects_basedon_product_list_id.yml
 
     - name: "Check all_operator_projects variable"
       ansible.builtin.assert:
@@ -27,7 +25,5 @@
         fail_msg: "The all_operator_projects variable is not properly defined or is empty."
 
     - name: "Attach Product List ID to all projects using the same Product-Listing ID"
-      ansible.builtin.include_role:
-        name: create_certification_project
-        tasks_from: attach_product_listing
+      ansible.builtin.include_tasks: attach_product_listing.yml
 ...

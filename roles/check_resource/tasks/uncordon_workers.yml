@@ -3,7 +3,9 @@
   ansible.builtin.shell: >
     set -eo pipefail;
     {{ oc_tool_path }} get nodes --no-headers=true |
-    grep 'Ready,SchedulingDisabled' | grep worker | awk '{ print $1 }'
+    grep 'Ready,SchedulingDisabled' |
+    grep worker |
+    awk '{ print $1 }'
   register: reg_disabled_nodes
 
 # The workaround should not be applied if we're dealing with a network problem here.

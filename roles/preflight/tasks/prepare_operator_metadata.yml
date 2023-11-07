@@ -17,7 +17,7 @@
   ansible.builtin.set_fact:
     bundle_data: "{{ rendered_bundle.stdout | from_json }}"
 
-- name: "Get operator name, version and image data blob"
+- name: "Get operator name, version and image data blob"  # noqa: jinja[invalid]
   vars:
     name_query: "properties[? type==`olm.package`].value.packageName"
     version_query: "properties[? type==`olm.package`].value.version"

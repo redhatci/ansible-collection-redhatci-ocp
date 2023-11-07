@@ -26,6 +26,7 @@
   delegate_to: localhost
 
 - name: "Cat out contents of public key"
-  ansible.builtin.slurp: "{{ ssh_key_path }}"
+  ansible.builtin.slurp:
+    src: "{{ ssh_key_path }}.pub"
   register: pubkey
   delegate_to: localhost

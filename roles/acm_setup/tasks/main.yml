@@ -40,6 +40,9 @@
   delay: 10
 
 - name: "Configure hugepages on postgres containers"
+  when:
+    - has_hugepages | default(false) | bool
+    - has_defined_hugepage | default(false) | bool
   block:
     - name: "Annotate the Search Object"
       community.kubernetes.k8s:
@@ -76,9 +79,6 @@
       community.kubernetes.k8s:
         state: present
         definition: "{{ dep_definition }}"
-  when:
-    - has_hugepages | default(false) | bool
-    - has_defined_hugepage | default(false) | bool
 
 - name: "Wait for ACM pods to be Running"
   community.kubernetes.k8s_info:

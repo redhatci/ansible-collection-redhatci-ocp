@@ -25,14 +25,16 @@
       ansible.builtin.include_tasks: dns_setup.yml
       when: do_dns_config | bool
     - name: Setup VBMC
-      ansible.builtin.include_role: redhatci.ocp.vbmc
+      ansible.builtin.include_role:
+        name: redhatci.ocp.vbmc
       vars:
         vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
     - name: DCI Setup
       ansible.builtin.include_tasks: dci_setup.yml
     - name: Setup conserver
-      ansible.builtin.include_role: redhatci.ocp.conserver
+      ansible.builtin.include_role:
+        name: redhatci.ocp.conserver
       vars:
         cluster_nodes: "{{ groups['masters'] + ('workers' in groups) | ternary(groups['workers'], []) }}"
       when: enable_conserver
@@ -55,7 +57,7 @@
       when: do_dns_config|bool
     - name: Cleanup VBMC
       ansible.builtin.include_role:
-        name: vbmc
+        name: redhatci.ocp.vbmc
       vars:
         vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"

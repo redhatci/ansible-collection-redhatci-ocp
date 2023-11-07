@@ -52,6 +52,10 @@
     - '"github-867" in dci_workarounds|default([])'
 
 - name: Run preflight check operator tests
+  environment:
+    OPENSHIFT_AUTH: "{{ partner_creds }}"
+    OO_BUNDLE: "{{ operator.bundle_image }}"
+    OO_INDEX: "{{ oo_index }}"
   ansible.builtin.shell: >
     podman run
     --rm
@@ -80,11 +84,6 @@
     {{ preflight_image }}
     check operator
     {{ operator.bundle_image }}
-  args:
-    environment:
-      - OPENSHIFT_AUTH: "{{ partner_creds }}"
-      - OO_BUNDLE: "{{ operator.bundle_image }}"
-      - OO_INDEX: "{{ oo_index }}"
   async: 600
   poll: 0
   register: preflight_exec
@@ -188,7 +187,7 @@
         name: redhatci.ocp.create_pr
         apply:
           environment:
-            - DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
+            DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
       vars:
         product_name: "{{ operator.name }}"
         product_version: "{{ operator.version }}"

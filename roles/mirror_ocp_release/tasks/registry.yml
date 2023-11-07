@@ -40,7 +40,7 @@
 
     - name: Generate Image Source manifest
       ansible.builtin.shell: >
-        set -o pipefail &&
+        set -o pipefail;
         echo -e "{{ result.stdout }}" |
         sed -n '/apiVersion/,$p' |
         sed -e 's/name:.*/name: release-{{ version }}/'

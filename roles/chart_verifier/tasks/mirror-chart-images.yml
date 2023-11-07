@@ -20,7 +20,7 @@
 
 - name: "Mirror chart images"
   ansible.builtin.include_role:
-    name: mirror_images
+    name: redhatci.ocp.mirror_images
   vars:
     images: "{{ all_images }}"
     authfile: "{{ pullsecret_tmp_file }}"

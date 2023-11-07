@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 #
 # Copyright (C) 2023 Red Hat, Inc.
 #
@@ -20,42 +20,61 @@
 #~  ansible-lint.sh [-f] [-p PROFILE]
 #~
 #~Options:
-#~  -f          Force linting of all roles
-#~  -p PROFILE  (default: shared) What ansible lint profile to use
+#~  -c      Remove .linted markers
+#~  -p      Use the "production" ansible-lint profile
+#~  -n      Don't clear screen after linting each role
 
 function usage(){
-    grep '^#~' $0 | sed -e 's/#~//'
+    grep "^#~" "$0" | sed -e "s/#~//"
 }
 
 TOPDIR="$(git rev-parse --show-toplevel)"
 CWD="$PWD"
-FORCE=""
+CLEAN=""
 PROFILE="shared"
+CLEAR="yes"
 
-while getopts ":fp" o; do
+while getopts ":cpn" o; do
     case $o in
-        f)
-            FORCE="yes"
+        c)
+            CLEAN="yes"
             ;;
         p)
             PROFILE="production"
             ;;
+        n)
+            CLEAR=""
+            ;;
         *)
             usage
+            exit
             ;;
     esac
 done
 
-cd $TOPDIR
+# Be verbose from this point forward
+set -x
+
+cd "$TOPDIR"
+
+if [ "$CLEAN" == "yes" ]; then
+    rm -fv roles/*/.linted
+fi
 
 for role in roles/*; do
-    clear
-    echo $role
-    if [ "$FORCE" != "yes" ] && [ -f $role/.linted ]; then
+    if [ "$CLEAR" == "yes" ]; then
+        clear
+    fi
+    echo "$role"
+    if [ -f "$role/.linted" ]; then
         continue
     else
-        ansible-lint --profile="$PROFILE" $role && touch $role/.linted || break
+        if ansible-lint --profile="$PROFILE" "$role"; then
+            touch "$role/.linted"
+        else
+            break
+        fi
     fi
 done
 
-cd $CWD
+cd "$CWD"

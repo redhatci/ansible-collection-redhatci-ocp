@@ -8,7 +8,7 @@
 
 - name: Mirror Operator-SDK images
   ansible.builtin.include_role:
-    name: mirror_images
+    name: redhatci.ocp.mirror_images
   vars:
     images: "{{ scorecard_images }}"
     authfile: "{{ scorecard_partner_creds }}"
@@ -25,7 +25,7 @@
     name: redhatci.ocp.fbc_catalog
     apply:
       environment:
-        - DOCKER_CONFIG: "{{ scorecard_tmp_dir.path }}"
+        DOCKER_CONFIG: "{{ scorecard_tmp_dir.path }}"
   vars:
     fbc_index_image: "{{ oo_index }}"
     fbc_bundles: "{{ scorecard_operators | map(attribute='bundle_image') | list }}"

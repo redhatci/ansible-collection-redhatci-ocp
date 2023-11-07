@@ -44,7 +44,7 @@
   until: not health_check.failed
 
 - name: Run health check
-  ansible.bultin.command:
+  ansible.builtin.command:
     cmd: >
       oscap-podman {{ health_check.stdout }} oval eval
       --results oval-report.xml
