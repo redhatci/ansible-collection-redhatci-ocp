@@ -66,6 +66,7 @@
 - name: "Build the catalog"
   shell: >
     podman build .
+    --no-cache
     -f catalog.Dockerfile
     -t {{ fbc_index_image }}
   args:

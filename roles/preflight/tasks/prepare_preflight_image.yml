@@ -29,6 +29,7 @@
   shell:
     cmd: >
       podman build .
+      --no-cache
       -t {{ preflight_image }}
       --build-arg=release_tag={{ preflight_branch }} &&
       podman push
