@@ -36,6 +36,7 @@
 
 - name: Install sushy-tools
   vars:
+    inventory_validated: True
   include_role:
     name: setup_sushy_tools
 
