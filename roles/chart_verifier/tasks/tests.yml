@@ -71,7 +71,7 @@
       get_url:
         url: "{{ item }}"
         dest: "{{ work_chart_dir }}/"
-        mode: "0750"
+        mode: "0640"
       loop: "{{ chart.values_file }}"
       when:
         - chart.values_file is defined
@@ -80,7 +80,6 @@
 
 - name: "Process local chart artifacts for {{ chart.chart_file }}"
   block:
-
     - name: "Check chart_file stat"
       stat:
         path: "{{ chart.chart_file }}"
