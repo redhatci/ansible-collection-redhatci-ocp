@@ -127,18 +127,21 @@ dci_charts:
   - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.2.tgz
     flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
     create_pr: false
-    values_file: https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
+    values_file:
+      - https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
     deploy_chart: false
   - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.2.tgz
     flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
     create_pr: true
-    values_file: https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
+    values_file:
+      - https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
     deploy_chart: false
-  - chart_file: /home/<user>/charts/samplechart-0.1.1.tgz
-    flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
+  - chart_file: /var/lib/dci-openshift-app-agent/samplechart-0.1.3.tgz
+    values_file:
+      - /var/lib/dci-openshift-app-agent/samplechart/mycustom_values1.yaml
+      - /var/lib/dci-openshift-app-agent/samplechart/mycustom_values2.yaml
+    deploy_chart: true
     create_pr: false
-    values_file: /home/<user>/charts/values.yaml
-    deploy_chart: false
 ```
 
 ### Usage in a DCI Pipeline
@@ -167,11 +170,24 @@ See below for an example of how to use the chart_verifier in a DCI pipeline.
     partner_email: "telcoci@redhat.com"
     sandbox_repository: betoredhat/charts
     dci_charts:
-      - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.1.tgz
+      - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.2.tgz
         flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
         create_pr: false
-      - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.1.tgz
+        values_file:
+          - https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
+        deploy_chart: false
+      - chart_file: https://github.com/ansvu/samplechart/releases/download/samplechart-0.1.1/samplechart-0.1.2.tgz
+        flags: -S image.repository="registry.dfwt5g.lab:4443/chart/nginx-118"
         create_pr: true
+        values_file:
+          - https://raw.githubusercontent.com/ansvu/samplechart/main/samplechart/values.yaml
+        deploy_chart: false
+      - chart_file: /var/lib/dci-openshift-app-agent/samplechart-0.1.3.tgz
+        values_file:
+          - /var/lib/dci-openshift-app-agent/samplechart/mycustom_values1.yaml
+          - /var/lib/dci-openshift-app-agent/samplechart/mycustom_values2.yaml
+        deploy_chart: true
+        create_pr: false
   components: []
   inputs:
     kubeconfig: kubeconfig_path
@@ -182,8 +198,6 @@ See below for an example of how to use the chart_verifier in a DCI pipeline.
 
 1. The helm-chart-verifier tool validates the images used in the charts by checking that the repository/image combined values match with the information available in the Red Hat certification database. That limits the testing with DCI in disconnected environments where the registry hosting an already certified image do not match with the registry used to certify the image.
 
-1. At this time there is no support to automatically manage certification projects in connect.redhat.com.
-
 1. The pull requests that fail the tests need to be manually deleted by the partner.
 
-1. The integration already supports charts that are already hosted on a reachable web server.
+1. The integration already supports local or remote charts. All the artifacts must be local or remote in a reachable web server. No combinations between local or remote files is supported.

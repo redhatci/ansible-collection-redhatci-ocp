@@ -6,6 +6,15 @@
     fail_msg: "The chart_file parameter is missing"
     success_msg: "All chart required parameters are defined"
 
+- name: "Check if chart.values_file is iterable"
+  assert:
+    that:
+      - chart.values_file | type_debug == "list"
+      - chart.values_file is iterable
+    fail_msg: "The chart.values_file must be a list"
+  when:
+    - chart.values_file is defined
+
 - name: "Set chart location"
   set_fact:
     chart_location: "{{ chart.chart_file.startswith('http') | ternary ('remote', 'local') }}"
@@ -34,35 +43,36 @@
       when:
         - file_response.status | int != 200
 
-    - name: "Check if the chart values file exists"
-      uri:
-        url: "{{ chart.values_file }}"
-        return_content: yes
-      register: values_response
-      ignore_errors: true
-      run_once: true
-      when:
-        - chart.values_file is defined
-
-    - name: "Chart values cannot be downloaded"
-      fail:
-        msg: "chart_values cannot be downloaded - {{ chart.values_file }}"
-      when:
-        - chart.values_file is defined
-        - values_response is defined
-        - values_response.status | int != 200
-
     - name: "Download chart file"
       get_url:
         url: "{{ chart.chart_file }}"
         dest: "{{ work_chart_dir }}/"
         mode: "0750"
 
-    - name: "Download values file"
+    - name: "Check if chart.values_file exist"
+      uri:
+        url: "{{ item }}"
+        return_content: yes
+      loop: "{{ chart.values_file }}"
+      register: url_stats
+      when:
+        - chart.values_file is defined
+
+    - name: "Fail if any of the values file is missing"
+      fail:
+        msg: "File {{ item.item }} does not exist."
+      loop: "{{ file_stats.results }}"
+      when:
+        - chart.values_file is defined
+        - values_response is defined
+        - values_response.status | int != 200
+
+    - name: "Download values_file to working directory"
       get_url:
-        url: "{{ chart.values_file }}"
+        url: "{{ item }}"
         dest: "{{ work_chart_dir }}/"
         mode: "0750"
+      loop: "{{ chart.values_file }}"
       when:
         - chart.values_file is defined
   when:
@@ -95,12 +105,16 @@
         path: "{{ item }}"
       loop: "{{ chart.values_file }}"
       register: file_stats
+      when:
+        - chart.values_file is defined
 
     - name: "Fail if any values file is missing"
       fail:
         msg: "File {{ item.item }} does not exist."
       loop: "{{ file_stats.results }}"
-      when: item.stat.exists == false
+      when:
+        - chart.values_file is defined
+        - item.stat.exists == false
 
     - name: "Copy values_file to working directory"
       copy:
