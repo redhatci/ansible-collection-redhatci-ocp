@@ -107,4 +107,3 @@ build_ignore:
   - '.gitignore'
   - '.github'
   - 'rpm'
-  - 'README.md'
