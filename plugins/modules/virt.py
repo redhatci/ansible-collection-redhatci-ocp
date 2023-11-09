@@ -11,7 +11,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 ---
 module: virt
 short_description: Manages virtual machines supported by libvirt

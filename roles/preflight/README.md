@@ -52,7 +52,7 @@ The idea is use one of them.
     export KUBECONFIG=/var/lib/dci-openshift-app-agent/kubeconfig
     ```
 
-- Create file settings.yml in /etc/dci-openshift-app-agent/settings.yml and provide all the information about your certification projects. Let’s consider two standard scenarios here.
+- Create file settings.yml in /etc/dci-openshift-app-agent/settings.yml and provide all the information about your certification projects. Let's consider two standard scenarios here.
 
   a. If you have a connected environment with the private external registry. In the example below, we use the existing certification project for testpmd-operator container and create a new one for bla-bla-operator.
 
@@ -150,7 +150,7 @@ The idea is use one of them.
     export KUBECONFIG=/var/lib/dci-openshift-app-agent/kubeconfig
     ```
 
-- Create file settings.yml in /etc/dci-openshift-app-agent/settings.yml and provide all the information about your certification projects. Let’s consider two standard scenarios here.
+- Create file settings.yml in /etc/dci-openshift-app-agent/settings.yml and provide all the information about your certification projects. Let's consider two standard scenarios here.
 
   a. If you have a connected environment with the private external registry. In the example below, we use existing certification projects for testpmd-operator and create new ones for bla-bla-operator.
 

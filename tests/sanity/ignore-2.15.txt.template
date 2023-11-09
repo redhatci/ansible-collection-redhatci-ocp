@@ -1,0 +1,3 @@
+# ansible-test skips: https://docs.ansible.com/ansible/latest/dev_guide/testing/sanity/ignores.html
+# roles/label_nodes/templates/node_label.yml yamllint!skip
+# roles/storage_tester/scripts/storage-tester-RWO.sh shellcheck:SC2086

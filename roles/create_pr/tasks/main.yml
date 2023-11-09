@@ -4,12 +4,12 @@
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"
   with_items:
-      - product_name
-      - product_version
-      - fork_name
-      - github_token_path
-      - target_repository
-      - work_dir
+    - product_name
+    - product_version
+    - fork_name
+    - github_token_path
+    - target_repository
+    - work_dir
 
 - name: Validate that cert_project_id is provided
   fail:
@@ -60,7 +60,7 @@
   copy:
     src: "{{ work_dir }}/ssh_key"
     dest: "{{ lookup('env','HOME') }}/.ssh/id_ecdsa"
-    mode: '0600'
+    mode: "0600"
     backup: yes
 
 - name: "Add ssh-key to Github"
@@ -100,5 +100,3 @@
 - name: Create PR for Operator Bundle Certification
   include_tasks: bundle_operator.yml
   when: target_repository == "redhat-openshift-ecosystem/certified-operators"
-...
-

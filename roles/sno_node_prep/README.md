@@ -1,7 +1,7 @@
 # Single Node OpenShift
 Single Node OpenShift is a Red Hat Openshift deployment designed to have a small footprint that fits constrained environments and Edge computing needs.
 
-The deployment consists on  a Single Cluster Node playing the Master and Worker Node at the same time. Single-node OpenShift deployment does not have an option to add additional hosts Single-node OpenShift isn’t highly-available. It explicitly does not assume zero downtime of the Kubernetes API.
+The deployment consists on  a Single Cluster Node playing the Master and Worker Node at the same time. Single-node OpenShift deployment does not have an option to add additional hosts Single-node OpenShift isn't highly-available. It explicitly does not assume zero downtime of the Kubernetes API.
 
 ## Variables
 

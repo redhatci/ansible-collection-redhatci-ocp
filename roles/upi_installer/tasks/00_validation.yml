@@ -5,19 +5,19 @@
   when: ansible_version.full is version('2.9.0', '<')
   delegate_to: localhost
   tags:
-  - always
-  - validation
-  - fully_disconnected
+    - always
+    - validation
+    - fully_disconnected
 
 - name: Ensure Python libraries are installed
   python_requirements_info:
     dependencies:
-    - netaddr
+      - netaddr
   register: _py_facts
   delegate_to: localhost
   tags:
-  - always
-  - validation
+    - always
+    - validation
 
 - name: Fail if version is undefined, empty, or not valid.
   assert:
@@ -28,8 +28,8 @@
   vars:
     ver: "{{ version.split('latest-')[1]|default(version) }}"
   tags:
-  - always
-  - validation
+    - always
+    - validation
 
 - name: Fail if build is undefined, empty or not valid.
   assert:
@@ -38,35 +38,35 @@
       - build is defined
       - build in ['nightly', 'ga', 'dev', 'candidate']
   tags:
-  - always
-  - validation
+    - always
+    - validation
 
 - name: Set release_url
   set_fact:
     release_url: "{{ (webserver_url|length) | ternary(webserver_url, '/'.join(hostvars.localhost.url.split('/')[:-1])) }}"
   tags:
-  - always
-  - validation
+    - always
+    - validation
 
 - name: Confirm whether or not internet connectivity on provisioner host
   uri:
     url: https://www.redhat.com
-    status_code: [-1,200,301]
+    status_code: [-1, 200, 301]
     timeout: 1
   register: check_url
   tags:
-  - validation
+    - validation
 
 - name: Take actions when no internet access
   block:
-  - name: Notify when provision host has no online access (can't assume access)
-    debug:
-      msg: |
-           A host with online access is required. For disconnected mode include registry_host group in the inventory
+    - name: Notify when provision host has no online access (can't assume access)
+      debug:
+        msg: |
+          A host with online access is required. For disconnected mode include registry_host group in the inventory
 
-  - name: Set fact when could not reach web server
-    set_fact:
-      cache_provisioner: false
+    - name: Set fact when could not reach web server
+      set_fact:
+        cache_provisioner: false
   when:
     - check_url.status == -1
   tags:
@@ -81,4 +81,3 @@
   tags:
     - validation
     - cache
-...

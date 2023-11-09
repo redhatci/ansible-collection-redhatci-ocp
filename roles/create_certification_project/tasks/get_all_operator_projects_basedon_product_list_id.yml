@@ -31,5 +31,3 @@
 - name: Print All operator projects
   debug:
     var: all_operator_projects
-...
-

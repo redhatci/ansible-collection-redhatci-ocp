@@ -31,7 +31,6 @@
     wait_timeout: 300
   loop: "{{ mlb_bgp_peers }}"
   ignore_errors: true
-  loop: "{{ mlb_resources }}"
+  # loop: "{{ mlb_resources }}"
   loop_control:
     loop_var: resource
-...

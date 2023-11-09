@@ -33,5 +33,3 @@
     status_code: 200
     timeout: 120
   register: update_cert_project_output
-...
-
