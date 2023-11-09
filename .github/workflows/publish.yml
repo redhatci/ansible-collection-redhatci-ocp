@@ -1,0 +1,25 @@
+name: Ansible Galaxy Publish
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Add release, date and commit hash to version in galaxy.yml
+        run: >
+          ts=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%Y%m%d%H%M')
+          sha=$(echo "${{ github.sha }}" | cut -c1-7);
+          rel=$(grep ^Release ansible-collection-redhatci-ocp.spec | grep -Po '\d+\.');
+          sed -ir "s/^(version: .*)$/&-${rel}${ts}git${sha}/" galaxy.yml;
+          grep ^version galaxy.yml
+
+      - name: Ansible Publish to Galaxy
+        uses: ansible/ansible-publish-action@v1.0.0
+        with:
+          api_key: ${{ secrets.ANSIBLE_GALAXY_TOKEN }}
