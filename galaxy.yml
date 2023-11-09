@@ -107,3 +107,4 @@ build_ignore:
   - '.gitignore'
   - '.github'
   - 'rpm'
+  - 'hack'

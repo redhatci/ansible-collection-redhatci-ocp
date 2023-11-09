@@ -16,7 +16,7 @@ jobs:
           ts=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%Y%m%d%H%M')
           sha=$(echo "${{ github.sha }}" | cut -c1-7);
           rel=$(grep ^Release ansible-collection-redhatci-ocp.spec | grep -Po '\d+\.');
-          sed -ir "s/^(version: .*)$/&-${rel}${ts}git${sha}/" galaxy.yml;
+          sed -i -r "s/^(version: .*)$/&-${rel}${ts}git${sha}/" galaxy.yml;
           grep ^version galaxy.yml
 
       - name: Ansible Publish to Galaxy
