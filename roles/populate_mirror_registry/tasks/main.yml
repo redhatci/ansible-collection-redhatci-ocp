@@ -1,0 +1,17 @@
+---
+# tasks file for populate_mirror_registry
+- import_tasks: var_check.yml
+  tags:
+    - populate_registry
+
+- import_tasks: prerequisites.yml
+  tags:
+    - populate_registry
+
+- import_tasks: populate_registry.yml
+  tags:
+    - populate_registry
+
+- import_tasks: cleanup.yml
+  tags:
+    - populate_registry

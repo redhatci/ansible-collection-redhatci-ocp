@@ -1,0 +1,12 @@
+- name: Assert agent_based_installer_path is defined
+  ansible.builtin.assert:
+    that:
+      - openshift_full_version is version('4.12.0', '>=')
+    fail_msg: Agent based installation is only avaiable for openshift_full_version >= 4.12.0
+
+- name: Assert nodes have network_config
+  ansible.builtin.assert:
+    that:
+      - hostvars[item]['network_config'] is defined
+    fail_msg: "use_agent_based_installer requires that hosts have a network config"
+  loop: "{{ groups['nodes'] | default([]) }}"

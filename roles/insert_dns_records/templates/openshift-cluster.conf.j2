@@ -1,0 +1,82 @@
+domain={{ domain }}
+{% if write_dnsmasq_config %}
+domain-needed
+bogus-priv
+listen-address={{ listen_addresses | join(',') }}
+{% for  listening_intf in (listening_interfaces | default([])) %}
+interface={{ listening_intf }}
+{% endfor%}
+{% for  no_dhcp_intf in (no_dhcp_interfaces | default([])) %}
+no-dhcp-interface={{ no_dhcp_intf }}
+{% endfor%}
+expand-hosts
+{% if upstream_dns | default(False) %}
+server={{ upstream_dns }}
+{% endif %}
+{% endif %}
+
+{% if use_dhcp %}
+dhcp-range= tag:{{ cluster_name }},{{ dhcp_range_first }},{{ dhcp_range_last }}
+dhcp-option= tag:{{ cluster_name }},option:netmask,{{ (gateway + '/' + prefix | string) | ansible.utils.ipaddr('netmask') }}
+dhcp-option= tag:{{ cluster_name }},option:router,{{ gateway }}
+dhcp-option= tag:{{ cluster_name }},option:dns-server,{{ listen_address }}
+dhcp-option= tag:{{ cluster_name }},option:domain-search,{{ domain }}
+dhcp-option= tag:{{ cluster_name }},option:ntp-server,{{ ntp_server }}
+{% endif %}
+
+# Wildcard for apps and other api domains
+{% for item in dns_records.values() %}
+address=/{{ item.address }}/{{ item.ip }}
+{% endfor %}
+
+# Node addresses
+{% for item in node_dns_records.values() %}
+# {{ item.name }}
+{% if item.use_dhcp %}
+dhcp-host={{item.mac}},{{ item.ip }},{{ item.address }}, set:{{ cluster_name }}
+{% endif %}
+address=/{{ item.address }}/{{ item.ip }}
+ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
+
+{% endfor %}
+
+{% if bmc_dns_records is defined %}
+# Node BMC addresses
+{% for item in bmc_dns_records.values() %}
+# {{ item.name }}
+address=/{{ item.address }}/{{ item.ip }}
+ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
+
+{% endfor %}
+
+{% endif %}
+{% if other_host_dns_records is defined %}
+# Bastions, services and vm_hosts
+{% for item in other_host_dns_records.values() %}
+# {{ item.name | join(', ') }}
+address=/{{ item.address }}/{{ item.ip }}
+ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
+
+{% endfor %}
+
+{% endif %}
+# User provided entries
+{% for item in extra_dns_records.values() %}
+# {{ item.name }}
+{% if item.use_dhcp %}
+dhcp-host={{item.mac}},{{ item.ip }},{{ item.address }}, set:{{ cluster_name }}
+{% endif %}
+address=/{{ item.address }}/{{ item.ip }}
+ptr-record={{ item.ip.split('.')[::-1] | join('.')  }}.in-addr.arpa,{{ item.address }}
+
+{% endfor %}
+{% if use_pxe %}
+
+# PXE boot config
+enable-tftp
+tftp-root={{ TFTP_ROOT }}
+dhcp-vendorclass=BIOS,PXEClient:Arch:00000
+dhcp-boot=tag:BIOS,lpxelinux.0
+dhcp-boot=tag:!BIOS,BOOTX64.EFI
+
+{% endif %}

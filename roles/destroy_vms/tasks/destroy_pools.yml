@@ -1,0 +1,38 @@
+- name: List vm storage pools
+  community.libvirt.virt_pool:
+    command: list_pools
+  register: pools
+
+- name: Get pool info
+  community.libvirt.virt_pool:
+    command: info
+    name: "{{ item }}"
+  loop: "{{ pools.list_pools }}"
+  register: pool_info
+
+- name: Get pools to Remove
+  set_fact:
+    pools_to_remove: "{{ pools_to_remove | default({}) | combine({item.name: item.data}) }}"
+  loop: "{{
+      pool_info.results |
+      map(attribute='pools') | list | combine |
+      dict2items(key_name='name', value_name='data')
+    }}"
+  when: item.data.path == images_dir
+
+- name: Find images
+  find:
+    path: "{{ images_dir }}"
+  register: images_to_remove
+
+- name: Remove file in image dir
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ images_to_remove.files |  map(attribute='path') | list }}"
+
+- name: Remove pools
+  community.libvirt.virt_pool:
+    state: deleted
+    name: "{{ item }}"
+  loop: "{{ pools_to_remove.keys() | list }}"

@@ -1,0 +1,31 @@
+---
+- name: Provision Nodes
+  become: true
+  block:
+    - name: Create rng device XML file
+      template:
+        src: rng_device.xml.j2
+        dest: "/tmp/{{ cluster_name }}_rng_device.xml"
+        mode: 0664
+
+    - name: Create vm create scripts dir
+      file:
+        path: "{{ vm_create_scripts_dir }}"
+        state: directory
+        recurse: yes
+
+    - name: Create vm creation_scripts
+      template:
+        # community.libvirt.virt doesn't define the qcow image so it was chosen to use
+        # virt-install. The reason we use a script is to aid with debugging on the host
+        src: create_vm.sh.j2
+        dest: "{{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
+        lstrip_blocks: true
+        mode: 0774
+      loop: "{{ kvm_nodes }}"
+
+    - name: Run vm creation_scripts
+      shell: 
+        cmd: "/bin/bash {{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
+      
+      loop: "{{ kvm_nodes }}"

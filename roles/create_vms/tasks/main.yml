@@ -1,0 +1,31 @@
+---
+- name: Setup host environment
+  become: true
+  block:
+    - name: "Install virt-manager"
+      package:
+        name: "{{ virt_packages }}"
+        state: present
+
+    - name: Insert lines for non-root user
+      blockinfile:
+        state: present
+        dest: /etc/libvirt/qemu.conf
+        block: |
+          user= "{{ qemu_user }}"
+          group= "{{ qemu_user }}"
+      when: qemu_user != "root"
+
+    - name: Start libvirtd
+      service:
+        name: libvirtd
+        state: started
+
+- name: Prepare Network
+  import_tasks: prepare_network.yml
+
+- name: Prepare Storage Pool
+  import_tasks: prepare_storage_pool.yml
+
+- name: Prepare VMS
+  import_tasks: provision_vms.yml

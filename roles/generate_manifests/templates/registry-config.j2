@@ -1,0 +1,22 @@
+{% if ocp_version_major is version('4.14', '<') %}
+imageContentSources:
+{% else %}
+imageDigestSources:
+{% endif %}
+  - source: quay.io/openshift-release-dev/ocp-release
+    mirrors:
+      - {{ mirror_registry }}/{{ registry_repository }}
+  - source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+    mirrors:
+      - {{ mirror_registry }}/{{ registry_repository }}
+  - source: registry.ci.openshift.org/ocp/release
+    mirrors:
+      - {{ mirror_registry }}/{{ registry_repository }}
+  - source: quay.io/edge-infrastructure
+    mirrors:
+      - {{ mirror_registry }}/ocpmetal
+  - source: quay.io/edge-infrastructure
+    mirrors:
+      - {{ mirror_registry }}/edge-infrastructure
+additionalTrustBundle: |
+  {{ mirror_certificate | indent(2) }}

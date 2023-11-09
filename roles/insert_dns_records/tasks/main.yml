@@ -1,0 +1,107 @@
+---
+- name: Get node_records for nodes
+  set_fact:
+    node_dns_records: "{{ (node_dns_records | default({})) | combine(
+        {
+          item: {
+            'name': item,
+            'address': item + '.' + cluster_name + '.' + base_dns_domain,
+            'ip': hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)],
+            'mac': hostvars[item]['mac'] | default(False),
+            'use_dhcp': hostvars[item]['ip'] | default('dhcp') == 'dhcp',
+          }
+        }
+      ) }}"
+  loop: "{{ groups['nodes'] }}"
+  when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] is defined
+
+- name: Get node_records for node bmc_addresses when it is an IP address
+  set_fact:
+    bmc_dns_records: "{{ (bmc_dns_records | default({})) | combine(
+        {
+          item: {
+            'name': item,
+            'address': item + dns_bmc_address_suffix,
+            'ip': hostvars[item]['bmc_ip'],
+          }
+        }
+      ) }}"
+  loop: "{{ groups['nodes'] }}"
+  when:
+    - hostvars[item]['bmc_ip'] is defined
+    - hostvars[item]['bmc_ip'] | ansible.utils.ipaddr('bool')
+
+- name: Define bmc_address where required
+  set_fact:
+    bmc_address: "{{ item.data.address }}"
+  delegate_to: "{{ item.host }}"
+  delegate_facts: true
+  loop: "{{ bmc_dns_records | dict2items(key_name='host', value_name='data') }}"
+  when:
+    - bmc_dns_records is defined
+
+- name: Get bastions, services (not including registry) when it ansible_host is an IP address
+  include_tasks: create_host_entry.yml
+  vars:
+    entry_address: "{{ hostvars[item]['ansible_fqdn'] }}"
+    entry_name: "{{ item }}"
+  loop: "{{ groups['bastions'] + groups['services'] }}"
+  when:
+    - item != 'registry_host'
+    - hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool')
+    - not (hostvars[item]['dns_skip_record'] | default(False)) | bool
+
+- name: Get registry_host when it ansible_host is an IP address
+  include_tasks: create_host_entry.yml
+  vars:
+    entry_address: "{{   hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
+    entry_name: "registry_host"
+    entry_extra_check: "{{ hostvars['registry_host']['registry_fqdn']  is not defined }}"
+  when:
+    - "'registry_host' in hostvars"
+    - hostvars['registry_host'][hostvars['registry_host']['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool')
+    - not (hostvars['registry_host']['dns_skip_record'] | default(False)) | bool
+
+- name: Get vm_hosts when ansible_host is an IP address
+  include_tasks: create_host_entry.yml
+  vars:
+    entry_address: "{{ hostvars[item]['sushy_fqdn'] | default(hostvars[item]['ansible_fqdn']) }}"
+    entry_name: "{{ item }}"
+    entry_extra_check: "{{ hostvars[item]['sushy_fqdn']  is not defined }}"
+  loop: "{{ groups['vm_hosts'] | default([]) }}"
+  when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool') and (not (hostvars[item]['dns_skip_record'] | default(False))) | bool
+
+- name: Configure firewall
+  become: true
+  import_tasks: configure_firewall.yml
+
+- name: Install dnsmasq
+  become: true
+  ansible.builtin.package:
+    name: dnsmasq
+    state: present
+
+- name: "Make sure {{ TFTP_ROOT }} exists"
+  file:
+    path: "{{ TFTP_ROOT }}"
+    state: directory
+    recurse: yes
+  when: use_pxe | bool
+
+- name: Configure dnsmasq via NetworkManager
+  become: true
+  import_tasks: network-manager.yml
+  when: dns_service_name == "NetworkManager"
+
+- name: Configure dnsmasq via dnsmasq
+  become: true
+  import_tasks: dnsmasq.yml
+  when: dns_service_name == "dnsmasq"
+
+- name: "Restart {{ dns_service_name }}"
+  become: true
+  ansible.builtin.service:
+    name: "{{ dns_service_name }}"
+    state: restarted
+  async: 45
+  poll: 5

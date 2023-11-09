@@ -1,0 +1,6 @@
+arch: x86_64
+version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
+release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
+extract_dest_path: /tmp/wip/extract/
+pull_secret_file: "{{ extract_dest_path }}/pull_secret.txt"
+openshift_installer_path: "{{ extract_dest_path }}/openshift-install"

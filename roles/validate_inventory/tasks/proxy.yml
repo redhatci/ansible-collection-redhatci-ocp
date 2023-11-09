@@ -1,0 +1,5 @@
+- name: Check for repeated values in proxy config
+  assert:
+    that:
+      -  "{{ (no_proxy.split(',') | unique | list | length) == (no_proxy.split(',') | list | length) }}"
+  when: no_proxy is defined and no_proxy != ""

@@ -1,0 +1,31 @@
+---
+- name: Setup Chrony
+  become: true
+  block:
+    - name: Install Chrony
+      ansible.builtin.package:
+        name: chrony
+        state: present
+
+    - name: Configure chrony
+      ansible.builtin.template:
+        src: chrony.conf.j2
+        dest: /etc/chrony.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart chronyd
+
+    - name: Start chrony
+      ansible.builtin.service:
+        name: chronyd
+        state: started
+        enabled: true
+
+    - name: Allow incoming ntp traffic
+      ansible.posix.firewalld:
+        zone: public
+        service: ntp
+        permanent: true
+        state: enabled
+        immediate: true

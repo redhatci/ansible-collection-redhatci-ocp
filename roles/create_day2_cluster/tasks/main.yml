@@ -1,0 +1,61 @@
+- name: Create day 2 cluster
+  uri:
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/import"
+    method: POST
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: >-
+      {
+        "name": "{{ cluster_name + '-day2' }}",
+        "api_vip_dnsname": "api.{{ cluster_name }}.{{ base_dns_domain }}",
+        "openshift_cluster_id": "{{ cluster_id }}",
+        "openshift_version": "{{ openshift_full_version }}"
+      }
+  register: http_reply
+
+- debug: # noqa unnamed-task
+    var: http_reply.json.id
+    verbosity: 1
+
+- name: Set cluster ID info
+  set_fact:
+    cluster_id: "{{ http_reply.json.id }}"
+    add_host_cluster_id: "{{ http_reply.json.id }}"
+
+- name: "Save add_host_cluster_id"
+  copy:
+    content: "{{ add_host_cluster_id }}"
+    dest: "{{ fetched_dest }}/{{ day2_cluster_id_filename }}"
+    mode: 0644
+  delegate_to: localhost
+  become: no
+
+- debug: # noqa unnamed-task
+    msg: "{{ pull_secret | to_json }}"
+    verbosity: 1
+
+- name: Patch day 2 install config
+  uri:
+    url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}"
+    method: PATCH
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body:
+      {
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "ssh_public_key": "{{ ssh_public_key }}",
+        "http_proxy": "{{ http_proxy }}",
+        "https_proxy": "{{ https_proxy }}",
+        "no_proxy": "{{ no_proxy }}",
+      }
+
+- name: Distribute add_host_cluster_id value to day2_worker hosts
+  set_fact:
+    add_host_cluster_id: "{{ add_host_cluster_id }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: yes
+  loop: "{{ groups['day2_workers'] }}"

@@ -1,0 +1,9 @@
+generated_dir: "{{ repo_root_path }}/generated"
+manifests_dir: "{{ generated_dir }}/{{ cluster_name }}"
+download_agent_dest_file: "{{ discovery_iso_name }}"
+download_dest_path: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
+config_file_path: /tmp/wip/config
+arch: x86_64
+version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
+release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
+use_local_mirror_registry: false

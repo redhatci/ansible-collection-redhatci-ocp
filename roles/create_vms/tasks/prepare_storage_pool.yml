@@ -1,0 +1,22 @@
+# Sushy-tools does not allow you to specify the libvirt storage pool, and assumes
+# that default exists, so we need to make sure that it does
+- name: Handle default storage pool
+  become: true
+  block:
+    - name: make images dir
+      file:
+        path: "{{ images_dir }}"
+        state: directory
+        recurse: yes
+
+    - name: Create default storage pool
+      community.libvirt.virt_pool:
+        command: define
+        name: default
+        xml: '{{ lookup("template", "storage-pool.xml.j2") }}'
+        autostart: yes
+
+    - name: Start default storage pool
+      community.libvirt.virt_pool:
+        name: default
+        state: active

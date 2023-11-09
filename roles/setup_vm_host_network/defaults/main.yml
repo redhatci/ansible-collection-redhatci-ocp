@@ -1,0 +1,6 @@
+vm_bridge_ip: "{{ machine_network_cidr | ansible.utils.ipaddr('next_usable') }}"
+vm_bridge_prefix: "{{ machine_network_cidr | ansible.utils.ipaddr('prefix') }}"
+vm_bridge_name: "{{ cluster_name }}-br"
+vm_bridge_port_name: "{{ vm_bridge_interface }}"
+vm_vlan_name: "{{ cluster_name }}.{{ vm_vlan_tag }}"
+vm_nmstate_config_path: "/tmp/{{ cluster_name }}_nmstate.yml"

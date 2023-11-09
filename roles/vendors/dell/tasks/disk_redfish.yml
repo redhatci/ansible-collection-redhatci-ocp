@@ -1,0 +1,37 @@
+---
+- name: DELL Power ON
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+
+- name: DELL Eject Virtual Media (if any)
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaEject
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    virtual_media:
+      image_url: "{{ boot_iso_url }}"
+    resource_id: iDRAC.Embedded.1
+  ignore_errors: yes
+
+- name: Set Dell OneTimeBoot Hdd
+  community.general.redfish_command:
+    category: Systems
+    command: SetOneTimeBoot
+    bootdevice: Hdd
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+
+- name: DELL Restart system power gracefully
+  community.general.redfish_command:
+    category: Systems
+    command: PowerGracefulRestart
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"

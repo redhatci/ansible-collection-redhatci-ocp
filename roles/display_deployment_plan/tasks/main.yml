@@ -1,0 +1,72 @@
+---
+- name: Get all PXE Nodes
+  set_fact:
+    pxe_node_names: "{{ pxe_node_names + [item] }}"
+  when: hostvars[item]['vendor'] | lower == 'pxe'
+  loop: "{{ groups['nodes'] }}"
+
+- name: Display deployment plan if interactive prompts are allowed
+  when: not ((skip_interactive_prompts | default(false)) | bool)
+  block:
+    - name: Display inventory details and ask for user confirmation
+      pause:
+        prompt: "{{ lookup('template', 'plan.j2').strip('\n') }}"
+      vars:
+        # Every row consists of two columns. To ensure all items in the right column are aligned,
+        # a minimum width of the left column is set in the following variable.
+        left_column_width: 36
+        row_format_str: '%-{{ left_column_width }}s %s'
+        # To improve readability, all hosts listed in the "Groups and hosts configuration" section
+        # are nested under groups by the number of spaces defined in the variable below.
+        # For padding set to 2, the displayed output is as follows:
+        # group_name:
+        #   host_name_A
+        #   host_name_B
+        hosts_row_padding: 2
+        hosts_row_format_str: '%-{{ (left_column_width - hosts_row_padding) }}s %s'
+        hosts_row_extended_format_str: '%-{{ (left_column_width - hosts_row_padding) }}s %s (%s)'
+        # In the sample inventory, some host groups are nested under other groups.
+        # To prevent the defined hosts from being displayed multiple times, selected top level
+        # groups are omitted from the deployment plan.
+        groups_to_exclude: ["all", "nodes", "ungrouped"]
+        messages:
+          value_missing: "<not set>"
+          hosts_missing: "<no hosts set>"
+          groups_missing: "<no groups set>"
+          kubeadmin_vault_password_file_path_missing: "UNDEFINED (This means the kubeadmin credentals will be stored in plain text)"
+          pxe_hosts_missing: "[WARNING] No hosts are set"
+        cached_image_hash_file_path: "{{ image_hashes_path | default(repo_root_path + '/image_hashes.yml') }}"
+
+        # A default error message is assigned to each variable referenced in the deployment plan.
+        # This prevents the prompt from not being displayed due to templating errors if a valid
+        # inventory file is not provided.
+        inventory:
+          cluster_name: "{{ cluster_name | default(messages.value_missing) }}"
+          base_dns_domain: "{{ base_dns_domain | default(messages.value_missing) }}"
+          api_vip: "{{ api_vip | default(messages.value_missing) }}"
+          ingress_vip: "{{ ingress_vip | default(messages.value_missing) }}"
+          vip_dhcp_allocation: "{{ vip_dhcp_allocation | default(messages.value_missing) }}"
+          openshift_full_version: "{{ openshift_full_version | default(messages.value_missing) }}"
+          setup_ntp_service: "{{ setup_ntp_service | default(messages.value_missing) }}"
+          setup_dns_service: "{{ setup_dns_service | default(messages.value_missing) }}"
+          setup_registry_service: "{{ setup_registry_service | default(messages.value_missing) }}"
+          setup_http_store_service: "{{ setup_http_store_service | default(messages.value_missing) }}"
+          setup_assisted_installer: "{{ setup_assisted_installer | default(messages.value_missing) }}"
+          setup_pxe_service: "{{ setup_pxe_service | default(messages.value_missing) }}"
+          num_pxe_nodes: "{{ pxe_node_names | length }}"
+          discovery_iso_name: "{{ discovery_iso_name | default(messages.value_missing) }}"
+          discovery_iso_download_path: "{{ iso_download_dest_path | default(messages.value_missing) }}"
+          is_valid_single_node_openshift_config: "{{ is_valid_single_node_openshift_config | default(messages.value_missing) }}"
+          groups_filtered: "{{ groups | difference(groups_to_exclude) }}"
+          kubeadmin_vault_password_file_path: "{{ kubeadmin_vault_password_file_path | default(messages.kubeadmin_vault_password_file_path_missing) }}"
+          cached_image_hash_file_path: "{{ cached_image_hash_file_path }}"
+          cached_image_hash_file_exists: "{{ cached_image_hash_file_path is file }}"
+          ignore_cached_image_hash_file: "{{ ignore_cached_image_hashes | default(false) }}"
+      register: display_deployment_plan__confirmation
+
+    - name: Assert the deployment plan is confirmed
+      assert:
+        that:
+          - (display_deployment_plan__confirmation.user_input | lower | trim) in ['y', 'yes']
+        fail_msg: "The deployment plan must be confirmed by the user"
+        quiet: true

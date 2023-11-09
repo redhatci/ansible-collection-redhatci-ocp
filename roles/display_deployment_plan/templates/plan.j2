@@ -1,0 +1,73 @@
+An OpenShift cluster is about to be deployed. Please double check the provided inventory details.
+
+* General configuration
+
+  {{ row_format_str | format('Cluster name', inventory.cluster_name) }}
+  {{ row_format_str | format('Base DNS domain', inventory.base_dns_domain) }}
+
+  {{ row_format_str | format('OpenShift version', inventory.openshift_full_version) }}
+
+  {{ row_format_str | format('Kube admin vault password file', inventory.kubeadmin_vault_password_file_path) }}
+
+* Cluster network configuration
+
+  {{ row_format_str | format('API Virtual IP', inventory.api_vip) }}
+  {{ row_format_str | format('Ingress Virtual IP', inventory.ingress_vip) }}
+
+  {{ row_format_str | format('Allocate Virtual IPs via DHCP', inventory.vip_dhcp_allocation) }}
+
+* Prerequisite services configuration
+
+  {{ row_format_str | format('Setup NTP Service', inventory.setup_ntp_service) }}
+  {{ row_format_str | format('Setup DNS Service', inventory.setup_dns_service) }}
+  {{ row_format_str | format('Setup Registry Service', inventory.setup_registry_service) }}
+  {{ row_format_str | format('Setup HTTP Store Service', inventory.setup_http_store_service) }}
+  {{ row_format_str | format('Setup Assisted Installer', inventory.setup_assisted_installer) }}
+  {{ row_format_str | format('Setup PXE Service', inventory.setup_pxe_service) }}
+  {% if inventory.setup_pxe_service | bool and inventory.num_pxe_nodes | int > 0 -%}
+  {{ row_format_str | format('Number of PXE Nodes', inventory.num_pxe_nodes) }}
+  {% elif inventory.setup_pxe_service | bool and inventory.num_pxe_nodes | int == 0 -%}
+  {{ row_format_str | format('Number of PXE Nodes', messages.pxe_hosts_missing) }}
+  {% endif -%}
+  {{ row_format_str | format('Discovery ISO Name', inventory.discovery_iso_name) }}
+  {{ row_format_str | format('Discovery ISO Download Path', inventory.discovery_iso_download_path) }}
+
+* Groups and hosts configuration
+
+  {{ row_format_str | format('Single Node OpenShift (SNO) Mode', inventory.is_valid_single_node_openshift_config) }}
+
+{% for group_name in inventory.groups_filtered %}
+  {{ group_name }}:
+{% for host_name in groups[group_name] %}
+{% set host_ansible_host = hostvars[host_name]['ansible_host'] | default(messages.value_missing) %}
+{% if hostvars[host_name]['vm_host'] is defined %}
+    {{ hosts_row_extended_format_str | format(host_name, host_ansible_host, hostvars[host_name]['vm_host']) }}
+{% else %}
+    {{ hosts_row_format_str | format(host_name, host_ansible_host) }}
+{% endif %}
+{% else %}
+    {{ messages.hosts_missing }}
+{% endfor %}
+{# This adds a newline character between groups #}{{ '' }}
+{% else %}
+  {{ messages.groups_missing }}{{ '\n' }}
+{% endfor %}
+
+* Image hash caching
+
+  {{ row_format_str | format('Cached image hash file path', inventory.cached_image_hash_file_path)}}
+  {{ row_format_str | format('Cached image hash file exists', inventory.cached_image_hash_file_exists)}}
+  {{ row_format_str | format('Ignoring cached image hash file', inventory.ignore_cached_image_hash_file)}}
+
+  {% if  inventory.cached_image_hash_file_exists and not inventory.ignore_cached_image_hash_file %}
+  NOTE: If you have changed any tags for images, the hash will NOT be updated unless you remove the
+        entry from (or remove the entire file)
+        {{ inventory.cached_image_hash_file_path }}
+        or set ignore_cached_image_hashes to True.
+  {% endif %}
+
+---
+
+Are you sure you want to proceed with the deployment using this inventory configuration?
+
+Enter a value [yes/NO]

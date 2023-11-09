@@ -1,0 +1,31 @@
+---
+- name: Unmount SuperMicro ISO
+  ansible.builtin.uri:
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.UnMount"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {}
+    body_format: json
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+
+- name: Mount SuperMicro ISO
+  ansible.builtin.uri:
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.Mount"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {"Image": "{{ boot_iso_url }}"}
+    body_format: json
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+    status_code: 200

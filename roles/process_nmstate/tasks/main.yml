@@ -1,0 +1,13 @@
+- name: "Set rendered_nmstate_yml from raw value for {{ target_name }}"
+  set_fact:
+    rendered_nmstate_yml: "{{ network_config.raw  | to_yaml | string }}"
+  when: network_config.raw is  defined
+
+- name: "Template rendered_nmstate_yml for {{ target_name }}"
+  set_fact:
+    rendered_nmstate_yml: "{{ lookup('template', network_config.template | default('nmstate.yml.j2')) }}"
+  when: network_config.raw is not defined
+
+- debug: # noqa unnamed-task
+    msg: "{{ rendered_nmstate_yml }}"
+    verbosity: 1

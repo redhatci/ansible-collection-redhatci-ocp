@@ -1,0 +1,31 @@
+write_dnsmasq_config: true
+domain: "{{ cluster_name }}.{{ base_dns_domain }}"
+host_ip_keyword: "ansible_host"
+dns_entries_file_name: "{{ 'dnsmasq.' + cluster_name + '.conf' }}"
+dns_bmc_domain: "infra.{{ base_dns_domain }}"
+dns_bmc_address_suffix: "-bmc.{{ dns_bmc_domain }}"
+dns_service_name: NetworkManager
+dns_records:
+  apps:
+    address: ".apps.{{ domain }}"
+    ip: "{{ ingress_vip }}"
+  api:
+    address: "api.{{ domain }}"
+    ip: "{{ api_vip }}"
+  api_int:
+    address: "api-int.{{ domain }}"
+    ip: "{{ api_vip }}"
+
+node_dns_records: {}
+extra_dns_records: {}
+
+use_pxe: false
+use_dhcp: false
+dhcp_lease_time: 24h
+
+listen_address: "{{ ansible_default_ipv4.address }}"
+listen_addresses: 
+  - "127.0.0.1"
+  - "{{ listen_address }}"
+
+TFTP_ROOT: "{% if (hostvars['tftp_host'] is defined) and (hostvars['tftp_host']['tftp_directory']) is defined %}{{ hostvars['tftp_host']['tftp_directory'] }}{% else %}/var/lib/tftpboot/{% endif %}"

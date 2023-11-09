@@ -1,0 +1,49 @@
+---
+- name: Applying Nmstate
+  become: true
+  block:
+    - name: Install nmstate
+      ansible.builtin.package:
+        name: nmstate
+        state: present
+
+    - name: "Copy rendered_nmstate_yml to {{ vm_nmstate_config_path }}"
+      ansible.builtin.copy:
+        content: "{{ rendered_nmstate_yml }}"
+        dest: "{{ vm_nmstate_config_path }}"
+        mode: 0644
+      # No commit is done to revert the changes if they cause the host to be come unreachable
+
+    - name: Check if vm_host is bastion
+      ansible.builtin.include_tasks:
+        file: check_if_vm_host_is_bastion.yml
+
+    - name: Apply nmstate
+      ansible.builtin.shell:
+        cmd: "nmstatectl apply --no-commit --timeout 120 {{ vm_nmstate_config_path }}"
+      async: 60
+      poll: 5
+
+    - name: Check network connection when vm_host and bastion are the same
+      when: vm_host_is_bastion | bool
+      block:
+        - name: Assert vm_network_test_ip is defined
+          ansible.builtin.assert:
+            that:
+              - vm_network_test_ip is defined
+            fail_msg: |
+              Please define vm_network_test_ip in your inventory.
+              This should be and IP external to the bastion and vm_host.
+
+        - name: "Check for connection wider network"
+          ansible.builtin.shell:
+            cmd: "ping -c 4 -W 1 {{ vm_network_test_ip }}"
+          when: vm_host_is_bastion | bool
+          register: connection_test_result
+          until: connection_test_result is succeeded
+          retries: 60
+          delay: 5
+
+    - name: Commit changes
+      ansible.builtin.shell:
+        cmd: "nmstatectl commit"

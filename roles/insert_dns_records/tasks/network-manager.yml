@@ -1,0 +1,24 @@
+---
+- name: Setup network manager to run dnsmasq
+  ansible.builtin.copy:
+    src: nm-dnsmasq.conf
+    dest: /etc/NetworkManager/conf.d/dnsmasq.conf
+    mode: 0644
+
+- name: Create dnsmasq openshift-cluster config file
+  ansible.builtin.template:
+    src: openshift-cluster.conf.j2
+    dest: "/etc/NetworkManager/dnsmasq.d/{{ dns_entries_file_name }}"
+    mode: 0644
+  notify: restart_service
+
+- name: Start NetworkManager
+  ansible.builtin.service:
+    name: NetworkManager
+    state: started
+    enabled: true
+
+- name: Reload NetworkManager
+  ansible.builtin.service:
+    name: NetworkManager
+    state: reloaded

@@ -1,0 +1,42 @@
+patch_cluster_id: "{{ cluster_id }}"
+patch_set_prefix: ""
+
+secure: False
+manifests: True
+fetched_dest: "{{ repo_root_path }}/fetched"
+
+disconnected: "{{ use_local_mirror_registry | default(setup_registry_service | default(true)) }}"
+mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['registry_host']['registry_port'] }}"
+ocp_registry_namespace: "{{ hostvars['registry_host']['registry_namespace'] | default('ocp4') }}"
+ocp_registry_image: "{{ hostvars['registry_host']['registry_image'] | default('openshift4') }}"
+registry_repository: "{{ ocp_registry_namespace }}/{{ ocp_registry_image }}"
+
+ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] | default(ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}"
+ASSISTED_INSTALLER_PORT: "{{ hostvars['assisted_installer']['port'] | default(8090) }}"
+ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v2"
+URL_ASSISTED_INSTALLER_CLUSTERS: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters"
+
+single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"
+
+# Accepted values for "High Availability Mode"
+#
+# 1. 'None' (when `is_valid_single_node_openshift_config` evaluates to True)
+#     Requires one master node and no worker nodes -- SNO.
+# 2. 'Full' (otherwise)
+#     Requires at least three master nodes for High Availability.
+high_availability_mode: "{{ single_node_openshift_enabled | ternary('none', 'full') }}"
+
+manifest_templates_for_mode:
+  none:
+    - template: 50-worker-nm-fix-ipv6.yml.j2
+    - template: 50-worker-remove-ipi-leftovers.yml.j2
+  full:
+    - template: 50-worker-nm-fix-ipv6.yml.j2
+    - template: 50-worker-remove-ipi-leftovers.yml.j2
+    - template: 02-fix-ingress-config.yml.j2
+
+default_manifests: "{{ manifest_templates_for_mode[high_availability_mode] }}"
+extra_manifests: []
+manifest_templates: "{{ default_manifests + extra_manifests }}"
+
+ocp_version_major: "{{ openshift_version }}"

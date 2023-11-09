@@ -1,0 +1,165 @@
+---
+- name: Setup AI Host
+  become: True
+  block:
+    - name: Install podman
+      package:
+        name: podman
+        state: present
+
+    - name: Configure registry cert and pull_secret
+      block:
+        - name: Copy cert to pki directory
+          copy:
+            content: "{{ mirror_certificate }}"
+            dest: /etc/pki/ca-trust/source/anchors/ai_registry.crt
+            mode: 0660
+            force: yes
+            backup: yes
+
+        - name: Update the CA trust files
+          command:
+            cmd: update-ca-trust extract
+
+        - name: Create podman auth dir
+          file:
+            path: "{{ config_file_path }}/containers/"
+            state: directory
+            recurse: true
+            mode: 0755
+
+        - name: Copy pull_secrets file.
+          copy:
+            content: "{{ pull_secret }}"
+            dest: "{{ config_file_path }}/containers/auth.json"
+            mode: 0644
+            remote_src: yes
+  
+      when: use_local_mirror_registry  | bool
+
+    - name: Open ports zone internal and public, for firewalld
+      firewalld:
+        port: "{{ item.1 }}/tcp"
+        permanent: yes
+        immediate: yes
+        state: enabled
+        zone: "{{ item.0 }}"
+      loop: "{{ ['internal', 'public'] | product(['8000', '8090', '8080', '8888']) | list }}"
+
+    - name: Create directories for assisted-installer
+      file:
+        path: "{{ item }}"
+        mode: 0775
+        state: directory
+      with_items:
+        - "{{ assisted_installer_dir }}"
+        - "{{ assisted_installer_data_dir }}"
+
+    - name: Create directory for assisted-installer database
+      file:
+        path: "{{ assisted_installer_data_dir }}/postgresql"
+        mode: 0775
+        state: directory
+        recurse: true
+    
+    - name: Create directory for assisted-installer images 
+      file:
+        path: "{{ assisted_installer_data_dir }}/image_service"
+        mode: 0775
+        state: directory
+        recurse: true
+
+    - name: Template out assisted-installer files
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: 0644
+        trim_blocks: true
+        lstrip_blocks: true
+      loop:
+        - src: configmap.yml.j2
+          dest: "{{ assisted_installer_dir }}/configmap.yml"
+        - src: pod.yml.j2
+          dest: "{{ assisted_installer_dir }}/pod.yml"
+
+- name: Setup AI pod
+  become: True
+  environment:
+    XDG_RUNTIME_DIR: "{{ config_file_path }}"
+  block:
+    - name: Gather info about specific pods
+      containers.podman.podman_pod_info:
+        name: assisted-installer
+      register: ai_pod_details
+
+    - name: Remove Assisted Installer Pod
+      containers.podman.podman_pod:
+        name: assisted-installer
+        state: absent
+      when: (ai_pod_details.pods | length) > 0
+
+    - name: network_name
+      ansible.builtin.set_fact:
+        network_name: assisted_installer_network
+      when: use_ipv6 | default(False)
+
+    - name: Create ipv6 network
+      containers.podman.podman_network:
+        debug: true
+        name: "{{ network_name }}"
+        subnet: "{{ podman_ipv6_network_subnet }}"
+        gateway: "{{ podman_ipv6_network_gateway }}"
+        ipv6: true
+        recreate: true
+      when: use_ipv6 | default(False)
+      become: true
+
+    - name: Update podman_networks with ipv6
+      ansible.builtin.set_fact:
+        podman_networks:
+          - "{{ network_name }}"
+      when: network_name is defined
+
+    - name: Play kube file
+      containers.podman.podman_play:
+        kube_file: "{{ assisted_installer_dir }}/pod.yml"
+        configmap: "{{ assisted_installer_dir }}/configmap.yml"
+        network: "{{ podman_networks | default(omit) }}"
+        recreate: true
+        state: created
+
+- name: Setup assisted_installer service
+  become: true
+  block:
+    - name: Copy the systemd service file
+      copy:
+        content: |
+          [Unit]
+          Description=Podman assisted_installer.service
+          [Service]
+          Restart=no
+          ExecStart=/usr/bin/podman pod start assisted-installer
+          ExecStop=/usr/bin/podman pod stop -t 10 assisted-installer
+          KillMode=none
+          Type=forking
+          [Install]
+          WantedBy=default.target
+        dest: "/etc/systemd/system/assisted_installer.service"
+        mode: 0644
+
+    - name: Reload systemd service
+      systemd:
+        daemon_reexec: yes
+        scope: system
+
+    - name: Enable assisted_installer.service
+      systemd:
+        name: assisted_installer
+        enabled: yes
+        scope: system
+
+    - name: Start assisted_installer.service
+      systemd:
+        name: assisted_installer
+        state: started
+        scope: system

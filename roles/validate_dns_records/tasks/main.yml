@@ -1,0 +1,36 @@
+- name: Check if the required binary for testing exists
+  ansible.builtin.shell:
+    cmd: "which {{ required_binary }}"
+  register: required_binary_check
+  ignore_errors: True
+  changed_when: False
+
+- name: (if binary is missing) Install the package providing the required binary
+  ansible.builtin.package:
+    name: "{{ required_binary_provided_in_package }}"
+    state: present
+  become: True
+  when: required_binary_check.rc != 0
+
+- name: Set inital failed_domains
+  ansible.builtin.set_fact:
+    failed_domains: {}
+
+- name: Check domains
+  ansible.builtin.include_tasks: "check.yml"
+  loop: "{{ required_domains | dict2items() }}"
+
+- name: List failed_domains
+  ansible.builtin.fail:
+    msg: |
+      Failed domains:
+        {% for failed in (failed_domains | dict2items) %}
+        {{ failed.key }}:
+            expected:
+              {{ failed.value.expected | indent(14) }}
+            stdout:
+              {{ failed.value.stdout | indent(14)}}
+            stderr:
+              {{ failed.value.stderr | indent(14) }}
+        {% endfor %}
+  when: failed_domains | length > 0

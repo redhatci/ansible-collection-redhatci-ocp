@@ -1,0 +1,75 @@
+#jinja2:trim_blocks: True, lstrip_blocks: True
+{% if network_config.dns_server_ips is defined %}
+dns-resolver:
+  config:
+    server:
+    {% for ip in network_config.dns_server_ips  %}
+    - {{ ip }}
+    {% endfor %}
+{% endif %}
+interfaces:
+{% for interface in network_config.interfaces %}
+  - name: {{ interface.name }}
+    state: {{ interface.state | default('up') }}
+    type: {{ interface.type | default('ethernet') }}
+    {% if interface.addresses.ipv4 is defined %}
+    ipv4:
+      address:
+        {% for address in interface.addresses.ipv4  %}
+        - ip: {{ address.ip }}
+          prefix-length: {{ address.prefix }}
+        {% endfor %}
+      dhcp: false
+      enabled: true
+    {% endif %}
+    {% if interface.addresses.ipv6 is defined  %}
+    ipv6:
+      address:
+        {% for address in interface.addresses.ipv6  %}
+        - ip: {{ address.ip }}
+          prefix-length: {{ address.prefix }}
+        {% endfor %}
+      dhcp: false
+      enabled: true
+    {% endif %}
+    {% if interface.link_aggregation is defined %}
+    link-aggregation:
+      mode: {{ interface.link_aggregation.mode | default('active-backup') }}
+      options: {{ interface.link_aggregation.options | default([]) | to_json  }}
+      slaves:
+        {% for slave in interface.link_aggregation.slaves %}
+        - {{ slave }}
+        {% endfor %}
+    {% endif %}
+    {% if (interface.type | default('ethernet')) == 'vlan' %}
+    vlan:
+      base-iface: {{ interface.vlan.interface }}
+      id: {{ interface.vlan.tag }}
+    {% endif %}
+    {% if (interface.type | default('ethernet')) == 'linux-bridge' %}
+    bridge:
+      options:
+        group-forward-mask: {{ interface.bridge.group_forward_mask | default(0) }}
+        mac-ageing-time: {{ interface.bridge.mac_ageing_time | default(20) }}
+        multicast-snooping: {{ interface.bridge.snooping | default(true) }}
+        stp:
+          enabled: {{ interface.bridge.stp | default(true) }}
+      {% if interface.bridge.port is defined %}
+      port:
+        - name: {{ interface.bridge.port.name }}
+          stp-hairpin-mode: {{ interface.bridge.port.hairpin | default(false) }}
+          stp-path-cost: {{ interface.bridge.port.cost | default(100) }}
+          stp-priority: {{ interface.bridge.port.priority | default(32) }}
+      {% endif %}
+  {% endif %}
+{% endfor %}
+{% if network_config.routes is defined %}
+routes:
+  config:
+    {% for route in network_config.routes %}
+    - destination: {{ route.destination | default('0.0.0.0/0') }}
+      next-hop-address: {{ route.address }}
+      next-hop-interface: {{ route.interface }}
+      table-id: {{ route.table_id | default('254') }}
+    {% endfor %}
+{% endif %}

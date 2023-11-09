@@ -1,0 +1,29 @@
+#! /bin/bash
+
+virt-install \
+    --virt-type=kvm \
+    --name "{{ item.name }}" \
+    {% if item.uuid | trim | length > 0 %}
+    --uuid="{{ item.uuid }}" \
+    {% endif %}
+    --memory {{ item.memory }} \
+    --vcpus={{ item.vcpu }} \
+    --os-variant=rhel8.3 \
+    --os-type linux \
+    {% for bridge, mac in item.network_interfaces.items() %}
+    --network=bridge:{{ bridge }},mac="{{ mac }}" \
+    {% endfor %}
+    {% for disk_name, disk_size in item.disks.items() %}
+    --disk path={{ images_dir }}/{{ item.name }}_{{ disk_name }}.qcow2,size={{ disk_size }},format=qcow2 \
+    {% endfor %}
+    --graphics vnc \
+    --noautoconsole \
+    --wait=-1 \
+    --boot uefi \
+    --events on_reboot=restart \
+    --autostart \
+    --print-xml > /tmp/{{item.name}}.xml
+
+virsh define --file /tmp/{{item.name}}.xml
+
+virsh detach-device {{ item.name }} /tmp/{{ cluster_name }}_rng_device.xml --config

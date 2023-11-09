@@ -1,0 +1,118 @@
+### SUSHY-TOOLS
+- name: Install sushy-tools
+  become: true
+  block:
+    - name: Install required packages
+      package:
+        name: "{{ sushy_packages }}"
+        state: present
+
+    - name: "Create sushy-tools directory {{ item }}"
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      loop:
+        - "{{ sushy_dir }}"
+        - "{{ sushy_auth_dir }}"
+        - "{{ sushy_cert_dir }}"
+        - "{{ sushy_data_dir }}"
+
+    - name: Install sushy-tools via pip in a virtual environment
+      pip:
+        name: "{{ sushy_pip_packages }}"
+        virtualenv: "{{ sushy_dir }}"
+
+    - name: Install httpd-tools for htpasswd
+      package:
+        name: httpd-tools
+        state: present
+
+    - name: Add TCP firewall rules for BM bridge
+      firewalld:
+        port: "{{ item.0 }}/tcp"
+        state: enabled
+        zone: "{{ item.1 }}"
+        permanent: yes
+        immediate: yes
+      loop: "{{ [sushy_tools_port] | product(['internal', 'public']) | list }}"
+
+    - name: Secure sushy tools
+      when: secure_sushy_tools | bool
+      block:
+        - name: Get KVM BMC username password combinations
+          vars:
+            user_password_combinations: {}
+          set_fact:
+            user_password_combinations: "{{
+              user_password_combinations | combine({hostvars[item]['bmc_user']: hostvars[item]['bmc_password']})
+              }}"
+          when: hostvars[item]['vendor'] | lower == 'kvm'
+          loop: "{{ groups['nodes'] }}"
+          no_log: true
+
+        - name: Generate htpasswd entry
+          command: htpasswd -bBn {{ item.user }} {{ item.password }}
+          register: htpass_entries
+          changed_when: false
+          loop: "{{ user_password_combinations | dict2items(key_name='user', value_name='password') }}"
+
+        - name: Write htpasswd file
+          copy:
+            content: "{{ htpass_entries.results | map(attribute='stdout') | join('\n') }}"
+            dest: "{{ sushy_auth_file }}"
+            owner: "{{ file_owner }}"
+            group: "{{ file_group }}"
+            mode: 0660
+            backup: yes
+            force: yes
+          become: True
+
+        - name: Generate self signed cert for sushy tools.
+          include_role:
+            name: setup_selfsigned_cert
+          vars:
+            cert_dir: "{{ sushy_cert_dir }}"
+            host_var_key: "{{ cert_vars_host_var_key }}"
+            cert_file_prefix: sushy_tools
+            cert_path: "{{ sushy_cert_dir }}/sushy_tools_{{ inventory_hostname }}.crt"
+            privatekey_path: "{{ sushy_cert_dir }}/sushy_tools.key"
+            cert_common_name: "{{ sushy_fqdn }}"
+
+    - name: Set X86_64 OVMF code path
+      set_fact:
+        sushy_x86_64_ovmf_code_path: "/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd"
+
+    - name: Check x86_64 OVMF code path
+      stat:
+        path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+      register: OVMF_X86_64_CODE_STAT
+
+    - name: Set x86_64 OVMF code path (legacy)
+      set_fact:
+        sushy_x86_64_ovmf_code_path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+      when:
+        - OVMF_X86_64_CODE_STAT.stat.exists
+        - not OVMF_X86_64_CODE_STAT.stat.islnk
+
+    - name: Create sushy-tools conf
+      template:
+        src: sushy-emulator.conf.j2
+        dest: "{{ sushy_dir }}/sushy-emulator.conf"
+        mode: 0664
+
+    - name: Create sushy-tools service
+      template:
+        src: sushy-tools.service.j2
+        dest: /etc/systemd/system/sushy-tools.service
+        mode: 0664
+
+    - name: Reload systemd service
+      systemd:
+        daemon_reexec: yes
+
+    - name: Start sushy-tools service
+      service:
+        name: sushy-tools
+        state: restarted
+        enabled: yes
