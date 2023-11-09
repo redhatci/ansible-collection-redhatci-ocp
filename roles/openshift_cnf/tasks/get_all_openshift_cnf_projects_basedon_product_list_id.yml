@@ -23,7 +23,7 @@
   set_fact:
     all_openshift_cnf_projects: "{{ cert_project_list_output.json.data | json_query(query) + [new_openshift_cnf_projects] | flatten }}"
   vars:
-    query: "[?product_listings[0] == '{{ cert_listings.pyxis_product_list_identifier }}'] | []._id"
+    query: "[?product_listings[0] == '{{ cert_listings.pyxis_product_list_identifier }}' && project_status != 'archived'] | []._id"
   when:
     - cert_project_list_output | length > 0
     - new_openshift_cnf_projects is defined
