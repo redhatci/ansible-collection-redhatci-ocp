@@ -61,7 +61,7 @@ description: Collection of QA-related roles for OpenShift
 
 # Either a single license or a list of licenses.
 license:
-  - GPL-2.0-or-later
+  - GPL-3.0-or-later
   - Apache-2.0
 
 # The path to the license file for the collection. This key is mutually
