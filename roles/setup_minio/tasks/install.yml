@@ -101,7 +101,7 @@
         name: "{{ service_name }}"
         namespace: "{{ sm_namespace }}"
       spec:
-        type: "{{ sm_service_type | default('ClusterIP') }}"
+        type: "{{ sm_service_type }}"
         ports:
           - name: http
             port: 9000
