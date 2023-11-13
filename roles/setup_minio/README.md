@@ -57,7 +57,7 @@ See below how to consume the services provided by Minio.
 
 ## From outside the cluster:
 
-NOTE: Remeber that variable `sm_service_type: LoadBalacer` was required to enable external access to the service.
+> NOTE: The variable `sm_service_type: LoadBalacer` is required to enable external access to the service.
 Get the node port assigned to the Kubernetes service. In the command shown below it is 31551
 ```
 $ oc get svc
