@@ -20,10 +20,12 @@ Role tasks:
 | sm_access_key_secret                   | minioadmin                    | No         | Minio's Initial Password                      |
 | sm_bucket_name                         | minio                         | No         | Initial Bucket name                           |
 | sm_action                              | install                       | No         | Default role's action                         |
+| sm_service_type                        | ClusterIP                     | No         | Type of service, use LoadBalacer or ClusterIP |
 
 ## Role requirements
   - A storage class with Support for ReadWriteMany volumes. NFS based providers are suitable for this. The PVC bound will fail if RWX mode is not supported.
   - 10Gi available in the defined StorageClass
+  - When enabling the service to use a external IP (`sm_service_type: LoadBalacer`) MetalLB operator is required to be installed and configured in the cluster.
 
 ## Usage example
 
@@ -55,6 +57,7 @@ See below how to consume the services provided by Minio.
 
 ## From outside the cluster:
 
+NOTE: Remeber that variable `sm_service_type: LoadBalacer` was required to enable external access to the service.
 Get the node port assigned to the Kubernetes service. In the command shown below it is 31551
 ```
 $ oc get svc
