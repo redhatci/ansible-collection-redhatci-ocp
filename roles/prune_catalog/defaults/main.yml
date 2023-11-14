@@ -1,0 +1,6 @@
+---
+pc_opm_args: ""
+pc_expire: true
+pc_expire_time: 5h
+pc_opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
+...
