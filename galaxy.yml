@@ -6,6 +6,10 @@ namespace: redhatci
 name: ocp
 
 # The version of the collection. Must be compatible with semantic versioning
+# Always leave patch version as .0
+# Patch version is replaced from commit date in epoch format
+# Metadata is included to add commit date and git hash
+# example: 0.2.2147483647+203801190314.git0a1b2c3
 version: 0.2.0
 
 # The path to the Markdown (.md) readme file.
