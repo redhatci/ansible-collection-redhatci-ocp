@@ -9,6 +9,7 @@ class FilterModule(object):
         Parse the deprecated and to-be-deprecated API after the workload installation.
         '''
         from junit_xml import TestCase, TestSuite
+        from collections import defaultdict
 
         def k8s2ocp(k8s_version):
             '''
@@ -36,10 +37,13 @@ class FilterModule(object):
 
         # parse the API after the workload installation and write down incompatible OCP versions
         failed_versions = {k8s2ocp(api['removedInRelease']) for api in removed_in_release_api}
-        version_to_removed_apis = {
-            version: {api['name'] for api in removed_in_release_api if k8s2ocp(api['removedInRelease']) == version}
-            for version in failed_versions
-        }
+        version_to_removed_apis = defaultdict(list)
+        for api in removed_in_release_api:
+            release = k8s2ocp(api['removedInRelease'])
+            name = api['name']
+            service_accounts = api['serviceAccounts']
+
+            version_to_removed_apis[release].append((name, service_accounts))
 
         # Find max version in the set of incompatible versions.
         # If the set is empty, bump the current version.
@@ -51,9 +55,14 @@ class FilterModule(object):
         status = 'compatible'
         while version <= max_version:
             if version in failed_versions:
-                deprecated_apis = ", ".join(version_to_removed_apis[version])
-                compatibility[version] = status + ", " + deprecated_apis if status != 'compatible' else deprecated_apis
-                status = deprecated_apis
+                incompatible_apis = ', '.join(
+                    f"{name} (service accounts: {', '.join(service_accounts)})"
+                    for name, service_accounts in version_to_removed_apis[version]
+                )
+                # making sure to carry the incompatible versions
+                # from the previous releases
+                compatibility[version] = status + ", " + incompatible_apis if status != 'compatible' else incompatible_apis
+                status = incompatible_apis
             elif status != 'compatible':
                 compatibility[version] = status
             else:

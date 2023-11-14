@@ -1,10 +1,22 @@
 [
-    {
-      "name": "flowschemas.v1beta2.flowcontrol.apiserver.k8s.io",
-      "removedInRelease": "1.29"
-    },
-    {
-      "name": "prioritylevelconfigurations.v1beta2.flowcontrol.apiserver.k8s.io",
-      "removedInRelease": "1.29"
-    }
+  {
+    "name": "events.v1beta1.events.k8s.io",
+    "removedInRelease": "1.25",
+    "serviceAccounts": ["system:serviceaccount:default:eventtest-operator-service-account"]
+  },
+  {
+    "name": "flowschemas.v1beta1.flowcontrol.apiserver.k8s.io",
+    "removedInRelease": "1.26",
+    "serviceAccounts": ["system:serviceaccount:openshift-cluster-version:default"]
+  },
+  {
+    "name": "podsecuritypolicies.v1beta1.policy",
+    "removedInRelease": "1.25",
+    "serviceAccounts": ["system:kube-controller-manager"]
+  },
+  {
+    "name": "prioritylevelconfigurations.v1beta1.flowcontrol.apiserver.k8s.io",
+    "removedInRelease": "1.26",
+    "serviceAccounts": ["system:serviceaccount:openshift-cluster-version:default"]
+  }
 ]
