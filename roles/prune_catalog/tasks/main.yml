@@ -96,7 +96,11 @@
           CMD ["serve", "/configs"]
           ADD configs /configs
           LABEL operators.operatorframework.io.index.configs.v1=/configs
+<<<<<<< HEAD
           {% if pc_expire %}LABEL quay.expires-after={{ pc_expire_time }} {% endif %}
+=======
+          LABEL maintainer={{ pc_maintainer }} {% if pc_expire %} quay.expires-after={{ pc_expire_time }}{% endif %}
+>>>>>>> 728125d (Expire labels)
         dest: "{{ pc_tmp_dir }}/configs.Dockerfile"
         mode: 0644
 
