@@ -96,11 +96,7 @@
           CMD ["serve", "/configs"]
           ADD configs /configs
           LABEL operators.operatorframework.io.index.configs.v1=/configs
-<<<<<<< HEAD
-          LABEL maintainer="Telco DCI team"{% if pc_expire %} quay.expires-after={{ pc_expire_time }}{% endif %}
-=======
-          LABEL {% if pc_expire %} quay.expires-after={{ pc_expire_time }}{% endif %}
->>>>>>> c38e99e (Add prune catalog role)
+          {% if pc_expire %}LABEL quay.expires-after={{ pc_expire_time }} {% endif %}
         dest: "{{ pc_tmp_dir }}/configs.Dockerfile"
         mode: 0644
 
