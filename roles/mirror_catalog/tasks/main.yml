@@ -50,6 +50,7 @@
       --index-filter-by-os="linux/amd64"
       --insecure
       --max-components=3
+      --continue-on-error={{ mc_continue_on_error }}
       {% if mc_pullsecret is defined %}
       --registry-config {{ mc_pullsecret }}
       {% endif %}
