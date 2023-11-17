@@ -40,7 +40,7 @@
     state: directory
   register: mc_tmp
 
-- name: Mirror catalog manifests
+- name: Mirror operators
   shell:
     cmd: >
       set -x;
