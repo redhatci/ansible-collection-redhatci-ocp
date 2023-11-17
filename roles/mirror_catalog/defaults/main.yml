@@ -1,2 +1,4 @@
 ---
 mc_is_type: "icsp"
+mc_continue_on_error: false
+...
