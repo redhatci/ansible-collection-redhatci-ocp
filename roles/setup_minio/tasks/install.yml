@@ -101,7 +101,7 @@
         name: "{{ service_name }}"
         namespace: "{{ sm_namespace }}"
       spec:
-        type: LoadBalancer
+        type: "{{ sm_service_type }}"
         ports:
           - name: http
             port: 9000
@@ -124,51 +124,54 @@
       - "node-role.kubernetes.io/worker"
   register: node_info
 
-- name: Check minio service availability
-  vars:
-    random_worker_ip: "{{ node_info.resources | json_query('[].status.addresses[?type==`InternalIP`].address') | random | first }}"
-    node_port: "{{ service_info.resources[0].spec.ports[0].nodePort }}"
-  uri:
-    url: "http://{{ random_worker_ip }}:{{ node_port }}/minio/health/ready"
-    return_content: no
-    status_code: 200
-  register: response
-  retries: 50
-  delay: 5
-  until: response.status == 200
+- name: Validate minio service using NodePort
+  block:
+    - name: Check minio service availability
+      vars:
+        random_worker_ip: "{{ node_info.resources | json_query('[].status.addresses[?type==`InternalIP`].address') | random | first }}"
+        node_port: "{{ service_info.resources[0].spec.ports[0].nodePort }}"
+      uri:
+        url: "http://{{ random_worker_ip }}:{{ node_port }}/minio/health/ready"
+        return_content: no
+        status_code: 200
+      register: response
+      retries: 50
+      delay: 5
+      until: response.status == 200
 
-- name: Create working directory
-  tempfile:
-    state: directory
-    prefix: minio_
-  register: minio_dir
+    - name: Create working directory
+      tempfile:
+        state: directory
+        prefix: minio_
+      register: minio_dir
 
-- name: Set working directory path
-  set_fact:
-    minio_dir: "{{ minio_dir.path }}"
+    - name: Set working directory path
+      set_fact:
+        minio_dir: "{{ minio_dir.path }}"
 
-- name: Get Minio CLI
-  vars:
-    minio_cli: "https://dl.min.io/client/mc/release/linux-amd64/mc"
-  get_url:
-    url: "{{ minio_cli }}"
-    dest: "{{ minio_dir }}/"
-    mode: "0750"
+    - name: Get Minio CLI
+      vars:
+        minio_cli: "https://dl.min.io/client/mc/release/linux-amd64/mc"
+      get_url:
+        url: "{{ minio_cli }}"
+        dest: "{{ minio_dir }}/"
+        mode: "0750"
 
-- name: Create an initial bucket
-  vars:
-    random_worker_ip: "{{ node_info.resources | json_query('[].status.addresses[?type==`InternalIP`].address') | random | first }}"
-    node_port: "{{ service_info.resources[0].spec.ports[0].nodePort }}"
-    instance: local
-  shell: |
-    {{ minio_dir }}/mc alias set {{ instance }} \ 
-    http://{{ random_worker_ip }}:{{ node_port }} \ 
-    {{ sm_access_key_id }} {{ sm_access_key_secret }} --api S3v4;
-    {{ minio_dir }}/mc mb --ignore-existing {{ instance }}/{{ sm_bucket_name }}
-  register: minio_cmd 
-  retries: 18
-  delay: 5
-  until: minio_cmd is not failed
-  notify:
-    - "Delete temp directory"
+    - name: Create an initial bucket
+      vars:
+        random_worker_ip: "{{ node_info.resources | json_query('[].status.addresses[?type==`InternalIP`].address') | random | first }}"
+        node_port: "{{ service_info.resources[0].spec.ports[0].nodePort }}"
+        instance: local
+      shell: |
+        {{ minio_dir }}/mc alias set {{ instance }} \
+        http://{{ random_worker_ip }}:{{ node_port }} \
+        {{ sm_access_key_id }} {{ sm_access_key_secret }} --api S3v4;
+        {{ minio_dir }}/mc mb --ignore-existing {{ instance }}/{{ sm_bucket_name }}
+      register: minio_cmd
+      retries: 18
+      delay: 5
+      until: minio_cmd is not failed
+      notify:
+        - "Delete temp directory"
+  when: sm_service_type == "NodePort"
 ...

@@ -10,20 +10,22 @@ Role tasks:
 
 ## Variables
 
-| Variable                               | Default                       | Required   | Description                                   |
-| -------------------------------------- | ----------------------------- | ---------- | ----------------------------------------------|
-| sm_minio_image                         | minio/minio                   | No         | Default Minio image                           |
-| sm_claim_size                          | 10Gi                          | No         | Requested storage for Minio                   |
-| sm_storage_class                       | undefined                     | Yes        | A storage Class with Support for RWX volumes  |
-| sm_namespace                           | minio                         | No         | Deployment Namespace                          |
-| sm_access_key_id                       | minioadmin                    | No         | Minio's Initial Username                      |
-| sm_access_key_secret                   | minioadmin                    | No         | Minio's Initial Password                      |
-| sm_bucket_name                         | minio                         | No         | Initial Bucket name                           |
-| sm_action                              | install                       | No         | Default role's action                         |
+| Variable                               | Default                       | Required   | Description                                         |
+| -------------------------------------- | ----------------------------- | ---------- | ----------------------------------------------------|
+| sm_minio_image                         | minio/minio                   | No         | Default Minio image                                 |
+| sm_claim_size                          | 10Gi                          | No         | Requested storage for Minio                         |
+| sm_storage_class                       | undefined                     | Yes        | A storage Class with Support for RWX volumes        |
+| sm_namespace                           | minio                         | No         | Deployment Namespace                                |
+| sm_access_key_id                       | minioadmin                    | No         | Minio's Initial Username                            |
+| sm_access_key_secret                   | minioadmin                    | No         | Minio's Initial Password                            |
+| sm_bucket_name                         | minio                         | No         | Initial Bucket name                                 |
+| sm_action                              | install                       | No         | Default role's action                               |
+| sm_service_type                        | NodePort                      | No         | Type of service: NodePort, LoadBalacer or ClusterIP |
 
 ## Role requirements
   - A storage class with Support for ReadWriteMany volumes. NFS based providers are suitable for this. The PVC bound will fail if RWX mode is not supported.
   - 10Gi available in the defined StorageClass
+  - When enabling the service to use a external IP (`sm_service_type: LoadBalacer`) MetalLB operator is required to be installed and configured in the cluster.
 
 ## Usage example
 
@@ -55,11 +57,32 @@ See below how to consume the services provided by Minio.
 
 ## From outside the cluster:
 
-Get the node port assigned to the Kubernetes service. In the command shown below it is 31551
+### When using LoadBalacer service type
+> NOTE: The variable `sm_service_type: LoadBalacer` is required to enable external access to the service.
+
+Get the external IP assigned and port to the Kubernetes service. In the command shown below is 10.20.30.40:9000
 ```
 $ oc get svc
 NAME            TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-minio-service   LoadBalancer   172.30.108.47   <pending>     9000:31551/TCP   28m
+minio-service   LoadBalancer   172.30.108.47   10.20.30.40   9000:31203/TCP   28m
+```
+
+Use the endpoint to connect:
+  - http://\<external-ip\>:\<port\>
+
+### When using NodePort service type (default)
+
+Get a node IP and the node port assigned to the Kubernetes service. In the command shown below it is 192.168.X.Y and 30521
+```
+$ oc get nodes -o custom-columns=INTERNAL-IP:status.addresses[0].address
+
+INTERNAL-IP
+192.168.X.Y
+...
+
+$ oc get svc
+NAME            TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+minio-service   NodePort   172.30.251.192   <none>        9000:30521/TCP   8s
 ```
 
 Use the endpoint to connect:
