@@ -5,7 +5,7 @@ Mirrors a catalog and its related images. Produces a file that can be used to se
 ## Role Variables
 
 Name            | Required | Type     | Default | Description
-----------------|----------| ---------|-------------
+--------------- | -------- | -------- | ------------
 mc_oc_tool_path | Yes      | string   |         | The path to the oc<sup>1</sup> binary, e.g. '/path/to/oc'
 mc_catalog      | Yes      | string   |         | The Fully Qualified Artifact Reference, e.g. 'example.com/namespace/web:v1.0'
 mc_registry     | Yes      | string   |         | The registry where the catalog will be mirrored, e.g. 'registry.example.com' or 'reg.example.com:4443'
