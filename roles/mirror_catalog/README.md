@@ -5,7 +5,7 @@ Mirrors a catalog and its related images. Produces a file that can be used to se
 ## Role Variables
 
 Name            | Required | Type     | Default | Description
---------------- | -------- | -------- | ------------
+--------------- | -------- | -------- | ------- | -----------
 mc_oc_tool_path | Yes      | string   |         | The path to the oc<sup>1</sup> binary, e.g. '/path/to/oc'
 mc_catalog      | Yes      | string   |         | The Fully Qualified Artifact Reference, e.g. 'example.com/namespace/web:v1.0'
 mc_registry     | Yes      | string   |         | The registry where the catalog will be mirrored, e.g. 'registry.example.com' or 'reg.example.com:4443'
@@ -19,8 +19,8 @@ mc_continue_on_error|  No  | boolean  | false   | Continue even if there if ther
 
 The following applications must be already present in the system.
 
-- [skopeo](https://github.com/containers/skopeo/blob/main/install.md).
-- [oc](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html).
+- [skopeo](https://github.com/containers/skopeo/blob/main/install.md)
+- [oc](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html)
 
 ## Outputs
 
