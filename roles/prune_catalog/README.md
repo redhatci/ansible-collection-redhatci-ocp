@@ -7,7 +7,7 @@ By default, the catalog image sets a label "quay.expires-after" to define an exp
 ## Parameters
 
 Name                   | Required | Default                                       | Description
------------------------|----------|---------------------------------------------- |-------------
+---------------------- | -------- | --------------------------------------------- | ------------
 pc_source_catalog      | Yes      |                                               | Source catalog to be pruned
 pc_destination_catalog | Yes      |                                               | Catalog containing the required operators
 pc_operators_list      | Yes      |                                               | List of operators to include in the pruned catalog
@@ -16,14 +16,15 @@ pc_opm_auths           | No       | /usr/share/dci-openshift-agent/utils/opm-aut
 pc_expire              | No       | false                                         | Whether or not to set an expiration label on the catalog
 pc_expire_time         | No       | 5h                                            | The amount of time to set for the expiration label
 pc_maintainer          | No       | redhatci.ocp                                  | Value for catalog's image maintainer label
+pc_ignore_pull_errors  | No       | false                                         | Makes the role fail if the image to prune is not available
 
 ## Requirements
 
 The following application must be already present on the system.
 
-* Podman
-* jq
-* skopeo
+- [Podman](https://podman.io/docs/installation)
+- [skopeo](https://github.com/containers/skopeo/blob/main/install.md)
+- [jq](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html)
 
 ## Example of usage
 
@@ -46,3 +47,5 @@ The following application must be already present on the system.
 ## Authentication
 
 This role uses [skopeo](https://github.com/containers/skopeo) and [opm](https://github.com/operator-framework/operator-registry) to obtain the container image's metadata. If registry authentication is required, please pass `DOCKER_CONFIG` as an environment variable to the role pointing to the directory that contains the `config.json` file with the proper authentication strings. See [docker-config](https://www.systutorials.com/docs/linux/man/5-docker-config-json/).
+
+The following applications must be already present in the system.

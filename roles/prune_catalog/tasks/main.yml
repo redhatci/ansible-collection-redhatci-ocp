@@ -14,18 +14,19 @@
   shell: >
     if [ -n "$DOCKER_CONFIG" ]; then
       skopeo inspect --no-tags \
-      --authfile $DOCKER_CONFIG/config.json \
-      --tls-verify=false docker://{{ pc_source_catalog }};
+      --authfile "$DOCKER_CONFIG/config.json" \
+      --tls-verify=false docker://{{ pc_source_catalog }}
     else
       skopeo inspect --no-tags \
-      --tls-verify=false docker://{{ pc_source_catalog }};
+      --tls-verify=false docker://{{ pc_source_catalog }}
     fi
   register: skopeo_result
-  retries: 2
+  retries: 3
   delay: 10
-  ignore_errors: true
-  no_log: true
   until: skopeo_result.rc == 0
+  failed_when:
+    - skopeo_result.rc != 0
+    - not pc_ignore_pull_errors
 
 - block:
     - name: Create temporary directory
@@ -75,6 +76,7 @@
       until: prune_result.rc == 0
       retries: 3
       delay: 10
+
 
     - name: "Extract required operator's channel, and packages"
       shell:
