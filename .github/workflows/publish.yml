@@ -11,15 +11,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Add release, date and commit hash to version in galaxy.yml
+      - name: Add epoch from commit date as patch version and metadata in galaxy.yml
         run: >
-          ts=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%Y%m%d%H%M')
+          z=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%s');
+          ts=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%Y%m%d%H%M');
           sha=$(echo "${{ github.sha }}" | cut -c1-7);
-          rel=$(grep ^Release ansible-collection-redhatci-ocp.spec | grep -Po '\d+\.');
-          sed -i -r "s/^(version: .*)$/&-${rel}${ts}git${sha}/" galaxy.yml;
+          sed -i -r "s/^(version: .*)\.0$/\1.${z}+${ts}.git${sha}/" galaxy.yml;
           grep ^version galaxy.yml
 
-      - name: Ansible Publish to Galaxy
-        uses: ansible/ansible-publish-action@v1.0.0
-        with:
-          api_key: ${{ secrets.ANSIBLE_GALAXY_TOKEN }}
+      # Build and publish manually due to https://github.com/ansible/galaxy/issues/3287
+      # ansible/ansible-publish-action implements this
+      # https://github.com/ansible/creator-ee/blob/main/_build/devtools-publish
+      - name: Ansible Galaxy Collection Publish
+        run: >
+          rm -f ./*.tar.gz;
+          ansible-galaxy collection build -v --force "${SRC_PATH:-.}";
+          TARBALL=$(ls -1 ./*.tar.gz);
+          publish=$(ansible-galaxy collection publish -v \
+            --server "${API_SERVER:-https://galaxy.ansible.com/}" \
+            --api-key "${{ secrets.ANSIBLE_GALAXY_TOKEN }}" \
+            "${TARBALL}" 2>&1
+          );
+          if [[ $? -ne 0 ]]; then
+            err="Error when publishing collection to cmd_arg .*HTTP Code: 500, Message:";
+            err500="Internal Server Error Code: Unknown";
+            if grep -qP "${err} ${err500}" <<< "${publish}"; then
+              echo "Error found https://github.com/ansible/galaxy/issues/3287, Ignoring...";
+              echo "${publish}";
+              ec=0;
+            else
+              echo "${publish}";
+              ec=1;
+            fi;
+            exit ${ec}
+          fi;
