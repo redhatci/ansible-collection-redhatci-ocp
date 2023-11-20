@@ -27,12 +27,14 @@ jobs:
           rm -f ./*.tar.gz;
           ansible-galaxy collection build -v --force "${SRC_PATH:-.}";
           TARBALL=$(ls -1 ./*.tar.gz);
+          set +e;
           publish=$(ansible-galaxy collection publish -v \
             --server "${API_SERVER:-https://galaxy.ansible.com/}" \
             --api-key "${{ secrets.ANSIBLE_GALAXY_TOKEN }}" \
             "${TARBALL}" 2>&1
           );
           if [[ $? -ne 0 ]]; then
+            set -e;
             err="Error when publishing collection to cmd_arg .*HTTP Code: 500, Message:";
             err500="Internal Server Error Code: Unknown";
             if grep -qP "${err} ${err500}" <<< "${publish}"; then
