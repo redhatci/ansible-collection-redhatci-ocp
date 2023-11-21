@@ -7,7 +7,7 @@
     inventory_nodes: "{{ groups['masters'] + groups['workers'] | default([]) }}"
 
 # Monitor hosts discovery
-- name: Allow up to 20 minutes for all hosts to be discovered
+- name: "Allow up to {{ hosts_discovery_minutes }} minutes for all hosts to be discovered"
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
     method: GET
@@ -17,7 +17,7 @@
   until:
     - (cluster.json.hosts | length) == (inventory_nodes | length)
     - cluster.json.status in host_discovery_states
-  retries: 20
+  retries: "{{ hosts_discovery_minutes }}"
   delay: 60
   when: install | bool == True
 

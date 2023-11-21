@@ -27,3 +27,6 @@ host_discovery_states:
 cluster_installation_states:
   - installing
   - installing-pending-user-action
+
+# Time to be waited for all hosts to be discovered
+hosts_discovery_minutes: 20
