@@ -4,8 +4,6 @@ tnf_check_commit_sha: false
 test_network_function_repo: https://github.com/test-network-function/cnf-certification-test
 test_network_function_version: v4.5.5
 test_network_function_project_name: cnf-certification-test
-tnf_suites: ""
-tnf_skip_suites: ""
 tnf_labels: "common,telco,extended"
 # By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
 # and set the other items as empty values. Under these conditions (i.e. no pods are discovered), no CNF Cert Suite tests are run.
@@ -17,12 +15,7 @@ tnf_config:
     exclude_connectivity_regexp: ""
 accepted_kernel_taints: []
 tnf_postrun_delete_resources: true
-tnf_certified_container_info: []
 tnf_env_vars: {}
-# Next two variables to be deleted when removing backwards compatibility with env vars usage. Also review cnf_cert README.
-tnf_non_intrusive_only: false
-tnf_log_level: "debug"
-tnf_use_legacy_operator_label: false
 tnf_image_suffix: "{{ lookup('community.general.random_string', length=16, special=false) }}"
 # Provide feedback for each tnf test launched. Just copy this template in your pipeline file and fill the value for the
 # tests you want to provide feedback. You don't need to include the tests that you don't want to provide feedback.

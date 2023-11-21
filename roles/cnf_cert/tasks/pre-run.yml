@@ -1,52 +1,30 @@
 ---
-- name: Fail if tnf version is lower than v4.0.0
+- name: Fail if tnf version is lower than v4.4.0
   fail:
-    msg: "cnf_cert role is no longer compatible with tnf versions lower than v4.0.0"
+    msg: "cnf_cert role is no longer compatible with tnf versions lower than v4.4.0"
   when:
-    - test_network_function_version is version("v4.0.0", "<")
+    - test_network_function_version is version("v4.4.0", "<")
     - test_network_function_version != "HEAD"
 
-- name: Fail if tnf_suites is not provided in tnf versions lower or equal than v4.0.2
-  assert:
-    that: "tnf_suites|length"
-    fail_msg: "tnf_suites is required in tnf versions lower or equal than v4.0.2"
-  when:
-    - test_network_function_version is version("v4.0.2", "<=")
-    - test_network_function_version != "HEAD"
-
-# Just do this in case preflight test suite is used. This happens if:
-# - (tnf >= v4.1.6 and tnf <= 4.2.2) - can be used with common label or with preflight label
-# - (tnf >= v4.2.3 or tnf == HEAD) - can be used just with preflight label
+# Just do this in case preflight test suite is used. This happens if using preflight label
 # This check is included as a warning for users in case of not defining
-# partner_creds properly, as cnf_cert will include preflight starting
-# from v4.1.6 version.
-- name: (From tnf v4.1.6) Verify if partner_creds is provided when running preflight on tnf
+# partner_creds properly
+- name: Verify if partner_creds is provided when running preflight on tnf
   assert:
     that: "partner_creds|length"
     fail_msg: >
       WARNING.
-      Note that, from v4.1.6 version, CNF Cert Suite includes preflight.
+      Note that CNF Cert Suite includes preflight.
       If you need credentials to pull the images under test,
       you need to set up partner_creds variable,
       else CNF Cert Suite execution will fail.
-  when: "((test_network_function_version is version('v4.1.6', '>=') and test_network_function_version is version('v4.2.2', '<=')
-      and ('common' in tnf_labels or 'preflight' in tnf_labels))
-      or ((test_network_function_version is version('v4.2.3', '>=') or test_network_function_version == 'HEAD')
-      and 'preflight' in tnf_labels))"
+  when: "'preflight' in tnf_labels"
   ignore_errors: true
 
-# This is to ensure compatibility with partners that are still using tnf_suites
-# in latest tnf version. In that case, we override tnf_labels default value to "".
-- name: Redefine tnf_labels variable if tnf_suites is provided
-  set_fact:
-    tnf_labels: ""
-  when:
-    - tnf_suites|length
-    -
-# For both versions before than 4.3.0 and the HEAD of the git repo, the support_image_version should be 'latest'
+# For HEAD version, the support_image_version should be 'latest'
 - name: Set support_image_version variable
   set_fact:
-    support_image_version: "{% if test_network_function_version is version('v4.3.0', '>=') %}{{test_network_function_version[1:]}}{% else %}latest{% endif %}"
+    support_image_version: "{% if test_network_function_version is version('v4.4.0', '>=') %}{{test_network_function_version[1:]}}{% else %}latest{% endif %}"
 
 - name: "cnf_cert : Save images in local registry"
   include_role:
