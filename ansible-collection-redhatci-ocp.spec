@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.2.EPOCH
+Version:        0.3.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -37,6 +37,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Nov 21 2023 Frederic Lepied <flepied@redhat.com> 0.3.EPOCH-VERS
+- force a rebuild with a higher Y
+
 * Tue Nov 21 2023 Frederic Lepied <flepied@redhat.com> 0.2.EPOCH-VERS
 - switch to a versioning based on the UNIX epoch to be in sync with
   the versionning for Ansible Galaxy.
