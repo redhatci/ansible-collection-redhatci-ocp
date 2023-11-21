@@ -83,4 +83,4 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 {% for key, value in ironic_nodes.items() -%}
 {{ key }}
 {% endfor %}
-{when: (disconnected_installer|length or the_url.status == 200)%- endif %}
+{%- endif %}
