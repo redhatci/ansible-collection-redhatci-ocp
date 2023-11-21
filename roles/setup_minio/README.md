@@ -1,18 +1,19 @@
 # setup_minio role
 
-This role allows the deployment of [Minio](https://min.io/). It is a S3 compatible storage.
+This role allows the deployment of [Minio](https://min.io/). Minio is a S3 compatible storage provisioner.
 
 Role tasks:
   - Validates requirements
   - Creates a Minio deployment
-  - Create an initial S3 bucket
   - Create a service for the deployment
+  - Create an initial S3 bucket
 
 ## Variables
 
 | Variable                               | Default                       | Required   | Description                                         |
 | -------------------------------------- | ----------------------------- | ---------- | ----------------------------------------------------|
-| sm_minio_image                         | minio/minio                   | No         | Default Minio image                                 |
+| sm_minio_image                         | quay.io/minio/minio           | No         | Default Minio server image                          |
+| sm_minio_client                        | quay.io/minio/mc              | No         | Default Minio client image                          |
 | sm_claim_size                          | 10Gi                          | No         | Requested storage for Minio                         |
 | sm_storage_class                       | undefined                     | Yes        | A storage Class with Support for RWX volumes        |
 | sm_namespace                           | minio                         | No         | Deployment Namespace                                |
@@ -57,7 +58,7 @@ See below how to consume the services provided by Minio.
 
 ## From outside the cluster:
 
-### When using LoadBalacer service type
+### When using LoadBalacer or NodePort
 > NOTE: The variable `sm_service_type: LoadBalacer` is required to enable external access to the service.
 
 Get the external IP assigned and port to the Kubernetes service. In the command shown below is 10.20.30.40:9000

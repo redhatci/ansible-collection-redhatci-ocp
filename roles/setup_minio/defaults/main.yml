@@ -5,6 +5,7 @@ sm_access_key_id: minioadmin
 sm_access_key_secret: minioadmin
 sm_bucket_name: minio
 sm_action: install
-sm_minio_image: quay.io/minio/minio:latest
+sm_minio_image: quay.io/minio/minio
+sm_minio_client: quay.io/minio/mc
 sm_service_type: NodePort
 ...
