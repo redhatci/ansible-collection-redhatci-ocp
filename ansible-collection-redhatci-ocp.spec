@@ -3,9 +3,9 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.2.0
-Release:        1.VERS%{?dist}
-Summary:        Redhat OCP Collection for ansible
+Version:        0.2.EPOCH
+Release:        VERS%{?dist}
+Summary:        Red Hat OCP CI Collection for Ansible
 
 License:        GPL-2.0-or-later and Apache-2.0
 URL:            %{forgeurl}
@@ -37,6 +37,10 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Nov 21 2023 Frederic Lepied <flepied@redhat.com> 0.2.EPOCH-VERS
+- switch to a versioning based on the UNIX epoch to be in sync with
+  the versionning for Ansible Galaxy.
+
 * Mon Oct 16 2023 Tony Garcia <tonyg@redhat.com> - 0.2.0-1
 - To be consumed by agents
 
