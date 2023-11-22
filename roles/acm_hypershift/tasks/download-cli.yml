@@ -26,7 +26,7 @@
 - name: Get hcp cli version
   shell:
     cmd: >
-      {{ ah_tmp_dir.path }}/hcp version
+      {{ ah_tmp_dir.path }}/hcp -v
   register: result
 
 - name: Print hcp cli version

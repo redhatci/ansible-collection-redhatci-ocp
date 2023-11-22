@@ -35,13 +35,13 @@ At this time the role supports creating the Openshift required endpoints under t
 | ----------------------- | ----------------------------------------- | --------- | --------------------------------------------------------------------------------------  |
 | ah_cluster_name         | Random string                             | No        | Name of the hosted cluster                                                              |
 | ah_base_domain          |                                           | No        | The base domain, DNS resolution for OCP endpoints must be prepared in advance. If undefined, the hosted cluster routes will be created as subdomains for \<hc\>.apps.\<hub-cluster-domain\>|
-| ah_node-pool-replicas   | [0|2]                                     | No        | Zero for none cluster, two for other provider types                                     |
+| ah_node-pool-replicas   | 2                                         | No        | Number of pool replicas, minimum 2 is required                                          |
 | ah_cluster_network_cidr | 10.132.0.0/14                             | No        | Cluster network CIDR                                                                    |
 | ah_clusters_ns          | clusters                                  | No        | The prefix for the namespace                                                            |
-| ah_cluster_type         | none                                      | No        | The type infrastructure provider, currently only supported is none "None" and "Kubevirt"|
+| ah_cluster_type         | kubevirt                                  | No        | The type infrastructure provider, currently only only supports "kubevirt"               |
 | ah_force_deploy         | false                                     | No        | Force redeploy of a cluster                                                             |
 | ah_no_log               | true                                      | No        | Allow logging on sensitive tasks                                                        |
-| ah_ocp_version          | 4.13.13                                   | No        | Full OCP version to install on the hypershift cluster. <major>.<minor>.<patch>          |
+| ah_ocp_version          | 4.14.0                                    | No        | Full OCP version to install on the hypershift cluster. <major>.<minor>.<patch>          |
 | ah_pullsecret_file      | ""                                        | Yes       | Required to pull the hosted cluster release image                                       |
 | ah_release_image        | quay.io/openshift-release-dev/ocp-release | No        | The release image to install, from the specified OCP version                            |
 | ah_node_memory          | 8Gi                                       | No        | Memory which is visible inside the Guest OS (type BinarySI, e.g. 5Gi, 100Mi)            |
@@ -54,7 +54,7 @@ See below for some examples of how to use the `acm_hypershift` role
 - name: Deploy hypershift cluster
   vars:
     ah_cluster_name: hypershift
-    ah_ocp_version: 4.13.4
+    ah_ocp_version: 4.14.0
     ah_pullsecret_file: /<path_to_ps>
   include_role:
     name: acm_hypershift
