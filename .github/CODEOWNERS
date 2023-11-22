@@ -1,0 +1,12 @@
+# Global owners
+*       @redhatci/all
+
+# most of the roles come from DCI, last match wins
+/roles  @redhatci/dci
+
+# Legacy baremetal-kni roles
+/roles/node_prep    @redhatci/baremetaldeploy
+/roles/installer    @redhatci/baremetaldeploy
+
+# Legacy crucible roles
+# /roles/<some crucible role>   @redhatci/crucible
