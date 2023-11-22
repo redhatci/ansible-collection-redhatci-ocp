@@ -7,7 +7,7 @@
     port: "{{ bmc_port }}"
     state: "off"
 
-- name: Set server to boot from network
+- name: Set server to boot from disk
   community.general.ipmi_boot:
     name: "{{ bmc_address }}"
     user: "{{ bmc_user }}"
