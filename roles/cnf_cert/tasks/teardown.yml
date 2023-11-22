@@ -4,8 +4,7 @@
   block:
   - name: Define tnf-debug daemonset namespace
     set_fact:
-      tnf_debug_ds_ns: "{{ ( test_network_function_version is version('v4.2.0', '>=') or
-      test_network_function_version == 'HEAD' ) | ternary('cnf-suite', 'default') }}"
+      tnf_debug_ds_ns: "cnf-suite"
 
   - name: Check if tnf-debug daemonset exists
     community.kubernetes.k8s_info:
@@ -39,18 +38,18 @@
       state: absent
     when: tnf_namespace.resources|length > 0
 
-  - name: Check if cnf-suite default namespace exists
+  - name: "Check if {{ tnf_debug_ds_ns }} default namespace exists"
     community.kubernetes.k8s_info:
       api_version: v1
       kind: Namespace
-      name: cnf-suite
+      name: "{{ tnf_debug_ds_ns }}"
     register: cnf_suite_namespace
 
-  - name: Delete tnf namespace
+  - name: "Delete {{ tnf_debug_ds_ns }} namespace"
     community.kubernetes.k8s:
       api_version: v1
       kind: Namespace
-      name: cnf-suite
+      name: "{{ tnf_debug_ds_ns }}"
       state: absent
     when: cnf_suite_namespace.resources|length > 0
   when: tnf_postrun_delete_resources|bool
@@ -64,19 +63,4 @@
     - tnf_git_dir is defined
     - tnf_git_dir.path is defined
 
-# Remember debug daemonset is launched on default namespace until tnf v4.2.0, where it's moved
-# to a new namespace
-- name: Removing PodSecurity-related labels in default namespace
-  community.kubernetes.k8s:
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: default
-        labels:
-          pod-security.kubernetes.io/enforce: null
-          pod-security.kubernetes.io/enforce-version: null
-  when:
-    - test_network_function_version is version("v4.2.0", "<")
-    - test_network_function_version != "HEAD"
 ...
