@@ -9,7 +9,7 @@
       --pull-secret={{ ah_pullsecret_file }}
       --namespace={{ ah_clusters_ns }}
       --cluster-cidr={{ ah_cluster_network_cidr }}
-      {% if ah_node_memory is defined and ah_cluster_type != "none" %} --memory="{{ ah_node_memory }}" {% endif %}
+      {% if ah_node_memory is defined %} --memory="{{ ah_node_memory }}" {% endif %}
       --node-pool-replicas={{ ah_node_pool_replicas }}
       --release-image={{ ah_release_image }}
   notify: Remove working directory
@@ -52,8 +52,7 @@
     - ah_hc_info | json_query('resources[0].status.version.history[0].state') == "Completed"
   retries: 20
   delay: 60
-  when:
-    - ah_cluster_type != "none"
+
 #
 # TODOs:
 # For Baremetal:
@@ -64,3 +63,4 @@
 # Add disconnected support
 # - "Get the user_ca_bundle content"
 # - Pullsecrets from within? or from the agent?
+...

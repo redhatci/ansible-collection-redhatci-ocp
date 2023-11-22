@@ -17,7 +17,6 @@
       - "A MetalLB instance is required to configure hypershift on baremetal environments"
   when:
     - mlb_instance.resources | length == 0
-    - ah_cluster_type != "none"
 
 - name: "Validate that a pull secret file is defined"
   fail:

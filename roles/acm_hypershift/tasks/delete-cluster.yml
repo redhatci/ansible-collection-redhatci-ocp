@@ -6,3 +6,4 @@
       --name={{ ah_cluster_generated_name }}
       --namespace={{ ah_clusters_ns }}
       --infra-id={{ ah_cluster_name }}
+...

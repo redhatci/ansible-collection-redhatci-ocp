@@ -35,10 +35,10 @@ At this time the role supports creating the Openshift required endpoints under t
 | ----------------------- | ----------------------------------------- | --------- | --------------------------------------------------------------------------------------  |
 | ah_cluster_name         | Random string                             | No        | Name of the hosted cluster                                                              |
 | ah_base_domain          |                                           | No        | The base domain, DNS resolution for OCP endpoints must be prepared in advance. If undefined, the hosted cluster routes will be created as subdomains for \<hc\>.apps.\<hub-cluster-domain\>|
-| ah_node-pool-replicas   | [0|2]                                     | No        | Zero for none cluster, two for other provider types                                     |
+| ah_node-pool-replicas   | 2                                         | No        | Number of pool replicas, minimum 2 is required                                          |
 | ah_cluster_network_cidr | 10.132.0.0/14                             | No        | Cluster network CIDR                                                                    |
 | ah_clusters_ns          | clusters                                  | No        | The prefix for the namespace                                                            |
-| ah_cluster_type         | none                                      | No        | The type infrastructure provider, currently only supported is none "None" and "Kubevirt"|
+| ah_cluster_type         | kubevirt                                  | No        | The type infrastructure provider, currently only only supports "kubevirt"               |
 | ah_force_deploy         | false                                     | No        | Force redeploy of a cluster                                                             |
 | ah_no_log               | true                                      | No        | Allow logging on sensitive tasks                                                        |
 | ah_ocp_version          | 4.13.13                                   | No        | Full OCP version to install on the hypershift cluster. <major>.<minor>.<patch>          |
