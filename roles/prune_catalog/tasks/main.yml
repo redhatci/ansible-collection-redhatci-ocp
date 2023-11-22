@@ -1,0 +1,128 @@
+---
+- name: "Validate parameters"
+  assert:
+    that:
+      - pc_operators_list is defined
+      - pc_operators_list | type_debug == "list"
+      - pc_source_catalog is defined
+      - pc_destination_catalog is defined
+      - pc_source_catalog | length > 0
+      - pc_destination_catalog | length > 0
+    fail_msg: "At least one of the parameters requirements is missing"
+
+- name: "Check if {{ pc_source_catalog }} is pullable"
+  shell: >
+    if [ -n "$DOCKER_CONFIG" ]; then
+      skopeo inspect --no-tags \
+      --authfile "$DOCKER_CONFIG/config.json" \
+      --tls-verify=false docker://{{ pc_source_catalog }}
+    else
+      skopeo inspect --no-tags \
+      --tls-verify=false docker://{{ pc_source_catalog }}
+    fi
+  register: skopeo_result
+  retries: 3
+  delay: 10
+  until: skopeo_result.rc == 0
+  failed_when:
+    - skopeo_result.rc != 0
+    - not pc_ignore_pull_errors
+
+- block:
+    - name: Create temporary directory
+      tempfile:
+        state: directory
+        prefix: pc_tmp_dir.
+      register: pc_tmp_dir
+
+    - name: "Set working directory"
+      set_fact:
+        pc_tmp_dir: "{{ pc_tmp_dir.path }}"
+
+    - name: "Set opm cmd"
+      set_fact:
+        pc_opm_cmd: "{{ pc_tmp_dir }}/opm {{ pc_opm_args }}"
+
+    - name: "Download stable opm client"
+      vars:
+        ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz"
+      unarchive:
+        src: "{{ ocp_clients_url }}"
+        dest: "{{ pc_tmp_dir }}"
+        remote_src: true
+        mode: 0755
+      register: result
+      retries: 3
+      delay: 10
+      until: result is not failed
+
+    - name: "Create index working directory"
+      file:
+        path: "{{ pc_tmp_dir }}/configs"
+        state: directory
+        mode: 0755
+
+    - name: "Render the source catalog"
+      vars:
+        opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
+      shell:
+        chdir: "{{ pc_tmp_dir }}"
+        cmd: >
+          set -x;
+          {{ opm_auths }}
+          opm render {{ pc_source_catalog }} >
+          index-packages
+      register: prune_result
+      until: prune_result.rc == 0
+      retries: 3
+      delay: 10
+
+
+    - name: "Extract required operator's channel, and packages"
+      shell:
+        chdir: "{{ pc_tmp_dir }}"
+        cmd: >
+          set -x;
+          jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'
+          {{ pc_tmp_dir }}/index-packages
+          >> {{ pc_tmp_dir }}/configs/index.json
+      with_items: "{{ pc_operators_list }}"
+      loop_control:
+        loop_var: operator_name
+
+    - name: "Copy configs.Dockerfile to temp directory"
+      copy:
+        content: |
+          FROM quay.io/operator-framework/opm:latest
+          ENTRYPOINT ["/bin/opm"]
+          CMD ["serve", "/configs"]
+          ADD configs /configs
+          LABEL operators.operatorframework.io.index.configs.v1=/configs
+          LABEL maintainer={{ pc_maintainer }} {% if pc_expire %} quay.expires-after={{ pc_expire_time }}{% endif %}
+        dest: "{{ pc_tmp_dir }}/configs.Dockerfile"
+        mode: 0644
+
+    - name: "Validate the pruned index"
+      shell: |
+        opm validate configs/
+      args:
+        chdir: "{{ pc_tmp_dir }}"
+
+    - name: "Build the index image"
+      shell:
+        chdir: "{{ pc_tmp_dir }}"
+        cmd: >
+          set -x;
+          podman build
+          --no-cache
+          -t {{ pc_destination_catalog }}
+          -f {{ pc_tmp_dir }}/configs.Dockerfile .
+      notify:
+        - "Delete temp directory"
+
+    - name: "Pruned image"
+      debug:
+        msg: "Catalog image build as {{ pc_destination_catalog }}"
+  when:
+    - skopeo_result.rc == 0
+...
