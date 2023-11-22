@@ -41,7 +41,7 @@ At this time the role supports creating the Openshift required endpoints under t
 | ah_cluster_type         | kubevirt                                  | No        | The type infrastructure provider, currently only only supports "kubevirt"               |
 | ah_force_deploy         | false                                     | No        | Force redeploy of a cluster                                                             |
 | ah_no_log               | true                                      | No        | Allow logging on sensitive tasks                                                        |
-| ah_ocp_version          | 4.13.13                                   | No        | Full OCP version to install on the hypershift cluster. <major>.<minor>.<patch>          |
+| ah_ocp_version          | 4.14.0                                    | No        | Full OCP version to install on the hypershift cluster. <major>.<minor>.<patch>          |
 | ah_pullsecret_file      | ""                                        | Yes       | Required to pull the hosted cluster release image                                       |
 | ah_release_image        | quay.io/openshift-release-dev/ocp-release | No        | The release image to install, from the specified OCP version                            |
 | ah_node_memory          | 8Gi                                       | No        | Memory which is visible inside the Guest OS (type BinarySI, e.g. 5Gi, 100Mi)            |
@@ -54,7 +54,7 @@ See below for some examples of how to use the `acm_hypershift` role
 - name: Deploy hypershift cluster
   vars:
     ah_cluster_name: hypershift
-    ah_ocp_version: 4.13.4
+    ah_ocp_version: 4.14.0
     ah_pullsecret_file: /<path_to_ps>
   include_role:
     name: acm_hypershift
