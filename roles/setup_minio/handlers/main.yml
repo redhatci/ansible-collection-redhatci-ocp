@@ -1,7 +1,0 @@
-- name: "Delete temp directory"
-  file:
-    state: absent
-    path: "{{ minio_dir }}"
-  when:
-    minio_dir is defined
-...
