@@ -143,8 +143,8 @@
                     mc --config-dir /tmp/ mb --ignore-existing local/{{ sm_bucket_name }}
             restartPolicy: Never
     wait: true
-    wait_sleep: 30
-    wait_timeout: 300
+    wait_sleep: 10
+    wait_timeout: 420
     wait_condition:
       type: Complete
       status: "True"
