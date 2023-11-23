@@ -5,6 +5,4 @@
     api: "v1"
     kind: "Namespace"
     name: "{{ sm_namespace }}"
-  notify:
-    - "Delete temp directory"
 ...
