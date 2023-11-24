@@ -1,0 +1,17 @@
+---
+- name: "Validate requirements"
+  ansible.builtin.assert:
+    that:
+      - mfd_local_registry is defined
+      - mfd_local_registry | length
+
+- name: "Assert that the source directory exists and has tar files"
+  ansible.builtin.find:
+    path: "{{ mfd_operators_dir }}"
+    recurse: true
+    patterns: "*.tar"
+  register: catalog_path
+  failed_when:
+    - catalog_path is undefined or
+      catalog_path.matched == 0
+...

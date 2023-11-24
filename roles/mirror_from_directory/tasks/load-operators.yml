@@ -1,0 +1,101 @@
+---
+- name: "Create working directory"
+  ansible.builtin.tempfile:
+    state: directory
+  register: image_dir
+
+- name: "Set workdir path"
+  ansible.builtin.set_fact:
+    image_dir: "{{ image_dir.path }}"
+
+- name: "Working directory path"
+  ansible.builtin.debug:
+    msg: "Manifest directory {{ image_dir }}"
+
+- name: "Download stable oc-mirror plugin"
+  vars:
+    ocp_mirror_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/oc-mirror.tar.gz"
+  ansible.builtin.unarchive:
+    src: "{{ ocp_mirror_url }}"
+    dest: "{{ image_dir }}"
+    remote_src: true
+    mode: "0755"
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
+
+- name: "Load Images to {{ mfd_local_registry }}"
+  ansible.builtin.shell:
+    chdir: "{{ image_dir }}"
+    cmd: >
+      set -x;
+      {{ image_dir }}/oc-mirror
+      --from={{ mfd_operators_dir }}
+      docker://{{ mfd_local_registry }}
+      --skip-metadata-check
+      --dest-skip-tls
+  retries: 3
+  delay: 10
+  register: result
+  changed_when: result.rc != 0
+  until: result.rc == 0
+
+- name: "Find the generated ICSP manifest"
+  ansible.builtin.find:
+    paths: "{{ image_dir }}"
+    recurse: true
+    patterns: "imageContentSourcePolicy.yaml"
+  register: icsp_manifest
+  failed_when:
+    - icsp_manifest.matched == 0
+
+- name: "Read Image Source file"
+  ansible.builtin.slurp:
+    src: "{{ icsp_manifest.files[0].path }}"
+  register: file_content
+
+- name: "Replace references to Red Hat internal registries in the ICSP"
+  ansible.builtin.replace:
+    path: "{{ icsp_manifest.files[0].path }}"
+    regexp: 'brew.registry.redhat.io'
+    replace: 'registry.redhat.io'
+    backup: true
+  when: file_content.content | b64decode | regex_search('brew.registry.redhat.io')
+
+- name: "Find the generated Catalogsource manifests"
+  ansible.builtin.find:
+    paths: "{{ image_dir }}"
+    recurse: true
+    patterns: "catalogSource-*.yaml"
+  register: catalog_manifest
+  failed_when:
+    - catalog_manifest.matched == 0
+
+- name: "Copy ICSP to working dir"
+  ansible.builtin.copy:
+    src: "{{ icsp_manifest.files[0].path }}"
+    dest: "{{ image_dir }}/imageContentSourcePolicy.yaml"
+    mode: "0644"
+
+- name: "Copy CatalogSource to working dir"
+  ansible.builtin.copy:
+    src: "{{ catalog_manifest.files[0].path }}"
+    dest: "{{ image_dir }}/catalogSource.yaml"
+    mode: "0644"
+
+- name: "Delete workspaces directory"
+  ansible.builtin.file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - "{{ image_dir }}/oc-mirror-workspace"
+  when:
+    - mfd_delete_workspace | bool
+
+- name: "Set image source file fact"
+  ansible.builtin.set_fact:
+    mdf_image_source_file: "{{ image_dir }}/imageContentSourcePolicy.yaml"
+    mdf_catalog_source_file: "{{ image_dir }}/catalogSource.yaml"
+    mdf_manifests_dir: "{{ image_dir }}"
+...
