@@ -56,6 +56,9 @@
       {% endif %}
       --to-manifests={{ mc_tmp.path }}/manifests
   register: catalog_manifests_output
+  retries: 3
+  delay: 10
+  until: catalog_manifests_output.rc == 0
 
 - name: Set the Image Source file
   tempfile:
