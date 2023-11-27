@@ -12,7 +12,7 @@ mfd_delete_workspace   | No       | True                                        
 
 ## Outputs
 
-The role copies a generated Image Sources manifest and CatalogSources files into a temporary directory. The files can bee access those files via following variables:
+The role involves copying a generated Image Sources manifest and CatalogSources files into a temporary directory. These files can be accessed using the following variables:
 
 - `mdf_image_source_file`: The path to the Image Source file produced.
 - `mdf_catalog_source_file`: The catalog manifest for the mirrored operators.
