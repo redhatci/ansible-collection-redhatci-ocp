@@ -20,10 +20,6 @@
       retries: "{{ check_wait_retries }}"
       delay: "{{ check_wait_delay }}"
 
-    - name: Reset retry count
-      set_fact:
-        retry_count: 1
-
   # If the last check failed, let's do some more checks to confirm the real status of the nodes
   rescue:
     # If nodes are NotReady, we cannot do much more than failing at this point.
