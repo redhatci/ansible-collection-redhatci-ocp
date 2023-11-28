@@ -12,7 +12,7 @@
                       | list }}"
 
 - name: Get API request counts for all custom namespaces
-  k8s_info:
+  community.kubernetes.k8s_info:
     kind: APIRequestCount
     namespace: "{{ item }}"
   # Check all namespaces by default unless otherwise requested
