@@ -91,7 +91,7 @@ compliance-operator  stable   compliance-operator.v1.3.1
 
 Prune a dictionary for specific channel
 ```yaml
-- name: "Prune a all and/or single channels"
+- name: "Prune all and/or single channels"
   include_role:
     name: redhatci.ocp.prune_catalog
   vars:
