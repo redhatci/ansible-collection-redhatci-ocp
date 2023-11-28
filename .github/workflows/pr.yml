@@ -55,7 +55,7 @@ jobs:
           echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
           diff -u0 branch.errors main.errors | grep '^-[^-]' | tee -a ${GITHUB_STEP_SUMMARY}
           echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
-          if grep -q '^-[^-]' <<< $(diff -u0 branch.errors main.errors); then
+          if diff -u0 branch.errors main.errors | grep -q '^-[^-]'; then
              echo "> Fix the regression errors listed above" | tee -a ${GITHUB_STEP_SUMMARY}
              exit 1
           fi
