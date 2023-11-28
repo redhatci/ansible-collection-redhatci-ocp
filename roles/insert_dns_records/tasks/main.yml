@@ -54,7 +54,7 @@
 - name: Get registry_host when it ansible_host is an IP address
   include_tasks: create_host_entry.yml
   vars:
-    entry_address: "{{   hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
+    entry_address: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
     entry_name: "registry_host"
     entry_extra_check: "{{ hostvars['registry_host']['registry_fqdn']  is not defined }}"
   when:

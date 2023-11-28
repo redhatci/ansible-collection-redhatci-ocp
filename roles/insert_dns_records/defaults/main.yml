@@ -24,7 +24,7 @@ use_dhcp: false
 dhcp_lease_time: 24h
 
 listen_address: "{{ ansible_default_ipv4.address }}"
-listen_addresses: 
+listen_addresses:
   - "127.0.0.1"
   - "{{ listen_address }}"
 

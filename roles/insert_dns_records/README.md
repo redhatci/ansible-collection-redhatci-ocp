@@ -21,8 +21,10 @@ node_dns_records:
     ip: "<ip>"
 extra_dns_records:
   place-0:
+    name: "place-0"
     address: "<address>"
     ip: "<ip>"
+    use_dhcp: false
 ```
 
 ## Example Playbook
@@ -36,12 +38,18 @@ extra_dns_records:
     domain: "cluster.example.com"
     node_dns_records:
       master-0:
+        name: "master-0"
         address: "master-0.cluster.example.com"
         ip: "111.111.111.111"
+        use_dhcp: false
       master-1:
+        name: "master-1"
         address: "master-1.cluster.example.com"
         ip: "111.111.111.112"
+        use_dhcp: false
       master-2:
+        name: "master-2"
         address: "master-2.cluster.example.com"
         ip: "111.111.111.113"
+        use_dhcp: false
 ```
