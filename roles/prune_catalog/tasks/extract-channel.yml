@@ -1,0 +1,36 @@
+---
+- name: "Extract the listed channels for each operator"
+  ansible.builtin.shell: |
+    set -o pipefail
+
+    {% if operator.value.channel is defined and operator.value.channel | length %}
+
+    jq 'select(.schema == "olm.package" and .name == "{{ operator.key }}")' {{ pc_tmp_dir }}/index-packages \
+    > {{ pc_tmp_dir }}/tmp_index.json
+
+    jq 'select(.package == "{{ operator.key }}" and .schema == "olm.channel" and .name == "{{ operator.value.channel }}")' \
+    {{ pc_tmp_dir }}/index-packages >> {{ pc_tmp_dir }}/tmp_index.json
+
+    channel_bundles=$(jq 'select(.package == "{{ operator.key }}" and .schema == "olm.channel" and .name == "{{ operator.value.channel }}")' \
+    {{ pc_tmp_dir }}/index-packages | jq -r '.entries[].name')
+
+    for BUNDLE in ${channel_bundles}; do
+      jq "select(.package == \"{{ operator.key }}\" and .schema == \"olm.bundle\" and .name == \"${BUNDLE}\")" \
+      {{ pc_tmp_dir }}/index-packages >> {{ pc_tmp_dir }}/tmp_index.json
+    done
+
+    jq '.defaultChannel = "{{ operator.value.channel }}"' {{ pc_tmp_dir }}/tmp_index.json \
+    >> {{ pc_tmp_dir }}/configs/index.json
+
+    {% else %}
+
+    jq 'select( .package == "{{ operator.key }}" or .name == "{{ operator.key }}")' \
+    {{ pc_tmp_dir }}/index-packages >> {{ pc_tmp_dir }}/configs/index.json
+
+    {% endif %}
+  loop: "{{ pc_operators | dict2items }}"
+  loop_control:
+    loop_var: operator
+  register: extract_result
+  changed_when: extract_result.rc != 0
+...
