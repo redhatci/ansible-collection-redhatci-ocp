@@ -11,7 +11,7 @@
       - pc_destination_catalog | length > 0
     fail_msg: "At least one of the parameters requirements is missing"
 
-- name: "Check if images is pullable - {{ pc_source_catalog }} "
+- name: "Check if image is pullable - {{ pc_source_catalog }} "
   ansible.builtin.shell: >
     if [ -n "$DOCKER_CONFIG" ]; then
       skopeo inspect --no-tags \
@@ -33,32 +33,32 @@
 - name: "Prune catalog"
   when: skopeo_result.rc == 0
   block:
-    # - name: Create temporary directory
-    #   ansible.builtin.tempfile:
-    #     state: directory
-    #     prefix: pc_tmp_dir.
-    #   register: pc_tmp_dir
+    - name: Create temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: pc_tmp_dir.
+      register: pc_tmp_dir
 
-    # - name: "Set working directory"
-    #   ansible.builtin.set_fact:
-    #     pc_tmp_dir: "{{ pc_tmp_dir.path }}"
+    - name: "Set working directory"
+      ansible.builtin.set_fact:
+        pc_tmp_dir: "{{ pc_tmp_dir.path }}"
 
-    # - name: "Set opm cmd"
-    #   ansible.builtin.set_fact:
-    #     pc_opm_cmd: "{{ pc_tmp_dir }}/opm {{ pc_opm_args }}"
+    - name: "Set opm cmd"
+      ansible.builtin.set_fact:
+        pc_opm_cmd: "{{ pc_tmp_dir }}/opm {{ pc_opm_args }}"
 
-    # - name: "Download stable opm client"
-    #   vars:
-    #     ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz"
-    #   ansible.builtin.unarchive:
-    #     src: "{{ ocp_clients_url }}"
-    #     dest: "{{ pc_tmp_dir }}"
-    #     remote_src: true
-    #     mode: "0755"
-    #   register: result
-    #   retries: 3
-    #   delay: 10
-    #   until: result is not failed
+    - name: "Download stable opm client"
+      vars:
+        ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz"
+      ansible.builtin.unarchive:
+        src: "{{ ocp_clients_url }}"
+        dest: "{{ pc_tmp_dir }}"
+        remote_src: true
+        mode: "0755"
+      register: result
+      retries: 3
+      delay: 10
+      until: result is not failed
 
     - name: "Create index working directory"
       ansible.builtin.file:
@@ -66,21 +66,21 @@
         state: directory
         mode: "0755"
 
-    # - name: "Render the source catalog"
-    #   vars:
-    #     opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
-    #   ansible.builtin.shell:
-    #     chdir: "{{ pc_tmp_dir }}"
-    #     cmd: >
-    #       set -x;
-    #       {{ opm_auths }}
-    #       opm render {{ pc_source_catalog }} >
-    #       index-packages
-    #   register: prune_result
-    #   changed_when: prune_result.rc != 0
-    #   until: prune_result.rc == 0
-    #   retries: 3
-    #   delay: 10
+    - name: "Render the source catalog"
+      vars:
+        opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
+      ansible.builtin.shell:
+        chdir: "{{ pc_tmp_dir }}"
+        cmd: >
+          set -x;
+          {{ opm_auths }}
+          opm render {{ pc_source_catalog }} >
+          index-packages
+      register: prune_result
+      changed_when: prune_result.rc != 0
+      until: prune_result.rc == 0
+      retries: 3
+      delay: 10
 
     - name: "Extract the listed channels for each operator"
       when: pc_operators | type_debug == "dict"

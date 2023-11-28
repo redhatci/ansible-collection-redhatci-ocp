@@ -34,7 +34,7 @@ Prune a list of operators
   vars:
     pc_source_catalog: "registry.redhat.io/redhat/redhat-operator-index:v4.13"
     pc_destination_catalog: "<my-local-registry>:4443/pruned-catalog:latest"
-    pc_operators_list:
+    pc_operators:
       - compliance-operator
       - file-integrity-operator
       - cluster-logging
@@ -63,7 +63,7 @@ Prune a dictionary for specific channel
   vars:
     pc_source_catalog: "registry.redhat.io/redhat/redhat-operator-index:v4.13"
     pc_destination_catalog: "<my-local-registry>:4443/pruned-catalog:latest"
-    pc_operators_list:
+    pc_operators:
       compliance-operator:
         channel: stable
       file-integrity-operator:
@@ -97,7 +97,7 @@ Prune a dictionary for specific channel
   vars:
     pc_source_catalog: "registry.redhat.io/redhat/redhat-operator-index:v4.13"
     pc_destination_catalog: "<my-local-registry>:4443/pruned-catalog:latest"
-    pc_operators_list:
+    pc_operators:
       compliance-operator:
       file-integrity-operator:
         channel: stable
