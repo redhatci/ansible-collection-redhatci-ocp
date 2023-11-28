@@ -1,0 +1,7 @@
+---
+- name: "Validate requirements"
+  include_tasks: validation.yml
+
+- name: "Mirror operators"
+  include_tasks: load-operators.yml
+...
