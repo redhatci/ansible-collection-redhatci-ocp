@@ -5,17 +5,25 @@ sushy_auth_dir: "{{ sushy_dir }}/auth"
 sushy_cert_dir: "{{ sushy_dir }}/cert"
 sushy_auth_file: "{{ sushy_auth_dir }}/htpasswd"
 sushy_data_dir: "{{ sushy_dir }}/data"
-sushy_packages:
+sushy_packages_rhel9:
+  - python3-devel
+  - python3-pip
+  - gcc
+  - libvirt-devel
+
+sushy_packages_rhel8:
   - python3-pip
   - python3-virtualenv
   - gcc
   - libvirt-devel
+
 sushy_pip_packages:
   - sushy-tools
   - libvirt-python
-
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
 
 secure_sushy_tools: "{{ secure | default(true) }}"
 sushy_fqdn: "{{ ansible_fqdn }}"
+
+is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"

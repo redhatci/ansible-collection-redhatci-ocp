@@ -3,8 +3,10 @@
   become: true
   block:
     - name: Install required packages
-      package:
-        name: "{{ sushy_packages }}"
+      package: # noqa: jinja[spacing]
+        name: "{{ sushy_packages | default(
+            (is_on_rhel9 | bool) | ternary(sushy_packages_rhel9, sushy_packages_rhel8)
+          ) }}"
         state: present
 
     - name: "Create sushy-tools directory {{ item }}"
@@ -21,6 +23,7 @@
     - name: Install sushy-tools via pip in a virtual environment
       pip:
         name: "{{ sushy_pip_packages }}"
+        virtualenv_command: "{{ (is_on_rhel9 | bool) | ternary('python3 -m venv', omit) }}"
         virtualenv: "{{ sushy_dir }}"
 
     - name: Install httpd-tools for htpasswd

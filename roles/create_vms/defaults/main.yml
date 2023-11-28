@@ -14,3 +14,5 @@ virt_packages:
   - python3-libvirt
 
 images_dir: /var/lib/libvirt/images/
+
+is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"

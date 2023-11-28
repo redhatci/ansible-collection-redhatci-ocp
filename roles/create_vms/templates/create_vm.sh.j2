@@ -19,7 +19,9 @@ virt-install \
     --graphics vnc \
     --noautoconsole \
     --wait=-1 \
+    {% if not is_on_rhel9 %}
     --boot uefi \
+    {% endif %}
     --events on_reboot=restart \
     --autostart \
     --print-xml > /tmp/{{item.name}}.xml
