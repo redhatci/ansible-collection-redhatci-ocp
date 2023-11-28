@@ -49,14 +49,14 @@ jobs:
           set +ex
           echo "## Improvements are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
           echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
-          diff -u0 branch.errors main.errors | grep '^+[^+]' | tee -a ${GITHUB_STEP_SUMMARY}
+          diff -u0 branch.errors main.errors | grep '^+[^+]' | sed -e 's/ERROR/FIXED/' | tee -a ${GITHUB_STEP_SUMMARY}
           echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
           echo "## Regressions are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
           echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
           diff -u0 branch.errors main.errors | grep '^-[^-]' | tee -a ${GITHUB_STEP_SUMMARY}
           echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
-          if ! diff -q main.errors branch.errors;  then
-             echo "> Fix the regressions listed above (starting with a '-')" | tee -a ${GITHUB_STEP_SUMMARY}
+          if [[ $(diff -u0 branch.errors main.errors | grep -c '^-[^-]') != 0 ]];  then
+             echo "> Fix the regression errors listed above" | tee -a ${GITHUB_STEP_SUMMARY}
              exit 1
           fi
         working-directory: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
