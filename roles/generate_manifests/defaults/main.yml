@@ -7,7 +7,11 @@ static_network_config: {}
 arch: x86_64
 version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
 release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
-mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['registry_host']['registry_port'] }}"
+
+mirror_registry_fqdn: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
+mirror_registry_port: "{{ hostvars['registry_host']['registry_port'] | default(5000) }}"
+mirror_registry: "{{ mirror_registry_fqdn }}:{{ mirror_registry_port }}"
+
 ocp_registry_namespace: "{{ hostvars['registry_host']['registry_namespace'] | default('ocp4') }}"
 ocp_registry_image: "{{ hostvars['registry_host']['registry_image'] | default('openshift4') }}"
 registry_repository: "{{ ocp_registry_namespace }}/{{ ocp_registry_image }}"

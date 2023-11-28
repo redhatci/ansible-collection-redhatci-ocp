@@ -5,7 +5,9 @@ secure: false
 disconnected: False
 manifests: True
 
-mirror_registry: "{{ hostvars['registry_host']['registry_fqdn'] }}:{{ hostvars['registry_host']['registry_port'] }}"
+mirror_registry_fqdn: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
+mirror_registry_port: "{{ hostvars['registry_host']['registry_port'] | default(5000) }}"
+mirror_registry: "{{ mirror_registry_fqdn }}:{{ mirror_registry_port }}"
 
 
 ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] | default(ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}"
