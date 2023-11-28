@@ -6,6 +6,60 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
 
+  sanity:
+    name: Sanity Check
+    strategy:
+      matrix:
+        ansible:
+          # 2.9 fails due to https://github.com/ansible/ansible/issues/68819
+          - stable-2.10
+          - stable-2.15
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Install ansible-base ${{ matrix.ansible }}
+        run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
+
+      # Fail when new errors appear
+      - name: Run sanity test
+        run: |
+          set -x
+          git checkout -b branch
+          git fetch --unshallow origin main
+          cmd="ansible-test sanity --verbose --docker --color --coverage --failure-ok"
+          $cmd 2>&1 | tee branch.output
+          git checkout main
+          $cmd > main.output 2>&1
+          for key in branch main; do
+            grep -E "(ERROR|FATAL):" "$key.output" |
+            grep -v "issue(s) which need to be resolved\|See error output above for details." |
+            sed -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "$key.errors"
+          done
+          set +ex
+          echo "## Improvements are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
+          echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
+          diff -u0 branch.errors main.errors | grep '^+[^+]' | tee -a ${GITHUB_STEP_SUMMARY}
+          echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
+          echo "## Regressions are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
+          echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
+          diff -u0 branch.errors main.errors | grep '^-[^-]' | tee -a ${GITHUB_STEP_SUMMARY}
+          echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
+          if ! diff -q main.errors branch.errors;  then
+             echo "> Fix the regressions listed above (starting with a '-')" | tee -a ${GITHUB_STEP_SUMMARY}
+             exit 1
+          fi
+        working-directory: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
+
   check-all-dependencies-are-merged:
     name: "Check all dependencies are merged"
     runs-on: ubuntu-latest
