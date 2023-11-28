@@ -48,8 +48,8 @@ assisted_installer_hardware_validation:
     installation_disk_speed_threshold_ms: 10
 
 dns_servers: "{% if dns is defined %}{{ [dns] }}{% else %}{{ [] }}{% endif %}"
-assisted_service_host: "{{ host | default('ansible_fqdn') }}" # nodes -> assisted service
-image_service_host: "{{ host | default('ansible_fqdn') }}" # bastion -> image service
+assisted_service_host: "{{ host | default(ansible_fqdn) }}" # nodes -> assisted service
+image_service_host: "{{ host | default(ansible_fqdn) }}" # bastion -> image service
 
 use_local_mirror_registry: "{{ setup_registry_service | default(False) }}"
 
