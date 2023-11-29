@@ -1,6 +1,6 @@
 # prune_catalog role
 
-A role to prune a File Base Catalogs (FBC), based on a list of required operators. The role will prune all the channels if  `pc_operators` is a list or a specific channel if it is a dictionary.
+A role to prune a File Base Catalog (FBC). The role creates a pruned catalog, leaving only the specified operators.
 
 ## Parameters
 
