@@ -73,7 +73,7 @@ Create a pruned catalog with specific channels
     pc_opm_args: "--skip-tls-verify=true"
 ```
 
-Only the specific channel for the listed operators are mirrored
+Only the specified channel of the operators are kept in the catalog
 ```ShellSession
 $ DOCKER_CONFIG=/home/<user>/.docker oc-mirror list operators --catalog <my-local-registry>:4443/pruned-catalog:latest 
 NAME                     DISPLAY NAME               DEFAULT CHANNEL
