@@ -57,7 +57,7 @@ compliance-operator  stable       compliance-operator.v1.3.1
 
 Create a pruned catalog with specific channels
 ```yaml
-- name: "Prune a catalog specific with channels"
+- name: "Create a pruned catalog with specific channels"
   include_role:
     name: redhatci.ocp.prune_catalog
   vars:
