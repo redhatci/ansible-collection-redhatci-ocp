@@ -55,7 +55,7 @@ compliance-operator  release-0.1  compliance-operator.v0.1.61
 compliance-operator  stable       compliance-operator.v1.3.1
 ```
 
-Prune a dictionary for specific channel
+Create a pruned catalog with specific channels
 ```yaml
 - name: "Prune a catalog specific with channels"
   include_role:
