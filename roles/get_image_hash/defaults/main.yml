@@ -83,24 +83,24 @@ release_images:
     version: 4.8.43
   - openshift_version: '4.9'
     cpu_architecture: x86_64
-    url: quay.io/openshift-release-dev/ocp-release:4.9.45-x86_64
-    version: 4.9.45
+    url: quay.io/openshift-release-dev/ocp-release:4.9.59-x86_64
+    version: 4.9.59
   - openshift_version: '4.10'
     cpu_architecture: x86_64
-    url: quay.io/openshift-release-dev/ocp-release:4.10.37-x86_64
-    version: 4.10.37
+    url: quay.io/openshift-release-dev/ocp-release:4.10.67-x86_64
+    version: 4.10.67
   - openshift_version: '4.11'
     cpu_architecture: x86_64
-    url: quay.io/openshift-release-dev/ocp-release:4.11.24-x86_64
-    version: 4.11.24
+    url: quay.io/openshift-release-dev/ocp-release:4.11.53-x86_64
+    version: 4.11.53
   - openshift_version: '4.12'
     cpu_architecture: x86_64
-    url: quay.io/openshift-release-dev/ocp-release:4.12.31-x86_64
-    version: 4.12.31
+    url: quay.io/openshift-release-dev/ocp-release:4.12.44-x86_64
+    version: 4.12.44
   - openshift_version: '4.13'
     cpu_architecture: x86_64
-    url: quay.io/openshift-release-dev/ocp-release:4.13.10-x86_64
-    version: 4.13.10
+    url: quay.io/openshift-release-dev/ocp-release:4.13.22-x86_64
+    version: 4.13.22
   - openshift_version: '4.14'
     cpu_architecture: x86_64
     url: quay.io/openshift-release-dev/ocp-release:4.14.2-x86_64

@@ -24,14 +24,14 @@ ai_version: "{{ hostvars.assisted_installer.ai_version | default('v2.26.0') }}"
 ai_version_number: "{{ ai_version | regex_replace('v(\\d+\\.\\d+\\.\\d+)', '\\1') }}"
 
 supported_ocp_versions:
-- 4.6.16
-- 4.7.52
-- 4.8.43
-- 4.9.45
-- 4.10.37
-- 4.11.24
-- 4.12.31
-- 4.13.10
-- 4.14.2
+  - 4.6.16
+  - 4.7.52
+  - 4.8.43
+  - 4.9.59
+  - 4.10.67
+  - 4.11.53
+  - 4.12.44
+  - 4.13.22
+  - 4.14.2
 
 single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"
