@@ -89,7 +89,7 @@ PACKAGE              CHANNEL  HEAD
 compliance-operator  stable   compliance-operator.v1.3.1
 ```
 
-Prune a dictionary for specific channel
+Another example of a pruned catalog with specific channels
 ```yaml
 - name: "Prune all and/or single channels"
   include_role:
