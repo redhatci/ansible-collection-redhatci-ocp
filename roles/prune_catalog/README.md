@@ -133,7 +133,7 @@ file-integrity-operator  stable   file-integrity-operator.v1.3.3
 
 ### Catalog inspection
 
-Pruning an specific channels requires to be able to inspect the source index to identify the available channel to be pruned. oc-mirror can be used to perform the task. Eg:
+To keep specific channels, it is required to inspect the source catalog to identify the available channels. `oc-mirror` can be used to perform the task. Example:
 
 ```ShellSession
 $ DOCKER_CONFIG=/home/<user>/.docker oc-mirror list operators --catalog registry.redhat.io/redhat/redhat-operator-index:v4.14 --package cluster-logging
