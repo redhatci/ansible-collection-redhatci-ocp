@@ -67,7 +67,7 @@
 - name: Confirm whether or not internet connectivity on provisioner host
   uri:
     url: https://www.redhat.com
-    status_code: [-1,200,301]
+    status_code: [-1, 200, 301]
     timeout: 1
   register: check_url
   tags:
