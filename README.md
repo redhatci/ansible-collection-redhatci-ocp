@@ -47,6 +47,7 @@ Name | Description
 [redhatci.ocp.merge_registry_creds](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/merge_registry_creds/README.md) | Combines multiple registry credentials in JSON format passed as dictionaries
 [redhatci.ocp.metallb_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/metallb_setup/README.md) | Setup of the MetalLB operator in BGP mode.
 [redhatci.ocp.mirror_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_catalog/README.md) | Mirrors a catalog and its related images.
+[redhatci.ocp.mirror_from_directory][https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_from_directory/README.md] | Mirror operators from a local directory into a container registry using the `oc-mirror` plugin.
 [redhatci.ocp.mirror_images](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_images/README.md) | Mirrors images from one repository to another.
 [redhatci.ocp.mirror_ocp_release](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_ocp_release/README.md) | Mirrors a given OpenShift release version to a given cache directory.
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
@@ -60,6 +61,7 @@ Name | Description
 [redhatci.ocp.openshift_cnf](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/openshift_cnf/README.md) | Generate an Openshift-cnf certification project.
 [redhatci.ocp.operator_sdk](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/operator_sdk/README.md) | Setup Operator-SDK Scorecard test suite
 [redhatci.ocp.preflight](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/preflight/README.md) | Container and Operator certification through Preflight
+[redhatci.ocp.prune_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/prune_catalog/README.md) | Create a pruned catalog, leaving only the specified operators.
 [redhatci.ocp.pyxis](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/pyxis/README.md) | Interacts with Pyxis API to submit Preflight certification results
 [redhatci.ocp.redhat_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/redhat_tests/README.md) | [Openshift End to End tests](https://github.com/openshift/openshift-tests)
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
