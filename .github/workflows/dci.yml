@@ -1,0 +1,20 @@
+---
+
+name: DCI Schedule
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'roles/**'
+jobs:
+
+  dci-job:
+    name: "Schedule a DCI job"
+    runs-on: bos2
+    steps:
+
+      - name: Add a dci-check-change job to the queue
+        run: |
+          dci-check-change --silent ${{ github.event.pull_request.html_url }}
+
+...
