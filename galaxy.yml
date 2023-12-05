@@ -16,47 +16,66 @@ readme: README.md
 
 # A list of the collection's content authors.
 authors:
-  - AbhishekBandarupalle <abhishek20393@gmail.com>
-  - Andrew Bays <andrew.bays@gmail.com>
-  - Andrew Vu <avu@redhat.com>
-  - Beto Rodriguez <josearod@redhat.com>
-  - Bill Peck <bpeck@redhat.com>
-  - Brandon Palm <bpalm@redhat.com>
-  - Charles CAPORALI <ccaporal@redhat.com>
-  - David Rabkin <david@rabkin.co.il>
-  - Denis Ollier <dollierp@redhat.com>
-  - Derek Higgins <derekh@redhat.com>
-  - DirectedSoul1 <shegde@redhat.com>
-  - Dustin Black <dblack@redhat.com>
-  - Eduardo Mínguez <e.minguez@gmail.com>
-  - Farid Da Encarnacao <fdaencar@redhat.com>
-  - François Charlier <francois.charlier@redhat.com>
-  - Frederic Lepied <flepied@redhat.com>
-  - gbenhaim <gbenhaim@redhat.com>
-  - Guillaume Vincent <gvincent@redhat.com>
-  - John Herr <john@cleverpenguin.com>
-  - Johnny Bieren <jbieren@redhat.com>
-  - Jorge Gallegos <jgallego@redhat.com>
-  - Keith Schincke <keith.schincke+github@gmail.com>
-  - Manuel Rodriguez <manuel.rodriguez@redhat.com>
-  - mbpavan <pbheeman@redhat.com>
-  - Murali Krishnasamy <70236227+mukrishn@users.noreply.github.com>
-  - Nacho Silla <nsilla@redhat.com>
-  - Pablo Iranzo Gómez <Pablo.Iranzo@gmail.com>
-  - Patrick Easters <patrick@patrickeasters.com>
-  - Pedro Ibanez Requena <1756381+ptrnull@users.noreply.github.com>
-  - Pierre Blanc <pblanc@redhat.com>
-  - Rabin Yasharzadehe <ryasharz@redhat.com>
-  - Ramon Perez <raperez@redhat.com>
-  - Roger Lopez <rlopez@redhat.com>
-  - Sai Sindhur Malleni <smalleni@redhat.com>
-  - Saravanan KR <skramaja@redhat.com>
-  - Tatiana Krishtop <tkrishto@redhat.com>
-  - Thomas Vassilian <tvassili@redhat.com>
-  - Tony Garcia <tonyg@redhat.com>
-  - ylamgarchal <yassine.lamgarchal@redhat.com>
-  - Yurii Prokulevych <yprokule@users.noreply.github.com>
-  - Yuval Kashtan <ykashtan@redhat.com>
+  - "AbhishekBandarupalle <abhishek20393@gmail.com>"
+  - "Ajay Simha <asimha@redhat.com>"
+  - "Alex Krzos <akrzos@redhat.com>"
+  - "Ali Bokhari <abokhari44@gmail.com>"
+  - "Andrew Bays <andrew.bays@gmail.com>"
+  - "Andrew Vu <avu@redhat.com>"
+  - "Arnaldo Hernandez <alhernan@redhat.com>"
+  - "Beto Rodriguez <josearod@redhat.com>"
+  - "Bill Peck <bpeck@redhat.com>"
+  - "Brandon Palm <bpalm@redhat.com>"
+  - "Brent Roskos <broskos@redhat.com>"
+  - "Carlos Donato <cdonato@redhat.com>"
+  - "Charles CAPORALI <ccaporal@redhat.com>"
+  - "Charlie Wheeler-Robinson <cwheeler@redhat.com>"
+  - "Dave Cain <novacain1@users.noreply.github.com>"
+  - "David Rabkin <david@rabkin.co.il>"
+  - "Demetris Vassiliades <dvassili@redhat.com>"
+  - "Denis Ollier <dollierp@redhat.com>"
+  - "Derek Higgins <derekh@redhat.com>"
+  - "DirectedSoul1 <shegde@redhat.com>"
+  - "Dustin Black <dblack@redhat.com>"
+  - "Eduardo Mínguez <e.minguez@gmail.com>"
+  - "Elyasaf Halle <ehalle@redhat.com>"
+  - "Farid Da Encarnacao <fdaencar@redhat.com>"
+  - "François Charlier <francois.charlier@redhat.com>"
+  - "Frederic Lepied <flepied@redhat.com>"
+  - "gbenhaim <gbenhaim@redhat.com>"
+  - "Guillaume Vincent <gvincent@redhat.com>"
+  - "Guillermo Ojea Quintana <gojeaqui@redhat.com>"
+  - "Hamza Hamid <hhamid@redhat.com>"
+  - "Hanen Garcia <hanengarcia@users.noreply.github.com>"
+  - "John Herr <john@cleverpenguin.com>"
+  - "Johnny Bieren <jbieren@redhat.com>"
+  - "Jorge Gallegos <jgallego@redhat.com>"
+  - "Jorge Tudela <jtudelag@redhat.com>"
+  - "Keith Schincke <keith.schincke+github@gmail.com>"
+  - "Manuel Rodriguez <manuel.rodriguez@redhat.com>"
+  - "Marek Kochanowski <mkochanowski@redhat.com>"
+  - "mbpavan <pbheeman@redhat.com>"
+  - "Michele Costa <micosta@redhat.com>"
+  - "Murali Krishnasamy <70236227+mukrishn@users.noreply.gihub.com>"
+  - "Nacho Silla <nsilla@redhat.com>"
+  - "Nati Fridman <nati2fridman@gmail.com>"
+  - "Pablo Iranzo Gómez <Pablo.Iranzo@gmail.com>"
+  - "Patrick Easters <patrick@patrickeasters.com>"
+  - "Pedro Ibanez Requena <1756381+ptrnull@users.noreply.gihub.com>"
+  - "Pierre Blanc <pblanc@redhat.com>"
+  - "Rabin Yasharzadehe <ryasharz@redhat.com>"
+  - "Ramon Perez <raperez@redhat.com>"
+  - "Roger Lopez <rlopez@redhat.com>"
+  - "Sai Sindhur Malleni <smalleni@redhat.com>"
+  - "Saravanan KR <skramaja@redhat.com>"
+  - "Tatiana Krishtop <tkrishto@redhat.com>"
+  - "Thomas Vassilian <tvassili@redhat.com>"
+  - "Tony Garcia <tonyg@redhat.com>"
+  - "William Caban Babilonia <wcabanba@redhat.com>"
+  - "ylamgarchal <yassine.lamgarchal@redhat.com>"
+  - "Yurii Prokulevych <yprokule@users.noreply.github.com>"
+  - "Yuval Kashtan <ykashtan@redhat.com>"
+
 
 ### OPTIONAL but strongly recommended
 # A short summary description of the collection
