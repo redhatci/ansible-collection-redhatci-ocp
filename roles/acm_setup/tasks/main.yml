@@ -30,20 +30,11 @@
   vars:
     catalog_query: "resources[*].status.catalogSource"
     catalog_source: "{{ mce_packagemanifest | json_query(catalog_query) | join('') | string }}"
-    me_annotation:
-      channel: "{{ me_channel }}"
-      installPlanApproval: "Automatic"
-      name: "multicluster-engine"
-      source: "{{ catalog_source }}"
-      sourceNamespace: "openshift-marketplace"
-      startingCSV: "{{ me_csv }}"
   community.kubernetes.k8s:
     definition:
       apiVersion: operator.open-cluster-management.io/v1
       kind: MultiClusterHub
       metadata:
-        annotations:
-          installer.open-cluster-management.io/mce-subscription-spec: "{{ me_annotation | to_json }}"
         name: "{{ hub_instance }}"
         namespace: "{{ hub_namespace }}"
       spec:
