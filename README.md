@@ -11,15 +11,21 @@ This repository hosts the `redhatci.ocp` Ansible collection.
 The collection includes Ansible roles and modules to help automate OpenShift Platform interactions, as well as the deployment, testing and continuous integration of the clusters or related components.
 
 
-## Plugins
+## Installing the collection
 
-Name | Type | Description
---- | --- | ---
-[redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
-[redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
-[redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
-[redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
-[redhatci.ocp.virt]() | Module | A copy of the module [community.libvirt.virt](https://github.com/ansible-collections/community.libvirt) to manage libvirt 
+### Ansible Galaxy
+
+```Shell
+ansible-galaxy collection install redhatci.ocp
+```
+
+### RPM package
+
+```Shell
+dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+dnf -y install https://packages.distributed-ci.io/dci-release.el8.noarch.rpm
+dnf -y install ansible-collection-redhatci-ocp
+```
 
 ## Roles
 
@@ -47,7 +53,7 @@ Name | Description
 [redhatci.ocp.merge_registry_creds](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/merge_registry_creds/README.md) | Combines multiple registry credentials in JSON format passed as dictionaries
 [redhatci.ocp.metallb_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/metallb_setup/README.md) | Setup of the MetalLB operator in BGP mode.
 [redhatci.ocp.mirror_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_catalog/README.md) | Mirrors a catalog and its related images.
-[redhatci.ocp.mirror_from_directory][https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_from_directory/README.md] | Mirror operators from a local directory into a container registry using the `oc-mirror` plugin.
+[redhatci.ocp.mirror_from_directory](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_from_directory/README.md) | Mirror operators from a local directory into a container registry using the `oc-mirror` plugin.
 [redhatci.ocp.mirror_images](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_images/README.md) | Mirrors images from one repository to another.
 [redhatci.ocp.mirror_ocp_release](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_ocp_release/README.md) | Mirrors a given OpenShift release version to a given cache directory.
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
@@ -73,21 +79,15 @@ Name | Description
 [redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Stup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)
 [redhatci.ocp.verify_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/verify_tests/README.md) | Verification of tests based on rules
 
-## Installing the collection
+## Plugins
 
-### Ansible Galaxy
-
-```Shell
-ansible-galaxy collection install redhatci.ocp
-```
-
-### RPM package
-
-```Shell
-dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-dnf -y install https://packages.distributed-ci.io/dci-release.el8.noarch.rpm
-dnf -y install ansible-collection-redhatci-ocp
-```
+Name | Type | Description
+--- | --- | ---
+[redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
+[redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
+[redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
+[redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
+[redhatci.ocp.virt]() | Module | A copy of the module [community.libvirt.virt](https://github.com/ansible-collections/community.libvirt) to manage libvirt 
 
 ## License
 
