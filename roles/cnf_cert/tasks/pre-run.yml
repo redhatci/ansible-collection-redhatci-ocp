@@ -152,7 +152,7 @@
       repo: "{{ test_network_function_repo }}"
       version: "{{ test_network_function_version }}"
       dest: "{{ tnf_dir }}"
-      force: yes
+      force: true
     # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
     # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
     # multiple times.

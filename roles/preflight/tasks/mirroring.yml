@@ -31,7 +31,7 @@
       environment:
         - DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
   vars:
-    fbc_index_image:  "{{ OO_INDEX }}"
+    fbc_index_image: "{{ OO_INDEX }}"
     fbc_bundles: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
     fbc_opm_args: "--skip-tls-verify=false"
 
