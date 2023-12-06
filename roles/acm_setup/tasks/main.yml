@@ -2,29 +2,6 @@
 - name: "Validate requirements"
   include_tasks: validation.yml
 
-- name: Get multicluster-engine package manifest
-  community.kubernetes.k8s_info:
-    api: packages.operators.coreos.com/v1
-    kind: PackageManifest
-    name: "multicluster-engine"
-    namespace:  default
-  register: mce_packagemanifest
-  retries: 5
-  delay: 5
-  no_log: true
-  until:
-    - mce_packagemanifest.resources is defined
-    - mce_packagemanifest.resources | length == 1
-
-- name: "Get multicluster-engine default channel and CSV"
-  vars:
-    channels: "resources[*].status.defaultChannel"
-    me_channels: "{{ mce_packagemanifest | json_query(channels) | join('') | string }}"
-    current_csv: "resources[*].status.channels[? name=='{{ me_channels }}' ].currentCSV | [0]"
-  set_fact:
-    me_channel: "{{ mce_packagemanifest | json_query(channels) | join('') | string }}"
-    me_csv: "{{ mce_packagemanifest | json_query(current_csv) | first }}"
-
 # Deploy Multicluster Hub. It will trigger the install of multicluster-engine operator
 - name: "Deploy Multicluster Hub CR"
   vars:
