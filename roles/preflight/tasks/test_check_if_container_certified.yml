@@ -1,10 +1,11 @@
 ---
 - name: Reset variable for certification
-  set_fact:
+  ansible.builtin.set_fact:
     already_certified: false
 
 - name: "Get Image Digest"
-  shell: >
+  ansible.builtin.shell: >
+    set -eo pipefail;
     skopeo inspect
     {% if partner_creds | length %}
     --authfile {{ partner_creds }}
@@ -15,18 +16,19 @@
   register: sha
 
 - name: "Get Image Registry"
-  set_fact:
+  ansible.builtin.set_fact:
     image_repository: "{{ current_operator_image.split('/')[0] }}"
     image_id: "{{ sha.stdout }}"
 
-- name: "Check with the API if {{ current_operator_image }} is already certified"
-  uri:
+- name: Check with the API if operator is already certified
+  ansible.builtin.uri:
     url: "{{ pyxis_url }}/images?\
-          include=data.image_id\
-          &include=data.docker_image_id&\
+          include=data.image_id&\
+          include=data.docker_image_id&\
           include=data.certified&\
           filter=docker_image_id%3D%3D%22{{ image_id }}%22&\
-          page_size=1&page=0"
+          page_size=1&
+          page=0"
     method: GET
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"
@@ -45,13 +47,16 @@
     - '"registry.redhat" not in image_repository'
     - 'sha.stdout | length > 0'
 
-- block:
-  - name: "Set the variable if the image is already certified"
-    set_fact:
-      already_certified: true
-
-  - name: "Certification Skip for {{ current_operator_image }}"
-    debug:
-      msg: "Certification for the image {{ current_operator_image }} has been skipped because it has already been certified"
-  when: (pyxis_image_info.json.data[0] is defined and pyxis_image_info.json.data[0].certified == true and preflight_test_certified_image)
+- name: Handle when previous certification exists
+  when: (pyxis_image_info.json.data[0] is defined and pyxis_image_info.json.data[0].certified|bool and preflight_test_certified_image|bool)
         or "registry.redhat" in image_repository
+  block:
+    - name: "Set the variable if the image is already certified"
+      ansible.builtin.set_fact:
+        already_certified: true
+
+    - name: "Certification Skip for {{ current_operator_image }}"
+      ansible.builtin.debug:
+        msg: >
+          Certification for the image {{ current_operator_image }} has been
+          skipped because it has already been certified

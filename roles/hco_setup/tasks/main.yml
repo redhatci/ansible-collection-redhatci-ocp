@@ -1,13 +1,13 @@
 ---
-- name: "hco_setup : deploy Hyperconverged Operator"
-  include_tasks: deploy-hco.yml
+- name: Deploy Hyperconverged Operator
+  ansible.builtin.include_tasks: deploy-hco.yml
   when:
     - hs_deploy | bool
   tags:
     - install
 
-- name: "hco_setup : deploy test Virtual Machine"
-  include_tasks: test-deploy-vm.yml
+- name: Deploy test Virtual Machine
+  ansible.builtin.include_tasks: test-deploy-vm.yml
   when:
     - hs_test_vm | bool
   tags:

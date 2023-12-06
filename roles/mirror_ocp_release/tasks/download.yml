@@ -1,7 +1,7 @@
 ---
 # TODO: For nightlies we could sign the artifacts with --signing-key
 - name: "Check if the release artifacts are in the cache"
-  stat:
+  ansible.builtin.stat:
     path: "{{ mor_cache_dir }}/{{ mor_version }}/release.txt"
     get_checksum: false
   register: target
@@ -9,7 +9,7 @@
     - not mor_force
 
 - name: "Extract artifacts from release image"
-  shell:
+  ansible.builtin.command:
     cmd: >
       {{ oc_tool_path }} adm release extract
       --registry-config {{ mor_auths_file }}
@@ -24,12 +24,12 @@
     - mor_force or not target.stat.exists
 
 - name: "Figure out status of SELinux"
-  command: /usr/sbin/selinuxenabled
+  ansible.builtin.command: /usr/sbin/selinuxenabled
   ignore_errors: true
   register: selinux_status
 
 - name: "Apply SELinux container file context to extracted files"
-  sefcontext:
+  ansible.builtin.sefcontext:
     target: "{{ mor_cache_dir }}/{{ mor_version }}"
     setype: container_file_t
   become: true

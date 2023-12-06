@@ -1,7 +1,4 @@
 ---
 - name: "Remove the local preflight image"
-  shell:
-    cmd: >
-      podman rmi -f {{ preflight_image }}
-
+  ansible.builtin.command: podman rmi -f {{ preflight_image }}
 ...

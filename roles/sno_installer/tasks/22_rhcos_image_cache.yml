@@ -3,11 +3,12 @@
 # 1. cache_enabled is true
 # 2. Access to www.redhat.com has been confirmed
 
-# SELinux when already has httpd_sys_content_t giving issues changing,thus leaving it the same
-# for the provision_cache_store to prevent issues. Also removing ":z" from podman_container for
-# provision_cache_store in the later task.
-- name: "Create {{ provision_cache_store }} on host with online access"
-  file:
+# SELinux when already has httpd_sys_content_t giving issues changing,thus
+# leaving it the same for the provision_cache_store to prevent issues. Also
+# removing ":z" from podman_container for provision_cache_store in the later
+# task.
+- name: "Create provision cache store on host with online access"
+  ansible.builtin.file:
     path: "{{ item[0] }}"
     state: directory
     owner: "{{ ansible_user }}"
@@ -36,19 +37,20 @@
   tags: cache
 
 - name: "Setting facts about container"
-  set_fact:
+  ansible.builtin.set_fact:
     rhcos_image_cache_name: "{{ rhcos_image_cache_info.container.Name }}"
     rhcos_image_cache_pidfile: "{{ rhcos_image_cache_info.container.ConmonPidFile }}"
   tags: cache
 
 - name: "Ensuring container restarts upon reboot"
+  tags: cache
   block:
     - name: "Ensure user specific systemd instance are persistent"
-      command: |
+      ansible.builtin.command: |
         /usr/bin/loginctl enable-linger {{ ansible_user }}
 
     - name: "Create systemd user directory"
-      file:
+      ansible.builtin.file:
         path: "{{ ansible_user_dir }}/.config/systemd/user"
         state: directory
         owner: "{{ ansible_user }}"
@@ -56,7 +58,7 @@
         mode: '0775'
 
     - name: "Copy the systemd service file"
-      copy:
+      ansible.builtin.copy:
         content: |
           [Unit]
           Description=Podman container-cache.service
@@ -75,35 +77,34 @@
         mode: '0644'
 
     - name: "Reload systemd service"
-      systemd:
-        daemon_reexec: yes
+      ansible.builtin.systemd:
+        daemon_reexec: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
 
     - name: "Enable container-cache.service"
-      systemd:
+      ansible.builtin.systemd:
         name: container-cache.service
-        enabled: yes
+        enabled: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
 
     - name: "Start container-cache.service"
-      systemd:
+      ansible.builtin.systemd:
         name: container-cache.service
         state: restarted
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
 
     - name: "Allow HTTP cache traffic"
-      firewalld:
+      ansible.posix.firewalld:
         port: "{{ webserver_caching_port_container }}/tcp"
-        permanent: yes
+        permanent: true
         immediate: true
         state: enabled
       become: true
       when: firewall == "firewalld"
-  tags: cache
 ...

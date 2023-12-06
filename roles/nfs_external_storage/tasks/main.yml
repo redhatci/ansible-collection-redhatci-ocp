@@ -1,11 +1,11 @@
 ---
 - name: "Assert all required fields are present"
-  assert:
+  ansible.builtin.assert:
     that:
       - nes_nfs_server | string
       - nes_nfs_path | string
 
-- name: "Creating {{ nes_namespace }} namespace"
+- name: "Creating namespace"
   community.kubernetes.k8s:
     definition:
       apiVersion: v1
@@ -18,7 +18,7 @@
           pod-security.kubernetes.io/enforce-version: latest
           security.openshift.io/scc.podSecurityLabelSync: "false"
 
-- name: "Allow hostmount-anyuid to the {{ nes_namespace }} namespace SA"
+- name: "Allow hostmount-anyuid to the namespace SA"
   community.kubernetes.k8s:
     definition: |
       apiVersion: v1
@@ -136,8 +136,8 @@
 - name: "Check if there is a default Storage Class"
   vars:
     query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
-    query_results: "{{ storage_class | json_query(query_default_sc) }}"
-  set_fact:
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"  # noqa: jinja[invalid]
+  ansible.builtin.set_fact:
     nes_default_sc: true
   when:
     - "not('true' in query_results)"
@@ -202,7 +202,7 @@
             volumes:
               - name: nfs-client-root
                 nfs:
-                  server: "{{ nes_nfs_server  }}"
+                  server: "{{ nes_nfs_server }}"
                   path: "{{ nes_nfs_path }}"
 
 - name: "Wait for nfs-client-provisioner pod to be Running"

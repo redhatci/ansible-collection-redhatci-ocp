@@ -1,37 +1,36 @@
 ---
-
 - name: "Set Logs path"
-  set_fact:
-    ts_log_dir: "{{ job_logs.path | default ('/tmp')}}"
+  ansible.builtin.set_fact:
+    ts_log_dir: "{{ job_logs.path | default('/tmp') }}"
 
 - name: "Checking if all nodes in MCP are updated and ready before running RedHat tests"
-  include_role:
-    name: check_resource
+  ansible.builtin.include_role:
+    name: redhatci.ocp.check_resource
   vars:
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 30
     check_wait_delay: 10
     check_reason: "Before running RedHat tests"
 
-- name: "redhat_tests : Run openshift conformance tests"
-  include_tasks: conformance.yml
+- name: "redhat_tests : Run openshift conformance tests"  # noqa: name[casing]
+  ansible.builtin.include_tasks: conformance.yml
   tags:
-  - conformance
+    - conformance
   when:
     - ts_conformance_tests | string | length > 0
     - ts_registry_certificate is defined
 
-- name: "redhat_tests : Run openshift CSI driver tests"
-  include_tasks: csi-tests.yml
+- name: "redhat_tests : Run openshift CSI driver tests"  # noqa: name[casing]
+  ansible.builtin.include_tasks: csi-tests.yml
   tags:
-  - csi-tests
+    - csi-tests
   when:
     - ts_csi_test_manifest | string | length > 0
 
-- name: "redhat_tests : Run openshift CNI tests suites"
-  include_tasks: cni-tests.yml
+- name: "redhat_tests : Run openshift CNI tests suites"  # noqa: name[casing]
+  ansible.builtin.include_tasks: cni-tests.yml
   tags:
-  - cni-tests
+    - cni-tests
   when:
     - ts_do_cni_tests | default(false) | bool
 
@@ -43,10 +42,10 @@
     name: kubevirts.kubevirt.io
   register: virtscrdstatus
 
-- name: "redhat_tests : Run openshift Virtualization tests suites - kubevirt-hyperconverged is required"
-  include_tasks: kubevirt-tests.yml
+- name: "redhat_tests : Run openshift Virtualization tests suites - kubevirt-hyperconverged is required"  # noqa: name[casing]
+  ansible.builtin.include_tasks: kubevirt-tests.yml
   tags:
-  - virtualization-tests
+    - virtualization-tests
   when:
     - ts_do_virt_tests | default(false) | bool
     - virtscrdstatus.resources|length > 0

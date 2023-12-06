@@ -1,5 +1,8 @@
 ---
-- include_tasks: packages.yml
-- include_tasks: config.yml
-- include_tasks: service.yml
+- name: Handle package install
+  ansible.builtin.include_tasks: packages.yml
+- name: Handle configuration
+  ansible.builtin.include_tasks: config.yml
+- name: Handle systemd service
+  ansible.builtin.include_tasks: service.yml
 ...

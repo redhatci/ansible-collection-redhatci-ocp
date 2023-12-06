@@ -1,36 +1,35 @@
 ---
 - name: "Enable and restart Services"
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: restarted
-    enabled: yes
-  become: yes
+    enabled: true
+  become: true
   with_items:
-  - libvirtd
-  when: |
-    - (sno_install_type is undefined) or
-      (sno_install_type == "virtual")
+    - libvirtd
+  when:
+    - sno_install_type | default("virtual") == "virtual"
   tags: services
 
 - name: "Enable Services (iptables)"
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: restarted
-    enabled: yes
-  become: yes
+    enabled: true
+  become: true
   with_items:
-  - "{{ firewall }}"
+    - "{{ firewall }}"
   when: firewall == "iptables"
   tags: services
 
 - name: "Enable Services (firewalld)"
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: started
-    enabled: yes
-  become: yes
+    enabled: true
+  become: true
   with_items:
-  - "{{ firewall }}"
+    - "{{ firewall }}"
   when: firewall != "iptables"
   tags: services
 ...

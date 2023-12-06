@@ -2,7 +2,7 @@
 - name: "Render bundle operator image"
   vars:
     opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
-  shell: >
+  ansible.builtin.shell: >
     {% if partner_creds | length %}
     DOCKER_CONFIG={{ preflight_tmp_dir.path }}
     {% endif %}
@@ -14,22 +14,22 @@
   until: rendered_bundle.rc == 0
 
 - name: "Get inspected data"
-  set_fact:
+  ansible.builtin.set_fact:
     bundle_data: "{{ rendered_bundle.stdout | from_json }}"
 
-- name: "Get operator name, version and image data blob"
+- name: "Get operator name, version and image data blob"  # noqa: jinja[invalid]
   vars:
     name_query: "properties[? type==`olm.package`].value.packageName"
     version_query: "properties[? type==`olm.package`].value.version"
     related_images: "{{ bundle_data | json_query('relatedImages[*].image') }}"
-  set_fact:
+  ansible.builtin.set_fact:
     operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
     operator_version: "{{ bundle_data | json_query(version_query) | join('') }}"
     operator_images: "{{ related_images | reject('search', operator.bundle_image) | list }}"
 
 - name: "Fail when cluster is disconnected and operator images are not using a digest"
-  fail:
+  ansible.builtin.fail:
     msg: "Operator images are not using a digest: {{ operator_images }}"
   when:
     - image | regex_search('.*@sha256:.*') == none
@@ -55,5 +55,5 @@
       merge_pr: "{{ operator.merge_pr | default(omit) }}"
       short_description: "{{ operator.short_description | default(omit) }}"
       attach_product_listing: "{{ operator.attach_product_listing | default(omit) }}"
-  set_fact:
-    preflight_operators_to_check: "{{ preflight_operators_to_check + [ operator_to_check ] }}"
+  ansible.builtin.set_fact:
+    preflight_operators_to_check: "{{ preflight_operators_to_check + [operator_to_check] }}"

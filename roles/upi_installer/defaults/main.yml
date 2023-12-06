@@ -5,4 +5,6 @@ webserver_url: ""
 cache_dir: "/opt/cache"
 upi_pullsecret: "{{ cache_dir }}/pull-secret.txt"
 provision_cache_store: "{{ cache_dir }}"
+force_mirroring: false
+ocp_binary_path: "/usr/local/bin"
 ...

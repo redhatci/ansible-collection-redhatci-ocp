@@ -1,25 +1,27 @@
 ---
 - name: Install openscap-utils
-  package:
+  ansible.builtin.package:
     name: "openscap-utils"
     state: present
   become: true
 
 - name: Download health check requirements
-  get_url:
+  ansible.builtin.get_url:
     url: https://www.redhat.com/security/data/oval/v2/RHEL{{ ansible_distribution_major_version }}/rhel-{{ ansible_distribution_major_version }}.oval.xml.bz2
     dest: "{{ preflight_container_artifacts.path }}"
+    mode: "0644"
   become: true
   register: hc_req
   until: hc_req.changed
   retries: 3
   delay: 20
 
-# Unarchive module can not be used: https://github.com/ansible/community/wiki/Module:-unarchive
-# Files that are only compressed such as foo.bz2 and bar.gz
-# are not currently supported since they are technically only compressed.
+# Unarchive module can not be used:
+# https://github.com/ansible/community/wiki/Module:-unarchive Files that are
+# only compressed such as foo.bz2 and bar.gz are not currently supported since
+# they are technically only compressed.
 - name: Unarchive the file
-  shell:
+  ansible.builtin.command:
     cmd: >
       bzip2 --decompress
       {{ preflight_container_artifacts.path }}/rhel-{{ ansible_distribution_major_version }}.oval.xml.bz2
@@ -28,7 +30,7 @@
   become: true
 
 - name: Get the image available for the root user
-  shell:
+  ansible.builtin.command:
     cmd: >
       podman pull
       {% if partner_creds | length %}
@@ -42,7 +44,7 @@
   until: not health_check.failed
 
 - name: Run health check
-  shell:
+  ansible.builtin.command:
     cmd: >
       oscap-podman {{ health_check.stdout }} oval eval
       --results oval-report.xml
@@ -53,7 +55,7 @@
   become: true
 
 - name: Change the ownership of oval report
-  file:
+  ansible.builtin.file:
     path: "{{ file }}"
     owner: "{{ ansible_user_id }}"
   loop:
@@ -69,7 +71,7 @@
     junit_dest: "{{ preflight_container_artifacts.path }}/oval-report.junit.xml"
 
 - name: Remove garbage files
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   loop:

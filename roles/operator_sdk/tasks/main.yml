@@ -2,24 +2,25 @@
 - name: Run Operator-SDK Scorecard suite
   block:
     - name: Create temporary directory for config and scorecard binary
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         prefix: scorecard_tmp_dir.
       register: scorecard_tmp_dir
 
     - name: Copy registry authentication into config folder
-      copy:
+      ansible.builtin.copy:
         src: "{{ scorecard_partner_creds }}"
         dest: "{{ scorecard_tmp_dir.path }}/config.json"
+        mode: "0644"
       when: scorecard_partner_creds | length
 
     # Optional. This can be used to test an unmerged branch.
     - name: Build operator_sdk_img
-      include_tasks: build_scorecard_image.yml
+      ansible.builtin.include_tasks: build_scorecard_image.yml
       when: operator_sdk_source_dir is defined
 
     - name: Retrieve operator-sdk binary from provided image
-      shell:
+      ansible.builtin.shell:
         cmd: >
           podman cp
           $(podman create --rm {{ operator_sdk_img }}):/usr/local/bin/operator-sdk
@@ -27,16 +28,16 @@
         chdir: "{{ scorecard_tmp_dir.path }}"
 
     - name: Manage images mirroring for Operator-sdk scorecard test suite
-      include_tasks: mirroring.yml
+      ansible.builtin.include_tasks: mirroring.yml
       when: scorecard_dci_disconnected | default(false) | bool
 
     # Main tests
     - name: Scorecard tests
-      include_tasks: tests_scorecard_check_operator.yml
+      ansible.builtin.include_tasks: tests_scorecard_check_operator.yml
       loop: "{{ scorecard_operators }}"
       loop_control:
         loop_var: operator
   always:
     - name: Teardown
-      include_tasks: teardown.yml
+      ansible.builtin.include_tasks: teardown.yml
 ...

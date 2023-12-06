@@ -1,6 +1,6 @@
 ---
 - name: "Create master cache directory"
-  file:
+  ansible.builtin.file:
     path: "{{ mor_cache_dir }}"
     state: directory
     owner: "{{ mor_owner }}"
@@ -9,7 +9,7 @@
   become: true
 
 - name: "Create cache directory for release"
-  file:
+  ansible.builtin.file:
     path: "{{ mor_cache_dir }}/{{ mor_version }}"
     owner: "{{ mor_owner }}"
     group: "{{ mor_group }}"

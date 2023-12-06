@@ -7,7 +7,7 @@
   no_log: true
 
 - name: "Fail if MetalLB CRD is not present"
-  fail:
+  ansible.builtin.fail:
     msg: "MetalLB CRD are not present, please install the MetalLB operator in the ACM hub"
   when: metal_crd.resources | list | count == 0
 
@@ -18,14 +18,15 @@
   register: mlb_instance
 
 - name: "Check if a metallb instance already exists"
-  debug:
-    msg:
-      - "A MetalLB instance already exists in this cluster, it will be updated accordingly"
+  ansible.builtin.debug:
+    msg: >
+      A MetalLB instance already exists in this cluster, it will be updated
+      accordingly
   when:
-  - mlb_instance.resources | length == 1
+    - mlb_instance.resources | length == 1
 
 - name: "Check mlb_settings file exits"
-  stat:
+  ansible.builtin.stat:
     path: "{{ mlb_settings }}"
   register: file_stat
   when:
@@ -33,7 +34,7 @@
     - mlb_settings | default("") | length
 
 - name: "Load mlb_settings from vars file"
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ mlb_settings }}"
   when:
     - file_stat is defined
@@ -41,7 +42,7 @@
     - file_stat.stat.exists | bool
 
 - name: "Validate parameters are defined"
-  assert:
+  ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required. See README.md for more details"
   loop:
@@ -61,12 +62,12 @@
   no_log: true
 
 - name: "Validate parameter mlb_ipaddr_pool is a list"
-  assert:
+  ansible.builtin.assert:
     that: "{{ mlb_ipaddr_pool }} is iterable"
     fail_msg: "The parameter {{ mlb_ipaddr_pool }} is required to be a list"
 
 - name: "Validate values of mlb_bgp_peers are defined"
-  assert:
+  ansible.builtin.assert:
     that:
       - peer.name is defined
       - peer.address is defined
@@ -90,10 +91,10 @@
 - name: "Fail when OCP version is not supported"
   vars:
     current_ver_query: "history[?state=='Completed'] | [0].version"
-    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"  # noqa: jinja[invalid]
     current_ver: "{{ full_ver.split('-')[0] }}"
-    ocp_version: "{{  current_ver }}"
-  fail:
+    ocp_version: "{{ current_ver }}"
+  ansible.builtin.fail:
     msg: "OCP version must be >= {{ mlb_ocp_supported }}"
   when: ocp_version is version( mlb_ocp_supported , "<")
 ...

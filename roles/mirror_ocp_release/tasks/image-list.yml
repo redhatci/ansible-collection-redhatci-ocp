@@ -1,43 +1,43 @@
 ---
 - name: "Get list of images"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_images: "{{ mor_images | default([]) }}"
 
 - name: "Add images for IPI installer"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_images: "{{ mor_images + mor_ipi }}"
   when:
     - mor_install_type == 'ipi'
 
 - name: "Add images for vsphere installer"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_images: "{{ mor_images + mor_vsphere }}"
   when:
     - mor_install_type == 'vsphere'
 
 - name: "Add images for ACM installation"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_images: "{{ mor_images + mor_acm }}"
   when:
     - mor_install_type == 'acm'
 
 - name: "Add images for SNO installation"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_images: "{{ mor_images + mor_sno }}"
   when:
     - mor_install_type == 'sno'
 
 - name: "Add images for Assisted installer"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_images: "{{ mor_images + mor_assisted_installer }}"
   when:
     - mor_install_type == 'assisted'
 
 - name: "Cleanup images list"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_images: "{{ mor_images | unique | select | list }}"
 
 - name: "Images to be mirrored"
-  debug:
+  ansible.builtin.debug:
     msg: "{{ mor_images }}"
 ...

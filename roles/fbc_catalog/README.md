@@ -32,7 +32,7 @@ The following application must be already present on the system.
     name: fbc_catalog
     apply:
       environment:
-        - DOCKER_CONFIG: "/path_docker_conf_dir/"
+        DOCKER_CONFIG: "/path_docker_conf_dir/"
   vars:
     fbc_index_image: <my-registry>:<port>/<namespace>/my_index:mytag
     fbc_expiration_time: 2d

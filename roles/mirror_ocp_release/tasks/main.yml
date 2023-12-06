@@ -1,6 +1,6 @@
 ---
 - name: "Validate required variables"
-  assert:
+  ansible.builtin.assert:
     that:
       - mor_cache_dir | string
       - mor_version | string
@@ -9,7 +9,7 @@
       - mor_oc | string
 
 - name: "Check if authentication file exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ mor_auths_file }}"
     get_checksum: false
   register: mor_auths_file_check
@@ -17,7 +17,7 @@
     - mor_auths_file is defined
 
 - name: "Validate optional authentication file"
-  assert:
+  ansible.builtin.assert:
     that:
       - mor_auths_file is defined
       - mor_auths_file_check.stat.exists | bool
@@ -25,7 +25,7 @@
     - mor_mirror_container_images | bool
 
 - name: "Validate optional mor_webserver_url variable"
-  assert:
+  ansible.builtin.assert:
     that:
       - mor_webserver_url | string
       - (mor_webserver_url | urlsplit('scheme')) in ('http', 'https',)
@@ -33,13 +33,13 @@
     - mor_write_custom_config | bool
 
 - name: "Validate install type"
-  assert:
+  ansible.builtin.assert:
     that:
       - mor_install_type | string
       - mor_install_type in ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm']
 
 - name: "Validate conditional registry variables"
-  assert:
+  ansible.builtin.assert:
     that:
       - mor_registry_url is defined
       - mor_registry_url | string
@@ -47,39 +47,39 @@
     - mor_mirror_container_images | bool
 
 - name: "Mirroring OCP"
-  debug:
+  ansible.builtin.debug:
     var: mor_version
 
 - name: "Create directory structure"
-  include_tasks: image-list.yml
+  ansible.builtin.include_tasks: image-list.yml
 
 - name: "Create directory structure"
-  include_tasks: dirs.yml
+  ansible.builtin.include_tasks: dirs.yml
 
 - name: "Download release resources"
-  include_tasks: download.yml
+  ansible.builtin.include_tasks: download.yml
 
 - name: "Unpack release artifacts"
-  include_tasks: unpack.yml
+  ansible.builtin.include_tasks: unpack.yml
 
 - name: "Extract installer"
-  include_tasks: installer.yml
+  ansible.builtin.include_tasks: installer.yml
 
 - name: "Write webserver configuration files"
-  include_tasks: files.yml
+  ansible.builtin.include_tasks: files.yml
   when:
     - mor_write_custom_config | bool
 
 - name: "Set OCP release facts"
-  include_tasks: facts.yml
+  ansible.builtin.include_tasks: facts.yml
 
 - name: "Mirror disk images"
-  include_tasks: images.yml
+  ansible.builtin.include_tasks: images.yml
   when:
     - mor_mirror_disk_images | bool
 
 - name: "Mirror container images"
-  include_tasks: registry.yml
+  ansible.builtin.include_tasks: registry.yml
   when:
     - mor_mirror_container_images | bool
 ...

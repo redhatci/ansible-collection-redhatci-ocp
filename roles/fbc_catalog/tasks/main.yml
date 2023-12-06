@@ -1,6 +1,6 @@
 ---
 - name: "Validate parameters"
-  assert:
+  ansible.builtin.assert:
     that:
       - fbc_bundles is defined
       - fbc_bundles | type_debug == "list"
@@ -8,47 +8,47 @@
     fail_msg: "At least one of the parameters requirements is missing"
 
 - name: Create temporary directory
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
     prefix: fbc_tmp_dir.
   register: fbc_tmp_dir
 
 - name: "Set working directory"
-  set_fact:
+  ansible.builtin.set_fact:
     fbc_tmp_dir: "{{ fbc_tmp_dir.path }}"
 
 - name: "Set opm cmd"
-  set_fact:
+  ansible.builtin.set_fact:
     fbc_opm_cmd: "{{ fbc_tmp_dir }}/opm {{ fbc_opm_args }}"
 
 - name: "Download stable opm client"
   vars:
     ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz"
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ ocp_clients_url }}"
     dest: "{{ fbc_tmp_dir }}"
     remote_src: true
-    mode: 0755
+    mode: "0755"
   register: result
   retries: 3
   delay: 10
   until: result is not failed
 
 - name: "Create index build directory"
-  file:
+  ansible.builtin.file:
     path: "{{ fbc_tmp_dir }}/catalog"
     state: directory
-    mode: 0755
+    mode: "0755"
 
 - name: "Build index image in temporary directory"
-  include_tasks: add-bundle.yml
+  ansible.builtin.include_tasks: add-bundle.yml
   loop: "{{ fbc_bundles }}"
   loop_control:
     loop_var: bundle
     label: "{{ bundle }}"
 
 - name: "Validate catalog"
-  shell: |
+  ansible.builtin.command: |
     {{ fbc_opm_cmd }} validate catalog
   args:
     chdir: "{{ fbc_tmp_dir }}"
@@ -58,13 +58,13 @@
   until: not catalog_validation.failed
 
 - name: "Add Dockerfile"
-  template:
+  ansible.builtin.template:
     src: catalog.Dockerfile.j2
     dest: "{{ fbc_tmp_dir }}/catalog.Dockerfile"
-    mode: 0644
+    mode: "0644"
 
 - name: "Build the catalog"
-  shell: >
+  ansible.builtin.command: >
     podman build .
     --no-cache
     -f catalog.Dockerfile
@@ -74,7 +74,7 @@
   notify:
     - "Delete temp directory"
 
-- name: "fbc_index_image"
-  debug:
+- name: "Display fbc_index_image"
+  ansible.builtin.debug:
     msg: "Catalog image build as {{ fbc_index_image }}"
 ...

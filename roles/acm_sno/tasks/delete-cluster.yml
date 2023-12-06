@@ -1,10 +1,10 @@
 ---
 - name: "Validate parameters"
-  assert:
+  ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"
   with_items:
-      - acm_cluster_name
+    - acm_cluster_name
 
 - name: "Delete managed cluster"
   community.kubernetes.k8s:

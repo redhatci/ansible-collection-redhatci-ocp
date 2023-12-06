@@ -7,6 +7,8 @@
     - ocs_install_type == 'internal'
 
 - name: Tasks for External OCS/ODF Integration
+  when:
+    - ocs_install_type == 'external'
   block:
     - name: Define External RHCS Cluster Settings in a secret
       community.kubernetes.k8s:
@@ -27,12 +29,10 @@
       register: extocsresult
 
     - name: "Give a delay for OCS to deploy pods"
-      pause:
+      ansible.builtin.pause:
         seconds: 60
       when:
         - extocsresult.changed | bool
-  when:
-    - ocs_install_type == 'external'
 
 - name: Get OCS health status
   community.kubernetes.k8s_info:

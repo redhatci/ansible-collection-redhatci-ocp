@@ -1,14 +1,14 @@
 ---
-- name: "Check if {{ uri | basename }} exists"
-  stat:
+- name: "Check if target file exists"
+  ansible.builtin.stat:
     path: "{{ mor_dir }}/{{ uri | basename }}"
     get_checksum: false
   register: target
   when:
     - not mor_force  # we don't care to stat files if we're forcing
 
-- name: "Fetch {{ uri | basename }}"
-  get_url:
+- name: "Fetch file from URL"
+  ansible.builtin.get_url:
     url: "{{ uri }}"
     dest: "{{ mor_dir }}"
     owner: "{{ mor_owner }}"
@@ -26,7 +26,7 @@
     - mor_force or not target.stat.exists
 
 - name: "Apply new SELinux file context to file"
-  command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ uri | basename }}"
+  ansible.builtin.command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ uri | basename }}"
   become: true
   when: selinux_status.rc == 0
 ...

@@ -5,8 +5,8 @@
     definition: "{{ lookup('file', scorecard_is_file) }}"
 
 - name: Wait for MCP status
-  include_role:
-    name: check_resource
+  ansible.builtin.include_role:
+    name: redhatci.ocp.check_resource
   vars:
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 60
@@ -14,19 +14,17 @@
     check_reason: "Delete Image Sources in operator_sdk role"
 
 - name: Remove tmp directory
-  file:
+  ansible.builtin.file:
     path: "{{ scorecard_tmp_dir.path }}"
     state: absent
   when: scorecard_tmp_dir is defined
 
 - name: Remove scorecard Image Source file
-  file:
+  ansible.builtin.file:
     path: "{{ scorecard_is_file }}"
     state: absent
   when: scorecard_is_file is defined
 
 - name: Remove operator_sdk_img built from the source
-  shell:
-    cmd: >
-      podman rmi -f {{ operator_sdk_img }}
+  ansible.builtin.command: podman rmi -f {{ operator_sdk_img }}
 ...

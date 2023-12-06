@@ -1,6 +1,6 @@
 ---
 - name: "Get chart images"
-  shell:
+  ansible.builtin.shell:
     cmd: >
       {{ helm_tool_path }} template {{ chart.chart_file }} |
       {{ yq_tool_path }} e '..|.image? | select(.)' - |
@@ -8,19 +8,19 @@
   loop: "{{ dci_charts }}"
   loop_control:
     loop_var: chart
-    label: "{{ chart.chart_file | basename}}"
+    label: "{{ chart.chart_file | basename }}"
   register: chart_images
   notify:
     - "Delete tmp tool directory"
 
 - name: "Get all images"
-  set_fact:
-    all_images: "{{ all_images|default([]) | unique + item.stdout_lines }}"
+  ansible.builtin.set_fact:
+    all_images: "{{ all_images | default([]) | unique + item.stdout_lines }}"
   loop: "{{ chart_images.results }}"
 
 - name: "Mirror chart images"
-  include_role:
-    name: mirror_images
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
   vars:
     images: "{{ all_images }}"
     authfile: "{{ pullsecret_tmp_file }}"

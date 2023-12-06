@@ -1,17 +1,20 @@
-- name: get vbmc node state
-  shell: "vbmc list | awk '/{{ item }}/ {print $4,$8}'"
+---
+- name: Get vbmc node state
+  ansible.builtin.shell: |
+    set -eo pipefail
+    vbmc list | awk '/{{ item }}/ {print $4,$8}'
   register: vbmc_status
-  with_items:  "{{ vbmc_nodes }}"
+  with_items: "{{ vbmc_nodes }}"
 
-- name: check and run vbmc node if it is down
-  command: "vbmc start {{ item.item }}"
+- name: Check and run vbmc node if it is down
+  ansible.builtin.command: "vbmc start {{ item.item }}"
   with_items: "{{ vbmc_status.results }}"
   when: item.stdout.split()[0]  == 'down'
 
-- name: create dictionary with vbmc port
-  set_fact:
-      vbmc_ports: "{{ vbmc_ports|default({})|combine({ item.item: item.stdout.split()[1]}) }}"
+- name: Create dictionary with vbmc port
+  ansible.builtin.set_fact:
+      vbmc_ports: "{{ vbmc_ports | default({}) | combine({item.item: item.stdout.split()[1]}) }}"
   with_items: "{{ vbmc_status.results }}"
 
-- name: include firewalld rules check
-  include_tasks: firewalld.yml
+- name: Include firewalld rules check
+  ansible.builtin.include_tasks: firewalld.yml

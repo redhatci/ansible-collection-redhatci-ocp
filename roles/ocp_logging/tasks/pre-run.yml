@@ -1,7 +1,7 @@
 ---
 
 - name: "Check logs_settings file"
-  stat:
+  ansible.builtin.stat:
     path: "{{ ol_settings }}"
   register: file_stat
   when:
@@ -9,7 +9,7 @@
     - ol_settings | default("") | length
 
 - name: "Load logs_settings from vars file"
-  include_vars:
+  ansible.builtin.include_vars:
     file: "{{ ol_settings }}"
   when:
     - ol_settings is defined
@@ -18,7 +18,7 @@
     - file_stat.stat.exists
 
 - name: "Validate parameters"
-  assert:
+  ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"
   with_items:
@@ -40,10 +40,10 @@
 - name: "Fail when OCP version is not supported"
   vars:
     current_ver_query: "history[?state=='Completed'] | [0].version"
-    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"  # noqa: jinja[invalid]
     current_ver: "{{ full_ver.split('-')[0] }}"
-    ocp_version: "{{  current_ver }}"
-  fail:
+    ocp_version: "{{ current_ver }}"
+  ansible.builtin.fail:
     msg: "OCP version must be >= {{ ol_ocp_supported }}"
   when: ocp_version is version( ol_ocp_supported , "<")
 
@@ -55,7 +55,7 @@
   no_log: true
 
 - name: "Fail if Loki CRD is not present"
-  fail:
+  ansible.builtin.fail:
     msg: "Loki CRD are not present"
   when: loki_crd.resources | list | count == 0
 
@@ -67,7 +67,7 @@
   no_log: true
 
 - name: "Fail if ClusterLogging CRD is not present"
-  fail:
+  ansible.builtin.fail:
     msg: "ClusterLogging CRD is not present"
   when: cl_crd.resources | list | count == 0
 
@@ -79,7 +79,7 @@
   register: storage_class
 
 - name: "Fail when the storage class does not exit"
-  fail:
+  ansible.builtin.fail:
     msg: "The defined storage class does not exist"
   when:
     - storage_class.resources | length == 0

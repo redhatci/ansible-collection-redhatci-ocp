@@ -1,42 +1,43 @@
 ---
-- name: "Verify the presence of {{ item | basename }} in the log folder"
-  stat:
+- name: "Verify the presence of file in the log folder"
+  ansible.builtin.stat:
     path: "{{ item }}"
   register: junit_file
 
-- name: "Fail if {{ item | basename }} is not present in the log folder"
-  fail:
+- name: "Fail if file is not present in the log folder"
+  ansible.builtin.fail:
     msg: "Could not verify test results: {{ item | basename }} is not present"
   failed_when:
     - not junit_file.stat.exists
     # Do not fail when the option to skip missing files is on
     - not skip_absent_testfiles | bool
 
-- block:
+- name: Parse JUnit file
+  when: junit_file.stat.exists
+  block:
     - name: Verify JUnit format and fix wrapping testsuites tags if required
+      when: junit_fix_tags | default(false) | bool
       block:
         - name: "Insert opening <testsuites> tag"
-          lineinfile:
+          ansible.builtin.lineinfile:
             path: "{{ item }}"
             insertbefore: '<testsuite'
             line: '<testsuites>'
 
         - name: "Insert closing </testsuites> tag"
-          lineinfile:
+          ansible.builtin.lineinfile:
             path: "{{ item }}"
             insertafter: EOF
             line: '</testsuites>'
-      when: junit_fix_tags | default(false) | bool
 
     - name: "Retrieve the actual test results from {{ item | basename }}"
-      set_fact:
+      ansible.builtin.set_fact:
         actual_results: "{{ item | redhatci.ocp.junit2dict }}"
 
-    - name: "Fail if not all test results are as expected for {{ item | basename }}"
+    - name: Fail if not all test results are as expected
       vars:
         expectation_failed: "{{ t.expected_results | redhatci.ocp.regex_diff(actual_results) }}"
-      fail:
+      ansible.builtin.fail:
         msg: "The following expectations failed: {{ expectation_failed }}"
       when: expectation_failed | length > 0
-  when: junit_file.stat.exists
 ...

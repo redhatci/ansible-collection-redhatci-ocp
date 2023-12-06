@@ -8,8 +8,8 @@
         definition: "{{ lookup('file', preflight_is_file) }}"
 
     - name: Wait for MCP status
-      include_role:
-        name: check_resource
+      ansible.builtin.include_role:
+        name: redhatci.ocp.check_resource
       vars:
         resource_to_check: "MachineConfigPool"
         check_wait_retries: 60
@@ -17,26 +17,25 @@
         check_reason: "Delete Image Sources in preflight role"
 
     - name: Remove preflight Image Source file
-      file:
+      ansible.builtin.file:
         path: "{{ preflight_is_file }}"
         state: absent
 
 - name: Remove tmp directory
-  file:
+  ansible.builtin.file:
     path: "{{ preflight_tmp_dir.path }}"
     state: absent
   when: preflight_tmp_dir is defined
 
 - name: Remove certificate used by preflight from the CA-Trust database
+  when: preflight_custom_ca | length
+  become: true
   block:
     - name: Remove the anchor CA file
-      file:
+      ansible.builtin.file:
         state: absent
         path: "/etc/pki/ca-trust/source/anchors/preflight_ca.crt"
 
     - name: Update trusted CA
-      command: /bin/update-ca-trust
-  when: preflight_custom_ca | length
-  become: true
-
+      ansible.builtin.command: /bin/update-ca-trust
 ...

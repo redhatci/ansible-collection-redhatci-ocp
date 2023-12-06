@@ -1,6 +1,6 @@
 ---
 - name: Delete cluster
-  shell:
+  ansible.builtin.shell:
     cmd: >
       {{ ah_cli_path }} destroy cluster {{ ah_cluster_type }}
       --name={{ ah_cluster_generated_name }}

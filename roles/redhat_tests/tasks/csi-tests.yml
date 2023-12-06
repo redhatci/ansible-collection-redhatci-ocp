@@ -1,6 +1,6 @@
 ---
-- name: "test_ redhat_tests: Run the openshift CSI tests"
-  shell:
+- name: "test_ redhat_tests: Run the openshift CSI tests"  # noqa: name[casing]
+  ansible.builtin.shell:
     cmd: >
      podman run --pull=always --rm
      -v {{ ts_configs_dir }}:/tests:Z
@@ -9,6 +9,8 @@
      -e TEST_CSI_DRIVER_FILES=/manifest.yaml
      -e KUBECONFIG=/tests/kubeconfig
      {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
-     /bin/bash -c "openshift-tests run openshift/csi --junit-dir /logs" > {{ ts_log_dir }}/csi-report.log
+     /bin/bash -c
+       "openshift-tests run openshift/csi --junit-dir /logs"
+     > {{ ts_log_dir }}/csi-report.log
   ignore_errors: true
 ...

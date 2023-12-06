@@ -8,7 +8,7 @@
     namespace: "{{ mlb_namespace }}"
     wait: true
     wait_condition:
-      status: False
+      status: "False"
     wait_sleep: 2
     wait_timeout: 300
   loop: "{{ mlb_bgp_peers }}"
@@ -26,10 +26,9 @@
     namespace: "{{ mlb_namespace }}"
     wait: true
     wait_condition:
-      status: False
+      status: "False"
     wait_sleep: 2
     wait_timeout: 300
-  loop: "{{ mlb_bgp_peers }}"
   ignore_errors: true
   loop: "{{ mlb_resources }}"
   loop_control:

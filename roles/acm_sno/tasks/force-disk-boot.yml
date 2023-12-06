@@ -1,6 +1,6 @@
 ---
 - name: "Power off node using ipmitool"
-  shell: >
+  ansible.builtin.shell: >
     ipmitool -I lanplus -U {{ acm_bmc_user }}
     -P {{ acm_bmc_pass }}
     -H {{ acm_bmc_address }}
@@ -12,7 +12,7 @@
   delay: 5
 
 - name: "Wait for power off"
-  shell: >
+  ansible.builtin.shell: >
     ipmitool -I lanplus -U {{ acm_bmc_user }}
     -P {{ acm_bmc_pass }}
     -H {{ acm_bmc_address }}
@@ -24,7 +24,7 @@
   delay: 60
 
 - name: "Change boot device using ipmitool"
-  shell: >
+  ansible.builtin.shell: >
     ipmitool -I lanplus -U {{ acm_bmc_user }}
     -P {{ acm_bmc_pass }}
     -H {{ acm_bmc_address }}
@@ -36,7 +36,7 @@
   delay: 5
 
 - name: "Power on node using ipmitool"
-  shell: >
+  ansible.builtin.shell: >
     ipmitool -I lanplus -U {{ acm_bmc_user }}
     -P {{ acm_bmc_pass }}
     -H {{ acm_bmc_address }}
@@ -48,7 +48,7 @@
   delay: 5
 
 - name: "Wait for power on"
-  shell: >
+  ansible.builtin.shell: >
     ipmitool -I lanplus -U {{ acm_bmc_user }}
     -P {{ acm_bmc_pass }}
     -H {{ acm_bmc_address }}

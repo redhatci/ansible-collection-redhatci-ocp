@@ -1,7 +1,7 @@
 ---
 - name: Install additional packages
   become: true
-  package:
+  ansible.builtin.package:
     name:
       - conserver
       - conserver-client

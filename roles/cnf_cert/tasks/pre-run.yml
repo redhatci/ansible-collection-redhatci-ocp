@@ -1,16 +1,17 @@
 ---
 - name: Fail if tnf version is lower than v4.4.0
-  fail:
-    msg: "cnf_cert role is no longer compatible with tnf versions lower than v4.4.0"
   when:
     - test_network_function_version is version("v4.4.0", "<")
     - test_network_function_version != "HEAD"
+  ansible.builtin.fail:
+    msg: "cnf_cert role is no longer compatible with tnf versions lower than v4.4.0"
 
-# Just do this in case preflight test suite is used. This happens if using preflight label
-# This check is included as a warning for users in case of not defining
-# partner_creds properly
+# Just do this in case preflight test suite is used. This happens if using
+# preflight label This check is included as a warning for users in case of not
+# defining partner_creds properly
 - name: Verify if partner_creds is provided when running preflight on tnf
-  assert:
+  when: "'preflight' in tnf_labels"
+  ansible.builtin.assert:
     that: "partner_creds|length"
     fail_msg: >
       WARNING.
@@ -18,17 +19,16 @@
       If you need credentials to pull the images under test,
       you need to set up partner_creds variable,
       else CNF Cert Suite execution will fail.
-  when: "'preflight' in tnf_labels"
   ignore_errors: true
 
 # For HEAD version, the support_image_version should be 'latest'
 - name: Set support_image_version variable
-  set_fact:
-    support_image_version: "{% if test_network_function_version is version('v4.4.0', '>=') %}{{test_network_function_version[1:]}}{% else %}latest{% endif %}"
+  ansible.builtin.set_fact:
+    support_image_version: "{{ test_network_function_version[1:] if test_network_function_version is version('v4.4.0', '>=') else 'latest' }}"
 
-- name: "cnf_cert : Save images in local registry"
-  include_role:
-    name: mirror_images
+- name: "Save images in local registry"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
   vars:
     images:
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"
@@ -42,164 +42,180 @@
 # defined by test-runner script when testing a PR from cnf-certification-test
 # repository, we will use a custom tnf image or not.
 - name: Tasks when testing a PR from cnf-certification-test repository
-  block:
-
-  # In this case, test_network_function_src_dir already points to cnf-certification-test
-  - name: Define variable to refer to the directory where tnf code is placed
-    set_fact:
-      tnf_dir: "{{ test_network_function_src_dir }}"
-
-  # Add proper permissions to the folder recursively.
-  # This is needed since extract-dependencies script downloads the code without
-  # write permissions/exec permissions, and they are required for creating new files
-  # (e.g. the output from tnf execution) or execute scripts (e.g. the script that runs
-  # the certification suites).
-  - name: Set proper permissions to the tnf folder
-    file:
-      path: "{{ tnf_dir }}"
-      state: directory
-      mode: u+wx,g+wx
-      recurse: true
-
-  # Retrieve the SHA to use it when building the tnf image locally.
-  # Following the same method it is defined in include_components role,
-  # track_dev_git_repo.yml playbook.
-  # However, in this case, we don't need to create the component in this
-  # role, since it is already done in dci-openshift-app-agent through
-  # dev_gits_to_components variable.
-  - name: "Check if .git/ORIG_HEAD file exists"
-    stat:
-      path: "{{ tnf_dir }}/.git/ORIG_HEAD"
-    register: orig_head_file
-
-  - name: Actions when .git/ORIG_HEAD file exists
-    block:
-      - name: Retrieve commit SHA from the downloaded repo - from ORIG_HEAD
-        shell: cat .git/ORIG_HEAD
-        register: tnf_repo_info_head
-        args:
-          chdir: "{{ tnf_dir }}"
-
-      - name: Create variable with tnf version name
-        set_fact:
-          tnf_version_image: "{{ tnf_repo_info_head.stdout }}"
-    when: orig_head_file.stat.exists
-
-  - name: Actions when .git/ORIG_HEAD file does not exist
-    block:
-      - name: Retrieve commit SHA from the downloaded repo - from refs
-        shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
-        register: tnf_repo_info_branch
-        args:
-          chdir: "{{ tnf_dir }}"
-
-      - name: Create variable with tnf version name
-        set_fact:
-          tnf_version_image: "{{ tnf_repo_info_branch.stdout }}"
-    when: not orig_head_file.stat.exists
-
-  - name: Create variable with tnf image name
-    set_fact:
-      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
-        {{ tnf_image_suffix }}"
-
-  # Steps from https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
-  - name: Build the tnf image locally
-    shell: |
-      set -x
-      podman build -t {{ tnf_image }} \
-      --no-cache \
-      --build-arg TNF_VERSION={{ tnf_version_image }} \
-      --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
-      --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
-    args:
-      chdir: "{{ tnf_dir }}"
-
   when:
     - test_network_function_src_dir is defined
     - test_network_function_src_dir | length > 0
+  block:
+    # In this case, test_network_function_src_dir already points to
+    # cnf-certification-test
+    - name: Define variable to refer to the directory where tnf code is placed
+      ansible.builtin.set_fact:
+        tnf_dir: "{{ test_network_function_src_dir }}"
+
+    # Add proper permissions to the folder recursively.  This is needed since
+    # extract-dependencies script downloads the code without write
+    # permissions/exec permissions, and they are required for creating new files
+    # (e.g. the output from tnf execution) or execute scripts (e.g. the script
+    # that runs the certification suites).
+    - name: Set proper permissions to the tnf folder
+      ansible.builtin.file:
+        path: "{{ tnf_dir }}"
+        state: directory
+        mode: u+wx,g+wx
+        recurse: true
+
+    # We need to check the SHA in this way, because extract-dependencies
+    # changes the commit id when creating the new branch based on the PR, but
+    # only if new PRs are merged in the repo and we have not included them in
+    # our change. In these cases, the original id is saved in .git/ORIG_HEAD
+    # file. Else, we can find it in the location called `.git/refs/heads/prXXX`
+    - name: "Check if .git/ORIG_HEAD file exists"
+      ansible.builtin.stat:
+        path: "{{ tnf_dir }}/.git/ORIG_HEAD"
+      register: orig_head_file
+
+    - name: Actions when .git/ORIG_HEAD file exists
+      when: orig_head_file.stat.exists
+      block:
+        - name: Retrieve commit SHA from the downloaded repo - from ORIG_HEAD
+          ansible.builtin.slurp:
+            src: "{{ tnf_dir }}/.git/ORIG_HEAD"
+          register: tnf_repo_info_head
+
+        - name: Create variable with tnf version name
+          ansible.builtin.set_fact:
+            tnf_version_image: "{{ tnf_repo_info_head['content'] | b64decode }}"
+
+    - name: Actions when .git/ORIG_HEAD file does not exist
+      when: not orig_head_file.stat.exists
+      block:
+        - name: Retrieve commit SHA from the downloaded repo - from refs
+          ansible.builtin.shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
+          register: tnf_repo_info_branch
+          args:
+            chdir: "{{ tnf_dir }}"
+
+        - name: Create variable with tnf version name
+          ansible.builtin.set_fact:
+            tnf_version_image: "{{ tnf_repo_info_branch.stdout }}"
+
+    - name: Create variable with tnf image name
+      ansible.builtin.set_fact:
+        tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
+          {{ tnf_image_suffix }}"
+
+    # Steps from
+    # https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
+    - name: Build the tnf image locally
+      ansible.builtin.shell: |
+        set -x
+        podman build -t {{ tnf_image }} \
+        --build-arg TNF_VERSION={{ tnf_version_image }} \
+        --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
+        --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .
+      args:
+        chdir: "{{ tnf_dir }}"
+
+    # This is needed because the DCI component is not automatically created, as
+    # it is done in case the git repo is directly used, in whose case it is
+    # created.  Doing this in the same way that is done in track_git_repo play
+    # but with the arguments obtained in previous tasks (e.g. commit SHA), as we
+    # cannot rely on the last commit id. For that reason, it is better to just do
+    # it here rather than changing pre-run and track_git_repo to be adapted to
+    # this casuistic
+    - name: Manually create the corresponding tnf component for DCI
+      ansible.legacy.dci_component:
+        display_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
+        version: "{{ tnf_version_image }}"
+        team_id: "{{ job_info['job']['team_id'] }}"
+        topic_id: "{{ job_info['job']['topic_id'] }}"
+        type: "{{ test_network_function_project_name }}"
+        url: "https://github.com/test-network-function/cnf-certification-test/commit/{{ tnf_version_image }}"  # noqa 204
+        state: present
+      register: tnf_git_component
+      tags: [dci]
+
+    - name: Attach tnf component to the job
+      ansible.legacy.dci_job_component:
+        component_id: "{{ tnf_git_component.component.id }}"
+        job_id: "{{ job_id }}"
+      register: job_component_result
+      until: job_component_result is not failed
+      retries: 5
+      delay: 20
+      tags: [dci]
 
 - name: Tasks when testing a cnf-certification-test stable version
-  block:
-
-  - name: Create temporary directory for tnf repository
-    tempfile:
-      state: directory
-    register: tnf_git_dir
-
-  - name: Define variable to refer to the directory where tnf code is placed
-    set_fact:
-      tnf_dir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
-
-  # In https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
-  # there are two main tags to take into account:
-  # -latest: linked to the latest tnf release.
-  # -unstable: related to the HEAD version of the main branch in the tnf repository
-  # (https://github.com/test-network-function/cnf-certification-test).
-  # So, if a version is provided in test_network_function_version, that version will be
-  # used. In case we are on the master branch (HEAD version), unstable tag is used.
-  - name: Create variable with tnf version name
-    set_fact:
-      tnf_version_image: "{{ ( test_network_function_version | regex_search('HEAD') ) | ternary('unstable', test_network_function_version) }}"
-
-  - name: Create variable with tnf image name
-    set_fact:
-      tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
-      {{ tnf_image_suffix }}"
-
-  - name: Clone tnf repository
-    git:
-      repo: "{{ test_network_function_repo }}"
-      version: "{{ test_network_function_version }}"
-      dest: "{{ tnf_dir }}"
-      force: yes
-    # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
-    # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the repo
-    # multiple times.
-    register: test_network_function_gitref
-    retries: 3
-    delay: 10
-    until: not test_network_function_gitref.failed
-
-  # We need to pull the original image to tag it. Then, we remove the pulled image
-  - name: Pull and tag tnf image for the version under test
-    shell: |
-      set -ex
-      podman pull quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }}
-      podman tag quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }} \
-      {{ tnf_image }}
-      podman image rm {{ test_network_function_project_name }}:{{ tnf_version_image }}
-    register: result
-    retries: 2
-    delay: 10
-    until: result.rc == 0
-
-  # This is used to lately check if we are really testing the version we are cloning
-  # from the cnf-certification-test repo, checking in tnf logs if the commit SHA is
-  # present. This is only useful to lately compare with the output from a downloaded
-  # cnf-certification-test repo, so this is not meant to be used with images built
-  # from a PR
-  - name: Retrieve last commit SHA
-    shell: git rev-parse HEAD
-    register: tnf_commit_sha_cmd
-    args:
-      chdir: "{{ tnf_dir }}"
-
-  - name: Create variable with tnf commit SHA
-    set_fact:
-      tnf_commit_sha: "{{ tnf_commit_sha_cmd.stdout }}"
-
-  - name: Create cnf-certification-test component calling to include_components role
-    vars:
-      gits_list:
-        - "{{ tnf_dir }}"
-      ic_gits: "{{ gits_list|flatten }}"
-      ic_rpms: []
-      ic_dev_gits: []
-    include_role:
-      name: redhatci.ocp.include_components
-
   when:
     - test_network_function_src_dir is not defined
+  block:
+    - name: Create temporary directory for tnf repository
+      ansible.builtin.tempfile:
+        state: directory
+      register: tnf_git_dir
 
+    - name: Define variable to refer to the directory where tnf code is placed
+      ansible.builtin.set_fact:
+        tnf_dir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
+
+    # In
+    # https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
+    # there are two main tags to take into account: -latest: linked to the
+    # latest tnf release.  -unstable: related to the HEAD version of the main
+    # branch in the tnf repository
+    # (https://github.com/test-network-function/cnf-certification-test).  So,
+    # if a version is provided in test_network_function_version, that version
+    # will be used. In case we are on the master branch (HEAD version),
+    # unstable tag is used.
+    - name: Create variable with tnf version name
+      ansible.builtin.set_fact:
+        tnf_version_image: "{{ (test_network_function_version | regex_search('HEAD')) | ternary('unstable', test_network_function_version) }}"
+
+    - name: Create variable with tnf image name
+      ansible.builtin.set_fact:
+        tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
+        {{ tnf_image_suffix }}"
+
+    - name: Clone tnf repository
+      ansible.builtin.git:
+        repo: "{{ test_network_function_repo }}"
+        version: "{{ test_network_function_version }}"
+        dest: "{{ tnf_dir }}"
+        force: true
+      # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
+      # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the
+      # repo multiple times.
+      register: test_network_function_gitref
+      retries: 3
+      delay: 10
+      until: not test_network_function_gitref.failed
+
+    # We need to pull the original image to tag it. Then, we remove the pulled
+    # image
+    - name: Pull and tag tnf image for the version under test
+      ansible.builtin.shell: |
+        set -ex
+        podman pull quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }}
+        podman tag quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }} \
+        {{ tnf_image }}
+        podman image rm {{ test_network_function_project_name }}:{{ tnf_version_image }}
+      register: result
+      retries: 2
+      delay: 10
+      until: result.rc == 0
+
+    # This is used to lately check if we are really testing the version we are
+    # cloning from the cnf-certification-test repo, checking in tnf logs if the
+    # commit SHA is present. This is only useful to lately compare with the
+    # output from a downloaded cnf-certification-test repo, so this is not
+    # meant to be used with images built from a PR
+    - name: Retrieve last commit SHA
+      ansible.builtin.command: git rev-parse HEAD  # noqa: command-instead-of-module
+      register: tnf_commit_sha_cmd
+      args:
+        chdir: "{{ tnf_dir }}"
+
+    - name: Create variable with tnf commit SHA
+      ansible.builtin.set_fact:
+        tnf_commit_sha: "{{ tnf_commit_sha_cmd.stdout }}"
 ...

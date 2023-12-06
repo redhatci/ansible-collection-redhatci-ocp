@@ -8,10 +8,9 @@
         name: "metallb"
         namespace: "{{ mlb_namespace }}"
       spec:
-      {% if mlb_workers_only | default (true) | bool %}
+      {% if mlb_workers_only | default(true) | bool %}
         nodeSelector:
-          node-role.kubernetes.io/worker: ""
-      {%- endif %}
+          node-role.kubernetes.io/worker: ""{%- endif %}
   community.kubernetes.k8s:
     state: present
     definition: "{{ instance }}"
@@ -24,7 +23,7 @@
     label_selectors:
       - component = speaker
   register: pod_list
-  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  until: pod_list | json_query('resources[*].status.phase')|unique == ["Running"]
   retries: 9
   delay: 10
   no_log: true
@@ -42,6 +41,8 @@
         addresses: "{{ mlb_ipaddr_pool }}"
 
 - name: "Setup BGP mode objects"
+  when:
+    - mlb_bgp_peers is defined
   block:
     - name: "Create MetalLB BFD Profile"
       community.kubernetes.k8s:
@@ -89,8 +90,6 @@
       community.kubernetes.k8s:
         state: present
         definition: "{{ bgpadvert }}"
-  when:
-    - mlb_bgp_peers is defined
 
 - name: "Create MetalLB L2 Advertisements"
   community.kubernetes.k8s:

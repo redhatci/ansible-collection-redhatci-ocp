@@ -1,6 +1,6 @@
 ---
 - name: Validate cert_listings required to attach product listing
-  assert:
+  ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required to attach product listing"
     success_msg: "All required parameters are ok, proceeding to attach product listing"
@@ -10,19 +10,19 @@
     - cert_listings.pyxis_product_list_identifier
 
 - name: Set pyxis_product_list_identifier if cert product list is already here
-  set_fact:
+  ansible.builtin.set_fact:
     pyxis_product_list_identifier: "{{ cert_listings.pyxis_product_list_identifier }}"
 
 - name: Set and save project IDs to use with Product-list-Attach For CNF project
-  set_fact:
-    cert_projects: "{{ cert_projects | default([]) + [ cert_project_id ] }}"
+  ansible.builtin.set_fact:
+    cert_projects: "{{ cert_projects | default([]) + [cert_project_id] }}"
   when:
     - cnf_to_certify is defined
     - cert_project_id is defined
 
 - name: Set and save project IDs to use with product listing attach for Helm Chart
-  set_fact:
-    helmchart_projects: "{{ helmchart_projects | default([]) + [ cert_project_id ] }}"
+  ansible.builtin.set_fact:
+    helmchart_projects: "{{ helmchart_projects | default([]) + [cert_project_id] }}"
   when:
     - cert_project_id is defined
     - helmchart_to_certify is defined
@@ -31,7 +31,7 @@
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
     template_filename: "templates/attach_product_{{ project_type }}_listing.json.j2"
-  uri:
+  ansible.builtin.uri:
     url: "{{ create_product_url }}/id/{{ pyxis_product_list_identifier }}"
     method: PATCH
     headers:

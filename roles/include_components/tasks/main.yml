@@ -1,9 +1,10 @@
 ---
-
-- include_tasks: track_dev_git_repo.yml
+- name: Track development git repos
+  ansible.builtin.include_tasks: track_dev_git_repo.yml
   loop: "{{ ic_dev_gits }}"
 
-- include_tasks: track_git_repo.yml
+- name: Track git repos
+  ansible.builtin.include_tasks: track_git_repo.yml
   loop: "{{ ic_gits }}"
   when: |
     item|regex_replace('^(?:.*/(.+)|.*/([^/]+))$', '\\1') is not in
@@ -11,10 +12,11 @@
     map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') | list)
 
 - name: Gather the package facts
-  package_facts:
+  ansible.builtin.package_facts:
     manager: auto
 
-- include_tasks: track_rpm.yml
+- name: Track RPMs
+  ansible.builtin.include_tasks: track_rpm.yml
   loop: "{{ ic_rpms }}"
   when:
     - item is not in
@@ -22,5 +24,4 @@
         map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') |
         map('regex_replace', 'python', 'python3') | list)
     - item in ansible_facts.packages
-
 ...

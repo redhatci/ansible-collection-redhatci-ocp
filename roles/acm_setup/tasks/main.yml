@@ -1,12 +1,20 @@
 ---
 - name: "Validate requirements"
-  include_tasks: validation.yml
+  ansible.builtin.include_tasks: validation.yml
 
-# Deploy Multicluster Hub. It will trigger the install of multicluster-engine operator
+# Deploy Multicluster Hub. It will trigger the install of multicluster-engine
+# operator
 - name: "Deploy Multicluster Hub CR"
   vars:
     catalog_query: "resources[*].status.catalogSource"
-    catalog_source: "{{ mce_packagemanifest | json_query(catalog_query) | join('') | string }}"
+    catalog_source: "{{ mce_packagemanifest | json_query(catalog_query) | join('') | string }}"  # noqa: jinja[invalid]
+    me_annotation:
+      channel: "{{ me_channel }}"
+      installPlanApproval: "Automatic"
+      name: "multicluster-engine"
+      source: "{{ catalog_source }}"
+      sourceNamespace: "openshift-marketplace"
+      startingCSV: "{{ me_csv }}"
   community.kubernetes.k8s:
     definition:
       apiVersion: operator.open-cluster-management.io/v1
@@ -32,6 +40,9 @@
   delay: 10
 
 - name: "Configure hugepages on postgres containers"
+  when:
+    - has_hugepages | default(false) | bool
+    - has_defined_hugepage | default(false) | bool
   block:
     - name: "Annotate the Search Object"
       community.kubernetes.k8s:
@@ -68,9 +79,6 @@
       community.kubernetes.k8s:
         state: present
         definition: "{{ dep_definition }}"
-  when:
-    - has_hugepages | default(false) | bool
-    - has_defined_hugepage | default(false) | bool
 
 - name: "Wait for ACM pods to be Running"
   community.kubernetes.k8s_info:
@@ -99,6 +107,8 @@
     - mch.resources[0].status.phase == 'Running'
 
 - name: "Disable ClusterImageSets and AppSubs when disconnected"
+  when:
+    - hub_disconnected | bool
   block:
     - name: "Disable ClusterImageSet subscription"
       community.kubernetes.k8s:
@@ -129,7 +139,7 @@
     - name: "Delete all ClusterImageSets"
       vars:
         subs_details: "resources[*].{ app_subs_name: metadata.name }"
-        app_subs: "{{ cis_list | json_query(subs_details) }}"
+        app_subs: "{{ cis_list | json_query(subs_details) }}"  # noqa: jinja[invalid]
       community.kubernetes.k8s:
         api: hive.openshift.io/v1
         state: absent
@@ -142,8 +152,6 @@
       when:
         - cis_list is defined
         - cis_list | length
-  when:
-    - hub_disconnected | bool
 
 - name: "Enable feature gate for Central Infrastructure Management service"
   community.kubernetes.k8s:
@@ -158,7 +166,7 @@
         featureGates:
           custom:
             enabled:
-            - AlphaAgentInstallStrategy
+              - AlphaAgentInstallStrategy
           featureSet: Custom
 
 - name: "Wait for Hive pods to be Running"
@@ -191,9 +199,11 @@
 - name: "Enable Hypershift if supported"
   vars:
     current_ver_query: "history[?state=='Completed'] | [0].version"
-    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"  # noqa: jinja[invalid]
     current_ver: "{{ full_ver.split('-')[0] }}"
     ocp_version: "{{  current_ver }}"
+  when:
+    - ocp_version is version( hub_hypershift_supported , ">=")
   block:
     - name: "Enable Hypershift component"
       community.kubernetes.k8s:
@@ -230,5 +240,4 @@
           spec:
             routeAdmission:
               wildcardPolicy: WildcardsAllowed
-  when: ocp_version is version( hub_hypershift_supported , ">=")
 ...

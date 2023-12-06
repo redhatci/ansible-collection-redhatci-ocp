@@ -2,37 +2,38 @@
 - name: Run preflight certification suite
   block:
     - name: Create tmp directory for custom configurations and preflight binary
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         prefix: preflight_tmp_dir.
       register: preflight_tmp_dir
 
     - name: Copy kubeconfig file into tmp config directory
-      copy:
+      ansible.builtin.copy:
         src: "{{ kubeconfig_path }}"
         dest: "{{ preflight_tmp_dir.path }}"
         mode: "0644"
 
     - name: Copy registry authentication into config folder
-      copy:
+      ansible.builtin.copy:
         src: "{{ partner_creds }}"
         dest: "{{ preflight_tmp_dir.path }}/config.json"
+        mode: "0644"
       when: partner_creds | length
 
     # Use custom certificate for self sign registry
     - name: Get custom ca certificate for preflight
-      include_tasks: prepare_custom_certificate.yml
+      ansible.builtin.include_tasks: prepare_custom_certificate.yml
       when: preflight_custom_ca | length
 
     # If you want to run preflight tests,
     # preflight_operators_to_certify variable should be provided
     # in the config file /etc/dci-openshift-app-agent/settings.yml
     - name: Create empty list of operators to check
-      set_fact:
+      ansible.builtin.set_fact:
         preflight_operators_to_check: []
 
     - name: Get preflight operators metadata
-      include_tasks: prepare_operator_metadata.yml
+      ansible.builtin.include_tasks: prepare_operator_metadata.yml
       loop: "{{ preflight_operators_to_certify }}"
       loop_control:
         loop_var: operator
@@ -41,34 +42,34 @@
     # to test a specific branch in the Preflight repository
     # when a ready image is not available.
     - name: Build preflight_image
-      include_tasks: prepare_preflight_image.yml
+      ansible.builtin.include_tasks: prepare_preflight_image.yml
       # this variable is set in test-runner
       when: preflight_source_dir is defined
 
     # Retrieve scorecard-test image in advance,
     # to allow its mirroring in the disconnected cluster.
     - name: Run preflight runtime-assets to get scorecard-test image
-      include_tasks: prepare_runtime_assets.yml
+      ansible.builtin.include_tasks: prepare_runtime_assets.yml
       when: dci_disconnected | default(false) | bool
 
     - name: Manage images mirroring for Preflight cert suite
-      include_tasks: mirroring.yml
+      ansible.builtin.include_tasks: mirroring.yml
       when: dci_disconnected | default(false) | bool
 
     # The main tests: containers
     - name: Check container - Preflight check operator images with check container one by one
-      include_tasks: test_preflight_check_container.yml
+      ansible.builtin.include_tasks: test_preflight_check_container.yml
       loop: "{{ preflight_operators_to_check }}"
       loop_control:
         loop_var: operator
 
     # The main tests: operators
     - name: Check operator - Preflight check operators one by one
-      include_tasks: tests_preflight_check_operator.yml
+      ansible.builtin.include_tasks: tests_preflight_check_operator.yml
       loop: "{{ preflight_operators_to_check }}"
       loop_control:
         loop_var: operator
   always:
     - name: Teardown
-      include_tasks: teardown.yml
+      ansible.builtin.include_tasks: teardown.yml
 ...

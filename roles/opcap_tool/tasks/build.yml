@@ -1,11 +1,12 @@
 ---
-
-- name: "Clone opcap repository"
-  git:
+- name: "Clone opcap repository"  # noqa: latest[git]
+  ansible.builtin.git:
     repo: "{{ opcap_repo }}"
     dest: "{{ opcap_dir.path }}/opcap"
 
 - name: "Use Golang container to build opcap"
+  # Launching a container to build the GO bin Dir where the repo has been
+  # cloned is bound as a volume (with option Z for SELinux compatibility)
   containers.podman.podman_container:
     name: go-builder
     image: "golang:1.19"
@@ -24,9 +25,8 @@
   until: opcap_build is not failed
 
 - name: "Check opcap bin"
-  shell:
+  ansible.builtin.command:
     cmd: >
       ./bin/opcap version
     chdir: "{{ opcap_dir.path }}/opcap"
-
 ...

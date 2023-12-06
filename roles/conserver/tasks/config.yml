@@ -1,13 +1,13 @@
 ---
 - name: Create /var/consoles/{{ cluster }}
   become: true
-  file:
+  ansible.builtin.file:
     path: /var/consoles/{{ cluster }}
-    mode: '0755'
+    mode: "0755"
     state: directory
 
 - name: Check for Serial over IPMI
-  command:
+  ansible.builtin.command:
     cmd: >
       ipmitool -H {{ hostvars[item].ipmi_address }}
                -U {{ hostvars[item].ipmi_user }}
@@ -20,22 +20,22 @@
   loop: "{{ cluster_nodes }}"
 
 - name: Build list of Serial over IPMI hosts
-  set_fact:
+  ansible.builtin.set_fact:
     ipmi_sol_hosts: "{{ ipmi_sol_hosts + [item.item] }}"
   when: item.rc == 0
   loop: "{{ ipmi_sol.results }}"
 
 - name: Include IPMI console config
-  include_tasks: config-ipmi.yml
+  ansible.builtin.include_tasks: config-ipmi.yml
   when: ipmi_sol_hosts| length>0
 
 - name: Build list of Serial over SOCKET hosts (libvirt)
-  set_fact:
+  ansible.builtin.set_fact:
     socket_hosts: "{{ socket_hosts + [item] }}"
   when:
     - hostvars[item].socket_console| default(false)
   loop: "{{ cluster_nodes }}"
 
 - name: Include libvirt console config
-  include_tasks: config-libvirt.yml
+  ansible.builtin.include_tasks: config-libvirt.yml
   when: socket_hosts| length>0

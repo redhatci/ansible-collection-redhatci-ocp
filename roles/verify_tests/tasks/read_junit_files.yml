@@ -1,12 +1,12 @@
 ---
 - name: Loop through the the given JUnit files
-  include_tasks: parse_junit_file.yml
+  ansible.builtin.include_tasks: parse_junit_file.yml
   with_fileglob:
     - "{{ job_logs.path }}/{{ t.filename }}"
   register: junit_file
 
-- name: "Fail if {{ t.filename }} does not match any junit file"
-  fail:
+- name: "Fail if file does not match any junit file"
+  ansible.builtin.fail:
     msg: "{{ t.filename }} does not match any junit file"
   when:
     - junit_file.skipped is defined

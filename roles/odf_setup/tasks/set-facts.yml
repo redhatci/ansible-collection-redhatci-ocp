@@ -1,6 +1,6 @@
 ---
 - name: Set facts for OCP integration with Internal OCS
-  set_fact:
+  ansible.builtin.set_fact:
     ocs_storagecluster_name: ocs-storagecluster
     ocs_sc_rbd_name: ocs-storagecluster-ceph-rbd
     ocs_sc_cephfs_name: ocs-storagecluster-cephfs
@@ -8,7 +8,7 @@
     - ocs_install_type == 'internal'
 
 - name: Set fact for External StorageCluster name
-  set_fact:
+  ansible.builtin.set_fact:
     ocs_storagecluster_name: ocs-external-storagecluster
     ocs_sc_rbd_name: ocs-external-storagecluster-ceph-rbd
     ocs_sc_cephfs_name: ocs-external-storagecluster-cephfs
@@ -16,7 +16,7 @@
     - ocs_install_type == 'external'
 
 - name: Set fact for default Storage Class
-  set_fact:
+  ansible.builtin.set_fact:
     ocs_default_storage_class: "{{ ocs_sc_rbd_name }}"
   when:
     - ocs_default_storage_class is undefined

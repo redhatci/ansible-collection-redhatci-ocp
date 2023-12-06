@@ -1,25 +1,23 @@
 ---
-# We need to check the SHA in this way, because extract-dependencies changes the
-# commit id when creating the new branch based on the PR, but only if new PRs are merged
-# in the repo and we have not included them in our change. In these cases, the original
-# id is saved in .git/ORIG_HEAD file. Else, we can find it in the location called
-# `.git/refs/heads/prXXX`
+# We need to check the SHA in this way, because extract-dependencies changes
+# the commit id when creating the new branch based on the PR, but only if new
+# PRs are merged in the repo and we have not included them in our change. In
+# these cases, the original id is saved in .git/ORIG_HEAD file. Else, we can
+# find it in the location called `.git/refs/heads/prXXX`
 - name: "Check if .git/ORIG_HEAD file exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ item }}/.git/ORIG_HEAD"
   register: orig_head_file
 
 # Actions when .git/ORIG_HEAD file exists
 - name: Retrieve commit SHA from the downloaded repo - from ORIG_HEAD
-  shell: cat .git/ORIG_HEAD
+  ansible.builtin.command: "cat {{ item }}/.git/ORIG_HEAD"
   register: last_commit_id_orig
-  args:
-    chdir: "{{ item }}"
   when: orig_head_file.stat.exists
 
 # Actions when .git/ORIG_HEAD file does not exist
 - name: Retrieve commit SHA from the downloaded repo - from refs
-  shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
+  ansible.builtin.shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
   register: last_commit_id_refs
   args:
     chdir: "{{ item }}"
@@ -29,11 +27,11 @@
 # checking commitId works and second one is skipped, but the registered
 # variable is unset, causing an error in the execution of next tasks.
 - name: Set commit SHA retrieval result
-  set_fact:
+  ansible.builtin.set_fact:
     last_commit_id: "{{ orig_head_file.stat.exists | ternary(last_commit_id_orig, last_commit_id_refs) }}"
 
-- name: get repo url
-  command: git -C {{ item }} config --get remote.origin.url
+- name: Get repo url  # noqa: command-instead-of-module
+  ansible.builtin.command: git -C {{ item }} config --get remote.origin.url
   register: repo_url
   when: last_commit_id.rc == 0
   no_log: true
@@ -42,12 +40,12 @@
 # dci-ansible/action_plugins/git.py
 - name: Create git repo component
   ansible.legacy.dci_component:
-    display_name: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }} {{ last_commit_id.stdout[:7] }}"
+    display_name: "{{ repo_url.stdout | basename | regex_replace('[.]git$', '') }} {{ last_commit_id.stdout[:7] }}"
     version: "{{ last_commit_id.stdout[:7] }}"
     uid: "{{ last_commit_id.stdout }}"
     team_id: "{{ job_info['job']['team_id'] }}"
     topic_id: "{{ job_info['job']['topic_id'] }}"
-    type: "{{ repo_url.stdout| basename | regex_replace('[.]git$', '') }}"
+    type: "{{ repo_url.stdout | basename | regex_replace('[.]git$', '') }}"
     url: "{{ repo_url.stdout | regex_replace('^(.*):(.*)@(.*)', 'https://\\3') | regex_replace('^ssh://(.*)@(.*)', 'https://\\2') | regex_replace('[.]git$', '') }}/commit/{{ last_commit_id.stdout }}"
     state: present
   register: git_component
@@ -57,7 +55,7 @@
   ansible.legacy.dci_job_component:
     component_id: "{{ git_component.component.id }}"
     job_id: " {{ job_id }} "
-  register : job_component_result
+  register: job_component_result
   until: job_component_result is not failed
   retries: 5
   delay: 20

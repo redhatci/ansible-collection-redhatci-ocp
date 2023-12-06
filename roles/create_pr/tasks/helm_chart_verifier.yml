@@ -1,48 +1,50 @@
 ---
 - name: "Set chart path"
   vars:
-    partner: "{{  partner_name | replace(' ','_') }}"
-  set_fact:
+    partner: "{{  partner_name | replace(' ', '_') }}"
+  ansible.builtin.set_fact:
     chart_path: "{{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/{{ chart_name }}/{{ chart_version }}/"
 
 - name: "Check if chart already exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ chart_path }}"
   register: chart_dir
 
 - name: "Fail if chart is already in the repository"
-  fail:
+  ansible.builtin.fail:
     msg: "There is a chart already in the repository for this version"
   when: chart_dir.stat.exists
 
 - name: "Git create a local branch"
-  shell: "git checkout -b {{ local_branch }}"
+  ansible.builtin.command: "git checkout -b {{ local_branch }}"  # noqa: command-instead-of-module
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
 
 - name: "Create target directory on the repository"
-  file:
+  ansible.builtin.file:
     state: directory
     force: true
     path: "{{ chart_path }}"
+    mode: "0750"
 
 - name: "Copy the report to the target directory"
-  copy:
+  ansible.builtin.copy:
     src: "{{ work_dir }}/report.yaml"
     dest: "{{ chart_path }}"
-    remote_src: yes
+    remote_src: true
+    mode: "0755"
   delegate_to: localhost
 
 - name: "Copy the chart tarball to the target directory"
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ chart.chart_file }}"
     dest: "{{ chart_path }}"
-    mode: u=rwx,g=rx,o=rx
+    mode: "u=rwx,g=rx,o=rx"
 
 - name: "Git add chart_file and report.yaml to the repository"
   vars:
-    partner: "{{  partner_name | replace(' ','_') }}"
-  shell:
+    partner: "{{  partner_name | replace(' ', '_') }}"
+  ansible.builtin.shell:  # noqa: command-instead-of-module
     cmd: |
       git config user.email {{ partner_email }}
       git config user.name {{ github_username }}
@@ -53,7 +55,7 @@
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
 
 - name: Ensure that remote branch is absent to avoid merge conflicts
-  shell:
+  ansible.builtin.shell:
     cmd: |
       eval "$(ssh-agent)"
       ssh-add {{ work_dir }}/ssh_key
@@ -63,7 +65,7 @@
   ignore_errors: true
 
 - name: "Push branch and create PR to the forked repository"
-  shell:
+  ansible.builtin.shell:
     cmd: |
       eval "$(ssh-agent)"
       ssh-add {{ work_dir }}/ssh_key
@@ -77,7 +79,7 @@
   register: pr_details
 
 - name: "Append details to the general report"
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ logs_dir }}/helm-submission-report.txt"
     line:
       " {{ product_name }} {{ product_version }} submitted via {{ pr_details.stdout_lines[2] }}"

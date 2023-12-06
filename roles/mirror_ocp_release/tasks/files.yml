@@ -1,6 +1,6 @@
 ---
 - name: "Download and refresh channel upgrade graph"
-  get_url:
+  ansible.builtin.get_url:
     url: "https://api.openshift.com/api/upgrades_info/v1/graph?channel=fast-{{ mor_base_version }}&arch=amd64"
     dest: "{{ mor_cache_dir }}/graph-{{ mor_base_version }}"
     owner: "{{ mor_owner }}"

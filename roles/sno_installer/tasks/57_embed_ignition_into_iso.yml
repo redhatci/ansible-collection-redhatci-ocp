@@ -1,6 +1,6 @@
 ---
 - name: Generate Embedded RHCOS LIVE ISO
-  shell:
+  ansible.builtin.shell:
     cmd: >
       podman run
       --pull=always
@@ -20,12 +20,12 @@
   tags: embedded
 
 - name: Set embedded iso in path fact
-  set_fact:
+  ansible.builtin.set_fact:
     embeddediso: "{{ dir }}/embedded.iso"
   tags: embedded
 
 - name: Set qemu permissions on the embedded ISO file
-  file:
+  ansible.builtin.file:
     path: "{{ embeddediso }}"
     owner: qemu
     group: qemu

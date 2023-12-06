@@ -1,6 +1,6 @@
 ---
 - name: Define DNS entries for dnsmasq
-  copy:
+  ansible.builtin.copy:
     content: |
       address=/api.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
       address=/.apps.{{ cluster }}.{{ domain }}/{{ sno_extnet_ip }}
@@ -9,14 +9,14 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  become: yes
+  become: true
   tags: dnsredirect
   loop: "{{ networks }}"
   loop_control:
     loop_var: network
 
 - name: Include dnsmasq in the DNS configuration of NetworkManager
-  ini_file:
+  ansible.builtin.ini_file:
     path: /etc/NetworkManager/conf.d/dnsmasq.conf
     section: main
     option: dns
@@ -24,12 +24,12 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  become: yes
+  become: true
   tags: dnsredirect
 
 - name: Reload Network Manager
-  service:
+  ansible.builtin.service:
     name: NetworkManager
     state: reloaded
-  become: yes
+  become: true
   tags: dnsredirect

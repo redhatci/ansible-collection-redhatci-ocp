@@ -1,2 +1,4 @@
+---
 ah_cluster_types:
   - kubevirt
+...

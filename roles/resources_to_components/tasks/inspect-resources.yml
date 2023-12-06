@@ -1,9 +1,7 @@
 ---
-
 # Just create the component if the resource is under the covered resources.
 - name: Retrieve resource information and create the components
-  include_tasks: resource-info-to-components.yml
+  ansible.builtin.include_tasks: resource-info-to-components.yml
   when:
     - resources.resource in rtc_supported_resources
-
 ...

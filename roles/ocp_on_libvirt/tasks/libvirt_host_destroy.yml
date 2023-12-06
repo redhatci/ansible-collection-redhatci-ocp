@@ -1,18 +1,20 @@
+---
 - name: "Does node exist"
-  ignore_errors: yes
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
+  ignore_errors: true
   register: node_exists
 
-- name: "destroy node"
+- name: "Destroy node"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: destroy
   when: node_exists['status'] is defined and node_exists['status'] == 'running'
 
-- name: "undefine node"
+- name: "Undefine node"
   become: true
-  shell:
-    cmd: "virsh undefine --remove-all-storage --nvram {{ host['name'] }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
+  ansible.builtin.command:
+    # community.libvirt.virt undefine can't specify --nvram
+    cmd: "virsh undefine --remove-all-storage --nvram {{ host['name'] }}"
   when: not node_exists.failed

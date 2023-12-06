@@ -12,8 +12,8 @@
 #
 #   spec: The spec field of the CR.
 ---
-- name: test_ Check for mandatory input
-  assert:
+- name: test_ Check for mandatory input  # noqa: name[casing]
+  ansible.builtin.assert:
     that:
       - api_version | string
       - kind | string
@@ -35,7 +35,7 @@
   delay: 60
   until: result is not failed
 
-- name: test_ Check that the CR is ready
+- name: test_ Check that the CR is ready  # noqa: name[casing]
   community.kubernetes.k8s_info:
     api_version: "{{ api_version }}"
     name: "{{ name }}"

@@ -1,32 +1,29 @@
 ---
 - name: Get GitHub username from provided token
-  include_tasks: get-gh-username.yml
+  ansible.builtin.include_tasks: get-gh-username.yml
 
 - name: Create operator project
-  include_tasks: create_project.yml
+  ansible.builtin.include_tasks: create_project.yml
 
 - name: Update the project with company info when cert_settings is defined
-  include_tasks: update_operator_project.yml
+  ansible.builtin.include_tasks: update_operator_project.yml
   when:
     - cert_settings is defined
     - cert_project_id is defined
 
-- block:
-  - name: "Get All operator certification projects based on Product Listing ID"
-    include_role:
-      name: create_certification_project
-      tasks_from: get_all_operator_projects_basedon_product_list_id.yml
-
-  - name: "Check all_operator_projects variable"
-    assert:
-      that:
-        - all_operator_projects is defined
-        - all_operator_projects | length > 0
-      fail_msg: "The all_operator_projects variable is not properly defined or is empty."
-
-  - name: "Attach Product List ID to all projects using the same Product-Listing ID"
-    include_role:
-      name: create_certification_project
-      tasks_from: attach_product_listing
+- name: Attach product list ID
   when: cert_listings.attach_product_listing | default(attach_product_listing) | bool
+  block:
+    - name: "Get All operator certification projects based on Product Listing ID"
+      ansible.builtin.include_tasks: get_all_operator_projects_basedon_product_list_id.yml
+
+    - name: "Check all_operator_projects variable"
+      ansible.builtin.assert:
+        that:
+          - all_operator_projects is defined
+          - all_operator_projects | length > 0
+        fail_msg: "The all_operator_projects variable is not properly defined or is empty."
+
+    - name: "Attach Product List ID to all projects using the same Product-Listing ID"
+      ansible.builtin.include_tasks: attach_product_listing.yml
 ...

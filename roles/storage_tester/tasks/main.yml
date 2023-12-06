@@ -1,7 +1,7 @@
 ---
 - name: "Mirroring the image needed for the Storage tests"
-  include_role:
-    name: mirror_images
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
   vars:
     images: ['registry.redhat.io/rhel8/support-tools']
     authfile: "{{ dci_pullsecret_file }}"
@@ -15,25 +15,25 @@
     name: storage-tester
 
 - name: "Get oc version output"
-  shell: |
-    {{ oc_tool_path }} version
+  ansible.builtin.command: "{{ oc_tool_path }} version"
   register: oc_version_str
 
 - name: "Get OCP version"
-  set_fact:
+  ansible.builtin.set_fact:
     ocp_version_storage: "{{ '.'.join(item.split(':')[1].strip().split('.')[0:2]) }}"
   when: "'Server Version' in item"
   loop: "{{ oc_version_str.stdout_lines }}"
 
 - name: "Create tmp Working Directory"
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
   register: pre_work_directory
 
 - name: "Render Tester Cronjob From Template"
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.yaml.j2"
     dest: "{{ pre_work_directory.path }}/{{ item }}.yaml"
+    mode: "0644"
   with_items:
     - "tester-cronjob-rox"
     - "tester-cronjob-rwo"
@@ -50,7 +50,7 @@
         name: storage-upgrade-tester-rwo
         namespace: storage-tester
       spec:
-        storageClassName: "{{ storage_class | default(omit)}}"
+        storageClassName: "{{ storage_class | default(omit) }}"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -67,7 +67,7 @@
         name: storage-upgrade-init-rox
         namespace: storage-tester
       spec:
-        storageClassName: "{{ storage_class | default(omit)}}"
+        storageClassName: "{{ storage_class | default(omit) }}"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -105,7 +105,7 @@
         name: storage-upgrade-tester-rox
         namespace: storage-tester
       spec:
-        storageClassName: "{{ storage_class | default(omit)}}"
+        storageClassName: "{{ storage_class | default(omit) }}"
         dataSource:
           name: storage-upgrade-init-rox
           kind: PersistentVolumeClaim
@@ -125,7 +125,7 @@
         name: storage-upgrade-tester-rwx
         namespace: storage-tester
       spec:
-        storageClassName: "{{ storage_class | default(omit)}}"
+        storageClassName: "{{ storage_class | default(omit) }}"
         accessModes:
           - ReadWriteMany
         resources:
@@ -135,25 +135,25 @@
 - name: "Deploy Tester Cronjob RWO"
   community.kubernetes.k8s:
     src: "{{ pre_work_directory.path }}/tester-cronjob-rwo.yaml"
-    apply: yes
+    apply: true
     state: present
-    wait: yes
+    wait: true
 
 - name: "Deploy Tester Cronjob ROX"
   community.kubernetes.k8s:
     src: "{{ pre_work_directory.path }}/tester-cronjob-rox.yaml"
-    apply: yes
+    apply: true
     state: present
-    wait: yes
+    wait: true
 
 - name: "Deploy Tester Cronjob RWX"
   community.kubernetes.k8s:
     src: "{{ pre_work_directory.path }}/tester-cronjob-rwx.yaml"
-    apply: yes
+    apply: true
     state: present
-    wait: yes
+    wait: true
 
 - name: "Deleting temporary files"
-  file:
+  ansible.builtin.file:
     state: absent
     path: "{{ pre_work_directory.path }}"

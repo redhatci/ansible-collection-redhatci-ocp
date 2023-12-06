@@ -1,19 +1,19 @@
 ---
 - name: Assert all required fields are present
-  assert:
+  ansible.builtin.assert:
     that:
       - operator | string
       - namespace | string
       - source | string
 
-- name: "Print install parameters"
-  debug:
+- name: Print install parameters
+  ansible.builtin.debug:
     msg:
       - "Operator: {{ operator }}"
       - "Target namespace: {{ namespace }}"
       - "Catalog: {{ source }}"
 
-- name: "Check that {{ source }} CatalogSource is Ready"
+- name: Check CatalogSource is Ready
   community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
     kind: CatalogSource
@@ -25,7 +25,7 @@
   retries: 60
   delay: 10
 
-- name: "Create Namespace for OLM operator {{ operator }}"
+- name: Create Namespace for OLM operator
   community.kubernetes.k8s:
     definition:
       apiVersion: v1
@@ -34,7 +34,7 @@
         name: "{{ namespace }}"
         labels: "{{ ns_labels | default(omit) }}"
 
-- name: "Labeling namespace to cover PodSecurity requirements"
+- name: Labeling namespace to cover PodSecurity requirements
   community.kubernetes.k8s:
     definition:
       apiVersion: v1
@@ -46,7 +46,7 @@
           pod-security.kubernetes.io/enforce-version: latest
           security.openshift.io/scc.podSecurityLabelSync: "false"
 
-- name: "Operator {{ operator }} installation"
+- name: Installing Operator
   block:
     - name: "Get operator's package manifests"
       community.kubernetes.k8s_info:
@@ -66,12 +66,12 @@
         or operator_packagemanifest.resources is undefined
         or operator_packagemanifest.resources | length != 1
 
-    - name: "Create OperatorGroup for OLM operator {{ operator }}"
+    - name: Create OperatorGroup for OLM operator  # noqa: jinja[invalid]
       vars:
-        allNamespaces: "{{ operator_packagemanifest |
-                        json_query('resources[*].status.channels[0].currentCSVDesc.installModes[3].supported') |
-                        first }}"
-        group_spec: "{{  {'targetNamespaces': []} if allNamespaces |
+        all_namespaces: "{{ operator_packagemanifest |
+          json_query('resources[*].status.channels[0].currentCSVDesc.installModes[3].supported') |
+          first }}"
+        group_spec: "{{  {'targetNamespaces': []} if all_namespaces |
                      default(false) else {'targetNamespaces': [namespace]} }}"
       community.kubernetes.k8s:
         definition:
@@ -82,13 +82,13 @@
             namespace: "{{ namespace }}"
           spec: "{{ operator_group_spec | default(group_spec, true) }}"
 
-    - name: "Set operator's channel for {{ operator }}"
+    - name: Set operator's channel
       vars:
         default_channel: "{{ operator_packagemanifest.resources[0].status.defaultChannel }}"
-      set_fact:
-        desired_channel: "{{ ( channel | length ) | ternary(channel, default_channel) }}"
+      ansible.builtin.set_fact:
+        desired_channel: "{{ (channel | length) | ternary(channel, default_channel) }}"
 
-    - name: "Create subscription for OLM operator {{ operator }}"
+    - name: Create subscription for OLM operator
       community.kubernetes.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
@@ -106,7 +106,7 @@
             sourceNamespace: "{{ source_ns }}"
             startingCSV: "{{ starting_csv | default('') | length | ternary(starting_csv, omit) }}"
 
-    - name: "Wait for subscription for {{ operator }} to be ready"
+    - name: Wait for subscription to be ready
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: Subscription
@@ -122,12 +122,15 @@
         - "'currentCSV' in sub.resources[0].status"
         - sub.resources[0].status.currentCSV | length > 0
 
-    - name: "Get operator's {{ operator }} CSV for desired channel"
-      set_fact:
+    - name: Get operator CSV for desired channel
+      ansible.builtin.set_fact:
         operator_csv: "{{ starting_csv | default('') | length | ternary(starting_csv, sub.resources[0].status.currentCSV) }}"
 
-    - block:
-        - name: "Get Install plans for {{ operator }}"
+    - name: Handle with a starting CSV
+      when:
+        - starting_csv | default('') | length
+      block:
+        - name: Get Install plans for {{ operator }}
           community.kubernetes.k8s_info:
             api: operators.coreos.com/v1alpha1
             kind: InstallPlan
@@ -139,7 +142,7 @@
             - install_plans.resources is defined
             - install_plans.resources | length
 
-        - name: "Approve install plan for specific CSV for {{ operator }}"
+        - name: Approve install plan for specific CSV  # noqa: jinja[invalid]
           community.kubernetes.k8s:
             definition:
               apiVersion: operators.coreos.com/v1alpha1
@@ -152,10 +155,8 @@
           vars:
             query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ operator_csv }}')]"
             install_plan: "{{ (install_plans | json_query(query) | first).metadata.name }}"
-      when:
-        - starting_csv | default('') | length
 
-    - name: "{{ ocp_version }} - {{ operator_csv }} - wait for CSV to be ready"
+    - name: Wait for CSV to be ready
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         namespace: "{{ namespace }}"
@@ -172,7 +173,7 @@
         - csv.resources[0].status.phase == 'Succeeded' or
           csv.resources[0].status.phase == 'Present'
 
-    - name: "Fail if not all {{ operator }} pods reach a successful state"
+    - name: Fail if not all pods reach a successful state
       community.kubernetes.k8s_info:
         kind: Pod
         namespace: "{{ namespace }}"
@@ -184,43 +185,45 @@
       no_log: true
 
   rescue:
-    - name: "Catalog sources information for {{ operator }}"
+    - name: Catalog sources information
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: CatalogSource
       register: catalog_info
 
-    - name: "Subscriptions information for {{ operator }}"
+    - name: Subscriptions information
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: Subscription
         namespace: "{{ namespace }}"
       register: subs_info
 
-    - name: "Install plans information for {{ operator }}"
+    - name: Install plan information
       community.kubernetes.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: InstallPlan
         namespace: "{{ namespace }}"
       register: ip_info
 
-    - name: "Print catalog information for {{ operator }}"
-      debug:
+    - name: Print catalog information
+      ansible.builtin.debug:
         msg: "{{ catalog_info.resources }}"
 
-    - name: "Print Subscription information for {{ operator }}"
-      debug:
+    - name: Print Subscription information
+      ansible.builtin.debug:
         msg: "{{ subs_info.resources }}"
 
-    - name: "Print InstallPlan information for {{ operator }}"
-      debug:
+    - name: Print InstallPlan information
+      ansible.builtin.debug:
         msg: "{{ ip_info.resources }}"
 
-    - name: "Issues during operator {{ operator }} installation"
-      fail:
-        msg: "There where issues during the operator deployment. See debug info in the above tasks"
+    - name: Issues during operator installation
+      ansible.builtin.fail:
+        msg: >
+          There where issues during the operator deployment. See debug info in
+          the above tasks
 
-- name: "Patch subscription according to install_approval - Default: Manual"
+- name: Patch subscription according to install_approval
   community.kubernetes.k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1

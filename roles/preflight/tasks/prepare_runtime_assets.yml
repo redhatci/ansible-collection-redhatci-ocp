@@ -1,6 +1,6 @@
 ---
 - name: Run preflight runtime-assets
-  shell:
+  ansible.builtin.command:
     cmd: >
       podman run
       --rm
@@ -15,6 +15,6 @@
   until: not preflight_assets.failed
 
 - name: Get scorecard config images
-  set_fact:
+  ansible.builtin.set_fact:
     preflight_assets_images: "{{ preflight_assets.stdout | from_json | json_query('images') | list | unique }}"
 ...

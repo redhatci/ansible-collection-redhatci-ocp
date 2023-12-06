@@ -1,6 +1,6 @@
 ---
 - name: "Check if rhcos.json exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ cache_dir }}/{{ version }}/rhcos.json"
     get_checksum: false
   register: rhcos_json
@@ -8,7 +8,7 @@
   tags: rhcospath
 
 - name: "Fetch rhcos.json File"
-  shell: >
+  ansible.builtin.shell: >
     set -o pipefail &&
     {{ cache_dir }}/{{ version }}/openshift-install coreos print-stream-json |
     tee {{ cache_dir }}/{{ version }}/rhcos.json
@@ -24,20 +24,20 @@
   tags: rhcospath
 
 - name: "Get the rhcos.json from cache server into temp file on control machine"
-  fetch:
+  ansible.builtin.fetch:
     dest: /tmp/
     flat: true
     src: "{{ cache_dir }}/{{ version }}/rhcos.json"
   delegate_to: "{{ cache_server }}"
 
 - name: "Load variables from rhcos.json"
-  include_vars:
+  ansible.builtin.include_vars:
     file: "/tmp/rhcos.json"
     name: rhcos_json_vars
   tags: rhcospath
 
 - name: "Remove the temporary copy of rhcos.json on control machine"
-  file:
+  ansible.builtin.file:
     path: "/tmp/rhcos.json"
     state: absent
   delegate_to: localhost

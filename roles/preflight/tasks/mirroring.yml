@@ -3,45 +3,45 @@
   vars:
     scorecard_images: "{{ (lookup('file', 'files/scorecard-images.yml') | from_yaml)['images'] }}"
     preflight_bundle_images: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
-  set_fact:
+  ansible.builtin.set_fact:
     preflight_images: "{{ (preflight_assets_images + scorecard_images + preflight_bundle_images) | unique }}"
     # TODO: these old images are still required by the operator-sdk 1.30.0
     old_images: "{{ (lookup('file', 'files/scorecard-old-images.yml') | from_yaml)['images'] }}"
 
 - name: Mirror preflight images
-  include_role:
-    name: mirror_images
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
   vars:
     images: "{{ preflight_images }}"
     authfile: "{{ partner_creds }}"
     mi_options: "--preserve-digests"
 
 - name: "Define catalog tag"
-  set_fact:
+  ansible.builtin.set_fact:
     index_tag: "{{ ansible_date_time.iso8601_basic }}"
 
 - name: Generate catalog path
-  set_fact:
-    OO_INDEX: "{{ '/'.join([ dci_local_registry ] + [ 'telcoci','preflight','disconnected-catalog']) }}:{{ index_tag }}"
+  ansible.builtin.set_fact:
+    oo_index: "{{ '/'.join([dci_local_registry] + ['telcoci', 'preflight', 'disconnected-catalog']) }}:{{ index_tag }}"
 
 - name: "Create FBC catalog"
-  include_role:
-    name: fbc_catalog
+  ansible.builtin.include_role:
+    name: redhatci.ocp.fbc_catalog
     apply:
       environment:
-        - DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
+        DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
   vars:
-    fbc_index_image:  "{{ OO_INDEX }}"
+    fbc_index_image: "{{ oo_index }}"
     fbc_bundles: "{{ preflight_operators_to_check | map(attribute='bundle_image') | list }}"
     fbc_opm_args: "--skip-tls-verify=false"
 
 - name: Push index image into local registry
-  shell: >
+  ansible.builtin.shell: >
     set -ex;
     podman push
     --authfile {{ partner_creds }}
-    {{ OO_INDEX }};
-    podman rmi {{ OO_INDEX }}
+    {{ oo_index }};
+    podman rmi {{ oo_index }}
 
 - name: Find ImageDigestMirrorSet in the cluster
   community.kubernetes.k8s_info:
@@ -50,22 +50,22 @@
   register: idms_res
 
 - name: Mirror generated catalog
-  include_role:
-    name: mirror_catalog
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_catalog
   vars:
     mc_oc_tool_path: "{{ oc_tool_path }}"
-    mc_catalog: "{{ OO_INDEX }}"
+    mc_catalog: "{{ oo_index }}"
     mc_registry: "{{ dci_local_registry }}"
     mc_pullsecret: "{{ pullsecret_tmp_file }}"
     mc_is_type: "{{ idms_res.resources is defined and idms_res.resources | length | ternary('idms', 'icsp') }}"
 
 - name: Set catalog and Image Source file
-  set_fact:
+  ansible.builtin.set_fact:
     preflight_is_file: "{{ mc_is_file.path }}"
-    OO_INDEX: "{{ mc_catalog_digest }}"
+    oo_index: "{{ mc_catalog_digest }}"
 
 - name: Append pre-flight images to Image Sources
-  blockinfile:
+  ansible.builtin.blockinfile:
     block: |
       # Scorecard container
         - mirrors:
@@ -81,8 +81,8 @@
     definition: "{{ lookup('file', preflight_is_file) }}"
 
 - name: Wait for MCP status
-  include_role:
-    name: check_resource
+  ansible.builtin.include_role:
+    name: redhatci.ocp.check_resource
   vars:
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 45

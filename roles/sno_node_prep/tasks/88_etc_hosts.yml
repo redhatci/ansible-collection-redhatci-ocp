@@ -1,7 +1,8 @@
 ---
 - name: Add DNS /etc/hosts entries (Fedora)
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/hosts
     line: "{{ sno_extnet_ip }} api.{{ cluster }}.{{ domain }}"
-  become: yes
-  tags: dnsredirect
+  become: true
+  tags:
+    - dnsredirect

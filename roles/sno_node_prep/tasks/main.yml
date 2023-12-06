@@ -1,10 +1,12 @@
 ---
-- include_tasks: 10_validation.yml
+- name: Validation
+  ansible.builtin.include_tasks: 10_validation.yml
   tags:
     - validation
     - use_registry
 
-- include_tasks: 15_validation_disconnected_registry.yml
+- name: Validate disconnected registry
+  ansible.builtin.include_tasks: 15_validation_disconnected_registry.yml
   when:
     - "'registry_host' in groups"
     - "groups['registry_host']"
@@ -12,69 +14,92 @@
     - disconnected
     - use_registry
 
-- include_tasks: 30_req_packages.yml
-  tags: packages
+- name: Install required packages
+  ansible.builtin.include_tasks: 30_req_packages.yml
+  tags:
+    - packages
 
-- include_tasks: 45_networking_facts.yml
-  tags: network_facts
+- name: Read network facts
+  ansible.builtin.include_tasks: 45_networking_facts.yml
+  tags:
+    - network_facts
 
-- include_tasks: 50_modify_sudo_user.yml
-  when: |
-    - (sno_install_type is undefined) or
-      (sno_install_type == "virtual")
-  tags: user
-
-- include_tasks: 60_enabled_services.yml
-  tags: services
-
-- include_tasks: 65_dnsmasq_tftp.yml
+- name: Modify sudo config
+  ansible.builtin.include_tasks: 50_modify_sudo_user.yml
   when:
-    - sno_install_type is defined
-    - sno_install_type == "baremetal"
+    - sno_install_type | default("virtual") == "virtual"
+  tags:
+    - user
+
+- name: Enable required services
+  ansible.builtin.include_tasks: 60_enabled_services.yml
+  tags:
+    - services
+
+- name: Setup DNSMasq
+  ansible.builtin.include_tasks: 65_dnsmasq_tftp.yml
+  when:
+    - sno_install_type | default("virtual") == "baremetal"
     - dnsmasq_enabled | bool
-  tags: dnsmasq_tftp
+  tags:
+    - dnsmasq_tftp
 
 - name: "Network and Storage for Virtual SNO"
+  when:
+    - sno_install_type | default("virtual") == "virtual"
   block:
-    - include_tasks: 70_cleanup_libvirt_network.yml
+    - name: Cleanup libvirt network
+      ansible.builtin.include_tasks: 70_cleanup_libvirt_network.yml
       loop: "{{ networks }}"
       loop_control:
         loop_var: network
-      tags: cleanup
+      tags:
+        - cleanup
 
-    - include_tasks: 71_cleanup_dns_entries.yml
-      tags: cleanup
+    - name: Cleanup DNS entries
+      ansible.builtin.include_tasks: 71_cleanup_dns_entries.yml
+      tags:
+        - cleanup
 
-    - include_tasks: 72_cleanup_files.yml
-      tags: cleanup
+    - name: Cleanup files
+      ansible.builtin.include_tasks: 72_cleanup_files.yml
+      tags:
+        - cleanup
 
-    - include_tasks: 80_libvirt_storage.yml
-      tags: storagepool
+    - name: Setup libvirt storage
+      ansible.builtin.include_tasks: 80_libvirt_storage.yml
+      tags:
+        - storagepool
 
-    - include_tasks: 85_libvirt_network.yml
+    - name: Setup libvirt network
+      ansible.builtin.include_tasks: 85_libvirt_network.yml
       loop: "{{ networks }}"
       loop_control:
         loop_var: network
-      tags: virtnetwork
+      tags:
+        - virtnetwork
 
-    - include_tasks: 87_network_manager.yml
+    - name: Setup NM
+      ansible.builtin.include_tasks: 87_network_manager.yml
       when:
         - ansible_facts['distribution'] == "RedHat"
-      tags: dnsredirect
+      tags:
+        - dnsredirect
 
-    - include_tasks: 88_etc_hosts.yml
+    - name: Setup /etc/hosts
+      ansible.builtin.include_tasks: 88_etc_hosts.yml
       when:
         - ansible_facts['distribution'] == "Fedora"
-      tags: dnsredirect
-  when: |
-    - (sno_install_type is undefined) or
-      (sno_install_type == "virtual")
+      tags:
+        - dnsredirect
 
-- include_tasks: 90_create_config_install_dirs.yml
+- name: Create clusterconfig dirs
+  ansible.builtin.include_tasks: 90_create_config_install_dirs.yml
   tags:
     - clusterconfigs
     - cleanup
 
-- include_tasks: 95_check_pull_secret.yml
+- name: Check pull secret
+  ansible.builtin.include_tasks: 95_check_pull_secret.yml
   tags:
     - pullsecret

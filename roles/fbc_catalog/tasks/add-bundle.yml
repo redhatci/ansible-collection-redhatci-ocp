@@ -1,6 +1,6 @@
 ---
 - name: "Render bundle operator image"
-  shell: >
+  ansible.builtin.shell: >
     {{ fbc_opm_auths }}
     {{ fbc_opm_cmd }} render {{ bundle }}
   args:
@@ -11,19 +11,19 @@
   until: rendered_bundle.rc == 0
 
 - name: "Get inspected data"
-  set_fact:
+  ansible.builtin.set_fact:
     bundle_data: "{{ rendered_bundle.stdout | from_json }}"
 
-- name: "Get operator name, version and image data blob"
+- name: "Get operator name, version and image data blob"  # noqa: jinja[invalid]
   vars:
     name_query: "properties[? type==`olm.package`].value.packageName"
     version_query: "properties[? type==`olm.package`].value.version"
-  set_fact:
+  ansible.builtin.set_fact:
     fbc_operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     fbc_short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
 
 - name: "Inspect the bundle image"
-  shell: >
+  ansible.builtin.shell: >
     if [ -n "$DOCKER_CONFIG" ]; then
       skopeo inspect --authfile $DOCKER_CONFIG/config.json \
       --tls-verify=false docker://{{ bundle }};
@@ -39,11 +39,11 @@
   vars:
     query_channel: "Labels.\"operators.operatorframework.io.bundle.channels.v1\""
     bundle_channel: "{{ bundle_inspect.stdout | from_json | json_query(query_channel) }}"
-  set_fact:
-    fbc_default_channel: "{{  bundle_channel | length | ternary(bundle_channel.split(',')[0], 'latest')}}"
+  ansible.builtin.set_fact:
+    fbc_default_channel: "{{ bundle_channel | length | ternary(bundle_channel.split(',')[0], 'latest') }}"
 
 - name: "Initialize operators index"
-  shell: >
+  ansible.builtin.shell: >
     {{ fbc_opm_cmd }} init {{ fbc_short_name }}
     --default-channel={{ fbc_default_channel }}
     --output=yaml >> catalog/index.yml
@@ -51,7 +51,7 @@
     chdir: "{{ fbc_tmp_dir }}"
 
 - name: "Render bundle for {{ fbc_short_name }}"
-  shell: >
+  ansible.builtin.shell: >
     {{ fbc_opm_auths }}
     {{ fbc_opm_cmd }} render {{ bundle }}
     --output=yaml >> {{ fbc_tmp_dir }}/catalog/index.yml
@@ -63,7 +63,7 @@
   until: render_result.rc == 0
 
 - name: "Append operator channel"
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "{{ fbc_tmp_dir }}/catalog/index.yml"
     content: |
       ---

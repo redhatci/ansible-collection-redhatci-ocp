@@ -1,14 +1,14 @@
 ---
 - name: Retrieve all images to mirror
   vars:
-    scorecard_basic_images: "{{ [ scorecard_test_img, scorecard_storage_img, scorecard_untar_img ] }}"
+    scorecard_basic_images: "{{ [scorecard_test_img, scorecard_storage_img, scorecard_untar_img] }}"
     bundle_images: "{{ scorecard_operators | map(attribute='bundle_image') | list }}"
-  set_fact:
+  ansible.builtin.set_fact:
     scorecard_images: "{{ scorecard_basic_images + bundle_images }}"
 
 - name: Mirror Operator-SDK images
-  include_role:
-    name: mirror_images
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
   vars:
     images: "{{ scorecard_images }}"
     authfile: "{{ scorecard_partner_creds }}"
@@ -17,27 +17,27 @@
 - name: Generate catalog path
   vars:
     index_tag: "{{ ansible_date_time.iso8601_basic }}"
-  set_fact:
-    OO_INDEX: "{{ '/'.join([ scorecard_dci_local_registry ] + [ 'telcoci','scorecard','disconnected-catalog']) }}:{{ index_tag }}"
+  ansible.builtin.set_fact:
+    oo_index: "{{ '/'.join([scorecard_dci_local_registry] + ['telcoci', 'scorecard', 'disconnected-catalog']) }}:{{ index_tag }}"
 
 - name: Create FBC catalog
-  include_role:
-    name: fbc_catalog
+  ansible.builtin.include_role:
+    name: redhatci.ocp.fbc_catalog
     apply:
       environment:
-        - DOCKER_CONFIG: "{{ scorecard_tmp_dir.path }}"
+        DOCKER_CONFIG: "{{ scorecard_tmp_dir.path }}"
   vars:
-    fbc_index_image:  "{{ OO_INDEX }}"
+    fbc_index_image: "{{ oo_index }}"
     fbc_bundles: "{{ scorecard_operators | map(attribute='bundle_image') | list }}"
     fbc_opm_args: "--skip-tls-verify=false"
 
 - name: Push catalog image to local registry and delete local image
-  shell: >
+  ansible.builtin.shell: >
     set -ex;
     podman push
     --authfile {{ scorecard_partner_creds }}
-    {{ OO_INDEX }};
-    podman rmi {{ OO_INDEX }}
+    {{ oo_index }};
+    podman rmi {{ oo_index }}
 
 - name: Find ImageDigestMirrorSet in the cluster
   community.kubernetes.k8s_info:
@@ -46,24 +46,24 @@
   register: idms_res
 
 - name: Mirror generated catalog
-  include_role:
-    name: mirror_catalog
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_catalog
   vars:
     mc_oc_tool_path: "{{ scorecard_oc_tool_path }}"
-    mc_catalog: "{{ OO_INDEX }}"
+    mc_catalog: "{{ oo_index }}"
     mc_registry: "{{ scorecard_dci_local_registry }}"
     mc_pullsecret: "{{ scorecard_pullsecret_tmp_file }}"
     mc_is_type: "{{ idms_res.resources is defined and idms_res.resources | length | ternary('idms', 'icsp') }}"
 
 - name: Set catalog and Image Source file
-  set_fact:
+  ansible.builtin.set_fact:
     scorecard_is_file: "{{ mc_is_file.path }}"
-    OO_INDEX: "{{ mc_catalog_digest }}"
+    oo_index: "{{ mc_catalog_digest }}"
 
 - name: Append operator-sdk images to Image Sources
   vars:
-    scorecard_basic_images: "{{ [ scorecard_test_img, scorecard_storage_img, scorecard_untar_img ] }}"
-  blockinfile:
+    scorecard_basic_images: "{{ [scorecard_test_img, scorecard_storage_img, scorecard_untar_img] }}"
+  ansible.builtin.blockinfile:
     block: |
       # Scorecard container
         - mirrors:
@@ -74,7 +74,7 @@
   loop: "{{ scorecard_basic_images }}"
 
 - name: Display new Image Source file to be applied
-  debug:
+  ansible.builtin.debug:
     msg: "{{ lookup('file', scorecard_is_file) }}"
 
 - name: Apply Image Source File
@@ -82,8 +82,8 @@
     definition: "{{ lookup('file', scorecard_is_file) }}"
 
 - name: Wait for MCP status
-  include_role:
-    name: check_resource
+  ansible.builtin.include_role:
+    name: redhatci.ocp.check_resource
   vars:
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 30

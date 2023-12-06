@@ -1,6 +1,6 @@
 ---
-- name: "mirror_images : Mirror images"
-  include_tasks: mirror-images.yml
+- name: "Mirror images"
+  ansible.builtin.include_tasks: mirror-images.yml
   loop: "{{ images }}"
   loop_control:
     loop_var: image

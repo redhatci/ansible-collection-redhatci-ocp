@@ -1,6 +1,5 @@
 ---
-
-- name: "Wait for the vm to shut down"
+- name: "Wait for VM to shut down"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
@@ -11,17 +10,16 @@
   when: node_exists.failed
 
 - name: "Remove cdrom (cloud-init)"
-  command: virsh change-media {{ host['name'] }} hda --eject --config
+  ansible.builtin.command: virsh change-media {{ host['name'] }} hda --eject --config
   become: "{{ libvirt_become }}"
   when: node_exists.failed
 
-- name: sync memory data to disk
-  command: sync
+- name: Sync memory data to disk
+  ansible.builtin.command: sync
 
 - name: "Start VM again"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     state: "running"
   when: node_exists.failed
-
 ...

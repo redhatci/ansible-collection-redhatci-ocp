@@ -2,14 +2,14 @@
 - name: Print JSON draft for the project to be created
   vars:
     template_filename: "templates/create_project_{{ project_type }}.json.j2"
-  debug:
+  ansible.builtin.debug:
     msg: "{{ lookup('template', template_filename) }}"
 
 - name: Create certification project
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
     template_filename: "templates/create_project_{{ project_type }}.json.j2"
-  uri:
+  ansible.builtin.uri:
     url: "{{ create_project_url }}"
     method: POST
     headers:
@@ -21,12 +21,12 @@
   register: cert_project_output
 
 - name: Set project ID to reuse it later
-  set_fact:
-    cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"
+  ansible.builtin.set_fact:
+    cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"  # noqa: jinja[invalid]
   when: not cert_project_output.failed
 
 - name: Print the URL of created certification project
-  debug:
+  ansible.builtin.debug:
     msg: |
       Certification project was created and could be checked here:
       {{ connect_url }}/{{ cert_project_id }}/overview

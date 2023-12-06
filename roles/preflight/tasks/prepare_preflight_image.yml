@@ -1,32 +1,32 @@
 ---
 - name: Retrieve branch name
-  shell:
+  ansible.builtin.command:
     cmd: >
       git branch --show-current
     chdir: "{{ preflight_source_dir }}"
   register: preflight_branch_name
 
 - name: Set preflight_branch
-  set_fact:
+  ansible.builtin.set_fact:
     preflight_branch: "{{ preflight_branch_name.stdout }}"
 
 - name: Copy read-only source folder to set 0755 mode
-  copy:
+  ansible.builtin.copy:
     src: "{{ preflight_source_dir }}/"
     dest: "{{ preflight_tmp_dir.path }}/preflight-source/"
     mode: "0755"
 
 - name: Set preflight_image name
-  set_fact:
+  ansible.builtin.set_fact:
     preflight_image: "{{ dci_local_registry }}/preflight/preflight:{{ preflight_branch }}"
 
 - name: "Append to image name the job id"
-  set_fact:
-    preflight_image: "{{ preflight_image +'-'+ job_id }}"
+  ansible.builtin.set_fact:
+    preflight_image: "{{ preflight_image + '-' + job_id }}"
   when: job_id is defined
 
 - name: Build Preflight image
-  shell:
+  ansible.builtin.shell:
     cmd: >
       podman build .
       --no-cache
@@ -40,6 +40,6 @@
     - "Remove the local preflight image"
 
 - name: Display Preflight version to ensure that the image build went fine
-  shell: >
+  ansible.builtin.command: >
     podman run --rm {{ preflight_image }} --version
 ...

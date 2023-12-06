@@ -1,12 +1,12 @@
 ---
 - name: Cleanup openshift dnsmasq settings
-  file:
+  ansible.builtin.file:
     path: /etc/NetworkManager/dnsmasq.d/openshift.conf
     state: absent
   become: "{{ libvirt_become }}"
 
 - name: Restart NetworkManager
-  service:
+  ansible.builtin.service:
     name: NetworkManager
     state: restarted
   become: "{{ libvirt_become }}"

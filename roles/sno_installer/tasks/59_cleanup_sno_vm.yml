@@ -3,7 +3,7 @@
   community.libvirt.virt:
     command: list_vms
   register: all_vms
-  become: yes
+  become: true
   tags: cleanup
 
 - name: Get list of all running VMs
@@ -11,7 +11,7 @@
     command: list_vms
     state: running
   register: running_vms
-  become: yes
+  become: true
   tags: cleanup
 
 - name: Get list of all paused VMs
@@ -19,7 +19,7 @@
     command: list_vms
     state: paused
   register: paused_vms
-  become: yes
+  become: true
   tags: cleanup
 
 - name: Destroy old SNO VMs, if any
@@ -30,21 +30,21 @@
     - "{{ running_vms.list_vms }}"
     - "{{ paused_vms.list_vms }}"
   when: item is search(host['name'])
-  become: yes
+  become: true
   tags: cleanup
 
 - name: "Undefine old SNO VMs, if any"
-  shell:
-    cmd: "virsh undefine --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
+  ansible.builtin.command:
+    cmd: "virsh undefine --nvram {{ item }}"  # community.libvirt.virt undefine doesn't have the ability to specify --nvram
   with_items: "{{ all_vms.list_vms }}"
   when: item is search(host['name'])
-  become: yes
+  become: true
   tags: cleanup
 
 - name: Delete old SNO VMs Storage
-  file:
+  ansible.builtin.file:
     path: "{{ default_libvirt_pool_dir }}/{{ host['name'] }}.qcow2"
     state: absent
-  become: yes
+  become: true
   tags: cleanup
 ...

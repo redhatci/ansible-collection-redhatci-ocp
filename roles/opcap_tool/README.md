@@ -29,7 +29,7 @@ KUBECONFIG must be defined as a ENV variable in order to have opcap bin working 
         name: opcap_tool
         apply:
           environment:
-            - KUBECONFIG: "{{ kubeconfig_path }}"
+            KUBECONFIG: "{{ kubeconfig_path }}"
       vars:
         opcap_target_catalog_source: "my-catalog"
         opcap_catalog_source_namespace: "openshift-marketplace"

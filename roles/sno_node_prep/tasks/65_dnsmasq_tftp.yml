@@ -1,23 +1,27 @@
 ---
 - name: Set the tftp server name
-  set_fact:
+  ansible.builtin.set_fact:
     tftp_server: "{{ groups['tftp_host'] is defined | ternary(groups['tftp_host'][0], groups['provisioner'][0]) }}"
   tags: tftp
 
 - name: "Delegate tasks to tftp_server"
+  become: true
+  delegate_to: "{{ tftp_server }}"
+  tags:
+    - tftp
   block:
     - name: "Install packages to boostrap SNO baremetal"
-      yum:
+      ansible.builtin.yum:
         name: "{{ snobm_pkg_list }}"
         state: present
         update_cache: true
-        disable_gpg_check: yes
+        disable_gpg_check: true
       tags:
         - packages
         - tftp
 
     - name: "Create TFTP directory"
-      file:
+      ansible.builtin.file:
         path: "{{ tftp_dir }}"
         state: directory
         owner: root
@@ -26,14 +30,14 @@
         setype: tftpdir_rw_t
 
     - name: "Collect efi files"
-      find:
+      ansible.builtin.find:
         paths: /boot/efi/EFI/
         recurse: true
         patterns: "*.efi,*.EFI"
       register: efi_files
 
-    - name: "Copy efi files"
-      copy:
+    - name: "Copy EFI files"  # noqa: risky-file-permissions
+      ansible.builtin.copy:
         remote_src: true
         src: "{{ item.path }}"
         dest: "{{ tftp_dir }}"
@@ -43,7 +47,7 @@
         label: "{{ item.path }}"
 
     - name: Define TFTP settings for dnsmasq
-      template:
+      ansible.builtin.template:
         src: dnsmasq.conf.j2
         dest: /etc/dnsmasq.d/{{ cluster }}.conf
         owner: root
@@ -51,12 +55,12 @@
         mode: u=rw,g=r,o=r
 
     - name: Restart dnsmasq
-      service:
+      ansible.builtin.service:
         name: dnsmasq
         state: restarted
 
     - name: "Create TFTP images directory"
-      file:
+      ansible.builtin.file:
         path: "{{ tftp_dir }}/images"
         state: directory
         owner: root
@@ -65,21 +69,18 @@
         setype: tftpdir_rw_t
 
     - name: "Allow DHCP traffic"
-      firewalld:
+      ansible.posix.firewalld:
         service: dhcp
-        permanent: yes
+        permanent: true
         immediate: true
         state: enabled
       when: firewall == "firewalld"
 
     - name: "Allow TFTP traffic"
-      firewalld:
+      ansible.posix.firewalld:
         service: tftp
-        permanent: yes
+        permanent: true
         immediate: true
         state: enabled
       when: firewall == "firewalld"
-  become: true
-  delegate_to: "{{ tftp_server }}"
-  tags: tftp
 ...

@@ -1,12 +1,12 @@
 ---
 - name: "Add Kubeconfig to Ansible User .bashrc"
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ ansible_user_dir }}/.bashrc"
     line: "export KUBECONFIG={{ dir }}/auth/kubeconfig"
   tags: install_bm
 
 - name: "Disable PXE Timeout"
-  shell: >
+  ansible.builtin.command: >
     ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
     -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
@@ -15,7 +15,7 @@
   tags: install_bm
 
 - name: "Set PXE - UEFI Temporally on next boot"
-  shell: >
+  ansible.builtin.command: >
     ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
     -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
@@ -26,7 +26,7 @@
   tags: install_bm
 
 - name: "Set PXE - BIOS Temporally on next boot"
-  shell: >
+  ansible.builtin.command: >
     ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
     -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
@@ -38,7 +38,7 @@
   tags: install_bm
 
 - name: "Recover power status of baremetal node"
-  shell: >
+  ansible.builtin.command: >
     ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
     -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
@@ -48,7 +48,7 @@
   tags: install_bm
 
 - name: "Start the baremetal node"
-  shell: >
+  ansible.builtin.command: >
     ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
     -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
@@ -59,7 +59,7 @@
   tags: install_bm
 
 - name: "Reset the baremetal node"
-  shell: >
+  ansible.builtin.command: >
     ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}
     -L ADMINISTRATOR -U {{ hostvars[groups['masters'][0]]['ipmi_user'] }}
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
@@ -70,7 +70,7 @@
   tags: install_bm
 
 - name: Show How to monitor for installation status
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Next step will provision SNO Baremetal. It might take a few minutes for the API to respond"
       - "Once the api gets available you can run the following in another shell session"

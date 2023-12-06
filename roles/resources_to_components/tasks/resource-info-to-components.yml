@@ -1,6 +1,6 @@
 ---
 # ClusterServiceVersion resource uses a different API.
-- name: "Get all {{ resources.resource }} from namespace"
+- name: Get all resources from namespace
   community.kubernetes.k8s_info:
     api_version: "\
       {% if resources.resource == 'ClusterServiceVersion' %}\
@@ -12,13 +12,13 @@
     kind: "{{ resources.resource }}"
   register: resources_in_ns
 
-# We only want to handle resources without ownerReferences, just to avoid duplicating
-# components.
+# We only want to handle resources without ownerReferences, just to avoid
+# duplicating components.
 - name: Check ownerReferences for the retrieved resources
   block:
     - name: "Getting resources details"
-      set_fact:
-        resource_details: "{{ resources_in_ns | json_query(details_query) }}"
+      ansible.builtin.set_fact:
+        resource_details: "{{ resources_in_ns | json_query(details_query) }}"  # noqa: jinja[invalid]
       vars:
         details_query: >
           resources[*].{ kind: kind,
@@ -28,20 +28,20 @@
           }
 
     - name: "Filtering resources with no ownerReferences"
-      set_fact:
-        resource_details: "{{ resource_details | json_query(filter_query) }}"
+      ansible.builtin.set_fact:
+        resource_details: "{{ resource_details | json_query(filter_query) }}"  # noqa: jinja[invalid]
       vars:
         filter_query: "[?owner == null]"
 
     - name: Print resources to be inspected
-      debug:
+      ansible.builtin.debug:
         msg: "{{ resource_details }}"
 
-# Depending on the resource type, the way of extracting the images is different.
-# ReplicaSet, StatefulSet and Deployment work in the same way, so they are covered
-# with the else statement.
+# Depending on the resource type, the way of extracting the images is
+# different.  ReplicaSet, StatefulSet and Deployment work in the same way, so
+# they are covered with the else statement.
 - name: Extract container images from resources
-  set_fact:
+  ansible.builtin.set_fact:
     container_images_in_ns: "\
       {% if resources.resource == 'Pod' %}\
         {{ resource_details | json_query('[*].spec.containers[*].image') | flatten | unique }}\
@@ -79,11 +79,11 @@
 - name: Create a component based on resource information
   vars:
     container_image_without_version: "\
-      {% if container_image.split('@')|length == 1 %}\
+      {% if container_image.split('@') | length == 1 %}\
         {% if '/' not in container_image.split(':')[-1] %}\
           {% for image_chunk in container_image.split(':') %}\
             {% if not loop.last %}\
-              {{ image_chunk }}{% if loop.index < loop.length-1 %}:{% endif %}\
+              {{ image_chunk }}{% if loop.index < loop.length - 1 %}:{% endif %}\
             {% endif %}\
           {% endfor %}\
         {% else %}\
@@ -92,7 +92,7 @@
       {% else %}\
         {% for image_chunk in container_image.split('@') %}\
           {% if not loop.last %}\
-            {{ image_chunk }}{% if loop.index < loop.length-1 %}@{% endif %}\
+            {{ image_chunk }}{% if loop.index < loop.length - 1 %}@{% endif %}\
           {% endif %}\
         {% endfor %}\
       {% endif %}"
@@ -101,7 +101,7 @@
         {% if loop.index > 1 %}{{ image_chunk }}{% if not loop.last %}/{% endif %}{% endif %}\
       {% endfor %}"
     container_image_version: "\
-      {% if container_image.split('@')|length == 1 %}\
+      {% if container_image.split('@') | length == 1 %}\
         {% if '/' not in container_image.split(':')[-1] %}\
           {{ container_image.split(':')[-1] }}\
         {% else %}\
@@ -111,7 +111,7 @@
         {{ container_image.split('@')[-1] }}\
       {% endif %}"
     container_image_version_short: "\
-      {% if container_image_version.split(':')|length == 1 %}\
+      {% if container_image_version.split(':') | length == 1 %}\
         {{ container_image_version }}\
       {% else %}\
         {{ container_image_version.split(':')[-1][:7] }}\
@@ -119,9 +119,8 @@
     comp_display_name: "IMG {{ container_image_name }} {{ container_image_version_short }}"
     comp_version: "{{ container_image_version }}"
     comp_type: "{{ container_image_name }}"
-  include_tasks: create-component.yml
+  ansible.builtin.include_tasks: create-component.yml
   loop: "{{ container_images_in_ns }}"
   loop_control:
     loop_var: container_image
-
 ...

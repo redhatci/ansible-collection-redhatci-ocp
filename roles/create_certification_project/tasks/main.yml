@@ -1,9 +1,9 @@
 ---
 - name: Create certification project for the operator
-  include_tasks: create_operator_project.yml
+  ansible.builtin.include_tasks: create_operator_project.yml
   when: project_type == 'operator'
 
 - name: Create certification project for the container
-  include_tasks: create_container_project.yml
+  ansible.builtin.include_tasks: create_container_project.yml
   when: project_type == 'container'
 ...

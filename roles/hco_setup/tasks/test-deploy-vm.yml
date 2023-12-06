@@ -1,8 +1,11 @@
 ---
 - name: Mirroring VM image in disconnected mode
+  when:
+    - hs_registry | length
+    - hs_pullsecret_file | length
   block:
     - name: "Mirror Test VM image to local registry"
-      shell:
+      ansible.builtin.command:
         cmd: >
           skopeo copy
           --authfile {{ hs_pullsecret_file }}
@@ -16,17 +19,14 @@
         - copy is not failed
 
     - name: "Set VM image in disconnected mode"
-      set_fact:
+      ansible.builtin.set_fact:
         hs_test_vm_image: "{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}"
-  when:
-    - hs_registry | length
-    - hs_pullsecret_file | length
 
 - name: "Create the test VirtualMachine"
   community.kubernetes.k8s:
     definition: "{{ lookup('template', hs_vm_file) }}"
 
-- name: "test_ Create the test VirtualMachineInstance"
+- name: "test_ Create the test VirtualMachineInstance"  # noqa: name[casing]
   community.kubernetes.k8s:
     state: present
     definition:
@@ -38,7 +38,7 @@
       spec:
         running: true
 
-- name: "test_ Get VMI status"
+- name: "test_ Get VMI status"  # noqa: name[casing]
   community.kubernetes.k8s_info:
     api: kubevirt.io/{{ hs_kubevirt_api_version }}
     kind: VirtualMachineInstance
