@@ -18,7 +18,7 @@ jobs:
           ts=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%Y%m%d%H%M')
           sha=$(echo "${{ github.sha }}" | cut -c1-7)
           cat >> galaxy.yml <<EOF
-            - "$ts"
+            - "ts$ts"
             - "git$sha"
           EOF
           tail -10 galaxy.yml
