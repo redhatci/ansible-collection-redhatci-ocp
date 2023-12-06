@@ -90,13 +90,6 @@ license:
 # exclusive with 'license'
 license_file: ''
 
-# A list of tags you want to associate with the collection for
-# indexing/searching.
-tags:
-  - openshift
-  - qa
-  - redhat
-
 # Collections that this collection requires to be installed for it to be
 # usable. The key of the dict is the collection label 'namespace.name'. The
 # value is a version range
@@ -130,3 +123,11 @@ build_ignore:
   - '.github'
   - 'rpm'
   - 'hack'
+
+# A list of tags you want to associate with the collection for
+# indexing/searching. KEEP IT AT THE END for the Github action to
+# append more publishing to galaxy.
+tags:
+  - openshift
+  - qa
+  - redhat

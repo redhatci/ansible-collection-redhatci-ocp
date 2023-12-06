@@ -12,9 +12,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Add epoch from commit date as patch version in galaxy.yml
-        run: >
-          z=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%s');
-          sed -i -r "s/^(version: .*)\.0$/\1.${z}/" galaxy.yml;
+        run: |
+          z=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%s')          
+          ts=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%Y%m%d%H%M')
+          sha=$(echo "${{ github.sha }}" | cut -c1-7)
+          cat >> galaxy.yml <<EOF
+            - $ts
+            - git$sha
+          EOF
+          sed -i -r "s/^(version: .*)\.0$/\1.${z}/" galaxy.yml
           grep ^version galaxy.yml
 
       # Build and publish manually due to https://github.com/ansible/galaxy/issues/3287
