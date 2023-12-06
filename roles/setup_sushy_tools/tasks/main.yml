@@ -73,7 +73,7 @@
 
         - name: Generate self signed cert for sushy tools.
           include_role:
-            name: setup_selfsigned_cert
+            name: redhatci.ocp.setup_selfsigned_cert
           vars:
             cert_dir: "{{ sushy_cert_dir }}"
             host_var_key: "{{ cert_vars_host_var_key }}"

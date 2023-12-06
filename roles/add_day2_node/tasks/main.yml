@@ -38,7 +38,7 @@
 
     - name: Patch host
       import_role:
-        name: patch_host_config
+        name: redhatci.ocp.patch_host_config
       vars:
         patch_cluster_id: "{{ add_host_cluster_id }}"
         discovered_host: "{{ discovered_host_reply.json }}"
@@ -72,7 +72,7 @@
 
     - name: Monitoring hosts installation
       import_role:
-        name: monitor_host
+        name: redhatci.ocp.monitor_host
       vars:
         monitor_cluster_id: "{{ add_host_cluster_id }}"
         current_host: "{{ discovered_host_reply.json }}"

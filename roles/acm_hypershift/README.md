@@ -56,8 +56,8 @@ See below for some examples of how to use the `acm_hypershift` role
     ah_cluster_name: hypershift
     ah_ocp_version: 4.14.0
     ah_pullsecret_file: /<path_to_ps>
-  include_role:
-    name: acm_hypershift
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_hypershift
 ```
 
 ## Role Outputs

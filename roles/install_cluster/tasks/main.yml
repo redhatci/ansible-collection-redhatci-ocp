@@ -23,7 +23,7 @@
 
 - name: Patch discovered hosts
   include_role:
-    name: patch_host_config
+    name: redhatci.ocp.patch_host_config
   with_items:
     - "{{ cluster.json.hosts }}"
   loop_control:
@@ -210,4 +210,4 @@
   until: cluster.json.status in cluster_installation_states
   retries: 5
   delay: 60
-  
+

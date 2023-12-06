@@ -55,7 +55,7 @@ As a task:
 ```yaml
 - name: Mirror catalog
   include_role:
-    name: mirror_catalog
+    name: redhatci.ocp.mirror_catalog
   vars:
     mc_oc_tool_path: "{{ path_to_oc }}"
     mc_catalog: my.example.com/my-org/my-image:latest

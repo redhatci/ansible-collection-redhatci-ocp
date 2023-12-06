@@ -23,7 +23,9 @@
         that:
           - all_container_projects is defined
           - all_container_projects | length > 0
-        fail_msg: "The all_container_projects variable is not properly defined or is empty."
+        fail_msg: >
+          The all_container_projects variable is not properly defined or is
+          empty.
 
     - name: Attach Product List ID to all projects using the same ID
       ansible.builtin.include_tasks: attach_product_listing.yml

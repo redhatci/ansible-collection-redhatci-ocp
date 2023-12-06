@@ -26,7 +26,7 @@ KUBECONFIG must be defined as a ENV variable in order to have opcap bin working 
 
     - name: Run opcap checks on my-catalog
       include_role:
-        name: opcap_tool
+        name: redhatci.ocp.opcap_tool
         apply:
           environment:
             KUBECONFIG: "{{ kubeconfig_path }}"

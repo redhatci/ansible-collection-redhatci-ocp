@@ -15,7 +15,7 @@ cs_type          | No       | grpc           | CatalogSource type
 ```yaml
 - name: "Create a CatalogSource"
   include_role:
-    name: catalog_source
+    name: redhatci.ocp.catalog_source
   vars:
     cs_name: "redhat-catalog"
     cs_namespace: "openshift-marketplace"

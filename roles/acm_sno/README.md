@@ -105,8 +105,8 @@ See below for some examples of how to use the acm_setup role to configure ACM.
     acm_iso_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/latest/rhcos-4.10.16-x86_64-live.x86_64.iso
     acm_root_fs_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/latest/rhcos-installer-rootfs.x86_64.img
     acm_sc: "assisted-service"
-  include_role:
-    name: acm_sno
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_sno
 ```
 
 *Deployment of a SNO instance in disconnected mode*
@@ -154,8 +154,8 @@ See below for some examples of how to use the acm_setup role to configure ACM.
 
         [[registry.mirror]]
           location = "registry.<my-lab>:4443/multicluster-engine"
-  include_role:
-    name: acm_sno
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_sno
 ```
 
 *Deployment of a SNO instance in connected mode - Minimal. Default role values will be used*
@@ -169,8 +169,8 @@ See below for some examples of how to use the acm_setup role to configure ACM.
     acm_bmc_user: REDACTED
     acm_bmc_pass: REDACTED
     acm_sc: "assisted-service"
-  include_role:
-    name: acm_sno
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_sno
 ```
 
 # Role Outputs

@@ -47,7 +47,7 @@ Passing the variables at role level:
 ```yaml
 - name: "Setup OCP logging stack"
   include_role:
-    name: ocp_logging
+    name: redhatci.ocp.ocp_logging
   vars:
     ol_access_key_id: <ACCESS_KEY_ID>
     ol_access_key_secret: <ACCESS_KEY_SECRET>
@@ -63,7 +63,7 @@ Passing the variables using a yaml vars file:
 ```yaml
 - name: "Setup OCP logging stack"
   include_role:
-    name: ocp_logging
+    name: redhatci.ocp.ocp_logging
   vars:
     ol_settings: <path_to_vars_filel.yml>
 ```
@@ -74,7 +74,7 @@ Remove resources created by the role.
   vars:
     ol_action: 'cleanup'
   include_role:
-    name: ocp_logging
+    name: redhatci.ocp.ocp_logging
 ```
 
 ## Validaton

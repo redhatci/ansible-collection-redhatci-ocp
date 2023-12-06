@@ -36,8 +36,8 @@ See below an example of how to use the acm_setup role to configure ACM.
 
 ```yaml
 - name: "Setup Advanced Cluster Management"
-  include_role:
-    name: acm_setup
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_setup
   vars:
       hub_disable_selfmanagement: true
       hub_availabilityConfig: High

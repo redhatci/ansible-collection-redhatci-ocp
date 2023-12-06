@@ -36,7 +36,7 @@ Passing the variables at role level:
 ```yaml
 - name: "Setup Minio deployment"
   include_role:
-    name: setup_minio
+    name: redhatci.ocp.setup_minio
   vars:
     sm_minio_image: quay.io/minio/minio:latest
 ```
@@ -45,7 +45,7 @@ Remove resources created by the role.
 ```yaml
 - name: "Setup OCP logging stack"
   include_role:
-    name: setup_minio
+    name: redhatci.ocp.setup_minio
     sm_action: cleanup
 ```
 

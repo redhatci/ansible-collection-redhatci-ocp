@@ -14,6 +14,6 @@ Usage examples
       any_errors_fatal: true
       tasks:
           - include_role:
-                name: vbmc
+                name: redhatci.ocp.vbmc
             vars:
                 vbmc_nodes: "{{ groups.get('master', []) }}"

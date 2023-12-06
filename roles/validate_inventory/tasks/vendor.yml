@@ -9,8 +9,8 @@
   loop: "{{ groups['nodes'] }}"
 
 - name: "Check vendors role exists"
-  include_role: 
-    name: "vendors/{{ hostvars[item]['vendor'] | lower }}"
+  include_role:
+    name: "redhatci.ocp.vendors/{{ hostvars[item]['vendor'] | lower }}"
     tasks_from: exists.yml
     allow_duplicates: true
   loop: "{{ groups['nodes'] }}"

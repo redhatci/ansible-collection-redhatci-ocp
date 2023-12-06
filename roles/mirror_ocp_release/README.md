@@ -35,7 +35,7 @@ See below for some examples of how to use the mirror_ocp_release role.
 ```yaml
 - name: Mirror release
   include_role:
-    name: mirror_ocp_release
+    name: redhatci.ocp.mirror_ocp_release
   vars:
     mor_version: "4.13.0-ec.1"
     mor_pull_url: "quay.io/openshift-release-dev/ocp-release@sha256:bb0d79219a876d87e994149c835033f8dcbf3433505a44a9e7e871b1b816b760"
@@ -55,7 +55,7 @@ See below for some examples of how to use the mirror_ocp_release role.
 ```yaml
 - name: "Mirror release"
   include_role:
-    name: mirror_ocp_release
+    name: redhatci.ocp.mirror_ocp_release
   vars:
     mor_version: "4.12.0-0.nightly-2023-01-10-062211"
     mor_pull_url: "registry.ci.openshift.org/ocp/release@sha256:86b4185571e403a9bfcf82c4b363c4aaa41751976e60c1c10d1961e4b67ed9ab"

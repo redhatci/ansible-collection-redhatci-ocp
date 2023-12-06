@@ -42,7 +42,7 @@ This is an example of how to use the metallb role to configure a MetalLB instanc
 ```yaml
 - name: "Setup MetalLB Operator"
   include_role:
-    name: metallb_setup
+    name: redhatci.ocp.metallb_setup
   vars:
     mlb_setup_name: vlan123
     mlb_ipaddr_pool:
@@ -63,7 +63,7 @@ Remove MetalLB created by the role
 ```yaml
 - name: "Setup MetalLB Segregated Configurations for network2"
   include_role:
-    name: metallb_setup
+    name: redhatci.ocp.metallb_setup
   vars:
     mlb_action: cleanup
     mlb_setup_name: vlan544
@@ -78,7 +78,7 @@ This is an example of how to use the metallb role to configure a MetalLB instanc
 ```yaml
 - name: "Setup MetalLB Segregated Configurations for network2"
   include_role:
-    name: metallb_setup
+    name: redhatci.ocp.metallb_setup
   vars:
     mlb_ipaddr_pool:
       - 192.168.62.32-192.168.62.35

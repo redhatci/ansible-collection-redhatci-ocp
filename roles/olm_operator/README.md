@@ -24,7 +24,7 @@ Installing an operator:
 ```yaml
 - name: "deploy-operators : Install OCS Operator"
   include_role:
-    name: olm_operator
+    name: redhatci.ocp.olm_operator
   vars:
     operator: ocs-operator
     source: "{{ opm_catalog_source_name }}"
@@ -41,7 +41,7 @@ Installing an operator's specific version:
 ```yaml
 - name: "deploy-operators : Install OCS Operator"
   include_role:
-    name: olm_operator
+    name: redhatci.ocp.olm_operator
   vars:
     operator: ocs-operator
     source: "{{ opm_catalog_source_name }}"
