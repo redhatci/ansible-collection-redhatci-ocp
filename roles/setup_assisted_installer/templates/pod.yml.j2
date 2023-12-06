@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: assisted-installer
+  name: assisted-installer
+spec:
+  containers:
+    - args:
+      - run-postgresql
+      image: "{{ assisted_postgres_image }}"
+      name: db
+      envFrom:
+      - configMapRef:
+          name: config
+      volumeMounts:
+        - mountPath: "/var/lib/pgsql:z"
+          name: db-volume
+    - image: "{{ assisted_service_gui_image }}"
+      name: ui
+      ports:
+      - hostPort: 8080
+      envFrom:
+      - configMapRef:
+          name: config
+    - image: "{{ assisted_service_image_service_image }}"
+      name: image-service
+      ports:
+      - hostPort: 8888
+      envFrom:
+      - configMapRef:
+          name: config
+      volumeMounts:
+        - mountPath: "/data:z"
+          name: image-data-volume
+{% for vol_name, vol_data in assisted_installer_pod_volumes.items() %}
+        - mountPath: "{{ vol_data.mount_path }}"
+          name: "{{ vol_name }}"
+{% endfor %}
+    - image: "{{ assisted_service_image }}"
+      name: service
+      ports:
+      - hostPort: {{ port }}
+      envFrom:
+      - configMapRef:
+          name: config
+  volumes:
+    - name: db-volume
+      hostPath:
+        path:  "{{ assisted_installer_data_dir }}/postgresql"
+        type: Directory
+    - name: image-data-volume
+      hostPath:
+        path:  "{{ assisted_installer_data_dir }}/image_service"
+        type: Directory
+{% for vol_name, vol_data in assisted_installer_pod_volumes.items() %}
+    - name: "{{ vol_name }}"
+      hostPath:
+        path: "{{ vol_data.host_path }}"
+        type: "{{ vol_data.type | default('Directory') }}"
+{% endfor %}
+  restartPolicy: OnFailure
+  {% if (dns_servers | length) > 0 %}
+  dnsConfig:
+    nameservers:
+      {% for server in dns_servers %}
+      - {{ server }}
+      {% endfor %}
+  {% endif %}

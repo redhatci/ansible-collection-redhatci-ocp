@@ -1,0 +1,126 @@
+---
+- name: DELL Power Off
+  community.general.redfish_command:
+    category: Systems
+    command: PowerGracefulShutdown
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+
+- block: # noqa unnamed-task
+    - name: Wait for machine to DELL Shutdown
+      community.general.redfish_info:
+        category: Systems
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+      register: system_inventory
+      until: (system_inventory |  json_query(filter_str) | length) == 0
+      retries: 10
+      delay: 30
+      vars:
+        filter_str: "redfish_facts.system.entries[] | [?PowerState == 'On']"
+  rescue:
+    - name: DELL Force Power Off
+      community.general.redfish_command:
+        category: Systems
+        command: PowerForceOff
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+
+- block: # noqa unnamed-task
+    - name: Set Dell OneTimeBoot VirtualCD (VCD-DVD)
+      community.general.redfish_command:
+        category: Systems
+        command: SetOneTimeBoot
+        bootdevice: VCD-DVD
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+  rescue:
+    - name: Set Dell OneTimeBoot VirtualCD (Cd)
+      community.general.redfish_command:
+        category: Systems
+        command: SetOneTimeBoot
+        bootdevice: Cd
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+
+- block: # noqa unnamed-task
+    - name: DELL Eject Virtual Media (if any)
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaEject
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        virtual_media:
+          image_url: "{{ boot_iso_url }}"
+        resource_id: iDRAC.Embedded.1
+  rescue:
+    - name: Get Virtual Media information
+      community.general.redfish_info:
+        category: Manager
+        command: GetVirtualMedia
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+      register: result
+
+    - name: Get blocking virtual_media
+      ansible.builtin.set_fact:
+        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
+            | flatten(levels=2)
+            | selectattr('ConnectedVia', 'defined') | list
+            | json_query('[?(
+                ConnectedVia == `URI`
+                && Image != null
+                && (
+                  contains(MediaTypes, `CD`)
+                  || contains(MediaTypes, `DVD`)
+                  || contains(MediaTypes, `VCD-DVD`)
+                )
+              )]'
+            ) | from_yaml
+          }}"
+
+    - ansible.builtin.debug: # noqa unnamed-task
+        var: blocking_virtual_media
+        verbosity: 1
+
+    - name: Attempting to eject blocking media
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaEject
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        virtual_media:
+          image_url: "{{ item.Image }}"
+        resource_id: iDRAC.Embedded.1
+      loop: "{{ blocking_virtual_media }}"
+      no_log: true
+
+- name: DELL Insert Virtual Media
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaInsert
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    virtual_media:
+      image_url: '{{ boot_iso_url }}'
+      media_types:
+        - CD
+        - DVD
+    resource_id: iDRAC.Embedded.1
+
+- name: DELL Restart system power gracefully
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"

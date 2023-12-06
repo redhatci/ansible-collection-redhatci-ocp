@@ -1,0 +1,22 @@
+---
+- name: Setup TFTP
+  become: true
+  block:
+    - name: Install TFTP
+      ansible.builtin.package:
+        name: tftp-server
+        state: present
+
+    - name: Start TFTP
+      ansible.builtin.service:
+        name: tftp.socket 
+        state: started
+        enabled: true
+
+    - name: Allow incoming tftp traffic
+      ansible.posix.firewalld:
+        zone: public
+        service: tftp
+        permanent: yes
+        state: enabled
+        immediate: yes

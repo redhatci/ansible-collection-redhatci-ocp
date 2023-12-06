@@ -1,0 +1,30 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: 50-worker-remove-ipi-leftovers
+  labels:
+    machineconfiguration.openshift.io/role: worker
+spec:
+  config:
+    ignition:
+      version: 3.1.0
+    storage:
+      files:
+        - contents:
+            source: data:,
+            verification: {}
+          filesystem: root
+          mode: 420
+          path: /etc/kubernetes/manifests/coredns.yaml
+        - contents:
+            source: data:,
+            verification: {}
+          filesystem: root
+          mode: 420
+          path: /etc/kubernetes/manifests/keepalived.yaml
+        - contents:
+            source: data:,
+            verification: {}
+          filesystem: root
+          mode: 420
+          path: /etc/kubernetes/manifests/mdns-publisher.yaml

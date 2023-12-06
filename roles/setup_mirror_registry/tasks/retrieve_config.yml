@@ -1,0 +1,29 @@
+---
+- name: Write auth for disconnected to localhost
+  fetch:
+    src: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+    dest: "{{ fetched_dest }}/"
+    flat: yes
+  tags:
+    - copy_config
+
+- name: "Read in the contents of {{ cert_file_prefix }}.crt"
+  slurp:
+    src: "{{ registry_dir_cert }}/{{ cert_file_prefix }}.crt"
+  register: domain_cert_b64
+  tags:
+    - copy_config
+
+- name: "Set trustbundle fact to contents of {{ cert_file_prefix }}.crt"
+  set_fact:
+    trustbundle: "{{ domain_cert_b64.content | string | b64decode }}"
+  tags:
+    - copy_config
+
+- name: Information
+  debug:
+    msg: |
+      To reuse this disconnected registry for other deployments, you must do the following:
+      Add the authentication from either
+          {{ config_file_path }}/{{ registry_auth_file }} on {{ inventory_hostname }}
+          or {{ config_file_path }}/{{ registry_auth_file }} on this server to your pull secret.

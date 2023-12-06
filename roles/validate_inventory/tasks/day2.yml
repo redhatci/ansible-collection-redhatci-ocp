@@ -1,0 +1,5 @@
+- name: Check for day2_discovery_iso_name if required
+  assert:
+    that:
+      - day2_discovery_iso_name is defined
+  when: (groups['day2_workers'] | default([])) | length > 0

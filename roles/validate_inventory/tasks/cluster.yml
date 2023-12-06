@@ -1,0 +1,95 @@
+---
+- name: Assert Openshift version is supported
+  assert:
+    that:
+      - openshift_full_version in supported_ocp_versions
+    fail_msg: "We do not support openshift version {{ openshift_full_version }}, The supported versions are: {{ supported_ocp_versions | join(',') }}"
+
+- name: Assert valid master configuration (HA)
+  assert:
+    that:
+      - groups['masters'] | length >= 3
+    fail_msg: "There must be at least three masters defined. To deploy SNO, define one master and no workers."
+  when: not single_node_openshift_enabled
+
+- name: Assert API and Ingress VIPs are set correctly (SNO)
+  assert:
+    that:
+      - api_vip == hostvars[sno_hostname]['ansible_host']
+      - ingress_vip == hostvars[sno_hostname]['ansible_host']
+    fail_msg: "For SNO deployments, API and Ingress VIPs need to match the IP address (ansible_host) of the master node."
+  vars:
+    sno_hostname: "{{ groups['masters'][0] }}"
+  when: single_node_openshift_enabled
+
+- name: Assert valid worker configuration
+  assert:
+    that:
+      - (groups['workers'] | length == 0) or (groups['workers'] | length >= 2)
+    fail_msg: "There must be either zero, or more than one, workers defined."
+  when: groups['workers'] is defined
+
+- name: Assert all nodes have all required vars
+  assert:
+    that:
+      - hostvars[item.0][item.1] is defined
+      - hostvars[item.0][item.1] | trim != ''
+    quiet: true
+    fail_msg: "Node {{ item.0 }} is missing required var {{ item.1 }}"
+  loop: "{{ groups['nodes'] | product(node_required_vars) | list }}"
+
+- name: Assert all nodes have a BMC IP or address
+  assert:
+    that:
+      - (hostvars[item]['bmc_ip'] is defined and (setup_dns_service | default(false)) | bool) or (hostvars[item]['bmc_address'] is defined)
+    quiet: true
+    fail_msg: "Node {{ item }} must have either bmc_ip"
+  loop: "{{ groups['nodes'] }}"
+
+- name: Assert bmc_ip is correct type
+  assert:
+    that:
+      - hostvars[item]['bmc_ip'] | ansible.utils.ipaddr('bool')
+    quiet: true
+    fail_msg: "Node {{ item }}'s bmc_ip must be a valid IP address'"
+  loop: "{{ groups['nodes'] }}"
+  when: hostvars[item]['bmc_ip'] is defined
+
+- name: Assert bmc_address is correct type
+  assert:
+    that:
+      - hostvars[item]['bmc_address'] is string
+    quiet: true
+    fail_msg: "Node {{ item }}'s bmc_address is string"
+  loop: "{{ groups['nodes'] }}"
+  when: hostvars[item]['bmc_address'] is defined
+
+- name: Assert required vars are correctly typed
+  assert:
+    that:
+      - (hostvars[item]['mac'] | ansible.utils.hwaddr('bool')) == true
+      - hostvars[item]['bmc_password'] is string
+      - hostvars[item]['bmc_user'] is string
+      - hostvars[item]['vendor'] is string
+    quiet: true
+    fail_msg: "Node {{ item }} has an incorrectly formatted var"
+  loop: "{{ groups['nodes'] }}"
+
+- name: Assert mac has linux format
+  assert:
+    that:
+      - ( hostvars[item]['mac'] | string | upper | regex_search('^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$')) is not none
+    quiet: true
+    fail_msg: |-
+      The mac address for node {{ item }} needs to be in linux format XX:XX:XX:XX:XX:XX
+      Make sure to wrap it quotes to make sure it is not being mangled
+      Current value: {{ hostvars[item]['mac'] }}
+  loop: "{{ groups['nodes'] }}"
+
+- name: Assert that all values of 'role' are supported
+  assert:
+    that:
+      - hostvars[item]['role'] is in supported_role_values
+    quiet: true
+    fail_msg: "Node {{ item }} does not have a supported value for 'role'"
+  loop: "{{ groups['nodes'] }}"

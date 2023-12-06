@@ -1,0 +1,46 @@
+---
+# defaults file for disconnected_registry
+force: "no" # force downloads for oc and opm
+pull_secret_file_name: pull-secret.txt
+registry_container_image: quay.io/redhat-partner-solutions/registry:2
+
+# Paths
+config_file_path: "{{ ansible_env.HOME }}" # Where config and secret files should be stored
+fetched_dest: "{{ repo_root_path }}/fetched"
+
+# vars file for disconnected_registry
+# packages needed for the disconnected registry tasks
+required_packages:
+  - podman
+  - httpd
+  - httpd-tools
+
+openshift_version: "{{ openshift_full_version.split('.')[:2] | join('.') }}"
+
+# Name of the pod running as the registry.
+image_name_registry: ocpdiscon-registry
+
+# Registry directories to be created
+registry_dir: /opt/registry
+registry_dir_auth: "{{ registry_dir }}/auth"
+registry_dir_cert: "{{ registry_dir }}/certs"
+registry_dir_data: "{{ registry_dir }}/data"
+
+# The information for the locally created registry
+registry_fqdn: "{{ ansible_fqdn }}"
+local_registry: "{{ registry_fqdn }}:{{ registry_port }}"
+registry_port: 5000
+
+install_config_appends_file: install-config-appends.yml
+registry_auth_file: registry-auths.json
+
+registry_email_user: "{{ ansible_env.USER }}"
+registry_email: "{{ registry_email_user }}@{{ registry_fqdn }}"
+
+file_owner: "{{ ansible_env.USER }}"
+file_group: "{{ file_owner }}"
+
+cert_file_prefix: registry
+cert_targets:
+  - bastion
+  - assisted_installer

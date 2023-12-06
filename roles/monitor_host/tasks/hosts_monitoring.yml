@@ -1,0 +1,42 @@
+---
+# tasks file for hosts_monitoring
+
+- name: "Wait for up to 60 minutes for node {{ host_name }} to reboot"
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: host
+
+- debug:  # noqa unnamed-task
+    var: host
+    verbosity: 1
+
+
+- name: "Wait for up to 60 minutes for node {{ host_name }} to reboot"
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: host
+  until:
+    (host.json.status | default(False)) in waiting_termination_states
+    or 
+    (host.json.status | default(False)) in ['installed', 'error']
+  retries: 60
+  delay: 60
+
+- name: Force rebooting on disk
+  include_role:
+    name: boot_disk
+  vars:
+    hosts:
+      - "{{ host.json.requested_hostname }}"
+  when: host.json.status == 'installing-pending-user-action'
+
+- name: Fail if host is in error condition
+  fail:
+    msg: "{{ host_name }} is in error condition can not continue"
+  when: host.json.status == 'error'

@@ -1,0 +1,43 @@
+- name: Set spec and role
+  set_fact:
+    kvm_node_spec:  "{{ hostvars[kvm_node_hostname]['vm_spec'] | default({}) }}"
+    kvm_node_defaults: "{{ vm_group_params[hostvars[kvm_node_hostname]['role']] }}"
+
+- name: Set default main disk
+  set_fact:
+    kvm_node_disks:
+      main: "{{ kvm_node_spec['disk_size_gb'] | default(kvm_node_defaults['disk_size']) }}"
+
+- name: Add extra disks
+  set_fact:
+    kvm_node_disks: "{{ kvm_node_disks | combine(kvm_node_spec['extra_disks']) }}"
+  when: "'extra_disks' in kvm_node_spec"
+
+- name: Get vm_host's name and vm mac
+  set_fact:
+    vm_hostname: "{{ hostvars[kvm_node_hostname]['vm_host'] }}"
+    vm_mac: "{{ hostvars[kvm_node_hostname]['mac'] }}"
+
+- name: Set kvm_network_interfaces
+  set_fact:
+    kvm_network_interfaces: "{{
+        hostvars[kvm_node_hostname]['network_interfaces'] | default(
+          {(hostvars[vm_hostname]['vm_bridge_name'] | default(cluster_name + '-br')): vm_mac}
+        )
+      }}"
+
+- name: Build node
+  set_fact:
+    kvm_node:
+      name: "{{ kvm_node_hostname.startswith(vm_node_prefix) | ternary(kvm_node_hostname, (vm_node_prefix + kvm_node_hostname)) }}"
+      uuid: "{{ hostvars[kvm_node_hostname]['uuid'] | default('') }}"
+      mac:  "{{ vm_mac }}"
+      vm_host: "{{ vm_hostname }}"
+      memory: "{{ kvm_node_spec['ram_mib'] | default(kvm_node_defaults['memory']) }}"
+      vcpu: "{{ kvm_node_spec['cpu_cores'] | default(kvm_node_defaults['vcpu']) }}"
+      disks: "{{ kvm_node_disks }}"
+      network_interfaces: "{{ kvm_network_interfaces }}"
+
+- name: Update processed_kvm_nodes
+  set_fact:
+    processed_kvm_nodes: "{{ processed_kvm_nodes | combine({kvm_node.vm_host: ((processed_kvm_nodes[kvm_node.vm_host] | default([])) +  [kvm_node])}) }}"

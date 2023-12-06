@@ -1,0 +1,64 @@
+#jinja2:trim_blocks: True, lstrip_blocks: True
+apiVersion: v1
+baseDomain: {{ base_dns_domain}}
+controlPlane:
+  name: master
+  replicas: {{ groups['masters'] | length }}
+compute:
+  - name: worker
+    replicas: {{ (groups['workers'] | default([]))| length }}
+metadata:
+  namespace: cluster0
+  name: {{ cluster_name }}
+networking:
+  clusterNetwork:
+    - cidr:  {{ cluster_network_cidr }}
+      hostPrefix: {{ cluster_network_host_prefix }}
+    {% for cluster_network in (extra_cluster_networks | default([])) %}
+    - cidr: {{ cluster_network.cidr }}
+      hostPrefix: {{ cluster_network.host_prefix }}
+    {% endfor %}
+  {% if network_type is defined %}
+  networkType: {{ network_type }}
+  {% endif %}
+  machineNetwork:
+    - cidr: {{ machine_network_cidr }}
+    {% for machine_network in (extra_machine_networks | default([])) %}
+    - cidr: {{ machine_network.cidr }}
+    {% endfor %}
+  serviceNetwork:
+    - {{ service_network_cidr }}
+    {% for service_network in (extra_service_networks | default([])) %}
+    - {{ service_network.cidr }}
+    {% endfor %}
+platform:
+  {% if single_node_openshift_enabled | bool %}
+  none: {}
+  {% else %}
+  baremetal:
+    apiVips:
+      {% for vip in api_vips %}
+      - {{ vip }}
+      {% endfor %}
+    ingressVips:
+      {% for vip in ingress_vips %}
+      - {{ vip }}
+      {% endfor %}
+  {% endif %}
+sshKey: {{ ssh_public_key }}
+pullSecret: '{{ pull_secret | to_json }}'
+{% if (http_proxy is defined and http_proxy != "") or (https_proxy is defined and https_proxy != "") or (no_proxy is defined and no_proxy != "") %}
+proxy:
+    {% if http_proxy is defined and http_proxy != "" %}
+    httpProxy: {{ http_proxy }}
+    {% endif %}
+    {% if https_proxy is defined and https_proxy != "" %}
+    httpsProxy: {{ https_proxy }}
+    {% endif %}
+    {% if no_proxy is defined and no_proxy != "" %}
+    noProxy: {{ no_proxy }}
+    {% endif %}
+{% endif %}
+{% if (use_local_mirror_registry | bool) %}
+{{ lookup('template', 'registry-config.j2') }}
+{% endif %}

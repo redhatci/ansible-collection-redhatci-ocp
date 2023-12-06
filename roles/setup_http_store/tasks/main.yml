@@ -1,0 +1,91 @@
+---
+- name: Setup HTTP Store
+  become: true
+  block:
+    - name: Install podman
+      package:
+        name: podman
+        state: present
+
+    - name: Open http port, zone internal and public, for firewalld
+      firewalld:
+        port: "{{ http_port }}/tcp"
+        permanent: yes
+        immediate: yes
+        state: enabled
+        zone: "{{ item }}"
+      loop:
+        - internal
+        - public
+
+    - name: Create directory to hold the registry files
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        recurse: yes
+      loop:
+        - "{{ http_dir }}"
+        - "{{ http_data_dir }}"
+
+    - name: Create httpd container
+      containers.podman.podman_pod:
+        name: "{{ http_store_pod_name }}"
+        publish:
+          - "{{ http_port }}:8080"
+      register: pod_info
+
+    - debug: # noqa unnamed-task
+        var: pod_info
+        verbosity: 1
+
+    - name: Create httpd container
+      containers.podman.podman_container:
+        name: "{{ http_store_container_name }}"
+        image: "{{ container_image }}"
+        pod: "{{ http_store_pod_name }}"
+        state: stopped
+        volumes:
+          - "{{ http_data_dir }}:/var/www/html:z"
+      register: container_info
+
+    - name: Setting facts about container
+      set_fact:
+        http_store_name: "{{ container_info.container.Name }}"
+        http_store_pidfile: "{{ container_info.container.ConmonPidFile }}"
+
+    - name: Copy the systemd service file
+      copy:
+        content: |
+          [Unit]
+          Description=Podman http_store.service
+          [Service]
+          Restart=on-failure
+          ExecStart=/usr/bin/podman pod start {{ http_store_pod_name }}
+          ExecStop=/usr/bin/podman pod stop -t 10 {{ http_store_pod_name }}
+          KillMode=none
+          Type=forking
+          PIDFile={{ http_store_pidfile }}
+          [Install]
+          WantedBy=default.target
+        dest: "/etc/systemd/system/http_store.service"
+        mode: 0644
+
+    - name: Reload systemd service
+      systemd:
+        daemon_reexec: yes
+        scope: system
+
+    - name: Enable http_store.service
+      systemd:
+        name: http_store
+        enabled: yes
+        scope: system
+
+    - name: Start http_store.service
+      systemd:
+        name: http_store
+        state: started
+        scope: system

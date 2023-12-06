@@ -1,0 +1,16 @@
+- name: "A hash wasn't provided, inspect the image to figure it out"
+  when: (item.value.hash | default('')) == ''
+  block:
+  - name: "Get {{ item.key }} image hash"
+    shell: "skopeo inspect --authfile {{ local_pull_secret_path }} docker://{{ item.value.url }}"
+    register: result
+    changed_when: false
+
+  - name: Update hashes
+    set_fact:
+      image_hashes: "{{ image_hashes | combine({item.key:  (result.stdout | from_json | json_query('Digest'))}) }}"
+
+- name: "A hash was provided, only update the hash dict"
+  when: (item.value.hash | default('')) != ''
+  set_fact:
+    image_hashes: "{{ image_hashes | combine({item.key:  item.value.hash}) }}"

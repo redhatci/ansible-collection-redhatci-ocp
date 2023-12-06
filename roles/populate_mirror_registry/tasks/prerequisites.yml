@@ -1,0 +1,222 @@
+---
+- name: Check that release_url variable is not defined
+  assert:
+    that:
+      - release_url is not defined
+    fail_msg: >
+      release_url is no longer needed in this role, the
+      functionality around it has changed.
+      Now, artifacts are directly extracted from release image,
+      and they are not downloaded from release_url.
+      Please make sure not to use release_url variable and
+      to check that you are using the correct release image
+
+- name: Make sure needed packages are installed
+  package:
+    name: tar
+    state: present
+  become: true
+
+# The pullsecret is copied in config_file_path in setup_mirror_registry, and this copy can
+# be modified in that role. This role is usually executed prior to populate_mirror_registry,
+# so we need to check if the pullsecret is present there or not.
+- name: "Check if {{ pull_secret_file_name }} has already been copied in {{ config_file_path }}"
+  stat:
+    path: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+  register: copied_pull_secret
+
+# If not present, let's copy it for the next tasks that require it.
+- name: Copy pull_secret
+  copy:
+    src: "{{ local_pull_secret_path }}"
+    dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+    mode: 0644
+  when:
+    - not copied_pull_secret.stat.exists
+
+- name: Create download dirs
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ file_owner }}"
+    group: "{{ file_group }}"
+    mode: 0755
+    state: directory
+  loop:
+    - "{{ downloads_path }}"
+    - "{{ downloads_path }}/{{ openshift_full_version }}"
+
+- name: Check if artifacts from release image have already been downloaded
+  stat:
+    path: "{{ downloads_path }}/{{ openshift_full_version }}/release.txt"
+  register: downloaded_artifacts
+
+# extract artifacts from the OCP release image instead of downloading them
+# from the release URL
+# This OCP release image provides the artifacts required (OCP clients, installer,
+# release.txt, among others)
+- name: Extract artifacts from release image
+  become: true
+  block:
+    # we need to temporarily download ocp stable binary to extract the artifacts
+    - name: Create tmp directory for oc stable client
+      tempfile:
+        state: directory
+        prefix: oc.
+      register: oc_tmp_dir
+
+    - name: Download stable client
+      unarchive:
+        src: "{{ stable_release_url }}/{{ stable_oc_tar }}"
+        dest: "{{ oc_tmp_dir.path }}"
+        mode: 0755
+        remote_src: yes
+
+    - name: Extract artifacts from release image (x86_64)
+      command:
+        cmd: >
+          "{{ oc_tmp_dir.path }}/oc" adm release extract
+            --registry-config "{{ config_file_path }}/{{ pull_secret_file_name }}"
+            --tools
+            --from  "{{ release_image_item.remote | quote }}"
+            --to "{{ downloads_path }}/{{ openshift_full_version }}"
+
+    - name: Remove temporary oc stable client
+      file:
+        path: "{{ oc_tmp_dir.path }}"
+        state: absent
+  when:
+    - not downloaded_artifacts.stat.exists
+
+- name: Setup Version/Image facts
+  block:
+    - name: "Read Release.txt downloaded file"
+      slurp:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/release.txt"
+      register: result
+
+    - name: Set Fact for Release Image
+      set_fact:
+        release_version: "{{ result.content | b64decode | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
+        release_image: "{{ result.content | b64decode | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
+
+- name: Create tmp directory for all binaries
+  tempfile:
+    state: directory
+    prefix: binaries.
+  register: binaries_tmp_dir
+
+- name: Set binaries_tool_path based on the tmp directory path
+  set_fact:
+    binaries_tool_path: "{{ binaries_tmp_dir.path }}"
+
+- name: Install oc
+  block:
+    - name: Check if oc binary has been extracted
+      stat:
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/oc"
+      register: extracted_oc
+
+    - name: Extract oc binary
+      unarchive:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ oc_tar }}"
+        dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        remote_src: yes
+      become: true
+      when:
+        - not extracted_oc.stat.exists
+
+    - name: Copy binary to binaries_tool_path
+      copy:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ item }}"
+        dest: "{{ binaries_tool_path }}/{{ item }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        remote_src: yes
+      become: true
+      with_items:
+        - kubectl
+        - oc
+
+    - name: Check binary installed
+      command: 
+        cmd: "{{ binaries_tool_path }}/{{ item }} help"
+      with_items:
+        - kubectl
+        - oc
+
+    # Also keep the binary in /usr/local/bin, since "oc" is used in other roles.
+    - name: Copy binary to /usr/local/bin
+      copy:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        remote_src: yes
+      become: true
+      with_items:
+        - kubectl
+        - oc
+
+    - name: Check binary installed
+      command: 
+        cmd: "/usr/local/bin/{{ item }} help"
+      with_items:
+        - kubectl
+        - oc
+
+  tags:
+    - create_registry
+    - fetch_oc
+
+- name: Install opm
+  block:
+    - name: Check if opm tarball has been previously downloaded
+      stat:
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/{{ stable_opm_tar }}"
+      register: downloaded_opm_tar
+
+    # opm needs to be downloaded from stable clients
+    - name: Download opm tarball
+      get_url:
+        url: "{{ stable_release_url }}/{{ stable_opm_tar }}"
+        dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
+        mode: 0664
+      when:
+        - not downloaded_opm_tar.stat.exists
+
+    - name: Check if opm binary has been extracted
+      stat:
+        path: "{{ downloads_path }}/{{ openshift_full_version }}/opm"
+      register: extracted_opm
+
+    - name: Extract binary
+      unarchive:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ stable_opm_tar }}"
+        dest: "{{ downloads_path }}/{{ openshift_full_version }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        remote_src: yes
+      become: true
+      when:
+        - not extracted_opm.stat.exists
+
+    - name: Copy opm to binaries_tool_path
+      copy:
+        src: "{{ downloads_path }}/{{ openshift_full_version }}/opm"
+        dest: "{{ binaries_tool_path }}/opm"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: 0775
+        remote_src: yes
+      become: true
+
+    - name: Check opm installed
+      command:  
+        cmd: "{{ binaries_tool_path }}/opm version"
+  tags:
+    - create_registry
+    - fetch_opm

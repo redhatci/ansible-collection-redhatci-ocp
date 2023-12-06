@@ -1,0 +1,10 @@
+---
+ntp_pool_servers:
+  - 0.us.pool.ntp.org
+  - 1.us.pool.ntp.org
+  - 2.us.pool.ntp.org
+  - 3.us.pool.ntp.org
+
+enable_logging: false
+
+ntp_server_allows: "{% if ntp_server_allow is defined %}{{ [ntp_server_allow] }}{% else %}{{ [] }}{% endif %}"

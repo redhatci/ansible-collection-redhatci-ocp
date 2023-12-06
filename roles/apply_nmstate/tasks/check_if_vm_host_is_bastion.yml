@@ -1,0 +1,16 @@
+---
+- name: Get bastion machine id
+  ansible.builtin.slurp:
+    src: /etc/machine-id
+  register: bastion_machine_id
+  delegate_to: bastion
+  become: false
+
+- name: Get vm_host machine id
+  ansible.builtin.slurp:
+    src: /etc/machine-id
+  register: vmhost_machine_id
+
+- name: Check if VM Host is bridge
+  ansible.builtin.set_fact:
+    vm_host_is_bastion: "{{ (bastion_machine_id.content == vmhost_machine_id.content) | bool }}"

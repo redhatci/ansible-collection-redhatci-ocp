@@ -1,0 +1,14 @@
+---
+- name: Restart TFTP
+  become: true
+  ansible.builtin.service:
+    name: tftp.socket
+    state: restarted
+
+- name: Start TFTP
+  become: true
+  ansible.builtin.service:
+    name: tftp.socket
+    state: started
+    enabled: true
+

@@ -1,0 +1,5 @@
+- name: Download kubeconfig
+  ansible.builtin.copy:
+    src: "{{ auth_dir }}/kubeconfig"
+    dest: "{{ kubeconfig_path }}"
+    mode: 0664

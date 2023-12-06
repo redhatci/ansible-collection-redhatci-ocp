@@ -1,0 +1,131 @@
+---
+- name: Populate Mirror with images required for installation
+  become: true
+  tags:
+    - mirror_images
+    - mirror_installation_images
+  block:
+    - name: Install jq
+      ansible.builtin.package:
+        name: jq
+        state: present
+
+    - name: Create podman auth dir
+      file:
+        path: "{{ config_file_path }}/containers/"
+        state: directory
+        mode: 0755
+
+    - name: Copy pull_secrets file.
+      copy:
+        src: "{{ config_file_path }}/{{ pull_secret_file_name }}"
+        dest: "{{ config_file_path }}/containers/auth.json"
+        mode: 0644
+        remote_src: yes
+
+    - name: Podman login to remote registry
+      containers.podman.podman_login_info:
+        registry: "registry.redhat.io"
+      environment:
+        XDG_RUNTIME_DIR: "{{ config_file_path }}"
+
+    - name: Mirror remote ocpmetal image registry to local
+      command:
+        cmd: >
+          "{{ binaries_tool_path }}"/oc image mirror
+            -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
+            {{ item.remote }}
+            {{ item.local }}:{{ item.local_tag }}
+      loop: "{{ ocpmetal_images }}"
+
+    - name: Mirror release image to local (x86_64)
+      command:
+        cmd: >
+          "{{ binaries_tool_path }}"/oc adm release mirror
+            -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
+            --from="{{ release_image_item.remote | quote }}"
+            --to-release-image="{{ release_image_item.local | quote }}:{{ release_image_item.local_tag | quote }}"
+            --to="{{ release_image_item.local | quote }}"
+
+    - name: Mirror release image to local (arm64)
+      command:
+        cmd: >
+          "{{ binaries_tool_path }}"/oc adm release mirror
+            -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
+            --from="{{ release_image_item_arm.remote | quote }}"
+            --to-release-image="{{ release_image_item_arm.local | quote }}:{{ release_image_item_arm.local_tag | quote }}"
+            --to="{{ release_image_item_arm.local | quote }}"
+      when: arm_release_image_key in image_hashes
+
+- name: Populate Mirror  with operators
+  become: true
+  tags:
+    - mirror_images
+    - mirror_operators
+  when: populate_operator_catalog | bool
+  block:
+
+    - name: Create temporary directory for rendered templates
+      ansible.builtin.tempfile:
+        state: directory
+      register: temp_dir
+
+    - name: Create config dir in temp_dir
+      ansible.builtin.file:
+        path: "{{ temp_dir.path }}/configs"
+        state: directory
+
+    # I found that the list of packages was so large that pulling them
+    # back into ansible for processing was not possible via normal means
+    # so I chose to write a script on the host and then run everything there.
+    - name: Render pruning script
+      ansible.builtin.template:
+        src: filter.sh.j2
+        dest: "{{ temp_dir.path }}/filter.sh"
+
+    - name: Runfilter
+      command:
+        cmd: "bash {{ temp_dir.path }}/filter.sh"
+      environment:
+        XDG_RUNTIME_DIR: "{{ config_file_path }}"
+
+    - name: Build pruned OLM index
+      command:
+        cmd: >
+          {{ downloads_path }}/{{ openshift_full_version }}/opm
+            generate dockerfile {{ temp_dir.path }}/configs
+      environment:
+        XDG_RUNTIME_DIR: "{{ config_file_path }}"
+
+    - name: Build pruned index
+      command:
+        cmd: >
+          podman build
+            -t  {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
+            -f configs.Dockerfile
+            .
+        chdir: "{{ temp_dir.path }}"
+
+    - name: "Validate pruned index"
+      command:
+        cmd: >
+          {{ downloads_path }}/{{ openshift_full_version }}/opm
+            validate configs/
+      args:
+        chdir: "{{ temp_dir.path }}"
+
+    - name: Push pruned index to local registry
+      command:
+        cmd: >
+          podman push
+            --tls-verify=false
+            {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
+            --authfile "{{ config_file_path }}/{{ pull_secret_file_name }}"
+
+    - name: Mirror Catalog to local registry
+      command:
+        cmd: >
+          {{ binaries_tool_path }}/oc adm catalog mirror
+            {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
+            {{ olm_item.local }}:{{ olm_item.local_tag }}
+            --registry-config="{{ config_file_path }}/{{ pull_secret_file_name }}"

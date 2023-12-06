@@ -1,0 +1,39 @@
+- name: Create podman auth dir
+  ansible.builtin.file:
+    path: "{{ config_file_path }}/containers/"
+    state: directory
+    mode: 0755
+    recurse: true
+
+- name: Generate an ISO and print message if there is a failure
+  block:
+    - name: Generate ISO
+      ansible.builtin.shell:
+        cmd: "{{ agent_based_installer_path }} --log-level=debug agent create image"
+        chdir: "{{ manifests_dir }}"
+      environment:
+        XDG_RUNTIME_DIR: "{{ config_file_path }}"
+      register: gen_iso
+  rescue:
+    - name: Print message about nmstate package missing
+      fail:
+        msg: "nmstate package missing in the bastion. See Dependencies section in README.md for more details."
+      when:
+        - gen_iso.stderr is defined
+        - gen_iso.stderr | regex_search("nmstatectl(.*) executable file not found")
+
+- name: Put discovery iso in http store
+  delegate_to: http_store
+  become: true
+  block:
+    - name: Create discovery directory
+      ansible.builtin.file:
+        path: "{{ download_dest_path }}/{{ download_agent_dest_file | dirname }}"
+        recurse: true
+        state: directory
+
+    - name: Copy agent iso to discovery directory
+      ansible.builtin.copy:
+        src: "{{ manifests_dir }}/agent.{{ arch }}.iso"
+        dest: "{{ download_dest_path }}/{{ download_agent_dest_file }}"
+        mode: 0644

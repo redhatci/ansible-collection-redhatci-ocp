@@ -1,0 +1,213 @@
+---
+# tasks file for install_cluster
+
+- name: Join list for workers and masters
+  set_fact:
+    nodes: "{{ groups['masters'] + groups['workers'] | default([]) }}"
+    inventory_nodes: "{{ groups['masters'] + groups['workers'] | default([]) }}"
+
+# Monitor hosts discovery
+- name: "Allow up to {{ hosts_discovery_minutes }} minutes for all hosts to be discovered"
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: cluster
+  until:
+    - (cluster.json.hosts | length) == (inventory_nodes | length)
+    - cluster.json.status in host_discovery_states
+  retries: "{{ hosts_discovery_minutes }}"
+  delay: 60
+  when: install | bool == True
+
+- name: Patch discovered hosts
+  include_role:
+    name: patch_host_config
+  with_items:
+    - "{{ cluster.json.hosts }}"
+  loop_control:
+    loop_var: discovered_host
+  no_log: True
+  when: install | bool == True
+
+- name: Patch cluster with config vars relevant to the selected HA mode
+  when: (install | bool == True)
+  block:
+  - name: Set config vars for patching the cluster (SNO)
+    set_fact:
+      cluster_config_patch_request_body: {
+        "machine_network_cidr": "{{ machine_network_cidr }}",
+      }
+    when: single_node_openshift_enabled
+
+  - name: Set config vars for patching the cluster (HA)
+    set_fact:
+      cluster_config_patch_request_body: {
+        "vip_dhcp_allocation": "{{ vip_dhcp_allocation | bool }}",
+        "ingress_vip": "{{ ingress_vip }}",
+        "api_vip": "{{ api_vip }}",
+      }
+    when: not single_node_openshift_enabled
+
+  - debug: # noqa unnamed-task
+      var: cluster_config_patch_request_body
+      verbosity: 1
+
+- name: Add cluster_id to machine_networks
+  vars:
+    extra_machine_networks_with_cluster_id: []
+  set_fact:
+    extra_machine_networks_with_cluster_id: "{{ (
+        extra_machine_networks_with_cluster_id + [item | combine({'cluster_id': cluster_id})]
+      ) }}"
+  loop: "{{ extra_machine_networks | default([]) }}"
+
+- name: Add cluster_id to cluster_networks
+  vars:
+    extra_cluster_networks_with_cluster_id: []
+  set_fact:
+    extra_cluster_networks_with_cluster_id: "{{ (
+        extra_cluster_networks_with_cluster_id + [item | combine({'cluster_id': cluster_id})]
+      ) }}"
+  loop: "{{ extra_cluster_networks | default([]) }}"
+
+- name: Add cluster_id to service_networks
+  vars:
+    extra_service_networks_with_cluster_id: []
+  set_fact:
+    extra_service_networks_with_cluster_id: "{{ (
+        extra_service_networks_with_cluster_id + [item | combine({'cluster_id': cluster_id})]
+      ) }}"
+  loop: "{{ extra_service_networks | default([]) }}"
+
+- name: Set patch cluster body (single stack)
+  set_fact:
+    patch_cluster_networking_body: '{{
+        {
+          "cluster_networks": [
+              {
+                "cluster_id": cluster_id,
+                "cidr": cluster_network_cidr,
+                "host_prefix": (cluster_network_host_prefix | int),
+              }
+          ],
+          "service_networks": [
+            {
+              "cluster_id": cluster_id,
+              "cidr": service_network_cidr,
+            }
+          ],
+        } | to_json
+      }}'
+  when:
+    - install | bool == True
+    - extra_machine_networks_with_cluster_id is not defined
+    - extra_cluster_networks_with_cluster_id is not defined
+    - extra_service_networks_with_cluster_id is not defined
+
+- name: Set patch cluster body (dual stack)
+  set_fact:
+    patch_cluster_networking_body: '{{
+        {
+           "machine_networks": [
+              {
+                "cluster_id": cluster_id,
+                "cidr": machine_network_cidr,
+              }
+          ] + extra_machine_networks_with_cluster_id,
+          "cluster_networks": [
+              {
+                "cluster_id": cluster_id,
+                "cidr": cluster_network_cidr,
+                "host_prefix": (cluster_network_host_prefix | int),
+              }
+          ] + extra_cluster_networks_with_cluster_id,
+          "service_networks": [
+            {
+              "cluster_id": cluster_id,
+              "cidr": service_network_cidr,
+            }
+          ] + extra_service_networks_with_cluster_id,
+        } | to_json
+      }}'
+  when:
+    - install | bool == True
+    - extra_machine_networks_with_cluster_id is defined
+    - extra_cluster_networks_with_cluster_id is defined
+    - extra_service_networks_with_cluster_id is defined
+
+- debug: # noqa unnamed-task
+    var: cluster_config_patch_request_body
+    verbosity: 1
+  when: install | bool
+
+- debug: # noqa unnamed-task
+    var: patch_cluster_networking_body
+    verbosity: 1
+  when: install | bool
+
+- name: patch cluster
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: PATCH
+    url_username: "{{ HTTP_AUTH_USERNAME }}"
+    url_password: "{{ HTTP_AUTH_PASSWORD }}"
+    body_format: json
+    status_code: [200, 201]
+    return_content: True
+    body: "{{ cluster_config_patch_request_body | combine(patch_cluster_networking_body | from_json) | to_json }}"
+  register: http_reply
+  when: install | bool == True
+
+- debug: # noqa unnamed-task
+    var: http_reply.json
+    verbosity: 1
+  when: install | bool == True
+
+# Monitor cluster discovery
+- name: Wait up to 20 minutes for the cluster to report as ready
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: cluster
+  until: "cluster.json.status == 'ready'"
+  retries: 20
+  delay: 60
+  when: install | bool == True
+
+# Install cluster
+- name: Install cluster
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/actions/install"
+    method: POST
+    status_code: [202]
+    return_content: True
+    body_format: json
+    body: {}
+  when: install | bool == True
+  register: http_reply
+
+- name: Debug http_reply
+  debug:
+    var: http_reply.json
+    verbosity: 1
+  when: install | bool == True
+
+
+- name: Allow up to 5 minutes for cluster to begin installing
+  uri:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+    body_format: json
+    body: {}
+  when: install | bool == True
+  register: cluster
+  until: cluster.json.status in cluster_installation_states
+  retries: 5
+  delay: 60
+  

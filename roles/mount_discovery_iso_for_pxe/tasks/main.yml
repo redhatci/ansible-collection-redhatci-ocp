@@ -1,0 +1,88 @@
+---
+- name: prepare PXE
+  become: true
+  block:
+    - name: Install syslinux
+      package:
+        name: syslinux
+        state: present
+
+    - name: mount the discovery iso
+      mount:
+        src: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
+        path: /mnt/iso
+        state: mounted
+        fstype: iso9660
+        opts: ro,noauto
+
+    - name: "Create mount point {{ mount_efiboot_directory }}"
+      file:
+        path: "{{ mount_efiboot_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: mount the efiboot image
+      shell: 
+        cmd: "mount -o loop,ro {{ mount_images_directory }}/efiboot.img {{ mount_efiboot_directory }}" # noqa command-instead-of-module
+ 
+    - name: Create grub Configuration File
+      template:
+        src: "./grub.cfg.j2"
+        dest: "{{ tftp_root }}/grub.cfg"
+        mode: '0644'
+
+    - name: Create a directory pxe
+      file:
+        path: "{{ rootfs_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy mount files to tftp directory
+      copy:
+        src: "{{ item }}"
+        dest: "{{ rootfs_directory }}"
+        mode: '0644'
+        remote_src: true # Remote because http_host is not required to be ansible controller
+
+      with_items: "{{ mounted_iso_files }}"
+
+    - name: Copy mount rootfs to http directory
+      copy:
+        src: "{{ mount_images_directory }}/pxeboot/rootfs.img"
+        dest: "{{ rootfs_directory }}"
+        mode: '0644'
+        remote_src: true # Remote because http_host is not required to be ansible controller
+
+    - name: Unmount a mounted volume
+      mount:
+        path: "{{ item }}"
+        state: unmounted
+      with_items:
+        - "/mnt/efiboot"
+        - "/mnt/iso"
+
+    - name: Copy system file to http directory
+      copy:
+        src: "{{ item }}"
+        dest: "{{ rootfs_directory }}"
+        mode: '0644'
+        remote_src: true # Remote because http_host is not required to be ansible controller
+      with_items: "{{ system_files }}"
+
+- name: copy files from http-store to tftp
+  become: true
+  delegate_to: tftp_host
+  block:
+    - name: Download system files
+      get_url:
+        url: "{{ item }}" 
+        dest: "{{ tftp_root }}"
+        mode: '0644'
+      with_items: "{{ system_files_to_download }}"
+    
+    - name: Download tftp files
+      get_url:
+        url: "{{ item }}"
+        dest: "{{ tftp_root }}"
+        mode: '0644'
+      with_items: "{{ tftp_files_to_download }}"

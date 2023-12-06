@@ -1,0 +1,17 @@
+- name: Set defualt for kvm_nodes
+  set_fact:
+    processed_kvm_nodes: {}
+
+- name: Set kvm_nodes
+  include_tasks: create_node.yml
+  loop: "{{ nodes_to_process }}"
+  loop_control:
+    loop_var: kvm_node_hostname
+  when: hostvars[kvm_node_hostname]['vendor'] | lower == 'kvm'
+
+- name: Distribute kvm_nodes for vm_host to that host
+  set_fact:
+    kvm_nodes: "{{ processed_kvm_nodes[item] | default([]) }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['vm_hosts'] | default([]) }}"

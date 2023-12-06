@@ -1,0 +1,18 @@
+network_name: "net-{{ cluster_name }}"
+path_base_dir: /home/redhat
+vm_create_scripts_dir: "{{ path_base_dir }}/vm_create_scripts/"
+qemu_user: "{{ ansible_user | default(ansible_env.USER) }}"
+
+virt_packages:
+  - python3
+  - libvirt
+  - virt-install
+  - qemu-kvm
+  - virt-manager
+  - python3-pip
+  - python3-lxml
+  - python3-libvirt
+
+images_dir: /var/lib/libvirt/images/
+
+is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"

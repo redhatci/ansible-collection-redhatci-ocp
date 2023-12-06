@@ -1,0 +1,28 @@
+---
+- name: Discovery iDRAC versions for Dell hardware
+  containers.podman.podman_container:
+    name: "{{ bmc_address }}-rac-version"
+    network: host
+    image: quay.io/dphillip/racadm-image
+    state: started
+    detach: false
+    rm: true
+    command:
+      [
+        "-v",
+        "-r", "{{ bmc_address }}",
+        "-u", "{{ bmc_user }}",
+        "-p", "{{ bmc_password }}",
+        "-i",
+        "{{ boot_iso_url }}",
+      ]
+  register: drac_version
+
+- name: "Using iDrac ISO method | Found iDrac {{ drac_version.stdout }}"
+  ansible.builtin.fail:
+    msg: "Not implemented"
+  when: drac_version.stdout | int <= 13
+
+- name: "Using RedFish ISO method | Found iDrac {{ drac_version.stdout }}"
+  ansible.builtin.include_tasks: ./disk_redfish.yml
+  when: drac_version.stdout | int > 13

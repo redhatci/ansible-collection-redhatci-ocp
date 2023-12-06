@@ -1,0 +1,81 @@
+- name: "Install node: {{inventory_hostname }}"
+  delegate_to: bastion
+  block:
+    - name: "Wait for up to 20 minutes for {{ inventory_hostname }} to be discovered"
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}?with-inventory=True"
+        method: GET
+        status_code: [200, 201]
+        return_content: True
+      register: cluster
+      until:
+        - ("json" in cluster)
+        - (hostvars[inventory_hostname]['mac'] | upper) in (cluster.json.hosts | map(attribute='inventory') | map('from_json') | map(attribute='interfaces') | flatten | map(attribute='mac_address') | map('upper') | list)
+      retries: 20
+      delay: 60
+
+    - name: Find host
+      set_fact:
+        discovered_host: "{{ item }}"
+      when: (mac | upper) in ((item.inventory | from_json).interfaces | flatten | map(attribute='mac_address') | map('upper') | list )
+      loop: "{{ cluster.json.hosts }}"
+      no_log: True
+
+    - debug: # noqa unnamed-task
+        var: discovered_host
+        verbosity: 1
+
+    - name: "Wait for up to 20 minutes for requirement checks on {{ inventory_hostname }} "
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
+        method: GET
+        status_code: [200, 201]
+        return_content: True
+      register: discovered_host_reply
+      until: "'status' in discovered_host_reply.json and discovered_host_reply.json.status in day2_states"
+      retries: 20
+      delay: 60
+
+    - name: Patch host
+      import_role:
+        name: patch_host_config
+      vars:
+        patch_cluster_id: "{{ add_host_cluster_id }}"
+        discovered_host: "{{ discovered_host_reply.json }}"
+        inventory_nodes:
+          - "{{ inventory_hostname }}"
+
+    - name: "Wait for up to 20 minutes for {{ inventory_hostname }} to be ready"
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
+        method: GET
+        status_code: [200, 201]
+        return_content: True
+      register: discovered_host_reply
+      until: "'status' in discovered_host_reply.json and discovered_host_reply.json.status in day2_states[1:]"
+      retries: 20
+      delay: 60
+
+    - debug: # noqa unnamed-task
+        var: discovered_host_reply.json
+        verbosity: 1
+
+    - name: Install cluster
+      uri:
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}/actions/install"
+        method: POST
+        status_code: [202]
+        return_content: True
+        body_format: json
+        body: {}
+      register: http_reply
+
+    - name: Monitoring hosts installation
+      import_role:
+        name: monitor_host
+      vars:
+        monitor_cluster_id: "{{ add_host_cluster_id }}"
+        current_host: "{{ discovered_host_reply.json }}"
+        waiting_termination_states:
+          - "added-to-existing-cluster"
+          - "installing-pending-user-action"

@@ -1,0 +1,6 @@
+<network>
+  <name>{{ network_name }}</name>
+  <uuid>{{ net_uuid | default(99999999 | random | to_uuid) }}</uuid>
+  <forward mode='bridge'/>
+  <bridge name='{{ vm_bridge_name }}'/>
+</network>

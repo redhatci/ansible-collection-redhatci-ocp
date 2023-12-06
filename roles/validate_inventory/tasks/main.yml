@@ -1,0 +1,102 @@
+---
+- name: Validate Inventory
+  block:
+    - include_tasks:
+        file: required_vars.yml
+        apply:
+          tags: validate_required_vars
+      tags: validate_required_vars
+
+    - include_tasks:
+        file: cluster.yml
+        apply:
+          tags: validate_cluster
+      tags: validate_cluster
+
+    - include_tasks:
+        file: vendor.yml
+        apply:
+          tags: validate_vendor
+      tags: validate_vendor
+
+    - include_tasks:
+        file: ntp.yml
+        apply:
+          tags: validate_ntp
+      tags: validate_ntp
+
+    - include_tasks:
+        file: vms.yml
+        apply:
+          tags: validate_vms
+      tags: validate_vms
+
+    - include_tasks:
+        file: secrets.yml
+        apply:
+          tags: validate_secrets
+      tags: validate_secrets
+
+    - include_tasks:
+        file: prereqs.yml
+        apply:
+          tags: validate_prereqs
+      tags: validate_prereqs
+
+    - include_tasks:
+        file: proxy.yml
+        apply:
+          tags: validate_proxy_config
+      tags: validate_proxy_config
+
+    - include_tasks:
+        file: network.yml
+        apply:
+          tags: validate_network
+      tags: validate_network
+
+    - include_tasks:
+        file: day2.yml
+        apply:
+          tags: validate_day2
+      tags: validate_day2
+
+    - include_tasks:
+        file: partitions.yml
+        apply:
+          tags: validate_partitions
+      tags: validate_partitions
+
+    - include_tasks:
+        file: validate_pxe.yml
+        apply:
+          tags: validate_pxe
+      tags: validate_pxe
+      when: (setup_pxe_service | default(false)) | bool
+
+    - include_tasks:
+        file: agent_based_installer_feature_gates.yml
+        apply:
+          tags: validate_agent_based_installer
+      when:
+        - (use_agent_based_installer | default(false) | bool)
+        - not ((ignore_agent_based_installer_feature_gates | default(false)) | bool)
+      tags: validate_agent_based_installer
+
+    - include_tasks:
+        file: agent_based_installer_requirements.yml
+        apply:
+          tags: validate_agent_based_installer
+      when:
+        - (use_agent_based_installer | default(false) | bool)
+      tags: validate_agent_based_installer
+
+  when: not (inventory_validated | default(False) | bool)
+  delegate_to: "{{ validation_host | default('bastion') }}"
+
+- name: Record successful validation on all hosts
+  set_fact:
+    inventory_validated: True
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  loop: "{{ groups['all'] + ['localhost'] }}"

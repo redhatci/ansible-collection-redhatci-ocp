@@ -1,0 +1,66 @@
+- name: Render nmstate
+  ansible.builtin.include_tasks: static.yml
+  loop: "{{ groups['nodes'] }}"
+
+- name: Make cluster-manifests dir
+  ansible.builtin.file:
+    name: "{{ manifests_dir }}"
+    state: absent
+  ignore_errors: true
+
+- name: Make cluster-manifests dir
+  ansible.builtin.file:
+    name: "{{ cluster_manifest_dir }}"
+    mode: 0775
+    recurse: true
+    state: directory
+
+- name: Update pull_secret variable
+  ansible.builtin.set_fact:
+    local_pull_secret: "{{ pull_secret | combine({
+        'auths': pull_secret['auths'] | combine({
+            'registry.ci.openshift.org': {
+              'auth': pull_secret['auths'][mirror_registry]['auth'],
+            }
+          })
+        })
+      }}"
+  when: use_local_mirror_registry  | bool
+
+- name: Render agent-config templates
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ manifests_dir }}/{{ item.rsplit('.', 1)[0] }}"
+    mode: 0644
+    trim_blocks: true
+    lstrip_blocks: true
+  loop:
+    - agent-config.yaml.j2
+    - install-config.yaml.j2
+
+# The agent-config files are eventually deleted after its usage, just
+# save them in a safe place in case of needing to check them
+- name: Save a backup of agent-config files
+  fetch:
+    src: "{{ manifests_dir }}/{{ item }}"
+    dest: "{{ fetched_dest }}/{{ item }}"
+    flat: true
+  loop:
+    - agent-config.yaml
+    - install-config.yaml
+
+- name: Create extra_manifest_dir dir
+  ansible.builtin.file:
+    name: "{{ extra_manifest_dir }}"
+    mode: 0775
+    recurse: true
+    state: directory
+  when:
+    - manifests | bool
+    - manifest_templates is defined
+    - manifest_templates | length >= 0
+
+- name: Render extra_manifests
+  ansible.builtin.include_tasks: manifest.yml
+  loop: "{{ manifest_templates }}"
+  when: manifests | bool

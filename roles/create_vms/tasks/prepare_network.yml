@@ -1,0 +1,13 @@
+- name: Setup network
+  become: true
+  block:
+    - name: define network
+      community.libvirt.virt_net:
+        name: "{{ network_name }}"
+        command: define
+        xml: "{{ lookup('template', 'network.xml.j2') }}"
+
+    - name: start network
+      community.libvirt.virt_net:
+        name: "{{ network_name }}"
+        command: start

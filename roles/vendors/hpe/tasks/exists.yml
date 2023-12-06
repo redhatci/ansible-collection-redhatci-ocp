@@ -1,0 +1,3 @@
+- ansible.builtin.debug: # noqa unnamed-task
+    msg: "HPE vendor role exists"
+    verbosity: 1

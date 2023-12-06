@@ -1,0 +1,42 @@
+- name: Check if there is a ISO mounted on the SuperMicro
+  ansible.builtin.uri:
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: GET
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+  register: cd1_contents
+
+- name: Unmount SuperMicro ISO
+  ansible.builtin.uri:
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.EjectMedia"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {}
+    body_format: json
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+  when: cd1_contents.json.Inserted | bool == True
+
+- name: Mount SuperMicro ISO
+  ansible.builtin.uri:
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.InsertMedia"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {"Image": "{{ boot_iso_url }}"}
+    body_format: json
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+    status_code: 202

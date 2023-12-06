@@ -1,0 +1,32 @@
+- name: Wait for bootstrap complete
+  ansible.builtin.shell:
+    cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for bootstrap-complete"
+    chdir: "{{ manifests_dir }}"
+  ignore_errors: True # Timeout is fixed and some bare metal clusters complete bootstrap just after the timeout
+
+- name: Check installation and gather jobs if it fails
+  block:
+    - name: Wait for install complete
+      ansible.builtin.shell:
+        cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
+        chdir: "{{ manifests_dir }}"
+
+  rescue:
+    # Using master-0 IP address to reach the bootstrap VM
+    # Placing the logs in repo_root_path
+    # Trying several times in case there are SSH connectivity issues
+    - name: Gather logs from installation
+      vars:
+        rendezvous_ip_address: "{{ hostvars[agent_based_installer_bootstrap_node][host_ip_keyword] }}"
+      ansible.builtin.shell:
+        cmd: "{{ agent_based_installer_path }} --log-level=debug gather bootstrap --bootstrap {{ rendezvous_ip_address }}"
+        chdir: "{{ repo_root_path }}"
+      register: command_result
+      until: command_result.rc == 0
+      retries: 6
+      delay: 20
+      ignore_errors: True
+
+    - name: Fail properly because installation was not completed
+      fail:
+        msg: "Installation was not completed"

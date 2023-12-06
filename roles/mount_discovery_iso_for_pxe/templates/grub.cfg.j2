@@ -1,0 +1,5 @@
+set timeout=1
+menuentry 'Install Red Hat Enterprise Linux CoreOS' --class fedora --class gnu-linux --class gnu --class os {
+	linuxefi vmlinuz random.trust_cpu=on ignition.firstboot ignition.platform.id=metal 'coreos.live.rootfs_url=http://{{ HTTPD_PXE_HOST }}/{{ pxe_directory }}/rootfs.img' 
+	initrdefi initrd.img ignition.img
+}
