@@ -9,17 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Add epoch from commit date as patch version in galaxy.yml
         run: |
+          set -x
           z=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%s')          
           ts=$(TZ=UTC0 git show ${{ github.sha }} --no-patch --format=%cd --date=format-local:'%Y%m%d%H%M')
           sha=$(echo "${{ github.sha }}" | cut -c1-7)
           cat >> galaxy.yml <<EOF
-            - $ts
-            - git$sha
+            - "ts$ts"
+            - "git$sha"
           EOF
+          tail -10 galaxy.yml
           sed -i -r "s/^(version: .*)\.0$/\1.${z}/" galaxy.yml
           grep ^version galaxy.yml
 
