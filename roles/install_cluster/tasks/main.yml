@@ -210,4 +210,4 @@
   until: cluster.json.status in cluster_installation_states
   retries: 5
   delay: 60
-
+...
