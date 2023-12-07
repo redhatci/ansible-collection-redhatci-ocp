@@ -72,7 +72,7 @@
           become: True
 
         - name: Generate self signed cert for sushy tools.
-          include_role:
+          ansible.builtin.include_role:
             name: redhatci.ocp.setup_selfsigned_cert
           vars:
             cert_dir: "{{ sushy_cert_dir }}"

@@ -54,7 +54,7 @@ As a task:
 
 ```yaml
 - name: Mirror catalog
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.mirror_catalog
   vars:
     mc_oc_tool_path: "{{ path_to_oc }}"

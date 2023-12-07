@@ -34,7 +34,7 @@ See below for some examples of how to use the mirror_ocp_release role.
 * Custom mirroring
 ```yaml
 - name: Mirror release
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.mirror_ocp_release
   vars:
     mor_version: "4.13.0-ec.1"
@@ -54,7 +54,7 @@ See below for some examples of how to use the mirror_ocp_release role.
 * Mirroring using default values
 ```yaml
 - name: "Mirror release"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.mirror_ocp_release
   vars:
     mor_version: "4.12.0-0.nightly-2023-01-10-062211"

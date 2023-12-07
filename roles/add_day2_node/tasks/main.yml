@@ -2,7 +2,7 @@
   delegate_to: bastion
   block:
     - name: "Wait for up to 20 minutes for {{ inventory_hostname }} to be discovered"
-      uri:
+      ansible.builtin.uri:
         url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}?with-inventory=True"
         method: GET
         status_code: [200, 201]
@@ -15,7 +15,7 @@
       delay: 60
 
     - name: Find host
-      set_fact:
+      ansible.builtin.set_fact:
         discovered_host: "{{ item }}"
       when: (mac | upper) in ((item.inventory | from_json).interfaces | flatten | map(attribute='mac_address') | map('upper') | list )
       loop: "{{ cluster.json.hosts }}"
@@ -26,7 +26,7 @@
         verbosity: 1
 
     - name: "Wait for up to 20 minutes for requirement checks on {{ inventory_hostname }} "
-      uri:
+      ansible.builtin.uri:
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
         method: GET
         status_code: [200, 201]
@@ -37,7 +37,7 @@
       delay: 60
 
     - name: Patch host
-      import_role:
+      ansible.builtin.import_role:
         name: redhatci.ocp.patch_host_config
       vars:
         patch_cluster_id: "{{ add_host_cluster_id }}"
@@ -46,7 +46,7 @@
           - "{{ inventory_hostname }}"
 
     - name: "Wait for up to 20 minutes for {{ inventory_hostname }} to be ready"
-      uri:
+      ansible.builtin.uri:
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
         method: GET
         status_code: [200, 201]
@@ -56,12 +56,12 @@
       retries: 20
       delay: 60
 
-    - debug: # noqa unnamed-task
+    - ansible.builtin.debug:  # noqa unnamed-task
         var: discovered_host_reply.json
         verbosity: 1
 
     - name: Install cluster
-      uri:
+      ansible.builtin.uri:
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}/actions/install"
         method: POST
         status_code: [202]
@@ -71,7 +71,7 @@
       register: http_reply
 
     - name: Monitoring hosts installation
-      import_role:
+      ansible.builtin.import_role:
         name: redhatci.ocp.monitor_host
       vars:
         monitor_cluster_id: "{{ add_host_cluster_id }}"

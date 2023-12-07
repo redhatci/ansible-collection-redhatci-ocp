@@ -9,7 +9,7 @@
 
 - name: Boot ISO for "{{ hostvars[inventory_hostname]['vendor'] }}"
   ansible.builtin.include_role:
-    name: "redhatci.ocp.vendors/{{ hostvars[inventory_hostname]['vendor'] | lower }}"
+    name: "redhatci.ocp.vendors.{{ hostvars[inventory_hostname]['vendor'] | lower }}"
     tasks_from: iso.yml
   vars:
     target_host: "{{ inventory_hostname }}"

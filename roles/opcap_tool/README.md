@@ -25,7 +25,7 @@ Binary is copied in the output_dir at the end of the test in case of debugging.
 KUBECONFIG must be defined as a ENV variable in order to have opcap bin working properly:
 
     - name: Run opcap checks on my-catalog
-      include_role:
+      ansible.builtin.include_role:
         name: redhatci.ocp.opcap_tool
         apply:
           environment:

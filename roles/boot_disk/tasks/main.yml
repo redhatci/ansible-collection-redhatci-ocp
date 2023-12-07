@@ -8,7 +8,7 @@
 
 - name: Boot from disk for "{{ hostvars[item]['vendor'] }}"
   ansible.builtin.include_role:
-    name: "redhatci.ocp.vendors/{{ hostvars[item]['vendor'] | lower }}"
+    name: "redhatci.ocp.vendors.{{ hostvars[item]['vendor'] | lower }}"
     tasks_from: disk.yml
   vars:
     target_host: "{{ item }}"

@@ -21,7 +21,7 @@ nes_provisioner_image       | No        | registry.k8s.io/sig-storage/nfs-subdir
 
 ```yaml
 - name: "deploy-operators : Install OCS Operator"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.nfs_external_storage
   vars:
     nes_nfs_server: "192.168.16.11"

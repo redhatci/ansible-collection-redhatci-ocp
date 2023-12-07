@@ -23,7 +23,7 @@ Installing an operator:
 
 ```yaml
 - name: "deploy-operators : Install OCS Operator"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.olm_operator
   vars:
     operator: ocs-operator
@@ -40,7 +40,7 @@ Installing an operator's specific version:
 
 ```yaml
 - name: "deploy-operators : Install OCS Operator"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.olm_operator
   vars:
     operator: ocs-operator

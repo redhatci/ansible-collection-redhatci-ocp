@@ -37,7 +37,7 @@ As a task:
 
 ```yaml
 - name: "Deploy hco-operator and test it"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.hco_setup
   vars:
     hs_test_vm: true

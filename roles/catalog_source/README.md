@@ -14,7 +14,7 @@ cs_type          | No       | grpc           | CatalogSource type
 ## Example of usage
 ```yaml
 - name: "Create a CatalogSource"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.catalog_source
   vars:
     cs_name: "redhat-catalog"

@@ -22,7 +22,7 @@
   when: install | bool == True
 
 - name: Patch discovered hosts
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.patch_host_config
   with_items:
     - "{{ cluster.json.hosts }}"

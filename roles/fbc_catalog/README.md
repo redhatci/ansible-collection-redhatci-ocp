@@ -28,7 +28,7 @@ The following application must be already present on the system.
 
 ```yaml
 - name: "Create an FBC catalog"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.fbc_catalog
     apply:
       environment:

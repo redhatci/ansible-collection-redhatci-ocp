@@ -46,7 +46,7 @@ See below for some examples of how to use the ocp_logging role to configure the 
 Passing the variables at role level:
 ```yaml
 - name: "Setup OCP logging stack"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.ocp_logging
   vars:
     ol_access_key_id: <ACCESS_KEY_ID>
@@ -62,7 +62,7 @@ Passing the variables at role level:
 Passing the variables using a yaml vars file:
 ```yaml
 - name: "Setup OCP logging stack"
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.ocp_logging
   vars:
     ol_settings: <path_to_vars_filel.yml>
@@ -73,7 +73,7 @@ Remove resources created by the role.
 - name: "Setup OCP logging stack"
   vars:
     ol_action: 'cleanup'
-  include_role:
+  ansible.builtin.include_role:
     name: redhatci.ocp.ocp_logging
 ```
 
