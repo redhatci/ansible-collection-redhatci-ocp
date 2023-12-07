@@ -7,6 +7,32 @@
     name: "{{ item.name }}"
     namespace: "{{ ol_namespace }}"
   ignore_errors: true
-  loop: "{{ ol_resources |
-           community.general.lists_mergeby(ol_pvc, 'name') }}"
+  loop: "{{ ol_resources }}"
+
+- name: "Get PVCs in the namespace"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "{{ ol_resources }}"
+  register: pvc_info
+
+- name: "Delete PVCs"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: "{{ item.metadata.name }}"
+        namespace: "{{ item.metadata.namespace }}"
+      spec: {}
+    state: absent
+  with_items: "{{ pvc_info.resources }}"
+  when: pvc_info.resources | length > 0
+
+- name: "Delete Cluster Logging namespace"
+  community.kubernetes.k8s:
+    state: absent
+    api: "v1"
+    kind: "Namespace"
+    name: "{{ ol_namespace }}"
 ...
