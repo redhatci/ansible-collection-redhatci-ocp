@@ -116,35 +116,6 @@
       args:
         chdir: "{{ tnf_dir }}"
 
-    # This is needed because the DCI component is not automatically created, as
-    # it is done in case the git repo is directly used, in whose case it is
-    # created.  Doing this in the same way that is done in track_git_repo play
-    # but with the arguments obtained in previous tasks (e.g. commit SHA), as we
-    # cannot rely on the last commit id. For that reason, it is better to just do
-    # it here rather than changing pre-run and track_git_repo to be adapted to
-    # this casuistic
-    - name: Manually create the corresponding tnf component for DCI
-      ansible.legacy.dci_component:
-        display_name: "{{ test_network_function_project_name }} {{ tnf_version_image[:7] }}"
-        version: "{{ tnf_version_image }}"
-        team_id: "{{ job_info['job']['team_id'] }}"
-        topic_id: "{{ job_info['job']['topic_id'] }}"
-        type: "{{ test_network_function_project_name }}"
-        url: "https://github.com/test-network-function/cnf-certification-test/commit/{{ tnf_version_image }}"  # noqa 204
-        state: present
-      register: tnf_git_component
-      tags: [dci]
-
-    - name: Attach tnf component to the job
-      ansible.legacy.dci_job_component:
-        component_id: "{{ tnf_git_component.component.id }}"
-        job_id: "{{ job_id }}"
-      register: job_component_result
-      until: job_component_result is not failed
-      retries: 5
-      delay: 20
-      tags: [dci]
-
 - name: Tasks when testing a cnf-certification-test stable version
   when:
     - test_network_function_src_dir is not defined
@@ -218,4 +189,15 @@
     - name: Create variable with tnf commit SHA
       ansible.builtin.set_fact:
         tnf_commit_sha: "{{ tnf_commit_sha_cmd.stdout }}"
+
+    - name: Create cnf-certification-test component calling to include_components role
+      ansible.builtin.include_role:
+        name: redhatci.ocp.include_components
+      vars:
+        gits_list:
+          - "{{ tnf_dir }}"
+        ic_gits: "{{ gits_list|flatten }}"
+        ic_rpms: []
+        ic_dev_gits: []
+
 ...
