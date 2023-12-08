@@ -26,7 +26,7 @@
         namespace: "{{ item.metadata.namespace }}"
       spec: {}
     state: absent
-  with_items: "{{ pvc_info.resources }}"
+  loop: "{{ pvc_info.resources }}"
   when: pvc_info.resources | length > 0
 
 - name: "Delete Cluster Logging namespace"
