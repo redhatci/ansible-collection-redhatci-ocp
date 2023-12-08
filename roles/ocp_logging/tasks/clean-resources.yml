@@ -13,7 +13,7 @@
   community.kubernetes.k8s_info:
     api_version: v1
     kind: PersistentVolumeClaim
-    namespace: "{{ ol_resources }}"
+    namespace: "{{ ol_namespace }}"
   register: pvc_info
 
 - name: "Delete PVCs"
