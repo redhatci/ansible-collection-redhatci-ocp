@@ -35,3 +35,6 @@ supported_ocp_versions:
   - 4.14.2
 
 single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | default(false) }}"
+
+# allowed modes: 'bridge', 'nat', using 'bridge' as default
+vm_network_mode: bridge

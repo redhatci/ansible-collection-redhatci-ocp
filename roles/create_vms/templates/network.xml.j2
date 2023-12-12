@@ -1,6 +1,19 @@
 <network>
   <name>{{ network_name }}</name>
   <uuid>{{ net_uuid | default(99999999 | random | to_uuid) }}</uuid>
+
+{% if vm_network_mode == 'bridge' %}
+
   <forward mode='bridge'/>
   <bridge name='{{ vm_bridge_name }}'/>
+
+{% elif vm_network_mode == 'nat' %}
+
+  <forward mode='nat'/>
+  <bridge name='{{ vm_bridge_name }}' stp='on' delay='0'/>
+  <ip address="{{ vm_bridge_ip }}" />
+  <domain name='{{ cluster_name }}.{{ base_dns_domain }}' localOnly='yes'/>
+
+{% endif %}
+
 </network>
