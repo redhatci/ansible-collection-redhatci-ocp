@@ -84,7 +84,7 @@
 
         - name: Create variable with tnf version name
           ansible.builtin.set_fact:
-            tnf_version_image: "{{ tnf_repo_info_head['content'] | b64decode }}"
+            tnf_version_image: "{{ tnf_repo_info_head['content'] | b64decode | trim }}"
 
     - name: Actions when .git/ORIG_HEAD file does not exist
       when: not orig_head_file.stat.exists
@@ -100,9 +100,10 @@
             tnf_version_image: "{{ tnf_repo_info_branch.stdout }}"
 
     - name: Create variable with tnf image name
+      vars:
+        tnf_image_tag: "{{ tnf_version_image }}-{{ tnf_image_suffix }}"
       ansible.builtin.set_fact:
-        tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
-          {{ tnf_image_suffix }}"
+        tnf_image: "{{ test_network_function_project_name }}:{{ tnf_image_tag }}"
 
     # Steps from
     # https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
@@ -143,9 +144,10 @@
         tnf_version_image: "{{ (test_network_function_version | regex_search('HEAD')) | ternary('unstable', test_network_function_version) }}"
 
     - name: Create variable with tnf image name
+      vars:
+        tnf_image_tag: "{{ tnf_version_image }}-{{ tnf_image_suffix }}"
       ansible.builtin.set_fact:
-        tnf_image: "{{ test_network_function_project_name }}:{{ tnf_version_image }}-\
-        {{ tnf_image_suffix }}"
+        tnf_image: "{{ test_network_function_project_name }}:{{ tnf_image_tag }}"
 
     - name: Clone tnf repository
       ansible.builtin.git:
