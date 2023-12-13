@@ -70,7 +70,7 @@ tnf_feedback:
   lifecycle-readiness-probe: ""
   lifecycle-startup-probe: ""
   lifecycle-statefulset-scaling: ""
-  lifecycle-storage-required-pods: ""
+  lifecycle-storage-provisioner: ""
   manageability-container-port-name-format: ""
   manageability-containers-image-tag: ""
   networking-dpdk-cpu-pinning-exec-probe: ""
