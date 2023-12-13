@@ -1,21 +1,19 @@
 ---
 # vim: ft=yaml
 
-offline: true
+profile: shared
 use_default_rules: true
+verbosity: 1
 
 exclude_paths:
-  - plugins
+  - .github
   - roles/installer  # will go through, eventually
   - roles/node_prep  # will go through, eventually
   - roles/upi_installer  # using vars_file in role makes linter mad
   - roles/verify_tests  # junitparser is a headache
 
-skip_list:
-  - yaml[line-length]
-  - yaml[new-line-at-end-of-file]
-
 warn_list:
+  - yaml[line-length]
   - ignore-errors
   - no-changed-when
 ...
