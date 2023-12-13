@@ -13,7 +13,7 @@ Usage examples
       hosts: localhost
       any_errors_fatal: true
       tasks:
-          - include_role:
-                name: vbmc
+          - ansible.builtin.include_role:
+                name: redhatci.ocp.vbmc
             vars:
                 vbmc_nodes: "{{ groups.get('master', []) }}"

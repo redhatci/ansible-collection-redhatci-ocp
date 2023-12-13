@@ -37,8 +37,8 @@ As a task:
 
 ```yaml
 - name: "Deploy hco-operator and test it"
-  include_role:
-    name: hco_setup
+  ansible.builtin.include_role:
+    name: redhatci.ocp.hco_setup
   vars:
     hs_test_vm: true
     hs_test_vm_image: quay.io/kubevirt/fedora-with-test-tooling-container-disk:v0.59.2

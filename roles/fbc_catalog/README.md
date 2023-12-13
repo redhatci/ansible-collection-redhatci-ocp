@@ -28,8 +28,8 @@ The following application must be already present on the system.
 
 ```yaml
 - name: "Create an FBC catalog"
-  include_role:
-    name: fbc_catalog
+  ansible.builtin.include_role:
+    name: redhatci.ocp.fbc_catalog
     apply:
       environment:
         DOCKER_CONFIG: "/path_docker_conf_dir/"

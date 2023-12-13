@@ -2,13 +2,13 @@
 # tasks file for boot_disk
 
 - name: Join list for workers and masters
-  set_fact:
+  ansible.builtin.set_fact:
     hosts: "{{ groups['masters'] + groups['workers'] | default([]) }}"
   when: hosts is not defined
 
 - name: Boot from disk for "{{ hostvars[item]['vendor'] }}"
-  include_role: 
-    name: "vendors/{{ hostvars[item]['vendor'] | lower }}"
+  ansible.builtin.include_role:
+    name: "redhatci.ocp.vendors.{{ hostvars[item]['vendor'] | lower }}"
     tasks_from: disk.yml
   vars:
     target_host: "{{ item }}"

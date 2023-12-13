@@ -35,8 +35,8 @@ See below for some examples of how to use the ocp_logging role to configure the 
 Passing the variables at role level:
 ```yaml
 - name: "Setup Minio deployment"
-  include_role:
-    name: setup_minio
+  ansible.builtin.include_role:
+    name: redhatci.ocp.setup_minio
   vars:
     sm_minio_image: quay.io/minio/minio:latest
 ```
@@ -44,8 +44,8 @@ Passing the variables at role level:
 Remove resources created by the role.
 ```yaml
 - name: "Setup OCP logging stack"
-  include_role:
-    name: setup_minio
+  ansible.builtin.include_role:
+    name: redhatci.ocp.setup_minio
     sm_action: cleanup
 ```
 

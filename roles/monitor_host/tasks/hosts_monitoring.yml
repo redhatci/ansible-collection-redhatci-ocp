@@ -23,14 +23,14 @@
   register: host
   until:
     (host.json.status | default(False)) in waiting_termination_states
-    or 
+    or
     (host.json.status | default(False)) in ['installed', 'error']
   retries: 60
   delay: 60
 
 - name: Force rebooting on disk
-  include_role:
-    name: boot_disk
+  ansible.builtin.include_role:
+    name: redhatci.ocp.boot_disk
   vars:
     hosts:
       - "{{ host.json.requested_hostname }}"

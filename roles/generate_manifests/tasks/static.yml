@@ -13,7 +13,7 @@
 
 - name: Process network_config
   ansible.builtin.import_role:
-    name: process_nmstate
+    name: redhatci.ocp.process_nmstate
   vars:
     network_config: "{{ item_network_config }}"
     target_name: "{{ item }}"

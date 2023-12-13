@@ -1,6 +1,6 @@
 
 - name: Assert that all values of 'vendor' are supported
-  assert:
+  ansible.builtin.assert:
     that:
       - (hostvars[item]['vendor'] | lower) is in supported_vendor_values
     quiet: true
@@ -9,8 +9,8 @@
   loop: "{{ groups['nodes'] }}"
 
 - name: "Check vendors role exists"
-  include_role: 
-    name: "vendors/{{ hostvars[item]['vendor'] | lower }}"
+  ansible.builtin.include_role:
+    name: "redhatci.ocp.vendors.{{ hostvars[item]['vendor'] | lower }}"
     tasks_from: exists.yml
     allow_duplicates: true
   loop: "{{ groups['nodes'] }}"

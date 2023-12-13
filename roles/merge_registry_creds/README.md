@@ -18,8 +18,8 @@ The `mrc_auth_data` variable contains the result of combining all the authentica
 
 ```yaml
 - name: "Combine registry auth secrets"
-  include_role:
-    name: merge_registry_creds
+  ansible.builtin.include_role:
+    name: redhatci.ocp.merge_registry_creds
   vars:
     mrc_auths:
       - auths:
