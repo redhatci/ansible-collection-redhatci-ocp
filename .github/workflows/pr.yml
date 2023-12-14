@@ -4,15 +4,52 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  linting:
-    name: Ansible Lint
+  ansible-lint:
+    name: Compute ansible-lint score
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run ansible-lint
-        continue-on-error: true
-        uses: ansible/ansible-lint@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Install ansible-lint
+        # Install ansible-lint from same branch as GHA
+        run: >
+          pip install
+          "ansible-lint[lock] @
+          git+https://github.com/ansible/ansible-lint@v6"
+
+      - name: Install requirements for plugins
+        run: pip install junitparser junit_xml
+
+      - name: Compare current branch vs main branch
+        # Run ansible-lint on this branch then compare vs main branch
+        run: |
+          set -x
+          git checkout -b branch
+          git fetch --unshallow origin main
+          cmd="ansible-lint --parseable --nocolor --profile=shared"
+          $cmd > branch.output || echo "Branch linting output written"
+          git checkout main
+          $cmd > main.output || echo "Main linting output written"
+          set +ex
+          diff -u0 branch.output main.output > diff.output || echo "Wrote diff file"
+          echo "## Improvements over main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
+          echo '```diff' >> ${GITHUB_STEP_SUMMARY}
+          grep '^+[^+]' diff.output | sed -e 's/^+/+FIXED: /' | tee -a ${GITHUB_STEP_SUMMARY}
+          echo '```' >> ${GITHUB_STEP_SUMMARY}
+          echo "## Regressions from main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
+          echo '```diff' >> ${GITHUB_STEP_SUMMARY}
+          grep '^-[^-]' diff.output | sed -e 's/^-/-ERROR: /' | tee -a ${GITHUB_STEP_SUMMARY}
+          echo '```' >> ${GITHUB_STEP_SUMMARY}
+          if grep -q '^-[^-]' diff.output; then
+             echo "> Fix regressions listed above" | tee -a ${GITHUB_STEP_SUMMARY}
+             exit 1
+          fi
 
   sanity:
     name: Sanity Check
@@ -25,7 +62,6 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -73,7 +109,6 @@ jobs:
     name: "Check all dependencies are merged"
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 

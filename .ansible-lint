@@ -7,10 +7,7 @@ verbosity: 1
 
 exclude_paths:
   - .github
-  - roles/installer  # will go through, eventually
-  - roles/node_prep  # will go through, eventually
-  - roles/upi_installer  # using vars_file in role makes linter mad
-  - roles/verify_tests  # junitparser is a headache
+  - plugins
 
 warn_list:
   - yaml[line-length]
