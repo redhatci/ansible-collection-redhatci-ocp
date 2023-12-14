@@ -12,7 +12,7 @@
   <forward mode='nat'/>
   <bridge name='{{ vm_bridge_name }}' stp='on' delay='0'/>
   <ip address="{{ vm_bridge_ip }}" />
-  <domain name='{{ cluster_name }}.{{ base_dns_domain }}' localOnly='yes'/>
+  <dns enable="no"/>
 
 {% endif %}
 
