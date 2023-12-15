@@ -19,7 +19,7 @@
         cmd: "{{ agent_based_installer_path }} --log-level=debug agent create image"
         chdir: "{{ manifests_dir }}"
       environment:
-        XDG_RUNTIME_DIR: "{{ config_file_path }}"
+        XDG_RUNTIME_DIR: "{{ generated_dir }}"
       register: gen_iso
   rescue:
     - name: Print message about nmstate package missing
