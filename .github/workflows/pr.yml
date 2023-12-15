@@ -33,9 +33,11 @@ jobs:
           git checkout -b branch
           git fetch --unshallow origin main
           cmd="ansible-lint --parseable --nocolor --profile=shared"
+          unset GITHUB_ACTIONS
           $cmd > branch.output || echo "Branch linting output written"
           git checkout main
           $cmd > main.output || echo "Main linting output written"
+          export GITHUB_ACTIONS=true
           set +ex
           diff -u0 branch.output main.output > diff.output || echo "Wrote diff file"
           echo "## Improvements over main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
