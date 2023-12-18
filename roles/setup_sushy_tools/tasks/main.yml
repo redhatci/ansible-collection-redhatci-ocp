@@ -119,3 +119,11 @@
         name: sushy-tools
         state: restarted
         enabled: yes
+
+    - name: Check sushy-tools service is active
+      service:
+        name: sushy-tools
+      register: sushy_service_result
+      until: "'active' in sushy_service_result.status.ActiveState"
+      retries: 10
+      delay: 5
