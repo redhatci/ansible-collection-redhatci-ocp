@@ -26,7 +26,7 @@
   community.kubernetes.k8s:
     definition:
       apiVersion: v1
-      kind: secret
+      kind: Secret
       metadata:
         name: "bmc-{{ acm_cluster_name }}"
         namespace: "{{ acm_cluster_name }}"
@@ -38,7 +38,7 @@
   community.kubernetes.k8s:
     state: absent
     api: v1
-    kind: secret
+    kind: Secret
     name: "bmc-{{ acm_cluster_name }}"
     namespace: "{{ acm_cluster_name }}"
   ignore_errors: true
