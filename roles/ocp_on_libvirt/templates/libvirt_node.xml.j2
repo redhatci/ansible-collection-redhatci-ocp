@@ -6,7 +6,7 @@
     <type arch='{{ host['arch'] }}'{{ " machine='pc-q35-rhel8.6.0'" if bootmode == "uefi" else "" }}>hvm</type>
     <boot dev='{{ host['boot_dev'] }}'/>
 {% if bootmode == "uefi" %}
-    <loader readonly='yes' secure='yes' type='pflash'>/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd</loader>
+    <loader readonly='yes' secure='no' type='pflash'>/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd</loader>
     <nvram template='/usr/share/edk2/ovmf/OVMF_VARS.secboot.fd'>/var/lib/libvirt/qemu/nvram/{{ host['name'] }}_VARS.fd</nvram>
 {% endif %}
 {% if enable_conserver %}
