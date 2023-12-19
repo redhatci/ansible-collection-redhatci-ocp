@@ -1,33 +1,3 @@
-- name: "Get Ansible roles path"
-  shell: "set -o pipefail && ansible-config dump|grep DEFAULT_ROLES_PATH|sed -e 's/.*=\\s*//'"
-  register: roles_path_cmd
-  delegate_to: localhost
-
-- name: "Set roles_path"
-  set_fact:
-    roles_path: "{{ roles_path_cmd.stdout }}"
-
-- name: "Clone/update assisted-deploy repo"
-  vars:
-    git_repo: "{{ redfish_assisted_deploy_repo }}"
-    git_ref: "{{ redfish_assisted_deploy_version }}"
-  git:
-    version: "{{ git_ref }}"
-    repo: "{{ git_repo }}"
-    dest: "{{ redfish_cache_dir }}/assisted_deploy_repo"
-    force: true
-  # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
-  # SSL_ERROR_SYSCALL, errno 104.
-  delegate_to: localhost
-  register: git_clone
-  retries: 3
-  delay: 10
-  until: not git_clone.failed
-  when:
-    - "redfish_cache_dir + '/assisted_deploy_repo/roles' in roles_path"
-  tags:
-    - clone_upstream_repos
-
 - name: Set hardware vendor to "kvm"
   set_fact:
     vendor: kvm
@@ -37,7 +7,7 @@
   delegate_to: "{{ item }}"
 
 - name: Install sushy-tools
-  include_role:
+  ansible.builtin.include_role:
     name: setup_sushy_tools
 
 - name: Get KVM hosts UUID
