@@ -47,11 +47,17 @@ jobs:
           diff -u0 branch.output main.output | tail -n +3 > diff.output
           echo "## Improvements over main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
           echo '```diff' >> ${GITHUB_STEP_SUMMARY}
-          grep '^+' diff.output | sed -e 's/^+/+FIXED: /' | tee -a ${GITHUB_STEP_SUMMARY}
+          grep '^+' diff.output |
+            sed -e 's/^+/+FIXED: /' |
+            sed -r 's/\x1B\[[0-9]{1,2}(;[0-9]{1,2})?[mGK]//g' |
+            tee -a ${GITHUB_STEP_SUMMARY}
           echo '```' >> ${GITHUB_STEP_SUMMARY}
           echo "## Regressions from main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
           echo '```diff' >> ${GITHUB_STEP_SUMMARY}
-          grep '^-' diff.output | sed -e 's/^-/-ERROR: /' | tee -a ${GITHUB_STEP_SUMMARY}
+          grep '^-' diff.output |
+            sed -e 's/^-/-ERROR: /' |
+            sed -r 's/\x1B\[[0-9]{1,2}(;[0-9]{1,2})?[mGK]//g' |
+            tee -a ${GITHUB_STEP_SUMMARY}
           echo '```' >> ${GITHUB_STEP_SUMMARY}
           if grep -q '^-' diff.output; then
              echo "> Fix regressions listed above" | tee -a ${GITHUB_STEP_SUMMARY}
