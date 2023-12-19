@@ -1,6 +1,6 @@
 ---
 libvirt_image_path: /var/lib/libvirt/images
-bootmode: "{{ 'uefi' if enable_virtualmedia else 'legacy' }}"
+bootmode: "{{ 'uefi' if enable_redfish else 'legacy' }}"
 enable_conserver: true
 enable_legacy_vga_mode: false
 do_dns_config: true
