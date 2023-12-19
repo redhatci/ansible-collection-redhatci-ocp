@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   ansible-lint:
-    name: Compute ansible-lint score
+    name: Ansible-lint Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,17 +29,18 @@ jobs:
       - name: Compare current branch vs main branch
         # Run ansible-lint on this branch then compare vs main branch
         run: |
+          set +e
           set -x
           # fix randomness
           export PYTHONHASHSEED=42
           git checkout -b branch
           git fetch --unshallow origin main
-          cmd="ansible-lint --parseable --nocolor --profile=shared"
+          cmd="ansible-lint --parseable --force-color --profile=shared"
           # don't want to annotate through GHA
           unset GITHUB_ACTIONS
-          $cmd > branch.output || echo "Branch linting output written"
+          $cmd | tee branch.output
           git checkout main
-          $cmd > main.output || echo "Main linting output written"
+          $cmd > main.output
           export GITHUB_ACTIONS=true
           set +ex
           # export diff sans headers
@@ -122,8 +123,6 @@ jobs:
     name: "Check all dependencies are merged"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Check all dependent Pull Requests are merged
         uses: depends-on/depends-on-action@main
