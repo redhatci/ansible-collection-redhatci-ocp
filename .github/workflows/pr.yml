@@ -30,6 +30,8 @@ jobs:
         # Run ansible-lint on this branch then compare vs main branch
         run: |
           set -x
+          # fix randomness
+          export PYTHONHASHSEED=42
           git checkout -b branch
           git fetch --unshallow origin main
           cmd="ansible-lint --parseable --nocolor --profile=shared"
