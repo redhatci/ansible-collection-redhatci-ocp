@@ -24,12 +24,14 @@ jobs:
           git+https://github.com/ansible/ansible-lint@v6"
 
       - name: Install requirements for plugins
-        run: pip install junitparser junit_xml
+        run: pip install junitparser junit_xml jmespath
 
       - name: Compare current branch vs main branch
         # Run ansible-lint on this branch then compare vs main branch
         run: |
           set -x
+          # fix randomness
+          export PYTHONHASHSEED=42
           git checkout -b branch
           git fetch --unshallow origin main
           cmd="ansible-lint --parseable --nocolor --profile=shared"
@@ -81,10 +83,13 @@ jobs:
           set -x
           git checkout -b branch
           git fetch --unshallow origin main
-          cmd="ansible-test sanity --verbose --docker --color --coverage --failure-ok"
-          $cmd 2>&1 | tee branch.output
+          for version in 3.6 3.7 3.8 3.9 ; do
+            ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
+          done 2>&1 | tee branch.output
           git checkout main
-          $cmd > main.output 2>&1
+          for version in 3.6 3.7 3.8 3.9 ; do
+            ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
+          done > main.output 2>&1
           for key in branch main; do
             grep -E "(ERROR|FATAL):" "$key.output" |
             grep -v "issue(s) which need to be resolved\|See error output above for details." |
