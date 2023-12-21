@@ -6,7 +6,7 @@
 
 # There are three types of files to be submitted:
 # - Configuration files - tnf_config.yml
-# - Execution logs - dci-tnf-execution.log
+# - Execution logs - dci-tnf-execution.log and cnf-certsuite.log, if exists
 # - Results of the execution (only generated if tnf execution was correct) -
 #   JUnit XML report and claim.json file
 - name: Copy files related to CNF Cert Suite
@@ -15,8 +15,8 @@
     dest: "{{ job_logs.path }}"
     mode: "0750"
   with_fileglob:
-    - "{{ tnf_logs_location }}/dci-tnf-execution.log"
     - "{{ tnf_logs_location }}/tnf_config.yml"
+    - "{{ tnf_logs_location }}/*.log"
     - "{{ tnf_logs_location }}/*.xml"
     - "{{ tnf_logs_location }}/*.json"
 
