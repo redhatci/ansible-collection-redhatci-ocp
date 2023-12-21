@@ -69,3 +69,6 @@ podman_ipv6_network_gateway: 'fd00::1:8:1'
 
 
 assisted_service_extra_config: {}
+
+insecure_skip_verify: false
+
