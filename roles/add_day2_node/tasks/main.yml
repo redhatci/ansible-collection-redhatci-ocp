@@ -10,6 +10,7 @@
       register: cluster_output
       until:
         - ("json" in cluster_output)
+<<<<<<< HEAD
         - >
           (
             hostvars[inventory_hostname]['mac'] | upper
@@ -25,6 +26,9 @@
             map('upper') |
             list
           )
+=======
+        - (hostvars[inventory_hostname]['mac'] | upper) in (cluster_output.json.hosts | map(attribute='inventory') | map('from_json') | map(attribute='interfaces') | flatten | map(attribute='mac_address') | map('upper') | list)
+>>>>>>> dd1a271 (Add cluster_output instead of cluster to avoid conflicts with ongoing cluster variable)
       retries: 20
       delay: 60
 
@@ -33,7 +37,11 @@
         discovered_host: "{{ item }}"
       when: (mac | upper) in ((item.inventory | from_json).interfaces | flatten | map(attribute='mac_address') | map('upper') | list )
       loop: "{{ cluster_output.json.hosts }}"
+<<<<<<< HEAD
       no_log: true
+=======
+      no_log: True
+>>>>>>> dd1a271 (Add cluster_output instead of cluster to avoid conflicts with ongoing cluster variable)
 
     - debug: # noqa unnamed-task
         var: discovered_host
