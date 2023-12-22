@@ -51,7 +51,7 @@
             })
           }}"
       loop: "{{ kvm_node_names }}"
-      # no_log: true
+      no_log: true
 
     - name: Check there are not mutliple bmc passwords for the same bmc user and vm host.
       assert:
@@ -61,7 +61,7 @@
           For vm host {{ item.key.split('.')[0] }}: bmc_user ({{ item.key.split('.')[1] }})
           and bmc_password combinations for a single host must be unique
       loop: "{{ kvm_user_password_combinations | dict2items() }}"
-      # no_log: true
+      no_log: true
 
 - name: Check UUIDs are unique
   when: (kvm_node_names is defined) and (kvm_node_names | length > 0)
@@ -73,7 +73,7 @@
         kvm_node_uuids: "{{ kvm_node_uuids + [hostvars[item]['uuid']] }}"
       when: "'uuid' in hostvars[item]"
       loop: "{{ kvm_node_names }}"
-      # no_log: true
+      no_log: true
 
     - name: Check values are unique
       assert:
