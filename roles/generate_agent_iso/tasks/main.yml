@@ -1,9 +1,16 @@
 - name: Create podman auth dir
   ansible.builtin.file:
-    path: "{{ config_file_path }}/containers/"
+    path: "{{ generated_dir }}/containers/"
     state: directory
     mode: 0755
     recurse: true
+
+- name: Copy pull_secrets file.
+  ansible.builtin.copy:
+    content: "{{ pull_secret }}"
+    dest: "{{ generated_dir }}/containers/auth.json"
+    mode: "0644"
+    remote_src: true
 
 - name: Generate an ISO and print message if there is a failure
   block:
@@ -12,7 +19,7 @@
         cmd: "{{ agent_based_installer_path }} --log-level=debug agent create image"
         chdir: "{{ manifests_dir }}"
       environment:
-        XDG_RUNTIME_DIR: "{{ config_file_path }}"
+        XDG_RUNTIME_DIR: "{{ generated_dir }}"
       register: gen_iso
   rescue:
     - name: Print message about nmstate package missing

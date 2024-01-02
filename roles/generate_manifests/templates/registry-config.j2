@@ -1,8 +1,4 @@
-{% if ocp_version_major is version('4.14', '<') %}
 imageContentSources:
-{% else %}
-imageDigestSources:
-{% endif %}
   - source: quay.io/openshift-release-dev/ocp-release
     mirrors:
       - {{ mirror_registry }}/{{ registry_repository }}
