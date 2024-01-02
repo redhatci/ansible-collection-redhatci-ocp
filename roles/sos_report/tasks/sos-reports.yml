@@ -1,0 +1,41 @@
+---
+- name: Generate SOS report for nodes
+  vars:
+    sos_report_registry: "{{ sos_report_image | regex_replace('([^/]+)/.*', '\\1') }}"
+    sos_report_image_name: "{{ sos_report_image | regex_replace('[^/]+/(.*)', '\\1') }}"
+  ansible.builtin.shell: >
+    {{ sos_report_oc_path }} debug --image={{ sos_report_image }} node/{{ node_name }} --
+    bash -c 'echo -e REGISTRY='{{ sos_report_registry }}'\\nIMAGE='{{ sos_report_image_name }}'> /host/root/.toolboxrc';
+    {{ sos_report_oc_path }} debug --image={{ sos_report_image }} node/{{ node_name }} --
+    chroot /host
+    toolbox
+    sos report --batch {{ sos_report_options }}
+  async: 600
+  poll: 0
+  register: report
+  loop: "{{ sos_report_nodes }}"
+  loop_control:
+    loop_var: node_name
+  changed_when: true
+
+- name: Check SOS report status
+  ansible.builtin.async_status:
+    jid: "{{ result.ansible_job_id }}"
+  loop: "{{ report.results }}"
+  loop_control:
+    loop_var: "result"
+  register: sos_async_results
+  until: sos_async_results.finished
+  retries: 20
+  delay: 30
+
+- name: Extract SOS report for nodes
+  vars:
+    tarball: "{{ async.stdout | regex_findall('/host/var/tmp/sosreport-.*.tar.xz') | first }}"
+  ansible.builtin.shell: >
+    {{ sos_report_oc_path }} debug --image={{ sos_report_image }} node/{{ async.result.node_name }} --
+    bash -c 'cat {{ tarball }}' > {{ sos_report_dir }}/{{ tarball | basename }}
+  loop: "{{ sos_async_results.results }}"
+  loop_control:
+    loop_var: "async"
+  changed_when: true

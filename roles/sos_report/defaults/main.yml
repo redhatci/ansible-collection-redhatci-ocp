@@ -1,0 +1,5 @@
+---
+sos_report_dir: "/tmp"
+sos_report_image: "registry.redhat.io/rhel9/support-tools"
+sos_report_oc_path: "/usr/local/bin/oc"
+sos_report_options: "-k crio.all=on -k crio.logs=on -k podman.all=on -k podman.logs=on"
