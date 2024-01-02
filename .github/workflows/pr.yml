@@ -86,8 +86,11 @@ jobs:
           set -x
           git checkout -b branch
           git fetch --unshallow origin main
-          # extract all the supported python versions from the error message
-          PY_VERS=$(ansible-test sanity --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1|grep -Po "invalid.*?\K'3.*\d'"|tr -d ,\')
+          # extract all the supported python versions from the error message, excluding 3.5
+          PY_VERS=$(ansible-test sanity --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
+            grep -Po "invalid.*?\K'3.*\d'" |
+            tr -d ,\' |
+            sed -e 's/3.5 //g')
           for version in $PY_VERS; do
             ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
           done 2>&1 | tee -a branch.output
