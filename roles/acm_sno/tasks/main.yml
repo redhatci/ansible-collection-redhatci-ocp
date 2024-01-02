@@ -4,7 +4,8 @@
 
 - name: "Check cluster namespace"
   community.kubernetes.k8s_info:
-    kind: namespace
+    api_version: v1
+    kind: Namespace
     name: "{{ acm_cluster_name }}"
   register: acm_cluster_ns
 

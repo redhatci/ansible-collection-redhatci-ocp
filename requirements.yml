@@ -1,0 +1,10 @@
+---
+collections:
+  - ansible.posix
+  - ansible.utils
+  - community.crypto
+  - community.general
+  - community.kubernetes
+  - community.libvirt
+  - containers.podman
+...

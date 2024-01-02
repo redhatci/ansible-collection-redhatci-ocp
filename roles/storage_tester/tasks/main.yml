@@ -81,7 +81,7 @@
 
 - name: "Wait for init job to be completed"
   community.kubernetes.k8s_info:
-    kind: job
+    kind: Job
     api_version: batch/v1
     namespace: storage-tester
     name: init-pv
