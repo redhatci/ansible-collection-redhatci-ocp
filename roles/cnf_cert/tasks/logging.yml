@@ -74,7 +74,7 @@
 - name: Confirm we are testing the correct CNF Cert code
   ansible.builtin.lineinfile:
     path: "{{ tnf_logs_location }}/dci-tnf-execution.log"
-    regex: '.*\(\ {{ tnf_commit_sha }}\ \)'
+    regex: '.*{{ tnf_commit_sha }}'
     state: absent
   changed_when: false
   check_mode: true
