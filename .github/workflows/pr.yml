@@ -57,6 +57,8 @@ jobs:
           if grep -q '^-' diff.output; then
              echo "> Fix regressions listed above" | tee -a ${GITHUB_STEP_SUMMARY}
              exit 1
+          else
+             echo "Congrats! The change introduced no regressions"
           fi
 
   sanity:
