@@ -17,11 +17,21 @@
 
 - name: Track RPMs
   ansible.builtin.include_tasks: track_rpm.yml
-  loop: "{{ ic_rpms }}"
+  loop: "{{ ic_rpms | default([]) }}"
   when:
     - item is not in
       ( (ic_gits + ic_dev_gits) |
         map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') |
         map('regex_replace', 'python', 'python3') | list)
     - item in ansible_facts.packages
+
+- name: Print ic_podman variable
+  debug:
+    msg: "ic_podman variable: {{ ic_podman | default([]) }}"
+
+- name: Track podman components
+  ansible.builtin.include_tasks: track_podman_component.yml
+  loop: "{{ ic_podman | default([]) }}"
+  loop_control:
+    loop_var: ic_repo_commit_pair
 ...

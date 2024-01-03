@@ -1,0 +1,44 @@
+---
+- name: Debug repo_url and commit_id
+  debug:
+    msg:
+      - "ic_repo_commit_pair: {{ ic_repo_commit_pair }}"
+      - "repo_url: {{ ic_repo_commit_pair.0 }}"
+      - "commit_id: {{ ic_repo_commit_pair.1 }}"
+
+- name: Assert repo_url and commit_id
+  assert:
+    that:
+      - ic_repo_commit_pair.0 is defined
+      - ic_repo_commit_pair.1 is defined
+      # Assert that ic_repo_commit_pair.0 is a valid https_repo_url
+      - ic_repo_commit_pair.0 is match('^https://github\.com/.+')
+      # Assert that ic_repo_commit_pair.1 is a valid commit_id
+      - ic_repo_commit_pair.1 is match('^[0-9a-f]{40}$')
+
+- name: Create podman component
+  vars:
+    ic_repo_https: "{{ ic_repo_commit_pair.0 }}"
+    ic_last_commit_id: "{{ ic_repo_commit_pair.1 }}"
+    ic_version: "{{ ic_last_commit_id[:7] }}"
+    ic_repo_name: "{{ ic_repo_https | basename }}"
+  ansible.legacy.dci_component:
+    display_name: "{{ ic_repo_name }} {{ ic_version }}"
+    version: "{{ ic_version }}"
+    uid: "{{ ic_last_commit_id }}"
+    team_id: "{{ job_info['job']['team_id'] }}"
+    topic_id: "{{ job_info['job']['topic_id'] }}"
+    type: "{{ ic_repo_name }}"
+    url: "{{ ic_repo_https }}/commit/{{ ic_last_commit_id }}"
+    state: present
+  register: ic_podman_component
+
+- name: Attach podman component to the job
+  ansible.legacy.dci_job_component:
+    component_id: "{{ ic_podman_component.component.id }}"
+    job_id: " {{ job_id }} "
+  register: job_component_result
+  until: job_component_result is not failed
+  retries: 5
+  delay: 20
+...
