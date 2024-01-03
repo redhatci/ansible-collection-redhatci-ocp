@@ -192,14 +192,11 @@
       ansible.builtin.set_fact:
         tnf_commit_sha: "{{ tnf_commit_sha_cmd.stdout }}"
 
-    - name: Create cnf-certification-test component calling to include_components role
+    - name: Create DCI component for cnf-certification-test
       ansible.builtin.include_role:
         name: redhatci.ocp.include_components
       vars:
-        gits_list:
+        ic_gits:
           - "{{ tnf_dir }}"
-        ic_gits: "{{ gits_list|flatten }}"
-        ic_rpms: []
         ic_dev_gits: []
-
 ...
