@@ -62,9 +62,8 @@ jobs:
     strategy:
       matrix:
         ansible:
-          # 2.9 fails due to https://github.com/ansible/ansible/issues/68819
-          - stable-2.10
-          - stable-2.15
+          - stable-2.9          # used by DCI on RHEL8
+          - stable-2.16         # latest stable version
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -87,13 +86,18 @@ jobs:
           set -x
           git checkout -b branch
           git fetch --unshallow origin main
-          for version in 3.6 3.7 3.8 3.9 ; do
+          # extract all the supported python versions from the error message, excluding 3.5
+          PY_VERS=$(ansible-test sanity --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
+            grep -Po "invalid.*?\K'3.*\d'" |
+            tr -d ,\' |
+            sed -e 's/3.5 //g')
+          for version in $PY_VERS; do
             ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
-          done 2>&1 | tee branch.output
+          done 2>&1 | tee -a branch.output
           git checkout main
-          for version in 3.6 3.7 3.8 3.9 ; do
+          for version in $PY_VERS; do
             ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
-          done > main.output 2>&1
+          done >> main.output 2>&1
           for key in branch main; do
             grep -E "(ERROR|FATAL):" "$key.output" |
             grep -v "issue(s) which need to be resolved\|See error output above for details." |

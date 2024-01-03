@@ -1,0 +1,8 @@
+---
+# ansible-test configuration file (stable-2.12+)
+# See template for more information:
+# https://github.com/ansible/ansible/blob/devel/test/lib/ansible_test/config/config.yml
+
+modules:
+  # Only perform tests on python versions >= 3.6
+  python_requires: '>=3.6'
