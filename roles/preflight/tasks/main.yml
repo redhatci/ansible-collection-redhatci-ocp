@@ -46,16 +46,28 @@
       # this variable is set in test-runner
       when: preflight_source_dir is defined
 
-    - name: Create a component when building the preflight image from the source
+    # $ podman run --rm quay.io/opdev/preflight:1.8.0 --version
+    # preflight version 1.8.0 <commit: b6bcc3506c0d84baa0c020f6b776a181b931f57a>
+    - name: Extract commit_id from Preflight image
+      ansible.builtin.shell:
+        cmd: >
+          set -o pipefail;
+          podman run --rm {{ preflight_image }} --version |
+          awk '/commit:/ {gsub(">", "", $NF); print $NF}'
+      register: preflight_commit_id
+      changed_when: false
+
+    - name: Create a DCI component from Preflight image
       ansible.builtin.include_role:
         name: redhatci.ocp.include_components
       vars:
-        gits_list:
-          - "{{ preflight_source_dir }}"
-        ic_gits: "{{ gits_list | flatten }}"
-        ic_rpms: []
+        ic_commit_urls:
+          - "{{ preflight_repo_https }}/commit/{{ preflight_commit_id.stdout }}"
+        ic_gits: []
         ic_dev_gits: []
-      when: preflight_source_dir is defined
+      # TODO: replace ic_* prefix with include_components prefix
+      tags:
+        - skip_ansible_lint
 
     # Retrieve scorecard-test image in advance,
     # to allow its mirroring in the disconnected cluster.

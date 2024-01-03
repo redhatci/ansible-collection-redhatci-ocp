@@ -17,11 +17,17 @@
 
 - name: Track RPMs
   ansible.builtin.include_tasks: track_rpm.yml
-  loop: "{{ ic_rpms }}"
+  loop: "{{ ic_rpms | default([]) }}"
   when:
     - item is not in
       ( (ic_gits + ic_dev_gits) |
         map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') |
         map('regex_replace', 'python', 'python3') | list)
     - item in ansible_facts.packages
+
+- name: Track Github components
+  ansible.builtin.include_tasks: track_repo_commit_component.yml
+  loop: "{{ ic_commit_urls | default([]) }}"
+  loop_control:
+    loop_var: ic_commit_url
 ...
