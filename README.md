@@ -74,6 +74,7 @@ Name | Description
 [redhatci.ocp.setup_minio](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_minio/README.md) | Deployment of [Minio](https://min.io/).
 [redhatci.ocp.sno_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sno_installer/README.md) | Deploy OCP SNO in a very opinionated fashion.
 [redhatci.ocp.sno_node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sno_node_prep/README.md) | Preparation to deploy OCP SNO
+[redhatci.ocp.sos_report](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sos_report/README.md) | Generate SOS report from a list of OCP nodes.
 [redhatci.ocp.storage_tester](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/storage_tester/README.md) | Storage Service tests during cluster upgrade
 [redhatci.ocp.upi_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/upi_installer/README.md) | UPI Installer
 [redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Stup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)

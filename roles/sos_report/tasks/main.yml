@@ -1,0 +1,9 @@
+---
+- name: Validation for sos report
+  ansible.builtin.assert:
+    that:
+      - sos_report_nodes is defined
+      - sos_report_nodes | length
+
+- name: Generate SOS reports
+  ansible.builtin.include_tasks: sos-reports.yml
