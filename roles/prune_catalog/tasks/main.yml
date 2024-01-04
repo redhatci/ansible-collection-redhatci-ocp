@@ -71,7 +71,6 @@
         chdir: "{{ pc_tmp_dir }}"
         cmd: >
           set -x;
-          {{ pc_opm_auths }}
           {{ pc_opm_cmd }} render {{ pc_source_catalog }} >
           index-packages
       register: prune_result
