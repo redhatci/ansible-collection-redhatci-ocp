@@ -10,7 +10,21 @@
       register: cluster_output
       until:
         - ("json" in cluster_output)
-        - (hostvars[inventory_hostname]['mac'] | upper) in (cluster_output.json.hosts | map(attribute='inventory') | map('from_json') | map(attribute='interfaces') | flatten | map(attribute='mac_address') | map('upper') | list)
+        - >
+          (
+            hostvars[inventory_hostname]['mac'] | upper
+          )
+          in
+          (
+            cluster_output.json.hosts |
+            map(attribute='inventory') |
+            map('from_json') |
+            map(attribute='interfaces') |
+            flatten |
+            map(attribute='mac_address') |
+            map('upper') |
+            list
+          )
       retries: 20
       delay: 60
 
@@ -19,18 +33,18 @@
         discovered_host: "{{ item }}"
       when: (mac | upper) in ((item.inventory | from_json).interfaces | flatten | map(attribute='mac_address') | map('upper') | list )
       loop: "{{ cluster_output.json.hosts }}"
-      no_log: True
+      no_log: true
 
     - debug: # noqa unnamed-task
         var: discovered_host
         verbosity: 1
 
-    - name: "Wait for up to 20 minutes for requirement checks on {{ inventory_hostname }} "
+    - name: "Wait for up to 20 minutes for requirement checks on {{ inventory_hostname }}"
       ansible.builtin.uri:
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
         method: GET
         status_code: [200, 201]
-        return_content: True
+        return_content: true
       register: discovered_host_reply
       until: "'status' in discovered_host_reply.json and discovered_host_reply.json.status in day2_states"
       retries: 20
@@ -40,17 +54,15 @@
       ansible.builtin.import_role:
         name: redhatci.ocp.patch_host_config
       vars:
-        patch_cluster_id: "{{ add_host_cluster_id }}"
-        discovered_host: "{{ discovered_host_reply.json }}"
-        inventory_nodes:
-          - "{{ inventory_hostname }}"
+        patch_host_config_cluster_id: "{{ add_host_cluster_id }}"
+        patch_host_config_discovered_host: "{{ discovered_host_reply.json }}"
 
-    - name: "Wait for up to 20 minutes for {{ inventory_hostname }} to be ready"
+    - name: "Wait for up to 20 minutes to be ready - {{ inventory_hostname }}"
       ansible.builtin.uri:
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
         method: GET
         status_code: [200, 201]
-        return_content: True
+        return_content: true
       register: discovered_host_reply
       until: "'status' in discovered_host_reply.json and discovered_host_reply.json.status in day2_states[1:]"
       retries: 20
@@ -65,7 +77,7 @@
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}/actions/install"
         method: POST
         status_code: [202]
-        return_content: True
+        return_content: true
         body_format: json
         body: {}
       register: http_reply
@@ -74,8 +86,8 @@
       ansible.builtin.import_role:
         name: redhatci.ocp.monitor_host
       vars:
-        monitor_cluster_id: "{{ add_host_cluster_id }}"
-        current_host: "{{ discovered_host_reply.json }}"
-        waiting_termination_states:
+        monitor_host_cluster_id: "{{ add_host_cluster_id }}"
+        monitor_host_current_host: "{{ discovered_host_reply.json }}"
+        monitor_host_waiting_termination_states:
           - "added-to-existing-cluster"
           - "installing-pending-user-action"

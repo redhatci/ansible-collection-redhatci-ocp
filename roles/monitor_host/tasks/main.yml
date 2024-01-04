@@ -19,14 +19,14 @@
 
 - name: Identify the host
   set_fact:
-    current_host: "{{ item }}"
+    monitor_host_current_host: "{{ item }}"
   loop: "{{ cluster_output.json.hosts }}"
   when: item.requested_hostname == inventory_hostname
-  no_log: True
+  no_log: true
 
 
 - debug: # noqa unnamed-task
-    msg: "{{ current_host }}"
+    msg: "{{ monitor_host_current_host }}"
     verbosity: 1
 
 - name: Start host monitoring
@@ -35,6 +35,6 @@
     apply:
       delegate_to: bastion
   vars:
-    host_id: "{{ current_host.id }}"
-    host_name: "{{ current_host.requested_hostname }}"
-  no_log: True
+    host_id: "{{ monitor_host_current_host.id }}"
+    host_name: "{{ monitor_host_current_host.requested_hostname }}"
+  no_log: true

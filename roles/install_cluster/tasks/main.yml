@@ -27,7 +27,7 @@
   with_items:
     - "{{ cluster_output.json.hosts }}"
   loop_control:
-    loop_var: discovered_host
+    loop_var: patch_host_config_discovered_host
   no_log: True
   when: install | bool == True
 
