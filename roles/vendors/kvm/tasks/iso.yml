@@ -163,17 +163,10 @@
     method: POST
     body_format: json
     body: { "ResetType": "ForceOn" }
-<<<<<<< HEAD
     # redfish specification: https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.19.0.pdf
     status_code: [200, 201, 202, 204]
     force_basic_auth: false
     validate_certs: false
     return_content: true
-=======
-    status_code: [200, 204]
-    force_basic_auth: no
-    validate_certs: no
-    return_content: yes
->>>>>>> parent of fd97ce7 (Crucible | Update possible responses received from KVM Force Power On System)
   register: redfish_poweron
   when: redfish_reply.json.PowerState == "Off"
