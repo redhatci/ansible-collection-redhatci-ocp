@@ -163,7 +163,7 @@
     method: POST
     body_format: json
     body: { "ResetType": "ForceOn" }
-    # redfish specification: https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.12.1.pdf
+    # redfish specification: https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.19.0.pdf
     status_code: [200, 201, 202, 204]
     force_basic_auth: no
     validate_certs: no
