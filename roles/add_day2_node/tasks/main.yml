@@ -57,7 +57,7 @@
         patch_host_config_cluster_id: "{{ add_host_cluster_id }}"
         patch_host_config_discovered_host: "{{ discovered_host_reply.json }}"
 
-    - name: "Wait for up to 20 minutes to be ready - {{ inventory_hostname }}"
+    - name: "Wait for up to 20 minutes host to be ready - {{ inventory_hostname }}"
       ansible.builtin.uri:
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
         method: GET
