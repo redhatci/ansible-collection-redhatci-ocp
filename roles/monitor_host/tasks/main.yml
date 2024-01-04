@@ -7,20 +7,20 @@
     method: GET
     status_code: [200, 201]
     return_content: True
-  register: cluster
+  register: cluster_output
   delegate_to: bastion
-  until: cluster is successful
+  until: cluster_output is successful
   retries: 4
   delay: 30
 
 - debug: # noqa unnamed-task
-    msg: "{{ cluster.json.hosts }}"
+    msg: "{{ cluster_output.json.hosts }}"
     verbosity: 1
 
 - name: Identify the host
   set_fact:
     current_host: "{{ item }}"
-  loop: "{{ cluster.json.hosts }}"
+  loop: "{{ cluster_output.json.hosts }}"
   when: item.requested_hostname == inventory_hostname
   no_log: True
 
