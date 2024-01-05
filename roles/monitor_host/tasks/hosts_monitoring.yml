@@ -6,7 +6,7 @@
     url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host_id }}"
     method: GET
     status_code: [200, 201]
-    return_content: True
+    return_content: true
   register: host
 
 - debug:  # noqa unnamed-task
@@ -19,10 +19,10 @@
     url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host_id }}"
     method: GET
     status_code: [200, 201]
-    return_content: True
+    return_content: true
   register: host
   until:
-    (host.json.status | default(False)) in waiting_termination_states
+    (host.json.status | default(False)) in monitor_host_waiting_termination_states
     or
     (host.json.status | default(False)) in ['installed', 'error']
   retries: 60

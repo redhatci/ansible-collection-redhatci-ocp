@@ -1,12 +1,12 @@
 ---
-# tasks file for install_cluster/hosts_discovery
+# tasks file for patch_host_config
 
 - name: Ensure host has inventory
-  when: discovered_host.inventory is not defined
+  when: patch_host_config_discovered_host.inventory is not defined
   block:
-    - name: "Wait for up to 10 minutes for node discovery - {{ discovered_host.id }}"
+    - name: "Wait for up to 10 minutes for node discovery - {{ patch_host_config_discovered_host.id }}"
       uri:
-        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ discovered_host.id }}"
+        url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ patch_host_config_discovered_host.id }}"
         method: GET
         status_code: [200, 201]
         return_content: True
@@ -15,16 +15,16 @@
       retries: 10
       delay: 60
 
-    - name: Identify the discovered host {{ discovered_host.id }}
+    - name: Identify the discovered host {{ patch_host_config_discovered_host.id }}
       set_fact:
         host: "{{ host.json }}"
 
-- name: Identify the discovered host {{ discovered_host.id }}
+- name: Identify the discovered host {{ patch_host_config_discovered_host.id }}
   set_fact:
-    host: "{{ discovered_host }}"
-  when: discovered_host.inventory is defined
+    host: "{{ patch_host_config_discovered_host }}"
+  when: patch_host_config_discovered_host.inventory is defined
 
-- name: Get inventory hostname for {{ discovered_host.id }}
+- name: Get inventory hostname for {{ patch_host_config_discovered_host.id }}
   vars:
     host_mac_addresses: "{{
         (host.inventory | from_json).interfaces | map(attribute='mac_address') | map('upper') | list

@@ -13,10 +13,10 @@
     method: GET
     status_code: [200, 201]
     return_content: True
-  register: cluster
+  register: cluster_output
   until:
-    - (cluster.json.hosts | length) == (inventory_nodes | length)
-    - cluster.json.status in host_discovery_states
+    - (cluster_output.json.hosts | length) == (inventory_nodes | length)
+    - cluster_output.json.status in host_discovery_states
   retries: "{{ hosts_discovery_minutes }}"
   delay: 60
   when: install | bool == True
@@ -25,9 +25,9 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.patch_host_config
   with_items:
-    - "{{ cluster.json.hosts }}"
+    - "{{ cluster_output.json.hosts }}"
   loop_control:
-    loop_var: discovered_host
+    loop_var: patch_host_config_discovered_host
   no_log: True
   when: install | bool == True
 
@@ -172,8 +172,8 @@
     method: GET
     status_code: [200, 201]
     return_content: True
-  register: cluster
-  until: "cluster.json.status == 'ready'"
+  register: cluster_output
+  until: "cluster_output.json.status == 'ready'"
   retries: 20
   delay: 60
   when: install | bool == True
@@ -206,8 +206,8 @@
     body_format: json
     body: {}
   when: install | bool == True
-  register: cluster
-  until: cluster.json.status in cluster_installation_states
+  register: cluster_output
+  until: cluster_output.json.status in cluster_installation_states
   retries: 5
   delay: 60
 ...
