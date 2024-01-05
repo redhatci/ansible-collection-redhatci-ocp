@@ -3,6 +3,7 @@ name: Pull Request
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  merge_group:
 jobs:
   ansible-lint:
     name: Ansible-lint Check

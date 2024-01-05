@@ -1,0 +1,27 @@
+---
+
+name: DCI
+on:
+  merge_group:
+jobs:
+
+  dci-job:
+    name: "DCI"
+    runs-on: bos2
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: DCI Job
+        run: |
+          set -ex
+          git fetch origin ${{ github.event.merge_group.base_sha }}
+          git fetch origin ${{ github.event.merge_group.head_sha }}
+          if git diff --name-only ${{ github.event.merge_group.base_sha }} ${{ github.event.merge_group.head_sha }} | grep -E 'roles/|plugins/'; then
+            ./hack/dci-merge.sh
+          else
+            echo "No code change"
+          fi
+
+...
