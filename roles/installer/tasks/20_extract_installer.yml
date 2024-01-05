@@ -67,6 +67,10 @@
     url: https://www.redhat.com
     status_code: [-1, 200, 301]
     timeout: 1
+  retries: 3
+  delay: 10
+  until: the_url.status in [200, 301]
+  failed_when: false
   register: the_url
   tags:
     - extract
