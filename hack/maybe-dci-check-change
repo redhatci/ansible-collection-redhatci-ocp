@@ -31,11 +31,12 @@ else
    AUTH=()
 fi
 
-if curl -s -L -H "Accept: application/vnd.github+json" "${AUTH[@]}" "${URL}/files"|jq -r .[].filename|grep -v '\.md$'|grep -E 'roles/|plugins/'; then
+pr=$(sed -e 's@.*/pull/'@@ <<< $URL)
+proj=$(sed -e 's@https://github.com/\(.*\)/pull/.*@\1@i' <<< $URL)
+
+if curl -s -L -H "Accept: application/vnd.github+json" "${AUTH[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -v '\.md$'|grep -E 'roles/|plugins/'; then
     dci-check-change --silent "$URL"
 else
-    pr=$(sed -e 's@.*/pull/'@@ <<< $URL)
-    proj=$(sed -e 's@https://github.com/\(.*\)/pull/.*@\1@i' <<< $URL)
     json=$(curl -s -H "Accept: application/vnd.github.v3+json" "${AUTH[@]}" https://api.github.com/repos/$proj/pulls/$pr)
     STATUSES_URL=$(jq -r .statuses_url <<< $json)
     curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_REPO_TOKEN" -X POST -d "{\"state\":\"success\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"non code files\"}" "$STATUSES_URL"
