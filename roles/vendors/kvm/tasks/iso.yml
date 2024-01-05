@@ -11,8 +11,8 @@
     password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
-    validate_certs: no
-    return_content: yes
+    validate_certs: false
+    return_content: true
   register: http_reply
 
 - debug: # noqa unnamed-task
@@ -37,9 +37,9 @@
     body_format: json
     body: { "ResetType": "ForceOff" }
     status_code: [200, 204]
-    force_basic_auth: no
-    validate_certs: no
-    return_content: yes
+    force_basic_auth: false
+    validate_certs: false
+    return_content: true
   register: redfish_poweroff
   ignore_errors: yes
 
@@ -52,8 +52,8 @@
     body_format: json
     body: {}
     status_code: [200, 204]
-    validate_certs: no
-    return_content: yes
+    validate_certs: false
+    return_content: true
   register: redfish_reply
   ignore_errors: yes
 
@@ -70,9 +70,9 @@
     body_format: json
     body: { "Image": "{{ boot_iso_url }}", "Inserted": true }
     status_code: [200, 204]
-    force_basic_auth: no
-    validate_certs: no
-    return_content: yes
+    force_basic_auth: false
+    validate_certs: false
+    return_content: true
     timeout: 120
   register: redfish_reply
   until: "redfish_reply.status == 204"
@@ -90,8 +90,8 @@
     password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
-    validate_certs: no
-    return_content: yes
+    validate_certs: false
+    return_content: true
   register: redfish_reply
   when: ansible_verbosity >= 1
 
@@ -116,9 +116,9 @@
           },
       }
     status_code: [200, 204]
-    force_basic_auth: no
-    validate_certs: no
-    return_content: yes
+    force_basic_auth: false
+    validate_certs: false
+    return_content: true
   register: redfish_reply
 
 - debug: # noqa unnamed-task
@@ -132,8 +132,8 @@
     password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
-    validate_certs: no
-    return_content: yes
+    validate_certs: false
+    return_content: true
   register: redfish_reply
 
 - debug: # noqa unnamed-task
@@ -149,9 +149,9 @@
     body_format: json
     body: { "ResetType": "ForceRestart" }
     status_code: [200, 204]
-    force_basic_auth: no
-    validate_certs: no
-    return_content: yes
+    force_basic_auth: false
+    validate_certs: false
+    return_content: true
   register: redfish_restart
   when: redfish_reply.json.PowerState == "On"
 
@@ -163,9 +163,10 @@
     method: POST
     body_format: json
     body: { "ResetType": "ForceOn" }
-    status_code: [200, 204]
-    force_basic_auth: no
-    validate_certs: no
-    return_content: yes
+    # redfish specification: https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.19.0.pdf
+    status_code: [200, 201, 202, 204]
+    force_basic_auth: false
+    validate_certs: false
+    return_content: true
   register: redfish_poweron
   when: redfish_reply.json.PowerState == "Off"
