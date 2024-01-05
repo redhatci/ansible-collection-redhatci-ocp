@@ -108,7 +108,7 @@ jobs:
           done >> main.output 2>&1
           for key in branch main; do
             grep -E "(ERROR|FATAL):" "$key.output" |
-            grep -v "issue(s) which need to be resolved\|See error output above for details." |
+            grep -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
             sed -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "$key.errors"
           done
           set +ex
