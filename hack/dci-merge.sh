@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2023 Red Hat, Inc.
+# Copyright (C) 2023, 2024 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,6 +16,8 @@
 
 # script called from a merge queue branch of the redhatci/ansible-collection-redhatci-ocp repo
 
+HEAD_SHA="$1"
+STATUSES_URL="https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/statuses/$HEAD_SHA"
 VIRT=
 DCI_QUEUE=
 SNO_DCI_QUEUE=
@@ -38,11 +40,13 @@ GH_HEADERS=(
     "Authorization: token ${GITHUB_TOKEN}"
 )
 
+set -x
+
 # Lookup the merge commits and get their PR descriptions to detect Test-Hints: strings
 COMMIT=HEAD
 VIRT=
 while true; do
-    PR=$(git log -1 "$COMMIT"|grep -oP 'Merge pull request #\K\d+')
+    PR=$(git log -1 "$COMMIT" --|grep -oP 'Merge pull request #\K\d+')
     if [ -n "$PR" ]; then
         DESC=$(curl -s "${GH_HEADERS[@]/#/-H}" https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/pulls/"$PR"|jq -r .body)
 
@@ -136,13 +140,21 @@ while true; do
     COMMIT="${COMMIT}^"
 done
 
-DIR="$(cd ..; pwd)"
-BASEDIR=/usr/share/dci-openshift-agent
-export DCI_SILENT=1
+# if nothing is specified
+if [ -z "$VIRT" ]; then
+    VIRT=--virt
+fi
+
+# copy the change to another directory to let test-runner manage it
+DIR=$HOME/github/ansible-collection-redhatci-ocp-mq-$HEAD_SHA
+mkdir -p "$DIR"
+cp -a "$PWD/" "$DIR/"
+CLCTDIR=$DIR/ansible-collection-redhatci-ocp
 
 cd "$DIR" || exit 1
 
+export DCI_SILENT=1
 # shellcheck disable=SC2086
-dci-queue schedule --block -C "$DCI_QUEUE" -- env DCI_SILENT=$DCI_SILENT UPGRADE_ARGS="$UPGRADE_ARGS" RES=@RESOURCE APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" $BASEDIR/test-runner $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR "$@" $OPTS
+dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_SILENT=$DCI_SILENT UPGRADE_ARGS="$UPGRADE_ARGS" APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" $CLCTDIR/hack/test-runner-wrapper $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR -p @RESOURCE $OPTS
 
 # dci-merge.sh ends here
