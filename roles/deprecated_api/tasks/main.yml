@@ -23,11 +23,64 @@
   vars:
     query: "results[*].resources[*].{name: metadata.name, removedInRelease: status.removedInRelease}[?removedInRelease != null]"
   set_fact:
-    removed_in_release_api: "{{ api_request_counts | json_query(query) | flatten }}"
+    removed_in_release_api: "{{ api_request_counts | json_query(query) | flatten | unique | list }}"
 
 - name: Compute OCP compatibility of the workload API
   vars:
     ocp_filename: "{{ job_logs.path }}/apirequestcounts_ocp_compatibility.xml"
   set_fact:
     ocp_compatibility: "{{ removed_in_release_api | redhatci.ocp.ocp_compatibility(ocp_version, ocp_filename) }}"
+
+- name: Build list of unique API names
+  set_fact:
+    unique_api_names: "{{ removed_in_release_api | map(attribute='name') | unique | list }}"
+
+- name: Check Deployments
+  community.kubernetes.k8s_info:
+    kind: Deployment
+    namespace: "{{ item }}"
+  loop: "{{ all_namespaces }}"
+  register: deployment_info
+
+- name: Check Pods
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ item }}"
+  loop: "{{ all_namespaces }}"
+  register: pod_info
+
+- name: Check Custom Resource Definitions
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    namespace: "{{ item }}"
+  loop: "{{ all_namespaces }}"
+  register: crd_info
+
+- name: Check Custom Resources
+  community.kubernetes.k8s_info:
+    kind: CustomResource
+    namespace: "{{ item }}"
+  loop: "{{ all_namespaces }}"
+  register: cr_info
+
+- name: Save information to file
+  copy:
+    content: |
+      {
+        "deployment_info": {{ deployment_info | to_json }},
+        "pod_info": {{ pod_info | to_json }},
+        "crd_info": {{ crd_info | to_json }},
+        "cr_info": {{ cr_info | to_json }}
+      }
+    dest:  "{{ job_logs.path }}/api_resources_info.json"
+
+- name: Build map from API name to resources
+  set_fact:
+    api_to_resources_map: "{{ api_to_resources_map | default({}) | combine({item: {
+      'deployments': deployment_info.results | json_query('[*].resources[?apiVersion==`' + item + '`]'),
+      'pods': pod_info.results | json_query('[*].resources[?apiVersion==`' + item + '`]'),
+      'crds': crd_info.results | json_query('[*].resources[?apiVersion==`' + item + '`]'),
+      'crs': cr_info.results | json_query('[*].resources[?apiVersion==`' + item + '`]')
+    }}) }}"
+  loop: "{{ unique_api_names }}"
 ...
