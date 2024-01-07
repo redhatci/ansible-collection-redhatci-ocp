@@ -16,8 +16,15 @@
 
 # script called from a merge queue branch of the redhatci/ansible-collection-redhatci-ocp repo
 
-HEAD_SHA="$1"
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <base_sha> <head_sha>"
+    exit 1
+fi
+
+BASE_SHA="$1"
+HEAD_SHA="$2"
 STATUSES_URL="https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/statuses/$HEAD_SHA"
+GITHUB_JOBNAME="DCI / DCI Job"
 VIRT=
 DCI_QUEUE=
 SNO_DCI_QUEUE=
@@ -40,7 +47,17 @@ GH_HEADERS=(
     "Authorization: token ${GITHUB_TOKEN}"
 )
 
+send_status() {
+    curl -s "${GH_HEADERS[@]/#/-H}" -X POST -d "{\"state\":\"$1\",\"description\":\"$2\",\"context\":\"$GITHUB_JOBNAME\"}" "$STATUSES_URL"
+}
+
 set -x
+
+# Check if there is a code change
+if ! git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E 'roles/|plugins/'; then
+    send_status success "No code change"
+    exit 0
+fi
 
 # Lookup the merge commits and get their PR descriptions to detect Test-Hints: strings
 COMMIT=HEAD
@@ -145,7 +162,8 @@ if [ -z "$VIRT" ]; then
     VIRT=--virt
 fi
 
-# copy the change to another directory to let test-runner manage it
+# Copy the change to another directory to let test-runner own
+# it. Avoid the directory being removed by the Github action code.
 DIR=$HOME/github/ansible-collection-redhatci-ocp-mq-$HEAD_SHA
 mkdir -p "$DIR"
 cp -a "$PWD/" "$DIR/"
@@ -153,8 +171,23 @@ CLCTDIR=$DIR/ansible-collection-redhatci-ocp
 
 cd "$DIR" || exit 1
 
-export DCI_SILENT=1
+# Create a json file to be used by send-feedback
+cat > github.json << EOF
+{
+    "url": "https://github.com/redhatci/ansible-collection-redhatci-ocp/pulls",
+    "statuses_url": "$STATUSES_URL",
+    "head": {
+        "repo": {
+            "full_name": "redhatci/ansible-collection-redhatci-ocp",
+            "name": "ansible-collection-redhatci-ocp",
+        },
+    }
+}
+EOF
+
 # shellcheck disable=SC2086
-dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_SILENT=$DCI_SILENT UPGRADE_ARGS="$UPGRADE_ARGS" APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" $CLCTDIR/hack/test-runner-wrapper $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR -p @RESOURCE $OPTS
+dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL UPGRADE_ARGS="$UPGRADE_ARGS" APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" $CLCTDIR/hack/test-runner $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR -p @RESOURCE $OPTS || exit 1
+
+dci-queue list "$DCI_QUEUE"
 
 # dci-merge.sh ends here

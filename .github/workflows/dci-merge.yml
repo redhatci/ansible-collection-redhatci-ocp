@@ -1,6 +1,6 @@
 ---
 
-name: DCI
+name: DCI Merge Queue
 on:
   merge_group:
 jobs:
@@ -13,19 +13,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0        #  Fetch all history to be able to look at all the merge commits in dci-merge.sh
+          fetch-depth: 0        #  Fetch all history to be able to look at the merge commits in dci-merge.sh
 
       - name: DCI Job
         run: |
           set -ex
-          git fetch origin ${{ github.event.merge_group.base_sha }}
-          git fetch origin ${{ github.event.merge_group.head_sha }}
-          if git diff --name-only ${{ github.event.merge_group.base_sha }} ${{ github.event.merge_group.head_sha }} | grep -E 'roles/|plugins/'; then
-            echo "Starting DCI job"
-            export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-            ./hack/dci-merge.sh ${{ github.event.merge_group.head_sha }}
-          else
-            echo "No code change"
-          fi
+          export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          ./hack/dci-merge.sh ${{ github.event.merge_group.base_sha }} ${{ github.event.merge_group.head_sha }}
 
 ...
