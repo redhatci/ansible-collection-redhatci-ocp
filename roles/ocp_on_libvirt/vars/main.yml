@@ -2,4 +2,14 @@
 ssh_key: id_rsa
 libvirt_become: true
 net: baremetal
+
+# REDFISH
+repo_root_path: "{{ playbook_dir | dirname }}"
+cert_country: US
+cert_state: MA
+cert_locality: Westford
+cert_organization: DCI
+cert_organizational_unit: Lab
+sushy_ignore_boot_device: false
+inventory_validated: True
 ...

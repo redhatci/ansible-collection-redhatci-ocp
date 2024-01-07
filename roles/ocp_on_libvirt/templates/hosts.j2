@@ -13,6 +13,10 @@ dir="{{ '{{' }} ansible_user_dir {{ '}}' }}/clusterconfigs"
 
 #webserver_url="http://{{ ansible_fqdn }}:8080"
 
+{% if externalMACAddress is defined %}
+externalMACAddress={{ externalMACAddress }}
+{% endif %}
+
 {% if enable_lso | default(false) | bool %}
 ocs_install_type=internal
 local_storage_devices=["/dev/sdb"]
@@ -28,7 +32,7 @@ labels={"cluster.ocs.openshift.io/openshift-storage": ""}
 [masters]
 {% for key, value in ironic_nodes.items() -%}
 {% if 'master' in key -%}
-{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=master ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=default socket_console={{ enable_conserver }}{% if value.root_device_hint is defined %} root_device_hint={{ value.root_device_hint }}{% endif %}{% if value.root_device_hint_value is defined %} root_device_hint_value={{ value.root_device_hint_value }}{% endif %}
+{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=master ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=default socket_console={{ enable_conserver }}{% if value.root_device_hint is defined %} root_device_hint={{ value.root_device_hint }}{% endif %}{% if value.root_device_hint_value is defined %} root_device_hint_value={{ value.root_device_hint_value }}{% endif %}{% if key in redfish_kvm_uuid | default({}) %} kvm_uuid={{ redfish_kvm_uuid[key] }} redfish_port={{ redfish_port }}{% endif %}
 {% endif %}
 {%- endfor %}
 
@@ -40,7 +44,7 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 [workers]
 {% for key, value in ironic_nodes.items() -%}
 {% if 'worker' in key -%}
-{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=worker ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=unknown socket_console={{ enable_conserver }}{% if value.root_device_hint is defined %} root_device_hint={{ value.root_device_hint }}{% endif %}{% if value.root_device_hint_value is defined %} root_device_hint_value={{ value.root_device_hint_value }}{% endif %}
+{{ key }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} role=worker ipmi_user={{ value.ipmi_user }} ipmi_password={{ value.ipmi_pass }} ipmi_address={{ value.ipmi_address }} ipmi_port={{ value.ipmi_port }} provision_mac={{ value.mac_address }} hardware_profile=unknown socket_console={{ enable_conserver }}{% if value.root_device_hint is defined %} root_device_hint={{ value.root_device_hint }}{% endif %}{% if value.root_device_hint_value is defined %} root_device_hint_value={{ value.root_device_hint_value }}{% endif %}{% if key in redfish_kvm_uuid | default({}) %} kvm_uuid={{ redfish_kvm_uuid[key] }} redfish_port={{ redfish_port }}{% endif %}
 {% endif %}
 {%- endfor %}
 
@@ -52,7 +56,7 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 [provisioner]
 {% for key, value in ironic_nodes.items() -%}
 {% if 'provision' in key -%}
-{{ key }}{{ "." + ansible_fqdn if not do_dns_config|bool else "" }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} ansible_user={{ provisionhost_user }} prov_nic=eth0 pub_nic=eth1 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+{{ key }}{{ "." + ansible_fqdn if not do_dns_config|bool else "" }} {{ "ansible_host=" + key + "." + ansible_fqdn if not do_dns_config|bool else "" }} name={{ key }} ansible_user={{ provisionhost_user }} prov_nic=eth0 pub_nic=eth1 ansible_ssh_common_args="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"{% if enable_virtualmedia %} bootstrapProvisioningIP={{ bootstrapProvisioningIP }}{% endif %}
 {% endif %}
 {%- endfor %}
 
@@ -73,3 +77,10 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 # The following mirror entries are the default ones. If you want to add more mirror
 #   you can uncomment this parameter and add it here.
 #registry_source_mirrors=["quay.io/openshift-release-dev/ocp-v4.0-art-dev", "registry.svc.ci.openshift.org/ocp/release", "quay.io/openshift-release-dev/ocp-release"]
+
+{% if enable_redfish | bool -%}
+[kvm_hosts_redfish]
+{% for key, value in ironic_nodes.items() -%}
+{{ key }}
+{% endfor %}
+{%- endif %}
