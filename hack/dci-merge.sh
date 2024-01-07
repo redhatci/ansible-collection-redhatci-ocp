@@ -60,10 +60,10 @@ if ! git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E 'roles/|plugins/'; t
 fi
 
 # Lookup the merge commits and get their PR descriptions to detect Test-Hints: strings
-COMMIT=HEAD
 VIRT=
-while true; do
-    PR=$(git log -1 "$COMMIT" --|grep -oP 'Merge pull request #\K\d+')
+PRS=$(git log ${BASE_SHA}..${HEAD_SHA} | grep -oP 'Merge pull request #\K\d+')
+
+while read PR <<< "$PRS"; do
     if [ -n "$PR" ]; then
         DESC=$(curl -s "${GH_HEADERS[@]/#/-H}" https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/pulls/"$PR"|jq -r .body)
 
@@ -151,10 +151,7 @@ while true; do
             # stop at the first valid Test-Hints: string
             break
         fi
-    else
-        break
     fi
-    COMMIT="${COMMIT}^"
 done
 
 # if nothing is specified
@@ -167,26 +164,27 @@ fi
 DIR=$HOME/github/ansible-collection-redhatci-ocp-mq-$HEAD_SHA
 mkdir -p "$DIR"
 cp -a "$PWD/" "$DIR/"
-CLCTDIR=$DIR/ansible-collection-redhatci-ocp
 
 cd "$DIR" || exit 1
 
-# Create a json file to be used by send-feedback
+# Create a json file to be used by send-feedback and test-runner
 cat > github.json << EOF
 {
+    "number": "${HEAD_SHA:0:8}",
     "url": "https://github.com/redhatci/ansible-collection-redhatci-ocp/pulls",
     "statuses_url": "$STATUSES_URL",
+    "html_url": "https://github.com/redhatci/ansible-collection-redhatci-ocp/queue/main",
     "head": {
         "repo": {
             "full_name": "redhatci/ansible-collection-redhatci-ocp",
-            "name": "ansible-collection-redhatci-ocp",
-        },
+            "name": "ansible-collection-redhatci-ocp"
+        }
     }
 }
 EOF
 
 # shellcheck disable=SC2086
-dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL UPGRADE_ARGS="$UPGRADE_ARGS" APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" $CLCTDIR/hack/test-runner $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR -p @RESOURCE $OPTS || exit 1
+dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL UPGRADE_ARGS="$UPGRADE_ARGS" APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" /usr/share/dci-openshift-agent/test-runner $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR -p @RESOURCE $OPTS || exit 1
 
 dci-queue list "$DCI_QUEUE"
 
