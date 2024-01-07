@@ -1,7 +1,6 @@
 ---
 - name: "Render bundle operator image"
   ansible.builtin.shell: >
-    {{ fbc_opm_auths }}
     {{ fbc_opm_cmd }} render {{ bundle }}
   args:
     chdir: "{{ fbc_tmp_dir }}"
@@ -52,7 +51,6 @@
 
 - name: "Render bundle for {{ fbc_short_name }}"
   ansible.builtin.shell: >
-    {{ fbc_opm_auths }}
     {{ fbc_opm_cmd }} render {{ bundle }}
     --output=yaml >> {{ fbc_tmp_dir }}/catalog/index.yml
   args:

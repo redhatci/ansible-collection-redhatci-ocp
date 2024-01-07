@@ -67,14 +67,11 @@
         mode: "0755"
 
     - name: "Render the source catalog"
-      vars:
-        opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
       ansible.builtin.shell:
         chdir: "{{ pc_tmp_dir }}"
         cmd: >
           set -x;
-          {{ opm_auths }}
-          opm render {{ pc_source_catalog }} >
+          {{ pc_opm_cmd }} render {{ pc_source_catalog }} >
           index-packages
       register: prune_result
       changed_when: prune_result.rc == 0

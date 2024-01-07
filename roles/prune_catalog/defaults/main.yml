@@ -2,7 +2,6 @@
 pc_opm_args: ""
 pc_expire: false
 pc_expire_time: 5h
-pc_opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
 pc_maintainer: "redhatci.ocp"
 pc_ignore_pull_errors: false
 ...

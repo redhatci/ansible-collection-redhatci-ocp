@@ -10,7 +10,6 @@ pc_source_catalog      | Yes      |                                             
 pc_destination_catalog | Yes      |                                               | Catalog containing the required operators
 pc_operators           | Yes      |                                               | The set of operators to keep in the pruned catalog. See examples below
 pc_opm_args            | No       | ""                                            | Arguments for opm command. Those will be applied globally for all opm calls
-pc_opm_auths           | No       | /usr/share/dci-openshift-agent/utils/opm-auths| Path to opm-auths a wrapper script to allow multi-registry auths in opm
 pc_expire              | No       | false                                         | Whether or not to set an expiration label on the catalog
 pc_expire_time         | No       | 5h                                            | The amount of time to set for the expiration label
 pc_maintainer          | No       | redhatci.ocp                                  | Value for catalog's image maintainer label
