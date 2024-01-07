@@ -44,6 +44,8 @@ jobs:
           $cmd > main.output
           export GITHUB_ACTIONS=true
           set +ex
+          # remove line numbers
+          sed -i -r 's/:[0-9]+:/::/' branch.output main.output
           # export diff sans headers
           diff -u0 branch.output main.output | tail -n +3 > diff.output
           echo "## Improvements over main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
