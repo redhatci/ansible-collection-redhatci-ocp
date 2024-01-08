@@ -10,6 +10,9 @@ dns-resolver:
 interfaces:
 {% for interface in network_config.interfaces %}
   - name: {{ interface.name }}
+    {% if interface.mac is defined %}
+    mac-address: {{ interface.mac }}
+    {% endif %}
     state: {{ interface.state | default('up') }}
     type: {{ interface.type | default('ethernet') }}
     {% if interface.addresses.ipv4 is defined %}

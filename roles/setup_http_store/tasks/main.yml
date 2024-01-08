@@ -48,7 +48,7 @@
         pod: "{{ http_store_pod_name }}"
         state: stopped
         volumes:
-          - "{{ http_data_dir }}:/var/www/html:z"
+          - "{{ http_data_dir }}:/var/www/html"
       register: container_info
 
     - name: Setting facts about container

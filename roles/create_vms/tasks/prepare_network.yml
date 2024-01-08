@@ -1,6 +1,16 @@
 - name: Setup network
   become: true
   block:
+    - name: Check if the selected network mode is allowed
+      vars:
+        allowed_vm_network_modes:
+          - bridge
+          - nat
+      assert:
+        that:
+          - create_vms_network_mode in allowed_vm_network_modes
+        fail_msg: "{{ create_vms_network_mode }} is not a supported network mode"
+
     - name: define network
       community.libvirt.virt_net:
         name: "{{ network_name }}"
