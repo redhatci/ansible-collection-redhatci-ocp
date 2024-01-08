@@ -26,20 +26,22 @@ URL="$1"
 GITHUB_REPO_TOKEN=$($BASEDIR/get-config-entry "https://github.com/$proj" github_token "$GITHUB_TOKEN")
 
 if [ -n "$GITHUB_REPO_TOKEN" ]; then
-   AUTH=(-H "Authorization: token $GITHUB_REPO_TOKEN")
+   HEADERS=(-H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_REPO_TOKEN")
 else
-   AUTH=()
+   HEADERS=(-H "Accept: application/vnd.github+json")
 fi
 
 pr=$(sed -e 's@.*/pull/'@@ <<< $URL)
 proj=$(sed -e 's@https://github.com/\(.*\)/pull/.*@\1@i' <<< $URL)
+json=$(curl -s -L "${HEADERS[@]}" https://api.github.com/repos/$proj/pulls/$pr)
+statuses_url=$(jq -r .statuses_url <<< $json)
 
-if curl -s -L -H "Accept: application/vnd.github+json" "${AUTH[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -v '\.md$'|grep -E 'roles/|plugins/'; then
+# Check if there is a code change
+if curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -v '\.md$'|grep -E 'roles/|plugins/'; then
+    curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"pending\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"QUEUED\"}" "$statuses_url"
     dci-check-change --silent "$URL"
 else
-    json=$(curl -s -H "Accept: application/vnd.github.v3+json" "${AUTH[@]}" https://api.github.com/repos/$proj/pulls/$pr)
-    STATUSES_URL=$(jq -r .statuses_url <<< $json)
-    curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_REPO_TOKEN" -X POST -d "{\"state\":\"success\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"non code files\"}" "$STATUSES_URL"
+    curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"success\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"non code files\"}" "$statuses_url"
 fi
 
 exit 0
