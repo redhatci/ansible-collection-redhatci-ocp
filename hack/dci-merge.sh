@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2023, 2024 Red Hat, Inc.
+# Copyright (C) 2023-2024 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -54,7 +54,7 @@ send_status() {
 set -x
 
 # Check if there is a code change
-if ! git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E 'roles/|plugins/'; then
+if ! git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -v '\.md$' | grep -E 'roles/|plugins/'; then
     send_status success "No code change"
     exit 0
 fi
@@ -185,6 +185,8 @@ EOF
 
 # shellcheck disable=SC2086
 dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL UPGRADE_ARGS="$UPGRADE_ARGS" APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" /usr/share/dci-openshift-agent/test-runner $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR -p @RESOURCE $OPTS || exit 1
+
+send_status pending "QUEUED"
 
 dci-queue list "$DCI_QUEUE"
 
