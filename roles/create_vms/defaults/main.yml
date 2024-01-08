@@ -18,7 +18,4 @@ images_dir: /var/lib/libvirt/images/
 is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"
 
 # allowed modes: 'bridge', 'nat', using 'bridge' as default
-vm_network_mode: bridge
-
-# needed for nat network mode
-vm_bridge_ip: "{{ machine_network_cidr | ansible.utils.ipaddr('next_usable') }}"
+create_vms_network_mode: bridge

@@ -2,16 +2,16 @@
   <name>{{ network_name }}</name>
   <uuid>{{ net_uuid | default(99999999 | random | to_uuid) }}</uuid>
 
-{% if vm_network_mode == 'bridge' %}
+{% if create_vms_network_mode == 'bridge' %}
 
   <forward mode='bridge'/>
   <bridge name='{{ vm_bridge_name }}'/>
 
-{% elif vm_network_mode == 'nat' %}
+{% elif create_vms_network_mode == 'nat' %}
 
   <forward mode='nat'/>
   <bridge name='{{ vm_bridge_name }}' stp='on' delay='0'/>
-  <ip address="{{ vm_bridge_ip }}" />
+  <ip address="{{ machine_network_cidr | ansible.utils.ipaddr('next_usable') }}" />
   <dns enable="no"/>
 
 {% endif %}

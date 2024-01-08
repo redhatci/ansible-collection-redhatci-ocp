@@ -80,13 +80,3 @@
         that:
           - (kvm_node_uuids | length) == (kvm_node_uuids | unique | length)
         fail_msg: "KVM node UUIDs must be unique otherwise they won't build or will collide during discovery"
-
-- name: Check if the selected network mode is allowed
-  vars:
-    allowed_vm_network_modes:
-      - bridge
-      - nat
-  assert:
-    that:
-      - vm_network_mode in allowed_vm_network_modes
-    fail_msg: "{{ vm_network_mode }} is not a supported network mode"
