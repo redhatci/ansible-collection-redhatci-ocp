@@ -22,6 +22,10 @@
   ansible.builtin.set_fact:
     logs_dir: "{{ job_logs.path | default('/tmp') }}"
 
+- name: "Set target repository"
+  ansible.builtin.set_fact:
+    target_repository: "{{ sandbox_repository | default('openshift-helm-charts/charts') }}"
+
 - name: "Render submission report header"
   vars:
     partner: "{{ partner_name | replace(' ', '_') }}"
