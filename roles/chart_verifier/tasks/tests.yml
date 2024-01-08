@@ -190,8 +190,10 @@
     name: redhatci.ocp.create_pr
   vars:
     product_name: "{{ chart_name }}"
+    project_type: "helm"
     product_version: "{{ chart_version }}"
     fork_name: "charts-{{ chart_name }}-{{ chart_version }}"
+    target_repository: "{{ sandbox_repository | default('openshift-helm-charts/charts') }}"
     work_dir: "{{ work_chart_dir }}"
   when:
     - chart.create_pr | default(false) | bool

@@ -175,24 +175,20 @@
     name: redhatci.ocp.pyxis
   when: cert_project_id | default('') | length > 0
 
-- name: Create certification PR
+- name: Create a PR for certification
+  ansible.builtin.include_role:
+    name: redhatci.ocp.create_pr
+    apply:
+      environment:
+        DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
+  vars:
+    product_name: "{{ operator.name }}"
+    product_type: "operator"
+    product_version: "{{ operator.version }}"
+    fork_name: "certified-operator-{{ operator.name }}-{{ operator.version }}"
+    work_dir: "{{ preflight_operator_artifacts.path }}"
+    target_repository: "{{ sandbox_repository | default('redhat-openshift-ecosystem/certified-operators') }}"
   when: operator.create_pr | default(false) | bool
-  block:
-    - name: Set target repository
-      ansible.builtin.set_fact:
-        target_repository: "{{ sandbox_repository | default('redhat-openshift-ecosystem/certified-operators') }}"
-
-    - name: Create a PR for certification
-      ansible.builtin.include_role:
-        name: redhatci.ocp.create_pr
-        apply:
-          environment:
-            DOCKER_CONFIG: "{{ preflight_tmp_dir.path }}"
-      vars:
-        product_name: "{{ operator.name }}"
-        product_version: "{{ operator.version }}"
-        fork_name: "certified-operator-{{ operator.name }}-{{ operator.version }}"
-        work_dir: "{{ preflight_operator_artifacts.path }}"
 
 - name: Unset project ID to ensure no occasional reuse
   ansible.builtin.set_fact:
