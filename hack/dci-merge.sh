@@ -61,9 +61,9 @@ fi
 
 # Lookup the merge commits and get their PR descriptions to detect Test-Hints: strings
 VIRT=
-PRS=$(git log ${BASE_SHA}..${HEAD_SHA} | grep -oP 'Merge pull request #\K\d+')
+PRS=$(git log --merges ${BASE_SHA}..${HEAD_SHA} | grep -oP 'Merge pull request #\K\d+')
 
-while read PR <<< "$PRS"; do
+for PR in $PRS; do
     if [ -n "$PR" ]; then
         DESC=$(curl -s "${GH_HEADERS[@]/#/-H}" https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/pulls/"$PR"|jq -r .body)
 
