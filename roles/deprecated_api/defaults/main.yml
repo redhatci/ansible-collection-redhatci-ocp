@@ -1,0 +1,5 @@
+---
+# that simplifies the usage of the role in standalone mode
+deprecated_api_logs:
+  path: "/tmp"
+...
