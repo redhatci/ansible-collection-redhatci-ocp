@@ -34,20 +34,9 @@ Keep the PRs small and focused on a single topic. It is easier to review and mer
 
 PRs can be created as a [Draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests), use this when the change is not yet ready for review or set a PR to Draft if it needs more time before continuing with the review process.
 
-### Branch out of date
+### Ready for review
 
-If you have this message on your PR:
-
-![out-of-date](./out-of-date.png "Out of date")
-
-Issue the following commands in your local directory:
-
-```ShellSession
-$ git fetch origin
-$ git rebase origin/main
-$ # resolve any conflict...
-$ git push --force
-```
+Your PR is considered ready for review if all the CI checks are green. If you don't want a review yet, convert your PR to a Draft.
 
 ### Sign commits
 
@@ -65,7 +54,7 @@ Edit `MAJOR` when there are breaking changes in the collection. Edit `MINOR` whe
 
 The collection has multiple CI pipelines that run on every PR:
 
-- PR pipeline: [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) that runs the sanity tests and fails if there are any regression. It also runs a check on the PR Dependencies (`Depends-On:` lines in the commit message) to make sure that the dependencies are merged before the PR.
+- PR pipeline: [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) that runs the sanity tests and Ansible lint. It fails if there is any regression. It also runs a check on the PR Dependencies (`Depends-On:` lines in the commit message) to make sure that the dependencies are merged before the PR.
 - DCI BOS2 pipeline: [`.github/workflows/dci.yml`](../.github/workflows/dci.yml) that runs a DCI job to test the collection in a virtual environment at the BOS2 Telco Partner CI lab. It is triggered only when a change is modifying files in the `/roles/` directory. You can use `Test-Hint*` strings in the PR to modify what is tested. See [the DCI documentation](https://docs.distributed-ci.io/dci-openshift-agent/docs/development/#hints) for more details.
 - DCI Dallas pipeline: run DCI jobs on a baremetal cluster in the Telco Partner CI Dallas lab. It is triggered only when changes are modifying files in the `role/cnf-cert` or `roles/preflight` directories.
 - RPM build pipeline (local/check). This is managed by the Zuul CI on https://softwarefactory-project.io/. It builds rpm for el8 and el9.
@@ -76,3 +65,7 @@ If you are part of the project, you can also use comments in the PR to trigger t
 - `check workload preflight-green`
 
 Reach out to the Telco Partner CI team if you need more information.
+
+### Merge Queue
+
+There is a set of CI pipelines that are run just before merging by [the merge queue mechanism of Github](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request-with-a-merge-queue). This allows to validate the merged PR before pushing them to main. This is important to avoid parallel merge of PRs that would break the collection.
