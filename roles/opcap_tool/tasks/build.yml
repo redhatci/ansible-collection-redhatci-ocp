@@ -3,6 +3,10 @@
   ansible.builtin.git:
     repo: "{{ opcap_repo }}"
     dest: "{{ opcap_dir.path }}/opcap"
+  register: git_clone_result
+  until: git_clone_result is succeeded
+  retries: 6
+  delay: 10
 
 - name: "Use Golang container to build opcap"
   # Launching a container to build the GO bin Dir where the repo has been
