@@ -10,7 +10,8 @@ exclude_paths:
   - plugins
 
 warn_list:
-  - yaml[line-length]
   - ignore-errors
   - no-changed-when
+  - var-naming[no-role-prefix]
+  - yaml[line-length]
 ...

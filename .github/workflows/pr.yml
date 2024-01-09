@@ -47,7 +47,10 @@ jobs:
           # remove line numbers
           sed -i -r 's/:[0-9]+:/::/' branch.output main.output
           # export diff sans headers
-          diff -u0 branch.output main.output | tail -n +3 > diff.output
+          diff -u0 branch.output main.output | tail -n +3 > diff.raw
+          # Get warnings out of the diff
+          grep -P '\(warning\)(\x1B\[0m)?$' diff.raw > diff.warnings
+          grep -vP '\(warning\)(\x1B\[0m)?$' diff.raw > diff.output
           echo "## Improvements over main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
           echo '```diff' >> ${GITHUB_STEP_SUMMARY}
           grep '^+' diff.output |
@@ -59,6 +62,13 @@ jobs:
           echo '```diff' >> ${GITHUB_STEP_SUMMARY}
           grep '^-' diff.output |
             sed -e 's/^-/-ERROR: /' |
+            sed -r 's/\x1B\[[0-9]{1,2}(;[0-9]{1,2})?[mGK]//g' |
+            tee -a ${GITHUB_STEP_SUMMARY}
+          echo '```' >> ${GITHUB_STEP_SUMMARY}
+          echo "## Warnings from main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
+          echo '```diff' >> ${GITHUB_STEP_SUMMARY}
+          grep '^-' diff.warning |
+            sed -e 's/^-/-WARNING: /' |
             sed -r 's/\x1B\[[0-9]{1,2}(;[0-9]{1,2})?[mGK]//g' |
             tee -a ${GITHUB_STEP_SUMMARY}
           echo '```' >> ${GITHUB_STEP_SUMMARY}
