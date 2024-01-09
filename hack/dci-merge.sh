@@ -156,7 +156,7 @@ done
 
 # if nothing is specified
 if [ -z "$VIRT" ]; then
-    VIRT=--virt
+    VIRT=--sno
 fi
 
 # Copy the change to another directory to let test-runner own
