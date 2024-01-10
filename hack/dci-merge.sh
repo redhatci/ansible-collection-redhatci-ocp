@@ -63,8 +63,11 @@ fi
 VIRT=
 PRS=$(git log --merges ${BASE_SHA}..${HEAD_SHA} | grep -oP 'Merge pull request #\K\d+')
 
+NB_PRS=0
+NB_NOCHECK=0
 for PR in $PRS; do
     if [ -n "$PR" ]; then
+        NB_PRS=$((NB_PRS+1))
         DESC=$(curl -s "${GH_HEADERS[@]/#/-H}" https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/pulls/"$PR"|jq -r .body)
 
         if [[ sno =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*sno\s*" <<< "$DESC"; then
@@ -100,6 +103,7 @@ for PR in $PRS; do
         fi
 
         if [[ no-check =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*no-check\s*" <<< "$DESC"; then
+            NB_NOCHECK=$((NB_NOCHECK+1))
             continue
         fi
 
@@ -156,6 +160,10 @@ done
 
 # if nothing is specified
 if [ -z "$VIRT" ]; then
+    if [ "$NB_NOCHECK" -eq "$NB_PRS" ]; then
+        send_status success "No check"
+        exit 0
+    fi
     VIRT=--sno
 fi
 
