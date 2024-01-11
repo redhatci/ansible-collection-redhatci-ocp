@@ -1,0 +1,111 @@
+---
+
+# Create site and policies in ArgoCD
+
+- name: Create temporary directory for cloning the repo
+  tempfile:
+    state: directory
+  register: temp_dir
+
+- name: Create a ZTP directory
+  ansible.builtin.file:
+    path: "{{ temp_dir.path }}/ztp"
+    state: directory
+    mode: '0775'
+
+- name: "Create a pull-secret file for podman"
+  copy:
+    content: "{{ ocp_pull_secret }}"
+    dest: "{{ temp_dir.path }}/temp-pull-secret.json"
+
+# Please see:
+# https://docs.openshift.com/container-platform/4.12/scalability_and_performance/ztp_far_edge/ztp-manual-install.html
+- name: Download ZTP cluster and policies applications from ztp site generator
+  shell: |
+    podman run --authfile "{{ temp_dir.path }}"/temp-pull-secret.json --rm --log-driver=none "{{ ztp_site_generator_image }}:{{ ztp_site_generator_version }}" extract /home/ztp --tar | tar x -C "{{ temp_dir.path }}"/ztp/
+
+- name: Set the proper permissions
+  shell: |
+    sudo chown "{{ ansible_user_id }}":"{{ ansible_user_id }}" -R "{{ temp_dir.path }}"/ztp/
+
+## Configure clusters
+- name: Replace path in clusters-app.yaml
+  replace:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
+    regexp: "path.*"
+    replace: "path: {{ ztp_sites_path }}"
+
+- name: Replace repoURL in clusters-app.yaml
+  replace:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
+    regexp: "repoURL.*"
+    replace: "repoURL: {{ ztp_sites_gitops_repo }}"
+
+- name: Replace targetRevision in clusters-app.yaml
+  replace:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
+    regexp: "targetRevision.*"
+    replace: "targetRevision: {{ ztp_sites_branch }}"
+
+- name: Allow empty in the clusters-app.yaml
+  lineinfile:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
+    line: "      allowEmpty: true"
+    insertafter: selfHeal.*
+
+## Configure policies
+- name: Replace path in policies-app.yaml
+  replace:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
+    regexp: "path.*"
+    replace: "path: {{ ztp_policies_path }}"
+
+- name: Replace repoURL in policies-app.yaml
+  replace:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
+    regexp: "repoURL.*"
+    replace: "repoURL: {{ ztp_policies_gitops_repo }}"
+
+- name: Replace targetRevision in policies-app.yaml
+  replace:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
+    regexp: "targetRevision.*"
+    replace: "targetRevision: {{ ztp_policies_branch }}"
+
+- name: Allow empty in the policies-app.yaml
+  lineinfile:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
+    line: "      allowEmpty: true"
+    insertafter: selfHeal.*
+
+
+## Add adaptation due to https://issues.redhat.com/browse/CNF-7840
+## based on https://redhat-internal.slack.com/archives/C02EG99MR9C/p1679006883470389?thread_ts=1678887461.410819&cid=C02EG99MR9C
+- name: Add ClusterImageSet to the app-project.yaml
+  lineinfile:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/app-project.yaml"
+    line: "{{ item }}"
+    insertafter: clusterResourceWhitelist.*
+  loop:
+    - "    kind: ClusterImageSet"
+    - "  - group: hive.openshift.io"
+
+- name: Run the policies and cluster apps
+  shell: |
+    oc apply -k "{{ temp_dir.path }}/ztp/argocd/deployment"
+
+- name: Replace image container URL in argocd-openshift-gitops-patch.json
+  replace:
+    path: "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json"
+    regexp: "{{ ztp_site_generator_image }}.*/"
+    replace: "{{ ztp_site_generator_image }}:{{ ztp_site_generator_version }}"
+
+- name: Apply ArgoCD changes
+  shell: |
+    oc patch argocd openshift-gitops -n openshift-gitops --patch-file "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json" --type=merge
+
+- name: Remove the temporary directories
+  file:
+    path: "{{ temp_dir.path }}"
+    state: absent
+  when: temp_dir.path is defined
