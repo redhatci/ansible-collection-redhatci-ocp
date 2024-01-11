@@ -160,7 +160,7 @@ done
 
 # if nothing is specified
 if [ -z "$VIRT" ]; then
-    if [ "$NB_NOCHECK" -eq "$NB_PRS" ]; then
+    if [ "$NB_NOCHECK" -ge 1 ] && [ "$NB_NOCHECK" -eq "$NB_PRS" ]; then
         send_status success "No check"
         exit 0
     fi
