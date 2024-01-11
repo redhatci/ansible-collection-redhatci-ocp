@@ -4,13 +4,14 @@ For now, it is used by the `chart_verifier` and `preflight` roles, to handle res
 
 Name                                | Default   | Required                    | Description
 ----------------------------------- |-----------|-----------------------------| -------------------------------------------------------------
-product_name                        | undefined | true                        | Name of the chart or the operator you want to certify
-product_version                     | undefined | true                        | Version of the product
+product_name                        | undefined | true                        | Name of the chart or the operator you want to certify.
+product_version                     | undefined | true                        | Version of the product.
 work_dir                            | /tmp      | false                       | Directory to store the tests results.
 github_token_path                   | undefined | true                        | GitHub token to be used to push the chart and the results to a repository.
 partner_name                        | undefined | true/false                  | Define this parameter only when opening PR for chart_verifier. Partner name to be used in the pull request title.
-partner_email                       | undefined | true/false                  | Define this parameter only when opening PR for chart_verifier. Email address to be used in the pull request
-target_repository                   | undefined | true                        | Either 'openshift-helm-charts/charts' or 'redhat-openshift-ecosystem/certified-operators'
+partner_email                       | undefined | true/false                  | Define this parameter only when opening PR for chart_verifier. Email address to be used in the pull request.
+target_repository                   | undefined | true                        | GitHub repository where the pull request will be created.
+product_type                        | undefined | true                        | Product type. Either "helm" or "operator".
 
 Those are the common variables used by both certification project.
 It includes tasks to generate an SSH key needed to push to Github repository and add it to the GitHub account.

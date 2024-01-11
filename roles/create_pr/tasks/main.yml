@@ -4,6 +4,7 @@
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"
   with_items:
+    - product_type
     - product_name
     - product_version
     - fork_name
@@ -95,9 +96,9 @@
 
 - name: Create PR for Helm Chart Verifier
   ansible.builtin.include_tasks: helm_chart_verifier.yml
-  when: target_repository == "openshift-helm-charts/charts"
+  when: product_type == "helm"
 
 - name: Create PR for Operator Bundle Certification
   ansible.builtin.include_tasks: bundle_operator.yml
-  when: target_repository == "redhat-openshift-ecosystem/certified-operators"
+  when: product_type == "operator"
 ...

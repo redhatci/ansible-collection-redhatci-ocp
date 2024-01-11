@@ -45,7 +45,7 @@
       ansible.builtin.include_role:
         name: redhatci.ocp.create_certification_project
       vars:
-        project_type: "container"
+        product_type: "container"
       when:
         - operator.create_container_project | default(false) | bool
         - operator.pyxis_container_identifier | default('') | length == 0
