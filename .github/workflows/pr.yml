@@ -123,6 +123,8 @@ jobs:
             grep -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
             sed -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "$key.errors"
           done
+          # remove line numbers
+          sed -i -E -e 's/:[0-9]+:/:/' -e 's/:[0-9]+:/:/' branch.errors main.errors
           set +ex
           echo "## Improvements are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
           echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
