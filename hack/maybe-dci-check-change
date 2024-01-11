@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-set -e
+set -ex
 
 BASEDIR=/usr/share/dci-pipeline
 GITHUB_JOBNAME="DCI / DCI Job"
@@ -36,12 +36,19 @@ proj=$(sed -e 's@https://github.com/\(.*\)/pull/.*@\1@i' <<< $URL)
 json=$(curl -s -L "${HEADERS[@]}" https://api.github.com/repos/$proj/pulls/$pr)
 statuses_url=$(jq -r .statuses_url <<< $json)
 
-# Check if there is a code change
-if curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -v '\.md$'|grep -E 'roles/|plugins/'; then
-    curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"pending\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"QUEUED\"}" "$statuses_url"
-    dci-check-change --silent "$URL"
+# check if there is a Test-Hints: force-check string in the PR description
+if grep -iq '^\s*Test-Hints:\s*force-check' <<< $(jq -r .body <<< $json); then
+    force_check=1
 else
-    curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"success\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"non code files\"}" "$statuses_url"
+    force_check=
+fi
+
+# Check if there is a force-check or a code change
+if [ -n "$force_check" ] || curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -v '\.md$'|grep -E 'roles/|plugins/'; then
+    curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"pending\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"QUEUED\"}" "$statuses_url"
+    dci-check-change "$URL"
+else
+    curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"success\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"No code change\"}" "$statuses_url"
 fi
 
 exit 0

@@ -53,15 +53,9 @@ send_status() {
 
 set -x
 
-# Check if there is a code change
-if ! git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -v '\.md$' | grep -E 'roles/|plugins/'; then
-    send_status success "No code change"
-    exit 0
-fi
-
 # Lookup the merge commits and get their PR descriptions to detect Test-Hints: strings
 VIRT=
-PRS=$(git log --merges ${BASE_SHA}..${HEAD_SHA} | grep -oP 'Merge pull request #\K\d+')
+PRS="$(git log --merges ${BASE_SHA}..${HEAD_SHA} | grep -oP 'Merge pull request #\K\d+')"
 
 NB_PRS=0
 NB_NOCHECK=0
@@ -157,6 +151,13 @@ for PR in $PRS; do
         fi
     fi
 done
+
+# Check if there is a code change
+if [ -z "$FORCE_CHECK" ] && ! git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -v '\.md$' | grep -E 'roles/|plugins/'; then
+    send_status success "No code change"
+    exit 0
+fi
+
 
 # if nothing is specified
 if [ -z "$VIRT" ]; then
