@@ -45,6 +45,11 @@ acceptedKernelTaints:
 {% endif %}
 {% endfor %}
 
+servicesignorelist:
+{% for item in tnf_services_ignore_list %}
+  - {{ item }}
+{% endfor %}
+
 ## fields below are not currently used, leaving placeholder in case they were needed in the future
 #managedDeployments:
 
@@ -57,8 +62,6 @@ acceptedKernelTaints:
 #skipHelmChartList:
 
 #validProtocolNames:
-
-#servicesignorelist:
 
 #collectorAppEndPoint: ""
 
