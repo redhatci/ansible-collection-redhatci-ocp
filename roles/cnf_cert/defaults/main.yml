@@ -14,6 +14,7 @@ tnf_config:
     target_crds: []
     exclude_connectivity_regexp: ""
 accepted_kernel_taints: []
+tnf_services_ignore_list: []
 tnf_postrun_delete_resources: true
 tnf_env_vars: {}
 tnf_image_suffix: "{{ lookup('community.general.random_string', length=16, special=false) }}"
