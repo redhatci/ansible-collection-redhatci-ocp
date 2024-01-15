@@ -54,6 +54,14 @@
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true
 
+- name: Remove the tested image
+  shell:
+    cmd: >
+      podman rmi
+      --force
+      {{ current_operator_image }}
+  become: true
+
 - name: Change the ownership of oval report
   ansible.builtin.file:
     path: "{{ file }}"
