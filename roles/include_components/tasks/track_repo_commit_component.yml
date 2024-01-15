@@ -1,0 +1,33 @@
+---
+- name: Assert ic_commit_url
+  assert:
+    that:
+      # Assert that ic_commit_url is a valid URL
+      # of the sort https://github.com/organisation/reponame/commit/commit_hash
+      - ic_commit_url is match('^https://github\\.com/[^/]+/[^/]+/commit/[0-9a-f]{40}$')
+
+- name: Create Github component
+  vars:
+    ic_repo_name: "{{ ic_commit_url | regex_search('https://github\\.com/[^/]+/([^/]+)/', '\\1') | first }}"
+    ic_last_commit_id: "{{ ic_commit_url | basename }}"
+    ic_version: "{{ ic_last_commit_id[:7] }}"
+  ansible.legacy.dci_component:
+    display_name: "{{ ic_repo_name }} {{ ic_version }}"
+    version: "{{ ic_version }}"
+    uid: "{{ ic_last_commit_id }}"
+    team_id: "{{ job_info['job']['team_id'] }}"
+    topic_id: "{{ job_info['job']['topic_id'] }}"
+    type: "{{ ic_repo_name }}"
+    url: "{{ ic_commit_url }}"
+    state: present
+  register: ic_github_component
+
+- name: Attach Github component to the job
+  ansible.legacy.dci_job_component:
+    component_id: "{{ ic_github_component.component.id }}"
+    job_id: " {{ job_id }} "
+  register: job_component_result
+  until: job_component_result is not failed
+  retries: 5
+  delay: 20
+...
