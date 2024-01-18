@@ -47,6 +47,7 @@
   tags: cleanup
 - include_tasks: 59_power_off_cluster_servers.yml
   tags: powerservers
+  when: ipmi_enable | default(true) | bool
 - include_tasks: 60_deploy_ocp.yml
   tags: install
 # - include_tasks: 70_cleanup_sub_man_registration.yml

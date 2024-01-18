@@ -114,7 +114,7 @@ Name | Description
 [redhatci.ocp.sos_report](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sos_report/README.md) | Generate SOS report from a list of OCP nodes.
 [redhatci.ocp.storage_tester](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/storage_tester/README.md) | Storage Service tests during cluster upgrade
 [redhatci.ocp.upi_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/upi_installer/README.md) | UPI Installer
-[redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Stup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)
+[redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Setup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)
 [redhatci.ocp.validate_dns_records](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_dns_records/README.md) | Checks for the required dns entries for ingress and api VIPs
 [redhatci.ocp.validate_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_http_store/README.md) | Checks via a round trip that http store is functional
 [redhatci.ocp.validate_inventory](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_inventory/README.md) | Validates a crucible inventory
@@ -135,7 +135,6 @@ Name | Type | Description
 [redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
 [redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
-[redhatci.ocp.virt]() | Module | A copy of the module [community.libvirt.virt](https://github.com/ansible-collections/community.libvirt) to manage libvirt
 
 ## License
 
