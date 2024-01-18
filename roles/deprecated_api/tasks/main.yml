@@ -27,7 +27,7 @@
 
 - name: Compute OCP compatibility of the workload API
   vars:
-    ocp_filename: "{{ job_logs.path }}/apirequestcounts_ocp_compatibility.xml"
+    ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility.xml"
   set_fact:
     ocp_compatibility: "{{ removed_in_release_api | redhatci.ocp.ocp_compatibility(ocp_version, ocp_filename) }}"
 ...
