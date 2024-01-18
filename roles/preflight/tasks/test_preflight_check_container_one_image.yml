@@ -76,7 +76,7 @@
             {{ preflight_image }}
             check container
             {{ current_operator_image }}
-            {% if cert_project_id | default('') | length %}
+            {% if cert_project_id | default('') | length and preflight_dci_all_components_are_ga | default(True) %}
             --submit
             {% endif %}
       rescue:
