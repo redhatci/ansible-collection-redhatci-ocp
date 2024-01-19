@@ -4,4 +4,4 @@ public_key_name: "{{ cluster_name }}.pub"
 path_base_dir: /home/redhat
 ssh_key_dest_base_dir: "{{ path_base_dir }}"
 ssh_key_dest_dir: "{{ ssh_key_dest_base_dir }}/ssh_keys/"
-fetched_dest: "{{ repo_root_path }}/fetched"
+fetched_dest: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/fetched"

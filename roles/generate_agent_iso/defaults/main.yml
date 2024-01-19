@@ -1,4 +1,4 @@
-generated_dir: "{{ repo_root_path }}/generated"
+generated_dir: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/generated"
 manifests_dir: "{{ generated_dir }}/{{ cluster_name }}"
 download_agent_dest_file: "{{ discovery_iso_name }}"
 download_dest_path: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"

@@ -17,7 +17,7 @@ destination_hosts:
   - registry_host
   - assisted_installer
 
-image_hashes_path: "{{ repo_root_path }}/image_hashes.yml"
+image_hashes_path: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/image_hashes.yml"
 ignore_cached_image_hashes: false
 image_hashes: {}
 

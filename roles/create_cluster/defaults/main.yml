@@ -6,7 +6,7 @@ create: True
 manifests: True
 schedulable_masters: True
 
-fetched_dest: "{{ repo_root_path }}/fetched"
+fetched_dest: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/fetched"
 
 disconnected: "{{ use_local_mirror_registry | default(setup_registry_service | default(true)) }}"
 mirror_registry_fqdn: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"

@@ -1,4 +1,4 @@
-generated_dir: "{{ repo_root_path }}/generated"
+generated_dir: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/generated"
 manifests_dir: "{{ generated_dir }}/{{ cluster_name }}"
 cluster_manifest_dir: "{{ manifests_dir }}/cluster-manifests"
 extra_manifest_dir: "{{ manifests_dir }}/openshift"
@@ -24,7 +24,7 @@ manifests: true
 extra_manifests: []
 manifest_templates: "{{ extra_manifests }}"
 
-fetched_dest: "{{ repo_root_path }}/fetched"
+fetched_dest: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/fetched"
 
 api_vips: "{% if extra_api_vip is defined %}{{ [api_vip] + [extra_api_vip] }}{% else %}{{ [api_vip] }}{% endif %}"
 ingress_vips: "{% if extra_ingress_vip is defined %}{{ [ingress_vip] + [extra_ingress_vip] }}{% else %}{{ [ingress_vip] }}{% endif %}"

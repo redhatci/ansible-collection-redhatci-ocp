@@ -6,7 +6,7 @@ registry_container_image: quay.io/redhat-partner-solutions/registry:2
 
 # Paths
 config_file_path: "{{ ansible_env.HOME }}" # Where config and secret files should be stored
-fetched_dest: "{{ repo_root_path }}/fetched"
+fetched_dest: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/fetched"
 
 # vars file for disconnected_registry
 # packages needed for the disconnected registry tasks

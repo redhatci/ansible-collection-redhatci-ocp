@@ -3,7 +3,7 @@ patch_set_prefix: ""
 
 secure: False
 manifests: True
-fetched_dest: "{{ repo_root_path }}/fetched"
+fetched_dest: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/fetched"
 
 disconnected: "{{ use_local_mirror_registry | default(setup_registry_service | default(true)) }}"
 

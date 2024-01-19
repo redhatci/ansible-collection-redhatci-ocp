@@ -2,7 +2,7 @@
 
 # Paths
 config_file_path: "{{ ansible_env.HOME }}" # Where config and secret files should be stored
-fetched_dest: "{{ repo_root_path }}/fetched"
+fetched_dest: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/fetched"
 
 # defaults file for disconnected_registry
 pull_secret_file_name: pull-secret.txt

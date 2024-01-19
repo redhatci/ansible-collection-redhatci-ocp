@@ -1,5 +1,5 @@
-generated_dir: "{{ repo_root_path }}/generated"
-manifests_dir: "{{ generated_dir}}/{{ cluster_name }}"
+generated_dir: "{{ repo_root_path | default(dci_cluster_configs_dir) }}/generated"
+manifests_dir: "{{ generated_dir }}/{{ cluster_name }}"
 
 agent_based_installer_bootstrap_node: "{{ groups['masters'][0] }}"
 host_ip_keyword: ansible_host

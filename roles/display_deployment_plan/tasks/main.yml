@@ -35,7 +35,7 @@
           groups_missing: "<no groups set>"
           kubeadmin_vault_password_file_path_missing: "UNDEFINED (This means the kubeadmin credentals will be stored in plain text)"
           pxe_hosts_missing: "[WARNING] No hosts are set"
-        cached_image_hash_file_path: "{{ image_hashes_path | default(repo_root_path + '/image_hashes.yml') }}"
+        cached_image_hash_file_path: "{{ image_hashes_path | default(repo_root_path | default(dci_cluster_configs_dir) + '/image_hashes.yml') }}"
 
         # A default error message is assigned to each variable referenced in the deployment plan.
         # This prevents the prompt from not being displayed due to templating errors if a valid
