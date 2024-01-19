@@ -19,14 +19,14 @@
 
 - name: Print JSON draft for the project to be updated
   vars:
-    template_filename: "templates/update_project_{{ project_type }}_setting.json.j2"
+    template_filename: "templates/update_project_{{ product_type }}_setting.json.j2"
   ansible.builtin.debug:
     msg: "{{ lookup('template', template_filename) }}"
 
 - name: Update certification Helm Chart project Settings
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-    template_filename: "templates/update_project_{{ project_type }}_setting.json.j2"
+    template_filename: "templates/update_project_{{ product_type }}_setting.json.j2"
   ansible.builtin.uri:
     url: "{{ create_project_url }}/id/{{ cert_project_id }}"
     method: PATCH

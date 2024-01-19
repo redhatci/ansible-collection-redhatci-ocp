@@ -1,14 +1,14 @@
 ---
 - name: Print JSON draft for the project to be created
   vars:
-    template_filename: "templates/create_project_{{ project_type }}.json.j2"
+    template_filename: "templates/create_project_{{ product_type }}.json.j2"
   ansible.builtin.debug:
     msg: "{{ lookup('template', template_filename) }}"
 
 - name: Create certification project
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-    template_filename: "templates/create_project_{{ project_type }}.json.j2"
+    template_filename: "templates/create_project_{{ product_type }}.json.j2"
   ansible.builtin.uri:
     url: "{{ create_project_url }}"
     method: POST

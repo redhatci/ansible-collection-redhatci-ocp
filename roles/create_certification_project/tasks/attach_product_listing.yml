@@ -30,7 +30,7 @@
 - name: Patch product list to attach Prod-List ID to container project
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-    template_filename: "templates/attach_product_{{ project_type }}_listing.json.j2"
+    template_filename: "templates/attach_product_{{ product_type }}_listing.json.j2"
   ansible.builtin.uri:
     url: "{{ create_product_url }}/id/{{ pyxis_product_list_identifier }}"
     method: PATCH
