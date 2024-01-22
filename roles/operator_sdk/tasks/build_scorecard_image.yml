@@ -26,7 +26,7 @@
   when: job_id is defined
 
 - name: Build Operator-SDK image
-  ansible.builtin.command:
+  ansible.builtin.shell:
     cmd: >
       podman buildx build
       -t {{ operator_sdk_img }}

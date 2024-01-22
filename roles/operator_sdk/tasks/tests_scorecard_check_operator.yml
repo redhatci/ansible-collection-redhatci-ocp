@@ -124,11 +124,11 @@
       --wait-time 300s
       "{{ scorecard_operator_dir }}"
     chdir: "{{ scorecard_tmp_dir.path }}"
-    environment:
-      - OPENSHIFT_AUTH: "{{ scorecard_partner_creds }}"
-      - OO_BUNDLE: "{{ operator.bundle_image }}"
-      - OO_INDEX: "{{ oo_index }}"
-      - ARTIFACT_DIR: "{{ scorecard_artifacts }}"
+  environment:
+    OPENSHIFT_AUTH: "{{ scorecard_partner_creds }}"
+    OO_BUNDLE: "{{ operator.bundle_image }}"
+    OO_INDEX: "{{ oo_index }}"
+    ARTIFACT_DIR: "{{ scorecard_artifacts }}"
   register: scorecard_exec
   ignore_errors: true
 
