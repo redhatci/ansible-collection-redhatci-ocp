@@ -43,7 +43,7 @@
         set -o pipefail;
         echo -e "{{ result.stdout }}" |
         sed -n '/apiVersion/,$p' |
-        sed -e 's/name:.*/name: release-{{ version }}/'
+        sed -e 's/name:.*/name: release-{{ mor_version }}/'
       register: is_release
 
     - name: Write Image Source manifest
