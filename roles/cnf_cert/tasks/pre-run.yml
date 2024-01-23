@@ -111,6 +111,7 @@
       ansible.builtin.shell: |
         set -x
         podman build -t {{ tnf_image }} \
+        --force-rm \
         --build-arg TNF_VERSION={{ tnf_version_image }} \
         --build-arg TNF_SRC_URL=https://github.com/test-network-function/cnf-certification-test \
         --build-arg OPENSHIFT_VERSION={{ ocp_version_full }} .

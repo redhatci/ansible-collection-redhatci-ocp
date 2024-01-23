@@ -1,5 +1,17 @@
 ---
 # Deleting resources created by the CNF Cert Suite to support the execution
+- name: Prune Buildah images and containers
+  ansible.builtin.shell:
+    cmd: >
+      buildah prune -fa
+  register: buildah_result
+  changed_when: buildah_result.rc == 0
+
+- name: Remove local tnf image
+  containers.podman.podman_image:
+    name: "{{ tnf_image }}"
+    state: absent
+
 - name: Clean CNF Cert Suite resources
   when: tnf_postrun_delete_resources|bool
   block:
