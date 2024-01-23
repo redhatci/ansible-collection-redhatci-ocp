@@ -3,7 +3,7 @@
 - name: Prune Buildah images and containers
   ansible.builtin.shell:
     cmd: >
-      buildah prune -fa
+      buildah prune -f
   register: buildah_result
   changed_when: buildah_result.rc == 0
 
