@@ -34,7 +34,7 @@
       ansible.builtin.set_fact:
         actual_results: "{{ item | redhatci.ocp.junit2dict }}"
 
-    - name: Fail if not all test results are as expected
+    - name: "Fail if not all test results are as expected for {{ item | basename }}"
       vars:
         expectation_failed: "{{ t.expected_results | redhatci.ocp.regex_diff(actual_results) }}"
       ansible.builtin.fail:
