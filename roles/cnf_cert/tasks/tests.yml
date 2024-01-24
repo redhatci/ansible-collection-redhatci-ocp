@@ -41,6 +41,12 @@
     chdir: "{{ tnf_dir }}"
   ignore_errors: true
 
+# Clean images just after finishing the execution
+- name: Remove local tnf image
+  containers.podman.podman_image:
+    name: "{{ tnf_image }}"
+    state: absent
+
 - name: Logging tasks after finishing the execution of CNF Cert
   ansible.builtin.include_tasks: logging.yml
 ...
