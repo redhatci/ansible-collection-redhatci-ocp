@@ -1,6 +1,5 @@
 ---
 # Deleting resources created by the CNF Cert Suite to support the execution
-
 - name: Clean CNF Cert Suite resources
   when: tnf_postrun_delete_resources|bool
   block:
