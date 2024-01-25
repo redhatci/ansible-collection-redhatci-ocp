@@ -33,7 +33,7 @@ single_node_openshift_enabled: "{{ is_valid_single_node_openshift_config | defau
 # 2. 'Full' (otherwise)
 #     Requires at least three master nodes for High Availability.
 high_availability_mode: "{{ single_node_openshift_enabled | ternary('none', 'full') }}"
-has_workers: "{{ (groups['workers'] | default([])) | length > 0 }} "
+has_workers: "{{ (groups['workers'] | default([])) | length > 0 }}"
 
 create_body_extras: {}
 cluster_id_filename: "cluster.txt" # This default is for backwards compatability
