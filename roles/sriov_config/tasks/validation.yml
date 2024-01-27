@@ -1,0 +1,52 @@
+---
+- name: Check SR-IOV config file
+  ansible.builtin.stat:
+    path: "{{ sriov_config_file }}"
+  register: sriov_config_file_stat
+
+- name: Fail if SR-IOV config file is not found
+  ansible.builtin.fail:
+    msg: "SR-IOV config file {{ sriov_config_file }} not found"
+  when: not sriov_config_file_stat.stat.exists
+
+- name: Fail if SR-IOV config file is empty
+  ansible.builtin.fail:
+    msg: "SR-IOV config file {{ sriov_config_file }} is empty"
+  when: sriov_config_file_stat.stat.size == 0
+
+- name: Load SR-IOV config file
+  ansible.builtin.include_vars:
+    file: "{{ sriov_config_file }}"
+  when: sriov_config_file_stat.stat.exists
+
+- name: Fail if SR-IOV config file does not contain sriov_network_configs
+  ansible.builtin.fail:
+    msg: "SR-IOV config file {{ sriov_config_file }} does not contain sriov_network_configs"
+  when: sriov_network_configs is not defined
+
+- name: Fail if SR-IOV does not include resource definition
+  ansible.builtin.fail:
+    msg: "SR-IOV config file {{ sriov_config_file }} does not include resource definition in each element of the sriov_network_configs"
+  when: sriov_network_configs | json_query('[*].resource') | select('undefined') | list | length > 0
+
+- name: Fail if SR-IOV does not include node_policy or network definition
+  ansible.builtin.fail:
+    msg: "SR-IOV config file {{ sriov_config_file }} does not include node_policy or network definition in each element of the sriov_network_configs"
+  when: sriov_network_configs | json_query('[*].node_policy') | select('undefined') | list | length > 0 or
+        sriov_network_configs | json_query('[*].network') | select('undefined') | list | length > 0
+
+- name: Check SR-IOV Operator
+  community.kubernetes.k8s_info:
+    api: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: openshift-sriov-network-operator
+  register: sriov_csv
+  retries: 5
+  delay: 5
+  until:
+    - sriov_csv is defined
+    - sriov_csv.resources is defined
+    - sriov_csv.resources | length
+    - sriov_csv.resources | json_query('[*].metadata.name') |
+      select('search', '^sriov-network-operator') |
+      list  | length

@@ -1,0 +1,40 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  name: "{{ sriov.network.name }}"
+  namespace: openshift-sriov-network-operator
+spec:
+{% if sriov.network.capabilities is defined %}
+  capabilities: "{{ sriov.network.capabilities }}"
+{% endif %}
+{% if sriov.network.ipam is defined %}
+  ipam: "{{ sriov.network.ipam }}"
+{% endif %}
+{% if sriov.network.link_state is defined %}
+  linkState: "{{ sriov.network.link_state }}"
+{% endif %}
+{% if sriov.network.max_tx_rate is defined %}
+  maxTxRate: "{{ sriov.network.max_tx_rate | int}}"
+{% endif %}
+{% if sriov.network.meta_plugins is defined %}
+  metaPlugins: "{{ sriov.network.meta_plugins }}"
+{% endif %}
+{% if sriov.network.min_tx_rate is defined %}
+  minTxRate: "{{ sriov.network.min_tx_rate | int}}"
+{% endif %}
+{% if sriov.network.network_namespace is defined %}
+  networkNamespace: "{{ sriov.network.network_namespace }}"
+{% endif %}
+  resourceName: "{{ sriov.resource }}"
+{% if sriov.network.spoof_chk is defined %}
+  spoofChk: "{{ sriov.network.spoof_chk }}"
+{% endif %}
+{% if sriov.network.trust is defined %}
+  trust: "{{ sriov.network.trust }}"
+{% endif %}
+{% if sriov.network.vlan is defined %}
+  vlan: {{ sriov.network.vlan | int }}
+{% endif %}
+{% if sriov.network.vlan_qos is defined %}
+  vlanQoS: {{ sriov.network.vlan_qos | int }}
+{% endif %}
