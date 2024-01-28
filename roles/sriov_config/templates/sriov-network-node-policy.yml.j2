@@ -20,7 +20,7 @@ spec:
   linkType: "{{ sriov.node_policy.link_type }}"
 {% endif %}
 {% if sriov.node_policy.mtu is defined %}
-  mtu: "{{ sriov.node_policy.mtu }}"
+  mtu: {{ sriov.node_policy.mtu | int }}
 {% endif %}
 {% if sriov.node_policy.need_vhost_net is defined %}
   needVhostNet: {{ sriov.node_policy.need_vhost_net | bool }}
