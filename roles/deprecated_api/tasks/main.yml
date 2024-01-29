@@ -11,23 +11,10 @@
                       | select('match', '^(?!openshift|kube-).*')
                       | list }}"
 
-- name: Get API request counts for all custom namespaces
-  community.kubernetes.k8s_info:
-    kind: APIRequestCount
-    namespace: "{{ item }}"
+- name: Loop over deprecated_namespaces to get API request counts
+  ansible.builtin.include_tasks: get_api_request_counts_per_namespace.yml
   # Check all namespaces by default unless otherwise requested
-  with_items: "{{ deprecated_namespaces | default(all_namespaces) }}"
-  register: api_request_counts
-
-- name: Extract deprecated and to-be-deprecated API
-  vars:
-    query: "results[*].resources[*].{name: metadata.name, removedInRelease: status.removedInRelease}[?removedInRelease != null]"
-  set_fact:
-    removed_in_release_api: "{{ api_request_counts | json_query(query) | flatten }}"
-
-- name: Compute OCP compatibility of the workload API
-  vars:
-    ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility.xml"
-  set_fact:
-    ocp_compatibility: "{{ removed_in_release_api | redhatci.ocp.ocp_compatibility(ocp_version, ocp_filename) }}"
+  loop: "{{ deprecated_namespaces | default(all_namespaces) }}"
+  loop_control:
+    loop_var: deprecated_ns
 ...
