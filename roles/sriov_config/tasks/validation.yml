@@ -50,3 +50,4 @@
     - sriov_csv.resources | json_query('[*].metadata.name') |
       select('search', '^sriov-network-operator') |
       list  | length
+  no_log: true
