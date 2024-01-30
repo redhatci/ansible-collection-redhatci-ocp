@@ -5,6 +5,9 @@ assisted_service_image: "{{ assisted_service_image_repo_url }}/assisted-service@
 assisted_service_gui_image: "{{ assisted_service_image_repo_url }}/assisted-installer-ui@{{ image_hashes.gui }}"
 assisted_service_image_service_image: "{{ assisted_service_image_repo_url }}/assisted-image-service@{{ image_hashes.image_service }}"
 
+assisted_service_gui_port: 8080
+assisted_service_image_service_port: 8888
+
 assisted_service_controller_image: "{{ assisted_service_image_repo_url }}/assisted-installer-controller@{{ image_hashes.controller }}"
 assisted_service_installer_agent_image: "{{ assisted_service_image_repo_url }}/assisted-installer-agent@{{ image_hashes.installer_agent }}"
 assisted_service_installer_image: "{{ assisted_service_image_repo_url }}/assisted-installer@{{ image_hashes.installer }}"
