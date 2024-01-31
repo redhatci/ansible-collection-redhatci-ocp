@@ -1,18 +1,24 @@
 ---
 - name: Power OFF nodes
   block:
-    - name: Create list of hosts that are going to be powered off
+    - name: Create list of hosts that are going to be powered off via IPMI
       add_host:
         groups: poweroff_hosts
         hostname: "{{ item }}"
         inventory_dir: "{{ hostvars[item].inventory_dir }}"
-      when: ( hostvars[item]['poweroff'] is not defined )
-        or  ( hostvars[item]['poweroff']|bool | default(True) )
+      when: |
+        (
+          ( hostvars[item]['poweroff'] is not defined ) or
+          ( hostvars[item]['poweroff']|bool | default(True) )
+        ) and
+        ( item not in groups['dell_hosts_redfish'] | default([]) )
+          and
+        ( item not in groups['hp_hosts_redfish'] | default([]) )
       with_items:
         - "{{ groups.masters }}"
         - "{{ groups.workers | default([]) }}"
 
-    - name: Power off hosts
+    - name: Power off hosts via IPMI
       ipmi_power:
         name: "{{ hostvars[item]['ipmi_address'] }}"
         user: "{{ hostvars[item]['ipmi_user'] }}"
@@ -26,3 +32,27 @@
       with_items: "{{ groups['poweroff_hosts'] }}"
       when: groups['poweroff_hosts'] is defined
   tags: powerservers
+
+- name: Power Off via Redfish
+  community.general.redfish_command:
+    category: Systems
+    command: PowerGracefulShutdown
+    baseuri: "{{ hostvars[item]['ipmi_address'] }}"
+    username: "{{ hostvars[item]['ipmi_user'] }}"
+    password: "{{ hostvars[item]['ipmi_password'] }}"
+  when: |
+    (
+      (hostvars[item]['poweroff'] is not defined) or
+      (hostvars[item]['poweroff'] | bool | default(True))
+    ) and (
+      (
+        groups['dell_hosts_redfish'] is defined and
+        groups['dell_hosts_redfish'] | length > 0
+      ) or (
+        groups['hp_hosts_redfish'] is defined and
+        groups['hp_hosts_redfish'] | length > 0
+      )
+    )
+  loop: "{{ groups['dell_hosts_redfish'] | default([]) + groups['hp_hosts_redfish'] | default([]) }}"
+  tags: powerservers
+...
