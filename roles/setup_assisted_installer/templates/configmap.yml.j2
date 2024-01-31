@@ -5,7 +5,7 @@ metadata:
   name: config
 data:
   ASSISTED_SERVICE_HOST: "{{ assisted_service_host }}:{{ port }}"
-  IMAGE_SERVICE_BASE_URL: http://{{ image_service_host }}:8888
+  IMAGE_SERVICE_BASE_URL: http://{{ image_service_host }}:{{ assisted_service_image_service_port }}
   SERVICE_BASE_URL: "http://{{ assisted_service_host }}:{{ port }}"
   ASSISTED_SERVICE_SCHEME: http
   AUTH_TYPE: none

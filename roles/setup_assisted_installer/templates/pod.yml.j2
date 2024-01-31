@@ -19,14 +19,14 @@ spec:
     - image: "{{ assisted_service_gui_image }}"
       name: ui
       ports:
-      - hostPort: 8080
+      - hostPort: {{ assisted_service_gui_port }}
       envFrom:
       - configMapRef:
           name: config
     - image: "{{ assisted_service_image_service_image }}"
       name: image-service
       ports:
-      - hostPort: 8888
+      - hostPort: {{ assisted_service_image_service_port }}
       envFrom:
       - configMapRef:
           name: config
