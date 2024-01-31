@@ -3,10 +3,10 @@
   ansible.builtin.include_tasks: test_check_if_container_certified.yml
   when: not preflight_test_certified_image
 
-- name: Non-certified image or force test run
+- name: "Non-certified image or force test run for {{ current_operator_image }}"
   when: not (already_certified | default(false) | bool)
   block:
-    - name: Validate parameters for check container run
+    - name: "Validate parameters for check container run on {{ current_operator_image }}"
       ansible.builtin.assert:
         that:
           - operator.name is defined
@@ -20,7 +20,7 @@
           operator.name = {{ operator.name }}
           operator.version = {{ operator.version }}
 
-    - name: Fail if both create_container_project and pyxis_container_identifier are provided
+    - name: "Fail if submission setup is not consistent for {{ current_operator_image }}"
       ansible.builtin.fail:
         msg: |
           If you want to reuse the existing cert project, provide its ID pyxis_container_identifier.
@@ -52,7 +52,7 @@
 
     - name: Run preflight check
       block:
-        - name: Run preflight check container on operator image with podman
+        - name: "Run preflight check container on {{ current_operator_image }}"
           ansible.builtin.command: >
             podman run
             --rm
@@ -92,7 +92,7 @@
           ansible.builtin.include_tasks: test_run_health_check.yml
           when: preflight_run_health_check | bool
 
-        - name: Copy execution artifacts from image to DCI logs directory
+        - name: "Copy execution artifacts for {{ current_operator_image }}"
           vars:
             image_name: "{{ current_operator_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
             preflight_prefix: "preflight_container_{{ operator.name }}_{{ image_name }}"

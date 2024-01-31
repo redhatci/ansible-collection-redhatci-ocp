@@ -20,7 +20,7 @@
     image_repository: "{{ current_operator_image.split('/')[0] }}"
     image_id: "{{ sha.stdout }}"
 
-- name: Check with the API if operator is already certified
+- name: "Use Pyxis API to check if the image is certified {{ current_operator_image }}"
   ansible.builtin.uri:
     url: "{{ pyxis_url }}/images?\
           include=data.image_id&\
@@ -48,8 +48,13 @@
     - 'sha.stdout | length > 0'
 
 - name: Handle when previous certification exists
-  when: (pyxis_image_info.json.data[0] is defined and pyxis_image_info.json.data[0].certified|bool and preflight_test_certified_image|bool)
-        or "registry.redhat" in image_repository
+  when: >
+    (
+      pyxis_image_info.json.data[0] is defined
+      and pyxis_image_info.json.data[0].certified | bool
+      and preflight_test_certified_image | bool
+    )
+    or "registry.redhat" in image_repository
   block:
     - name: "Set the variable if the image is already certified"
       ansible.builtin.set_fact:

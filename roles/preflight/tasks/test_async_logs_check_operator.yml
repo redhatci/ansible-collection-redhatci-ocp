@@ -1,5 +1,6 @@
 ---
-- name: Retrieve operator logs (global Preflight timeout = 180 seconds)
+# global Preflight timeout = 180 seconds
+- name: "Retrieve logs for operator {{ operator.name }}"
   vars:
     attempts:
       - one
