@@ -1,5 +1,5 @@
 ---
-- name: Fail if both create_operator_project and pyxis_operator_identifier are provided
+- name: "Fail if submission setup is inconsistent for {{ operator.name }}"
   ansible.builtin.fail:
     msg: |
       If you want to reuse the existing cert project, provide its ID pyxis_operator_identifier.
@@ -51,7 +51,7 @@
   when:
     - '"github-867" in dci_workarounds|default([])'
 
-- name: Run preflight check operator tests
+- name: "Run preflight check operator on {{ operator.name }}"
   environment:
     OPENSHIFT_AUTH: "{{ partner_creds }}"
     OO_BUNDLE: "{{ operator.bundle_image }}"
@@ -88,7 +88,7 @@
   poll: 0
   register: preflight_exec
 
-- name: Retrieve async logs
+- name: "Retrieve async logs for {{ operator.name }}"
   ansible.builtin.include_tasks: test_async_logs_check_operator.yml
   ignore_errors: true
 
