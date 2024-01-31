@@ -1,0 +1,74 @@
+---
+- name: "Validate VM name"
+  assert:
+    that: kvirt_vm_name is defined
+    fail_msg: VM name is required
+
+- name: "Get Storage Classes"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+  register: kvirt_vm_sc
+  no_log: true
+
+- name: "Fail when there is no storage class available"
+  ansible.builtin.fail:
+    msg: "A storage class does not exists"
+  when:
+    - kvirt_vm_sc.resources | length == 0
+
+- name: "Fail when defined storage class does not exists"
+  vars:
+    query_sc_name: 'resources[*].metadata.name'
+    query_results: "{{ kvirt_vm_sc | json_query(query_sc_name) }}"
+  ansible.builtin.fail:
+    msg: "The defined storage class do not exists"
+  when:
+    - kvirt_cluster_storage_class is defined
+    - kvirt_cluster_storage_class not in query_results
+
+- name: "Fail when no default storage class"
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ kvirt_vm_sc | json_query(query_default_sc) }}"
+  ansible.builtin.fail:
+    msg: "No default storage class was found"
+  when:
+    - kvirt_vm_sc is defined
+    - "not('true' in query_results)"
+    - kvirt_cluster_storage_class is undefined
+
+- name: "Check if the CNV CRD is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: kubevirts.kubevirt.io
+  register: kvirt_crd
+  no_log: true
+
+- name: "Fail if CNV CRD is not present"
+  fail:
+    msg: "CRDs are not present"
+  when: kvirt_crd.resources | list | count == 0
+
+- name: Check if instance exists
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: VirtualMachine
+    name: "{{ kvirt_vm_name }}"
+    namespace: "{{ kvirt_vm_namespace }}"
+  register: kvirt_vm_check
+
+- name: Fail if a VM already exists in the namespace
+  ansible.builtin.fail:
+    msg: >
+      A VM with name {{ kvirt_vm_name }} already
+      exist in the {{ kvirt_vm_namespace }} namespace. Set kvirt_vm_force: true to delete it
+  when:
+    - kvirt_vm_check.resources | length == 1
+    - not kvirt_vm_force | bool
+
+- name: "Delete VM"
+  ansible.builtin.include_tasks: delete-vm.yml
+  when:
+    - kvirt_vm_force | bool
+...

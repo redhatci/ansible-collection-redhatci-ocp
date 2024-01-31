@@ -1,0 +1,7 @@
+---
+- name: Run validations
+  ansible.builtin.include_tasks: validations.yml
+
+- name: "Install a new cluster"
+  ansible.builtin.include_tasks: create-vm.yml
+...

@@ -1,0 +1,21 @@
+---
+kvirt_vm_api_version: kubevirt.io/v1
+kvirt_vm_namespace: default
+kvirt_vm_memory: 8Gi
+kvirt_vm_disk_mode: ReadWriteOnce
+kvirt_vm_disk_size: 60Gi
+kvirt_vm_os: rhcos
+kvirt_vm_cpu_cores: 8
+kvirt_vm_cpu_sockets: 1
+kvirt_vm_cpu_threads: 1
+kvirt_vm_network_interface_multiqueue: true
+kvirt_vm_running: false
+kvirt_vm_force: false
+kvirt_vm_interfaces:
+  - masquerade: {}
+    model: virtio
+    name: default
+kvirt_vm_networks:
+  - name: default
+    pod: {}
+...

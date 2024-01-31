@@ -1,0 +1,64 @@
+apiVersion: "{{ kvirt_vm_api_version }}"
+kind: "VirtualMachine"
+metadata:
+  name: "{{ kvirt_vm_name }}"
+  namespace: "{{ kvirt_vm_namespace }}"
+spec:
+  dataVolumeTemplates:
+    - apiVersion: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      metadata:
+        annotations:
+          cdi.kubevirt.io/storage.bind.immediate.requested: "true"
+        name: os-disk-{{ kvirt_vm_namespace }}-{{ kvirt_vm_name }}
+      spec:
+        accessModes: [ "{{ kvirt_vm_disk_mode }}" ]
+{% if kvirt_vm_storage_class is defined %}
+        storageClassName: "{{ kvirt_vm_storage_class }}"
+{% endif %}
+        source:
+          blank: {}
+        storage:
+          resources:
+            requests:
+              storage: "{{ kvirt_vm_disk_size }}"
+  running: {{ kvirt_vm_running | bool }}
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/os: "{{ kvirt_vm_os }}"
+      labels:
+        kubevirt.io/domain: "{{ kvirt_vm_namespace }}"
+    spec:
+{% if kvirt_vm_node_selector is defined %}
+      nodeSelector: {{ kvirt_vm_node_selector }}
+{% endif %}
+      architecture: amd64
+      domain:
+        cpu:
+          cores: {{ kvirt_vm_cpu_cores | int }}
+          sockets: {{ kvirt_vm_cpu_sockets | int }}
+          threads: {{ kvirt_vm_cpu_threads | int }}
+        devices:
+          disks:
+            - disk:
+                bus: virtio
+              name: rootdisk
+          interfaces: {{ kvirt_vm_interfaces }}
+          networkInterfaceMultiqueue: {{ kvirt_vm_network_interface_multiqueue | bool }}
+          rng: {}
+        features:
+          acpi: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi: {}
+        memory:
+          guest: "{{ kvirt_vm_memory }}"
+        resources: {}
+      networks: {{ kvirt_vm_networks }}
+      volumes:
+        - dataVolume:
+            name: os-disk-{{ kvirt_vm_namespace }}-{{ kvirt_vm_name }}
+          name: rootdisk

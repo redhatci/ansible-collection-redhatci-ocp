@@ -1,0 +1,22 @@
+---
+- name: "Delete VM {{ kvirt_vm_name }}"
+  community.kubernetes.k8s:
+    kind: VirtualMachine
+    api_version: "{{ kvirt_vm_api_version }}"
+    name: "{{ kvirt_vm_name }}"
+    namespace: "{{ kvirt_vm_namespace }}"
+    state: absent
+
+- name: Wait for VirtualMachine to be deleted
+  community.kubernetes.k8s_info:
+    api: "{{ kvirt_vm_api_version }}"
+    kind: VirtualMachine
+    name: "{{ kvirt_vm_name }}"
+    namespace: "{{ kvirt_vm_namespace }}"
+  register: kvirt_vm_info
+  until:
+    - kvirt_vm_info.resources is defined
+    - kvirt_vm_info.resources | length == 0
+  retries: 60
+  delay: 5
+...
