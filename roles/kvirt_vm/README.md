@@ -84,7 +84,7 @@ Deploy a VM with SRIOV support
   vars:
     kvirt_vm_name: test
     kvirt_vm_interfaces:
-      - name: mellanox_port0
+      - name: sriov_resource_name_0
         sriov: {}
         macAddress: "52:54:00:00:20:20"
       - name: mellanox_port1
@@ -92,11 +92,11 @@ Deploy a VM with SRIOV support
         macAddress: "52:54:00:00:20:21"
     kvirt_vm_networks:
       - multus:
-          networkName: mellanox-net0
-        name: mellanox_port0
+          networkName: sriov-network-name-0
+        name: sriov_resource_name_0
       - multus:
-          networkName: mellanox-net1
-        name: mellanox_port1
+          networkName: sriov-network-name-1
+        name: sriov_resource_name_1
   ansible.builtin.include_role:
     name: redhatci.ocp.kvirt_vm
 ```
