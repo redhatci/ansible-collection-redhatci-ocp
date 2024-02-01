@@ -36,7 +36,7 @@ The `sriov_config_file` **must** meet the following requirements
 | ---------------- | -------- | ------- | -----------
 | name             | Yes      | String  | Name of the SR-IOV Network Node Policy.
 | device_type      | No       | String  | The driver type for configured VFs. Allowed value "netdevice", "vfio-pci".
-| eswitch_mode     | No       | String  | NIC Device Mode. Allowed value "legacy","switchdev".
+| e_switch_mode     | No       | String  | NIC Device Mode. Allowed value "legacy","switchdev".
 | exclude_topology | No       | Boolean | Exclude device's NUMA node when advertising this resource by SR-IOV network device plugin.
 | is_rdma          | No       | Boolean | RDMA mode.
 | link_type        | No       | String  | NIC Link Type. Allowed value "eth", "ETH", "ib", and "IB"
