@@ -2,7 +2,7 @@
 
 This role allows the deployment of a Kubevirt virtual machine. In order to execute the role a running OpenShift cluster and its credentials are required. i.e. through the KUBECONFIG environment variable.
 
-The role is aimed for deployment if virtual nodes for OCP deployments, so only the root disk is created.
+The role is aimed for deployment of virtual nodes for OCP deployments, so only the root disk is created.
 
 ```shell
 export KUBECONFIG=<path_kubeconfig>
