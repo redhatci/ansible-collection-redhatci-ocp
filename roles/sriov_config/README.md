@@ -53,7 +53,7 @@ The `sriov_config_file` **must** meet the following requirements
 | Variable     | Required | Type    | Description
 | ------------ | -------- | ------- | -----------
 | device_id    | Yes      | String  | The device hex code of SR-IoV device. Allowed value "0d58", "1572", "158b", "1013", "1015", "1017", "101b".
-| net_filter   | No       | String  | Infrastructure Networking selection filter. Allowed value "openstack/NekID:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+| net_filter   | No       | String  | Infrastructure Networking selection filter. Allowed value "openstack/NetworkID:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 | pf_names     | Yes      | List    | List of Names of SR-IoV PF.
 | root_devices | No       | List    | List of PCI address of SR-IoV PF.
 | vendor       | Yes      | String  | The vendor hex code of SR-IoV device. Allowed value "8086", "15b3".
