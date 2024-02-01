@@ -24,6 +24,7 @@
         namespace: "{{ ol_namespace }}"
       spec:
         size: "{{ ol_loki_size }}"
+        replicationFactor: "{{ ol_replication_factor }}"
         storage:
           schemas:
             - version: v12

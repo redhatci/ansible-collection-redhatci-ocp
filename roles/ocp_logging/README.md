@@ -27,6 +27,7 @@ This role only works on OCP 4.10 and newer and with a S3 compatible storage back
 | ol_endpoint                            | undefined                     | Yes         | Object Storage endpoint                       |
 | ol_region                              | undefined                     | Yes         | Object Storage region                         |
 | ol_loki_size                           | undefined                     | Yes         | Loki Deployment Size. See [Sizing](https://docs.openshift.com/container-platform/4.13/logging/cluster-logging-loki.html#deployment-sizing_cluster-logging-loki) for more details |
+| ol_replication_factor                  | undefined                     | Yes         | Replication factor                            |
 | ol_storage_class                       | undefined                     | Yes         | Cluster Storage class for Loki components     |
 | ol_event_router_image                  | registry.redhat.io/openshift-logging/eventrouter-rhel8:v5.2.1-1 | No   | Event Router image |
 | ol_action                              | install                       | No          | Controls the action performed by the role: Install or cleanup|

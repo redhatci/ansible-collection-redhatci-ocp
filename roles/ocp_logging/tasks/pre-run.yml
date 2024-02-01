@@ -29,6 +29,7 @@
     - ol_region
     - ol_loki_size
     - ol_storage_class
+    - ol_replication_factor
 
 - name: "Get cluster version"
   community.kubernetes.k8s_info:
