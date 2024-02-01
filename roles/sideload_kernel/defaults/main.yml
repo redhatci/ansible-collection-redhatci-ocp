@@ -1,0 +1,6 @@
+---
+sideload_kernel_namespace: default
+sideload_kernel_force: false
+sideload_kernel_job_timeout: 15
+sideload_kernel_base_image: ubi9
+k8s_auth: {}

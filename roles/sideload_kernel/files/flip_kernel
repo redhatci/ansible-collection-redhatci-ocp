@@ -1,0 +1,184 @@
+#!/bin/bash -eu
+#
+# Note: This script is designed to run inside a privileged OCP container that
+# has been chroot'd into the host filesystem, as it deals directly  with
+# rpm-ostree.
+#
+# Upon execution, one of 3 results will happen
+# - It will return 0 if the desired kernel is installed and active
+# - It will return 1 if there is any error
+# - It will reboot the system if the requested kernel is not yet active
+#
+# Run this script with '-h' for usage instructions.
+#
+
+NONRT=(kernel{-core,-modules,-modules-core,-modules-extra})
+RT=(kernel-rt{-core,-modules,-modules-core,-modules-extra})
+PREFETCH=/tmp
+
+replace_standard_kernel() {
+    local -a install
+    for pkg in "$@"; do
+        install+=(--install "${pkg}")
+    done
+    rpm-ostree override remove kernel "${NONRT[@]}" "${install[@]}"
+}
+
+reinstall_kernel_packages() {
+    local -a install
+    for pkg in "$@"; do
+        install+=(--install "${pkg}")
+    done
+    rpm-ostree uninstall --all "${install[@]}"
+}
+
+replaced_base_kernel() {
+    rpm-ostree status --json | jq -r '.deployments[0]."requested-base-removals"[]' | grep -q kernel-core
+}
+
+is_rpmostree_staged() {
+    [[ $(rpm-ostree status --json | jq '.deployments[0].staged') == "true" ]]
+}
+
+is_pkg_installed() {
+    local basename
+    basename=$(basename "$1" .rpm)
+    rpm -q "$basename" >/dev/null
+}
+
+reboot_if_staged() {
+    rpm-ostree status
+    if is_rpmostree_staged; then
+        # TODO: There is a race with MCD which may run 'rpm-ostree cleanup -p'
+        # on us and blow away our staged changes before they take effect.
+        # Attempt to make the window smaller by rebooting immediately
+        echo "Rebooting!"
+        systemctl reboot
+    else
+        echo "No changes staged!"
+        return 1
+    fi
+}
+
+inject_kernel_rpms() {
+    if is_pkg_installed "$1"; then
+        echo "$(basename "$1") is already installed; nothing to do!"
+        uname -r
+        return 0
+    fi
+
+    if replaced_base_kernel; then
+        reinstall_kernel_packages "$@" || return $?
+    else
+        replace_standard_kernel "$@" || return $?
+    fi
+    reboot_if_staged
+}
+
+inject_from_dir() {
+    local pkgdir=${1:-/tmp}
+    local -a rpms
+    rpms=("$pkgdir/kernel-*.rpm")
+    inject_kernel_rpms "${rpms[@]}"
+}
+
+get_kernel_rpms_from_uri() {
+    local -n uris=$1; shift
+    uris=()
+    local prefix=$1; shift
+    local suffix=$1; shift
+    for pkg in "$@"; do
+        local uri="$prefix/$pkg-$suffix"
+        local fetch="-I"
+        if [[ -d $PREFETCH ]]; then
+            pushd "$PREFETCH" >/dev/null || return 1
+            fetch="-O"
+        fi
+        if ! curl "$fetch" -fksS "$uri" >/dev/null; then
+            echo "Error: Could not fetch RPM '$uri'"
+            return 1
+        fi
+        if [[ -d $PREFETCH ]]; then
+            uris+=("$PREFETCH/$(basename "$uri")")
+            popd >/dev/null || return 1
+        else
+            uris+=("$uri")
+        fi
+    done
+}
+
+inject_from_uri() {
+    local base=$1
+    local -a rpms
+    local prefix suffix
+    local -a pkglist
+    if [[ $base =~ .*/kernel-core-.*.rpm ]]; then
+      prefix=${base%%/kernel-core-*}
+      suffix=${base##*/kernel-core-}
+      pkglist=("${NONRT[@]}")
+    elif [[ $base =~ .*/kernel-rt-core-.*.rpm ]]; then
+      prefix=${base%%/kernel-rt-core-*}
+      suffix=${base##*/kernel-rt-core-}
+      pkglist=("${RT[@]}")
+    else
+        echo "URI must point to either the kernel-rt-core or kernel-core RPM"
+        return 1
+    fi
+
+    get_kernel_rpms_from_uri rpms "$prefix" "$suffix" "${pkglist[@]}" || return 1
+    inject_kernel_rpms "${rpms[@]}"
+}
+
+reset_kernel() {
+    if ! replaced_base_kernel; then
+        echo "The standard kernel is already running; nothing to do!"
+        uname -r
+        return 0
+    fi
+
+    rpm-ostree reset
+    reboot_if_staged
+}
+
+usage() {
+    echo "Switches to arbitrary kernel-[rt-]*.rpm packages"
+    echo
+    echo "Usage:"
+    echo "  $(basename "$0") http[s]://full-uri-to/kernel-[rt-]core-\$SOMEVERSION.rpm"
+    echo "    Fetches the kernel packages at the URI given, provided:"
+    echo "     - the URI must be to the 'kernel-rt-core' or 'kernel-core' package"
+    echo "     - the other packages must be in the same directory on the HTTP server"
+    echo
+    echo "  $(basename "$0") /path/to/pkgdir"
+    echo "    Installs a set of kernel packages from a local directory"
+    echo "    Must only contain one set of kernel packages"
+    echo
+    echo "  $(basename "$0") reset"
+    echo "    Resets the kernel back to the default standard kernel"
+    return 1
+}
+
+main() {
+    if [[ $1 == "-h" || $1 == "--help" ]]; then
+        usage
+        return 0
+    fi
+
+    if [[ $(id -u) -ne 0 ]]; then
+        echo "This script must be run as root"
+        return 1
+    fi
+
+    if [[ $1 == "reset" ]]; then
+        reset_kernel
+    elif [[ $1 =~ https?:// ]]; then
+        inject_from_uri "$1"
+    elif [[ -d $1 ]]; then
+        inject_from_dir "$1"
+    else
+        echo "'$1' was not a URI or a local directory."
+        usage
+    fi
+}
+
+[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"
