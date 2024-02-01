@@ -49,26 +49,4 @@
   fail:
     msg: "CRDs are not present"
   when: kvirt_crd.resources | list | count == 0
-
-- name: Check if instance exists
-  community.kubernetes.k8s_info:
-    api_version: v1
-    kind: VirtualMachine
-    name: "{{ kvirt_vm_name }}"
-    namespace: "{{ kvirt_vm_namespace }}"
-  register: kvirt_vm_check
-
-- name: Fail if a VM already exists in the namespace
-  ansible.builtin.fail:
-    msg: >
-      A VM with name {{ kvirt_vm_name }} already
-      exist in the {{ kvirt_vm_namespace }} namespace. Set kvirt_vm_force: true to delete it
-  when:
-    - kvirt_vm_check.resources | length == 1
-    - not kvirt_vm_force | bool
-
-- name: "Delete VM"
-  ansible.builtin.include_tasks: delete-vm.yml
-  when:
-    - kvirt_vm_force | bool
 ...

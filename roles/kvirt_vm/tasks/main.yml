@@ -2,6 +2,11 @@
 - name: Run validations
   ansible.builtin.include_tasks: validations.yml
 
+- name: "Delete VM"
+  ansible.builtin.include_tasks: delete-vm.yml
+  when:
+    - kvirt_vm_force | bool
+
 - name: "Install a new cluster"
   ansible.builtin.include_tasks: create-vm.yml
 ...
