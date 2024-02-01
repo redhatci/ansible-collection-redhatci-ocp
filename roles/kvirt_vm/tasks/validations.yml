@@ -17,12 +17,12 @@
   when:
     - kvirt_vm_sc.resources | length == 0
 
-- name: "Fail when defined storage class does not exists"
+- name: "Fail when defined storage class does not exist"
   vars:
     query_sc_name: 'resources[*].metadata.name'
     query_results: "{{ kvirt_vm_sc | json_query(query_sc_name) }}"
   ansible.builtin.fail:
-    msg: "The defined storage class do not exists"
+    msg: "The defined storage class does not exist"
   when:
     - kvirt_cluster_storage_class is defined
     - kvirt_cluster_storage_class not in query_results

@@ -13,7 +13,7 @@ Main tasks:
 - Check the required operators (CNV)
 - Create the VM and set it to the desired state
 
-This role only been tested in x86_64 architectures.
+This role has been tested only in x86_64 architectures.
 
 ## Variables
 
