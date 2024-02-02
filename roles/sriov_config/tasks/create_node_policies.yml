@@ -26,7 +26,7 @@
   register: nodes
   no_log: true
   until: selected_nodes == sriov_nodes
-  retries: 90
+  retries: "{{ selected_nodes * sriov_config_retries_per_node | int }}"
   delay: 10
   loop: "{{ sriov_network_configs }}"
   loop_control:

@@ -14,6 +14,8 @@ Nodes must have SR-IOV capable network interfaces.
 | ----------------------------- | --------- | ------- | --------- | -----------
 | sriov_config_file             | Yes       | String  | Undefined | The configuration file for SR-IOV Node policy and/or network.
 | sriov_config_wait_node_policy | No        | Boolean | True      | Whether or not wait for node policies to apply
+| sriov_config_retries_per_node | No        | Int     | 60        | Number of retries for Node readiness
+| sriov_config_delay_per_node   | No        | Int     | 10        | Seconds to wait between retries for Node readiness
 
 ### SR-IOV Network configs
 
@@ -109,8 +111,7 @@ sriov_network_configs:
           - "0000:12:00.0"
         vendor: "15b3"
       node_selector:
-        node-role.kubernetes.io/worker: ""
-        node-role.kubernetes.io/infra: ""
+        node-role.kubernetes.io/sriov: ""
       num_vfs: 16
       priority: 99
     network:
@@ -121,6 +122,9 @@ sriov_network_configs:
       trust: on
       capabilities: '{ "mac": true, "ips": true }'
 ```
+
+> NOTE: SR-IOV operator requires nodes to use the `worker` role.
+> Additional tags are valid as long as those nodes are also `workers`
 
 #### SR-IOV Node Policy
 
