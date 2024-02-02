@@ -100,7 +100,3 @@ Deploy a VM with SRIOV support
   ansible.builtin.include_role:
     name: redhatci.ocp.kvirt_vm
 ```
-
-# Troubleshooting
-
-# References
