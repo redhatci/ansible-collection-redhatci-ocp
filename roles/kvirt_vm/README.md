@@ -87,7 +87,7 @@ Deploy a VM with SRIOV support
       - name: sriov_resource_name_0
         sriov: {}
         macAddress: "52:54:00:00:20:20"
-      - name: mellanox_port1
+      - name: sriov_resource_name_1
         sriov: {}
         macAddress: "52:54:00:00:20:21"
     kvirt_vm_networks:
