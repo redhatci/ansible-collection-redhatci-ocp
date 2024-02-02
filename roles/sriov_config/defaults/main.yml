@@ -1,3 +1,3 @@
 ---
-sriov_network_retries_per_node: 60
-sriov_network_delay_per_node: 10
+sriov_config_retries_per_node: 60
+sriov_config_delay_per_node: 10
