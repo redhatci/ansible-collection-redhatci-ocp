@@ -1,0 +1,30 @@
+---
+- name: Get SR-IOV Selected Nodes for resource {{ sriov_conf.resource }}
+  community.kubernetes.k8s_info:
+    kind: Node
+    label_selectors: >-
+      {{ sriov_conf.node_policy.node_selector |
+         default({"node-role.kubernetes.io/worker": ""}) |
+         list }}
+  register: selected_nodes
+  no_log: true
+
+# "retries" variables require to be defined prior executing the task
+- name: Wait for selected nodes to have SR-IOV resource {{ sriov_conf.resource }}
+  vars:
+    sriov_filter: "{{ '[*].status.allocatable.\"openshift.io/' + sriov_conf.resource + '\".to_number(@)' }}"
+    nodes_with_sriov: "{{ nodes.resources | json_query(sriov_filter) }}"
+  community.kubernetes.k8s_info:
+    kind: Node
+    label_selectors: >-
+      {{ sriov_conf.node_policy.node_selector |
+         default({"node-role.kubernetes.io/worker": ""}) |
+         list }}
+  register: nodes
+  retries: "{{ selected_nodes.resources | length * sriov_config_retries_per_node | int }}"
+  delay: "{{ sriov_config_delay_per_node | int }}"
+  until:
+    - nodes_with_sriov | length == nodes.resources | length
+    - nodes_with_sriov | sort | unique | length == 1
+    - nodes_with_sriov | sort | unique | first | int == sriov_conf.node_policy.num_vfs
+  no_log: true

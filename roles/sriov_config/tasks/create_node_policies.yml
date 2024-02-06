@@ -8,30 +8,12 @@
     label: "{{ sriov.resource }}"
   when: sriov.node_policy is defined
 
-- name: Wait for the Nodes to be SR-IOV Ready
-  vars:
-    selected_nodes: "{{ nodes.resources | length }}"
-    sriov_nodes: >-
-      {{ nodes.resources |
-         map(attribute='status.allocatable') |
-         map('dict2items') | flatten | list |
-         selectattr('key', 'equalto', 'openshift.io/' + sriov.resource) |
-         list | length }}
-  community.kubernetes.k8s_info:
-    kind: Node
-    label_selectors: >-
-      {{ sriov.node_policy.node_selector |
-         default('node-role.kubernetes.io/worker') |
-         list }}
-  register: nodes
-  no_log: true
-  until: selected_nodes == sriov_nodes
-  retries: "{{ selected_nodes * sriov_config_retries_per_node | int }}"
-  delay: "{{ sriov_config_delay_per_node | int }}"
+- name: Check for SRIOV Node Policy
+  ansible.builtin.include_tasks: check_sriov_node_policy.yml
   loop: "{{ sriov_network_configs }}"
   loop_control:
-    loop_var: sriov
-    label: "{{ sriov.resource }}"
+    loop_var: sriov_conf
+    label: "{{ sriov_conf.resource }}"
   when:
-    - sriov.node_policy is defined
-    - sriov_config_wait_node_policy | default(true) | bool
+    - sriov_conf.node_policy is defined
+    - sriov_config_wait_node_policy | bool
