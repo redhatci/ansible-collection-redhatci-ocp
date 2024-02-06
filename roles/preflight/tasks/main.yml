@@ -46,8 +46,8 @@
       # this variable is set in test-runner
       when: preflight_source_dir is defined
 
-    # $ podman run --rm quay.io/opdev/preflight:1.8.0 --version
-    # preflight version 1.8.0 <commit: b6bcc3506c0d84baa0c020f6b776a181b931f57a>
+    # $ podman run --rm quay.io/opdev/preflight:tag --version
+    # preflight version tag <commit: b6bcc3506c0d84baa0c020f6b776a181b931f57a>
     - name: Extract commit_id from Preflight image
       ansible.builtin.shell:
         cmd: >
