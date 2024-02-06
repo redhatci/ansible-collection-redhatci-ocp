@@ -59,6 +59,7 @@
     cmd: >
       podman rmi
       --force
+      --ignore
       {{ current_operator_image }}
   become: true
 
