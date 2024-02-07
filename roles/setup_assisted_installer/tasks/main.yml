@@ -44,7 +44,7 @@
         immediate: yes
         state: enabled
         zone: "{{ item.0 }}"
-      loop: "{{ ['internal', 'public'] | product(['8000', '8090', '8080', '8888']) | list }}"
+      loop: "{{ ['internal', 'public'] | product(['8000', port, assisted_service_gui_port, assisted_service_image_service_port]) | list }}"
 
     - name: Create directories for assisted-installer
       file:
