@@ -1,0 +1,4 @@
+---
+sriov_config_retries_per_node: 60
+sriov_config_delay_per_node: 20
+sriov_config_wait_node_policy: true

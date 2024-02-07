@@ -1,0 +1,19 @@
+---
+- name: Create SriovNetworkNodePolicy
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'templates/sriov-network-node-policy.yml.j2') }}"
+  loop: "{{ sriov_network_configs }}"
+  loop_control:
+    loop_var: sriov
+    label: "{{ sriov.resource }}"
+  when: sriov.node_policy is defined
+
+- name: Check for SRIOV Node Policy
+  ansible.builtin.include_tasks: check_sriov_node_policy.yml
+  loop: "{{ sriov_network_configs }}"
+  loop_control:
+    loop_var: sriov_conf
+    label: "{{ sriov_conf.resource }}"
+  when:
+    - sriov_conf.node_policy is defined
+    - sriov_config_wait_node_policy | bool

@@ -1,0 +1,9 @@
+---
+- name: Create SriovNetwork
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'templates/sriov-network.yml.j2') }}"
+  loop: "{{ sriov_network_configs }}"
+  loop_control:
+    loop_var: sriov
+    label: "{{ sriov.resource }}"
+  when: sriov.network is defined

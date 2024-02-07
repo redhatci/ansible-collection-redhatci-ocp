@@ -1,0 +1,53 @@
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: "{{ sriov.node_policy.name }}"
+  namespace: openshift-sriov-network-operator
+spec:
+{% if sriov.node_policy.device_type is defined %}
+  deviceType: "{{ sriov.node_policy.device_type }}"
+{% endif %}
+{% if sriov.node_policy.e_switch_mode is defined %}
+  eSwitchMode: "{{ sriov.node_policy.e_switch_mode }}"
+{% endif %}
+{% if sriov.node_policy.exclude_topology is defined %}
+  excludeTopology: {{ sriov.node_policy.exclude_topology | bool }}
+{% endif %}
+{% if sriov.node_policy.is_rdma is defined %}
+  isRdma: {{ sriov.node_policy.is_rdma | bool }}
+{% endif %}
+{% if sriov.node_policy.link_type is defined %}
+  linkType: "{{ sriov.node_policy.link_type }}"
+{% endif %}
+{% if sriov.node_policy.mtu is defined %}
+  mtu: {{ sriov.node_policy.mtu | int }}
+{% endif %}
+{% if sriov.node_policy.need_vhost_net is defined %}
+  needVhostNet: {{ sriov.node_policy.need_vhost_net | bool }}
+{% endif %}
+  nicSelector:
+    deviceID: "{{ sriov.node_policy.nic_selector.device_id }}"
+{% if sriov.node_policy.nic_selector.net_filter is defined %}
+    netFilter: "{{ sriov.node_policy.nic_selector.net_filter }}"
+{% endif %}
+    pfNames:
+{% for pf_name in sriov.node_policy.nic_selector.pf_names %}
+    - "{{ pf_name }}"
+{% endfor %}
+{% if sriov.node_policy.nic_selector.root_devices is defined %}
+    rootDevices:
+{% for root_device in sriov.node_policy.nic_selector.root_devices %}
+    - "{{ root_device }}"
+{% endfor %}
+{% endif %}
+    vendor: "{{ sriov.node_policy.nic_selector.vendor }}"
+  nodeSelector:
+    {{ sriov.node_policy.node_selector | default('"node-role.kubernetes.io/worker": ""') }}
+  numVfs: {{ sriov.node_policy.num_vfs | int }}
+{% if sriov.node_policy.priority is defined %}
+  priority: {{ sriov.node_policy.priority | int }}
+{% endif %}
+  resourceName: "{{ sriov.resource }}"
+{% if sriov.node_policy.vdpa_type is defined %}
+    vdpaType: "{{ sriov.node_policy.vdpa_type }}"
+{% endif %}
