@@ -1,8 +1,8 @@
-apiVersion: "{{ kvirt_vm_api_version }}"
+apiVersion: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
 kind: "VirtualMachine"
 metadata:
-  name: "{{ kvirt_vm_name }}"
-  namespace: "{{ kvirt_vm_namespace }}"
+  name: "{{ vm.name }}"
+  namespace: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
 spec:
   dataVolumeTemplates:
     - apiVersion: cdi.kubevirt.io/v1beta1
@@ -10,42 +10,42 @@ spec:
       metadata:
         annotations:
           cdi.kubevirt.io/storage.bind.immediate.requested: "true"
-        name: os-disk-{{ kvirt_vm_namespace }}-{{ kvirt_vm_name }}
+        name: os-disk-{{ vm.namespace | default(kvirt_vm_namespace) }}-{{ vm.name }}
       spec:
-        accessModes: [ "{{ kvirt_vm_disk_mode }}" ]
-{% if kvirt_vm_storage_class is defined %}
-        storageClassName: "{{ kvirt_vm_storage_class }}"
+        accessModes: [ "{{ vm.disk_mode | default(kvirt_vm_disk_mode)  }}" ]
+{% if storage_class is defined %}
+        storageClassName: "{{ vm.storage_class | default(kvirt_vm_storage_class) }}"
 {% endif %}
         source:
           blank: {}
         storage:
           resources:
             requests:
-              storage: "{{ kvirt_vm_disk_size }}"
-  running: {{ kvirt_vm_running | bool }}
+              storage: "{{ vm.disk_size | default(kvirt_vm_disk_size) }}"
+  running: {{ vm.running | default(kvirt_vm_running) }}
   template:
     metadata:
       annotations:
-        vm.kubevirt.io/os: "{{ kvirt_vm_os }}"
+        vm.kubevirt.io/os: "{{ vm.os | default(kvirt_vm_os) }}"
       labels:
-        kubevirt.io/domain: "{{ kvirt_vm_namespace }}"
+        kubevirt.io/domain: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
     spec:
-{% if kvirt_vm_node_selector is defined %}
-      nodeSelector: {{ kvirt_vm_node_selector }}
+{% if node_selector is defined %}
+      nodeSelector: {{ vm.node_selector }}
 {% endif %}
       architecture: amd64
       domain:
         cpu:
-          cores: {{ kvirt_vm_cpu_cores | int }}
-          sockets: {{ kvirt_vm_cpu_sockets | int }}
-          threads: {{ kvirt_vm_cpu_threads | int }}
+          cores: {{ vm.cpu_cores | default(kvirt_vm_cpu_cores) }}
+          sockets: {{ vm.cpu_sockets | default(kvirt_vm_cpu_sockets) }}
+          threads: {{ vm.cpu_threads | default(kvirt_vm_cpu_threads) }}
         devices:
           disks:
             - disk:
                 bus: virtio
               name: rootdisk
-          interfaces: {{ kvirt_vm_interfaces }}
-          networkInterfaceMultiqueue: {{ kvirt_vm_network_interface_multiqueue | bool }}
+          interfaces: {{ vm.interfaces | default(kvirt_vm_interfaces) }}
+          networkInterfaceMultiqueue: {{ vm.network_interface_multiqueue | default(kvirt_vm_network_interface_multiqueue) }}
           rng: {}
         features:
           acpi: {}
@@ -55,10 +55,10 @@ spec:
           bootloader:
             efi: {}
         memory:
-          guest: "{{ kvirt_vm_memory }}"
+          guest: "{{ vm.memory | default(kvirt_vm_memory)}}"
         resources: {}
-      networks: {{ kvirt_vm_networks }}
+      networks: {{ vm.networks | default(kvirt_vm_networks) }}
       volumes:
         - dataVolume:
-            name: os-disk-{{ kvirt_vm_namespace }}-{{ kvirt_vm_name }}
+            name: os-disk-{{ vm.namespace | default(kvirt_vm_namespace) }}-{{ vm.name }}
           name: rootdisk

@@ -2,11 +2,10 @@
 - name: Run validations
   ansible.builtin.include_tasks: validations.yml
 
-- name: "Delete VM"
-  ansible.builtin.include_tasks: delete-vm.yml
-  when:
-    - kvirt_vm_force | bool
-
-- name: Create VM
+- name: "Create the VM"
   ansible.builtin.include_tasks: create-vm.yml
+  loop: "{{ vm_configs }}"
+  loop_control:
+    loop_var: vm
+    label: "{{ vm.name }}"
 ...

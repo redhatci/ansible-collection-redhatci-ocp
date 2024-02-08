@@ -1,26 +1,46 @@
 ---
-- name: "Validate VM name"
-  assert:
-    that: kvirt_vm_name is defined
-    fail_msg: VM name is required
+- name: Check VM config file
+  ansible.builtin.stat:
+    path: "{{ vms_config_file }}"
+  register: vms_conf_file_stat
+
+- name: Fail if VM config file is not found
+  ansible.builtin.fail:
+    msg: "VM config file {{ vms_config_file }} not found"
+  when: not vms_conf_file_stat.stat.exists
+
+- name: Fail VM config file is empty
+  ansible.builtin.fail:
+    msg: "VM config file {{ vms_config_file }} is empty"
+  when: vms_conf_file_stat.stat.size == 0
+
+- name: Load VM config file
+  ansible.builtin.include_vars:
+    file: "{{ vms_config_file }}"
+  when: vms_conf_file_stat.stat.exists
+
+- name: Fail if VM config file does not contain vm_configs
+  ansible.builtin.fail:
+    msg: "VM config file {{ vms_config_file }} does not contain vm_configs"
+  when: vm_configs is not defined
 
 - name: "Get Storage Classes"
   community.kubernetes.k8s_info:
     api_version: v1
     kind: StorageClass
-  register: kvirt_vm_sc
+  register: sc
   no_log: true
 
 - name: "Fail when there is no storage class available"
   ansible.builtin.fail:
     msg: "A storage class does not exists"
   when:
-    - kvirt_vm_sc.resources | length == 0
+    - sc.resources | length == 0
 
 - name: "Fail when defined storage class does not exist"
   vars:
     query_sc_name: 'resources[*].metadata.name'
-    query_results: "{{ kvirt_vm_sc | json_query(query_sc_name) }}"
+    query_results: "{{ sc | json_query(query_sc_name) }}"
   ansible.builtin.fail:
     msg: "The defined storage class does not exist"
   when:
@@ -30,11 +50,11 @@
 - name: "Fail when no default storage class"
   vars:
     query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
-    query_results: "{{ kvirt_vm_sc | json_query(query_default_sc) }}"
+    query_results: "{{ sc | json_query(query_default_sc) }}"
   ansible.builtin.fail:
     msg: "No default storage class was found"
   when:
-    - kvirt_vm_sc is defined
+    - sc is defined
     - "not('true' in query_results)"
     - kvirt_cluster_storage_class is undefined
 

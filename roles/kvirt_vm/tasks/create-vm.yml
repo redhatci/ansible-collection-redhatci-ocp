@@ -1,35 +1,45 @@
 ---
-- name: Create the VM Namespace
+- name: "Validate VM name"
+  assert:
+    that: vm.name is defined
+    fail_msg: VM name is required
+
+- name: Create the VM Namespace for {{ vm.name }}
   community.kubernetes.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
       metadata:
-        name: "{{ kvirt_vm_namespace }}"
+        name: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
         labels:
           security.openshift.io/scc.podSecurityLabelSync: "false"
           pod-security.kubernetes.io/enforce: "baseline"
           pod-security.kubernetes.io/enforce-version: "latest"
 
-- name: Create the VM
+- name: Delete VM {{ vm.name }}
+  ansible.builtin.include_tasks: delete-vm.yml
+  when:
+    - vm.force | default(kvirt_vm_force) | bool
+
+- name: Create the VM {{ vm.name }}
   community.kubernetes.k8s:
     definition: "{{ lookup('template', 'templates/vm-template.yml.j2') }}"
 
-- name: Wait for VirtualMachine to be in desired state
+- name: Wait for VM to be in desired state {{ vm.name }}
   vars:
-    kvirt_vm_state: |-
-      {%- if kvirt_vm_running %}
+    state: |-
+      {%- if vm.running | default(kvirt_vm_running) %}
       Running{%- else %}
       Stopped{%- endif %}
   community.kubernetes.k8s_info:
-    api: "{{ kvirt_vm_api_version }}"
+    api: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
     kind: VirtualMachine
-    name: "{{ kvirt_vm_name }}"
-    namespace: "{{ kvirt_vm_namespace }}"
-  register: kvirt_vm_info
+    name: "{{ vm.name }}"
+    namespace: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
+  register: info
   until:
-    - kvirt_vm_info.resources is defined
-    - kvirt_vm_info.resources[0].status.printableStatus == kvirt_vm_state
+    - info.resources is defined
+    - info.resources[0].status.printableStatus == state
   retries: 60
   delay: 5
 ...
