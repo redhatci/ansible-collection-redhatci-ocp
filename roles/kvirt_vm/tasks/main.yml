@@ -7,6 +7,6 @@
   when:
     - kvirt_vm_force | bool
 
-- name: "Install a new cluster"
+- name: Create VM
   ansible.builtin.include_tasks: create-vm.yml
 ...
