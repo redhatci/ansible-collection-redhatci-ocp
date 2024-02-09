@@ -1,9 +1,4 @@
 ---
-- name: "Validate VM name"
-  assert:
-    that: vm.name is defined
-    fail_msg: VM name is required
-
 - name: Create the VM Namespace for {{ vm.name }}
   community.kubernetes.k8s:
     definition:

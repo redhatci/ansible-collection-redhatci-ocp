@@ -24,6 +24,11 @@
     msg: "VM config file {{ kvirt_vm_config_file }} does not contain vm_configs"
   when: vm_configs is not defined
 
+- name: Fail if not all VMs have a name
+  ansible.builtin.fail:
+    msg: "At least a VM in config file {{ kvirt_vm_config_file }} does not contain a name"
+  when: vm_configs | selectattr('name', 'undefined') | list | length > 0
+
 - name: "Get Storage Classes"
   community.kubernetes.k8s_info:
     api_version: v1
