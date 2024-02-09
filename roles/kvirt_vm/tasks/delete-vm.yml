@@ -1,5 +1,5 @@
 ---
-- name: "Delete VM {{ name }}"
+- name: "Delete VM {{ vm.name }}"
   community.kubernetes.k8s:
     kind: VirtualMachine
     api_version: "{{ vm.api_version | default(kvirt_vm_api_version) }}"

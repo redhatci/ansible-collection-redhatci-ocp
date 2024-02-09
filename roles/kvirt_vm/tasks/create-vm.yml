@@ -11,11 +11,6 @@
           pod-security.kubernetes.io/enforce: "baseline"
           pod-security.kubernetes.io/enforce-version: "latest"
 
-- name: Delete VM {{ vm.name }}
-  ansible.builtin.include_tasks: delete-vm.yml
-  when:
-    - vm.force | default(kvirt_vm_force) | bool
-
 - name: Create the VM {{ vm.name }}
   community.kubernetes.k8s:
     definition: "{{ lookup('template', 'templates/vm-template.yml.j2') }}"
