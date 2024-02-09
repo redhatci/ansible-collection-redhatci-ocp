@@ -1,0 +1,35 @@
+---
+- name: Create the VM Namespace for {{ vm.name }}
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
+        labels:
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+          pod-security.kubernetes.io/enforce: "baseline"
+          pod-security.kubernetes.io/enforce-version: "latest"
+
+- name: Create the VM {{ vm.name }}
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'templates/vm-template.yml.j2') }}"
+
+- name: Wait for VM to be in desired state {{ vm.name }}
+  vars:
+    state: |-
+      {%- if vm.running | default(kvirt_vm_running) %}
+      Running{%- else %}
+      Stopped{%- endif %}
+  community.kubernetes.k8s_info:
+    api: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
+    kind: VirtualMachine
+    name: "{{ vm.name }}"
+    namespace: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
+  register: info
+  until:
+    - info.resources is defined
+    - info.resources[0].status.printableStatus == state
+  retries: 60
+  delay: 5
+...

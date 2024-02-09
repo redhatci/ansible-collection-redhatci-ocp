@@ -1,0 +1,64 @@
+apiVersion: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
+kind: "VirtualMachine"
+metadata:
+  name: "{{ vm.name }}"
+  namespace: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
+spec:
+  dataVolumeTemplates:
+    - apiVersion: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      metadata:
+        annotations:
+          cdi.kubevirt.io/storage.bind.immediate.requested: "true"
+        name: os-disk-{{ vm.namespace | default(kvirt_vm_namespace) }}-{{ vm.name }}
+      spec:
+        accessModes: [ "{{ vm.disk_mode | default(kvirt_vm_disk_mode)  }}" ]
+{% if storage_class is defined %}
+        storageClassName: "{{ vm.storage_class | default(kvirt_vm_storage_class) }}"
+{% endif %}
+        source:
+          blank: {}
+        storage:
+          resources:
+            requests:
+              storage: "{{ vm.disk_size | default(kvirt_vm_disk_size) }}"
+  running: {{ vm.running | default(kvirt_vm_running) }}
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/os: "{{ vm.os | default(kvirt_vm_os) }}"
+      labels:
+        kubevirt.io/domain: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
+    spec:
+{% if node_selector is defined %}
+      nodeSelector: {{ vm.node_selector }}
+{% endif %}
+      architecture: amd64
+      domain:
+        cpu:
+          cores: {{ vm.cpu_cores | default(kvirt_vm_cpu_cores) }}
+          sockets: {{ vm.cpu_sockets | default(kvirt_vm_cpu_sockets) }}
+          threads: {{ vm.cpu_threads | default(kvirt_vm_cpu_threads) }}
+        devices:
+          disks:
+            - disk:
+                bus: virtio
+              name: rootdisk
+          interfaces: {{ vm.interfaces | default(kvirt_vm_interfaces) }}
+          networkInterfaceMultiqueue: {{ vm.network_interface_multiqueue | default(kvirt_vm_network_interface_multiqueue) }}
+          rng: {}
+        features:
+          acpi: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi: {}
+        memory:
+          guest: "{{ vm.memory | default(kvirt_vm_memory)}}"
+        resources: {}
+      networks: {{ vm.networks | default(kvirt_vm_networks) }}
+      volumes:
+        - dataVolume:
+            name: os-disk-{{ vm.namespace | default(kvirt_vm_namespace) }}-{{ vm.name }}
+          name: rootdisk
