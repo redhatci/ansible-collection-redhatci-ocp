@@ -14,9 +14,9 @@
   vars:
     sriov_filter: "{{ '[*].status.allocatable.\"openshift.io/' + sriov_conf.resource + '\".to_number(@)' }}"
     nodes_with_sriov: "{{ nodes.resources | json_query(sriov_filter) }}"
-    sriov_policy_pf: "{{ sriov.node_policy.nic_selector.pf_names[0] | split('#') }}"
-    sriov_policy_pf_range: "{{ sriov_policy_pf[1] | default('') | split('-') }}"
-    vfs: "{{ sriov_policy_pf_range[1] | default(sriov.node_policy.num_vfs, true) | int - sriov_policy_pf_range[0] | default(1, true) | int + 1 }}"
+    sriov_policy_pf: "{{ sriov_conf.node_policy.nic_selector.pf_names[0].split('#') }}"
+    sriov_policy_pf_range: "{{ (sriov_policy_pf[1] | default('')).split('-') }}"
+    vfs: "{{ sriov_policy_pf_range[1] | default(sriov_conf.node_policy.num_vfs, true) | int - sriov_policy_pf_range[0] | default(1, true) | int + 1 }}"
   community.kubernetes.k8s_info:
     kind: Node
     label_selectors: >-
@@ -29,5 +29,5 @@
   until:
     - nodes_with_sriov | length == nodes.resources | length
     - nodes_with_sriov | sort | unique | length == 1
-    - nodes_with_sriov | sort | unique | first | int >= vfs
+    - nodes_with_sriov | sort | unique | first | int >= vfs | int
   no_log: true
