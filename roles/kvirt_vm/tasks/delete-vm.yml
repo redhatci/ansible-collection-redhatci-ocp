@@ -2,7 +2,7 @@
 - name: "Delete VM {{ name }}"
   community.kubernetes.k8s:
     kind: VirtualMachine
-    api_version: "{{ vm.api_version | default(kvirt_vm_api_version)}}"
+    api_version: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
     name: "{{ vm.name }}"
     namespace: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
     state: absent
