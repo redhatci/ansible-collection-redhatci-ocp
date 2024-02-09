@@ -18,12 +18,12 @@ This role has been tested only in x86_64 architectures.
 # Role variables
 | Variable                      | Required  | Type    | Default   | Description
 | ----------------------------- | --------- | ------- | --------- | -----------
-| vms_config_file               | Yes       | String  | Undefined | The configuration file with the VM's settings
-| vms_settings                  | Yes       | List    | Undefined | A list with the settings for each VM
+| kvirt_vm_config_file          | Yes       | String  | Undefined | The configuration file with the VM's settings
 
 ## VM configs
 | Variable                      | Default                       | Required    | Description
-| -----------------------------------------------    ---------- | ----------- | ---------------------------------
+| ----------------------------- | ----------------------------- | ----------- | ---------------------------------
+| vms_settings                  |                               | yes         | A list with the settings for each VM
 | name                          |                               | yes         | VM name
 | force                         | false                         | no          | Destroy the VM if already
 | namespace                     | default                       | no          | VM namespace
@@ -55,7 +55,7 @@ Deploy a VM with custom configs
     name: redhatci.ocp.kvirt_vm
 ```
 
-Tree VMs with default settings
+Three VMs with default settings
 ```yaml
 ---
 vm_configs:
@@ -67,7 +67,7 @@ vm_configs:
 Generic VM definition
 ```yaml
 ---
-vms_configs:
+vm_configs:
   - name: test
     force: true
     namespace: myns
@@ -100,16 +100,16 @@ vm_configs:
   - name: master-1
     interfaces:
       - macAddress: "54:54:00:00:21:20"
-        name: mellanox_port0
+        name: sriov_resource_name_0
         sriov: {}
       - macAddress: "54:54:00:00:21:21"
-        name: mellanox_port1
+        name: sriov_resource_name_1
         sriov: {}
     networks:
       - multus:
-          networkName: mellanox-net0
-        name: mellanox_port0
+          networkName: sriov-network-name-0
+        name: sriov_resource_name_0
       - multus:
-          networkName: mellanox-net1
-        name: mellanox_port1
+          networkName: sriov-network-name-1
+        name: sriov_resource_name_1
 ```

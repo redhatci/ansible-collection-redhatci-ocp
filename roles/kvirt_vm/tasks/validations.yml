@@ -1,27 +1,27 @@
 ---
 - name: Check VM config file
   ansible.builtin.stat:
-    path: "{{ vms_config_file }}"
+    path: "{{ kvirt_vm_config_file }}"
   register: vms_conf_file_stat
 
 - name: Fail if VM config file is not found
   ansible.builtin.fail:
-    msg: "VM config file {{ vms_config_file }} not found"
+    msg: "VM config file {{ kvirt_vm_config_file }} not found"
   when: not vms_conf_file_stat.stat.exists
 
 - name: Fail VM config file is empty
   ansible.builtin.fail:
-    msg: "VM config file {{ vms_config_file }} is empty"
+    msg: "VM config file {{ kvirt_vm_config_file }} is empty"
   when: vms_conf_file_stat.stat.size == 0
 
 - name: Load VM config file
   ansible.builtin.include_vars:
-    file: "{{ vms_config_file }}"
+    file: "{{ kvirt_vm_config_file }}"
   when: vms_conf_file_stat.stat.exists
 
 - name: Fail if VM config file does not contain vm_configs
   ansible.builtin.fail:
-    msg: "VM config file {{ vms_config_file }} does not contain vm_configs"
+    msg: "VM config file {{ kvirt_vm_config_file }} does not contain vm_configs"
   when: vm_configs is not defined
 
 - name: "Get Storage Classes"
