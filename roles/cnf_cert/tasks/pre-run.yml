@@ -155,12 +155,17 @@
         version: "{{ test_network_function_version }}"
         dest: "{{ tnf_dir }}"
         force: true
+        # Fetch only the latest commit to reduce the data
+        # to transfer when cloning the large repo
+        depth: 1
+        # Reuse objects from an existing repository to speed up cloning
+        reference: "{{ tnf_dir }}"
       # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
       # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the
       # repo multiple times.
       register: test_network_function_gitref
       retries: 3
-      delay: 10
+      delay: 30
       until: not test_network_function_gitref.failed
 
     # We need to pull the original image to tag it. Then, we remove the pulled
