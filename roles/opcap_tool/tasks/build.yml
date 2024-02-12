@@ -9,20 +9,15 @@
   delay: 10
 
 - name: "Use Golang container to build opcap"
-  # Launching a container to build the GO bin Dir where the repo has been
-  # cloned is bound as a volume (with option Z for SELinux compatibility)
-  containers.podman.podman_container:
-    name: go-builder
-    image: "golang:1.19"
-    debug: true
-    pids_limit: -1
-    log_level: "info"
-    command: make -C /opcap build OPCAP_VERSION={{ opcap_version }}
-    detach: false
-    tty: true
-    rm: true
-    volume:
-      - "{{ opcap_dir.path }}/opcap/:/opcap:Z"
+  # Launching a container to build the opcap binary.
+  # The directory where the repository has been cloned is bound as a volume.
+  # The 'Z' option is for SELinux compatibility.
+  command:
+    cmd: >
+      podman run --name go-builder --rm -it
+      --log-level info --pids-limit=0
+      -v {{ opcap_dir.path }}/opcap/:/opcap:Z
+      golang:1.19 make -C /opcap build OPCAP_VERSION={{ opcap_version }}
   register: opcap_build
   retries: 4
   delay: 10
