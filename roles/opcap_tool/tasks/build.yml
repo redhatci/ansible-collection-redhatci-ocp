@@ -1,34 +1,19 @@
 ---
-- name: "Clone opcap repository"  # noqa: latest[git]
-  ansible.builtin.git:
-    repo: "{{ opcap_repo }}"
-    dest: "{{ opcap_dir.path }}/opcap"
-  register: git_clone_result
-  until: git_clone_result is succeeded
-  retries: 6
-  delay: 10
+- name: Ensure bin directory exists
+  ansible.builtin.file:
+    path: "{{ opcap_dir.path }}/opcap/bin"
+    state: directory
+    mode: "0755"
 
-- name: "Use Golang container to build opcap"
-  # Launching a container to build the GO bin Dir where the repo has been
-  # cloned is bound as a volume (with option Z for SELinux compatibility)
-  containers.podman.podman_container:
-    name: go-builder
-    image: "golang:1.19"
-    debug: true
-    pids_limit: -1
-    log_level: "info"
-    command: make -C /opcap build OPCAP_VERSION={{ opcap_version }}
-    detach: false
-    tty: true
-    rm: true
-    volume:
-      - "{{ opcap_dir.path }}/opcap/:/opcap:Z"
-  register: opcap_build
-  retries: 4
-  delay: 10
-  until: opcap_build is not failed
+- name: Download opcap release
+  vars:
+    opcap_archi: "{{ 'linux-amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
+  ansible.builtin.get_url:
+    url: "{{ opcap_download_url }}/v{{ opcap_version }}/opcap-{{ opcap_archi }}"
+    dest: "{{ opcap_dir.path }}/opcap/bin/opcap"
+    mode: "0755"
 
-- name: "Check opcap bin"
+- name: Check opcap bin
   ansible.builtin.command:
     cmd: >
       ./bin/opcap version
