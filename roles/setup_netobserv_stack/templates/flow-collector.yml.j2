@@ -1,0 +1,113 @@
+apiVersion: flows.netobserv.io/v1beta1
+kind: FlowCollector
+metadata:
+  name: "cluster"
+spec:
+  namespace: "netobserv"
+  deploymentModel: DIRECT
+  agent:
+    ebpf:
+      excludeInterfaces:
+        - lo
+      imagePullPolicy: IfNotPresent
+      interfaces: []
+      logLevel: info
+      privileged: {{ setup_netobserv_stack_agent_privileged }}
+      resources:
+        limits:
+          memory: "{{ setup_netobserv_stack_agent_limits_memory }}"
+        requests:
+          cpu: "{{ setup_netobserv_stack_agent_cpu }}"
+          memory: "{{ setup_netobserv_stack_agent_memory }}"
+      sampling: {{ setup_netobserv_stack_sampling }}
+    type: EBPF
+  consolePlugin:
+    autoscaler:
+      maxReplicas: {{ setup_netobserv_stack_console_max_replicas }}
+      metrics:
+        - resource:
+            name: cpu
+            target:
+              averageUtilization: {{ setup_netobserv_stack_console_avg_utilization }}
+              type: Utilization
+          type: Resource
+      minReplicas: 1
+    enable: true
+    imagePullPolicy: IfNotPresent
+    logLevel: info
+    port: 9001
+    portNaming:
+      enable: true
+      portNames:
+        "3100": loki
+    quickFilters:
+      - default: true
+        filter:
+          dst_namespace!: openshift-,netobserv
+          src_namespace!: openshift-,netobserv
+        name: Applications
+      - filter:
+          dst_namespace: openshift-,netobserv
+          src_namespace: openshift-,netobserv
+        name: Infrastructure
+      - default: true
+        filter:
+          dst_kind: Pod
+          src_kind: Pod
+        name: Pods network
+      - filter:
+          dst_kind: Service
+        name: Services network
+    register: true
+    replicas: 1
+    resources:
+      limits:
+        memory: "{{ setup_netobserv_stack_console_limits_memory }}"
+      requests:
+        cpu: "{{ setup_netobserv_stack_console_cpu }}"
+        memory: "{{ setup_netobserv_stack_console_memory }}"
+  loki:
+    authToken: FORWARD
+    statusUrl: "https://netobserv-loki-query-frontend-http.netobserv.svc:3100/"
+    tenantID: network
+    timeout: 10s
+    tls:
+      caCert:
+        certFile: service-ca.crt
+        name: netobserv-loki-gateway-ca-bundle
+        namespace: "netobserv"
+        type: configmap
+      enable: true
+      insecureSkipVerify: {{ setup_netobserv_stack_loki_tls_insecure_skip_verify }}
+      userCert:
+        namespace: "netobserv"
+    url: "https://netobserv-loki-gateway-http.netobserv.svc:8080/api/logs/v1/{{ setup_netobserv_stack_bucket }}"
+  processor:
+    conversationHeartbeatInterval: 30s
+    debug: {}
+    healthPort: 8080
+    imagePullPolicy: IfNotPresent
+    logLevel: info
+    logTypes: FLOWS
+    metrics:
+      disableAlerts: []
+      ignoreTags:
+        - egress
+        - packets
+        - nodes-flows
+        - namespaces-flows
+        - workloads-flows
+        - namespaces
+      server:
+        port: 9102
+        tls:
+          insecureSkipVerify: {{ setup_netobserv_stack_loki_tls_insecure_skip_verify }}
+          type: DISABLED
+    port: 2055
+    profilePort: 6060
+    resources:
+      limits:
+        memory: "{{ setup_netobserv_stack_processor_limits_memory }}"
+      requests:
+        cpu: "{{ setup_netobserv_stack_processor_cpu }}"
+        memory: "{{ setup_netobserv_stack_processor_memory }}"

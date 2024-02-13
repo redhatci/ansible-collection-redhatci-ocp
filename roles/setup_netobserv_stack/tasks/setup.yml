@@ -1,0 +1,57 @@
+---
+- name: Create the Namespace
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "netobserv"
+        labels:
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+          pod-security.kubernetes.io/enforce: "baseline"
+          pod-security.kubernetes.io/enforce-version: "latest"
+
+- name: Setting Object Storage authentication
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: netobserv-loki
+        namespace: "netobserv"
+      stringData:
+        access_key_id: "{{ setup_netobserv_stack_access_key_id }}"
+        access_key_secret: "{{ setup_netobserv_stack_access_key_secret }}"
+        bucketnames: "{{ setup_netobserv_stack_bucket }}"
+        endpoint: "{{ setup_netobserv_stack_endpoint }}"
+        region: "{{ setup_netobserv_stack_region }}"
+
+- name: Create the NetObservability Loki Stack
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: loki.grafana.com/v1
+      kind: LokiStack
+      metadata:
+        name: netobserv-loki
+        namespace: "netobserv"
+      spec:
+        size: "{{ setup_netobserv_stack_loki_size }}"
+        storage:
+          schemas:
+            - version: v12
+              effectiveDate: "{{ ansible_date_time.date }}"
+          secret:
+            name: netobserv-loki
+            type: s3
+        storageClassName: "{{ setup_netobserv_stack_storage_class }}"
+        tenants:
+          mode: "openshift-network"
+
+- name: Configuring RBACs
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'templates/rbacs.yml.j2') }}"
+
+- name: Create the Flow Collector
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'templates/flow-collector.yml.j2') }}"
+...

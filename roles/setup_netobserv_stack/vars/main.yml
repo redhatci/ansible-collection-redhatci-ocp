@@ -1,0 +1,13 @@
+---
+pvcs:
+  - { kind: 'PersistentVolumeClaim', name: 'storage-netobserv-loki-compactor-0', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'storage-netobserv-loki-index-gateway-0', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'storage-netobserv-loki-index-gateway-1', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'storage-netobserv-loki-ingester-0', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'storage-netobserv-loki-ingester-1', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'wal-netobserv-loki-ingester-0', apiVer: 'v1' }
+  - { kind: 'PersistentVolumeClaim', name: 'wal-netobserv-loki-ingester-1', apiVer: 'v1' }
+
+# Minimal OCP version supported by the role
+ocp_supported: 4.12
+...
