@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.3.EPOCH
+Version:        0.4.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -12,8 +12,21 @@ URL:            %{forgeurl}
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  ansible-packaging
-
 BuildArch:      noarch
+
+Requires: ansible-collection-ansible-posix
+Requires: ansible-collection-ansible-utils
+Requires: ansible-collection-community-general
+Requires: ansible-collection-community-kubernetes
+Requires: ansible-collection-community-libvirt
+Requires: ansible-collection-containers-podman
+Requires: git
+Requires: jq
+Requires: podman
+Requires: python3-jmespath
+Requires: python3-netaddr
+Requires: python3-pyyaml
+Requires: skopeo
 
 %description
 %{summary}.
@@ -37,6 +50,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Feb 12 2024 Tony Garcia <tonyg@redhat.com> - 0.4.EPOCH-VER
+- Add requirements
+
 * Tue Nov 21 2023 Frederic Lepied <flepied@redhat.com> 0.3.EPOCH-VERS
 - force a rebuild with a higher Y
 
