@@ -1,0 +1,13 @@
+name = "minimal-microshift"
+
+description = ""
+version = "0.0.1"
+modules = []
+groups = []
+
+[[packages]]
+name = "microshift"
+version = "{{ microshift_generate_iso_microshift_version | default('*') }}"
+
+[customizations.services]
+enabled = ["microshift"]
