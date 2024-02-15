@@ -1,6 +1,5 @@
 ---
-
-- name: "Validate parameters"
+- name: Validate parameters
   ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"
@@ -9,22 +8,22 @@
     - opcap_catalog_source_namespace
     - opcap_output_dir
 
-- name: "Create tmp dir for Opcap tool"
+- name: Create tmp dir for opcap tool
   ansible.builtin.tempfile:
     state: directory
     prefix: opcap_tool.
   register: opcap_dir
 
-- name: "Build opcap from source"
+- name: Download opcap using release link
   ansible.builtin.include_tasks: build.yml
 
-- name: "Display Available package in the catalog"
+- name: Display available package in the catalog
   ansible.builtin.command:
     cmd: >
       ./opcap list packages --catalogsource={{ opcap_target_catalog_source }}
     chdir: "{{ opcap_dir.path }}/opcap/bin"
 
-- name: "Run opcap check"
+- name: Run opcap check
   ansible.builtin.command:
     cmd: >
       ./opcap check --audit-plan={{ opcap_audit_plan }}
@@ -36,7 +35,7 @@
     chdir: "{{ opcap_dir.path }}/opcap/bin"
   register: opcap_check
 
-- name: "Copy Results in {{ opcap_output_dir }}"
+- name: "Copy results in {{ opcap_output_dir }}"
   ansible.builtin.copy:
     src: "{{ opcap_dir.path }}/opcap/bin/operator_install_report.json"
     dest: "{{ opcap_output_dir }}/{{ opcap_target_catalog_source }}_install_report.json"

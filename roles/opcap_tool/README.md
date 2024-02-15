@@ -16,7 +16,7 @@ Binary is copied in the output_dir at the end of the test in case of debugging.
 | opcap_catalog_source_namespace | true     | None                             | Namespace where is deployed the catalogSource tested                                                                                        |
 | opcap_output_dir               | true     | None                             | Directory where the results of the checks are copied                                                                                        |
 | opcap_packages                 | false    | None                             |  List of package(s) which limits audits and/or other flag(s) output, CSV format
-| opcap_version                  | false    | 0.0.1                            | Version that will be displayed when the binary is running                                                                                   |
+| opcap_version                  | false    | 0.2.1                            | Version that will be displayed when the binary is running                                                                                   |
 | opcap_repo                     | false    | https://github.com/opdev/opcap   | Repository used to clone and build the tool                                                                                                 |
 | opcap_audit_plan               | false    | "OperatorInstall,OperandInstall" | In order to test operands, the audit plan can be modified. Possible values: "OperatorInstall,OperandInstall,OperandCleanUp,OperatorCleanUp" |
 
