@@ -1,0 +1,81 @@
+---
+- name: Check for config file
+  ansible.builtin.stat:
+    path: "{{ setup_netobserv_stack_conf_file }}"
+  register: conf_file_stat
+  when:
+    - setup_netobserv_stack_conf_file | length
+
+- name: Fail if config file is not found
+  ansible.builtin.fail:
+    msg: "Config file {{ setup_netobserv_stack_conf_file }} not found"
+  when:
+    - setup_netobserv_stack_conf_file | length
+    - conf_file_stat is defined
+    - not conf_file_stat.stat.exists
+
+- name: Load the config file
+  ansible.builtin.include_vars:
+    file: "{{ setup_netobserv_stack_conf_file }}"
+  when:
+    - setup_netobserv_stack_conf_file | length
+    - conf_file_stat is defined
+    - conf_file_stat.stat.exists
+
+- name: Get cluster version
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: cluster_version
+  no_log: true
+
+- name: Fail when OCP version is not supported
+  vars:
+    current_ver_query: "history[?state=='Completed'] | [0].version"
+    full_ver: "{{ cluster_version.resources[0].status | json_query(current_ver_query) }}"  # noqa: jinja[invalid]
+    current_ver: "{{ full_ver.split('-')[0] }}"
+    ocp_version: "{{ current_ver }}"
+  ansible.builtin.fail:
+    msg: "OCP version must be >= {{ ocp_supported }}"
+  when: ocp_version is version( ocp_supported , "<")
+
+- name: Check for the Loki CRD
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: lokistacks.loki.grafana.com
+  register: loki_crd
+  no_log: true
+
+- name: Ensure Loki CRD is present
+  ansible.builtin.assert:
+    that:
+      - loki_crd.resources | list | count > 0
+    fail_msg: "Loki CRD is not present"
+
+- name: Check for the Network Observability
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: flowcollectors.flows.netobserv.io
+  register: nob_crd
+  no_log: true
+
+- name: Ensure Network Observability CRD is present
+  ansible.builtin.assert:
+    that:
+      - nob_crd.resources | list | count > 0
+    fail_msg: "Network Observability CRD is not present"
+
+- name: Get Storage Classes
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: StorageClass
+    name: "{{ setup_netobserv_stack_storage_class }}"
+  register: sc
+
+- name: Ensure the storage class is present
+  ansible.builtin.assert:
+    that:
+      - sc.resources | length > 0
+    fail_msg: "The defined storage is not present"
+...

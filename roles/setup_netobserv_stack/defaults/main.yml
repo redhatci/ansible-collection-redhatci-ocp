@@ -1,0 +1,25 @@
+---
+setup_netobserv_stack_conf_file: ""
+setup_netobserv_stack_action: 'install'
+setup_netobserv_stack_sampling: 50
+setup_netobserv_stack_agent_privileged: true
+setup_netobserv_stack_agent_memory: 50Mi
+setup_netobserv_stack_agent_cpu: 100m
+setup_netobserv_stack_agent_limits_memory: 800Mi
+setup_netobserv_stack_processor_memory: 100Mi
+setup_netobserv_stack_processor_cpu: 100m
+setup_netobserv_stack_processor_limits_memory: 800Mi
+setup_netobserv_stack_console_avg_utilization: 50
+setup_netobserv_stack_console_max_replicas: 3
+setup_netobserv_stack_console_limits_memory: 100Mi
+setup_netobserv_stack_console_cpu: 100m
+setup_netobserv_stack_console_memory: 50Mi
+setup_netobserv_stack_loki_tls_insecure_skip_verify: true
+setup_netobserv_stack_access_key_id: minioadmin
+setup_netobserv_stack_access_key_secret: minioadmin
+setup_netobserv_stack_bucket: network
+setup_netobserv_stack_endpoint: http://minio-service.minio:9000
+setup_netobserv_stack_region: us-east-1
+setup_netobserv_stack_loki_size: 1x.extra-small
+setup_netobserv_stack_storage_class: managed-nfs-storage
+...

@@ -1,0 +1,42 @@
+---
+- name: Confirm that pods are Running
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "netobserv"
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 9
+  delay: 10
+  no_log: true
+
+- name: Confirm that PVCs are bound
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "netobserv"
+    name: "{{ item.name }}"
+  register: pvc
+  until:
+    - pvc is defined
+    - pvc.resources is defined
+    - pvc.resources | length > 0
+    - pvc.resources[0].status.phase == "Bound"
+  retries: 12
+  delay: 10
+  loop: "{{ pvcs }}"
+  no_log: true
+
+- name: Confirm that the Flowcollector is Ready
+  community.kubernetes.k8s_info:
+    api_version: flows.netobserv.io/v1beta1
+    kind: FlowCollector
+    namespace: "netobserv"
+    name: "cluster"
+    wait: true
+    wait_condition:
+      type: Ready
+      status: true
+    wait_sleep: 2
+    wait_timeout: 300
+...
