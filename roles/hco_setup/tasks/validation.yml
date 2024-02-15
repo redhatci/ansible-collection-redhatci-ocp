@@ -1,0 +1,14 @@
+---
+- name: Check if the CNV CRD is present
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: kubevirts.kubevirt.io
+  register: kvirt_crd
+  no_log: true
+
+- name: Ensure CNV CRD CRD is present
+  ansible.builtin.assert:
+    that:
+      - kvirt_crd.resources | list | count > 0
+    fail_msg: "Container-native Virtualization CRD is not present"
+...

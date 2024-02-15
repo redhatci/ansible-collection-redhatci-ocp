@@ -14,7 +14,7 @@
   delay: 60
   until: result is not failed
 
-- name: test_ Check for hyperconverged  # noqa: name[casing]
+- name: Check for hyperconverged
   community.kubernetes.k8s_info:
     api_version: "hco.kubevirt.io/v1beta1"
     namespace: "{{ hs_ns }}"
@@ -29,7 +29,7 @@
   delay: 60
   until: result is not failed
 
-- name: test_ Check for hyperconverged operator  # noqa: name[casing]
+- name: Check for hyperconverged operator
   community.kubernetes.k8s_info:
     api_version: v1
     namespace: "{{ hs_ns }}"
