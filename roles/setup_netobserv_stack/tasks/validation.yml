@@ -40,6 +40,18 @@
     msg: "OCP version must be >= {{ ocp_supported }}"
   when: ocp_version is version( ocp_supported , "<")
 
+- name: "Check all API services are available"
+  community.kubernetes.k8s_info:
+    kind: APIService
+    api_version: apiregistration.k8s.io/v1
+  register: api_services
+  vars:
+    status_query: "resources[*].status.conditions[?type=='Available'].status"
+    api_services_status: "{{ api_services | json_query(status_query) | flatten | unique }}"
+  until: "'False' not in api_services_status"
+  retries: 6
+  delay: 10
+
 - name: Check for the Loki CRD
   community.kubernetes.k8s_info:
     kind: CustomResourceDefinition
