@@ -1,4 +1,7 @@
 ---
+- name: Validate requirements
+  ansible.builtin.include_tasks: validation.yml
+
 - name: Deploy Hyperconverged Operator
   ansible.builtin.include_tasks: deploy-hco.yml
   when:
