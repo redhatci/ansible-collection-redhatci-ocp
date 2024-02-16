@@ -8,9 +8,10 @@
 - name: Create certification project
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+    # TODO: check if templates could be merged or it's better as it is
     template_filename: "templates/create_project_{{ product_type }}.json.j2"
   ansible.builtin.uri:
-    url: "{{ create_project_url }}"
+    url: "{{ catalog_url }}/projects/certification"
     method: POST
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"

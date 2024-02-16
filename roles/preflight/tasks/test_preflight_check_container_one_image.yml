@@ -23,6 +23,8 @@
     - name: "Fail if submission setup is not consistent for {{ current_operator_image }}"
       ansible.builtin.fail:
         msg: |
+          operator.create_container_project: {{ operator.create_container_project }}
+          operator.pyxis_container_identifier: {{ operator.pyxis_container_identifier }}
           If you want to reuse the existing cert project, provide its ID pyxis_container_identifier.
           If you want to create a new cert project for container, set create_container_project to true.
           Doing both at once makes your intentions unclear.

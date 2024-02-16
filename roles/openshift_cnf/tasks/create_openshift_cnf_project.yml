@@ -10,9 +10,4 @@
     name: redhatci.ocp.create_certification_project
     tasks_from: create_project
   when: cnf.create_cnf_project | default(false) | bool
-
-- name: Set Openshift-cnf project to store new projects for later merging with existing IDs
-  ansible.builtin.set_fact:
-    new_openshift_cnf_projects: "{{ new_openshift_cnf_projects | default([]) + [cert_project_id] }}"
-  when: cert_project_id is defined
 ...

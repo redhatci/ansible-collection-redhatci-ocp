@@ -1,9 +1,27 @@
 ---
-- name: Create certification project for the operator
-  ansible.builtin.include_tasks: create_operator_project.yml
+# TODO: generalize this task for all project types
+- name: Handle the situation when cert project already exists
+  ansible.builtin.include_tasks: check_if_container_project_exists.yml
+  when:
+    - product_type == 'container'
+    - check_for_existing_projects | bool
+
+- name: Get GitHub username from provided token
+  ansible.builtin.include_tasks: get-gh-username.yml
   when: product_type == 'operator'
 
-- name: Create certification project for the container
-  ansible.builtin.include_tasks: create_container_project.yml
-  when: product_type == 'container'
+- name: Create cert project
+  ansible.builtin.include_tasks: create_project.yml
+
+- name: Update the project with company info when cert_settings is defined
+  ansible.builtin.include_tasks: update_project.yml
+  when:
+    - cert_settings is defined
+    - cert_project_id | default('') | length
+
+- name: Attach all product listings
+  ansible.builtin.include_tasks: attach_product_listings.yml
+  when:
+    - cert_listings is defined
+    - cert_project_id | default('') | length
 ...

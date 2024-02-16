@@ -12,7 +12,4 @@
 - name: Check if Helm Chart project exists in the same org
   ansible.builtin.include_tasks: check_if_helmchart_project_exists_same_org.yml
   when: helmchart_to_certify is defined
-
-- name: Check if container project exists in the other org
-  ansible.builtin.include_tasks: check_if_container_project_exists_other_org.yml
 ...

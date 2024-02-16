@@ -1,0 +1,41 @@
+---
+- name: Ensure organization_id is defined
+  ansible.builtin.assert:
+    that: organization_id is defined
+    fail_msg: "The organization_id variable is not defined"
+
+- name: Get all non-archived certification projects for organization
+  vars:
+    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
+  ansible.builtin.uri:
+    # Filter out the archived projects
+    url: >
+      {{ catalog_url }}/vendors/org-id/{{ organization_id }}/projects/certification?filter=project_status%3D%3Dactive&page_size={{ page_size }}&page=0
+    method: GET
+    headers:
+      X-API-KEY: "{{ pyxis_apikey }}"
+    body_format: json
+    status_code: 200
+    timeout: 120
+  register: cert_project_list_output
+  retries: 2
+  delay: 10
+  until: not cert_project_list_output.failed
+
+- name: "Projects already linked to the PL {{ pyxis_product_list_identifier }}"
+  vars:
+    query: "[?product_listings != `null` && contains(product_listings, '{{ pyxis_product_list_identifier }}')] | []._id"
+  ansible.builtin.set_fact:
+    prev_projects: "{{ cert_project_list_output.json.data | json_query(query) }}"
+  when: cert_project_list_output.json.data | length
+
+- name: "Append the current project into the list to link to PL"
+  ansible.builtin.set_fact:
+    all_cert_projects: "{{ prev_projects | default([]) + [cert_project_id] }}"
+
+- name: Ensure that all_cert_projects is not empty
+  ansible.builtin.assert:
+    that: all_cert_projects | length
+    fail_msg: "all_cert_projects should not be empty, please debug"
+    success_msg: "all_cert_projects: {{ all_cert_projects }}"
+...
