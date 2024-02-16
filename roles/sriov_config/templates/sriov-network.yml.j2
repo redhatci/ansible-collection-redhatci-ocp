@@ -5,7 +5,7 @@ metadata:
   namespace: openshift-sriov-network-operator
 spec:
 {% if sriov.network.capabilities is defined %}
-  capabilities: "{{ sriov.network.capabilities }}"
+  capabilities: {{ sriov.network.capabilities | to_json }}
 {% endif %}
 {% if sriov.network.ipam is defined %}
   ipam: "{{ sriov.network.ipam }}"
