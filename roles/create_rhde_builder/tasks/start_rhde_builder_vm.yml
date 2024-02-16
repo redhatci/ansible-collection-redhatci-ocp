@@ -1,0 +1,36 @@
+---
+- name: Start the domain {{ rhde_builder_vm_name }}
+  become: true
+  ansible.builtin.command: >-
+    virt-install --name {{ rhde_builder_vm_name }}
+      --hvm --memory=4096 --vcpus=2
+      --disk {{ rhde_builder_image_file }},format=qcow2,bus=scsi
+      --controller type=scsi,model=virtio-scsi
+      --network bridge=virbr0,model=virtio
+      --os-variant=rhel{{ rhde_builder_rhel_version.split('.')[0] }}-unknown
+      --nographics --noautoconsole --import
+      --cloud-init ssh-key={{ rhde_builder_ssh_pubkey }},disable=no
+  changed_when: true
+
+- name: Wait for domain to be started {{ rhde_builder_vm_name }}
+  become: true
+  community.libvirt.virt:
+    name: "{{ rhde_builder_vm_name }}"
+    command: status
+  register: rhde_builder_vm_status
+  until: "rhde_builder_vm_status.status == 'running'"
+  retries: 30
+  delay: 1
+
+- name: Add domain to the inventory {{ rhde_builder_vm_name }}
+  ansible.builtin.import_tasks: add_rhde_builder_vm_to_inventory.yml
+
+- name: Register to RHSM {{ rhde_builder_vm_name }}
+  delegate_to: "{{ rhde_builder_vm_name }}"
+  delegate_facts: true
+  community.general.redhat_subscription:
+    org_id: "{{ rhde_builder_rhsm_org_id }}"
+    activationkey: "{{ rhde_builder_rhsm_activation_key }}"
+    release: "{{ rhde_builder_rhel_version }}"
+    state: "present"
+...

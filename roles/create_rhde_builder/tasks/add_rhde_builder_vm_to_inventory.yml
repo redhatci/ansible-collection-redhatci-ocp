@@ -1,0 +1,27 @@
+---
+- name: Wait for IP address for domain {{ rhde_builder_vm_name }}
+  become: true
+  ansible.builtin.shell: >-
+    set -o pipefail;
+    virsh domifaddr {{ rhde_builder_vm_name }} --source arp |
+      awk '/ipv4/ { gsub("/.*", "", $4); print $4 }'
+  register: rhde_builder_ip_address
+  until: "rhde_builder_ip_address.stdout_lines"
+  retries: 60
+  delay: 1
+  changed_when: true
+
+- name: Register a new ansible host for the domain {{ rhde_builder_vm_name }}
+  ansible.builtin.add_host:
+    name: "{{ rhde_builder_vm_name }}"
+    ansible_host: "{{ rhde_builder_ip_address.stdout }}"
+    ansible_user: root
+    ansible_ssh_private_key_file: "{{ rhde_builder_ssh_privkey }}"
+    ansible_ssh_command_args: "-o StrictHostKeyChecking=no"
+    groups: rhde_builder
+
+- name: Get facts for {{ rhde_builder_vm_name }}
+  ansible.builtin.setup:
+  delegate_to: "{{ rhde_builder_vm_name }}"
+  delegate_facts: true
+...

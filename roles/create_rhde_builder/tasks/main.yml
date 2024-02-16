@@ -1,0 +1,29 @@
+---
+- name: Setup host environment
+  become: true
+  block:
+    - name: "Install virt-manager"
+      ansible.builtin.package:
+        name: "{{ virt_packages }}"
+        state: present
+
+    - name: Start libvirtd
+      ansible.builtin.service:
+        name: libvirtd
+        state: started
+
+- name: Start the default virsh network
+  become: true
+  community.libvirt.virt_net:
+    name: default
+    state: active
+
+- name: Cleanup previous RHDE VM / Image
+  ansible.builtin.import_tasks: cleanup_rhde_builder.yml
+
+- name: Prepare RHDE virt image
+  ansible.builtin.import_tasks: prepare_rhde_virt_image.yml
+
+- name: Start RHDE builder VM
+  ansible.builtin.import_tasks: start_rhde_builder_vm.yml
+...

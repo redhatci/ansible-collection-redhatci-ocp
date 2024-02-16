@@ -48,6 +48,7 @@ Name | Description
 [redhatci.ocp.create_certification_project](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_certification_project/README.md) | Creation of a container certification project
 [redhatci.ocp.create_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_cluster/README.md) | Creates a cluster definition in an on-prem assisted installer instance.
 [redhatci.ocp.create_day2_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_day2_cluster/README.md) | Creates an add-hosts cluster definition in an on-prem assisted installer instance which can be used to add day2 nodes to the cluster.
+[redhatci.ocp.create_rhde_builder](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_rhde_builder/README.md) | Create a VM ready for building RHDE images.
 [redhatci.ocp.create_vms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_vms/README.md) | Provisions libvirt network, storage pools and the KVM Nodes.
 [redhatci.ocp.create_helmchart](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_helmchart/README.md) | Creation of a Helm Chart certification project
 [redhatci.ocp.create_pr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_pr/README.md) | Pull-Request handling for helm chart certification and operator bundle certification.
