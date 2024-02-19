@@ -1,4 +1,7 @@
 ---
+- name: Resources cleanup
+  include_tasks: cleanup.yml
+
 - name: Create the Namespace
   community.kubernetes.k8s:
     definition:

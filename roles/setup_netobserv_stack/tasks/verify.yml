@@ -36,7 +36,7 @@
     wait: true
     wait_condition:
       type: Ready
-      status: true
+      status: "True"
     wait_sleep: 2
     wait_timeout: 300
 ...

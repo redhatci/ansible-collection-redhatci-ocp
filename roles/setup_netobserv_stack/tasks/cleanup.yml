@@ -1,23 +1,11 @@
 ---
-- name: Get PVCs in the namespace
-  community.kubernetes.k8s_info:
-    api_version: v1
-    kind: PersistentVolumeClaim
-    namespace: "netobserv"
-  register: pvc_info
-
-- name: Delete PVCs
+- name: Delete the Flow collector
   community.kubernetes.k8s:
-    definition:
-      apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: "{{ item.metadata.name }}"
-        namespace: "{{ item.metadata.namespace }}"
-      spec: {}
+    api_version: flows.netobserv.io/v1beta1
+    kind: FlowCollector
+    name: "cluster"
     state: absent
-  loop: "{{ pvc_info.resources }}"
-  when: pvc_info.resources | length > 0
+    wait: true
 
 - name: Delete the namespace netobserv
   community.kubernetes.k8s:
@@ -25,4 +13,5 @@
     api: "v1"
     kind: "Namespace"
     name: "netobserv"
+    wait: true
 ...
