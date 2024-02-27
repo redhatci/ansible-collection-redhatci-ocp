@@ -12,8 +12,8 @@
         name: redhatci.ocp.check_resource
       vars:
         resource_to_check: "MachineConfigPool"
-        check_wait_retries: 60
-        check_wait_delay: 20
+        check_wait_retries: 90
+        check_wait_delay: 30
         check_reason: "Delete Image Sources in preflight role"
 
     - name: Remove preflight Image Source file
