@@ -14,7 +14,7 @@
 
 - name: "Download stable oc-mirror plugin"
   vars:
-    ocp_mirror_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/oc-mirror.tar.gz"
+    ocp_mirror_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.14/oc-mirror.tar.gz"
   ansible.builtin.unarchive:
     src: "{{ ocp_mirror_url }}"
     dest: "{{ image_dir }}"
