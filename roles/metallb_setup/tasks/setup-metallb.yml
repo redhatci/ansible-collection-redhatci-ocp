@@ -39,6 +39,11 @@
         namespace: "{{ mlb_namespace }}"
       spec:
         addresses: "{{ mlb_ipaddr_pool }}"
+  register: address_pool
+  until: address_pool is succeeded
+  retries: 6
+  delay: 10
+  no_log: true
 
 - name: "Setup BGP mode objects"
   when:
@@ -61,6 +66,11 @@
             echoMode: false
             passiveMode: true
             minimumTtl: 254
+      register: bfdprof
+      until: bfdprof is succeeded
+      retries: 6
+      delay: 10
+      no_log: true
 
     - name: "Create MetalLB BGP Peers"
       community.kubernetes.k8s:
@@ -69,6 +79,11 @@
       loop: "{{ mlb_bgp_peers }}"
       loop_control:
         loop_var: peer
+      register: bgppeer
+      until: bgppeer is succeeded
+      retries: 6
+      delay: 10
+      no_log: true
 
     - name: "Create MetalLB BGP Advertisements"
       vars:
@@ -90,6 +105,11 @@
       community.kubernetes.k8s:
         state: present
         definition: "{{ bgpadvert }}"
+      register: bgpadver
+      until: bgpadver is succeeded
+      retries: 6
+      delay: 10
+      no_log: true
 
 - name: "Create MetalLB L2 Advertisements"
   community.kubernetes.k8s:
@@ -103,6 +123,11 @@
       spec:
         ipAddressPools:
           - "{{ mlb_setup_name | default('metallb') }}"
+  register: l2adver
+  until: l2adver is succeeded
+  retries: 6
+  delay: 10
+  no_log: true
   when:
     - mlb_bgp_peers is undefined
 
