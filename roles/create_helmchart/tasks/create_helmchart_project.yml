@@ -14,14 +14,8 @@
 - name: Update the Helm Chart project with company info when cert_settings is defined
   ansible.builtin.include_role:
     name: create_certification_project
-    tasks_from: update_helmchart_project
+    tasks_from: update_project
   when:
     - cert_settings is defined
-    - cert_project_id is defined
-    - cert_project_id | length > 0
-
-- name: Set Helm Chart project to store new projects for later merging with existing IDs
-  ansible.builtin.set_fact:
-    new_helmchart_projects: "{{ new_helmchart_projects | default([]) + [cert_project_id] }}"
-  when: cert_project_id is defined
+    - cert_project_id | default('') | length
 ...

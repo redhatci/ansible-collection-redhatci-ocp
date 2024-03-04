@@ -10,7 +10,7 @@ Note: For the latest information on how the container product listing attachment
 Name                     | Default                                                                    | Description
 -------------------      | ------------                                                               | -------------
 connect_url              | https://connect.redhat.com/projects                                        | Mandatory; usually there is no need in redefining it. Certification UI link, you may need to change it to target UAT environment for the testing.
-create_project_url       | https://catalog.redhat.com/api/containers/v1/projects/certification        | Mandatory; usually there is no need in redefining it. Pyxis API to create certification project, you may need to change it to target UAT environment for the testing.
+catalog_url              | https://catalog.redhat.com/api/containers/v1                               | Mandatory; usually there is no need in redefining it. Pyxis API to create certification project, you may need to change it to target UAT environment for the testing.
 github_token_path        | undefined                                                                  | Mandatory when using `create_operator_project`. Path to GitHub token to be used for the operator certification project.
 organization_id          | None                                                                       | Mandatory when using `create_container_project`. Company ID to be used for the verification of container certification project.
 page_size                | 200                                                                        | Define a page size for Pyxis API queries. Number of results to retrieve in a single page.
@@ -58,10 +58,9 @@ repository_description     | "Add a description of project here"  | This will be
 
 Name                          | Default                              | Description
 ----------------------------- | ------------------------------------ | -------------
-pyxis_product_list_identifier | None                                 | Product-listing ID, it has to be created before [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing)
+pyxis_product_lists           | None                                 | A list of Product Listings; all of them must be created beforehand [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing). It could contain one or many PLs. If set, it will attach all PLs to both old and new certification projects.
 published                     | false                                | Boolean to enable publishing list of products
 type                          | "container stack"                    | String. Type of product list
-attach_product_listing        | false                                | If set to true, it would attach product-listing to all old + new cert projects that used same product-listing ID
 
 
 ## Example of configuration file
@@ -81,6 +80,21 @@ dci_component: ['8cef32d9-bb90-465f-9b42-8b058878780a']
 # if your registry is private.
 partner_creds: "/opt/pull-secrets/partner_config.json"
 
+# Optional; provide it when you need to submit test results.
+# This token is shared between all your projects.
+# To generate it: connect.redhat.com -> Product certification ->
+# Container API Keys -> Generate new key
+pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+
+# Required to create and update cert projects.
+# Check the instructions below on where to retrieve it
+organization_id: "12345678"
+
+# Optional; provide this token when using create_pr option
+# while creating operator or helm-chart project
+# Check the instructions below on how to create it
+github_token_path: "/opt/cache/dcicertbot-token.txt"
+
 # List of operators to certify,
 # you could provide many operators at once.
 preflight_operators_to_certify:
@@ -93,8 +107,8 @@ preflight_operators_to_certify:
     # Optional; provide it when you need to create
     # a new "Operator Bundle Image" and submit test results in it.
     create_operator_project: true
-    # Optional; use it to pass an image description to the created project
-    short_description: "Add operator image description here"
+    # Required when creating cert project
+    short_description: "Add 50+ characters image description here"
     # Optional; use it to automatically open cert PR
     # at the certified-operators repository
     create_pr: true
@@ -104,51 +118,33 @@ preflight_operators_to_certify:
 preflight_containers_to_certify:
   - container_image: "quay.io/my-container/bla-bla-image:v0.0.1"
     create_container_project: true
-    # Optional; use it to pass an image description to the created project
-    short_description: "Add description here"
+    # Required when creating cert project
+    short_description: "Add 50+ characters image description here"
 
 # Project certification setting (Optional)
 # This allows to fill the rest of the project settings after project creation
 # Any project for containers images certifications can use them
+# TODO: provide cert_settings example for every project type
 cert_settings:
-   auto_publish: false
-   build_categories: "Standalone image"
-   registry_override_instruct: "This are instructions of how to override settings"
-   email_address: "email@example.com"
-   application_categories: "Networking"
-   os_content_type: "Red Hat Universal Base Image (UBI)"
-   privileged: false
-   release_category: "Generally Available"
-   repository_description: "This is a test repo"
-
-# Any project for operators bundle certifications can use them
-cert_settings:
-   auto_publish: false
-   registry_override_instruct: "This are instructions of how to override settings"
-   email_address: "email@example.com"
-   application_categories: "Networking"
-   privileged: false
-   repository_description: "This is a test repo"
+  auto_publish: false
+  build_categories: "Standalone image"
+  registry_override_instruct: "These are instructions of how to override settings"
+  email_address: "email@example.com"
+  application_categories: "Networking"
+  os_content_type: "Red Hat Universal Base Image (UBI)"
+  privileged: false
+  release_category: "Generally Available"
+  repository_description: "This is a test repository"
 
 # Project certification list setting (Optional)
 cert_listings:
   published: false
   type: "container stack"
-  pyxis_product_list_identifier: "yyyyyyyyyyyyyyyyy"
-  attach_product_listing: false
-
-# Optional; provide it when you need to submit test results.
-# This token is shared between all your projects.
-# To generate it: connect.redhat.com -> Product certification ->
-# Container API Keys -> Generate new key
-pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
-
-# Optional; provide this token when using create_pr option
-github_token_path: "/opt/cache/dcicertbot-token.txt"
-
-# Only required when preflight_containers_to_certify.create_container_project is true
-organization_id: 12345678
+  pyxis_product_lists:
+    - "yyy"
+    - "xxx"
 ```
+
 ## GitHub token
 
 Please note that `github_token_path` is required when using `create_operator_project` project. It is used to setup proper permissions in the certification project.

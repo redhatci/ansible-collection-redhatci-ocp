@@ -6,8 +6,6 @@ Please note that the role `openshift_cnf` is currently a basic automation setup.
 
 The current backend behavior for attaching a product listing to newly created cert projects requires to include the <old_certs_list> and <new_cert_list>. This is because the product listing ID may have been used in both the old and new projects. To address this, we implemented an enhancement to query all old cert projects based on the product listing ID that was used in both lists. We then merge the results into a single array and attach the product listing ID to to all cert projects.
 
-Note: Previously, users could decide whether to attach a product listing to each cert project. However, this is no longer possible since the `attach_product_listing` parameter is now part of the `cert_listings`
-
 ## Global Variables
 As the new role openshift_cnf reuses some existing tasks, please refer to the description in the `create_certification_project` role for information on the shared global variables.
 
@@ -24,11 +22,11 @@ cnf_name                 | None                                                 
 
 Name                          | Default                              | Description
 ----------------------------- | ------------------------------------ | -------------
-pyxis_product_list_identifier | None                                 | Product-listing ID, it has to be created before. [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing)
+pyxis_product_lists           | None                                 | A list of Product Listings; all of them must be created beforehand [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing). It could contain one or many PLs. If set, it will attach all PLs to both old and new certification projects.
 published                     | false                                | Boolean to enable publishing list of products
 type                          | "container stack"                    | String. Type of product list
 email_address                 | "mail@example.com"                   | String. Email address is needed for creating openshift-cnf project
-attach_product_listing        | false                                | If set to true, it would attach product-listing to all old + new cert projects that used same product-listing ID
+
 
 
 ## Example Configuration of Openshift-cnf certification project creation
@@ -50,12 +48,17 @@ cnf_to_certify:
     create_cnf_project: true
 
 cert_listings:
-  #email_address is mandatory when creating openshift-cnf for vendor validation but does not hurt to define it
+  # TODO: check the comment with Andrew - mandatory or not mandatory?
+  # Looks like mandatory because cert_listings.email_address is used in the template
+  # create_certification_project/templates/create_project_openshift_cnf.json.j2
+  # TODO: could we delete this contact setup to merge openshift_cnf with other product types?
+  # email_address is mandatory when creating openshift-cnf for vendor validation but does not hurt to define it
   email_address: "email@example.com"
   published: false
   type: "container stack"
-  pyxis_product_list_identifier: "yyyyyyyyyyyyyyyyy" #7GC UDM
-  attach_product_listing: true
+  pyxis_product_lists:
+    - "xxxxxxxxxxxxxxxxxxxxxxxx"
+    - "yyyyyyyyyyyyyyyyyyyyyyyy"
 
 pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/pyxis-apikey.txt"
 dci_gits_to_components: []
