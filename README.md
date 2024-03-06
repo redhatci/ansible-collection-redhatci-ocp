@@ -140,7 +140,6 @@ Name | Type | Description
 [redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
 [redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
-[redhatci.ocp.virt]() | Module | A copy of the module [community.libvirt.virt](https://github.com/ansible-collections/community.libvirt) to manage libvirt
 
 ## License
 
