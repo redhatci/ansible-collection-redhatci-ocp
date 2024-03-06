@@ -167,6 +167,9 @@
         url: "{{ infra_env_reply.json.download_url }}"
         dest: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
         setype: httpd_sys_content_t
+      retries: 3
+      delay: 10
+      until: http_reply is not failed
       when: download | bool == True
       register: http_reply
       become: true
