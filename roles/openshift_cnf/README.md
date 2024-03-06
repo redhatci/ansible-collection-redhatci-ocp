@@ -18,6 +18,13 @@ create_cnf_project       | false                                                
 cnf_name                 | None                                                                       | If defined, it would create Openshift-cnf certification project for vendor validated, cnf_name format: `CNF25.8 + OCP4.12`
 
 
+## Variables to define for project settings under `cert_settings`
+
+Name                          | Default                              | Description
+----------------------------- | ------------------------------------ | -------------
+email_address                 | "mail@example.com"                   | String. Email address is needed for creating openshift-cnf project
+
+
 ## Variables to define for project settings under `cert_listings` main variable
 
 Name                          | Default                              | Description
@@ -25,8 +32,6 @@ Name                          | Default                              | Descripti
 pyxis_product_lists           | None                                 | A list of Product Listings; all of them must be created beforehand [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing). It could contain one or many PLs. If set, it will attach all PLs to both old and new certification projects.
 published                     | false                                | Boolean to enable publishing list of products
 type                          | "container stack"                    | String. Type of product list
-email_address                 | "mail@example.com"                   | String. Email address is needed for creating openshift-cnf project
-
 
 
 ## Example Configuration of Openshift-cnf certification project creation
@@ -47,13 +52,10 @@ cnf_to_certify:
   - cnf_name: "test-upf23.5 OCP4.11.5"
     create_cnf_project: true
 
-cert_listings:
-  # TODO: check the comment with Andrew - mandatory or not mandatory?
-  # Looks like mandatory because cert_listings.email_address is used in the template
-  # create_certification_project/templates/create_project_openshift_cnf.json.j2
-  # TODO: could we delete this contact setup to merge openshift_cnf with other product types?
-  # email_address is mandatory when creating openshift-cnf for vendor validation but does not hurt to define it
+cert_settings:
   email_address: "email@example.com"
+
+cert_listings:
   published: false
   type: "container stack"
   pyxis_product_lists:

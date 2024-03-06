@@ -1,11 +1,13 @@
 {
   "certification_status": "Started",
+  {% if cert_settings is defined and cert_settings.email_address is defined %}
   "contacts": [
     {
-      "email_address": "{{ cert_listings.email_address }}",
+      "email_address": "{{ cert_settings.email_address }}",
       "type": "Technical contact"
     }
   ],
+  {% endif %}
   "name": "{{ current_cnf_name }}",
   "project_status": "active",
   "type": "OpenShift-cnf"
