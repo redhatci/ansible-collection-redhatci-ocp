@@ -1,3 +1,4 @@
+---
 cert_vars_host_var_key: "{{ inventory_hostname }}"
 sushy_tools_port: 8082
 sushy_dir: "/opt/sushy-tools"
@@ -5,6 +6,7 @@ sushy_auth_dir: "{{ sushy_dir }}/auth"
 sushy_cert_dir: "{{ sushy_dir }}/cert"
 sushy_auth_file: "{{ sushy_auth_dir }}/htpasswd"
 sushy_data_dir: "{{ sushy_dir }}/data"
+sushy_libvirt_uri: "qemu:///system"
 sushy_packages_rhel9:
   - python3-devel
   - python3-pip
@@ -18,7 +20,7 @@ sushy_packages_rhel8:
   - libvirt-devel
 
 sushy_pip_packages:
-  - sushy-tools
+  - sushy-tools<1.1.0
   - libvirt-python
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
@@ -27,3 +29,4 @@ secure_sushy_tools: "{{ secure | default(true) }}"
 sushy_fqdn: "{{ ansible_fqdn }}"
 
 is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"
+...

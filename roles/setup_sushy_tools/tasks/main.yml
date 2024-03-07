@@ -36,8 +36,8 @@
         port: "{{ item.0 }}/tcp"
         state: enabled
         zone: "{{ item.1 }}"
-        permanent: yes
-        immediate: yes
+        permanent: true
+        immediate: true
       loop: "{{ [sushy_tools_port] | product(['internal', 'public']) | list }}"
 
     - name: Secure sushy tools
@@ -67,9 +67,9 @@
             owner: "{{ file_owner }}"
             group: "{{ file_group }}"
             mode: 0660
-            backup: yes
-            force: yes
-          become: True
+            backup: true
+            force: true
+          become: true
 
         - name: Generate self signed cert for sushy tools.
           ansible.builtin.include_role:
@@ -112,13 +112,13 @@
 
     - name: Reload systemd service
       systemd:
-        daemon_reexec: yes
+        daemon_reexec: true
 
     - name: Start sushy-tools service
       service:
         name: sushy-tools
         state: restarted
-        enabled: yes
+        enabled: true
 
     - name: Check sushy-tools service is active
       service:
