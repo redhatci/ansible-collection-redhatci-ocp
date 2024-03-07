@@ -1,17 +1,7 @@
 ---
-- name: Validate cert_listings settings required to attach product listing
-  ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required to attach product listing"
-    success_msg: "The parameter {{ item }} is present"
-  with_items:
-    - cert_listings.published
-    - cert_listings.type
-    - cert_listings.pyxis_product_lists
-
 - name: Loop over Product Listings and attach them all
   ansible.builtin.include_tasks: attach_one_product_listing.yml
-  loop: "{{ cert_listings.pyxis_product_lists }}"
+  loop: "{{ cert_item.pyxis_product_lists }}"
   loop_control:
     loop_var: pyxis_product_list_identifier
 ...

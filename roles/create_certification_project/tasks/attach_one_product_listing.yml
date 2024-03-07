@@ -2,7 +2,19 @@
 - name: "Build all_cert_projects list to attach to PL {{ pyxis_product_list_identifier }}"
   ansible.builtin.include_tasks: get_all_projects_for_product_listing.yml
 
-- name: Patch product list to attach Prod-List ID to container project
+- name: Check if PL is published
+  ansible.builtin.uri:
+    url: "{{ catalog_url }}/product-listings/id/{{ pyxis_product_list_identifier }}"
+    method: GET
+    headers:
+      X-API-KEY: "{{ lookup('file', pyxis_apikey_path) }}"
+    body_format: json
+    status_code: 200
+    timeout: 120
+  register: pl_published
+
+# PUT is not yet implemented by Pyxis, and we have to use PATCH
+- name: Patch PL to attach PL ID to container project
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
     template_filename: "templates/attach_product_listing.json.j2"

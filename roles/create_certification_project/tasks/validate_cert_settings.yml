@@ -5,8 +5,8 @@
     fail_msg: "The parameter {{ item }} is required to update cert project"
     success_msg: "The parameter {{ item }} is present"
   with_items:
-    - operator.short_description
-    - operator.short_description | length >= 50
+    - cert_item.short_description
+    - cert_item.short_description | length >= 50
     - cert_settings.auto_publish
     - cert_settings.email_address
     - cert_settings.build_categories
@@ -24,8 +24,8 @@
     fail_msg: "The parameter {{ item }} is required to update cert project"
     success_msg: "The parameter {{ item }} is present"
   with_items:
-    - operator.short_description
-    - operator.short_description | length >= 50
+    - cert_item.short_description
+    - cert_item.short_description | length >= 50
     - cert_settings.auto_publish
     - cert_settings.email_address
     - cert_settings.registry_override_instruct

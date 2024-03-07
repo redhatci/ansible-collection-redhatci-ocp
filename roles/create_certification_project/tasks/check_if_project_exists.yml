@@ -1,0 +1,5 @@
+---
+# Possible product types: container, operator, helmchart, cnf
+- name: Check if container project exists in the same org
+  ansible.builtin.include_tasks: "check_if_{{ product_type }}_project_exists.yml"
+...
