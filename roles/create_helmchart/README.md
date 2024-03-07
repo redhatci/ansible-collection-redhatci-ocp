@@ -64,13 +64,13 @@ helmchart_to_certify:
     create_helmchart_project: true
 
 cert_settings:
-   email_address: "mail@example.com"
-   distribution_method: "undistributed" #undistributed==>Web catalog only, external==> charts.openshift.io
-   github_usernames: "xusername"
-   application_categories: "Networking"
-   long_description: "This is a long description about this sample chart"
-   application_categories: "Networking"
-   distribution_instructions: "Instruction how to get this helm-chart"
+  email_address: "mail@example.com"
+  distribution_method: "undistributed" #undistributed==>Web catalog only, external==> charts.openshift.io
+  github_usernames: "xusername"
+  application_categories: "Networking"
+  long_description: "This is a long description about this sample chart"
+  application_categories: "Networking"
+  distribution_instructions: "Instruction how to get this helm-chart"
 
 cert_listings:
   published: false
