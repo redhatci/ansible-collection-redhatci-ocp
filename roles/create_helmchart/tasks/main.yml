@@ -1,27 +1,11 @@
 ---
 # TODO: this role should be merged with create_certification_project
-- name: Helm Chart Certification Project
-  block:
-    - name: Create Helm Chart Certification Project
-      vars:
-        current_chart_name: "{{ hc.chart_name }}"
-        helmchart:
-          create_helmchart_project: "{{ hc.create_helmchart_project | default('') }}"
-          short_description: "{{ hc.short_description | default('') }}"
-      ansible.builtin.include_tasks: create_helmchart_project.yml
-      loop: "{{ helmchart_to_certify }}"
-      loop_control:
-        loop_var: hc
-
-    - name: Attach all product listings
-      ansible.builtin.include_role:
-        name: redhatci.ocp.create_certification_project
-        tasks_from: attach_product_listings.yml
-      when:
-        - cert_listings is defined
-        - cert_project_id | default('') | length
-
-- name: Unset Helm Chart cert project ID to ensure no occasional reuse
-  ansible.builtin.set_fact:
-    cert_project_id: ""
+- name: Create certification projects in a loop
+  ansible.builtin.include_role:
+    name: create_certification_project
+  vars:
+    product_type: "helmchart"
+  loop: "{{ helmchart_to_certify }}"
+  loop_control:
+    loop_var: cert_item
 ...

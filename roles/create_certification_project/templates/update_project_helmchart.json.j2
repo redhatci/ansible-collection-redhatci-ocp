@@ -9,19 +9,19 @@
     "application_categories": [
     "{{ cert_settings.application_categories }}"
     ],
-    "chart_name": "{{ current_chart_name }}",
+    "chart_name": "{{ cert_item.chart_name }}",
     "distribution_instructions": "{{ cert_settings.distribution_instructions }}",
     "distribution_method": "{{ cert_settings.distribution_method }}",
     "github_usernames": [
     "{{ cert_settings.github_usernames }}"
     ],
     "long_description": "{{ cert_settings.long_description }}",
-    "short_description": "{{ helmchart.short_description }}"
+    "short_description": "{{ cert_item.short_description }}"
   },
   "marketplace": {
     "enablement_status": "ineligible"
   },
-  "name": "{{ current_chart_name }}",
+  "name": "{{ cert_item.chart_name }}",
   "project_status": "active",
   "type": "Helm Chart",
 }

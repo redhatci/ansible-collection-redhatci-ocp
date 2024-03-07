@@ -96,7 +96,7 @@
 
 - name: Create PR for Helm Chart Verifier
   ansible.builtin.include_tasks: helm_chart_verifier.yml
-  when: product_type == "helm"
+  when: product_type == "helmchart"
 
 - name: Create PR for Operator Bundle Certification
   ansible.builtin.include_tasks: bundle_operator.yml

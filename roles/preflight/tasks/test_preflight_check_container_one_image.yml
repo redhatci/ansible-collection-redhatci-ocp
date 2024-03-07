@@ -48,6 +48,7 @@
         name: redhatci.ocp.create_certification_project
       vars:
         product_type: "container"
+        cert_item: "{{ operator }}"
       when:
         - operator.create_container_project | default(false) | bool
         - operator.pyxis_container_identifier | default('') | length == 0

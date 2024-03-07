@@ -25,61 +25,47 @@ Note: Some variables are not mentioned since they are same as explained in `crea
 
 Name                     | Default                                                                    | Description
 -------------------      | ------------                                                               | -------------
-create_helmchart_project | false                                                                      | If set to true, it would create a new Helm Chart certification project.
 chart_name               | None                                                                       | If defined, it would create Helm Chart certification project, chart_name will be used as project and chart name
 repository               | None                                                                       | If defined, it will be used for chart_name, the value for this `repository` variable can be dummy but please give more meaningful as chart_name
 short_description        | None                                                                       | Define when create new Helm Chart and values of this variable is to describe specific detail about this chart
-
-
-## Variables to define for project settings under `cert_listings` main variable
-
-Name                          | Default                              | Description
------------------------------ | ------------------------------------ | -------------
-pyxis_product_lists           | None                                 | A list of Product Listings; all of them must be created beforehand [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing). It could contain one or many PLs. If set, it will attach all PLs to both old and new certification projects.
-published                     | false                                | Boolean to enable publishing list of products
-type                          | "container stack"                    | String. Type of product list
-
-
+pyxis_product_lists       | None                                                                      | Optional. A list of Product Listings; all of them must be created beforehand [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing). It could contain one or many PLs. If set, it will attach all PLs to both old and new certification projects.
 
 
 ## Example Configuration of Helm Chart certification project creation
 ```yaml
 ---
-dci_topic: OCP-4.11
+# Generic DCI config
+dci_topic: OCP-4.15
 dci_name: Automatic to create,update and attach certification Project for Helm Chart with DCI
 dci_configuration: Use DCI to Automate Helm Chart Project Creation
-check_for_existing_projects: true
 dci_config_dirs: [/etc/dci-openshift-agent]
+dci_gits_to_components: []
+
+# Certification-related config
+pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/demo-pyxis-apikey.txt"
 organization_id: 12345678
-do_must_gather: false
-page_size: 300
+
 helmchart_to_certify:
+  # Mandatory variables
   - repository: "https://github.com/xxxx/demochart1"
-    short_description: "This is a short description demochart1"
     chart_name: "demochart1"
-    create_helmchart_project: true
+    short_description: "This is a short description demochart1"
+    # Optional, define list of Product Listings
+    # if you want to attach PLs to your cert project
+    pyxis_product_lists:
+      - "xxxxxxxxxxxxxxxxxxxxxxxx"
+      - "yyyyyyyyyyyyyyyyyyyyyyyy"
   - repository: "https://github.com/xxxx/demochart2"
-    short_description: "This is a short description demochart2"
     chart_name: "demochart2"
-    create_helmchart_project: true
+    short_description: "This is a short 50+ characters description demochart2"
 
 cert_settings:
   email_address: "mail@example.com"
   distribution_method: "undistributed" #undistributed==>Web catalog only, external==> charts.openshift.io
   github_usernames: "xusername"
   application_categories: "Networking"
-  long_description: "This is a long description about this sample chart"
+  long_description: "This is a long 100+ characters description about this sample chart"
   application_categories: "Networking"
   distribution_instructions: "Instruction how to get this helm-chart"
-
-cert_listings:
-  published: false
-  type: "container stack"
-  pyxis_product_lists:
-    - "xxxxxxxxxxxxxxxxxxxxxxxx"
-    - "yyyyyyyyyyyyyyyyyyyyyyyy"
-
-pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/demo-pyxis-apikey.txt"
-dci_gits_to_components: []
 ...
 ```

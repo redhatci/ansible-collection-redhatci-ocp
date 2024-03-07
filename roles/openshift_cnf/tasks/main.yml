@@ -1,24 +1,11 @@
 ---
 # TODO: this role should be merged with create_certification_project
-- name: "Create Openshift-cnf Certification Project"
+- name: Create certification projects in a loop
+  ansible.builtin.include_role:
+    name: create_certification_project
   vars:
-    current_cnf_name: "{{ cc.cnf_name }}"
-    cnf:
-      create_cnf_project: "{{ cc.create_cnf_project | default('') }}"
-  ansible.builtin.include_tasks: create_openshift_cnf_project.yml
+    product_type: "cnf"
   loop: "{{ cnf_to_certify }}"
   loop_control:
-    loop_var: cc
-
-- name: Attach all product listings
-  ansible.builtin.include_role:
-    name: redhatci.ocp.create_certification_project
-    tasks_from: attach_product_listings.yml
-  when:
-    - cert_listings is defined
-    - cert_project_id | default('') | length
-
-- name: Unset Openshift-cnf cert project ID to ensure no occasional reuse
-  ansible.builtin.set_fact:
-    cert_project_id: ""
+    loop_var: cert_item
 ...

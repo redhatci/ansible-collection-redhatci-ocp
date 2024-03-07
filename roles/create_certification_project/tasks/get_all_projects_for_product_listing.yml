@@ -4,11 +4,11 @@
     that: organization_id is defined
     fail_msg: "The organization_id variable is not defined"
 
-- name: Get all non-archived certification projects for organization
+- name: Get all active certification projects for organization
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
   ansible.builtin.uri:
-    # Filter out the archived projects
+    # Only get projects with the active status
     url: >
       {{ catalog_url }}/vendors/org-id/{{ organization_id }}/projects/certification?filter=project_status%3D%3Dactive&page_size={{ page_size }}&page=0
     method: GET
@@ -19,7 +19,7 @@
     timeout: 120
   register: cert_project_list_output
   retries: 2
-  delay: 10
+  delay: 60
   until: not cert_project_list_output.failed
 
 - name: "Projects already linked to the PL {{ pyxis_product_list_identifier }}"

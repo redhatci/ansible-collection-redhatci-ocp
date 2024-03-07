@@ -34,6 +34,8 @@ create_container_project           | undefined        | Optional. If you use thi
 create_operator_project            | undefined        | Optional. If you use this parameter, DCI would automatically create "Operator Bundle Image project" for you using `pyxis_apikey_path`. `create_operator_project` and `pyxis_operator_identifier` are incompatible options, you have to choose one of them.
 create_pr                          | false                                                | Optional. Use this option if you'd like to create a certification PR at [certified-operators](https://github.com/redhat-openshift-ecosystem/certified-operators/pulls). Creation of such a PR is a part of operator certification process and required to publish the operator in the catalog. Please do not forget to provide `github_token_path` when using this option.
 merge_pr                           | false                                                | Optional. Use this option if you'd like to merge a certification PR at [certified-operators](https://github.com/redhat-openshift-ecosystem/certified-operators/pulls).
+pyxis_product_lists           | None                                 | A list of Product Listings; all of them must be created beforehand [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing). It could contain one or many PLs. If set, it will attach all PLs to both old and new certification projects.
+
 
 ## Two modes of certification
 
@@ -85,6 +87,9 @@ The idea is use one of them.
         # Optional; provide it when you need to create
         # a new "Container Image project" and submit test results in it.
         create_container_project: true
+        pyxis_product_lists:
+          - "65dc9e05f1f7e59bac573122"
+          - "65dc9dbb11956b89f14194e0"
 
     # Optional; provide it when you need to submit test results.
     # This token is shared between all your projects.

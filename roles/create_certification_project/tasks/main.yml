@@ -1,9 +1,16 @@
 ---
-# TODO: generalize this task for all project types
+# cert_item is a complex nested variable,
+# it could be container, operator, cnf, or helmchart
+- name: Validate cert_item to be defined
+  ansible.builtin.assert:
+    that: "{{ cert_item }} is defined"
+    fail_msg: "The parameter cert_item is required to create cert project"
+    success_msg: "The parameter {{ cert_item }} is present"
+
 - name: Handle the situation when cert project already exists
-  ansible.builtin.include_tasks: check_if_container_project_exists.yml
+  ansible.builtin.include_tasks: check_if_project_exists.yml
   when:
-    - product_type == 'container'
+    - product_type in ['container', 'helmchart', 'cnf']
     - check_for_existing_projects | bool
 
 - name: Get GitHub username from provided token
@@ -17,11 +24,15 @@
   ansible.builtin.include_tasks: update_project.yml
   when:
     - cert_settings is defined
+    # The only update for cnf project is to add email
+    # and it's done during the project creation
+    - product_type != 'cnf'
     - cert_project_id | default('') | length
 
 - name: Attach all product listings
   ansible.builtin.include_tasks: attach_product_listings.yml
   when:
-    - cert_listings is defined
+    - cert_item.pyxis_product_lists is defined
+    - cert_item.pyxis_product_lists | length > 0
     - cert_project_id | default('') | length
 ...
