@@ -79,19 +79,6 @@
       ansible.builtin.include_tasks: mirroring.yml
       when: dci_disconnected | default(false) | bool
 
-    # The main tests: containers
-    - name: Check container - Preflight check operator images with check container one by one
-      ansible.builtin.include_tasks: test_preflight_check_container.yml
-      loop: "{{ preflight_operators_to_check }}"
-      loop_control:
-        loop_var: operator
-
-    # The main tests: operators
-    - name: Check operator - Preflight check operators one by one
-      ansible.builtin.include_tasks: tests_preflight_check_operator.yml
-      loop: "{{ preflight_operators_to_check }}"
-      loop_control:
-        loop_var: operator
   always:
     - name: Teardown
       ansible.builtin.include_tasks: teardown.yml
