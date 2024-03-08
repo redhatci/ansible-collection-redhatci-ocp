@@ -74,7 +74,7 @@
         cmd: >
           set -x;
           {{ opm_auths }}
-          opm render {{ pc_source_catalog }} >
+          {{ pc_opm_cmd }} render {{ pc_source_catalog }} >
           index-packages
       register: prune_result
       changed_when: prune_result.rc == 0
@@ -110,7 +110,7 @@
 
     - name: "Validate the pruned index"
       ansible.builtin.shell: |
-        opm validate configs/
+        {{ pc_opm_cmd }} validate configs/
       args:
         chdir: "{{ pc_tmp_dir }}"
       register: validate_result
