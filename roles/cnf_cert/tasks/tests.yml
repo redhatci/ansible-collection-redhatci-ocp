@@ -27,6 +27,7 @@
   vars:
     tnf_partner_repo: "{{ (dci_local_registry | length) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
     support_image: "debug-partner:{{ support_image_version }}"
+    tnf_exec_ignore_errors: "{{ (test_network_function_version is version('v5.0.4', '>=') or test_network_function_version == 'HEAD') | ternary('false', 'true') }}"
   environment: "{{ tnf_env_vars | combine({'TNF_PARTNER_REPO': tnf_partner_repo, 'TNF_IMAGE': tnf_image, 'SUPPORT_IMAGE': support_image}) }}"
   ansible.builtin.shell: |
     set -x
@@ -39,7 +40,7 @@
     -i {{ tnf_image }} &> {{ test_network_function_project_name }}/dci-tnf-execution.log
   args:
     chdir: "{{ tnf_dir }}"
-  ignore_errors: true
+  ignore_errors: "{{ tnf_exec_ignore_errors | bool }}"
 
 # Clean images just after finishing the execution
 - name: Remove local tnf image
