@@ -1,7 +1,11 @@
 {
     "certification_status": "Started",
     "container": {
+{% if cert_project_id | default('') | length and preflight_dci_all_components_are_ga | default(True) %}
+      "auto_publish": true,
+{% else %}
       "auto_publish": false,
+{% endif %}
       "distribution_method": "external",
       "os_content_type": "Red Hat Universal Base Image (UBI)",
       "privileged": false,
