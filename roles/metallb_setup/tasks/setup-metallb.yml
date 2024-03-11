@@ -24,7 +24,7 @@
       - component = speaker
   register: pod_list
   until: pod_list | json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 9
+  retries: 18
   delay: 10
   no_log: true
 
