@@ -13,10 +13,14 @@ Requirements
 Role Variables
 --------------
 
-metallb: True or false. Set it to true to modify the Provisioning resource to allow the Bare Metal Operator to watch all namespaces
-database_storage_request: i.e 20Gi for the AgentService
-filesystem_storage_request: i.e 20Gi for AgentService
-image_storage_request: i.e 100Gi for the AgentService
+Variable | Type | Mandatory | Default | Descrition
+=========|======|===========|=========|============
+metallb | boolean | no | true | Set it to true to modify the Provisioning resource to allow the Bare Metal Operator to watch all namespaces.
+database_storage_request | bit size | no | 20Gi | Database storage size for the AgentService.
+filesystem_storage_request | bit size | no |  20Gi | Filesystem storage size for the AgentService.
+image_storage_request | bit size | no | 100Gi | Image storage for the AgentService.
+iog_configure_only | boolean | no | false | Set it to skip installing the Gitops Operator and run only the configuration actions.
+
 
 Dependencies
 ------------

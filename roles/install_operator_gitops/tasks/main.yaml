@@ -15,38 +15,6 @@
        --type merge -p '{"spec":{"watchAllNamespaces": true }}'
   when: metallb
 
-- name: Create namespace for GitOps
-  kubernetes.core.k8s:
-    api_version: v1
-    kind: Namespace
-    name: openshift-gitops
-
-- name: Create operator group for GitOps
-  kubernetes.core.k8s:
-    api_version: operators.coreos.com/v1
-    kind: OperatorGroup
-    name: gitops-operator-group
-    namespace: openshift-gitops
-    resource_definition:
-      spec:
-        installModeType: AllNamespaces
-
-- name: Find recommended version of GitOps if not defined
-  when: gitops_channel is not defined
-  block:
-    - name: Find recommended version of GitOps
-      kubernetes.core.k8s_info:
-        api_version: packages.operators.coreos.com/v1
-        kind: PackageManifest
-        name: openshift-gitops-operator
-        namespace: default
-      register: gitops_info
-
-    - name: Set GitOps channel as the default one
-      ansible.builtin.set_fact:
-        gitops_channel: "{{ gitops_info.resources[0].status.defaultChannel }}"
-
-
 - name: Create Agent Service config
   kubernetes.core.k8s:
     api_version: agent-install.openshift.io/v1beta1
@@ -73,20 +41,53 @@
             requests:
               storage: "{{ image_storage_request }}"
 
-- name: Sanity wait of 120 seconds
-  ansible.builtin.pause:  # TBD: Replace by proper check
-    seconds: 120
+- block:
+    - name: Create namespace for GitOps
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: openshift-gitops
 
-- name: Subscribe to GitOps
-  kubernetes.core.k8s:
-    api_version: operators.coreos.com/v1alpha1
-    kind: Subscription
-    name: openshift-gitops-operator
-    namespace: openshift-gitops
-    resource_definition:
-      spec:
-        channel: "{{ gitops_channel }}"
-        installPlanApproval: Automatic
+    - name: Create operator group for GitOps
+      kubernetes.core.k8s:
+        api_version: operators.coreos.com/v1
+        kind: OperatorGroup
+        name: gitops-operator-group
+        namespace: openshift-gitops
+        resource_definition:
+          spec:
+            installModeType: AllNamespaces
+
+    - name: Find recommended version of GitOps if not defined
+      when: gitops_channel is not defined
+      block:
+        - name: Find recommended version of GitOps
+          kubernetes.core.k8s_info:
+            api_version: packages.operators.coreos.com/v1
+            kind: PackageManifest
+            name: openshift-gitops-operator
+            namespace: default
+          register: gitops_info
+
+        - name: Set GitOps channel as the default one
+          ansible.builtin.set_fact:
+            gitops_channel: "{{ gitops_info.resources[0].status.defaultChannel }}"
+
+    - name: Sanity wait of 120 seconds
+      ansible.builtin.pause:  # TBD: Replace by proper check
+        seconds: 120
+
+    - name: Subscribe to GitOps
+      kubernetes.core.k8s:
+        api_version: operators.coreos.com/v1alpha1
+        kind: Subscription
         name: openshift-gitops-operator
-        source: redhat-operators
-        sourceNamespace: openshift-marketplace
+        namespace: openshift-gitops
+        resource_definition:
+          spec:
+            channel: "{{ gitops_channel }}"
+            installPlanApproval: Automatic
+            name: openshift-gitops-operator
+            source: redhat-operators
+            sourceNamespace: openshift-marketplace
+- when: not (iog_configure_only | bool)
