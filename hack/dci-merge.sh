@@ -107,7 +107,7 @@ for PR in $PRS; do
 
         if [[ upgrade =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Upgrade-Hints:\s*yes\s*" <<< "$DESC"; then
             UPGRADE=--upgrade
-        
+
             if [ -z "$VIRT" ]; then
                 VIRT=--virt
             fi
@@ -166,6 +166,9 @@ if [ -z "$VIRT" ]; then
         exit 0
     fi
     VIRT=--sno
+    if [ -n "$SNO_DCI_QUEUE" ]; then
+        DCI_QUEUE="$SNO_DCI_QUEUE"
+    fi
 fi
 
 # Copy the change to another directory to let test-runner own
