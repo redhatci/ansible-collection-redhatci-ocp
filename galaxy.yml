@@ -95,14 +95,7 @@ license_file: ''
 # value is a version range
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification).
 # Multiple version range specifiers can be set and are separated by ','
-dependencies:
-  ansible.posix: "*"
-  ansible.utils: "*"
-  community.crypto: "*"
-  community.general: "*"
-  community.kubernetes: "*"
-  community.libvirt: "*"
-  containers.podman: "*"
+dependencies: {}
 
 # The URL of the originating SCM repository
 repository: https://github.com/redhatci/ansible-collection-redhatci-ocp
