@@ -150,4 +150,23 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           check-unmerged-pr: true
+
+  check-docs:
+    name: Check documentation and README
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check roles are documented in main README
+        run: |
+          echo "# Missing roles in README" > ${GITHUB_STEP_SUMMARY}
+          for role in $(ls roles); do
+            if ! grep -q "^\[redhatci\.ocp\.${role}" README.md; then
+              echo "- Missing: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
+            fi
+          done
+          if grep -q Missing: ${GITHUB_STEP_SUMMARY}; then
+            exit 1
+          fi
 ...
