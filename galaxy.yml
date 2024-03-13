@@ -100,7 +100,7 @@ dependencies:
   "ansible.utils": "*"
   "community.crypto": "*"
   "community.general": "*"
-  "community.kubernetes": "*"
+  "community.kubernetes": "1.2.1"
   "community.libvirt": "*"
   "containers.podman": "*"
 
