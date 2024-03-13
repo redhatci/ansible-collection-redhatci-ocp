@@ -1,4 +1,8 @@
 ---
+- name: Task to test agent
+  debug: 
+    msg: "Fake task to replicate issue in pr#200"
+
 - name: Track development git repos
   ansible.builtin.include_tasks: track_dev_git_repo.yml
   loop: "{{ ic_dev_gits }}"
