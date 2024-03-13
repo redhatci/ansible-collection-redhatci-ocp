@@ -14,12 +14,13 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  ansible-packaging
 BuildArch:      noarch
 
-Requires: ansible-collection-ansible-posix
-Requires: ansible-collection-ansible-utils
-Requires: ansible-collection-community-general
-Requires: ansible-collection-community-kubernetes
-Requires: ansible-collection-community-libvirt
-Requires: ansible-collection-containers-podman
+# These must match pinned versions in galaxy.yml
+Requires: ansible-collection-ansible-posix < 1.6
+Requires: ansible-collection-ansible-utils < 2.7
+Requires: ansible-collection-community-general < 7.1
+Requires: ansible-collection-community-kubernetes < 1.3
+Requires: ansible-collection-community-libvirt < 1.3
+Requires: ansible-collection-containers-podman < 1.13
 Requires: git
 Requires: jq
 Requires: podman
