@@ -1,1 +1,3 @@
 ---
+
+czga_oc_tool_path: "{{ oc_tool_path | default('/usr/loca/bin/oc') }}"

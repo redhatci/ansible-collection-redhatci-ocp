@@ -22,3 +22,5 @@ Role Variables
 
 * ztp_site_generator_image
 * ztp_site_generator_version
+
+czga_oc_tool_path | string | no | {{ oc_tool_path | default('/usr/local/bin/oc) }} | Path to the OpenShift Command Line Interface binary.

@@ -2,7 +2,7 @@
 
 - name: Modify the HiveConfig resource to enable the feature gate for Assisted Installer
   ansible.builtin.shell: |
-    oc patch hiveconfig hive \
+    {{ iog_oc_tool_path }} patch hiveconfig hive \
        --type merge \
        -p '{"spec":{"targetNamespace":"hive",
             "logLevel":"debug",
@@ -11,7 +11,7 @@
 
 - name: Modify the Provisioning resource to allow the Bare Metal Operator to watch all namespaces
   ansible.builtin.shell: |
-    oc patch provisioning provisioning-configuration \
+    {{ iog_oc_tool_path }} patch provisioning provisioning-configuration \
        --type merge -p '{"spec":{"watchAllNamespaces": true }}'
   when: metallb
 
@@ -41,7 +41,9 @@
             requests:
               storage: "{{ image_storage_request }}"
 
-- block:
+- name: Optionally install the openshift-gitops-operator
+  when: not (iog_configure_only | bool)
+  block:
     - name: Create namespace for GitOps
       community.kubernetes.k8s:
         api_version: v1
@@ -90,4 +92,3 @@
             name: openshift-gitops-operator
             source: redhat-operators
             sourceNamespace: openshift-marketplace
-  when: not (iog_configure_only | bool)

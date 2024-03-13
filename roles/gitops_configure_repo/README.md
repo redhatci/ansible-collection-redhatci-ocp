@@ -13,7 +13,9 @@ Requirements
 Role Variables
 --------------
 
-gitlab_ssh_known_hosts: Should be the ssh known hosts. It is required by ArgoCD when working with a SSH key.
+Variable | Type | Required | Default | Descrition
+---------|------|-----------|---------|------------
+gitlab_ssh_known_hosts | String | yes | | Should be the ssh known hosts. It is required by ArgoCD when working with a SSH key.
 
 Dependencies
 ------------
