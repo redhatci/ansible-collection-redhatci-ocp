@@ -1,7 +1,7 @@
 ---
 - name: Check if override path is defined for extra openshift manifests
   set_fact:
-    extramanifestsopenshift_path: "{{ customize_extramanifestsopenshift_path | default( role_path + '/files/openshift' ) }}"
+    extramanifestsopenshift_path: "{{ customize_extramanifestsopenshift_path | default(role_path + '/files/openshift') }}"
 
 - name: Copy Dual-Stack related manifest
   copy:
