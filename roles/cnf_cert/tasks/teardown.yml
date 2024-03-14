@@ -16,6 +16,7 @@
   containers.podman.podman_image:
     name: "{{ tnf_image }}"
     state: absent
+  ignore_errors: true
 
 # Deleting resources created by the CNF Cert Suite to support the execution
 - name: Clean CNF Cert Suite resources
