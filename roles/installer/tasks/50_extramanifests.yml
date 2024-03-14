@@ -26,7 +26,7 @@
 
 - name: Check if override path is defined for extramanifests
   set_fact:
-    extramanifests_path: "{{ customize_extramanifests_path | default( role_path + '/files/manifests' ) }}"
+    extramanifests_path: "{{ customize_extramanifests_path | default(role_path + '/files/manifests') }}"
 
 - name: Add Manifests from files dir
   copy:
