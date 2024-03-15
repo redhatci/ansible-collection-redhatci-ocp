@@ -23,7 +23,7 @@
     - conf_file_stat.stat.exists
 
 - name: Get cluster version
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: config.openshift.io/v1
     kind: ClusterVersion
     name: version
@@ -41,7 +41,7 @@
   when: ocp_version is version( ocp_supported , "<")
 
 - name: "Check all API services are available"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: APIService
     api_version: apiregistration.k8s.io/v1
   register: api_services
@@ -53,7 +53,7 @@
   delay: 10
 
 - name: Check for the Loki CRD
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: lokistacks.loki.grafana.com
   register: loki_crd
@@ -66,7 +66,7 @@
     fail_msg: "Loki CRD is not present"
 
 - name: Check for the Network Observability
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: flowcollectors.flows.netobserv.io
   register: nob_crd
@@ -79,7 +79,7 @@
     fail_msg: "Network Observability CRD is not present"
 
 - name: Get Storage Classes
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: StorageClass
     name: "{{ setup_netobserv_stack_storage_class }}"

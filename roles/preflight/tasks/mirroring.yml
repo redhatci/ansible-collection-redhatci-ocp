@@ -44,7 +44,7 @@
     podman rmi {{ oo_index }}
 
 - name: Find ImageDigestMirrorSet in the cluster
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: config.openshift.io/v1
     kind: ImageDigestMirrorSet
   register: idms_res
@@ -77,7 +77,7 @@
   loop: "{{ (preflight_images + old_images) | unique }}"
 
 - name: Apply Image Source file
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('file', preflight_is_file) }}"
 
 - name: Wait for MCP status

@@ -1,6 +1,6 @@
 ---
 - name: "Get API request counts for a workload ns {{ deprecated_ns }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: APIRequestCount
     namespace: "{{ deprecated_ns }}"
   register: deprecated_api_apirequestcount

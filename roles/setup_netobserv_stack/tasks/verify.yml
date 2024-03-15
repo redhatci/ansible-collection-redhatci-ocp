@@ -1,6 +1,6 @@
 ---
 - name: Confirm that pods are Running
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "netobserv"
@@ -11,7 +11,7 @@
   no_log: true
 
 - name: Confirm that PVCs are bound
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: PersistentVolumeClaim
     namespace: "netobserv"
@@ -28,7 +28,7 @@
   no_log: true
 
 - name: Confirm that the Flowcollector is Ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: flows.netobserv.io/v1beta1
     kind: FlowCollector
     namespace: "netobserv"

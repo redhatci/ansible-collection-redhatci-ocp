@@ -1,6 +1,6 @@
 ---
 - name: Delete Image Source from cluster
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     definition: "{{ lookup('file', scorecard_is_file) }}"
 

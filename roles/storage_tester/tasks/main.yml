@@ -9,7 +9,7 @@
     - dci_disconnected | default(false) | bool
 
 - name: "Create storage-tester Namespace"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
     name: storage-tester
@@ -45,7 +45,7 @@
     - "tester-init-pv-job"
 
 - name: "Create PVC for Tester Cronjob RWO"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       kind: PersistentVolumeClaim
@@ -62,7 +62,7 @@
             storage: 1Gi
 
 - name: "Create a RWO PVC for filling ROX PVC"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       kind: PersistentVolumeClaim
@@ -79,12 +79,12 @@
             storage: 1Gi
 
 - name: "Initializing PV for ROX by writing a file in it"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     src: "{{ pre_work_directory.path }}/tester-init-pv-job.yaml"
 
 - name: "Wait for init job to be completed"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Job
     api_version: batch/v1
     namespace: storage-tester
@@ -99,7 +99,7 @@
     - init.resources[0].status.succeeded == 1
 
 - name: "Create ROX PVC from previous PVC"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     wait: true
     definition:
@@ -120,7 +120,7 @@
             storage: 1Gi
 
 - name: "Create PVC for Tester Cronjob RWX"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       kind: PersistentVolumeClaim
@@ -137,21 +137,21 @@
             storage: 1Gi
 
 - name: "Deploy Tester Cronjob RWO"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     src: "{{ pre_work_directory.path }}/tester-cronjob-rwo.yaml"
     apply: true
     state: present
     wait: true
 
 - name: "Deploy Tester Cronjob ROX"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     src: "{{ pre_work_directory.path }}/tester-cronjob-rox.yaml"
     apply: true
     state: present
     wait: true
 
 - name: "Deploy Tester Cronjob RWX"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     src: "{{ pre_work_directory.path }}/tester-cronjob-rwx.yaml"
     apply: true
     state: present

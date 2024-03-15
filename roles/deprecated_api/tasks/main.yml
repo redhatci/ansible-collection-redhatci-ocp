@@ -1,6 +1,6 @@
 ---
 - name: Discover all namespaces
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Namespace
   register: cluster_namespaces
 

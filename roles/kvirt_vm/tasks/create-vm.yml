@@ -1,6 +1,6 @@
 ---
 - name: Create the VM Namespace for {{ vm.name }}
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
@@ -12,7 +12,7 @@
           pod-security.kubernetes.io/enforce-version: "latest"
 
 - name: Create the VM {{ vm.name }}
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'templates/vm-template.yml.j2') }}"
 
 - name: Wait for VM to be in desired state {{ vm.name }}
@@ -21,7 +21,7 @@
       {%- if vm.running | default(kvirt_vm_running) %}
       Running{%- else %}
       Stopped{%- endif %}
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
     kind: VirtualMachine
     name: "{{ vm.name }}"

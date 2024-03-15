@@ -27,7 +27,7 @@
     seconds: 10
 
 - name: Monitor Hosted Cluster Control-Plane availability
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: hypershift.openshift.io/v1beta1
     kind: HostedCluster
     namespace: "{{ ah_clusters_ns }}"
@@ -46,7 +46,7 @@
   ansible.builtin.include_tasks: get-credentials.yml
 
 - name: Monitor Hosted Cluster Nodes availability
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: hypershift.openshift.io/v1beta1
     kind: HostedCluster
     namespace: "{{ ah_clusters_ns }}"

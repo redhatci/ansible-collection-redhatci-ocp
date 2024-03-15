@@ -12,7 +12,7 @@
     msg: CatalogSource {{ cs_name }}
 
 - name: Create CatalogSource
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: operators.coreos.com/v1alpha1
       kind: CatalogSource
@@ -26,7 +26,7 @@
         sourceType: "{{ cs_type }}"
 
 - name: Wait for CatalogSource to be Ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: operators.coreos.com/v1alpha1
     kind: CatalogSource
     name: "{{ cs_name }}"

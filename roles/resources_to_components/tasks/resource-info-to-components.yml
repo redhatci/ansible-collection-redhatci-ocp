@@ -1,7 +1,7 @@
 ---
 # ClusterServiceVersion resource uses a different API.
 - name: Get all resources from namespace
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: "\
       {% if resources.resource == 'ClusterServiceVersion' %}\
         operators.coreos.com/v1alpha1\

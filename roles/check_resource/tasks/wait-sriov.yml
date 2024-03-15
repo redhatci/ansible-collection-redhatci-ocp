@@ -5,7 +5,7 @@
     # SriovNetworkNodeState should be stable before that time under normal
     # circumstances
     - name: Wait till sriovnetworknodestate becomes ready
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: sriovnetwork.openshift.io/v1
         kind: SriovNetworkNodeState
       register: sriovnetnode

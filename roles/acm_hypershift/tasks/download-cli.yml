@@ -13,7 +13,7 @@
   until: result is not failed
 
 - name: Get route for hcp-cli
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Route
     name: hcp-cli-download
     namespace: multicluster-engine
