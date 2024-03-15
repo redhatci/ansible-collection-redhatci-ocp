@@ -3,14 +3,7 @@
   ansible.builtin.assert:
     that: "{{ organization_id }} is defined"
 
-- name: Set container image facts
-  ansible.builtin.set_fact:
-    image_name: "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[-1] }}"
-    repo_name: "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[1] }}"
-    registry_name: "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[0] }}"
-    repository_name: "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}"
-
-- name: Get certification projects for organization
+- name: Get certification cnf projects for the organization
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
   ansible.builtin.uri:
@@ -31,9 +24,9 @@
   ansible.builtin.set_fact:
     cert_project_data: "{{ cert_project_list_output.json.data | json_query(query_data) }}"  # noqa: jinja[invalid]
   vars:
-    query_data: "[?container.repository == '{{ repository_name }}']"
+    query_data: "[?name == '{{ cert_item.cnf_name }}']"
 
-- name: Set fact if name is already in an active certification project
+- name: "Set fact if is already in an active certification project"
   ansible.builtin.set_fact:
     cert_project_exists_own_org: true
   loop: "{{ cert_project_data }}"
@@ -41,23 +34,21 @@
     label: "{{ item._id }}"
   when:
     - cert_project_data | default([]) | length > 0
-    - item.container.registry == registry_name
-    - item.container.repository.split('/')[0] == repo_name
+    - item.name == cert_item.cnf_name
     - item.project_status == "active"
 
-- name: Notify if image is already in an active certification project
+- name: Notify if CNF is already in an active certification project
   ansible.builtin.debug:
     msg:
-      - "Image {{ registry_name }}/{{ repo_name }}/{{ image_name }} is in process to get certify in another project of this organization"
+      - "CNF Name {{ cert_item.cnf_name }} is in process to get certify in another project of this organization"
       - "Review the following projects: {{ item._id }}"
-      - "To continue archive the project or reach out to support to delete it."
+      - "To continue, archive the project or reach out to support to delete it."
   loop: "{{ cert_project_data }}"
   loop_control:
     label: "{{ item._id }}"
   when:
     - cert_project_exists_own_org | default(false) | bool
-    - item.container.registry == registry_name
-    - item.container.repository.split('/')[0] == repo_name
+    - item.name == cert_item.cnf_name
     - item.project_status == "active"
 
 - name: Set project ID to reuse it later

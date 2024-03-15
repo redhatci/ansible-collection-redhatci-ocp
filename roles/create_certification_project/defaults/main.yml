@@ -1,10 +1,8 @@
 ---
 catalog_url: "https://catalog.redhat.com/api/containers/v1"
 connect_url: "https://connect.redhat.com/projects"
-# Define a page size for API queries
-page_size: 200
+# TODO: generalize for operator projects
 check_for_existing_projects: false
-privileged: false
-auto_publish: false
-published: false
+# Page size for API query to retrieve the cert projects
+page_size: 200
 ...

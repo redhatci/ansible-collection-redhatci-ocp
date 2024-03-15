@@ -54,5 +54,6 @@
       create_pr: "{{ operator.create_pr | default(omit) }}"
       merge_pr: "{{ operator.merge_pr | default(omit) }}"
       short_description: "{{ operator.short_description | default(omit) }}"
+      pyxis_product_lists: "{{ operator.pyxis_product_lists | default(omit) }}"
   ansible.builtin.set_fact:
     preflight_operators_to_check: "{{ preflight_operators_to_check + [operator_to_check] }}"

@@ -54,14 +54,6 @@ application_categories     | "Networking"                         | (String) Up 
 privileged                 | false                                | false or true: false when the container is isolated from the host, and true when the container requires special Host level privileges.
 repository_description     | "Add a description of project here"  | This will be displayed on the container catalog repository overview page.
 
-## Variables to define for project settings under `cert_listings` main variable (Optional)
-
-Name                          | Default                              | Description
------------------------------ | ------------------------------------ | -------------
-pyxis_product_lists           | None                                 | A list of Product Listings; all of them must be created beforehand [See doc](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/product-listing). It could contain one or many PLs. If set, it will attach all PLs to both old and new certification projects.
-published                     | false                                | Boolean to enable publishing list of products
-type                          | "container stack"                    | String. Type of product list
-
 
 ## Example of configuration file
 
@@ -112,6 +104,10 @@ preflight_operators_to_certify:
     # Optional; use it to automatically open cert PR
     # at the certified-operators repository
     create_pr: true
+    # Product Listings to attach to the cert project (Optional)
+    pyxis_product_lists:
+      - "yyy"
+      - "xxx"
 
 # List of container images to certify,
 # you could provide multiple images to certify at once.
@@ -120,6 +116,10 @@ preflight_containers_to_certify:
     create_container_project: true
     # Required when creating cert project
     short_description: "Add 50+ characters image description here"
+    # Product Listings to attach to the cert project (Optional)
+    pyxis_product_lists:
+      - "yyy"
+      - "xxx"
 
 # Project certification setting (Optional)
 # This allows to fill the rest of the project settings after project creation
@@ -135,14 +135,6 @@ cert_settings:
   privileged: false
   release_category: "Generally Available"
   repository_description: "This is a test repository"
-
-# Project certification list setting (Optional)
-cert_listings:
-  published: false
-  type: "container stack"
-  pyxis_product_lists:
-    - "yyy"
-    - "xxx"
 ```
 
 ## GitHub token

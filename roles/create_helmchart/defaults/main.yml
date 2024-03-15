@@ -1,4 +1,4 @@
-page_size: 200
+---
 catalog_url: "https://catalog.redhat.com/api/containers/v1"
-published: false
+page_size: 200
 ...

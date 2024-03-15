@@ -11,7 +11,7 @@ github_token_path                   | undefined | true                        | 
 partner_name                        | undefined | true/false                  | Define this parameter only when opening PR for chart_verifier. Partner name to be used in the pull request title.
 partner_email                       | undefined | true/false                  | Define this parameter only when opening PR for chart_verifier. Email address to be used in the pull request.
 target_repository                   | undefined | true                        | GitHub repository where the pull request will be created.
-product_type                        | undefined | true                        | Product type. Either "helm" or "operator".
+product_type                        | undefined | true                        | Product type. Either "helmchart" or "operator".
 
 Those are the common variables used by both certification project.
 It includes tasks to generate an SSH key needed to push to Github repository and add it to the GitHub account.

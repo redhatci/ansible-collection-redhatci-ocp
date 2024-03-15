@@ -190,7 +190,7 @@
     name: redhatci.ocp.create_pr
   vars:
     product_name: "{{ chart_name }}"
-    product_type: "helm"
+    product_type: "helmchart"
     product_version: "{{ chart_version }}"
     fork_name: "charts-{{ chart_name }}-{{ chart_version }}"
     work_dir: "{{ work_chart_dir }}"
