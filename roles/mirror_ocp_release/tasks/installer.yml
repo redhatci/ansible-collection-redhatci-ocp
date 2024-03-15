@@ -14,6 +14,10 @@
     --command=openshift-baremetal-install
     --from {{ mor_pull_url }}
     --to "{{ mor_cache_dir }}/{{ mor_version }}"
+  register: extract_cmd
+  until: extract_cmd is succeeded
+  retries: 9
+  delay: 10
   when:
     - mor_force or not target.stat.exists
 
