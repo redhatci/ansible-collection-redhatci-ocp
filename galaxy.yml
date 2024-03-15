@@ -98,7 +98,7 @@ license_file: ''
 dependencies:
   "ansible.posix": "*"
   "ansible.utils": "*"
-  "community.general": "*"
+  "community.general": "7.0.1"
   "community.kubernetes": "1.2.1"
   "community.libvirt": "*"
   "containers.podman": "*"
