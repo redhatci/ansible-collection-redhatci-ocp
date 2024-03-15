@@ -4,19 +4,14 @@
   ansible.builtin.set_fact:
     tnf_logs_location: "{{ tnf_dir }}/{{ test_network_function_project_name }}"
 
-# There are three types of files to be submitted:
-# - Configuration files - tnf_config.yml
-# - Execution logs - dci-tnf-execution.log and cnf-certsuite.log, if exists
-# - Results of the execution (only generated if tnf execution was correct) -
+# Copy the results of the execution (only generated if tnf execution was correct) -
 #   JUnit XML report and claim.json file
-- name: Copy files related to CNF Cert Suite
+- name: Copy files related to CNF Cert Suite result execution
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ job_logs.path }}"
     mode: "0750"
   with_fileglob:
-    - "{{ tnf_logs_location }}/tnf_config.yml"
-    - "{{ tnf_logs_location }}/*.log"
     - "{{ tnf_logs_location }}/*.xml"
     - "{{ tnf_logs_location }}/*.json"
 
@@ -59,7 +54,7 @@
         dest: "{{ job_logs.path }}/{{ html_report_filename }}"
 
 # claim.json file must be present if the execution finished correctly
-# This is needed for the next blocks.
+# This is needed for the next task.
 - name: Check the presence of claim.json
   ansible.builtin.stat:
     path: "{{ tnf_logs_location }}/claim.json"

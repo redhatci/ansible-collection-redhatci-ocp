@@ -1,4 +1,23 @@
 ---
+# Always submit these files to DCI:
+# - Configuration files - tnf_config.yml
+# - Execution logs - dci-tnf-execution.log and cnf-certsuite.log, if exists
+- name: Copy config and log files related to CNF Cert Suite execution
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ job_logs.path }}"
+    mode: "0750"
+  with_fileglob:
+    - "{{ tnf_dir }}/{{ test_network_function_project_name }}/tnf_config.yml"
+    - "{{ tnf_dir }}/{{ test_network_function_project_name }}/*.log"
+
+# Clean images just after finishing the execution
+- name: Remove local tnf image
+  containers.podman.podman_image:
+    name: "{{ tnf_image }}"
+    state: absent
+  ignore_errors: true
+
 # Deleting resources created by the CNF Cert Suite to support the execution
 - name: Clean CNF Cert Suite resources
   when: tnf_postrun_delete_resources|bool
