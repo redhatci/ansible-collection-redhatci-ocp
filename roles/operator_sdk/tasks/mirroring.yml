@@ -40,7 +40,7 @@
     podman rmi {{ oo_index }}
 
 - name: Find ImageDigestMirrorSet in the cluster
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: config.openshift.io/v1
     kind: ImageDigestMirrorSet
   register: idms_res
@@ -78,7 +78,7 @@
     msg: "{{ lookup('file', scorecard_is_file) }}"
 
 - name: Apply Image Source File
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('file', scorecard_is_file) }}"
 
 - name: Wait for MCP status

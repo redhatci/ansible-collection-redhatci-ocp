@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.4.EPOCH
+Version:        0.5.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -17,7 +17,7 @@ BuildArch:      noarch
 Requires: ansible-collection-ansible-posix
 Requires: ansible-collection-ansible-utils
 Requires: ansible-collection-community-general
-Requires: ansible-collection-community-kubernetes
+Requires: ansible-collection-kubernetes-core >= 2.3.2
 Requires: ansible-collection-community-libvirt
 Requires: ansible-collection-containers-podman
 Requires: git
@@ -50,6 +50,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Mar 18 2024 Tony Garcia <tonyg@redhat.com> - 0.5.EPOCH-VER
+- Switch to kubernetes.core
+
 * Mon Feb 12 2024 Tony Garcia <tonyg@redhat.com> - 0.4.EPOCH-VER
 - Add requirements
 

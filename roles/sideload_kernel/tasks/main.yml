@@ -5,7 +5,7 @@
       - sideload_kernel_uri | string
 
 - name: Sideload-kernel job namespace
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     api_version: v1
     kind: Namespace
@@ -13,7 +13,7 @@
   environment: "{{ k8s_auth }}"
 
 - name: Sideload-kernel configmap
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     apply: true
     definition:
@@ -29,7 +29,7 @@
   register: configmap_created
 
 - name: Clean out any previous jobs
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api_version: batch/v1
     kind: Job
@@ -39,7 +39,7 @@
   when: configmap_created.changed or sideload_kernel_force | bool
 
 - name: Sideload-kernel job
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: batch/v1
@@ -94,7 +94,7 @@
     msg: "Waiting for the job to reach a completed state (may take up to {{ sideload_kernel_job_timeout }} mins)..."
 
 - name: Wait for job completion
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: batch/v1
     kind: Job
     name: flip-kernel

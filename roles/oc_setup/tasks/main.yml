@@ -38,7 +38,7 @@
   register: encoded_password
 
 - name: "Set htpasswd config secret in openshift"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Secret
@@ -50,7 +50,7 @@
         htpasswd: "{{ encoded_password.content }}"
 
 - name: "Setup htpasswd auth IDP backend in openshift"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: config.openshift.io/v1
       kind: OAuth
@@ -68,7 +68,7 @@
                 name: htpass-secret
 
 - name: "Grant cluster-admin permissions to admin user"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: rbac.authorization.k8s.io/v1
