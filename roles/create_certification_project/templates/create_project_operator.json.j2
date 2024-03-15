@@ -1,24 +1,24 @@
 {
-    "certification_status": "Started",
-    "container": {
-      "auto_publish": false,
-      "build_categories": "Operator bundle",
-      "distribution_method": "rhcc",
-      "github_usernames": [ "{{ github_username }}" ],
-      "hosted_registry": false,
-      "os_content_type": "Operator Bundle Image",
-      "privileged": false,
-      "registry": "{{ cert_item.bundle_image.split('/')[0] }}",
-      "repository": "{{ cert_item.bundle_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
-      "repository_description": "{{ cert_item.bundle_image.split('/')[1] }}",
-      "repository_name": "{{ cert_item.bundle_image.split('@')[0].split(':')[0].split('/')[-1] }}",
-      "type": "operator bundle image"
-    },
-    "marketplace": {
-      "enablement_status": "ineligible"
-    },
-    "name": "{{ cert_item.bundle_image.split('@')[0].split(':')[0].split('/')[-1] }}",
-    "operator_distribution": "connect",
-    "project_status": "active",
-    "type": "Containers"
+  "certification_status": "Started",
+  "container": {
+    "auto_publish": false,
+    "build_categories": "Operator bundle",
+    "distribution_method": "rhcc",
+    "github_usernames": [ "{{ github_username }}" ],
+    "hosted_registry": false,
+    "os_content_type": "Operator Bundle Image",
+    "privileged": false,
+    "registry": "{{ cert_item.bundle_image.split('/')[0] }}",
+    "repository": "{{ cert_item.bundle_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
+    "repository_description": "{{ cert_item.bundle_image.split('/')[1] }}",
+    "repository_name": "{{ cert_item.bundle_image.split('@')[0].split(':')[0].split('/')[-1] }}",
+    "type": "operator bundle image"
+  },
+  "marketplace": {
+    "enablement_status": "ineligible"
+  },
+  "name": "{{ cert_item.bundle_image.split('@')[0].split(':')[0].split('/')[-1] }}",
+  "operator_distribution": "connect",
+  "project_status": "active",
+  "type": "Containers"
 }

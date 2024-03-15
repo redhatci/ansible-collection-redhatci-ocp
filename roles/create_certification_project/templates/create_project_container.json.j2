@@ -1,18 +1,18 @@
 {
-    "certification_status": "Started",
-    "container": {
-      "auto_publish": false,
-      "distribution_method": "external",
-      "os_content_type": "Red Hat Universal Base Image (UBI)",
-      "privileged": false,
-      "registry": "{{ current_operator_image.split('/')[0] }}",
-      "repository": "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
-      "type": "container"
-    },
-    "marketplace": {
-      "enablement_status": "ineligible"
-    },
-    "name": "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[-1] }}",
-    "project_status": "active",
-    "type": "Containers"
+  "certification_status": "Started",
+  "container": {
+    "auto_publish": false,
+    "distribution_method": "external",
+    "os_content_type": "Red Hat Universal Base Image (UBI)",
+    "privileged": false,
+    "registry": "{{ current_operator_image.split('/')[0] }}",
+    "repository": "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[1:] | join('/') }}",
+    "type": "container"
+  },
+  "marketplace": {
+    "enablement_status": "ineligible"
+  },
+  "name": "{{ current_operator_image.split('@')[0].split(':')[0].split('/')[-1] }}",
+  "project_status": "active",
+  "type": "Containers"
 }

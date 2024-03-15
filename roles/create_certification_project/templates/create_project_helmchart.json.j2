@@ -1,21 +1,21 @@
 {
-    "certification_status": "Started",
-    {% if cert_settings is defined and cert_settings.email_address is defined %}
-    "contacts": [
-      {
-        "email_address": "{{ cert_settings.email_address }}",
-        "type": "Technical contact"
-      }
-    ],
-    {% endif %}
-    "helm_chart": {
-      "chart_name": "{{ cert_item.chart_name }}",
-      "distribution_method": "undistributed",
-    },
-    "marketplace": {
-      "enablement_status": "ineligible"
-    },
-    "name": "{{ cert_item.chart_name }}",
-    "project_status": "active",
-    "type": "Helm Chart"
+  "certification_status": "Started",
+  {% if cert_settings is defined and cert_settings.email_address is defined %}
+  "contacts": [
+    {
+      "email_address": "{{ cert_settings.email_address }}",
+      "type": "Technical contact"
+    }
+  ],
+  {% endif %}
+  "helm_chart": {
+    "chart_name": "{{ cert_item.chart_name }}",
+    "distribution_method": "undistributed",
+  },
+  "marketplace": {
+    "enablement_status": "ineligible"
+  },
+  "name": "{{ cert_item.chart_name }}",
+  "project_status": "active",
+  "type": "Helm Chart"
 }
