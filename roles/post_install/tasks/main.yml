@@ -2,12 +2,12 @@
 - name: Fetch kubeconfig for assisted installer
   ansible.builtin.include_tasks:
     file: fetch_kubeconfg_assisted_installer.yml
-  when: not ((use_agent_based_installer | default(false)) | bool)
+  when: not (use_agent_based_installer | bool)
 
 - name: Fetch kubeconfig for agent based installer
   ansible.builtin.include_tasks:
     file: fetch_kubeconfg_agent_based_installer.yml
-  when: (use_agent_based_installer | default(false)) | bool
+  when: use_agent_based_installer | bool
 
 - name: Perform basic checks and login
   environment:
@@ -41,18 +41,18 @@
 - name: Fetch credentials for assisted installer
   ansible.builtin.include_tasks:
     file: credentails_assisted_installer.yml
-  when: not ((use_agent_based_installer | default(false)) | bool)
+  when: not (use_agent_based_installer | bool)
 
 - name: Fetch credentials for agent based installer
   ansible.builtin.include_tasks:
     file: credentails_agent_based_installer.yml
-  when: (use_agent_based_installer | default(false)) | bool
+  when: use_agent_based_installer | bool
 
 - name: Save credentials to file
   ansible.builtin.copy:
     content: "{{ credentials | to_nice_json }}"
     dest: "{{ dest_dir }}/{{ kubeadmin_vault_name }}"
-    mode: 0600
+    mode: "0600"
 
 - name: Save credentials to vault
   ansible.builtin.shell:
