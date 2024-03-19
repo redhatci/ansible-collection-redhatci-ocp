@@ -1,0 +1,40 @@
+---
+- name: Check if the domain exists {{ rhde_builder_vm_name }}
+  become: true
+  community.libvirt.virt:
+    command: info
+  register: rhde_builder_vms_list
+
+- name: Remove the domain completely {{ rhde_builder_vm_name }}
+  when: "rhde_builder_vm_name in rhde_builder_vms_list.keys()"
+  block:
+    - name: Add to the inventory (if running) {{ rhde_builder_vm_name }}
+      ansible.builtin.import_tasks: add_rhde_builder_vm_to_inventory.yml
+      when: "rhde_builder_vms_list[rhde_builder_vm_name]['state'] == 'running'"
+
+    - name: Unregister from RHSM
+      delegate_to: "{{ rhde_builder_vm_name }}"
+      community.general.redhat_subscription:
+        state: absent
+      when: "rhde_builder_vm_name in lookup('ansible.builtin.inventory_hostnames', rhde_builder_vm_name)"
+
+    - name: Destroy the domain
+      become: true
+      community.libvirt.virt:
+        name: "{{ rhde_builder_vm_name }}"
+        command: destroy
+      when: "rhde_builder_vms_list[rhde_builder_vm_name]['state'] == 'running'"
+
+    - name: Undefine the domain
+      become: true
+      community.libvirt.virt:
+        name: "{{ rhde_builder_vm_name }}"
+        command: undefine
+
+- name: Remove the base RHEL image
+  become: true
+  ansible.builtin.file:
+    path: "{{ rhde_builder_base_image_file }}"
+    state: absent
+  when: rhde_builder_cleanup_remove_base_rhel_image
+...

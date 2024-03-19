@@ -1,0 +1,94 @@
+---
+argument_specs:
+  main:
+    short_description: Main entrypoint for the create_rhde_builder
+    description:
+      - This is the main entrypoint for the create_rhde_builder role
+      - This role downloads a RHEL Qcow2 base image,
+        creates a new VM based on it,
+        registers it to RHSM and installs RHDE dependencies.
+    author:
+      - François Charlier <fcharlie@redhat.com>
+      - Farid Da Encarnacao <fdaencar@redhat.com>
+    options:
+      rhde_builder_rhsm_api_offline_token:
+        type: "str"
+        required: true
+        description:
+          - This token is used to download the base RHEL Qcow2 image using the customer portal API.
+          - Get this token at https://access.redhat.com/management/api
+          - /!\ This token expires after 30 days of inactivity
+      rhde_builder_rhsm_org_id:
+        type: "str"
+        required: true
+        description:
+          - Organization ID used to register the RHEL guest image
+      rhde_builder_rhsm_activation_key:
+        type: "str"
+        required: true
+        description:
+          - Name of the activation key used to register the RHEL guest image
+      rhde_builder_rhel_version:
+        type: "str"
+        required: false
+        default: "9.3"
+        description:
+          - Version (X.Y) RHEL to use
+      rhde_builder_libvirt_pool_dir:
+        type: "str"
+        required: false
+        default: "/var/lib/libvirt/images"
+        description:
+          - Path where libvirt images will be created
+      rhde_builder_image_size:
+        type: "str"
+        required: false
+        default: "20G"
+        description:
+          - "Size of the RHDE builder VM disk. Format: <size>G"
+      rhde_builder_ssh_pubkey:
+        type: "str"
+        required: false
+        default: ${HOME}/.ssh/id_rsa.pub
+        description:
+          - Path to the ssh public key to be inserted in the VM to access it later
+      rhde_builder_ssh_privkey:
+        type: "str"
+        required: false
+        default: ${HOME}/.ssh/id_rsa
+        description:
+          - Path to the ssh private key to be used to ssh into the VM
+  cleanup_rhde_builder:
+    short_description: Tasks to remove everything we created
+    description:
+      - These tasks will unregister the VM, trash it & eventually delete the base RHEL image if specified
+      - /!\ Note /!\ The VM host must already exist in the inventory
+    author:
+      - François Charlier <fcharlie@rehdat.com>
+    options:
+      rhde_builder_cleanup_remove_base_rhel_image:
+        type: "bool"
+        required: false
+        default: false
+        description:
+          - Set to `true` to also remove the base rhel image
+      rhde_builder_rhel_version:
+        type: "str"
+        required: false
+        default: "9.3"
+        description:
+          - Version (X.Y) RHEL to use
+          - This will be used to find the base image to remove (if enabled)
+      rhde_builder_libvirt_pool_dir:
+        type: "str"
+        required: false
+        default: "/var/lib/libvirt/images"
+        description:
+          - Path where libvirt images are stored
+      rhde_builder_base_image_file:
+        type: "str"
+        required: false
+        default: "{{ rhde_builder_libvirt_pool_dir }}/rhel-{{ rhde_builder_rhel_version }}-for-rhde.qcow2"
+        description:
+          - Full path to the RHEL Qcow2 base image used for RHDE builder
+...

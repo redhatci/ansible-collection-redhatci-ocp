@@ -1,0 +1,32 @@
+---
+#
+#  You can override the following to match your needs
+#
+rhde_builder_rhel_version: "9.3"
+rhde_builder_libvirt_pool_dir: "/var/lib/libvirt/images"
+rhde_builder_image_size: 20G
+rhde_builder_ssh_pubkey: "{{ lookup('env', 'HOME') + '/.ssh/id_rsa.pub' }}"
+rhde_builder_ssh_privkey: "{{ lookup('env', 'HOME') + '/.ssh/id_rsa' }}"
+
+rhde_builder_cleanup_remove_base_rhel_image: false
+
+#
+# /!\ Modify the following at your own risks /!\
+# The following vars are not supposed to be modified and changing them could break
+# Some features
+#
+rhde_builder_base_image_file: "{{ rhde_builder_libvirt_pool_dir }}/rhel-{{ rhde_builder_rhel_version }}-for-rhde.qcow2"
+rhde_builder_image_name: "rhde-builder-{{ rhde_builder_rhel_version }}"
+rhde_builder_image_file: "{{ rhde_builder_libvirt_pool_dir }}/{{ rhde_builder_image_name }}.qcow2"
+rhde_builder_vm_name: "{{ rhde_builder_image_name }}"
+
+virt_packages:
+  - python3
+  - libvirt
+  - virt-install
+  - qemu-kvm
+  - virt-manager
+  - python3-pip
+  - python3-lxml
+  - python3-libvirt
+...

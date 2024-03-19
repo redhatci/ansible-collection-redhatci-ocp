@@ -1,0 +1,54 @@
+---
+- name: Check if the image already exists
+  ansible.builtin.stat:
+    path: "{{ rhde_builder_base_image_file }}"
+  register: stat_rhde_builder_base_image
+
+- name: Download the base image
+  when: not stat_rhde_builder_base_image.stat.exists
+  block:
+    - name: Log into RH SSO API
+      ansible.builtin.uri:
+        url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+        body_format: form-urlencoded
+        method: POST
+        body:
+          grant_type: refresh_token
+          client_id: rhsm-api
+          refresh_token: "{{ rhde_builder_rhsm_api_offline_token }}"
+      register: rh_sso_reg
+
+    - name: Get list of images for RHEL {{ rhde_builder_rhel_version }}
+      ansible.builtin.uri:
+        url: "https://api.access.redhat.com/management/v1/images/rhel/{{ rhde_builder_rhel_version }}/x86_64"
+        status_code: 200
+        headers:
+          Authorization: "Bearer {{ rh_sso_reg.json.access_token }}"
+      register: content_set_image_list
+      until: content_set_image_list.status == 200
+      retries: 10
+      delay: 2
+
+    - name: Download the RHEL KVM Guest Image {{ rhde_builder_rhel_version }}
+      vars:
+        images_list: "{{ content_set_image_list.json.body }}"
+        image_link: >-
+          [?imageName=='Red Hat Enterprise Linux {{ rhde_builder_rhel_version }} KVM Guest Image'].downloadHref
+      become: true
+      ansible.builtin.get_url:
+        url: "{{ images_list | json_query(image_link) | first }}"
+        dest: "{{ rhde_builder_base_image_file }}"
+        mode: "0644"
+        headers:
+          Authorization: "Bearer {{ rh_sso_reg.json.access_token }}"
+
+- name: Create the RHDE image based on RHEL {{ rhde_builder_rhel_version }}
+  become: true
+  ansible.builtin.command: >
+    qemu-img create -f qcow2
+      -b {{ rhde_builder_base_image_file }} -F qcow2
+      {{ rhde_builder_image_file }} {{ rhde_builder_image_size }}
+  register: qemu_img_create_rhde_builder
+  changed_when: qemu_img_create_rhde_builder.rc == 0
+  failed_when: qemu_img_create_rhde_builder.rc != 0
+...
