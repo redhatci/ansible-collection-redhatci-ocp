@@ -1,0 +1,12 @@
+---
+- name: Wait until NetworkAttachmentDefinition is created from SriovNetwork {{ sriov_conf.network.name }}
+  community.kubernetes.k8s_info:
+    api_version: k8s.cni.cncf.io/v1
+    name: "{{ sriov_conf.network.name }}"
+    namespace: "{{ sriov_conf.network.network_namespace }}"
+    kind: NetworkAttachmentDefinition
+  register: net_attach_def_check
+  retries: 6
+  delay: 10
+  until: net_attach_def_check.resources|length == 1
+  no_log: true

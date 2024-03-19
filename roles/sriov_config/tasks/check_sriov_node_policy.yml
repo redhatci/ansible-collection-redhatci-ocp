@@ -7,7 +7,7 @@
          default({"node-role.kubernetes.io/worker": ""}) |
          list }}
   register: selected_nodes
-  #no_log: true
+  no_log: true
 
 # "retries" variables require to be defined prior executing the task
 - name: Wait for selected nodes to have SR-IOV resource {{ sriov_conf.resource }}
@@ -30,4 +30,4 @@
     - nodes_with_sriov | length == nodes.resources | length
     - nodes_with_sriov | sort | unique | length == 1
     - nodes_with_sriov | sort | unique | first | int >= vfs | int
-  #no_log: true
+  no_log: true
