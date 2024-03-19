@@ -12,6 +12,10 @@
     url: "{{ opcap_download_url }}/v{{ opcap_version }}/opcap-{{ opcap_archi }}"
     dest: "{{ opcap_dir.path }}/opcap/bin/opcap"
     mode: "0755"
+  register: opcap_download
+  until: opcap_download is succeeded
+  retries: 2
+  delay: 30
 
 - name: Check opcap bin
   ansible.builtin.command:
