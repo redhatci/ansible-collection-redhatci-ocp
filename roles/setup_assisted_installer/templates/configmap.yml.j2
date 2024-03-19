@@ -20,6 +20,7 @@ data:
   ENABLE_SINGLE_NODE_DNSMASQ: "true"
   HW_VALIDATOR_REQUIREMENTS: {{ assisted_installer_hardware_validation | to_json | quote}}
   IPV6_SUPPORT: "true"
+  INSECURE_SKIP_VERIFY: {{ insecure_skip_verify }}
   LISTEN_PORT: "8888"
   NTP_DEFAULT_SERVER: ""
   OS_IMAGES: {{ assisted_installer_os_images | to_json | quote }}
@@ -45,3 +46,4 @@ data:
   {% for k, v in assisted_service_extra_config.items() %}
   {{ k }}: {{ v }}
   {% endfor %}
+

@@ -1,20 +1,16 @@
 assisted_service_image_repo: "edge-infrastructure"
 assisted_service_image_repo_url: "quay.io/{{ assisted_service_image_repo }}"
-
 assisted_service_image: "{{ assisted_service_image_repo_url }}/assisted-service@{{ image_hashes.service }}"
 assisted_service_gui_image: "{{ assisted_service_image_repo_url }}/assisted-installer-ui@{{ image_hashes.gui }}"
 assisted_service_image_service_image: "{{ assisted_service_image_repo_url }}/assisted-image-service@{{ image_hashes.image_service }}"
-
 assisted_service_gui_port: 8080
 assisted_service_image_service_port: 8888
-
 assisted_service_controller_image: "{{ assisted_service_image_repo_url }}/assisted-installer-controller@{{ image_hashes.controller }}"
 assisted_service_installer_agent_image: "{{ assisted_service_image_repo_url }}/assisted-installer-agent@{{ image_hashes.installer_agent }}"
 assisted_service_installer_image: "{{ assisted_service_image_repo_url }}/assisted-installer@{{ image_hashes.installer }}"
 assisted_postgres_image: quay.io/centos7/postgresql-12-centos7:latest
 assisted_installer_dir: /opt/assisted-installer
 assisted_installer_data_dir: "{{ assisted_installer_dir }}/data"
-
 assisted_installer_pod_volumes: {}
 # Useful if you want to e.g. install extra certificate chains in the pods prior
 # to setting up the AI service, e.g. you built your own AI images and pushed
@@ -27,7 +23,6 @@ assisted_installer_pod_volumes: {}
 #     host_path: /root/mybin
 #     mount_path: /usr/local/bin/mybin
 #     type: File  # default is Directory
-
 assisted_installer_hardware_validation:
   - version: default
     master:
@@ -49,23 +44,17 @@ assisted_installer_hardware_validation:
       ram_mib: 16384
       disk_size_gb: 120
       installation_disk_speed_threshold_ms: 10
-
 dns_servers: "{% if dns is defined %}{{ [dns] }}{% else %}{{ [] }}{% endif %}"
 assisted_service_host: "{{ host | default(ansible_fqdn) }}" # nodes -> assisted service
 image_service_host: "{{ host | default(ansible_fqdn) }}" # bastion -> image service
-
 use_local_mirror_registry: "{{ setup_registry_service | default(False) }}"
-
 config_file_path: /tmp/wip/config
 port: 8090
-
 # Proxy settings for the AI Pod configuration.
 http_proxy: ""
 https_proxy: ""
 no_proxy: ""
-
 podman_ipv6_network_subnet: 'fd00::1:8:0/112'
 podman_ipv6_network_gateway: 'fd00::1:8:1'
-
-
 assisted_service_extra_config: {}
+insecure_skip_verify: false
