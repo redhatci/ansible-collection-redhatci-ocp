@@ -9,3 +9,7 @@
 - name: Create SriovNetworks
   ansible.builtin.include_tasks: create_networks.yml
   when: sriov_network_configs | json_query('[*].network') | select('defined') | list | length
+
+- name: Sleep 600 seconds
+  pause:
+    seconds: 600
