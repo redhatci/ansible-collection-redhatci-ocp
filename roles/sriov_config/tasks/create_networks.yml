@@ -7,3 +7,13 @@
     loop_var: sriov
     label: "{{ sriov.resource }}"
   when: sriov.network is defined
+
+- name: Check for SRIOV Network
+  ansible.builtin.include_tasks: check_sriov_network.yml
+  loop: "{{ sriov_network_configs }}"
+  loop_control:
+    loop_var: sriov_conf
+    label: "{{ sriov_conf.resource }}"
+  when:
+    - sriov_conf.network is defined
+    - sriov_config_wait_network | bool

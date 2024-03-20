@@ -14,6 +14,7 @@ Nodes must have SR-IOV capable network interfaces.
 | ----------------------------- | --------- | ------- | --------- | -----------
 | sriov_config_file             | Yes       | String  | Undefined | The configuration file for SR-IOV Node policy and/or network.
 | sriov_config_wait_node_policy | No        | Boolean | True      | Whether or not wait for node policies to apply
+| sriov_config_wait_network     | No        | Boolean | True      | Whether or not wait for networks to apply the proper NetworkAttachmentDefinition resources
 | sriov_config_retries_per_node | No        | Int     | 60        | Number of retries for Node readiness
 | sriov_config_delay_per_node   | No        | Int     | 10        | Seconds to wait between retries for Node readiness
 
