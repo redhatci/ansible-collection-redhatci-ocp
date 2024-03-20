@@ -3,7 +3,7 @@
   community.kubernetes.k8s_info:
     api_version: k8s.cni.cncf.io/v1
     name: "{{ sriov_conf.network.name }}"
-    namespace: "{{ sriov_conf.network.network_namespace }}"
+    namespace: "{{ sriov_conf.network.network_namespace | default('default') }}"
     kind: NetworkAttachmentDefinition
   register: net_attach_def_check
   retries: 6
