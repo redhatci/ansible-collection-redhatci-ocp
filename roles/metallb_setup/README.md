@@ -17,7 +17,7 @@ NOTES:
 | Variable               | Default        | Type         | Required    | Description                                                              |
 | ---------------------- | ---------------|------------- | ----------- | -------------------------------------------------------------------------|
 | mlb_setup_name         | metallb        | String       | No          | Name of the BGP Instance to setup, could represent a vlan or network name|
-| mlb_ipaddr_pool        | undefined      | List         | Yes         | Pool of addresses to advertise, could be a range, a CIDR, IPv4, IPv6     |
+| mlb_ipaddr_pool        | undefined      | List         | Yes         | Pool of addresses to advertise, could be one or multiple IPv4/IPv6 CIDRs |
 | mlb_bgp_peers          | metallb        | List         | No          | A list of values to create BGP Peers for MetalLB. See variables below.   |
 |   name                 | undefined      | String       | Yes         | Name to identify the BGP Peer                                            |
 |   address              | undefined      | IP           | Yes         | IP address of the BGP Peer, IPv4 or IPv6                                 |
@@ -74,7 +74,7 @@ Remove MetalLB created by the role
         local_asn: 65052
 ```
 
-This is an example of how to use the metallb role to configure a MetalLB instance in Layer 2 mode.
+This is an example of how to use the metallb role to configure a MetalLB instance in Layer 2 mode in a cluster with dual stack.
 ```yaml
 - name: "Setup MetalLB Segregated Configurations for network2"
   ansible.builtin.include_role:
@@ -82,6 +82,7 @@ This is an example of how to use the metallb role to configure a MetalLB instanc
   vars:
     mlb_ipaddr_pool:
       - 192.168.62.32-192.168.62.35
+      - fd1c:61fe:21:22::29-fd1c:61fe:21:22::33
 ```
 
 * Passing the variables at role level
