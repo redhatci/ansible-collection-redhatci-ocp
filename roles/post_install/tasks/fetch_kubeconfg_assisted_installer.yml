@@ -2,4 +2,4 @@
   ansible.builtin.get_url:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}/downloads/credentials?file_name=kubeconfig"
     dest: "{{ kubeconfig_path }}"
-    mode: 0664
+    mode: "0664"

@@ -11,3 +11,4 @@ domain: "{{ cluster_name }}.{{ base_dns_domain }}"
 generated_dir: "{{ repo_root_path }}/generated"
 manifests_dir: "{{ generated_dir }}/{{ cluster_name }}"
 auth_dir: "{{ manifests_dir }}/auth"
+use_agent_based_installer: true
