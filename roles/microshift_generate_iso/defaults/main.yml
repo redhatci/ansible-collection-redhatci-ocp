@@ -1,0 +1,10 @@
+---
+microshift_generate_iso_action: "install"
+microshift_generate_iso_action_allowed: ['install']
+microshift_generate_iso_folder: "{{ ansible_user_dir }}/microshift"
+microshift_generate_iso_folder_blueprints_dir: "{{ microshift_generate_iso_folder }}/blueprints"
+microshift_generate_iso_ssh_key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa.pub') }}"
+microshift_generate_iso_fast_datapath_repo_url: "https://cdn.redhat.com/content/dist/layered/rhel{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/fast-datapath/os"
+microshift_generate_iso_localhost_folder: "/tmp"
+microshift_generate_iso_microshift_iso_name: "microshift.iso"
+...

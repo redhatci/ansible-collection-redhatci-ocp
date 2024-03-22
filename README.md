@@ -77,6 +77,7 @@ Name | Description
 [redhatci.ocp.label_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/label_nodes/README.md) | Applies labels defined at inventory level to the OCP cluster nodes.
 [redhatci.ocp.merge_registry_creds](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/merge_registry_creds/README.md) | Combines multiple registry credentials in JSON format passed as dictionaries
 [redhatci.ocp.metallb_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/metallb_setup/README.md) | Setup of the MetalLB operator in BGP mode.
+[redhatci.ocp.microshift_generate_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/microshift_generate_iso/README.md) | Generate a MicroShift ISO image.
 [redhatci.ocp.mirror_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_catalog/README.md) | Mirrors a catalog and its related images.
 [redhatci.ocp.mirror_from_directory](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_from_directory/README.md) | Mirror operators from a local directory into a container registry using the `oc-mirror` plugin.
 [redhatci.ocp.mirror_images](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_images/README.md) | Mirrors images from one repository to another.
@@ -144,6 +145,7 @@ Name | Type | Description
 [redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
 [redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
+[redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
 [redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
 
 ## License

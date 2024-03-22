@@ -1,0 +1,4 @@
+---
+- include_tasks: "{{ microshift_generate_iso_action }}.yml" # noqa name[missing]
+  when: microshift_generate_iso_action in microshift_generate_iso_action_allowed
+...

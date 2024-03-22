@@ -1,0 +1,32 @@
+---
+- name: Create the rhocp toml file needed by Microshift
+  ansible.builtin.template:
+    src: rhocp.toml.j2
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/rhocp.toml"
+    mode: '0644'
+
+- name: Create the fast-datapath.toml file needed by Microshift
+  ansible.builtin.template:
+    src: fast-datapath.toml.j2
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/fast-datapath.toml"
+    mode: '0644'
+
+- name: Create the microshift.toml file needed by Microshift
+  ansible.builtin.template:
+    src: microshift.toml.j2
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/microshift.toml"
+    mode: '0644'
+
+- name: Register all the sources blueprint files
+  ansible.builtin.find:
+    path: "{{ microshift_generate_iso_folder_blueprints_dir }}"
+    patterns: '*.toml'
+  register: blueprint_files
+
+- name: Add the source to image builder
+  become: true
+  ansible.builtin.command:
+    composer-cli sources add {{ item.path }}
+  loop: "{{ blueprint_files.files }}"
+  changed_when: true
+...
