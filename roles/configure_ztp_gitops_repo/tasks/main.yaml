@@ -9,6 +9,8 @@
     repo: "{{ target_ztp_gitops_repo }}"
     dest: "{{ temp_dir.path }}/ztp-gitops/"
     version: "{{ target_ztp_gitops_repo_src_branch }}"
+  environment:
+    GIT_SSH_COMMAND: "/usr/bin/ssh {{ '-i ' + czgr_ssh_key_file if czgr_ssh_key_file is defined else '' }}"
 
 - name: Delete target branch in case it exists
   ignore_errors: true
