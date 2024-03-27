@@ -18,19 +18,12 @@
   ansible.builtin.set_fact:
     local_image_src: "{{ local_image_path }}/{{ image_src_basename }}"
 
-
-- name: "Does a local copy of image_src exist?"
-  ansible.builtin.stat:
-    path: "{{ local_image_src }}"
-  register: lis
-
 - name: "Download image_src"
   ansible.builtin.get_url:
     url: "{{ host['image_src'] }}"
     dest: "{{ local_image_src }}"
-    mode: "0750"
+    mode: "0640"
   become: "{{ libvirt_become }}"
-  when: not (lis.stat.exists | bool)
 
 - name: "Determine image_src mime_type"
   # identify file type
