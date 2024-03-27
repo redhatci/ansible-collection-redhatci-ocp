@@ -25,13 +25,21 @@
     preflight_image: "{{ preflight_image + '-' + job_id }}"
   when: job_id is defined
 
+- name: Get latest tag from Preflight repository
+  uri:
+    url: "https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/tags"
+    method: GET
+  register: preflight_github_tags
+
+# We have to tag using the last stable version
+# to make Pyxis submission work
 - name: Build Preflight image
   ansible.builtin.shell:
     cmd: >
       podman build .
       --no-cache
       -t {{ preflight_image }}
-      --build-arg=release_tag={{ preflight_branch }} &&
+      --build-arg=release_tag={{ preflight_github_tags.json[0].name }} &&
       podman push
       --authfile {{ partner_creds }}
       {{ preflight_image }}

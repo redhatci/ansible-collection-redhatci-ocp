@@ -9,6 +9,15 @@
     preflight_artifact: "{{ lookup('file', preflight_log_file) | to_json }}"
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
 
+- name: Get latest commit hash for the Preflight release
+  vars:
+    preflight_release: "{{ preflight_output.test_library.version }}"
+  ansible.builtin.uri:
+    url: >
+      https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/git/refs/tags/{{ preflight_release }}
+    method: GET
+  register: preflight_latest
+
 - name: Get info of artifact file
   stat:
     path: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_preflight.log"
