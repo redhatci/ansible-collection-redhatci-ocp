@@ -1,6 +1,6 @@
 ---
 - name: Add Storage node labels
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: v1
@@ -18,7 +18,7 @@
     - hostvars[node].lso_label is defined
 
 - name: Deploying DaemonSet to gather disk-id on nodes
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'ocs-disk-gatherer.yml.j2') }}"
     state: present
     wait: true
@@ -35,18 +35,18 @@
   register: disk_id
 
 - name: Configure Local Storage Volumes
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'local-storage-block.yml.j2') }}"
   register: local_storage_volcrd
 
 - name: Remove DaemonSet ocs-disk-gatherer
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'ocs-disk-gatherer.yml.j2') }}"
     state: absent
     wait: true
 
 - name: Check LSO Storage Class exists
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: StorageClass
     name: "{{ local_storage_class }}"
   register: lso_storage_class
@@ -55,7 +55,7 @@
   until: lso_storage_class.resources != []
 
 - name: Set Default Local Storage Class
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: storage.k8s.io/v1

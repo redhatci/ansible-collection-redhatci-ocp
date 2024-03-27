@@ -3,7 +3,7 @@
   include_tasks: cleanup.yml
 
 - name: Create the Namespace
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
@@ -15,7 +15,7 @@
           pod-security.kubernetes.io/enforce-version: "latest"
 
 - name: Setting Object Storage authentication
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Secret
@@ -30,7 +30,7 @@
         region: "{{ setup_netobserv_stack_region }}"
 
 - name: Create the NetObservability Loki Stack
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: loki.grafana.com/v1
       kind: LokiStack
@@ -51,10 +51,10 @@
           mode: "openshift-network"
 
 - name: Configuring RBACs
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'templates/rbacs.yml.j2') }}"
 
 - name: Create the Flow Collector
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'templates/flow-collector.yml.j2') }}"
 ...

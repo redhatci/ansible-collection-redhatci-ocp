@@ -99,7 +99,7 @@ dependencies:
   "ansible.posix": "*"
   "ansible.utils": "*"
   "community.general": "7.0.1"
-  "community.kubernetes": "1.2.1"
+  "kubernetes.core": "2.3.2"
   "community.libvirt": "*"
   "containers.podman": "*"
 

@@ -1,6 +1,6 @@
 ---
 - name: Create SriovNetworkNodePolicy
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'templates/sriov-network-node-policy.yml.j2') }}"
   loop: "{{ sriov_network_configs }}"
   loop_control:

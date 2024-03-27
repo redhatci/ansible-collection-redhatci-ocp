@@ -1,6 +1,6 @@
 ---
 - name: Define OCS Storage Cluster settings
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'openshift-storage-cluster.yml.j2') }}"
   register: intocsresult
   when:
@@ -11,7 +11,7 @@
     - ocs_install_type == 'external'
   block:
     - name: Define External RHCS Cluster Settings in a secret
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: v1
           kind: Secret
@@ -24,7 +24,7 @@
           type: Opaque
 
     - name: Enable External OCS Storage Cluster
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition: "{{ lookup('template', 'openshift-storage-cluster.yml.j2') }}"
       register: extocsresult
 
@@ -35,7 +35,7 @@
         - extocsresult.changed | bool
 
 - name: Get OCS health status
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CephCluster
     namespace: "{{ ocs_storage_namespace }}"
     name: "{{ ocs_storagecluster_name }}-cephcluster"
@@ -50,7 +50,7 @@
     - "'HEALTH_ERR' not in ocs_health_status.resources[0].status.ceph.health"
 
 - name: Deploy the Rook-Ceph toolbox pod
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: ocs.openshift.io/v1
       kind: OCSInitialization
@@ -63,7 +63,7 @@
     - ocs_install_type == 'internal'
 
 - name: Check OCS Storage Class exists
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: StorageClass
     name: "{{ ocs_default_storage_class }}"
   register: ocs_storage_class
@@ -72,7 +72,7 @@
   until: ocs_storage_class.resources != []
 
 - name: Set Default Openshift Storage Class
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: storage.k8s.io/v1
       kind: StorageClass

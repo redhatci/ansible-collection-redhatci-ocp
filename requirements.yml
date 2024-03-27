@@ -4,7 +4,7 @@ collections:
   - ansible.utils
   - community.crypto
   - community.general
-  - community.kubernetes
+  - kubernetes.core
   - community.libvirt
   - containers.podman
 ...
