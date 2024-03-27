@@ -8,7 +8,7 @@ assisted_service_image_service_port: 8888
 assisted_service_controller_image: "{{ assisted_service_image_repo_url }}/assisted-installer-controller@{{ image_hashes.controller }}"
 assisted_service_installer_agent_image: "{{ assisted_service_image_repo_url }}/assisted-installer-agent@{{ image_hashes.installer_agent }}"
 assisted_service_installer_image: "{{ assisted_service_image_repo_url }}/assisted-installer@{{ image_hashes.installer }}"
-assisted_postgres_image: quay.io/centos7/postgresql-12-centos7:latest
+assisted_postgres_image: quay.io/centos7/postgresql-12-centos7:centos7
 assisted_installer_dir: /opt/assisted-installer
 assisted_installer_data_dir: "{{ assisted_installer_dir }}/data"
 assisted_installer_pod_volumes: {}
