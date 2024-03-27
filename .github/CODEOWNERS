@@ -18,7 +18,6 @@
 /roles/create_day2_cluster           @redhatci/crucible
 /roles/create_vms                    @redhatci/crucible
 /roles/destroy_vms                   @redhatci/crucible
-/roles/display_deployment_plan       @redhatci/crucible
 /roles/extract_openshift_installer   @redhatci/crucible
 /roles/generate_agent_iso            @redhatci/crucible
 /roles/generate_discovery_iso        @redhatci/crucible
@@ -27,7 +26,7 @@
 /roles/get_image_hash                @redhatci/crucible
 /roles/insert_dns_records            @redhatci/crucible
 /roles/install_cluster               @redhatci/crucible
-/roles/monitor_agent_based_installer @redhatci/crucible 
+/roles/monitor_agent_based_installer @redhatci/crucible
 /roles/monitor_cluster               @redhatci/crucible
 /roles/monitor_host                  @redhatci/crucible
 /roles/mount_discovery_iso_for_pxe   @redhatci/crucible
