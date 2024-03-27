@@ -14,6 +14,9 @@
     {% endif %}
     docker://{{ current_operator_image }} | jq -r '.Digest'
   register: sha
+  retries: 5
+  delay: 10
+  until: sha is not failed
 
 - name: "Get Image Registry"
   ansible.builtin.set_fact:
