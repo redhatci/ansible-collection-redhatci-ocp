@@ -43,7 +43,7 @@ SUSHY_EMULATOR_LIBVIRT_URI = u'{{ sushy_libvirt_uri }}'
 # Instruct the libvirt driver to ignore any instructions to
 # set the boot device. Allowing the UEFI firmware to instead
 # rely on the EFI Boot Manager
-SUSHY_EMULATOR_IGNORE_BOOT_DEVICE = True
+SUSHY_EMULATOR_IGNORE_BOOT_DEVICE = {{ (sushy_ignore_boot_device | bool) | ternary("True", "False") }}
 
 # The map of firmware loaders dependant on the boot mode and
 # system architecture

@@ -1,0 +1,34 @@
+- name: Set hardware vendor to "kvm"
+  set_fact:
+    vendor: kvm
+    bmc_user: "{{ vbmc_user }}"
+    bmc_password: "{{ vbmc_pass }}"
+  loop: "{{ groups['nodes'] }}"
+  delegate_to: "{{ item }}"
+
+- name: Install sushy-tools
+  ansible.builtin.include_role:
+    name: setup_sushy_tools
+  vars:
+    sushy_tools_port: "{{ redfish_port }}"
+    repo_root_path: "{{ ocp_on_libvirt_repo_root_path }}"
+    cert_country: "{{ ocp_on_libvirt_cert_country }}"
+    cert_state: "{{ ocp_on_libvirt_cert_state }}"
+    cert_locality: "{{ ocp_on_libvirt_cert_locality }}"
+    cert_organization: "{{ ocp_on_libvirt_cert_organization }}"
+    cert_organizational_unit: "{{ ocp_on_libvirt_cert_organizational_unit }}"
+    sushy_ignore_boot_device: false
+    inventory_validated: true
+
+- name: Get KVM hosts UUID
+  shell: >
+    set -o pipefail; virsh list --all --name --uuid |
+    sed -e 's/^\([^ ]*\) \([^ ]*\)$/"\2": "\1",/g' |
+    tr -d '\n' |
+    sed -e 's/^\(.*\),$/{\1}/g'
+  register: all_vms
+  become: true
+
+- name: Store KVM hosts UUID
+  set_fact:
+    redfish_kvm_uuid: "{{ all_vms.stdout | from_json }}"
