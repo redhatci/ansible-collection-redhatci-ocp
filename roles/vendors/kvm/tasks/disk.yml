@@ -7,8 +7,8 @@
 - name: Identify System Manager
   uri:
     url: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
-    user: "{{ bmc_user | default(omit) }}"
-    password: "{{ bmc_password | default(omit) }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
     validate_certs: no
@@ -23,8 +23,8 @@
 - name: KVM Force Power Off System {{ target_host }}
   uri:
     url: "{{ system_uuid_url }}/Actions/ComputerSystem.Reset"
-    user: "{{ bmc_user | default(omit) }}"
-    password: "{{ bmc_password | default(omit) }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: { "ResetType": "ForceOff" }
@@ -38,8 +38,8 @@
 - name: KVM Eject Virtual Media (if any) {{ target_host }}
   uri:
     url: "{{ system_manager_url }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
-    user: "{{ bmc_user | default(omit) }}"
-    password: "{{ bmc_password | default(omit) }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: {}
@@ -52,8 +52,8 @@
 - name: KVM Set Next Boot from HDD {{ target_host }}
   uri:
     url: "{{ system_uuid_url }}"
-    user: "{{ bmc_user | default(omit) }}"
-    password: "{{ bmc_password | default(omit) }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: PATCH
     body_format: json
     body:
@@ -74,8 +74,8 @@
 - name: KVM Force Power On System {{ target_host }}
   uri:
     url: "{{ system_uuid_url }}/Actions/ComputerSystem.Reset"
-    user: "{{ bmc_user | default(omit) }}"
-    password: "{{ bmc_password | default(omit) }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
     method: POST
     body_format: json
     body: { "ResetType": "ForceOn" }
