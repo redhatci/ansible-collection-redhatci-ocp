@@ -48,9 +48,4 @@
     - "hco_pods.resources[0].status.containerStatuses|length == 1"
     - "'ready' in hco_pods.resources[0].status.containerStatuses[0]"
     - "hco_pods.resources[0].status.containerStatuses[0].ready|bool"
-    namespace: "{{ hs_ns }}"
-  register: pod_list
-  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 9
-  delay: 10
 ...
