@@ -11,7 +11,7 @@
 
 - name: Get latest commit hash for the Preflight release
   vars:
-    preflight_release: "{{ preflight_output.test_library.version }}"
+    preflight_release: "{{ preflight_output.test_library.version.split('+')[0] }}"
   ansible.builtin.uri:
     url: >
       https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/git/refs/tags/{{ preflight_release }}
