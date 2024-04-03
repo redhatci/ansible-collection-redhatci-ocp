@@ -1,0 +1,154 @@
+- name: Create the deployment namespace
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: namespace
+      metadata:
+        name: "{{ goo_namespace }}"
+
+- name: Create Service Account
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: anyuid
+        namespace: "{{ goo_namespace }}"
+
+- name: Create Role
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: scc-anyuid
+        namespace: "{{ goo_namespace }}"
+      rules:
+      - apiGroups:
+        - security.openshift.io
+        resourceNames:
+        - anyuid
+        resources:
+        - securitycontextconstraints
+        verbs:
+        - use
+
+- name: Create Role Binding
+  community.kubernetes.k8s:
+    definition:
+      kind: RoleBinding
+      apiVersion: rbac.authorization.k8s.io/v1
+      metadata:
+        name: sa-to-scc-anyuid
+        namespace: "{{ goo_namespace }}"
+      subjects:
+        - kind: ServiceAccount
+          name: anyuid
+      roleRef:
+        kind: Role
+        name: scc-anyuid
+        apiGroup: rbac.authorization.k8s.io
+
+- name: Create the authorized keys secret
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ goo_repo_name }}-authorized-keys"
+        namespace: "{{ goo_namespace }}"
+      stringData:
+        authorized_keys: "{{ goo_ssh_authorized_keys }}"
+
+- name: Create Deployment
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: "{{ goo_repo_name }}"
+        namespace: "{{ goo_namespace }}"
+        labels:
+          app: "{{ goo_repo_name }}"
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: "{{ goo_repo_name }}"
+        template:
+          metadata:
+            labels:
+              app: "{{ goo_repo_name }}"
+          spec:
+            serviceAccount: anyuid
+            serviceAccountName: anyuid
+            securityContext:
+              runAsUser: 1000
+            containers:
+              - name: "{{ goo_repo_name }}"
+                image: quay.io/nsilla/git-server
+                ports:
+                  - containerPort: 2222
+                env:
+                  - name: SSH_AUTH_KEYS
+                    valueFrom:
+                      secretKeyRef:
+                        name: "{{ goo_repo_name }}-authorized-keys"
+                        key: authorized_keys
+                  - name: GIT_REPO_NAME
+                    value: "{{ goo_repo_name }}"
+    wait: yes
+
+- name: Create Route to the Git service
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: "{{ goo_repo_name }}"
+        namespace: "{{ goo_namespace }}"
+      spec:
+        type: NodePort
+        imagePullPolicy: Always
+        selector:
+          app: "{{ goo_repo_name }}"
+        ports:
+          - protocol: TCP
+            port: 2222
+            targetPort: 2222
+  register: goo_svc
+
+- name: Get repo pod
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Pod
+    namespace: "{{ goo_namespace }}"
+    label_selectors:
+      - "app = {{ goo_repo_name }}"
+  register: goo_pod
+
+- name: Get repo hosting node
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Node
+    name: "{{ goo_pod.resources[0].spec.nodeName }}"
+  register: goo_node
+
+- name: Set Git repo URL
+  vars:
+    node_ip: "{{ (goo_node.resources[0].status | json_query('addresses[? type == `InternalIP`].address'))[0] }}"
+    node_port: "{{ goo_svc | json_query('result.spec.ports[0].nodePort') }}"
+  ansible.builtin.set_fact:
+    goo_node_ip: "{{ node_ip }}"
+    goo_node_port: "{{ node_port }}"
+    goo_git_url: ssh://git@{{ node_ip }}:{{ node_port }}/git/{{ goo_repo_name }}
+
+- name: Get server signature
+  ansible.builtin.shell: |
+    set -o pipefail
+    ssh-keyscan -p {{ goo_node_port }} {{ goo_node_ip }}
+  register: goo_keyscan
+
+- name: Set server signature
+  ansible.builtin.set_fact:
+    goo_server_signature: "{{ goo_keyscan.stdout }}"
