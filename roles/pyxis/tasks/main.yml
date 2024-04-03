@@ -33,7 +33,7 @@
 
 - name: Publishing artifact to Pyxis
   uri:
-    url: "{{ pyxis_url }}/projects/certification/id/{{ cert_project_id }}/artifacts"
+    url: "{{ catalog_url }}/projects/certification/id/{{ cert_project_id }}/artifacts"
     method: POST
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"
@@ -44,7 +44,7 @@
 
 - name: Submit Test result to Pyxis
   uri:
-    url: "{{ pyxis_url }}/projects/certification/id/{{ cert_project_id }}/test-results"
+    url: "{{ catalog_url }}/projects/certification/id/{{ cert_project_id }}/test-results"
     method: POST
     headers:
       X-API-KEY: "{{ pyxis_apikey }}"
