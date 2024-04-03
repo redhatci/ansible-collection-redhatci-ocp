@@ -1,7 +1,7 @@
 ---
 
 - name: Add gitlab ssh key to argoCD
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: ConfigMap
     name: argocd-ssh-known-hosts-cm
@@ -31,19 +31,8 @@
     mode: '0644'
 
 - name: Apply ssh private repo
-  community.kubernetes.k8s:
-    api_version: v1
-    kind: Secret
-    name: private-repo
-    namespace: openshift-gitops
-    resource_definition:
-      labels:
-        argocd.argoproj.io/secret-type: repository
-      stringData:
-        type: git
-        url: "{{ ztp_gitops_repo }}"
-        sshPrivateKey: |
-          {{ gitlab_key.stdout | indent(4) }}
+  kubernetes.core.k8s:
+    src: "{{ temp_dir.path }}/ssh_private_repo.yaml"
 
 - name: Remove temporary directory
   ansible.builtin.file:
