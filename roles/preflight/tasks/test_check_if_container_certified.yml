@@ -1,9 +1,9 @@
 ---
-- name: Reset variable for certification
+- name: Reset certification status
   ansible.builtin.set_fact:
     already_certified: false
 
-- name: "Get Image Digest"
+- name: Get image digest
   ansible.builtin.shell: >
     set -eo pipefail;
     skopeo inspect
@@ -14,57 +14,28 @@
     {% endif %}
     docker://{{ current_operator_image }} | jq -r '.Digest'
   register: sha
-  retries: 5
-  delay: 10
-  until: sha is not failed
+  retries: 2
+  delay: 30
+  until: sha is succeeded
 
-- name: "Get Image Registry"
-  ansible.builtin.set_fact:
-    image_repository: "{{ current_operator_image.split('/')[0] }}"
-    image_id: "{{ sha.stdout }}"
+- name: Debug image digest
+  ansible.builtin.debug:
+    msg: "{{ sha.stdout }}"
 
 - name: "Use Pyxis API to check if the image is certified {{ current_operator_image }}"
+  vars:
+    filter_params: "filter=image_id%3D%3D{{ sha.stdout }}%3Brepositories.published%3D%3Dtrue"
+    include_params: "include=data.repositories.published&include=data.repositories.repository"
   ansible.builtin.uri:
-    url: "{{ pyxis_url }}/images?\
-          include=data.image_id&\
-          include=data.docker_image_id&\
-          include=data.certified&\
-          filter=docker_image_id%3D%3D%22{{ image_id }}%22&\
-          page_size=1&
-          page=0"
+    url: >
+      {{ catalog_url }}/images?{{ filter_params }}&{{ include_params }}&page_size=1&page=0
     method: GET
     headers:
-      X-API-KEY: "{{ pyxis_apikey }}"
-      accept: application/json
+      X-API-KEY: "{{ lookup('file', pyxis_apikey_path) }}"
     status_code: 200
     timeout: 120
-  register: pyxis_image_info
-  retries: 5
-  delay: 10
-  until: pyxis_image_info.status >= 200
-  no_log: false
-  ignore_errors: true
-  vars:
-    pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
-  when:
-    - '"registry.redhat" not in image_repository'
-    - 'sha.stdout | length > 0'
+  register: pyxis_cert_status
 
-- name: Handle when previous certification exists
-  when: >
-    (
-      pyxis_image_info.json.data[0] is defined
-      and pyxis_image_info.json.data[0].certified | bool
-      and preflight_test_certified_image | bool
-    )
-    or "registry.redhat" in image_repository
-  block:
-    - name: "Set the variable if the image is already certified"
-      ansible.builtin.set_fact:
-        already_certified: true
-
-    - name: "Certification Skip for {{ current_operator_image }}"
-      ansible.builtin.debug:
-        msg: >
-          Certification for the image {{ current_operator_image }} has been
-          skipped because it has already been certified
+- name: "Skip the certification if already-in-catalog {{ current_operator_image }}"
+  ansible.builtin.set_fact:
+    already_certified: "{{ pyxis_cert_status.json.data | length > 0 }}"
