@@ -30,8 +30,6 @@
     url: >
       {{ catalog_url }}/images?{{ filter_params }}&{{ include_params }}&page_size=1&page=0
     method: GET
-    headers:
-      X-API-KEY: "{{ lookup('file', pyxis_apikey_path) }}"
     status_code: 200
     timeout: 120
   register: pyxis_cert_status
