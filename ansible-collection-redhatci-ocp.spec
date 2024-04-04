@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.4.EPOCH
+Version:        0.5.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -16,6 +16,7 @@ BuildArch:      noarch
 
 Requires: ansible-collection-ansible-posix
 Requires: ansible-collection-ansible-utils
+Requires: ansible-collection-community-crypto
 Requires: ansible-collection-community-general
 Requires: ansible-collection-community-kubernetes
 Requires: ansible-collection-community-libvirt
@@ -50,7 +51,10 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
-* Mon Feb 12 2024 Tony Garcia <tonyg@redhat.com> - 0.4.EPOCH-VER
+* Wed Mar 20 2024 Jorge A Gallegos <jgallego@redhat.com> - 0.5.EPOCH-VERS
+- Adding community.crypto dependency
+
+* Mon Feb 12 2024 Tony Garcia <tonyg@redhat.com> - 0.4.EPOCH-VERS
 - Add requirements
 
 * Tue Nov 21 2023 Frederic Lepied <flepied@redhat.com> 0.3.EPOCH-VERS
