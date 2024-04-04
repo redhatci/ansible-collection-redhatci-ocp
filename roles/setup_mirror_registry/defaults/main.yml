@@ -15,8 +15,6 @@ required_packages:
   - httpd
   - httpd-tools
 
-openshift_version: "{{ openshift_full_version.split('.')[:2] | join('.') }}"
-
 # Name of the pod running as the registry.
 image_name_registry: ocpdiscon-registry
 
