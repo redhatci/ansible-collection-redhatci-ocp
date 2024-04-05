@@ -9,7 +9,7 @@
 
 - name: "Extract installer command from release image"
   ansible.builtin.command: >
-    {{ oc_tool_path }} adm release extract
+    {{ mor_oc }} adm release extract
     --registry-config={{ mor_auths_file }}
     --command=openshift-baremetal-install
     --from {{ mor_pull_url }}
