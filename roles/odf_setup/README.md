@@ -1,7 +1,7 @@
 Role Name
 =========
 
-Role to setup Openshift Container Storage (OCS) and integrate with Internal Local Storage operators in OCP 4.X or integrate with External RHCS cluster (ODF External Mode)
+Role to setup OpenShift Container Storage (OCS) and integrate with Internal Local Storage operators in OCP 4.X or integrate with External RHCS cluster (ODF External Mode)
 
 Requirements
 ------------

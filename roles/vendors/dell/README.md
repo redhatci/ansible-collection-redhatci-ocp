@@ -1,3 +1,3 @@
 # dell
 
-Boots a dell iDRAC machine to iso or disk via redfish
+Boots a Dell iDRAC machine to ISO or disk via redfish

@@ -13,7 +13,7 @@ Requirements
 Role Variables
 --------------
 
-Variable | Type | Required | Default | Descrition
+Variable | Type | Required | Default | Description
 ---------|------|-----------|---------|------------
 metallb | boolean | no | true | Set it to true to modify the Provisioning resource to allow the Bare Metal Operator to watch all namespaces.
 database_storage_request | bit size | no | 20Gi | Database storage size for the AgentService.

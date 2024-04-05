@@ -26,10 +26,10 @@ on SNO installations.
 ## Authentication
 
 The steps taken by this role require proper kubernetes authentication be set up
-on the ansible host (or localhost) for the cluster in question.  This may be
+on the Ansible host (or localhost) for the cluster in question.  This may be
 done in 3 ways:
 
-- If the ansible host has a valid kubeconfig in ~/.kube/config, this will be
+- If the Ansible host has a valid kubeconfig in ~/.kube/config, this will be
   used by default.
 - You can set the appropriate environment variables via the `k8s_auth` role
   variable. These will be named K8S_AUTH_* and are outlined in [kubernetes.core.k8s](https://galaxy.ansible.com/ui/repo/published/kubernetes/core/content/module/k8s/)

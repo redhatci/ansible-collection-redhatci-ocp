@@ -1,7 +1,7 @@
 # OPCAP tool role
 
-OPCAP is a tool to test the installation of the Openshift operators.
-Here is the official [Github repository](https://github.com/opdev/opcap) of the tool for more details.
+OPCAP is a tool to test the installation of the OpenShift operators.
+Here is the official [GitHub repository](https://github.com/opdev/opcap) of the tool for more details.
 
 This role clones the official repository, builds the tool and launches checks on a catalog operator.
 It generates a JSON file with the results of the checks, and it also displays all the packages available in the catalog

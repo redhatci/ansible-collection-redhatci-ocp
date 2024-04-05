@@ -8,7 +8,7 @@
 - Detect to-be-removed APIs by filtering through APIRequestCount.status.removedInRelease.
 - Verify compatibility with the current Kubernetes version, the next version, and all versions up to the latest release mentioned in removedInRelease.
 - Output a map from OpenShift versions to a list of workload APIs to be removed in each version.
-- Generate a JUnit file containing the testsuite 'Workload Compatibility with OCP Versions'.
+- Generate a JUnit file containing the test suite 'Workload Compatibility with OCP Versions'.
 
 # Requirements
 
@@ -25,7 +25,7 @@ The role requires the following:
 | `kubeconfig`            | `~/.kube/config.json` | Path to an existing Kubernetes config file to be used by k8s_info dependency. If not provided, the OpenShift client will attempt to load the default configuration file from `~/.kube/config.json`. Can also be specified via `K8S_AUTH_KUBECONFIG` environment variable.                                                                                                |
 | `deprecated_namespaces` | `undefined`           | Optional. List of namespaces the role will check for deprecated APIs. Typically, it should include the namespaces where you deploy the workload. If left undefined, the role will check all namespaces, excluding those starting with the `openshift` and `kube-` prefixes.                                                |
 | `ocp_version`           | `"4.9"/"4.10"/etc`    | OpenShift version currently running on your cluster. |
-| `deprecated_api_logs.path` | `/tmp`             | Optional. Directory to store the output JUnit file containing the 'Workload Compatibility with OCP Versions' testsuite.                                                              |
+| `deprecated_api_logs.path` | `/tmp`             | Optional. Directory to store the output JUnit file containing the 'Workload Compatibility with OCP Versions' test suite.                                                              |
 
 # Examples
 
@@ -55,7 +55,7 @@ The role sets the Ansible fact `ocp_compatibility` - a map from OpenShift versio
 {"ansible_facts": {"ocp_compatibility": {"4.10": "compatible", "4.11": "compatible", "4.12": "podsecuritypolicies.v1beta1.policy", "4.13": "podsecuritypolicies.v1beta1.policy, prioritylevelconfigurations.v1beta1.flowcontrol.apiserver.k8s.io, flowschemas.v1beta1.flowcontrol.apiserver.k8s.io, horizontalpodautoscalers.v2beta2.autoscaling", "4.9": "compatible"}}, "changed": false}
 ```
 
-The second output is a JUnit file generated in the deprecated_api_logs folder, which contains the testsuite 'Workload Compatibility with OCP Versions'. Here is an example:
+The second output is a JUnit file generated in the deprecated_api_logs folder, which contains the test suite 'Workload Compatibility with OCP Versions'. Here is an example:
 
 ```
 $ cat apirequestcounts_ocp_compatibility.xml 

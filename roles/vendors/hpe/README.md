@@ -1,3 +1,3 @@
 # hpe
 
-Boots a hpe ilo machine to iso or disk via redfish
+Boots a HPE iLO machine to ISO or disk via redfish

@@ -1,6 +1,6 @@
 # metallb_setup role
 
-This role setups the MetalLB operator in BGP mode. It allows to advertise IPv4/IPv6 service addresses with mutiple BGP peers.
+This role setups the MetalLB operator in BGP mode. It allows to advertise IPv4/IPv6 service addresses with multiple BGP peers.
 
 Main role tasks:
   - Validates the required variables are defined.
@@ -30,7 +30,7 @@ NOTES:
 | mlb_settings           | ""             | File Path    | No          | An optional YAML file with the variables listed above.                   |
 
 ## Role requirements for BGP mode
-  - An Openshift cluster with worker nodes using OCP >= 4.10.
+  - An OpenShift cluster with worker nodes using OCP >= 4.10.
   - MetalLB operator already installed.
   - BGP Peers configured and ready to accept connections (A Router or a FFR Instance).
   - BGP Peers should be accessible (Use NMstate at day2 if you need to setup configurations).
@@ -87,7 +87,7 @@ This is an example of how to use the metallb role to configure a MetalLB instanc
 
 * Passing the variables at role level
 
-## Validaton
+## Validation
 
 To confirm that the BGP routing is working properly:
 1. Create a service that uses MetalLB labels, and use a deployment with for example an HTTP service in port 8080

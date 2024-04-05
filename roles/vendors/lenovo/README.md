@@ -1,3 +1,3 @@
 # lenovo
 
-Boots a lenovo machine to iso or disk via redfish
+Boots a Lenovo machine to ISO or disk via redfish

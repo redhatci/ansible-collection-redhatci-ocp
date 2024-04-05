@@ -13,7 +13,7 @@ This role applies labels defined at inventory level to the OCP cluster nodes.
 | hosts_list             | []             | List         | No          | A list of host that need its labels applied to OCP nodes                 |
 
 ## Role requirements for BGP mode
-  - An Openshift cluster.
+  - An OpenShift cluster.
   - Access to the kubeconfig file via the `KUBECONFIG` environment variable
   - The inventory host should have the labels needed in JSON format
 

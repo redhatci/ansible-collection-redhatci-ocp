@@ -1,6 +1,6 @@
 # fbc_catalog role
 
-A Role to create File Base Catalogs (FBC) for Operator Lifecycle Manager (OLM). A list of operator bundles will be added to a catalog index using the FBC format.
+A Role to create File Base Catalogs (FBC) for Operator Life-cycle Manager (OLM). A list of operator bundles will be added to a catalog index using the FBC format.
 
 In case the bundle image does not specify a channel via `"LABEL operators.operatorframework.io.bundle.channel.default.v1"` the default channel for the bundle will be set to "latest". The catalog image will be pushed to the registry according to the values set for `fbc_target_registry`.
 

@@ -1,3 +1,3 @@
 # boot_iso
 
-Boots nodes to the provided iso on its vendor.
+Boots nodes to the provided ISO on its vendor.

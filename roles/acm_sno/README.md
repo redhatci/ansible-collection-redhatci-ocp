@@ -1,6 +1,6 @@
 # acm_sno role
 
-This role allows the deployment of SNO (Single Node Openshift) instances using ACM (Advanced Cluster Management). In order to execute the acm_sno role a running OpenShift cluster and its credentials are required. i.e. through the KUBECONFIG environment variable.
+This role allows the deployment of SNO (Single Node OpenShift) instances using ACM (Advanced Cluster Management). In order to execute the acm_sno role a running OpenShift cluster and its credentials are required. i.e. through the KUBECONFIG environment variable.
 
 Please see [acm_setup](../acm_setup/README.md) role in case configuring the ACM hub is required.
 
@@ -53,7 +53,7 @@ This role only been tested in x86_64 architectures.
 |acm_user_bundle                         |Undefined                      |No           |CA certificate to be injected to spoke nodes. Requires `acm_disconnected` set to true |
 |acm_user_registry                       |Undefined                      |Yes, for disconnected environments | Entries added to the registries.conf file during the initial spoke cluster bootstrap. Must include entries for the OCP release and multicluster-engine images. See examples below|
 |acm_vm_external_network                 |true                           |No           |Defines if the ISO created by the Bare Metal Operator is exposed via the External Network (baremetal) or the provisioning network (172.22.0.x), if set to `false` the ISO will be exposed using the private IP of the metal3 pod, Set to False in Deployments with Assisted Installer|
-|webserver_url                           |Undefined                      |Yes, for disconnected environments | http or https URL where the rhcos-\*-live.x86_64.iso ISO will be accessible to bootstrap the SNO node, example: http://mirror.example.com:8080 |
+|webserver_url                           |Undefined                      |Yes, for disconnected environments | HTTP or HTTPS URL where the rhcos-\*-live.x86_64.iso ISO will be accessible to bootstrap the SNO node, example: http://mirror.example.com:8080 |
 
 *Important:* The values defined for the `acm_ocp_version` must match with the images provided for `acm_iso_url` and `acm_root_fs_url` variables.
 

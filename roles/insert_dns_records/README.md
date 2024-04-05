@@ -1,15 +1,15 @@
 # Insert DNS Records roles
 
-Setups `dnsmasq` (either directly or via `NetworkManager`) inserting the DNS A records required for Openshift install.
+Setups `dnsmasq` (either directly or via `NetworkManager`) inserting the DNS A records required for OpenShift install.
 
 ## Role Variables
 
 | Variable              | Required | Default        | Options                 | Comments                                                    |
 | --------------------- | -------- | -------------- | ----------------------- | ----------------------------------------------------------- |
-| domain                | yes      |                |                         | base for the dns entries                                    |
+| domain                | yes      |                |                         | base for the DNS entries                                    |
 | dns_entries_file_name | no       | domains.dns    |                         |                                                             |
-| dns_service_name      | no       | NetworkManager | NetworkManager, dnsmasq | the name of the service you want to manage your dns records |
-| node_dns_records      | no       |                |                         | dns records for the nodes of the Openshift cluster          |
+| dns_service_name      | no       | NetworkManager | NetworkManager, dnsmasq | the name of the service you want to manage your DNS records |
+| node_dns_records      | no       |                |                         | dns records for the nodes of the OpenShift cluster          |
 | extra_dns_records     | no       |                |                         | used to defined dns records which are excess of the         |
 
 The structure of `node_dns_records` and `extra_dns_records` is the same and as follows:
