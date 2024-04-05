@@ -9,7 +9,6 @@ If enabled, the role requires an container registry to mirror the OCP container 
 | Variable                     | Default                               | Required | Description                                                                                    |
 | ---------------------------- | ------------------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
 | mor_auths_file               | undefined                             | Yes      | Path to the authentication file used for container registries e.g. $HOME/.docker/config.json   |
-| mor_build                    | undefined                             | Yes      | Build type (nightly, ga, dev, rc)                                                              |
 | mor_cache_dir                | /var/lib/dci-openshift-agent/releases | No       | Base directory that will hold the OCP version binaries and OS images                           |
 | mor_force                    | false                                 | No       | If passed as true, the role will re-download all the OCP release resources                     |
 | mor_install_type             | "ipi"                                 | No       | Mirrors image required for the install type (ipi, acm, assisted, sno, upi, vsphere)            |

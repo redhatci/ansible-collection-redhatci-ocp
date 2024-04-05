@@ -5,7 +5,6 @@
       - mor_cache_dir | string
       - mor_version | string
       - mor_pull_url | string
-      - mor_build | string
       - mor_oc | string
 
 - name: "Check if authentication file exists"
