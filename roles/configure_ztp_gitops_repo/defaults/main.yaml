@@ -1,1 +1,4 @@
 ---
+target_ztp_gitops_repo_src_branch: main
+czgr_sites_path: SiteConfig
+czgr_from_template: false

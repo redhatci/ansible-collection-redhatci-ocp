@@ -8,7 +8,7 @@
   ansible.builtin.git:
     repo: "{{ target_ztp_gitops_repo }}"
     dest: "{{ temp_dir.path }}/ztp-gitops/"
-    version: "{{ target_ztp_gitops_repo_src_branch }}"
+    version: "{{ target_ztp_gitops_repo_src_branch | default(omit) }}"
   environment:
     GIT_SSH_COMMAND: "/usr/bin/ssh {{ '-i ' + czgr_ssh_key_file if czgr_ssh_key_file is defined else '' }}"
 
@@ -23,10 +23,47 @@
     cd "{{ temp_dir.path }}/ztp-gitops/" && \
     git checkout -b "{{ target_ztp_gitops_repo_dst_branch }}"
 
+- name: Build site config manifests from template
+  when: czgr_from_template | bool
+  block:
+    - name: Delete any existing content
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      with_fileglob: "{{ temp_dir.path }}/ztp-gitops/*"
+
+    - name: Create the sites config directory
+      ansible.builtin.file:
+        path: "{{ temp_dir.path }}/ztp-gitops/{{ czgr_sites_path }}"
+        state: directory
+
+    - name: Create the kustomization file
+      ansible.builtin.copy:
+        dest: "{{ temp_dir.path }}/ztp-gitops/{{ czgr_sites_path }}/kustomization.yaml"
+        content: |
+          apiVersion: kustomize.config.k8s.io/v1beta1
+          kind: Kustomization
+          generators:
+            - site_config.yaml
+
+    - name: Create the site config manifest
+      ansible.builtin.template:
+        dest: "{{ temp_dir.path }}/ztp-gitops/{{ czgr_sites_path }}/site_config.yaml"
+        src: site_config.yaml.j2
+
+    - name: Commit the changes to the repository
+      ansible.builtin.shell: |
+        git add --all
+        git commit -am 'site config manifests'
+      args:
+        chdir: "{{ temp_dir.path }}/ztp-gitops/"
+
 - name: Push new branch
   shell: |
     cd "{{ temp_dir.path }}/ztp-gitops/" && \
     git push --set-upstream origin "{{ target_ztp_gitops_repo_dst_branch }}"
+  environment:
+    GIT_SSH_COMMAND: "/usr/bin/ssh {{ '-i ' + czgr_ssh_key_file if czgr_ssh_key_file is defined else '' }}"
 
 - name: Remove the temporary directory
   file:

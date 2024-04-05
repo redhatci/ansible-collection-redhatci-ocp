@@ -1,0 +1,93 @@
+# example-node1-bmh-secret & assisted-deployment-pull-secret need to be created under same namespace example-sno
+---
+apiVersion: ran.openshift.io/v1
+kind: SiteConfig
+metadata:
+  name: "server07-vpool-worker-2-sno"
+  namespace: "server07-vpool-worker-02-sno"
+spec:
+  baseDomain: "partnerci.bos2.lab"
+  pullSecretRef:
+    name: "assisted-deployment-pull-secret"
+  clusterImageSetNameRef: "img4.14.9-x86-64-appsub"
+  sshPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDXzhvukvk3OS2e2Z8DKACD8spJ4N/W0ylzSqCmUHdxGedyz39UoKA3sQpJv9L3WrPlLZYxCaAC+BdFTxn5lRxwrib7eCUo5ignD7fBcVSF6sHNWlQGjCd33cpdfBG3Nm3WxlGNCYamByRNW3jpG2gwo8WlU6wBDA1TWBbD+TMEth40QyGMfO3w/sPxePV7kLp5psWwh5S+09W8EU5Ana8wbkauuDBSpOeXaFWSUoknGJmDCzV3qTFmk7XXTTGOu3gaUMN9y3ZgyO683Mue1xH5IiR/+DIWs3xDWMd5uSkK8/o2uwBxeQwETqrosug1TxT1U9zfAkXwu932wCSXJZwjogY215lSr7avdLuF/+KQvCo45P4bewl2B9ZJ8TXnVpjgor/Z1kHlrHIeotdkw7UFEqE4r2aUTw4k0yStUWBl/S5XdlaiPLaNEWsWwOEYcg/hzd4sb79i+Kb35q7S8gsh8W4Ngv4YiKoBOXLpoU4BCkmaeASb39C0D1UgcPUEUNooaEhm7Ge0htXQ5yfjTp3Uc2i45LKaB86+uROcTBxlGsGeYaq+EpM1Uwa0toqp8O3sKOJoolHY9v1J7fuHZYW4kAq7sCmvVJmgmbaC6+/26EG3OqzYJakVw7f2EvEkB6TIESEreNDi5M7wMkS/UpoEEzpZw+Yc/t4xZRetOQ5DTw=="
+  clusters:
+  - clusterName: "server07-vpool-worker-2-sno"
+    networkType: "OVNKubernetes"
+    # installConfigOverrides is a generic way of passing install-config
+    # parameters through the siteConfig.  The 'capabilities' field configures
+    # the composable openshift feature.  In this 'capabilities' setting, we
+    # remove all but the marketplace component from the optional set of
+    # components.
+    # Notes:
+    # - NodeTuning is needed for 4.13 and later, not for 4.12 and earlier
+    installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\", \"NodeTuning\" ] }}"
+    # It is strongly recommended to include crun manifests as part of the additional install-time manifests for 4.13+.
+    # The crun manifests can be obtained from source-crs/optional-extra-manifest/ and added to the git repo ie.sno-extra-manifest.
+    # extraManifestPath: sno-extra-manifest
+    clusterLabels:
+      # These example cluster labels correspond to the bindingRules in the PolicyGenTemplate examples
+      du-profile: "4.14"
+      # These example cluster labels correspond to the bindingRules in the PolicyGenTemplate examples in ../policygentemplates:
+      # ../policygentemplates/common-ranGen.yaml will apply to all clusters with 'common: true'
+      common: true
+      # ../policygentemplates/group-du-sno-ranGen.yaml will apply to all clusters with 'group-du-sno: ""'
+      group-du-sno: ""
+      # ../policygentemplates/example-sno-site.yaml will apply to all clusters with 'sites: "example-sno"'
+      # Normally this should match or contain the cluster name so it only applies to a single cluster
+      sites : "server07-vpool-worker-2-sno"
+    clusterNetwork:
+      - cidr: 10.128.0.0/14
+        hostPrefix: 23
+    machineNetwork:
+      - cidr: 192.168.16.0/25
+    serviceNetwork:
+      - 172.30.0.0/16
+    additionalNTPSources:
+      - 192.168.16.11
+    # Initiates the cluster for workload partitioning. Setting specific reserved/isolated CPUSets is done via PolicyTemplate
+    # please see Workload Partitioning Feature for a complete guide.
+    cpuPartitioningMode: AllNodes
+    # Optionally; This can be used to override the KlusterletAddonConfig that is created for this cluster:
+    #crTemplates:
+    #  KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
+    nodes:
+      - hostName: "provisionhost.server02.partnerci.bos2.lab"
+        role: "master"
+        # Optionally; This can be used to configure desired BIOS setting on a host:
+        #biosConfigRef:
+        #  filePath: "example-hw.profile"
+        bmcAddress: "redfish-virtualmedia://server02.partnerci.bos2.lab:8082/redfish/v1/Systems/d1046006-838f-4912-bfd4-529239afb0e5"
+        bmcCredentialsName:
+          name: "server07-vpool-worker-2-sno-bmh-secret"
+        bootMACAddress: "52:54:00:5f:83:0d"
+        # Use UEFISecureBoot to enable secure boot
+        bootMode: "UEFI"
+          #        rootDeviceHints:
+          #wwn: "0x11111000000asd123"
+        # example of diskPartition below is used for image registry (check ImageRegistry.md for more details), but it's not limited to this use case
+#        diskPartition:
+#          - device: /dev/disk/by-id/wwn-0x11111000000asd123 # match rootDeviceHints
+#            partitions:
+#              - mount_point: /var/imageregistry
+#                size: 102500
+#                start: 344844
+        nodeNetwork:
+          interfaces:
+            - name: eth0
+              macAddress: "52:54:00:5f:83:0d"
+            - name: eth1
+              macAddress: "52:54:00:00:02:00"
+          config:
+            interfaces:
+              - name: eth0
+                type: ethernet
+                state: up
+                ipv4:
+                  enabled: true
+              - name: eth1
+                type: ethernet
+                state: up
+                ipv4:
+                  enabled: true
+...
