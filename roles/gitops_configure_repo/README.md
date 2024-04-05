@@ -7,13 +7,13 @@ Requirements
 ------------
 
 * ArgoCD/GitOps already configured
-* The repository MUST be hosted in Gitlab
-* The SSH key has permissions to read from Gitlab repository.
+* The repository MUST be hosted in GitLab
+* The SSH key has permissions to read from GitLab repository.
 
 Role Variables
 --------------
 
-Variable | Type | Required | Default | Descrition
+Variable | Type | Required | Default | Description
 ---------|------|-----------|---------|------------
 gitlab_ssh_known_hosts | String | yes | | Should be the ssh known hosts. It is required by ArgoCD when working with a SSH key.
 

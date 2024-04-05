@@ -10,14 +10,14 @@ To execute the acm_hypershift role a running OpenShift cluster and its credentia
   - Advanced Cluster Manager
   - Multicluster Engine
   - Metal LB operator is required when using kvirt provider in Bare Metal environments
-  - Hyperconvered Operator for kubevirt provider
+  - Hyperconverged Operator for kubevirt provider
 - A default storage class capabilities for DataVolumes provisioning
 - A metalLB instance on baremetal environments
 - DNS configuration
 
 ### DNS configuration
 
-The API Server for the hosted hypershift cluster is exposed using the LoadBalancer service. All DNS entries required by the Openshift must exist. Example: `api.hypershift.<hub-cluster-domain>`.
+The API Server for the hosted hypershift cluster is exposed using the LoadBalancer service. All DNS entries required by the OpenShift must exist. Example: `api.hypershift.<hub-cluster-domain>`.
 
 These are the required DNS entries to allow interaction with the hosted hypershift cluster:
 
@@ -27,7 +27,7 @@ api.<ah_cluster_name>.<ah_base_domain>
 apps.<ah_cluster_name>.<ah_base_domain>
 ```
 
-At this time the role supports creating the Openshift required endpoints under the Hub cluster subdomain. Eg: https://console-openshift-console.apps.<hosted-cluster-name>.apps.<cluster-domain>
+At this time the role supports creating the OpenShift required endpoints under the Hub cluster subdomain. example: https://console-openshift-console.apps.<hosted-cluster-name>.apps.<cluster-domain>
 
 ## Variables
 

@@ -12,7 +12,7 @@ In particular, this role extracts the container images used in the resources dep
 
 - This role should be used from `dci-openshift-app-agent`.
 - You need to set up `rtc_resources_to_components` variable with the resources to check and the namespace where this role will look at.
-- You have to make sure that `rtc_resources_to_components` is defined according to the resources you have deployed in your cluster; else, the role will not autodiscover anything and no components will be created.
+- You have to make sure that `rtc_resources_to_components` is defined according to the resources you have deployed in your cluster; else, the role will not auto-discover anything and no components will be created.
 
 ## Variables
 

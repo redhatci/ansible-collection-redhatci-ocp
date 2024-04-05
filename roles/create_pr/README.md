@@ -14,8 +14,8 @@ target_repository                   | undefined | true                        | 
 product_type                        | undefined | true                        | Product type. Either "helmchart" or "operator".
 
 Those are the common variables used by both certification project.
-It includes tasks to generate an SSH key needed to push to Github repository and add it to the GitHub account.
-Specially, it generates an ed25519 key into the '.ssh/' folder of the ansible user's HOME and, in order to not taint any configuration, it is doing a backup of the already existing SSH key (if it already exists).
+It includes tasks to generate an SSH key needed to push to GitHub repository and add it to the GitHub account.
+Specially, it generates an ed25519 key into the '.ssh/' folder of the Ansible user's HOME and, in order to not taint any configuration, it is doing a backup of the already existing SSH key (if it already exists).
 
 ## Operator Bundle certification
 Check the [README](roles/preflight/README.md) of the 'preflight' role for more details.
@@ -24,7 +24,7 @@ After check tests have been executed in the preflight role on the operator, the 
 The role will create a fork of the 'certified-operators' project, then add the manifests extracted from the bundle operator image and add a ci.yaml configuration file. The changes are committed and finally create a PR to be added in the catalog of certified operator.
 
 Requirements:
-    - If you create a cert project manually, please think to add github user into connect.redhat.com -> Operator Bundle Image. If you chose an automated project creation, that will be done for you.
+    - If you create a cert project manually, please think to add GitHub user into connect.redhat.com -> Operator Bundle Image. If you chose an automated project creation, that will be done for you.
     - Please precise on which OCP you tested the operator as `com.redhat.openshift.versions: "v4.7-v4.10"` in /medatadata/annotations.yaml of your bundle image.
 
 ## Helm chart certification

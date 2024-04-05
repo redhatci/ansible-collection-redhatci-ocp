@@ -1,3 +1,3 @@
 # generate_agent_iso
 
-Creates the boot iso using openshift_installer's agent subcommand
+Creates the boot ISO using openshift_installer's agent sub-command

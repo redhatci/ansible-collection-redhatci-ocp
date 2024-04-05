@@ -1,6 +1,6 @@
 # SNO-Installer role
 
-This role contains playbooks to deploy OCP SNO in a very opinionated fashion. This might not correspond to the official or recommended way to deploy SNO. For SNO on libvirt it uses a livecd image to bootstrap a VM, and for baremetal it uses dnsmasq as TFTP/DNS/DHCP server and bootstrap a physical node. 
+This role contains playbooks to deploy OCP SNO in a very opinionated fashion. This might not correspond to the official or recommended way to deploy SNO. For SNO on libvirt it uses a live CD image to bootstrap a VM, and for baremetal it uses dnsmasq as TFTP/DNS/DHCP server and bootstrap a physical node. 
 
 NOTE: Disconnected support only available on Baremetal SNO, virtual SNO still requires connected environment
 

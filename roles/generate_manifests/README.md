@@ -1,3 +1,3 @@
 # generate_manifests
 
-Generates the manifests required for openshift_installer's agent subcommand
+Generates the manifests required for openshift_installer's agent sub-command

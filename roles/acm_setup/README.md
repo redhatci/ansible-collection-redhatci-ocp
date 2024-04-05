@@ -23,7 +23,7 @@ The configuration of the ACM hub can be customized by using the following variab
 |hub_hugepages_size                  |1024Mi                         |No           |Hugepages `hub_hugepages_type` size              |
 
 ## Requirements
-1. An Openshift Cluster with a subscription for the ACM operator.
+1. An OpenShift Cluster with a subscription for the ACM operator.
 1. On air-gapped environments, the multicluster-engine operator must be available in the mirrored catalog
 
 It is highly recommended to provision a storage class with enough space available for volumes of the Assisted Service Config before starting deploying clusters. See [acm_sno](../acm_sno/README.md) for more details.

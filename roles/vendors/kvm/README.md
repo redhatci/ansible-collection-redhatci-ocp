@@ -1,3 +1,3 @@
 # kvm
 
-Boots a vm to iso or disk via redfish (sushy tools)
+Boots a VM to ISO or disk via redfish (sushy tools)

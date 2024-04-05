@@ -1,3 +1,3 @@
 # zt
 
-Boots a zt machine to iso or disk via redfish
+Boots a ZT machine to ISO or disk via redfish

@@ -2,7 +2,7 @@
 
 This role allows enabling the OCP logging subsystem. This allows to aggregate cluster's metrics, application and infrastructure logs. The main components of the stack are:
   - [Loki](https://grafana.com/oss/loki/) - for logs storage in an Object Storage
-  - Clusterlogging - for collecting for logs and metrics
+  - Cluster logging - for collecting for logs and metrics
   - Object storage bucket - the permanent logs storage
   - Physical volumes - local storage used for data catching
 
@@ -77,7 +77,7 @@ Remove resources created by the role.
     name: redhatci.ocp.ocp_logging
 ```
 
-## Validaton
+## Validation
 
 To confirm that the stack is working properly:
 1. Validate that a "Logs" entry has been added to the OCP console under the "Observe" menu.

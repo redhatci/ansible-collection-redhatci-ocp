@@ -18,7 +18,7 @@ sandbox_repository                 | undefined                                  
 
 ## Helm charts Certification in a nut shell
 
-In order to run the chart-verifier tool and get your helm chart certified the folllwing requisites must be met:
+In order to run the chart-verifier tool and get your helm chart certified the following requisites must be met:
 
 1. A project in [Red Hat Partner Connect](https://connect.redhat.com/) must be created for each chart to be tested.
 1. An OWNERS file will be created by a bot in https://github.com/openshift-helm-charts/charts/tree/main/charts/partners/<partner_name>/<chart_name>/OWNERS. Once the project information is complete in the connect site. This may take a bit to complete.
@@ -88,7 +88,7 @@ If the tests are executed by DCI, the results will be stored in the DCI job file
 
 ## Using the sandbox environment
 
-Testing without submitting the results to the [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) repository is possible by setting the `sandbox_repository` variable to a repository with a fork of [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) already available. The pull request will be done to the this repository. Having the `create_pr` variable set to true will create a pull request against the sandbox or the official openshift repository. Defining create_pr as false will save the test results in the `log_directory` or the DCI file section.
+Testing without submitting the results to the [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) repository is possible by setting the `sandbox_repository` variable to a repository with a fork of [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/) already available. The pull request will be done to the this repository. Having the `create_pr` variable set to true will create a pull request against the sandbox or the official OpenShift repository. Defining create_pr as false will save the test results in the `log_directory` or the DCI file section.
 
 ## Chart certification and submission to openshift-charts/charts
 
@@ -98,7 +98,7 @@ The `create_pr` variable is set to true by default for each chart, this will sub
 
 Creating the pull request requires the `github_token` variable set and the permissions to fork repositories in your GitHub account. See [creating-a-personal-access-token](https://docs.github.com/es/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) for more information. If the certification process is run by DCI, the token will be automatically provisioned by our dcicertbot account.
 
-Helm Chart verifier defines 3 different test profiles: partner, redhat, and community. The DCI integration will run by default the ["partner"](https://github.com/redhat-certification/chart-verifier/blob/main/docs/helm-chart-checks.md#profiles) profile.
+Helm Chart verifier defines 3 different test profiles: partner, RedHat, and community. The DCI integration will run by default the ["partner"](https://github.com/redhat-certification/chart-verifier/blob/main/docs/helm-chart-checks.md#profiles) profile.
 
 To fully comply with the certification process and test submission, the chart must be deployed on an OCP cluster and pass all the tests. Setting deploy_chart to `false` in the chart definition will skip the results submission. This setting combined with the use of the sandbox environment will allow to get familiar with the process and improve the chart testing before going through the certification process. The test results will be stored in the DCI job files section.
 

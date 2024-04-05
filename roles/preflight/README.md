@@ -1,6 +1,6 @@
 # Preflight cert suite Role
 
-Preflight is a commandline interface for validating if OpenShift operator bundles and containers meet minimum requirements for Red Hat OpenShift Certification.
+Preflight is a command-line interface for validating if OpenShift operator bundles and containers meet minimum requirements for Red Hat OpenShift Certification.
 
 This role implements the preflight test suite as part of DCI Application Agent.
 
@@ -13,12 +13,12 @@ preflight_containers_to_certify  | undefined                                    
 preflight_image                   | quay.io/opdev/preflight:1.9.1                                 | Optional. [Version of Preflight Cert Suite to run check operator cert suite](https://quay.io/repository/opdev/preflight?tab=tags)
 preflight_namespace               | preflight-testing                                    | Optional. Namespace to use for preflight tests
 preflight_sa                      | default                                             | Optional. Service account to use for preflight tests
-pyxis_apikey_path                | undefined                                            | Optional. This is a path to file that contains partner's token. Parner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
+pyxis_apikey_path                | undefined                                            | Optional. This is a path to file that contains partner's token. Partner should generate this token in connect.redhat.com. The token is shared for all projects within one partner.
 preflight_custom_ca              | undefined                                            | Optional. Path of custom ca.crt. Used to test operator stored in a self signed registry
 preflight_source_dir             | undefined                                            | Optional. If this variable is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image if any.
 preflight_test_certified_image  | false                                                | Optional. Run preflight tests on already certified images.
 catalog_url                       | https://catalog.redhat.com/api/containers/v1         | Optional. This is a Pyxis API that used during the check if the image is certified.
-preflight_run_health_check      | true                                                 | Optional. Run health check on every container and generate oval reports both in xml and html formats.
+preflight_run_health_check      | true                                                 | Optional. Run health check on every container and generate oval reports both in xml and HTML formats.
 preflight_dci_all_components_are_ga | true                                             | Optional. Only submit test results when all components in the list `dci_ga_components_for_certification` are GA.
 
 

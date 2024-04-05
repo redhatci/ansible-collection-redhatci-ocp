@@ -1,3 +1,3 @@
 # pxe
 
-Boots a machine to pxe or disk via ipmi
+Boots a machine to PXE or disk via IPMI

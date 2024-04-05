@@ -68,4 +68,4 @@ Reach out to the Telco Partner CI team if you need more information.
 
 ### Merge Queue
 
-There is a set of CI pipelines that are run just before merging by [the merge queue mechanism of Github](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request-with-a-merge-queue). This allows to validate the merged PR before pushing them to main. This is important to avoid parallel merge of PRs that would break the collection.
+There is a set of CI pipelines that are run just before merging by [the merge queue mechanism of GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request-with-a-merge-queue). This allows to validate the merged PR before pushing them to main. This is important to avoid parallel merge of PRs that would break the collection.

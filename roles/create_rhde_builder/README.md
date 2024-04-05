@@ -23,7 +23,7 @@ Mandatory parameters for this role are:
 - `rhde_builder_rhsm_org_id`: the RHSM org id to register the RHEL system
 - `rhde_builder_rhsm_activation_key`: the RHSM activation key to register the RHEL system
 
-All other intersting parameters are defined in [defaults/main.yml](defaults/main.yml) and described in [meta/argument_specs.yml](meta/argument_specs.yml)
+All other interesting parameters are defined in [defaults/main.yml](defaults/main.yml) and described in [meta/argument_specs.yml](meta/argument_specs.yml)
 
 [rhsm_offline_token]: https://access.redhat.com/management/api
 

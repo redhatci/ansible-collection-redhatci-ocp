@@ -14,7 +14,7 @@ As the new role `create_helmchart` reuses some existing tasks such as check_for_
 Name                     | Default                                                                    | Description
 -------------------      | ------------                                                               | -------------
 distribution_method      | None                                                                       | Define when creating new Helm Chart and recommended to define the value as `undistributed` (Web catalog only) and for second value `external` (charts.openshift.io)
-github_usernames         | None                                                                       | Define the Github user
+github_usernames         | None                                                                       | Define the GitHub user
 long_description         | None                                                                       | Same as describe in other project, it means to describe what general information about these CNFs if there are more than one chart
 distribution_instructions| None                                                                       | Define when creating new Helm Chart and provide the information how the user can get this Helm Chart
 
