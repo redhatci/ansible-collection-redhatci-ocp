@@ -40,7 +40,7 @@
   ansible.builtin.debug:
     msg: "pod_list: {{ pod_list | json_query('resources[*].metadata.name') }}"
 
-- name: "Get logs from each pods"
+- name: "Get logs from each pod"
   ansible.builtin.shell: >
     timeout 1m
     {{ glfn_oc }} logs
