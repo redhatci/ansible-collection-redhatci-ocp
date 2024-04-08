@@ -1,19 +1,96 @@
 ---
+- name: Create working directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: hcp_tmp
+  register: ah_tmp_dir
+
+- name: Set work directory path
+  ansible.builtin.set_fact:
+    ah_tmp_dir: "{{ ah_tmp_dir.path }}"
+
+- name: Download CLIs
+  ansible.builtin.include_tasks: download-cli.yml
+  when:
+    - ah_download_cli | bool
+
+- name: Restart HCP pods to pick latest Management cluster state
+  ansible.builtin.include_tasks: restart-cpo.yml
+
+- name: Get management cluster facts
+  ansible.builtin.include_tasks: get-mc-facts.yml
+
+- name: "Validate the target a release image"
+  ansible.builtin.assert:
+    that:
+      - ah_release_image is defined
+
+- name: Extract target version
+  ansible.builtin.shell:
+    chdir: "{{ ah_tmp_dir }}"
+    cmd: >
+      set -x -o pipefail ;
+      oc --registry-config={{ ah_pullsecret_file }}
+      adm
+      release info
+      {{ ah_release_image }}
+      -o json |
+      jq -r .metadata.version
+  retries: 3
+  delay: 10
+  register: ah_ocp_version
+  changed_when: ah_ocp_version.rc != 0
+  until: ah_ocp_version.rc == 0
+
+- name: Get Hub ICSP
+  community.kubernetes.k8s_info:
+    api_version: operator.openshift.io/v1alpha1
+    kind: ImageContentSourcePolicy
+  register: mc_icsp
+
+- name: "Migrate ICSP to IDMS"
+  ansible.builtin.shell:
+    chdir: "{{ ah_tmp_dir }}"
+    cmd: >
+      set -x -o pipefail;
+      mkdir -p idms icsp;
+      for f in $(oc get imageContentSourcePolicy -o name); do
+        oc get ${f} -o yaml > icsp/$(basename ${f}).yaml;
+      done;
+      for f in icsp/*.yaml; do
+        oc adm migrate icsp ${f} --dest-dir idms;
+      done;
+      for f in idms/*.yaml; do
+        sed -i '/creationTimestamp\|generation\|resourceVersion\|uid\|annotations\|last-applied-configuration/d' "${f}";
+      done;
+      oc apply --force --overwrite=true -f idms
+  register: migration_result
+  changed_when: migration_result.rc != 0
+  when:
+    - mc_icsp is defined
+    - mc_icsp.resources | length > 0
+
+- name: Set OCP release version
+  ansible.builtin.set_fact:
+    ah_ocp_version: "{{ ah_ocp_version.stdout }}"
+
 - name: Set cluster name
   ansible.builtin.set_fact:
     ah_cluster_generated_name: "{{ ah_cluster_name | default(lookup('password', '/dev/null length=10 chars=ascii_lowercase,digits'), true) }}"
   run_once: true
 
+- name: Set disconnected facts for Kubevirt disconnected
+  ansible.builtin.include_tasks: kvirt-disconnected.yml
+  when:
+    - ah_disconnected | default(true) | bool
+    - ah_cluster_type == "kubevirt"
+
+- name: "Set Hosted Cluster annotations"
+  ansible.builtin.set_fact:
+    ah_hc_annotations: "{{ ah_cpo_annotations }}{{ ah_hc_annotations }}"
+
 - name: Hypershift validations
   ansible.builtin.include_tasks: validations.yml
-
-- name: Create working directory
-  ansible.builtin.tempfile:
-    state: directory
-  register: ah_tmp_dir
-
-- name: Hypershift cli
-  ansible.builtin.include_tasks: download-cli.yml
 
 - name: Delete existent cluster
   ansible.builtin.include_tasks: delete-cluster.yml
@@ -22,3 +99,4 @@
 
 - name: Hypershift cluster creation
   ansible.builtin.include_tasks: create-cluster.yml
+...

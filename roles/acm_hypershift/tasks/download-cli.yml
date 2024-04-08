@@ -1,4 +1,17 @@
 ---
+- name: Download stable openshift client
+  vars:
+    ocp_client_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.14/openshift-client-linux.tar.gz"
+  ansible.builtin.unarchive:
+    src: "{{ ocp_client_url }}"
+    dest: "{{ ah_tmp_dir }}"
+    remote_src: true
+    mode: "0755"
+  register: result
+  retries: 3
+  delay: 10
+  until: result is not failed
+
 - name: Get route for hcp-cli
   community.kubernetes.k8s_info:
     kind: Route
@@ -14,7 +27,7 @@
     ah_arch: amd64
   ansible.builtin.unarchive:
     src: "https://{{ ah_route.resources[0].spec.host }}/linux/{{ ah_arch }}/hcp.tar.gz"
-    dest: "{{ ah_tmp_dir.path }}"
+    dest: "{{ ah_tmp_dir }}"
     mode: "0755"
     remote_src: true
     validate_certs: false
@@ -26,8 +39,9 @@
 - name: Get hcp cli version
   ansible.builtin.shell:
     cmd: >
-      {{ ah_tmp_dir.path }}/hcp --version
+      {{ ah_tmp_dir }}/hcp --version
   register: result
+  changed_when: false
 
 - name: Print hcp cli version
   ansible.builtin.debug:
@@ -35,5 +49,5 @@
 
 - name: Set hcp cli path
   ansible.builtin.set_fact:
-    ah_cli_path: "{{ ah_tmp_dir.path }}/hcp"
+    ah_hcp_cli_path: "{{ ah_tmp_dir }}/hcp"
 ...

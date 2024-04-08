@@ -1,0 +1,36 @@
+---
+- name: Get CPO pods
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "hypershift"
+  register: pods_info
+
+- name: Restart CPO pods
+  community.kubernetes.k8s:
+    state: absent
+    definition:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: "{{ item.metadata.name }}"
+        namespace: "hypershift"
+    wait: true
+  loop: "{{ pods_info.resources }}"
+  loop_control:
+    label: "{{ item.metadata.name }}"
+
+- name: Check for CPO pods to be running
+  vars:
+    status_query: "resources[*].status.conditions[?type=='Ready'].status"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "hypershift"
+  register: cpo_pods
+  until:
+    - cpo_pods is defined
+    - cpo_pods.resources is defined
+    - cpo_pods.resources | length > 0
+    - cpo_pods | json_query(status_query) | flatten | unique == ["True"]
+  retries: 30
+  delay: 10
+...

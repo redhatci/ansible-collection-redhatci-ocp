@@ -5,6 +5,10 @@
   when:
     - ah_cluster_type | lower not in ah_cluster_types
 
+- name: Assert requirements
+  ansible.builtin.assert:
+    that: ah_hcp_cli_path is defined
+
 - name: "Check for metallb instances"
   community.kubernetes.k8s_info:
     api_version: metallb.io/v1beta1
@@ -18,17 +22,20 @@
   when:
     - mlb_instance.resources | length == 0
 
-- name: "Validate that a pull secret file is defined"
-  ansible.builtin.fail:
-    msg: "A pull secret file is required"
-  when: ah_pullsecret_file is undefined
-
 - name: Check pull secret file
   ansible.builtin.stat:
     path: "{{ ah_pullsecret_file }}"
   register: ah_ps_file
   failed_when: not ah_ps_file.stat.exists
   when: ah_pullsecret_file | length
+  no_log: true
+
+- name: Check CA bundle file
+  ansible.builtin.stat:
+    path: "{{ ah_ca_bundle_file }}"
+  register: ah_ca_file
+  failed_when: not ah_ca_file.stat.exists
+  when: ah_ca_bundle_file | length
 
 - name: Check hypershift namespace is present
   community.kubernetes.k8s_info:

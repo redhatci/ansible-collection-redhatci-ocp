@@ -1,0 +1,101 @@
+---
+- name: Extract the control plane operator image
+  ansible.builtin.shell:
+    chdir: "{{ ah_tmp_dir }}"
+    cmd: >
+      set -x -o pipefail ;
+      oc --registry-config={{ ah_pullsecret_file }}
+      adm release info
+      {{ ah_release_image }} |
+      grep -w hypershift |
+      awk '{print $2}'
+  no_log: true
+  retries: 3
+  delay: 10
+  register: hs_cp_digest
+  changed_when: hs_cp_digest.rc != 0
+  until: hs_cp_digest.rc == 0
+
+- name: Debug CPO image digest
+  ansible.builtin.debug:
+    msg: "{{ hs_cp_digest.stdout }}"
+
+- name: Set CPO image
+  vars:
+    cpo_image_tag: "{{ ah_release_image | regex_replace('^(.*?):[^:]*$', '\\1') }}"
+    cpo_image_base: |-
+      {%- if ah_release_image is search('@') %}
+      {{ ah_release_image.split('@') | first }}
+      {%- else %}
+      {{ cpo_image_tag }}
+      {%- endif %}
+  ansible.builtin.set_fact:
+    cpo_image_path: "{{ cpo_image_base }}@{{ hs_cp_digest.stdout }}"
+
+- name: Set CPO annotation
+  ansible.builtin.set_fact:
+    ah_cpo_annotations: "hypershift.openshift.io/control-plane-operator-image={{ cpo_image_path }} "
+
+- name: Fail is CPO image is not pullable from the local registry
+  ansible.builtin.command: >
+    skopeo inspect
+    --no-tags
+    docker://{{ cpo_image_path }}
+  no_log: true
+  register: skopeo_result
+  changed_when: false
+  failed_when: skopeo_result.rc != 0
+
+- name: Extract the RHCOS images file
+  ansible.builtin.shell:
+    chdir: "{{ ah_tmp_dir }}"
+    cmd: >
+      set -x;
+      oc --registry-config={{ ah_pullsecret_file }}
+      image extract
+      --file /release-manifests/0000_50_installer_coreos-bootimages.yaml
+      {{ ah_release_image }}
+      --confirm
+  retries: 3
+  delay: 10
+  register: hs_boot_images
+  changed_when: hs_boot_images.rc != 0
+  until: hs_boot_images.rc == 0
+
+- name: Load images file and extract RCHOS digest-ref
+  ansible.builtin.include_vars:
+    file: "{{ ah_tmp_dir }}/0000_50_installer_coreos-bootimages.yaml"
+    name: rhcos_data
+  no_log: true
+
+- name: Extract digest-ref for x86_64
+  vars:
+    digest_ref: "{{ rhcos_data.data.stream | from_json }}"
+  ansible.builtin.set_fact:
+    kvirt_rhcos_digest: "{{ digest_ref | json_query('architectures.x86_64.images.kubevirt.\"digest-ref\"') }}"
+
+- name: Mirror Kvirt RHCOS image
+  vars:
+    digest_ref: "{{ rhcos_data.data.stream | from_json }}"
+    kvirt_rhcos_image: "{{ digest_ref | json_query('architectures.x86_64.images.kubevirt.\"digest-ref\"') }}"
+    local_registry_repo: "{{ ah_release_image | regex_replace('^(.*?):[^:]*$', '\\1') }}"
+    local_registry_path: |-
+      {%- if ah_release_image is search('@') %}
+      {{ ah_release_image.split('@') | first }}
+      {%- else %}
+      {{ local_registry_repo }}
+      {%- endif %}
+    rhcos_tag: "{{ lookup('community.general.random_string', length=10, upper=false, special=false) }}"
+  ansible.builtin.shell:
+    chdir: "{{ ah_tmp_dir }}"
+    cmd: >
+      set -x;
+      oc --registry-config={{ ah_pullsecret_file }}
+      image mirror
+      {{ kvirt_rhcos_image }} {{ local_registry_path }}:{{ rhcos_tag }}
+  retries: 3
+  delay: 10
+  register: hs_boot_images
+  changed_when: hs_boot_images.rc != 0
+  until: hs_boot_images.rc == 0
+...
