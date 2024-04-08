@@ -9,7 +9,7 @@ class FilterModule(object):
         Parse the deprecated and to-be-deprecated API after the workload installation.
         '''
         from junit_xml import TestCase, TestSuite
-        from semver import VersionInfo
+        import re
 
         def k8s2ocp(x):
             '''
@@ -23,29 +23,19 @@ class FilterModule(object):
             for version in failed_versions
         }
 
-        def ocp2semver(x):
-            '''
-            Convert major.minor version to semvers' major.minor.patch
-            '''
-            return VersionInfo.parse(x + ".0")
-
-        def semver2ocp(x):
-            '''
-            Convert semver's major.minor.patch to OCP major.minor
-            '''
-            return '.'.join(str(x).split('.')[:-1])
         # Find max version in the set of incompatible versions.
         # If the set is empty, bump the current version.
-        max_version = max(failed_versions | {semver2ocp(ocp2semver(curr_version).bump_minor())},
-                          key=ocp2semver)
+        max_version = max(failed_versions) or curr_version
 
-        # build a continuous list from curr_version to max_version
-        version = ocp2semver(curr_version)
-        max_version_semver = ocp2semver(max_version)
+        major_version = int(re.findall(r'^(\d*)\.', curr_version)[0])
+        minor_version = int(re.findall(r'\.(\d*)$', curr_version)[0])
+        max_minor_version = int(re.findall(r'\.(\d*)$', max_version)[0])
+
         ocp_versions = {}
         status = 'compatible'
-        while version <= max_version_semver:
-            ocp_version = semver2ocp(version)
+        version_to_check = minor_version
+        while version_to_check <= max_minor_version:
+            ocp_version = str(major_version)+"."+str(version_to_check)
             if ocp_version in failed_versions:
                 deprecated_apis = ", ".join(version_to_removed_apis[ocp_version])
                 ocp_versions[ocp_version] = status + ", " + deprecated_apis if status != 'compatible' else deprecated_apis
@@ -54,7 +44,7 @@ class FilterModule(object):
                 ocp_versions[ocp_version] = status
             else:
                 ocp_versions[ocp_version] = "compatible"
-            version = version.bump_minor()
+            version_to_check = version_to_check + 1
 
         # convert the dictionary to JUnit test suite
         test_cases = []
