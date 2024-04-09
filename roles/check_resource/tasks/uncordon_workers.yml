@@ -2,7 +2,7 @@
 - name: Check for workers with Ready,SchedulingDisabled status
   ansible.builtin.shell: >
     set -eo pipefail;
-    {{ oc_tool_path }} get nodes --no-headers=true |
+    {{ cr_oc }} get nodes --no-headers=true |
     grep 'Ready,SchedulingDisabled' |
     grep worker |
     awk '{ print $1 }'
@@ -17,13 +17,13 @@
   when: reg_disabled_nodes.stdout | length > 0
   block:
     - name: Workaround - uncordon all ready workers with disabled scheduling
-      ansible.builtin.command: "{{ oc_tool_path }} adm uncordon {{ item }}"
+      ansible.builtin.command: "{{ cr_oc }} adm uncordon {{ item }}"
       loop: "{{ reg_disabled_nodes.stdout.split('\n') }}"
 
     # If nodes are not ready after this time, then the whole role will fail
     - name: "Wait for workers to be ready - {{ check_reason | default('To define the location') }}"
       ansible.builtin.shell: >
-        {{ oc_tool_path }} get nodes --no-headers=true | grep worker
+        {{ cr_oc }} get nodes --no-headers=true | grep worker
       register: nodes
       until:
         - '"SchedulingDisabled" not in nodes.stdout'
