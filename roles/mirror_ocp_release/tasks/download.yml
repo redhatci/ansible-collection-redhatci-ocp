@@ -11,7 +11,7 @@
 - name: "Extract artifacts from release image"
   ansible.builtin.command:
     cmd: >
-      {{ oc_tool_path }} adm release extract
+      {{ mor_oc }} adm release extract
       --registry-config {{ mor_auths_file }}
       --tools
       --from {{ mor_pull_url }}
