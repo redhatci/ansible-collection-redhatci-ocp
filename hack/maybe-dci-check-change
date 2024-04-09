@@ -44,7 +44,7 @@ else
 fi
 
 # Check if there is a force-check or a code change
-if [ -n "$force_check" ] || curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -v '\.md$'|grep -E 'roles/|plugins/|galaxy.yml'; then
+if [ -n "$force_check" ] || curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -Ev '^tests/|\.md$'|grep -E 'roles/|plugins/|galaxy.yml'; then
     curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"pending\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"QUEUED\"}" "$statuses_url"
     dci-check-change "$URL"
 else
