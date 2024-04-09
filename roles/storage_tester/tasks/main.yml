@@ -14,15 +14,19 @@
     kind: Namespace
     name: storage-tester
 
-- name: "Get oc version output"
-  ansible.builtin.command: "{{ oc_tool_path }} version"
-  register: oc_version_str
+- name: "Get cluster version"
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: sc_cluster_version
 
 - name: "Get OCP version"
+  vars:
+    ver_query: "history[?state=='Completed'] | [0].version"
+    full_ver: "{{ sc_cluster_version.resources[0].status | json_query(ver_query) }}"
   ansible.builtin.set_fact:
-    ocp_version_storage: "{{ '.'.join(item.split(':')[1].strip().split('.')[0:2]) }}"
-  when: "'Server Version' in item"
-  loop: "{{ oc_version_str.stdout_lines }}"
+    ocp_version_storage: "{{ '.'.join(full_ver.split('.')[0:2]) }}"
 
 - name: "Create tmp Working Directory"
   ansible.builtin.tempfile:
