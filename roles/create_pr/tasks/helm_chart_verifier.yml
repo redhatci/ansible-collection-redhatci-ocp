@@ -40,6 +40,8 @@
     url: "{{ chart.chart_file }}"
     dest: "{{ chart_path }}"
     mode: "u=rwx,g=rx,o=rx"
+  when:
+    - publish_chart | bool
 
 - name: "Git add chart_file and report.yaml to the repository"
   vars:
@@ -48,9 +50,8 @@
     cmd: |
       git config user.email {{ partner_email }}
       git config user.name {{ github_username }}
-      git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/OWNERS
-      git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/{{ chart_name }}/{{ chart_version }}/
-      git commit -m 'Added {{ chart_name }}_{{ chart_version }}'
+      git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/
+      git commit -m 'Added files for {{ chart_name }}_{{ chart_version }}'
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
 
