@@ -14,7 +14,7 @@
 
 - name: "Compute OCP compatibility of the workload API for {{ deprecated_ns }}"
   vars:
-    ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility_{{ deprecated_ns }}.xml"
+    ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility_{{ deprecated_ns }}_junit.xml"
   set_fact:
     ocp_compatibility: "{{ deprecated_api_removed_api | redhatci.ocp.ocp_compatibility(ocp_version, ocp_filename) }}"
 ...
