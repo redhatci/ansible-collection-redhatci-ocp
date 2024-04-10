@@ -13,7 +13,7 @@
   "operator_package_name": "{{ operator.name }}",
   "passed": {{ preflight_output.passed }},
   "results": {{ preflight_output.results }},
-  "test_library": {{ preflight_output.test_library | combine({'commit': preflight_latest.json.object.sha}) }},
+  "test_library": {{ preflight_output.test_library | combine({'commit': preflight_latest.json.object.sha, 'version': preflight_release}) }},
   "tested_on": {
     "name": "OCP",
     "version": "{{ ocp_version_full }}"
