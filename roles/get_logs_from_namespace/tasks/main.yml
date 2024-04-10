@@ -1,46 +1,70 @@
 ---
-- name: "Create directory {{ get_logs_folder }}"
-  ansible.builtin.file:
-    path: "{{ get_logs_folder }}"
-    state: directory
-    mode: "0700"
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - glfn_ns | string
+      - glfn_oc | string
 
-- name: "Get a list of all pods from {{ get_logs_ns }}"
+- name: Check provided logs directory exists
+  ansible.builtin.stat:
+    path: "{{ glfn_dir }}"
+  register: dir_stat
+  when: glfn_dir is defined
+  failed_when: not dir_stat.stat.exists
+
+- name: Create logs directory when not provided
+  when: glfn_dir is not defined
+  block:
+    - name: Create logs directory
+      tempfile:
+        state: directory
+        prefix: glfn_logs.
+      register: logs
+
+    - name: Set logs directory
+      set_fact:
+        glfn_dir: "{{ logs.path }}"
+
+    - name: Logs path
+      debug:
+        msg: "{{ job_logs.path }}"
+
+- name: "Get a list of all pods from {{ glfn_ns }}"
   community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
-    namespace: "{{ get_logs_ns }}"
+    namespace: "{{ glfn_ns }}"
   register: pod_list
 
 - name: "Print pods names"
   ansible.builtin.debug:
-    msg: "pod_list: {{ pod_list | json_query('resources[*].metadata.name') }}"  # noqa: jinja[invalid]
+    msg: "pod_list: {{ pod_list | json_query('resources[*].metadata.name') }}"
 
-- name: "Get logs from each pods"  # noqa: jinja[invalid]
+- name: "Get logs from each pod"
   ansible.builtin.shell: >
     timeout 1m
-    {{ oc_tool_path }} logs
+    {{ glfn_oc }} logs
     --since=8h
-    --namespace={{ get_logs_ns }}
+    --namespace={{ glfn_ns }}
     --all-containers=true
     {{ item }}
-    > {{ get_logs_folder }}/{{ item }}.log ;
-    [ -s {{ get_logs_folder }}/{{ item }}.log ] || rm -f {{ get_logs_folder }}/{{ item }}.log
+    > {{ glfn_dir }}/{{ item }}.log ;
+    [ -s {{ glfn_dir }}/{{ item }}.log ] || rm -f {{ glfn_dir }}/{{ item }}.log
   loop: "{{ pod_list | json_query('resources[*].metadata.name') }}"
 
 - name: "Get pods status from namespace"
   ansible.builtin.shell: >
-    {{ oc_tool_path }} get pods
-    --namespace={{ get_logs_ns }}
+    {{ glfn_oc }} get pods
+    --namespace={{ glfn_ns }}
     --show-labels
     --output=wide
-    > {{ get_logs_folder }}/{{ get_logs_ns }}_status.log ;
-    [ -s {{ get_logs_folder }}/{{ get_logs_ns }}_status.log ] || rm -f {{ get_logs_folder }}/{{ get_logs_ns }}_status.log
+    > {{ glfn_dir }}/{{ glfn_ns }}_status.log ;
+    [ -s {{ glfn_dir }}/{{ glfn_ns }}_status.log ] || rm -f {{ glfn_dir }}/{{ glfn_ns }}_status.log
 
 - name: "Get events from from namespace"
   ansible.builtin.shell: >
-    {{ oc_tool_path }} get events
-    --namespace={{ get_logs_ns }}
-    > {{ get_logs_folder }}/{{ get_logs_ns }}_events.log ;
-    [ -s {{ get_logs_folder }}/{{ get_logs_ns }}_events.log ] || rm -f {{ get_logs_folder }}/{{ get_logs_ns }}_events.log
+    {{ glfn_oc }} get events
+    --namespace={{ glfn_ns }}
+    > {{ glfn_dir }}/{{ glfn_ns }}_events.log ;
+    [ -s {{ glfn_dir }}/{{ glfn_ns }}_events.log ] || rm -f {{ glfn_dir }}/{{ glfn_ns }}_events.log
 ...

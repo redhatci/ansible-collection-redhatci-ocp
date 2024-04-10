@@ -27,7 +27,7 @@
     # Ready, so retrying this task during 10 minutes maximum.
     - name: Check for nodes with NotReady,SchedulingDisabled status
       ansible.builtin.shell: >
-        {{ oc_tool_path }} get nodes --no-headers=true |
+        {{ cr_oc }} get nodes --no-headers=true |
         grep 'NotReady,SchedulingDisabled' | awk '{ print $1 }'
       register: not_ready_disabled_nodes
       until: not_ready_disabled_nodes.stdout | length == 0
@@ -38,7 +38,7 @@
     # Run this check during 3 minutes maximum.
     - name: Check for nodes with Ready,SchedulingDisabled status
       ansible.builtin.shell: >
-        {{ oc_tool_path }} get nodes --no-headers=true |
+        {{ cr_oc }} get nodes --no-headers=true |
         grep 'Ready,SchedulingDisabled' | awk '{ print $1 }'
       register: reg_disabled_nodes
       until: reg_disabled_nodes.stdout | length == 0

@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -93,7 +93,7 @@ jobs:
           path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
@@ -101,7 +101,7 @@ jobs:
         run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
 
       # Fail when new errors appear
-      - name: Run sanity test
+      - name: Run ansible-test sanity/units
         run: |
           set -x
           git checkout -b branch
@@ -113,13 +113,15 @@ jobs:
             sed -e 's/3.5 //g')
           for version in $PY_VERS; do
             ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
+            ansible-test units --verbose --docker --python $version --color --coverage || :
           done 2>&1 | tee -a branch.output
           git checkout main
           for version in $PY_VERS; do
             ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
+            ansible-test units --verbose --docker --python $version --color --coverage || :
           done >> main.output 2>&1
           for key in branch main; do
-            grep -E "(ERROR|FATAL):" "$key.output" |
+            grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |
             grep -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
             sed -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "$key.errors"
           done
@@ -152,7 +154,7 @@ jobs:
           check-unmerged-pr: true
 
   check-docs:
-    name: Check documentation and README
+    name: Check version, documentation and README
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -169,4 +171,15 @@ jobs:
           if grep -q Missing: ${GITHUB_STEP_SUMMARY}; then
             exit 1
           fi
+
+      - name: Check versions are consistent between rpm spec and galaxy.yml
+        run: |
+          echo "# Inconsistent versions" > ${GITHUB_STEP_SUMMARY}
+          spec_version=$(grep Version: ansible-collection-redhatci-ocp.spec | awk '{print $2}' | cut -d. -f1,2)
+          galaxy_version=$(grep version: galaxy.yml | awk '{print $2}' | cut -d. -f1,2)
+          if [ "$spec_version" != "$galaxy_version" ]; then
+            echo "- Inconsistent: rpm spec: ${spec_version} galaxy: ${galaxy_version}" | tee -a ${GITHUB_STEP_SUMMARY}
+            exit 1
+          fi
+
 ...
