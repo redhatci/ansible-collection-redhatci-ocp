@@ -156,6 +156,16 @@
     msg: "results-junit file is absent, it seems like the tests failed: {{ preflight_junit }}"
   when: not preflight_junit_exists.stat.exists
 
+- name: Update existing operator project using cert_settings
+  ansible.builtin.include_role:
+    name: redhatci.ocp.create_certification_project
+    tasks_from: update_project.yml
+  vars:
+    product_type: "operator"
+  when:
+    - cert_settings is defined
+    - cert_project_id | default('') | length
+
 - name: "Create certification project for {{ operator.name }}"
   ansible.builtin.include_role:
     name: redhatci.ocp.create_certification_project
