@@ -152,7 +152,7 @@ jobs:
           check-unmerged-pr: true
 
   check-docs:
-    name: Check documentation and README
+    name: Check version, documentation and README
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -169,4 +169,15 @@ jobs:
           if grep -q Missing: ${GITHUB_STEP_SUMMARY}; then
             exit 1
           fi
+
+      - name: Check versions are consistent between rpm spec and galaxy.yml
+        run: |
+          echo "# Inconsistent versions" > ${GITHUB_STEP_SUMMARY}
+          spec_version=$(grep Version: ansible-collection-redhatci-ocp.spec | awk '{print $2}' | cut -d. -f1,2)
+          galaxy_version=$(grep version: galaxy.yml | awk '{print $2}' | cut -d. -f1,2)
+          if [ "$spec_version" != "$galaxy_version" ]; then
+            echo "- Inconsistent: rpm spec: ${spec_version} galaxy: ${galaxy_version}" | tee -a ${GITHUB_STEP_SUMMARY}
+            exit 1
+          fi
+
 ...

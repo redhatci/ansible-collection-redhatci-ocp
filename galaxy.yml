@@ -7,9 +7,9 @@ name: ocp
 
 # The version of the collection. Must be compatible with semantic versioning
 # Always leave patch version as .0
-# Patch version is replaced from commit date in epoch format
+# Patch version is replaced from commit date in UNIX epoch format
 # example: 0.3.2147483647
-version: 0.3.0
+version: 0.5.0
 
 # The path to the Markdown (.md) readme file.
 readme: README.md
