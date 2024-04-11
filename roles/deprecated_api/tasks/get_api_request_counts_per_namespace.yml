@@ -10,7 +10,7 @@
   vars:
     query: "resources[*].{name: metadata.name, removedInRelease: status.removedInRelease}[?removedInRelease != null]"
   set_fact:
-    deprecated_api_removed_api: "{{ deprecated_api_apirequestcount | json_query(query) | flatten }}"
+    deprecated_api_removed_api: "{{ deprecated_api_apirequestcount | json_query(query) | flatten | unique }}"
 
 - name: "Compute OCP compatibility of the workload API for {{ deprecated_ns }}"
   vars:
