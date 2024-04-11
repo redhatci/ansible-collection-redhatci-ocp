@@ -18,6 +18,7 @@
       ansible.builtin.shell:
         cmd: >
           skopeo inspect
+          --tls-verify=false
           {% if mc_pullsecret is defined %}
           --authfile {{ mc_pullsecret }}
           {% endif %}
