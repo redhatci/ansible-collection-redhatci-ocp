@@ -1,0 +1,10 @@
+[
+    {
+      "name": "flowschemas.v1beta2.flowcontrol.apiserver.k8s.io",
+      "removedInRelease": "1.29"
+    },
+    {
+      "name": "prioritylevelconfigurations.v1beta2.flowcontrol.apiserver.k8s.io",
+      "removedInRelease": "1.29"
+    }
+]
