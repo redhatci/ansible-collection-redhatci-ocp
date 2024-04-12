@@ -9,9 +9,11 @@
     preflight_artifact: "{{ lookup('file', preflight_log_file) | to_json }}"
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
 
-- name: Get latest commit hash for the Preflight release
-  vars:
+- name: Set preflight release
+  set_fact: 
     preflight_release: "{{ preflight_output.test_library.version.split('+')[0] }}"
+
+- name: Get latest commit hash for the Preflight release
   ansible.builtin.uri:
     url: >
       https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/git/refs/tags/{{ preflight_release }}
