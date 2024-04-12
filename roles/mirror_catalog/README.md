@@ -12,6 +12,7 @@ mc_registry     | Yes      | string   |         | The registry where the catalog
 mc_pullsecret   | No       | string   | ""      | The credential file to pull and/or push the images, e.g. '/path/to/pullsecret.json'
 mc_is_type      | No       | string   | icsp    | The type of image source to use, choose between icsp (imageContentsourcePolicy) (default) or idms (imageDigestMirrorSet).
 mc_continue_on_error|  No  | boolean  | false   | Continue even if there if there are errors during mirroring
+mc_allow_unsecure_registry| No| boolean| true   | Allow mirror from/to insecure registries
 
 <sup>1</sup> It's recommended to use a [stable version of oc](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/)
 

@@ -18,7 +18,9 @@
       ansible.builtin.shell:
         cmd: >
           skopeo inspect
+          {% if mc_allow_unsecure_registry | bool %}
           --tls-verify=false
+          {% endif %}
           {% if mc_pullsecret is defined %}
           --authfile {{ mc_pullsecret }}
           {% endif %}
@@ -49,7 +51,9 @@
       {{ mc_catalog_digest }}
       {{ mc_registry }}
       --index-filter-by-os="linux/amd64"
+      {% if mc_allow_unsecure_registry | bool %}
       --insecure
+      {% endif %}
       --max-components=3
       --continue-on-error={{ mc_continue_on_error }}
       {% if mc_pullsecret is defined %}
