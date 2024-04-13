@@ -36,7 +36,7 @@ jobs:
           export PYTHONHASHSEED=42
           git checkout -b branch
           git fetch --unshallow origin main
-          cmd="ansible-lint --parseable --force-color --profile=shared"
+          cmd="hack/ansible-lint.sh -d"
           # don't want to annotate through GHA
           unset GITHUB_ACTIONS
           $cmd | tee branch.output
@@ -104,21 +104,22 @@ jobs:
       - name: Run ansible-test sanity/units
         run: |
           set -x
+          EXCLUDE="--exclude hack/"
           git checkout -b branch
           git fetch --unshallow origin main
           # extract all the supported python versions from the error message, excluding 3.5
-          PY_VERS=$(ansible-test sanity --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
+          PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
             grep -Po "invalid.*?\K'3.*\d'" |
             tr -d ,\' |
             sed -e 's/3.5 //g')
           for version in $PY_VERS; do
-            ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
-            ansible-test units --verbose --docker --python $version --color --coverage || :
+            ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
+            ansible-test units $EXCLUDE --verbose --docker --python $version --color --coverage || :
           done 2>&1 | tee -a branch.output
           git checkout main
           for version in $PY_VERS; do
-            ansible-test sanity --verbose --docker --python $version --color --coverage --failure-ok
-            ansible-test units --verbose --docker --python $version --color --coverage || :
+            ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
+            ansible-test units $EXCLUDE --verbose --docker --python $version --color --coverage || :
           done >> main.output 2>&1
           for key in branch main; do
             grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |

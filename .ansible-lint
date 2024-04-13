@@ -1,17 +1,26 @@
 ---
 # vim: ft=yaml
 
-profile: shared
+rulesdir:
+  - hack/rules
+
 use_default_rules: true
+
+display_relative_path: true
+
 verbosity: 1
 
 exclude_paths:
   - .github
   - plugins
+  - hack
+  - tests
+
+skip_list:
+  - var-naming[no-role-prefix]
 
 warn_list:
   - ignore-errors
   - no-changed-when
-  - var-naming[no-role-prefix]
   - yaml[line-length]
 ...
