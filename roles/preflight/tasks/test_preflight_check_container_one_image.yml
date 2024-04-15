@@ -44,6 +44,17 @@
         cert_project_id: "{{ operator.pyxis_container_identifier }}"
       when: operator.pyxis_container_identifier | default('') | length
 
+    - name: Update existing container project using cert_settings
+      ansible.builtin.include_role:
+        name: redhatci.ocp.create_certification_project
+        tasks_from: update_project.yml
+      vars:
+        product_type: "container"
+        cert_item: "{{ operator }}"
+      when:
+        - cert_settings is defined
+        - cert_project_id | default('') | length
+
     - name: "Create certification project for {{ current_operator_image }}"
       ansible.builtin.include_role:
         name: redhatci.ocp.create_certification_project
