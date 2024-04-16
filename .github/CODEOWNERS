@@ -1,12 +1,12 @@
 # Global owners
-*       @redhatci/all
+*                                    @redhatci/all
 
 # most of the roles come from legacy DCI, last match wins
-/roles  @redhatci/dci
+/roles                               @redhatci/dci
 
 # Legacy baremetal-kni roles
-/roles/node_prep    @redhatci/baremetaldeploy
-/roles/installer    @redhatci/baremetaldeploy
+/roles/node_prep                     @redhatci/baremetaldeploy
+/roles/installer                     @redhatci/baremetaldeploy
 
 # Legacy crucible roles
 /roles/add_day2_node                 @redhatci/crucible
@@ -50,5 +50,8 @@
 /roles/validate_inventory            @redhatci/crucible
 /roles/vendors                       @redhatci/crucible
 
+# verification team
+/roles/jenkins_job_launcher          @redhatci/verification
+
 # maintainers
-/.github        @redhatci/maintain
+/.github                             @redhatci/maintain
