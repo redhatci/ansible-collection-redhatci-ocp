@@ -67,7 +67,7 @@
 - name: Check for a default storage class
   vars:
     query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
-    query_results: "{{ ah_sc | json_query(query_default_sc) }}"  # noqa: jinja[invalid]
+    query_results: "{{ ah_sc | json_query(query_default_sc) }}"
   community.kubernetes.k8s_info:
     api_version: v1
     kind: StorageClass

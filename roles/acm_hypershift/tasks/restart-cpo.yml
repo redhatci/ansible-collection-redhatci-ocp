@@ -1,11 +1,11 @@
 ---
-- name: Get CPO pods
+- name: Get Cluster-Plane Operator pods
   community.kubernetes.k8s_info:
     kind: Pod
     namespace: "hypershift"
   register: pods_info
 
-- name: Restart CPO pods
+- name: Restart Cluster-Plane Operator pods
   community.kubernetes.k8s:
     state: absent
     definition:
@@ -19,7 +19,7 @@
   loop_control:
     label: "{{ item.metadata.name }}"
 
-- name: Check for CPO pods to be running
+- name: Check for Cluster-Plane Operator pods to be running
   vars:
     status_query: "resources[*].status.conditions[?type=='Ready'].status"
   community.kubernetes.k8s_info:

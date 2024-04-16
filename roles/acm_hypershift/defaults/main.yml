@@ -2,10 +2,12 @@
 ah_cluster_network_cidr: 10.132.0.0/14
 ah_clusters_ns: clusters
 ah_cluster_type: "kubevirt"
+ah_disconnected: false
+ah_download_cli: true
 ah_force_deploy: false
-ah_no_log: true
+ah_hc_annotations: ""
 ah_node_memory: 8Gi
 ah_node_pool_replicas: 2
-ah_disconnected: true
-ah_hc_annotations: ""
+ah_no_log: true
+cpo_annotation: ""
 ...

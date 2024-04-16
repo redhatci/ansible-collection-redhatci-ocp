@@ -26,7 +26,7 @@
       ansible.builtin.set_fact:
         ah_pullsecret_file: "{{ ah_tmp_dir }}/{{ auths_file }}"
 
-- name: "Get Hub Image Source"
+- name: "Get Management Image Source"
   community.kubernetes.k8s_info:
     api_version: "config.openshift.io/v1"
     kind: "ImageDigestMirrorSet"
@@ -38,6 +38,7 @@
   when:
     - mc_idms is defined
     - mc_idms.resources | length > 0
+    - ah_disconnected | bool
     - ah_ics is undefined
   block:
     - name: Save mirrors to a file
@@ -57,7 +58,7 @@
   when:
     - ah_release_image is undefined
   block:
-    - name: Get Hub OCP release image
+    - name: Get Management OCP release image
       community.kubernetes.k8s_info:
         api_version: "config.openshift.io/v1"
         kind: "ClusterVersion"
@@ -106,37 +107,34 @@
       ansible.builtin.set_fact:
         ah_ssh_key: "{{ ah_tmp_dir }}/{{ ssh_pub_key }}"
 
-- name: Get facts for disconnected
+- name: Get CA cert from Management cluster
+  vars:
+    bundle_file: "hcp_ca_bundle.pem"
   when:
+    - ah_ca_bundle_file is undefined
     - ah_disconnected | bool
+  no_log: "{{ ah_no_log | bool }}"
   block:
-    - name: Get CA cert from Management cluster
+    - name: Get cluster user-ca cert
+      community.kubernetes.k8s_info:
+        api: v1
+        kind: ConfigMap
+        name: "user-ca-bundle"
+        namespace: openshift-config
+      register: mc_user_ca_bundle
+
+    - name: Get the user_ca_bundle content
       vars:
-        bundle_file: "hcp_ca_bundle.pem"
+        user_ca_bundle: '{{ mc_user_ca_bundle.resources[0].data["ca-bundle.crt"] }}'
+      copy:
+        content: "{{ user_ca_bundle }}"
+        dest: "{{ ah_tmp_dir }}/{{ bundle_file }}"
+        mode: "0600"
       when:
-        - ah_ca_bundle_file is undefined
-      no_log: "{{ ah_no_log | bool }}"
-      block:
-        - name: Get cluster user-ca cert
-          community.kubernetes.k8s_info:
-            api: v1
-            kind: ConfigMap
-            name: "user-ca-bundle"
-            namespace: openshift-config
-          register: mc_user_ca_bundle
+        - mc_user_ca_bundle is defined
+        - mc_user_ca_bundle.resources | length == 1
 
-        - name: Get the user_ca_bundle content
-          vars:
-            user_ca_bundle: '{{ mc_user_ca_bundle.resources[0].data["ca-bundle.crt"] }}'
-          copy:
-            content: "{{ user_ca_bundle }}"
-            dest: "{{ ah_tmp_dir }}/{{ bundle_file }}"
-            mode: "0600"
-          when:
-            - mc_user_ca_bundle is defined
-            - mc_user_ca_bundle.resources | length == 1
-
-        - name: Set CA bundle fact
-          ansible.builtin.set_fact:
-            ah_ca_bundle_file: "{{ ah_tmp_dir }}/{{ bundle_file }}"
+    - name: Set CA bundle fact
+      ansible.builtin.set_fact:
+        ah_ca_bundle_file: "{{ ah_tmp_dir }}/{{ bundle_file }}"
 ...

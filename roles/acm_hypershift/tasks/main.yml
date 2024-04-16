@@ -29,12 +29,11 @@
   ansible.builtin.shell:
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
-      set -x -o pipefail ;
-      oc --registry-config={{ ah_pullsecret_file }}
-      adm
-      release info
+      set -x -o pipefail;
+      oc adm release info
       {{ ah_release_image }}
-      -o json |
+      --output json
+      --registry-config={{ ah_pullsecret_file }} |
       jq -r .metadata.version
   retries: 3
   delay: 10
@@ -42,7 +41,7 @@
   changed_when: ah_ocp_version.rc != 0
   until: ah_ocp_version.rc == 0
 
-- name: Get Hub ICSP
+- name: Get Management ICSP
   community.kubernetes.k8s_info:
     api_version: operator.openshift.io/v1alpha1
     kind: ImageContentSourcePolicy
@@ -82,12 +81,12 @@
 - name: Set disconnected facts for Kubevirt disconnected
   ansible.builtin.include_tasks: kvirt-disconnected.yml
   when:
-    - ah_disconnected | default(true) | bool
+    - ah_disconnected | bool
     - ah_cluster_type == "kubevirt"
 
 - name: "Set Hosted Cluster annotations"
   ansible.builtin.set_fact:
-    ah_hc_annotations: "{{ ah_cpo_annotations }}{{ ah_hc_annotations }}"
+    ah_hc_annotations: "{{ cpo_annotation }}{{ ah_hc_annotations }}"
 
 - name: Hypershift validations
   ansible.builtin.include_tasks: validations.yml

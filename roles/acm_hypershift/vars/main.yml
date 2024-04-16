@@ -2,5 +2,4 @@
 ah_cluster_types:
   - kubevirt
   - agent
-ah_download_cli: true
 ...
