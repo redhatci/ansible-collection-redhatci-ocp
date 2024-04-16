@@ -137,6 +137,7 @@ Name | Description
 [redhatci.ocp.vendors.supermicro](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/supermicro/README.md) | Boots a supermicro machine to iso or disk via redfish
 [redhatci.ocp.vendors.zt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/zt/README.md) | Boots a zt machine to iso or disk via redfish
 [redhatci.ocp.verify_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/verify_tests/README.md) | Verification of tests based on rules
+[redhatci.ocp.ztphub](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ztphub) | Installs ZTP ACM based hub
 
 ## Plugins
 

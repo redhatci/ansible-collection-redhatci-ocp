@@ -1,0 +1,46 @@
+---
+- name: Subscribe for GitOps (ArgoCD)
+  kubernetes.core.k8s:
+    api_version: operators.coreos.com/v1alpha1
+    kind: Subscription
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    name: openshift-gitops-operator
+    namespace: openshift-operators
+    resource_definition:
+      spec:
+        channel: "{{ ztphub_gitops_operator_install_channel }}"
+        name: openshift-gitops-operator
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+        installPlanApproval: "{{ ztphub_install_ops_mode }}"
+  when: not ztphub_install_gitops_operator_from_image
+
+- include_tasks: approve_install_plan.yml
+  when: not ztphub_automatic_update | bool
+
+- name: Ensure GitOps CSV phase has Succeeded before proceeding
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: openshift-operators
+  register: ops_csv_status
+  until:
+    - "'resources' in ops_csv_status"
+    - ops_csv_status.resources | length > 0
+    - "ops_csv_status.resources[0].status.phase == 'Succeeded'"
+  retries: 20
+  delay: 30
+  ignore_errors: true
+  when: not ztphub_install_gitops_operator_from_image
+
+- name: Fail if CSV phase is not Succeeded
+  fail:
+    msg: |
+      State: {{ ops_csv_status.resources[0].state | default('Unknown') }}
+      Status: {{ ops_csv_status.resources[0].status.phase | default('Unknown') }}
+      Reason: {{ ops_csv_status.resources[0].status.reason | default('Unknown') }}
+      Message: {{ ops_csv_status.resources[0].status.message | default('Unknown') }}
+  when:
+    - ops_csv_status is failed
+    - not ztphub_install_gitops_operator_from_image

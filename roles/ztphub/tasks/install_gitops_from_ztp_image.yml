@@ -1,0 +1,26 @@
+---
+- name: Print install command from image if need
+  debug:
+    msg: |-
+      In case of installation from the image, run:
+      oc --kubeconfig={{ ztphub_kubeconfig_file | default('') }} apply -f {{ ztphub_out_dir }}/argocd/deployment/openshift-gitops-operator.yaml
+
+- name: Create ArgoCD operator
+  shell: >-
+    oc --kubeconfig={{ ztphub_kubeconfig_file }} apply -f {{ ztphub_out_dir }}/argocd/deployment/openshift-gitops-operator.yaml
+
+- name: Wait for ArgoCD operator to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    name: openshift-gitops-operator
+    namespace: openshift-gitops
+  register: gitops_operator_status
+  until:
+    - "'resources' in gitops_operator_status"
+    - gitops_operator_status.resources | length > 0
+    - "gitops_operator_status.resources[0].status.readyReplicas == gitops_operator_status.resources[0].status.replicas"
+  retries: 20
+  delay: 30
+  ignore_errors: true

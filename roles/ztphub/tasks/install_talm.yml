@@ -1,0 +1,42 @@
+---
+- name: Subscribe for TALM
+  kubernetes.core.k8s:
+    api_version: operators.coreos.com/v1alpha1
+    kind: Subscription
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    name: openshift-topology-aware-lifecycle-manager-subscription
+    namespace: openshift-operators
+    resource_definition:
+      spec:
+        channel: "{{ ztphub_talm_operator_install_channel }}"
+        name: topology-aware-lifecycle-manager
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+        installPlanApproval: "{{ ztphub_install_ops_mode }}"
+
+- include_tasks: approve_install_plan.yml
+  when: not ztphub_automatic_update | bool
+
+- name: Ensure TALM CSV phase has Succeeded before proceeding
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: openshift-operators
+  register: talm_csv_status
+  until:
+    - "'resources' in talm_csv_status"
+    - talm_csv_status.resources | length > 0
+    - "talm_csv_status.resources[0].status.phase == 'Succeeded'"
+  retries: 20
+  delay: 30
+  ignore_errors: true
+
+- name: Fail if CSV phase is not Succeeded
+  fail:
+    msg: |
+      State: {{ talm_csv_status.resources[0].state | default('Unknown') }}
+      Status: {{ talm_csv_status.resources[0].status.phase | default('Unknown') }}
+      Reason: {{ talm_csv_status.resources[0].status.reason | default('Unknown') }}
+      Message: {{ talm_csv_status.resources[0].status.message | default('Unknown') }}
+  when: talm_csv_status is failed

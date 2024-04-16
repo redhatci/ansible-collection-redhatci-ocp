@@ -1,0 +1,72 @@
+---
+
+ztphub_working_dir: "/tmp/hub/{{ cluster | default('ztp') }}"
+ztphub_gitops_operator_install_channel: latest
+ztphub_talm_operator_install_channel: stable
+ztphub_image: quay.io/openshift-kni/ztp-site-generator:latest
+ztphub_out_dir: "{{ ztphub_working_dir }}/out"
+ztphub_automatic_update: true
+ztphub_install_ops_mode: "{% if ztphub_automatic_update %}Automatic{% else %}Manual{% endif %}"
+ztphub_install_gitops_operator_from_image: false
+
+ztphub_app_autosync: false
+
+# ztphub_kubeconfig_file:
+ztphub_gitops_repo_insecure: true
+ztphub_gitops_repo_project: default
+
+ztphub_gitops_repo: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/gitops.git
+ztphub_gitops_path: install
+ztphub_gitops_revision: master
+
+ztphub_policy_gitops_repo: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/gitops.git
+ztphub_policy_gitops_path: configuration
+ztphub_policy_gitops_revision: master
+
+ztphub_custom_images: []
+
+ztphub_agent_service_config_spec: |-
+  databaseStorage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 19Gi
+  filesystemStorage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 19Gi
+  imageStorage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 190Gi
+  osImages:
+  - cpuArchitecture: x86_64
+    openshiftVersion: "4.12"
+    rootFSUrl: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.12/latest/rhcos-live-rootfs.x86_64.img
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.12/latest/rhcos-live.x86_64.iso
+    version: "4.12"
+  - cpuArchitecture: x86_64
+    openshiftVersion: "4.13"
+    rootFSUrl: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.13/latest/rhcos-live-rootfs.x86_64.img
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.13/latest/rhcos-live.x86_64.iso
+    version: "4.13"
+  - cpuArchitecture: x86_64
+    openshiftVersion: "4.14"
+    rootFSUrl: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.14/latest/rhcos-live-rootfs.x86_64.img
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.14/latest/rhcos-live.x86_64.iso
+    version: "4.14"
+  - cpuArchitecture: x86_64
+    openshiftVersion: "4.15"
+    rootFSUrl: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/latest-4.15/rhcos-live-rootfs.x86_64.img
+    url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/latest-4.15/rhcos-live.x86_64.iso
+    version: "4.15"
+  - cpuArchitecture: x86_64
+    openshiftVersion: "4.16"
+    rootFSUrl: https://releases-rhcos-art.apps.ocp-virt.prod.psi.redhat.com/storage/prod/streams/4.16-9.4/builds/416.94.202402021701-0/x86_64/rhcos-416.94.202402021701-0-live-rootfs.x86_64.img
+    url: https://releases-rhcos-art.apps.ocp-virt.prod.psi.redhat.com/storage/prod/streams/4.16-9.4/builds/416.94.202402021701-0/x86_64/rhcos-416.94.202402021701-0-live.x86_64.iso
+    version: "4.16"

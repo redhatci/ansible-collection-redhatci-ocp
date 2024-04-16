@@ -1,0 +1,152 @@
+---
+- name: Create out directory if not exist
+  file:
+    path: "{{ ztphub_working_dir }}"
+    state: directory
+
+- name: Create a namespace for GitOps
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: openshift-gitops
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+
+- name: Create AgentServiceConfig
+  kubernetes.core.k8s:
+    api_version: agent-install.openshift.io/v1beta1
+    kind: AgentServiceConfig
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    name: agent
+    resource_definition:
+      metadata:
+        annotations:
+          unsupported.agent-install.openshift.io/assisted-image-service-skip-verify-tls: "true"
+      spec: "{{ ztphub_agent_service_config_spec | from_yaml }}"
+
+- name: Ensure provisioning-configuration is patched
+  kubernetes.core.k8s:
+    api_version: metal3.io/v1alpha1
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    kind: Provisioning
+    name: provisioning-configuration
+    merge_type:
+      - merge
+    definition:
+      spec:
+        watchAllNamespaces: true
+        disableVirtualMediaTLS: true
+
+- include_tasks: install_gitops.yml
+- include_tasks: install_talm.yml
+
+- name: Create custom images
+  kubernetes.core.k8s:
+    api_version: hive.openshift.io/v1
+    kind: ClusterImageSet
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    name: "{{ item.name }}"
+    resource_definition:
+      spec:
+        releaseImage: "{{ item.image }}"
+  loop: "{{ ztphub_custom_images }}"
+  when:
+    - ztphub_custom_images is defined
+    - ztphub_custom_images | length > 0
+
+- name: Get ZTP image
+  containers.podman.podman_image:
+    name: "{{ ztphub_image }}"
+
+- name: Create out directory if not exist
+  file:
+    path: "{{ ztphub_out_dir }}"
+    state: directory
+
+- name: Extract ZTP image
+  shell: podman run --rm --log-driver=none ztp-site-generator:latest extract /home/ztp --tar | tar x -C ./out
+  args:
+    chdir: "{{ ztphub_working_dir }}"
+    creates: "{{ ztphub_out_dir }}/argocd"
+
+- include_tasks: install_gitops_from_ztp_image.yml
+  when: ztphub_install_gitops_operator_from_image | bool
+
+- name: Patch GitOps operator
+  shell: >-
+    oc --kubeconfig={{ ztphub_kubeconfig_file }} patch argocd openshift-gitops -n openshift-gitops
+    --type=merge
+    --patch-file {{ ztphub_out_dir }}/argocd/deployment/argocd-openshift-gitops-patch.json
+  register: patch_result
+  changed_when: "'(no change)' not in patch_result.stdout"
+
+- name: Replace parameters in SiteConfigs YAML file
+  lineinfile:
+    path: "{{ ztphub_out_dir }}/argocd/deployment/clusters-app.yaml"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backrefs: true
+  loop:
+    - regexp: '^(\s+path:\s+).*'
+      line: '\1{{ ztphub_gitops_path }}'
+    - regexp: '^(\s+repoURL:\s+).*'
+      line: '\1{{ ztphub_gitops_repo }}'
+    - regexp: '^(\s+targetRevision:\s+).*'
+      line: '\1{{ ztphub_gitops_revision }}'
+
+- name: Replace parameters in PolicyConfigs YAML file
+  lineinfile:
+    path: "{{ ztphub_out_dir }}/argocd/deployment/policies-app.yaml"
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    backrefs: true
+  loop:
+    - regexp: '^(\s+path:\s+).*'
+      line: '\1{{ ztphub_policy_gitops_path }}'
+    - regexp: '^(\s+repoURL:\s+).*'
+      line: '\1{{ ztphub_policy_gitops_repo }}'
+    - regexp: '^(\s+targetRevision:\s+).*'
+      line: '\1{{ ztphub_policy_gitops_revision }}'
+
+- name: Disable auto-sync if configured
+  ansible.builtin.lineinfile:
+    path: "{{ ztphub_out_dir }}/argocd/deployment/clusters-app.yaml"
+    state: absent
+    regexp: "{{ item }}"
+  loop:
+    - '^\s+automated:.*'
+    - '^\s+prune:.*'
+    - '^\s+selfHeal:.*'
+  when: not ztphub_app_autosync
+
+- name: Deploy application
+  shell: >-
+    oc --kubeconfig={{ ztphub_kubeconfig_file }} apply -k {{ ztphub_out_dir }}/argocd/deployment
+  changed_when: "' changed' in deploy_result.stdout or ' created' in deploy_result.stdout"
+  register: deploy_result
+
+- name: Connect repo by creating secret in ArgoCD
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        annotations:
+          managed-by: argocd.argoproj.io
+        labels:
+          argocd.argoproj.io/secret-type: repository
+        name: repo-5g-devops-ci-infra-12345
+        namespace: openshift-gitops
+      data:
+        insecure: "{{ ztphub_gitops_repo_insecure | string | lower | b64encode }}"
+        project: "{{ ztphub_gitops_repo_project | b64encode }}"
+        type: "{{ 'git' | b64encode }}"
+        url: "{{ ztphub_gitops_repo | b64encode }}"
+
+- name: For sync run the following command if Autosync is disabled
+  debug:
+    msg: |-
+      To sync the application run (if Autosync is disabled):
+      oc --kubeconfig={{ ztphub_kubeconfig_file }} patch app clusters -n openshift-gitops -p '{"operation": {"sync": { "revision": "HEAD" } }}' --type merge

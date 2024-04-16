@@ -1,0 +1,42 @@
+---
+- name: Let the operator to wait to create an Install Plan
+  pause:
+    seconds: 30
+
+- name: Get all InstallPlans that are set to Manual and not approved
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: InstallPlan
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+  register: install_plans
+
+- name: Print InstallPlans that are set to Manual and not approved
+  debug:
+    msg: "Approving Install Plan for {{ item.spec.clusterServiceVersionNames.0 }} - {{ item.metadata.namespace }}/{{ item.metadata.name }}"
+  loop: >-
+    {{ install_plans.resources |
+        selectattr('spec.approval', 'equalto', 'Manual') |
+        selectattr('spec.approved', 'equalto', false) |
+        list }}
+  loop_control:
+    label: "{{ item.metadata.namespace }}/{{ item.metadata.name }}"
+
+- name: Approve InstallPlans
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: InstallPlan
+      metadata:
+        name: "{{ item.metadata.name }}"
+        namespace: "{{ item.metadata.namespace }}"
+      spec:
+        approved: true
+    kubeconfig: "{{ ztphub_kubeconfig_file | default(omit) }}"
+  loop: >-
+    {{ install_plans.resources |
+        selectattr('spec.approval', 'equalto', 'Manual') |
+        selectattr('spec.approved', 'equalto', false) |
+        list }}
+  loop_control:
+    label: "{{ item.metadata.namespace }}/{{ item.metadata.name }}"
