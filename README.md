@@ -73,6 +73,7 @@ Name | Description
 [redhatci.ocp.install_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/install_cluster/README.md) | Waits for nodes to be discovered by the on-prem assisted installer then then patches cluster networking and triggers the install process
 [redhatci.ocp.installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/installer/README.md) | [IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.install_operator_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/install_operator_gitops/README.md) | Installs and configures the openshift-gitops-operator so it can be used for ZTP deployments. Installation is optional and may be skipped by setting the variable ```ioc_configure_only: true``
+[redhatci.ocp.jenkins_job_launcher](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/jenkins_job_launcher/README.md) | Launch Jenkins jobs
 [redhatci.ocp.kvirt_vm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/kvirt_vm/README.md) | Deployment of Kubevirt virtual machines.
 [redhatci.ocp.label_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/label_nodes/README.md) | Applies labels defined at inventory level to the OCP cluster nodes.
 [redhatci.ocp.merge_registry_creds](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/merge_registry_creds/README.md) | Combines multiple registry credentials in JSON format passed as dictionaries
@@ -137,6 +138,7 @@ Name | Description
 [redhatci.ocp.vendors.supermicro](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/supermicro/README.md) | Boots a supermicro machine to iso or disk via redfish
 [redhatci.ocp.vendors.zt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/zt/README.md) | Boots a zt machine to iso or disk via redfish
 [redhatci.ocp.verify_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/verify_tests/README.md) | Verification of tests based on rules
+
 
 ## Plugins
 
