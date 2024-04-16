@@ -4,6 +4,7 @@
 
 Name:           %{repo}
 Version:        0.15.EPOCH
+
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 

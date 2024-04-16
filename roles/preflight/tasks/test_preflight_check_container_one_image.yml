@@ -94,6 +94,29 @@
             {% if cert_project_id | default('') | length and preflight_dci_all_components_are_ga | default(True) %}
             --submit
             {% endif %}
+
+        - name: Get image digest
+          ansible.builtin.shell: >
+            set -eo pipefail;
+            skopeo inspect
+            {% if partner_creds | length %}
+            --authfile {{ partner_creds }}
+            {% else %}
+            --no-creds
+            {% endif %}
+            docker://{{ current_operator_image }} | jq -r '.Digest'
+          register: sha
+
+        - name: Use Pyxis API to check image vulnerability status
+          vars:
+            filter_params: "filter=image_id%3D%3D{{ sha.stdout }}"
+          ansible.builtin.uri:
+            url: >
+              {{ catalog_url }}/images?{{ filter_params }}&page_size=1&page=0
+            method: GET
+            status_code: 200
+            timeout: 120
+          register: vulnerability_status
       rescue:
         - name: Do not fail when preflight check container throws an error
           ansible.builtin.debug:
