@@ -2,4 +2,8 @@
 ah_cluster_types:
   - kubevirt
   - agent
+
+ah_control_plane_availability_policies:
+  - HighlyAvailable
+  - SingleReplica
 ...

@@ -51,6 +51,7 @@ At this time the role supports creating the OpenShift required endpoints under t
 | ah_hcp_cli_path         |                                           | No        | Path to the hcp CLI, if `ah_download_cli` the role will get the binary from the Management Cluster
 | ah_ssh_key              | `sshKey` from Management cluster          | No        | SSH key to be added to the `authorized_keys` file in NodePool's instances
 | ah_disconnected         | False                                     | No        | Defines if the management cluster is in a disconnected (air-gapped) environment
+| ah_control_plane_availability_policy | HighlyAvailable              | No        | ControllerAvailabilityPolicy specifies the availability policy applied to critical control plane components. Options: HighlyAvailable, SingleReplica |
 
 ## Disconnected control planes
 

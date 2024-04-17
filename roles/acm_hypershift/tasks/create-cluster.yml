@@ -16,6 +16,9 @@
       {%- if ah_ca_bundle_file is defined %} --additional-trust-bundle "{{ ah_ca_bundle_file }}"{%- endif %}
       {%- if ah_hc_annotations | length >0 %} --annotations {{ ah_hc_annotations }}{%- endif %}
       {%- if ah_ssh_key | length >0 %} --ssh-key {{ ah_ssh_key }}{%- endif %}
+      {% if ah_control_plane_availability_policy is defined %}
+      --control-plane-availability-policy="{{ ah_control_plane_availability_policy }}"
+      {% endif %}
   notify: Remove working directory
   changed_when: false
 
