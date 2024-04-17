@@ -56,5 +56,11 @@
 # platform team
 /roles/sideload_kernel               @redhatci/platform
 
+# ztp
+/roles/configure_ztp_gitops_repo     @redhatci/ztp
+/roles/configure_ztp_gitops_apps     @redhatci/ztp
+/roles/gitops_configure_repo         @redhatci/ztp
+/roles/install_operator_gitops       @redhatci/ztp
+
 # maintainers
 /.github                             @redhatci/maintain
