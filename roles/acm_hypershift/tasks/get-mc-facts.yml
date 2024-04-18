@@ -1,0 +1,140 @@
+---
+- name: Get pull secret from Management cluster
+  vars:
+    auths_file: "hcp_pullsecret.json"
+  when:
+    - ah_pullsecret_file is undefined
+  no_log: "{{ ah_no_log | bool }}"
+  block:
+    - name: Get cluster pull_secret
+      community.kubernetes.k8s_info:
+        api: v1
+        kind: Secret
+        name: "pull-secret"
+        namespace: openshift-config
+      register: mc_pull_secret
+
+    - name: Set the pullsecret file
+      vars:
+        pull_secret: "{{ mc_pull_secret.resources[0].data['.dockerconfigjson'] | b64decode }}"
+      copy:
+        content: "{{ pull_secret }}"
+        dest: "{{ ah_tmp_dir }}/{{ auths_file }}"
+        mode: "0600"
+
+    - name: Set pull secret path
+      ansible.builtin.set_fact:
+        ah_pullsecret_file: "{{ ah_tmp_dir }}/{{ auths_file }}"
+
+- name: "Get Management Image Source"
+  community.kubernetes.k8s_info:
+    api_version: "config.openshift.io/v1"
+    kind: "ImageDigestMirrorSet"
+  register: mc_idms
+
+- name: Get IDMS from Management cluster
+  vars:
+    ics_file: "hcp_ics"
+  when:
+    - mc_idms is defined
+    - mc_idms.resources | length > 0
+    - ah_disconnected | bool
+    - ah_ics is undefined
+  block:
+    - name: Save mirrors to a file
+      vars:
+        idms_query: "resources[*].spec.imageDigestMirrors"
+        mirrors: "{{ mc_idms | json_query(idms_query) | flatten | to_yaml }}"
+      copy:
+        content: "{{ mirrors }}"
+        dest: "{{ ah_tmp_dir }}/{{ ics_file }}"
+        mode: "0644"
+
+    - name: Set ICS path
+      ansible.builtin.set_fact:
+        ah_ics: "{{ ah_tmp_dir }}/{{ ics_file }}"
+
+- name: Get HCP target version
+  when:
+    - ah_release_image is undefined
+  block:
+    - name: Get Management OCP release image
+      community.kubernetes.k8s_info:
+        api_version: "config.openshift.io/v1"
+        kind: "ClusterVersion"
+      register: mc_cv
+      no_log: true
+
+    - name: Set target release from Management cluster
+      vars:
+        mc_desired_release: "resources[0].status.desired.image"
+      set_fact:
+        ah_release_image: "{{ mc_cv | json_query(mc_desired_release) }}"
+      when:
+        - mc_cv is defined
+        - mc_cv.resources | length > 0
+
+- name: Get SSH pub key from Management cluster
+  vars:
+    ssh_pub_key: "hcp_pub_key.pem"
+  when:
+    - ah_ssh_key is undefined
+  block:
+    - name: Get cluster install-config
+      community.kubernetes.k8s_info:
+        api: v1
+        kind: ConfigMap
+        name: cluster-config-v1
+        namespace: kube-system
+      register: install_config
+      until: "'resources' in install_config and install_config.resources != []"
+      retries: 12
+      delay: 5
+
+    - name: Get SSH public key from Management cluster
+      vars:
+        cluster_install_info: |-
+          {{ ( install_config.resources[0].data |
+          from_yaml )['install-config'] |
+          from_yaml }}
+        mc_ssh_key: "{{ cluster_install_info.sshKey }}"
+      copy:
+        content: "{{ mc_ssh_key }}"
+        dest: "{{ ah_tmp_dir }}/{{ ssh_pub_key }}"
+        mode: "0400"
+
+    - name: Set SSH public key file
+      ansible.builtin.set_fact:
+        ah_ssh_key: "{{ ah_tmp_dir }}/{{ ssh_pub_key }}"
+
+- name: Get CA cert from Management cluster
+  vars:
+    bundle_file: "hcp_ca_bundle.pem"
+  when:
+    - ah_ca_bundle_file is undefined
+    - ah_disconnected | bool
+  no_log: "{{ ah_no_log | bool }}"
+  block:
+    - name: Get cluster user-ca cert
+      community.kubernetes.k8s_info:
+        api: v1
+        kind: ConfigMap
+        name: "user-ca-bundle"
+        namespace: openshift-config
+      register: mc_user_ca_bundle
+
+    - name: Get the user_ca_bundle content
+      vars:
+        user_ca_bundle: '{{ mc_user_ca_bundle.resources[0].data["ca-bundle.crt"] }}'
+      copy:
+        content: "{{ user_ca_bundle }}"
+        dest: "{{ ah_tmp_dir }}/{{ bundle_file }}"
+        mode: "0600"
+      when:
+        - mc_user_ca_bundle is defined
+        - mc_user_ca_bundle.resources | length == 1
+
+    - name: Set CA bundle fact
+      ansible.builtin.set_fact:
+        ah_ca_bundle_file: "{{ ah_tmp_dir }}/{{ bundle_file }}"
+...

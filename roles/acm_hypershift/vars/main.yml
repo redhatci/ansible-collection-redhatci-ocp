@@ -1,4 +1,5 @@
 ---
 ah_cluster_types:
   - kubevirt
+  - agent
 ...
