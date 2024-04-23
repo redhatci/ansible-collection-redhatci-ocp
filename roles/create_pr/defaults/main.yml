@@ -1,3 +1,4 @@
 ---
 publish_chart: true
+git_protocol: ssh
 ...

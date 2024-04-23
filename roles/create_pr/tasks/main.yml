@@ -31,7 +31,7 @@
   failed_when: gh_login.rc != 0
 
 - name: "Configure Git protocol"
-  ansible.builtin.command: "{{ gh_tool_path }} config set git_protocol ssh"
+  ansible.builtin.command: "{{ gh_tool_path }} config set git_protocol {{ git_protocol }}"
 
 - name: "Get GitHub status details"
   ansible.builtin.command:

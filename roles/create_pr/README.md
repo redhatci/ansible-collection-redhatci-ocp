@@ -13,6 +13,7 @@ partner_email                       | undefined | true/false                  | 
 target_repository                   | undefined | true                        | GitHub repository where the pull request will be created.
 product_type                        | undefined | true                        | Product type. Either "helmchart" or "operator".
 publish_chart                       | true      | false                       | For helm charts, disable adding the Chart as part of the pull request.
+git_protocol                        | ssh       | false                       | Protocol for GitHub communication (ssh/https)
 
 Those are the common variables used by both certification project.
 It includes tasks to generate an SSH key needed to push to GitHub repository and add it to the GitHub account.
