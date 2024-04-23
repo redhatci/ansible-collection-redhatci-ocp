@@ -12,6 +12,11 @@
     - target_repository
     - work_dir
 
+- name: Check GH accepted protocols
+  ansible.builtin.assert:
+    that: git_protocol in ['ssh', 'https']
+    msg: "{{ git_protocol }} is not a valid protocol for GitHub"
+
 - name: Validate that cert_project_id is provided
   ansible.builtin.fail:
     msg: "Please define operator.pyxis_operator_identifier or use create_container_project / create_operator_project"
