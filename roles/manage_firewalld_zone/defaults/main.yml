@@ -1,0 +1,7 @@
+---
+mfz_state: present
+mfz_masquerade: false
+mfz_ifaces: []
+mfz_services: []
+mfz_ports: []
+...

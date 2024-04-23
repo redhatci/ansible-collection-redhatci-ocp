@@ -1,0 +1,68 @@
+---
+- name: Validate input
+  ansible.builtin.assert:
+    that:
+      - mfz_zone is defined
+      - mfz_state in ['present', 'absent']
+      - mfz_ifaces | type_debug == 'list'
+      - mfz_ports | type_debug == 'dict'
+      - mfz_services | type_debug == 'dict'
+
+- name: Manage firewalld zone state
+  become: true
+  ansible.posix.firewalld:
+    zone: "{{ mfz_zone }}"
+    state: "{{ mfz_state }}"
+    permanent: true
+  register: _mfz_zone_state
+
+- name: Reload firewalld if zone state changed
+  become: true
+  when: _mfz_zone_state is changed
+  ansible.builtin.service:
+    name: firewalld
+    state: reloaded
+
+# if zone is present, manage its attributes
+- name: Manage zone attributes
+  when: mfz_state == 'present'
+  block:
+    - name: Manage masquerading
+      become: true
+      ansible.posix.firewalld:
+        zone: "{{ mfz_zone }}"
+        state: enabled
+        masquerade: "{{ mfz_masquerade }}"
+        immediate: true
+        permanent: true
+
+    - name: Add interface(s)
+      become: true
+      ansible.posix.firewalld:
+        zone: "{{ mfz_zone }}"
+        state: enabled
+        immediate: true
+        permanent: true
+        interface: "{{ item }}"
+      loop: "{{ mfz_ifaces }}"
+
+    - name: Manage service(s)
+      become: true
+      ansible.posix.firewalld:
+        zone: "{{ mfz_zone }}"
+        state: "{{ 'enabled' if item.value | bool else 'disabled' }}"
+        immediate: true
+        permanent: true
+        service: "{{ item.key }}"
+      with_dict: "{{ mfz_services }}"
+
+    - name: Manage port(s)
+      become: true
+      ansible.posix.firewalld:
+        zone: "{{ mfz_zone }}"
+        state: "{{ 'enabled' if item.value | bool else 'disabled' }}"
+        immediate: true
+        permanent: true
+        port: "{{ item.key }}"
+      with_dict: "{{ mfz_ports }}"
+...

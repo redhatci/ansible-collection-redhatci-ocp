@@ -76,6 +76,7 @@ Name | Description
 [redhatci.ocp.jenkins_job_launcher](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/jenkins_job_launcher/README.md) | Launch Jenkins jobs
 [redhatci.ocp.kvirt_vm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/kvirt_vm/README.md) | Deployment of Kubevirt virtual machines.
 [redhatci.ocp.label_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/label_nodes/README.md) | Applies labels defined at inventory level to the OCP cluster nodes.
+[redhatci.ocp.manage_firewalld_zone](roles/manage_firewalld_zone/README.md) | Manage a FirewallD zone.
 [redhatci.ocp.merge_registry_creds](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/merge_registry_creds/README.md) | Combines multiple registry credentials in JSON format passed as dictionaries
 [redhatci.ocp.metallb_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/metallb_setup/README.md) | Setup of the MetalLB operator in BGP mode.
 [redhatci.ocp.microshift_generate_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/microshift_generate_iso/README.md) | Generate a MicroShift ISO image.
