@@ -194,7 +194,7 @@
     product_version: "{{ chart_version }}"
     fork_name: "charts-{{ chart_name }}-{{ chart_version }}-{{ ansible_date_time.iso8601_basic_short }}"
     work_dir: "{{ work_chart_dir }}"
-    publish_chart: "{{ chart.flags | regex_search('-W') | default('', True) | length == 0 }}"
+    publish_chart: "{{ chart.flags |default('') is not search('-W') }}"
   when:
     - chart.create_pr | default(false) | bool
     - cv_fail_count.stdout | int == 0
