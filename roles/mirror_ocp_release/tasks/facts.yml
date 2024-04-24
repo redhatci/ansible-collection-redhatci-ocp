@@ -122,6 +122,8 @@
   ansible.builtin.set_fact:
     bootstraposimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['qemu_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['qemu_uncompressed_sha256'] }}"
     clusterosimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['openstack_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['openstack_sha256'] }}"
+    metalosimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['metal_iso_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['metal_iso_
+sha256'] }}"
   when:
     - mor_write_custom_config | bool
 ...
