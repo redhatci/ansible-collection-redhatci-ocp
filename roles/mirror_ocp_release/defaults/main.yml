@@ -13,6 +13,7 @@ mor_registry_path: "ocp-{{ mor_base_version }}/{{ mor_version }}"
 mor_ipi:
  - openstack
  - qemu
+ - metal_iso
 mor_vsphere:
  - openstack
  - qemu
