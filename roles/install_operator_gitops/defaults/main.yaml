@@ -3,6 +3,7 @@ metallb: true
 database_storage_request: 20Gi
 filesystem_storage_request: 20Gi
 image_storage_request: 100Gi
+rhcos_images: null
 
 iog_configure_only: false
 iog_oc_tool_path: "{{ oc_tool_path | default('/usr/local/bin/oc') }}"

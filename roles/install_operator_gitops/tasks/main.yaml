@@ -40,6 +40,7 @@
           resources:
             requests:
               storage: "{{ image_storage_request }}"
+        osImages: "{{ rhcos_images | default(null) }}"
 
 - name: Optionally install the openshift-gitops-operator
   when: not (iog_configure_only | bool)
