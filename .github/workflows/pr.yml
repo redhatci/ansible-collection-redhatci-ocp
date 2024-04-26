@@ -24,6 +24,8 @@ jobs:
         run: pip install junitparser junit_xml jmespath
 
       - name: Run ansible-lint
-        run: ansible-lint --parseable --nocolor --profile=shared -v
+        run: |
+          unset GITHUB_ACTIONS
+          ansible-lint --parseable --nocolor --profile=shared -v
 
 ...
