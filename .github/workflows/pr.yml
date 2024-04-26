@@ -32,7 +32,7 @@ jobs:
           export PYTHONHASHSEED=42
           git checkout -b branch
           git fetch --unshallow origin main
-          cmd="ansible-lint --parseable --force-color --profile=shared -vv"
+          cmd="ansible-lint --parseable --nocolor --profile=shared -vv"
           # don't want to annotate through GHA
           unset GITHUB_ACTIONS
           $cmd | tee branch.output
