@@ -35,18 +35,33 @@ pr=$(sed -e 's@.*/pull/'@@ <<< $URL)
 proj=$(sed -e 's@https://github.com/\(.*\)/pull/.*@\1@i' <<< $URL)
 json=$(curl -s -L "${HEADERS[@]}" https://api.github.com/repos/$proj/pulls/$pr)
 statuses_url=$(jq -r .statuses_url <<< $json)
+body=$(jq -r .body <<< $json)
 
 # check if there is a Test-Hints: force-check string in the PR description
-if grep -iq '^\s*Test-Hints:\s*force-check' <<< $(jq -r .body <<< $json); then
+if grep -iEq '^\s*Test-Hints?:\s*force-check' <<< $body; then
     force_check=1
 else
     force_check=
 fi
 
+# check if there is a Test-Hints: no-check string in the PR description
+if grep -iEq '^\s*Test-Hints?:\s*no-check' <<< $body; then
+    no_check=1
+else
+    no_check=
+fi
+
 # Check if there is a force-check or a code change
-if [ -n "$force_check" ] || curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -Ev '^tests/|\.md$'|grep -E 'roles/|plugins/|galaxy.yml'; then
+if [ -z "$no_check" ] && ( [ -n "$force_check" ] || curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -Ev '^tests/|\.md$'|grep -E 'roles/|plugins/|galaxy.yml' ); then
     curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"pending\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"QUEUED\"}" "$statuses_url"
-    dci-check-change "$URL"
+    url=$(jq -r .html_url <<< $json)
+    if ! dci-auto-launch "$url" <<< "$body"; then
+        if ! grep -E 'TestDallas(Workload|Sno)?:' <<< "$body"; then
+            echo "No DCI job specified. Use \`TestDallas:\`, \`TestDallasWorkload:\` or \`TestBos2:\` in your PR description." >> ${GITHUB_STEP_SUMMARY}
+            echo "Else, use \`Test-Hints: no-check\` if there is no need for a DCI job." >> ${GITHUB_STEP_SUMMARY}
+            exit 1
+        fi
+    fi
 else
     curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"success\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"No code change\"}" "$statuses_url"
 fi

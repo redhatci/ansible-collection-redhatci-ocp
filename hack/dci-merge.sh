@@ -25,16 +25,7 @@ BASE_SHA="$1"
 HEAD_SHA="$2"
 STATUSES_URL="https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/statuses/$HEAD_SHA"
 GITHUB_JOBNAME="DCI / DCI Job"
-VIRT=
 DCI_QUEUE=
-SNO_DCI_QUEUE=
-SUPPORTED_HINTS=
-NO_DCI_QUEUE=${NO_DCI_QUEUE:-}
-NO_COMMENT=
-UPGRADE=
-UPGRADE_ARGS=
-APP_NAME=
-APP_ARGS=
 FORCE_CHECK=
 
 # shellcheck disable=SC1091
@@ -54,100 +45,43 @@ send_status() {
 set -x
 
 # Lookup the merge commits and get their PR descriptions to detect Test-Hints: strings
-VIRT=
-PRS="$(git log --merges ${BASE_SHA}..${HEAD_SHA} | grep -oP 'Merge pull request #\K\d+')"
+PRS="$(git log --merges "${BASE_SHA}".."${HEAD_SHA}" | grep -oP 'Merge pull request #\K\d+')"
 
 NB_PRS=0
 NB_NOCHECK=0
+# CMD is a list of commands to run for each PR
+declare -a CMD
+declare -a CMD_SNO
+declare -a CMD_SNO_BM
+
 for PR in $PRS; do
     if [ -n "$PR" ]; then
         NB_PRS=$((NB_PRS+1))
         DESC=$(curl -s "${GH_HEADERS[@]/#/-H}" https://api.github.com/repos/redhatci/ansible-collection-redhatci-ocp/pulls/"$PR"|jq -r .body)
 
-        if [[ sno =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*sno\s*" <<< "$DESC"; then
-            VIRT=--sno
-            if [ -n "$SNO_DCI_QUEUE" ]; then
-                DCI_QUEUE="$SNO_DCI_QUEUE"
-            fi
-        fi
-
-        if [[ sno-ai =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*sno-ai\s*" <<< "$DESC"; then
-            VIRT=--sno-ai
-            if [ -n "$SNO_AI_DCI_QUEUE" ]; then
-                DCI_QUEUE="$SNO_AI_DCI_QUEUE"
-            fi
-        fi
-
-        if [[ assisted =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*assisted\s*" <<< "$DESC"; then
-            VIRT=--assisted
-            if [ -n "$ASSISTED_DCI_QUEUE" ]; then
-                DCI_QUEUE="$ASSISTED_DCI_QUEUE"
-            fi
-        fi
-
-        if [[ assisted-abi =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*assisted-abi\s*" <<< "$DESC"; then
-            VIRT=--assisted-abi
-            if [ -n "$ASSISTED_DCI_QUEUE" ]; then
-                DCI_QUEUE="$ASSISTED_DCI_QUEUE"
-            fi
-        fi
-
-        if [[ libvirt =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*libvirt\s*" <<< "$DESC"; then
-            VIRT=--virt
-        fi
-
-        if [[ no-check =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*no-check\s*" <<< "$DESC"; then
+        if [[ no-check =~ $SUPPORTED_HINTS ]] && grep -qEi "^\s*Test-Hints?:\s*no-check\s*" <<< "$DESC"; then
             NB_NOCHECK=$((NB_NOCHECK+1))
             continue
         fi
 
-        if [[ force-check =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Hints:\s*force-check\s*" <<< "$DESC"; then
-            FORCE_CHECK=--force-check
+        if [[ force-check =~ $SUPPORTED_HINTS ]] && grep -qEi "^\s*Test-Hints?:\s*force-check\s*" <<< "$DESC"; then
+            FORCE_CHECK=1
         fi
 
-        if [[ upgrade =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Upgrade-Hints:\s*yes\s*" <<< "$DESC"; then
-            UPGRADE=--upgrade
-
-            if [ -z "$VIRT" ]; then
-                VIRT=--virt
-            fi
-
-            # process Test-Upgrade-Args-Hints
-            if [[ upgrade-args =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Upgrade-Args-Hints:" <<< "$DESC"; then
-                UPGRADE_ARGS="$(sed -n -e 's/^\s*Test-Upgrade-Args-Hints:\s*//pi' <<< "$DESC")"
-            fi
-
-            # process Test-Upgrade-From-Topic-Hints
-            if [[ upgrade-from-topic =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Upgrade-From-Topic-Hints:" <<< "$DESC"; then
-                UPGRADE="$UPGRADE --from-topic $(sed -n -e 's/^\s*Test-Upgrade-From-Topic-Hints:\s*//pi' <<< "$DESC")"
-            fi
-
-            # process Test-Upgrade-To-Topic-Hints
-            if [[ upgrade-to-topic =~ $SUPPORTED_HINTS ]] && grep -qi "^\s*Test-Upgrade-To-Topic-Hints:" <<< "$DESC"; then
-                UPGRADE="$UPGRADE --to-topic $(sed -n -e 's/^\s*Test-Upgrade-To-Topic-Hints:\s*//pi' <<< "$DESC")"
-            fi
+        # extract TestBos2 commands
+        if grep -qE "^\s*TestBos2:\s*" <<< "$DESC"; then
+            # shellcheck disable=SC2001,SC2086
+            CMD+=("$(sed -e 's/^\s*TestBos2:\s*//' <<< $DESC)")
         fi
-
-        if [ -n "$VIRT" ]; then
-            # process Test-Args-Hints
-            if [[ args =~ $SUPPORTED_HINTS ]]; then
-                OPTS=$(sed -n -e "s/^\s*Test-Args-Hints:\s*//pi" <<< "$DESC")
-            else
-                OPTS=
-            fi
-
-            # process Test-App-Hints
-            if [[ app =~ $SUPPORTED_HINTS ]]; then
-                APP_NAME=$(sed -n -e "s/^\s*Test-App-Hints:\s*//pi" <<< "$DESC")
-            fi
-
-            # process Test-App-Args-Hints
-            if [[ app-args =~ $SUPPORTED_HINTS ]]; then
-                APP_ARGS=$(sed -n -e "s/^\s*Test-App-Args-Hints:\s*//pi" <<< "$DESC")
-            fi
-
-            # stop at the first valid Test-Hints: string
-            break
+        # extract TestBos2Sno commands
+        if grep -qE "^\s*TestBos2Sno:\s*" <<< "$DESC"; then
+            # shellcheck disable=SC2001,SC2086
+            CMD_SNO+=("$(sed -e 's/^\s*TestBos2Sno:\s*//' <<< $DESC)")
+        fi
+        # extract TestBos2Baremetal commands
+        if grep -qE "^\s*TestBos2Baremetal:\s*" <<< "$DESC"; then
+            # shellcheck disable=SC2001,SC2086
+            CMD_SNO_BM+=("$(sed -e 's/^\s*TestBos2Baremetal:\s*//' <<< $DESC)")
         fi
     fi
 done
@@ -160,14 +94,10 @@ fi
 
 
 # if nothing is specified
-if [ -z "$VIRT" ]; then
+if [ -z "$FORCE_CHECK" ]; then
     if [ "$NB_NOCHECK" -ge 1 ] && [ "$NB_NOCHECK" -eq "$NB_PRS" ]; then
         send_status success "No check"
         exit 0
-    fi
-    VIRT=--sno
-    if [ -n "$SNO_DCI_QUEUE" ]; then
-        DCI_QUEUE="$SNO_DCI_QUEUE"
     fi
 fi
 
@@ -186,6 +116,7 @@ cat > github.json << EOF
     "url": "https://github.com/redhatci/ansible-collection-redhatci-ocp/pulls",
     "statuses_url": "$STATUSES_URL",
     "html_url": "https://github.com/redhatci/ansible-collection-redhatci-ocp/queue/main",
+    "body": "",
     "head": {
         "repo": {
             "full_name": "redhatci/ansible-collection-redhatci-ocp",
@@ -195,11 +126,45 @@ cat > github.json << EOF
 }
 EOF
 
-# shellcheck disable=SC2086
-dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL UPGRADE_ARGS="$UPGRADE_ARGS" APP_NAME=$APP_NAME APP_ARGS="$APP_ARGS" /usr/share/dci-openshift-agent/test-runner $VIRT $FORCE_CHECK $TAG $UPGRADE $NO_COMMENT $DIR -p @RESOURCE $OPTS || exit 1
+COUNT=0
 
-send_status pending "QUEUED"
+for ARGS in "${CMD[@]}"; do
+    # shellcheck disable=SC2086
+    dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner $DIR $ARGS || exit 1
+    COUNT=$((COUNT+1))
+done
 
 dci-queue list "$DCI_QUEUE"
+
+if [ ${#CMD_SNO[@]} -gt 0 ]; then
+    DCI_QUEUE="sno"
+
+    for ARGS in "${CMD_SNO[@]}"; do
+        # shellcheck disable=SC2086
+        dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner $DIR $ARGS || exit 1
+        COUNT=$((COUNT+1))
+    done
+
+    dci-queue list "$DCI_QUEUE"
+fi
+
+if [ ${#CMD_SNO_BM[@]} -gt 0 ]; then
+    DCI_QUEUE="sno_baremetal"
+
+    for ARGS in "${CMD_SNO_BM[@]}"; do
+        # shellcheck disable=SC2086
+        dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner $DIR $ARGS || exit 1
+        COUNT=$((COUNT+1))
+    done
+
+    dci-queue list "$DCI_QUEUE"
+fi
+
+if [ $COUNT -eq 0 ]; then
+    send_status success "No test specified for BOS2"
+    exit 0
+fi
+
+send_status pending "QUEUED"
 
 # dci-merge.sh ends here
