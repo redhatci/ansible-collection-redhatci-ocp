@@ -35,7 +35,9 @@
     path: "{{ ah_ca_bundle_file }}"
   register: ah_ca_file
   failed_when: not ah_ca_file.stat.exists
-  when: ah_ca_bundle_file | length
+  when:
+    - ah_ca_bundle_file is defined
+    - ah_ca_bundle_file | length
 
 - name: Check hypershift namespace is present
   community.kubernetes.k8s_info:
