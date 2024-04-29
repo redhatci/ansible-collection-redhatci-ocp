@@ -12,9 +12,6 @@ acm_cluster_network_host_prefix: 23
 acm_service_network_cidr: 172.30.0.0/16
 acm_release_image: quay.io/openshift-release-dev/ocp-release:4.9.47-x86_64
 acm_iso_url: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-4.9/49.84.202207192205-0/x86_64/rhcos-49.84.202207192205-0-live.x86_64.iso"
-acm_root_fs_url: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-4.9/49.84.202207192205-0/x86_64/rhcos-49.84.202207192205-0-live-rootfs.x86_64.img"
-acm_db_volume_size: 40Gi
-acm_fs_volume_size: 50Gi
-acm_img_volume_size: 40Gi
+acm_root_fs_url: ''
 acm_vm_external_network: true
 ...
