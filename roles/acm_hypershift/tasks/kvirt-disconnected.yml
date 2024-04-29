@@ -36,7 +36,7 @@
   ansible.builtin.set_fact:
     cpo_annotation: "hypershift.openshift.io/control-plane-operator-image={{ cpo_image_path }} "
 
-- name: Fail is Control-Plane Operator image is not pullable from local registry
+- name: Fail if Control-Plane Operator image is not pullable from local registry
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
