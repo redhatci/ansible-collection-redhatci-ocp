@@ -1,0 +1,48 @@
+---
+# If this shell cmd ahs a correct rc, it means the multibench_host is ready
+- name: "Check the multi-bench host has the crucible binaries"
+  ansible.builtin.shell: >
+    crucible help
+  register: crucible_help
+  delegate_to: "{{ multibench_host }}"
+  become: yes
+
+# This file contains some information about the execution like the number of iterations, the tags...
+- name: "Generate config file for multibench"
+  template:
+    src: "templates/config.ini.j2"
+    dest: "{{ multibench_script_dir }}/config.ini"
+  delegate_to: "{{ multibench_host }}"
+  become: yes
+
+# If the multibench_output_dir is not defined, it generates a tmp directory to store the results.
+- name: Create working directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: multibench
+  register: multibench_output_dir
+  when: multibench_output_dir is undefined
+
+# Multibench needs to be run as root to properly access all settings files needed.
+# The script launch a crucible cmd which start to build the container images used for the tests.
+# Then, the infrastructure is deployed in a dedicated namespace called crucible-rickshaw.
+# Once the tests are finished, the results are published in an OpenSearch DB and a summary is generated.
+- name: "Launch multibench workload"
+  ansible.builtin.shell:
+    cmd: >
+      ./{{ multibench_script }} config.ini
+    chdir: "{{ multibench_script_dir }}"
+  register: bench_out
+  delegate_to: "{{ multibench_host }}"
+  become: yes
+
+# The Summary is copied on the Ansible controller.
+# If you need to collect specific data, you can connect to the multibench_host and launch some crucible cmd.
+- name: "Retrieve summary results from Multibench VM"
+  fetch:
+    src: "/var/lib/crucible/run/latest/run/result-summary.txt"
+    dest: "{{ multibench_output_dir.path }}/result-summary.txt"
+    flat: yes
+  delegate_to: "{{ multibench_host }}"
+  become: yes
+...

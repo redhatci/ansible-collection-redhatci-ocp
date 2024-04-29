@@ -88,6 +88,7 @@ Name | Description
 [redhatci.ocp.monitor_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/monitor_cluster/README.md) | Tracks the progress of the cluster installation via an on-prem assisted installer
 [redhatci.ocp.monitor_host](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/monitor_host/README.md) | Tracks host status dusing the installation via an on-prem assisted installer and triggers a reboot to disk if needed
 [redhatci.ocp.mount_discovery_iso_for_pxe](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mount_discovery_iso_for_pxe/README.md) | Extracts the required artifacts for a pxe boot from a discovery iso
+[redhatci.ocp.multibench_run](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/multibench_run/README.md) | Launch a crucible scenario on OCP
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.ocp_logging](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_logging/README.md) | Enables the OCP logging subsystem.
