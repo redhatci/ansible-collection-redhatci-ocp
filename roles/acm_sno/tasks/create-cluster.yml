@@ -79,61 +79,12 @@
         namespace: multicluster-engine
       spec:
         osImages: "{{ asg.resources[0].spec.osImages + [os_images] }}"
+        mirrorRegistryRef:
+            name: mirror-registry-config-map
   community.kubernetes.k8s:
     state: present
     definition: "{{ as_def }}"
   when: (asg.resources | length == 1)
-
-- name: "Create the Agent Service config"
-  vars:
-    agent_def: |
-      apiVersion: agent-install.openshift.io/v1beta1
-      kind: AgentServiceConfig
-      metadata:
-        name: agent
-        namespace: multicluster-engine
-      spec:
-        databaseStorage:
-      {% if acm_sc is defined %}
-          storageClassName: {{ acm_sc }}
-      {% endif %}
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: "{{ acm_db_volume_size }}"
-        filesystemStorage:
-      {% if acm_sc is defined %}
-          storageClassName: {{ acm_sc }}
-      {% endif %}
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: "{{ acm_fs_volume_size }}"
-        imageStorage:
-      {% if acm_sc is defined %}
-          storageClassName: {{ acm_sc }}
-      {% endif %}
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: "{{ acm_img_volume_size }}"
-        osImages:
-          - openshiftVersion: "{{ acm_ocp_version }}"
-            version: "{{ acm_ocp_version.split('.')[:2] | join('.') }}"
-            url: "{{ acm_iso_url }}"
-            rootFSUrl: "{{ acm_root_fs_url }}"
-            cpuArchitecture: x86_64
-        {% if inherit_mirroring is defined and inherit_mirroring | bool %}
-      mirrorRegistryRef:
-          name: mirror-registry-config-map
-        {% endif %}
-  community.kubernetes.k8s:
-    state: present
-    definition: "{{ agent_def }}"
-  when: (asg.resources | length != 1)
 
 - name: "Wait for assisted-image-service pods to be Running"
   community.kubernetes.k8s_info:

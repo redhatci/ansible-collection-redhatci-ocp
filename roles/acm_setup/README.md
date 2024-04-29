@@ -11,16 +11,20 @@ The configuration of the ACM hub can be customized by using the following variab
 
 ## Variables
 
-| Variable                           | Default                       | Required    | Description                                   |
-| ---------------------------------- | ----------------------------- | ----------- | ----------------------------------------------|
-|hub_availability                    |High                           |No           |Multicluster hub High Availability configuration |
-|hub_disable_selfmanagement          |False                          |No           |Do not import the hub cluster as managed in ACM  |
-|hub_namespace                       |open-cluster-management        |No           |Namespace where ACM has been installed and will be configured |
-|hub_instance                        |multiclusterhub                |No           |Name of the multiclusterhub instance to be created (fail if already exists) |
-|hub_disconnected                    |false                          |No           |If true, it will create custom ClusterImageSets and remove the Channel subscriptions |
-|hub_sc                              |Undefined                      |If no default StorageClass is available | Desired storage class for ACM resources. If undefined, the default SC will be used |
-|hub_hugepages_type                  |hugepages-2Mi                  |No           |Hugepages type to be configured for Postgres search pods. x86_64 support hugepages-2Mi and hugepages-1Gi |
-|hub_hugepages_size                  |1024Mi                         |No           |Hugepages `hub_hugepages_type` size              |
+| Variable                           | Default                       | Required    | Description
+| ---------------------------------- | ----------------------------- | ----------- | ----------------------------------------------
+|hub_availability                    |High                           |No           | Multicluster hub High Availability configuration
+|hub_disable_selfmanagement          |False                          |No           | Do not import the hub cluster as managed in ACM
+|hub_namespace                       |open-cluster-management        |No           | Namespace where ACM has been installed and will be configured
+|hub_instance                        |multiclusterhub                |No           | Name of the multiclusterhub instance to be created (fail if already exists)
+|hub_disconnected                    |false                          |No           | If true, it will create custom ClusterImageSets and remove the Channel subscriptions
+|hub_sc                              |Undefined                      |If no default StorageClass is available | Desired storage class for ACM resources. If undefined, the default SC will be used
+|hub_hugepages_type                  |hugepages-2Mi                  |No           | Hugepages type to be configured for Postgres search pods. x86_64 support hugepages-2Mi and hugepages-1Gi
+|hub_hugepages_size                  |1024Mi                         |No           | Hugepages `hub_hugepages_type` size
+|hub_db_volume_size                  |40Gi                           |No           | This value specifies how much storage it is allocated for storing files like database tables and database views for the clusters. You might need to use a higher value if there are many clusters
+|hub_fs_volume_size                  |50Gi                           |No           | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters
+|hub_img_volume_size                 |40Gi                           |No           | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS
+|hub_os_images                       |                               |Yes          | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images)
 
 ## Requirements
 1. An OpenShift Cluster with a subscription for the ACM operator.
@@ -42,6 +46,29 @@ See below an example of how to use the acm_setup role to configure ACM.
       hub_disable_selfmanagement: true
       hub_availabilityConfig: High
       hub_disconnected: true
+      hub_os_images:
+        - openshiftVersion: "4.15.0-0.nightly-2024-04-21-051624"
+          version: "4.15"
+          url: "http://webcache.dfwt5g.lab:8080/rhcos-415.92.202402201450-0-live.x86_64.iso"
+          cpuArchitecture: x86_64
+```
+
+## OS images
+
+```yaml
+hub_os_images:
+  - cpuArchitecture: x86_64
+      openshiftVersion: "4.<NN>"
+      rootFSUrl: https://<host>/<path>/rhcos-live-rootfs.x86_64.img
+      url: https://<mirror-registry>/<path>/rhcos-live.x86_64.iso
+  - cpuArchitecture: x86_64
+      openshiftVersion: "4.<NN>"
+      url: https://<mirror-registry>/<path>/rhcos-4.14-live.x86_64.iso
+
+hub_os_images:
+  - cpuArchitecture: x86_64
+      openshiftVersion: "4.<NN>"
+      url: https://<mirror-registry>/<path>/rhcos-live.x86_64.iso
 ```
 
 ## References

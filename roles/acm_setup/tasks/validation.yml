@@ -1,4 +1,10 @@
 ---
+- name: "Assert hub_os_images"
+  ansible.builtin.assert:
+    that:
+    - hub_os_images is defined
+    - hub_os_images | type_debug == 'list'
+
 - name: "Get Storage Classes"
   community.kubernetes.k8s_info:
     api_version: v1
@@ -11,7 +17,7 @@
   when:
     - storage_class.resources | length == 0
 
-- name: "Fail when defined storage class does not exists"  # noqa: jinja[invalid]
+- name: "Fail when defined storage class does not exists"
   vars:
     query_sc_name: 'resources[*].metadata.name'
     query_results: "{{ storage_class | json_query(query_sc_name) }}"
@@ -21,7 +27,7 @@
     - hub_sc is defined
     - hub_sc not in query_results
 
-- name: "Fail when no default storage class"  # noqa: jinja[invalid]
+- name: "Fail when no default storage class"
   vars:
     query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
     query_results: "{{ storage_class | json_query(query_default_sc) }}"
@@ -40,7 +46,7 @@
   retries: 5
   delay: 5
 
-- name: "Fail if ACM csv is not present"  # noqa: jinja[invalid]
+- name: "Fail if ACM csv is not present"
   vars:
     csv_details: "resources[*].metadata.name"
     csvs: "{{ current_csvs | json_query(csv_details) }}"

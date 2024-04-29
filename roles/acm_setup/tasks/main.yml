@@ -240,4 +240,86 @@
           spec:
             routeAdmission:
               wildcardPolicy: WildcardsAllowed
+
+- name: "Check the AgentServiceConfig instance"
+  community.kubernetes.k8s_info:
+    api: agent-install.openshift.io/v1beta1
+    kind: AgentServiceConfig
+    name: agent
+    namespace: multicluster-engine
+  register: _asg
+
+- name: "Create the Agent Service config"
+  vars:
+    agent_def: |
+      apiVersion: agent-install.openshift.io/v1beta1
+      kind: AgentServiceConfig
+      metadata:
+        name: agent
+        namespace: multicluster-engine
+      spec:
+        databaseStorage:
+      {% if hub_sc is defined %}
+          storageClassName: {{ hub_sc }}
+      {% endif %}
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ hub_db_volume_size }}"
+        filesystemStorage:
+      {% if hub_sc is defined %}
+          storageClassName: {{ hub_sc }}
+      {% endif %}
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ hub_fs_volume_size }}"
+        imageStorage:
+      {% if hub_sc is defined %}
+          storageClassName: {{ hub_sc }}
+      {% endif %}
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ hub_img_volume_size }}"
+        osImages: {{ hub_os_images }}
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ agent_def }}"
+  when: (_asg.resources | length != 1)
+
+- name: "Wait for assisted-image-service pods to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    label_selectors:
+      - "app=assisted-image-service"
+    field_selectors:
+      - status.phase=Running
+    namespace: multicluster-engine
+    wait: true
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 20
+  delay: 15
+  no_log: true
+
+- name: "Wait for assisted-service to be Running"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Pod
+    label_selectors:
+      - "app=assisted-service"
+    field_selectors:
+      - status.phase=Running
+    namespace: multicluster-engine
+    wait: true
+  register: pod_list
+  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 20
+  delay: 15
+  no_log: true
 ...
