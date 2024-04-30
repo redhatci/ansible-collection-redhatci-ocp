@@ -75,4 +75,11 @@
     kind: StorageClass
   register: ah_sc
   failed_when: not 'true' in query_results
+
+- name: "Check for valid control plane availability policy"
+  ansible.builtin.fail:
+    msg: "Control plane availability policy '{{ ah_control_plane_availability_policy }}' is not supported"
+  when:
+    - ah_control_plane_availability_policy is defined
+    - ah_control_plane_availability_policy not in ah_control_plane_availability_policies
 ...
