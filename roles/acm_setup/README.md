@@ -24,7 +24,7 @@ The configuration of the ACM hub can be customized by using the following variab
 |hub_db_volume_size                  |40Gi                           |No           | This value specifies how much storage it is allocated for storing files like database tables and database views for the clusters. You might need to use a higher value if there are many clusters
 |hub_fs_volume_size                  |50Gi                           |No           | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters
 |hub_img_volume_size                 |40Gi                           |No           | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS
-|hub_os_images                       |                               |Yes          | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images)
+|hub_os_images                       | *null*                        |No           | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images)
 
 ## Requirements
 1. An OpenShift Cluster with a subscription for the ACM operator.

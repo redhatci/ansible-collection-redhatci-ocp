@@ -285,7 +285,9 @@
           resources:
             requests:
               storage: "{{ hub_img_volume_size }}"
+      {% if hub_os_images is defined %}
         osImages: {{ hub_os_images }}
+      {% endif %}
   community.kubernetes.k8s:
     state: present
     definition: "{{ agent_def }}"

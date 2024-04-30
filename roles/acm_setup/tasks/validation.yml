@@ -2,8 +2,7 @@
 - name: "Assert hub_os_images"
   ansible.builtin.assert:
     that:
-    - hub_os_images is defined
-    - hub_os_images | type_debug == 'list'
+    - hub_os_images is undefined or hub_os_images | type_debug == 'list'
 
 - name: "Get Storage Classes"
   community.kubernetes.k8s_info:
