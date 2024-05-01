@@ -55,14 +55,33 @@ Edit `MAJOR` when there are breaking changes in the collection. Edit `MINOR` whe
 The collection has multiple CI pipelines that run on every PR:
 
 - PR pipeline: [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) that runs the sanity tests and Ansible lint. It fails if there is any regression. It also runs a check on the PR Dependencies (`Depends-On:` lines in the commit message) to make sure that the dependencies are merged before the PR.
-- DCI BOS2 pipeline: [`.github/workflows/dci.yml`](../.github/workflows/dci.yml) that runs a DCI job to test the collection in a virtual environment at the BOS2 Telco Partner CI lab. It is triggered only when a change is modifying files in the `/roles/` directory. You can use `Test-Hint*` strings in the PR to modify what is tested. See [the DCI documentation](https://docs.distributed-ci.io/dci-openshift-agent/docs/development/#hints) for more details.
-- DCI Dallas pipeline: run DCI jobs on a baremetal cluster in the Telco Partner CI Dallas lab. It is triggered only when changes are modifying files in the `role/cnf-cert` or `roles/preflight` directories.
+- DCI BOS2 pipeline: [`.github/workflows/dci.yml`](../.github/workflows/dci.yml) that runs a DCI job to test the collection in a virtual environment at the BOS2 Telco Partner CI lab. It is triggered only when a change is modifying files in the `/roles/` directory.
+- DCI Dallas pipeline: run DCI jobs on a baremetal cluster in the Telco Partner CI Dallas lab. It is triggered automatically only when changes are modifying files in the `role/cnf-cert` or `roles/preflight` directories.
 - RPM build pipeline (local/check). This is managed by the Zuul CI on https://softwarefactory-project.io/. It builds rpm for el8 and el9.
 
-If you are part of the project, you can also use comments in the PR to trigger the baremetal pipelines manually in the Telco Partner CI Dallas lab:
+To specify which DCI lab to use and which resources to use, you can use the following strings in the descrption of the PR:
 
-- `check dallas ocp-4.15-vanilla example-cnf`
-- `check workload preflight-green`
+  * `TestDallas`: baremetal clusters in the Dallas lab.
+  * `TestDallasWorkload`: workload on a pre-installed baremetal cluster in Dallas.
+  * `TestBos2`: virtual setup in the BOS2 lab.
+  * `TestBos2Sno`: virtual SNO setup in the BOS2 lab.
+  * `TestBos2SnoBaremetal`: baremetal SNO node in the BOS2 lab.
+
+The following `Test-Hints` can be specified if needed in the description of the PR:
+
+  * `Test-Hint: no-check` when no test is needed in DCI. For a doc only change this is detected automatically.
+  * `Test-Hint: force-check` to bypass the automatic no code change detection. Useful for CI testing.
+
+Example:
+
+```
+TestDallas: ocp-4.14-vanilla example-cnf
+TestDallasWorkload: preflight-green
+TestBos2: virt control-plane
+Test-Hint: force-check
+```
+
+At least one check needs to pass for the PR to be validated.
 
 Reach out to the Telco Partner CI team if you need more information.
 
