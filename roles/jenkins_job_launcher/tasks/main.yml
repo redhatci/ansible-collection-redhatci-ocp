@@ -12,6 +12,7 @@
   ansible.builtin.uri:
     url: "{{ jjl_job_url }}/buildWithParameters/"
     method: POST
+    validate_certs: false
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
     force_basic_auth: true
