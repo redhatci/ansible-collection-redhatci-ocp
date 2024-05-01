@@ -17,30 +17,6 @@
 - name: Restart HCP pods to pick latest Management cluster state
   ansible.builtin.include_tasks: restart-cpo.yml
 
-- name: Get management cluster facts
-  ansible.builtin.include_tasks: get-mc-facts.yml
-
-- name: "Validate the target a release image"
-  ansible.builtin.assert:
-    that:
-      - ah_release_image is defined
-
-- name: Extract target version
-  ansible.builtin.shell:
-    chdir: "{{ ah_tmp_dir }}"
-    cmd: >
-      set -x -o pipefail;
-      oc adm release info
-      {{ ah_release_image }}
-      --output json
-      --registry-config={{ ah_pullsecret_file }} |
-      jq -r .metadata.version
-  retries: 3
-  delay: 10
-  register: ah_ocp_version
-  changed_when: ah_ocp_version.rc != 0
-  until: ah_ocp_version.rc == 0
-
 - name: Get Management ICSP
   community.kubernetes.k8s_info:
     api_version: operator.openshift.io/v1alpha1
@@ -68,6 +44,30 @@
   when:
     - mc_icsp is defined
     - mc_icsp.resources | length > 0
+
+- name: Get management cluster facts
+  ansible.builtin.include_tasks: get-mc-facts.yml
+
+- name: "Validate the target a release image"
+  ansible.builtin.assert:
+    that:
+      - ah_release_image is defined
+
+- name: Extract target version
+  ansible.builtin.shell:
+    chdir: "{{ ah_tmp_dir }}"
+    cmd: >
+      set -x -o pipefail;
+      oc adm release info
+      {{ ah_release_image }}
+      --output json
+      --registry-config={{ ah_pullsecret_file }} |
+      jq -r .metadata.version
+  retries: 3
+  delay: 10
+  register: ah_ocp_version
+  changed_when: ah_ocp_version.rc != 0
+  until: ah_ocp_version.rc == 0
 
 - name: Set OCP release version
   ansible.builtin.set_fact:
