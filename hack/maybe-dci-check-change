@@ -52,7 +52,13 @@ else
 fi
 
 # Check if there is a force-check or a code change
-if [ -z "$no_check" ] && ( [ -n "$force_check" ] || curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files"|jq -r .[].filename|grep -Ev '^tests/|\.md$'|grep -E 'roles/|plugins/|galaxy.yml' ); then
+if [ -z "$no_check" ] &&
+   ( [ -n "$force_check" ] ||
+     curl -s -L "${HEADERS[@]}" "https://api.github.com/repos/$proj/pulls/$pr/files" |
+     jq -r .[].filename |
+     grep -Ev '^tests/|\.md$' |
+     grep -E 'roles/|plugins/|galaxy.yml' 
+   ); then
     curl -s -L "${HEADERS[@]}" -X POST -d "{\"state\":\"pending\",\"context\":\"$GITHUB_JOBNAME\",\"description\": \"QUEUED\"}" "$statuses_url"
     url=$(jq -r .html_url <<< $json)
     if ! dci-auto-launch "$url" <<< "$body"; then
