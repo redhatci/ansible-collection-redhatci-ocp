@@ -9,7 +9,7 @@ name: ocp
 # Always leave patch version as .0
 # Patch version is replaced from commit date in UNIX epoch format
 # example: 0.3.2147483647
-version: 0.8.0
+version: 0.9.0
 
 # The path to the Markdown (.md) readme file.
 readme: README.md

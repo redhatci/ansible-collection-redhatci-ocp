@@ -1,5 +1,4 @@
 ---
-
 - name: "Fail when acm_user_registry is not defined"
   fail:
     msg: >
@@ -21,38 +20,17 @@
     msg: "CRDs are not present"
   when: acm_crd.resources | list | count == 0
 
-- name: "Get Storage Classes"
+- name: "Check the AgentServiceConfig instance"
   community.kubernetes.k8s_info:
-    api_version: v1
-    kind: StorageClass
-  register: storage_class
+    api: agent-install.openshift.io/v1beta1
+    kind: AgentServiceConfig
+    name: agent
+  register: _asg
 
-- name: "Fail when there is no storage class available"
+- name: "Fail if AgentServiceConfig is missing"
   fail:
-    msg: "Defined storage class do not exists"
-  when:
-    - storage_class.resources | length == 0
-
-- name: "Fail when defined storage class do not exists"
-  vars:
-    query_sc_name: 'resources[*].metadata.name'
-    query_results: "{{ storage_class | json_query(query_sc_name) }}"  # noqa: jinja[invalid]
-  fail:
-    msg: "Defined storage class do not exists"
-  when:
-    - acm_sc is defined
-    - acm_sc not in query_results
-
-- name: "Fail when no default storage class"
-  vars:
-    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
-    query_results: "{{ storage_class | json_query(query_default_sc) }}"  # noqa: jinja[invalid]
-  fail:
-    msg: "No default storage class was found"
-  when:
-    - storage_class is defined
-    - "not('true' in query_results)"
-    - acm_sc is not defined
+    msg: "An Agent Service config must be running on the Hub/Management Cluster"
+  when: _asg.resources | default([]) | length == 0
 
 - name: "Disable provisioning"
   when:

@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.8.EPOCH
+Version:        0.9.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Apr 30 2024 Beto Rodriguez <josearod@redhat.com> - 0.9.EPOCH-VERS
+- Dependency for acm_* roles
+
 * Wed Mar 20 2024 Jorge A Gallegos <jgallego@redhat.com> - 0.5.EPOCH-VERS
 - Adding community.crypto dependency
 
