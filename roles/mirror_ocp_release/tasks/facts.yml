@@ -7,12 +7,27 @@
   register: release_image
   changed_when: false
 
-- name: "Write rhcos.json from command (>= 4.8)"
+- name: Write rhcos.json from command (4.16+)
+  when: mor_version is version("4.16", ">=")
+  containers.podman.podman_container:
+    name: extract-rhcos
+    image: quay.io/centos/centos:stream9
+    command:
+      - /bin/bash
+      - -c
+      - "/ocp/openshift-baremetal-install coreos print-stream-json > /ocp/rhcos-test.json"
+    rm: true
+    volumes:
+      - "{{ mor_cache_dir }}/{{ mor_version }}:/ocp"
+
+- name: "Write rhcos.json from command (4.8 - 4.15)"
   ansible.builtin.shell: >
     {{ mor_cache_dir }}/{{ mor_version }}/openshift-baremetal-install coreos print-stream-json >
     {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json
   when:
+    - mor_version is version("4.16", "<")
     - mor_version is version("4.8", ">=")
+  changed_when: true
 
 # TODO: Remove this block when 4.7 is no longer supported
 - name: "Download rhcos.json (< 4.8)"
