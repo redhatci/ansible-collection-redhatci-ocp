@@ -32,7 +32,7 @@
       set -x;
       {{ image_dir }}/oc-mirror
       --from={{ mfd_operators_dir }}
-      docker://{{ mfd_local_registry }}
+      docker://{{ mfd_local_registry }}/{{ mfd_local_registry_path }}
       --skip-metadata-check
       --dest-skip-tls
   retries: 3
