@@ -17,33 +17,32 @@
 # under the License.
 #
 #~Usage:
-#~  ansible-lint.sh [-f] [-p PROFILE]
+#~  ansible-lint.sh [-b BIN] [-d] [PATH]
 #~
 #~Options:
-#~  -c      Remove .linted markers
-#~  -p      Use the "production" ansible-lint profile
-#~  -n      Don't clear screen after linting each role
+#~  -b BIN  Path to the `ansible-lint` binary (default: $PATH/ansible-lint)
+#~  -d      Download requirements declared in galaxy.yml (default: False)
+#~Arguments:
+#~  PATH    (Optional) path to lint, defaults to the top level directory
 
 function usage(){
     grep "^#~" "$0" | sed -e "s/#~//"
 }
 
+set -x
+
 TOPDIR="$(git rev-parse --show-toplevel)"
 CWD="$PWD"
-CLEAN=""
-PROFILE="shared"
-CLEAR="yes"
+BIN="$(which ansible-lint)"
+OFFLINE="--offline"
 
-while getopts ":cpn" o; do
+while getopts ":b:d" o; do
     case $o in
-        c)
-            CLEAN="yes"
+        b)
+            BIN="$OPTARG"
             ;;
-        p)
-            PROFILE="production"
-            ;;
-        n)
-            CLEAR=""
+        d)
+            OFFLINE=""
             ;;
         *)
             usage
@@ -52,29 +51,22 @@ while getopts ":cpn" o; do
     esac
 done
 
-# Be verbose from this point forward
-set -x
+shift $((OPTIND-1))
+EXTRA_ARGS="$@"
+
+if ! test -x $BIN; then
+    echo "You need to install ansible-lint. Ideally from the source code branch"
+    echo "Example:"
+    echo -e "pip install 'ansible-lint[lock] @ git+https://github.com/ansible/ansible-lint@v6'"
+    exit 1
+fi
 
 cd "$TOPDIR"
 
-if [ "$CLEAN" == "yes" ]; then
-    rm -fv roles/*/.linted
-fi
-
-for role in roles/*; do
-    if [ "$CLEAR" == "yes" ]; then
-        clear
-    fi
-    echo "$role"
-    if [ -f "$role/.linted" ]; then
-        continue
-    else
-        if ansible-lint --profile="$PROFILE" "$role"; then
-            touch "$role/.linted"
-        else
-            break
-        fi
-    fi
-done
+$BIN \
+    $OFFLINE \
+    --force-color \
+    --parseable \
+    $EXTRA_ARGS
 
 cd "$CWD"

@@ -27,7 +27,7 @@
         disableHubSelfManagement: "{{ hub_disable_selfmanagement }}"
 
 - name: "Wait for search-postgres deployment"
-  k8s_info:
+  community.kubernetes.k8s_info:
     kind: Deployment
     namespace: "{{ hub_namespace }}"
     name: search-postgres

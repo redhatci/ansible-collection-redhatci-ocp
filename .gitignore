@@ -1,3 +1,4 @@
 *.tar.gz
 roles/**/.linted
 tests/output
+__pycache__
