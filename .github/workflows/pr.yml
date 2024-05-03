@@ -39,9 +39,11 @@ jobs:
           cmd="hack/ansible-lint.sh -d"
           # don't want to annotate through GHA
           unset GITHUB_ACTIONS
+          echo "=== Incoming branch ==="
           $cmd | tee branch.output
           git checkout main
-          $cmd > main.output
+          echo "=== Main branch ==="
+          $cmd | tee main.output
           export GITHUB_ACTIONS=true
           set +ex
           # remove line numbers
