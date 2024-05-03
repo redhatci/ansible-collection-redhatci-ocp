@@ -1,0 +1,90 @@
+---
+- name: Multi-bench Set up playbook
+  hosts: multibench_host
+  gather_facts: true
+  tags:
+    - multi-bench
+    - setup
+  tasks:
+    - name: "Fail when required variables are not defined"
+      ansible.builtin.fail:
+        msg: "Missing argument - this playbook requires 'multibench_quay_token' to be defined"
+      when: multibench_quay_token is not defined
+
+    - name: "Check if crucible binaries are installed"
+      ansible.builtin.shell: >
+        crucible help
+      register: crucible_help
+      ignore_errors: true
+
+    - name: "Install the crucible binaries"
+      when:
+        - crucible_help.rc != 0
+      block:
+        - name: "Clone crucible repository"
+          ansible.builtin.git:
+            repo: "https://github.com/perftool-incubator/crucible.git"
+            dest: "/root/crucible"
+            clone: true
+            update: true
+            version: master
+
+        - name: "Set custom registry when running in disconnected mode"
+          ansible.builtin.set_fact:
+            crucible_registry: "{{ multibench_local_registry }}"
+          when:
+            - multibench_disconnected | default('false') | bool
+            - multibench_local_registry is defined
+
+        # You might need to change the INSTALL_PATH to /root/crucible
+        # This task can last for several minutes.
+        - name: "Run the crucible-install script"
+          ansible.builtin.shell:
+            cmd: >
+              ./crucible-install.sh  \
+              --client-server-registry {{ crucible_registry | default("quay.io/crucible/client-server") }} \
+              --client-server-auth-file {{ multibench_quay_token }} \
+              --name {{ multibench_git_name | default("Smith") }} \
+              --email {{ multibench_git_email | default("ansible@whatever.com") }} \
+              --verbose --client-server-tls-verify true
+            chdir: "/root/crucible"
+
+    - name: "Clone the crucible-example repository"
+      ansible.builtin.git:
+        repo: "https://github.com/perftool-incubator/crucible-examples.git"
+        dest: "/root/crucible-example"
+        clone: true
+        update: false
+        version: master
+
+    - name: "Remove default node selectors JSON files"
+      ansible.builtin.file:
+        path: "/root/crucible-example/multibench/openshift/example-A/{{ item }}"
+        state: absent
+      loop:
+        - nodeSelector-worker0.json
+        - nodeSelector-worker1.json
+        - nodeSelector-worker2.json
+
+    - name: "Generate new node selectors file"
+      ansible.builtin.copy:
+        dest: "/root/crucible-example/multibench/openshift/example-A/nodeSelector-worker00{{ index }}.json"
+        content: |
+          "nodeSelector": {
+              "kubernetes.io/hostname": "{{ item }}"
+          }
+        mode: '0644'
+      loop: "{{ groups['workers'] }}"
+      loop_control:
+        index_var: index
+
+    - name: "Display post install message"
+      vars:
+        post_install_message: |
+          Installation successful! Here is a list of files you may want to check before using the Ansible role:
+           - the folder '/root/crucible-example/multibench/openshift/example-A' which contains all the settings of the default scenario.
+           - the file '/root/.crucible/identity' if you want to change the default Git identity.
+           - Make sure you got enough space disk for the OpenSearch db.
+      ansible.builtin.debug:
+        msg: "{{ post_install_message.split('\n') }}"
+...
