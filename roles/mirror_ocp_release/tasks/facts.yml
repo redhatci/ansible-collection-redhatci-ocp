@@ -15,7 +15,7 @@
     command:
       - /bin/bash
       - -c
-      - "/ocp/openshift-baremetal-install coreos print-stream-json > /ocp/rhcos-test.json"
+      - "/ocp/openshift-baremetal-install coreos print-stream-json > /ocp/rhcos.json"
     rm: true
     volumes:
       - "{{ mor_cache_dir }}/{{ mor_version }}:/ocp"
