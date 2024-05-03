@@ -1,4 +1,8 @@
 ---
+- name: debug msg
+  debug:
+    msg: hi
+
 - name: Fail if tnf version is lower than v4.4.0
   when:
     - test_network_function_version is version("v4.4.0", "<")
