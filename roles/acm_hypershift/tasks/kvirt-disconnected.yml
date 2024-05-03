@@ -83,7 +83,7 @@
       {%- else %}
       {{ local_registry_repo }}
       {%- endif %}
-    rhcos_tag: "{{ lookup('community.general.random_string', length=10, upper=false, special=false) }}"
+    rhcos_tag: "{{ lookup('ansible.builtin.password', '/dev/null length=10 chars=ascii_letters') | lower }}"
   ansible.builtin.shell:
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
