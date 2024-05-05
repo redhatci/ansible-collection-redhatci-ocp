@@ -26,6 +26,7 @@
   ansible.builtin.uri:
     url: '{{ queue_build_number.location }}/api/json'
     method: GET
+    validate_certs: false
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
   register: jenkins_build_number
@@ -34,6 +35,7 @@
   ansible.builtin.uri:
     url: "{{ jenkins_build_number.json.executable.url }}/api/json"
     method: GET
+    validate_certs: false
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
   register: in_progress
