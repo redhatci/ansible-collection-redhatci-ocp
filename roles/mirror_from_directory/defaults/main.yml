@@ -1,3 +1,4 @@
 ---
 mfd_delete_workspace: true
+mfd_local_registry_path: ""
 ...
