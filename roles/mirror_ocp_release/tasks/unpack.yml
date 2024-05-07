@@ -20,21 +20,44 @@
   when:
     - mor_force or not unpacked.stat.exists
 
-- name: Extract el8 client for 4.16+
+- name: Tasks for el8 on 4.16+
   when:
     - ansible_distribution_major_version == '8'
     - mor_version is version("4.16", ">=")
-  ansible.builtin.command: >
-    {{ mor_oc }} adm release extract
-    --registry-config={{ mor_auths_file }}
-    --command=oc.rhel8
-    --from {{ mor_pull_url }}
-    --to "{{ mor_cache_dir }}/{{ mor_version }}" &&
-    mv -f "{{ mor_cache_dir }}/{{ mor_version }}/oc.rhel8"
-    "{{ mor_cache_dir }}/{{ mor_version }}/oc"
-  register: extract_cmd
-  until: extract_cmd is succeeded
-  retries: 9
-  delay: 10
+  block:
+    - name: Create temporary directory for oc client
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: _mor_tmp_dir.
+      register: _mor_tmp_dir
+
+    - name: Download required latest openshift client for el8 in 4.16+
+      ansible.builtin.unarchive:
+        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz"
+        dest: "{{ _mor_tmp_dir.path }}"
+        remote_src: true
+        mode: "0755"
+      register: _mor_result
+      retries: 3
+      delay: 10
+      until: _mor_result is not failed
+
+    - name: Extract el8 client for 4.16+
+      ansible.builtin.command: >
+        {{ _mor_tmp_dir.path }}/oc adm release extract
+        --registry-config={{ mor_auths_file }}
+        --command=oc.rhel8
+        --from {{ mor_pull_url }}
+        --to "{{ mor_cache_dir }}/{{ mor_version }}"
+      register: _mor_extract_cmd
+      until: _mor_extract_cmd is succeeded
+      retries: 9
+      delay: 10
+      changed_when: false
+
+    - name: Delete temporary directory for oc client
+      ansible.builtin.file:
+        path: "{{ _mor_tmp_dir.path }}"
+        state: absent
 
 ...
