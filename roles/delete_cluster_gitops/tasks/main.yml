@@ -1,0 +1,131 @@
+---
+- name: Remove managedcluster object
+  kubernetes.core.k8s:
+    api_version: cluster.open-cluster-management.io/v1
+    kind: ManagedCluster
+    kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+    name: "{{ dcg_cluster_name }}"
+    namespace: "{{ dcg_namespace }}"
+    state: absent
+    wait: true
+
+- name: Remove clusterdeployment object
+  kubernetes.core.k8s:
+    api_version: hive.openshift.io/v1
+    kind: ClusterDeployment
+    kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+    name: "{{ dcg_cluster_name }}"
+    namespace: "{{ dcg_namespace }}"
+    state: absent
+    wait: true
+
+- name: Try to remove namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+    name: "{{ dcg_namespace }}"
+    state: absent
+    wait: true
+    wait_timeout: "{{ dcg_timeout }}"
+  ignore_errors: true
+  register: namespace_result
+
+- name: Remove finalizers if namespace can't be delete in time
+  when: namespace_result is failed
+  block:
+
+    - name: Retrieve all secrets in the namespace
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+        api_version: v1
+        kind: Secret
+        namespace: "{{ dcg_namespace }}"
+      register: all_secrets
+
+    - name: Filter secrets that have 'BareMetalHost' in their owner references
+      set_fact:
+        bmh_related_secrets: >-
+          {{
+            all_secrets.resources
+            | json_query('[?contains(metadata.ownerReferences[].kind, `BareMetalHost`)]')
+          }}
+
+    - name: Print discovered BMH related secrets
+      debug:
+        msg: >-
+          Discovered BMH related secrets:
+          {{ bmh_related_secrets | map(attribute='metadata.name') | list | join(', ') }}
+
+    - name: Remove finalizers for secrets objects
+      kubernetes.core.k8s_json_patch:
+        kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+        kind: Secret
+        namespace: "{{ dcg_namespace }}"
+        name: "{{ item.metadata.name }}"
+        patch:
+          - op: remove
+            path: /metadata/finalizers
+      loop: "{{ bmh_related_secrets }}"
+      when: bmh_related_secrets | length > 0 and item.metadata.finalizers | default([])
+
+    - name: Wait until secret bmh_related_secrets are deleted
+      kubernetes.core.k8s:
+        kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+        api_version: v1
+        kind: Secret
+        namespace: "{{ dcg_namespace }}"
+        name: "{{ item.metadata.name }}"
+        state: absent
+        wait: true
+        wait_sleep: 2
+        wait_timeout: "{{ dcg_finalizers_timeout }}"
+      loop: "{{ bmh_related_secrets }}"
+
+    - name: Retrieve all BMH objects in the specified namespace
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+        api_version: metal3.io/v1alpha1
+        kind: BareMetalHost
+        namespace: "{{ dcg_namespace }}"
+      register: bmh_objects
+
+    - name: Print discovered BMH objects
+      debug:
+        msg: "Discovered BMH objects: {{ bmh_objects.resources | map(attribute='metadata.name') | list | join(', ') }}"
+
+    - name: Remove finalizers for BMH objects
+      kubernetes.core.k8s_json_patch:
+        api_version: metal3.io/v1alpha1
+        kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+        kind: BareMetalHost
+        namespace: "{{ dcg_namespace }}"
+        name: "{{ item.metadata.name }}"
+        patch:
+          - op: remove
+            path: /metadata/finalizers
+      loop: "{{ bmh_objects.resources }}"
+      when: bmh_objects.resources | length > 0 and item.metadata.finalizers | default([])
+
+    - name: Wait until BMH objects are deleted
+      kubernetes.core.k8s:
+        kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+        api_version: metal3.io/v1alpha1
+        kind: BareMetalHost
+        namespace: "{{ dcg_namespace }}"
+        name: "{{ item.metadata.name }}"
+        state: absent
+        wait: true
+        wait_sleep: 2
+        wait_timeout: "{{ dcg_finalizers_timeout }}"
+      loop: "{{ bmh_objects.resources }}"
+
+    - name: Try to remove namespace again
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        kubeconfig: "{{ dcg_kubeconfig_file | default(omit, true) }}"
+        name: "{{ dcg_namespace }}"
+        state: absent
+        wait_timeout: "{{ dcg_timeout }}"
+        wait: true
