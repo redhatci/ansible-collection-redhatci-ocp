@@ -19,4 +19,22 @@
       - README.md
   when:
     - mor_force or not unpacked.stat.exists
+
+- name: Extract el8 client for 4.16+
+  when:
+    - ansible_distribution_major_version == '8'
+    - mor_version is version("4.16", ">=")
+  ansible.builtin.command: >
+    {{ mor_oc }} adm release extract
+    --registry-config={{ mor_auths_file }}
+    --command=oc.rhel8
+    --from {{ mor_pull_url }}
+    --to "{{ mor_cache_dir }}/{{ mor_version }}" &&
+    mv -f "{{ mor_cache_dir }}/{{ mor_version }}/oc.rhel8"
+    "{{ mor_cache_dir }}/{{ mor_version }}/oc"
+  register: extract_cmd
+  until: extract_cmd is succeeded
+  retries: 9
+  delay: 10
+
 ...
