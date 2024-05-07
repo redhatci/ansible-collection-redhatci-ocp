@@ -1,0 +1,14 @@
+---
+- name: Sync repository for ArgoCD with patch merge
+  kubernetes.core.k8s:
+    kubeconfig: "{{ gops_kubeconfig_file | default(omit) }}"
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    name: "{{ gops_app_name }}"
+    namespace: "{{ gops_namespace | default('openshift-gitops') }}"
+    merge_type:
+      - merge
+    definition:
+      operation:
+        sync:
+          revision: "HEAD"

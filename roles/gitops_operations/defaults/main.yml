@@ -1,0 +1,5 @@
+---
+# Path to kubeconfig file to use for deletion, or K8S_AUTH_KUBECONFIG environment variable is used
+# gops_kubeconfig_file:
+gops_app_name:
+gops_namespace:

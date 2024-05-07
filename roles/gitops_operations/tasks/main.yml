@@ -1,0 +1,6 @@
+---
+- name: Fail if no tasks are specified
+  fail:
+    msg: >
+      Fail, because no tasks specified for role gitops_operations.
+      Use tasks_from keyword to include tasks from collection, don't run this role directly.
