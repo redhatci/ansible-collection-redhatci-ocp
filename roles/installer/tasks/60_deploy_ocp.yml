@@ -13,7 +13,7 @@
 
 - name: Deploy OpenShift Cluster
   shell: |
-    /usr/local/bin/openshift-baremetal-install --dir {{ dir }} --log-level debug create cluster
+    /usr/local/bin/{{ cmd }} --dir {{ dir }} --log-level debug create cluster
   when:
     - increase_bootstrap_timeout is not defined
     - increase_install_timeout is not defined
@@ -23,7 +23,7 @@
   block:
     - name: Run OpenShift Cluster install as async task
       shell: |
-        /usr/local/bin/openshift-baremetal-install --dir {{ dir }} --log-level debug create cluster
+        /usr/local/bin/{{ cmd }} --dir {{ dir }} --log-level debug create cluster
       async: 3600
       poll: 0
       ignore_errors: true
@@ -37,7 +37,7 @@
 
     - name: Wait for Bootstrap Complete
       shell: |
-        /usr/local/bin/openshift-baremetal-install --dir {{ dir }} --log-level debug wait-for bootstrap-complete
+        /usr/local/bin/{{ cmd }} --dir {{ dir }} --log-level debug wait-for bootstrap-complete
       register: wait_for_bootstrap_result
       until: wait_for_bootstrap_result is succeeded
       retries: "{{ increase_bootstrap_timeout|default(1)|int }}"
@@ -45,7 +45,7 @@
 
     - name: Wait for Install Complete
       shell: |
-        /usr/local/bin/openshift-baremetal-install --dir {{ dir }} --log-level debug wait-for install-complete
+        /usr/local/bin/{{ cmd }} --dir {{ dir }} --log-level debug wait-for install-complete
       register: wait_for_install_result
       until: wait_for_install_result is succeeded
       retries: "{{ increase_install_timeout|default(1)|int }}"

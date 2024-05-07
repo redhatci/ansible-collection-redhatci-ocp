@@ -8,18 +8,21 @@
     - not mor_force  # we don't care to stat files if we're forcing
 
 - name: "Extract installer command from release image"
+  when:
+    - mor_force or not target.stat.exists
   ansible.builtin.command: >
     {{ mor_oc }} adm release extract
     --registry-config={{ mor_auths_file }}
-    --command=openshift-baremetal-install
+    --command={{ item }}
     --from {{ mor_pull_url }}
     --to "{{ mor_cache_dir }}/{{ mor_version }}"
   register: extract_cmd
   until: extract_cmd is succeeded
   retries: 9
   delay: 10
-  when:
-    - mor_force or not target.stat.exists
+  loop:
+    - openshift-baremetal-install
+    - openshift-install
 
 - name: "Make installer command readable from HTTP"
   ansible.builtin.file:
