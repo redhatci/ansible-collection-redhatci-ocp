@@ -12,11 +12,11 @@
     - mor_version is version("4.8", ">=")
   vars:
     _cmd: >-
-      {% if ansible_distribution_major_version == '8' and mor_version is version("4.16", ">=") -%}
+      {%- if ansible_distribution_major_version == '8' and mor_version is version("4.16", ">=") -%}
       openshift-install
-      {% else -%}
+      {%- else -%}
       openshift-baremetal-install
-      {% endif -%}
+      {%- endif -%}
   ansible.builtin.shell: >
     {{ mor_cache_dir }}/{{ mor_version }}/{{ _cmd }} coreos print-stream-json >
     {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json
