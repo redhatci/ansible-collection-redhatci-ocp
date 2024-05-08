@@ -51,8 +51,8 @@ jobs:
           # export diff sans headers
           diff -u0 branch.output main.output | tail -n +3 > diff.raw
           # Get warnings out of the diff
-          grep -P '\(warning\)(\x1B\[0m)?$' diff.raw > diff.warnings
-          grep -vP '\(warning\)(\x1B\[0m)?$' diff.raw > diff.output
+          grep -P '\x1B\[33m|\(warning\)(\x1B\[0m)?$' diff.raw > diff.warnings
+          grep -vP '\x1B\[33m|\(warning\)(\x1B\[0m)?$' diff.raw > diff.output
           echo "## Improvements over main branch:" | tee -a ${GITHUB_STEP_SUMMARY}
           echo '```diff' >> ${GITHUB_STEP_SUMMARY}
           grep '^+' diff.output |
