@@ -1,15 +1,19 @@
 ---
 - name: "Check if installer has been extracted"
   ansible.builtin.stat:
-    path: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-baremetal-install"
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/{{ item }}"
     get_checksum: false
   register: target
+  loop:
+    - openshift-baremetal-install
+    - openshift-install
   when:
-    - not mor_force  # we don't care to stat files if we're forcing
+    - not mor_force | bool # we don't care to stat files if we're forcing
 
 - name: "Extract installer command from release image"
   when:
-    - mor_force or not target.stat.exists
+    - ((mor_force | bool) or
+      (not target | json_query('results[*].stat.exists') | unique == [true]))
   ansible.builtin.command: >
     {{ mor_oc }} adm release extract
     --registry-config={{ mor_auths_file }}
@@ -26,10 +30,13 @@
 
 - name: "Make installer command readable from HTTP"
   ansible.builtin.file:
-    path: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-baremetal-install"
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/{{ item }}"
     state: file
     owner: "{{ mor_owner }}"
     group: "{{ mor_group }}"
     mode: "0755"
     setype: "httpd_sys_content_t"
+  loop:
+    - openshift-baremetal-install
+    - openshift-install
 ...
