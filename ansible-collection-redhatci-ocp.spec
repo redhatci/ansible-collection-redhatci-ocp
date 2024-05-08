@@ -21,6 +21,7 @@ Requires: ansible-collection-community-general
 Requires: ansible-collection-community-kubernetes
 Requires: ansible-collection-community-libvirt
 Requires: ansible-collection-containers-podman
+Requires: ansible-collection-kubernetes-core
 Requires: git
 Requires: jq
 Requires: podman
