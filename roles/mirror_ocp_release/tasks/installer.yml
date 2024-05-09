@@ -1,7 +1,15 @@
 ---
+- name: Get OCP version
+  ansible.builtin.set_fact:
+    ocp_version: '{{ mor_version | regex_search("\d+\.\d+\.\d+") }}'
+
+- name: Set extracted command
+  ansible.builtin.set_fact:
+    extracted_command: "{{ ocp_version is ansible.builtin.version('4.16.0', '>=') | ternary('openshift-install', 'openshift-baremetal-install') }}"
+
 - name: "Check if installer has been extracted"
   ansible.builtin.stat:
-    path: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-baremetal-install"
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/{{ extracted_command }}"
     get_checksum: false
   register: target
   when:
@@ -11,7 +19,7 @@
   ansible.builtin.command: >
     {{ mor_oc }} adm release extract
     --registry-config={{ mor_auths_file }}
-    --command=openshift-baremetal-install
+    --command "{{ extracted_command }}"
     --from {{ mor_pull_url }}
     --to "{{ mor_cache_dir }}/{{ mor_version }}"
   register: extract_cmd
@@ -23,7 +31,7 @@
 
 - name: "Make installer command readable from HTTP"
   ansible.builtin.file:
-    path: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-baremetal-install"
+    path: "{{ mor_cache_dir }}/{{ mor_version }}/{{ extracted_command }}"
     state: file
     owner: "{{ mor_owner }}"
     group: "{{ mor_group }}"
