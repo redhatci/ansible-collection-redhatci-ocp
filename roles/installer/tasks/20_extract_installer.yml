@@ -85,7 +85,7 @@
   command: >
     /usr/local/bin/oc adm release extract
     --registry-config {{ pullsecret_file | quote }}
-    --command={{ cmd |quote }}
+    --command={{ installer_cmd |quote }}
     --to {{ tempdir_loc }} {{ disconnected_installer | ternary(disconnected_installer, release_image) }}
   args:
     chdir: "{{ tempdir }}"
@@ -106,8 +106,8 @@
 
 - name: OFFLINE mode requires installer pre-extracted
   get_url:
-    url: "{{ webserver_url }}/{{ version }}/{{ cmd }}"
-    dest: "{{ tempdir }}/{{ cmd }}"
+    url: "{{ webserver_url }}/{{ version }}/{{ installer_cmd }}"
+    dest: "{{ tempdir }}/{{ installer_cmd }}"
   register: result
   retries: 3
   delay: 10
@@ -118,7 +118,7 @@
 
 - name: Copy install binary to /usr/local/bin
   copy:
-    src: "{{ tempdir_loc }}/{{ cmd }}"
+    src: "{{ tempdir_loc }}/{{ installer_cmd }}"
     dest: /usr/local/bin/
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -132,7 +132,7 @@
   fetch:
     dest: /tmp/
     flat: true
-    src: "{{ tempdir_loc }}/{{ cmd }}"
+    src: "{{ tempdir_loc }}/{{ installer_cmd }}"
   when: registry_creation|bool
   delegate_to: "{{ groups['registry_host'][0] }}"
   tags:
@@ -140,8 +140,8 @@
 
 - name: Copy the install binary from control machine to the provisioner host
   copy:
-    src: /tmp/{{ cmd }}
-    dest: "/usr/local/bin/{{ cmd }}"
+    src: /tmp/{{ installer_cmd }}
+    dest: "/usr/local/bin/{{ installer_cmd }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0755
@@ -154,7 +154,7 @@
 
 - name: Remove the temporary copy of the install binary on control machine
   file:
-    path: "/tmp/{{ cmd }}"
+    path: "/tmp/{{ installer_cmd }}"
     state: absent
   when:
     - registry_creation|bool

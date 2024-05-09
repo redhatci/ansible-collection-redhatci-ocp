@@ -1,12 +1,9 @@
 ---
 # vars file for installer
 pullsecret_file: "{{ dir }}/pull-secret.txt"
-cmd: >-
-  {%- if release_version is version('4.16', ">=") and ansible_distribution_major_version == '8' -%}
-  openshift-install
-  {%- else -%}
-  openshift-baremetal-install
-  {%- endif -%}
+installer_cmd: >-
+  {{ release_version is version('4.16', '>=') and ansible_distribution_major_version == '8' |
+  ternary('openshift-install', 'openshift-baremetal-install') }}
 default_libvirt_pool_dir:
   - /var/lib/libvirt/images/
   - /var/lib/libvirt/openshift-images/
