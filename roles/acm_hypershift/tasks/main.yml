@@ -29,26 +29,71 @@
     cmd: >
       set -x -o pipefail;
       mkdir -p idms icsp;
-      for f in $(oc get imageContentSourcePolicy -o name); do
-        oc get ${f} -o yaml > icsp/$(basename ${f}).yaml;
+      for f in $({{ ah_oc_cli_path }} get imageContentSourcePolicy -o name); do
+        {{ ah_oc_cli_path }} get ${f} -o yaml > icsp/$(basename ${f}).yaml;
       done;
       for f in icsp/*.yaml; do
-        oc adm migrate icsp ${f} --dest-dir idms;
+        {{ ah_oc_cli_path }} adm migrate icsp ${f} --dest-dir idms;
       done;
       for f in idms/*.yaml; do
         sed -i '/creationTimestamp\|generation\|resourceVersion\|uid\|annotations\|last-applied-configuration/d' "${f}";
       done;
-      oc apply --force --overwrite=true -f idms
+      {{ ah_oc_cli_path }} apply --force --overwrite=true -f idms
   register: migration_result
   changed_when: migration_result.rc != 0
   when:
     - mc_icsp is defined
     - mc_icsp.resources | length > 0
 
+- name: Get Management ICSP
+  community.kubernetes.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: ImageDigestMirrorSet
+  register: mc_idms
+
+- name: "Patch hypershift operator registry overrides"
+  ansible.builtin.shell:
+    cmd: |
+      REGISTRY_OVERRIDES=$({{ ah_oc_cli_path }} get idms -A -o=json | jq -r '.items[].spec.imageDigestMirrors[] | .source+"="+.mirrors[0]' | tr '\n' ',' | sed 's/.$//')
+      EXISTING_ARGS=$({{ ah_oc_cli_path }} get deployment -n hypershift operator -o=jsonpath='{.spec.template.spec.containers[?(@.name=="operator")].args}' | tr -d '[]')
+      if [[ ! "$EXISTING_ARGS" =~ --registry-overrides= ]]; then
+        NEW_ARGS="${EXISTING_ARGS},\"--registry-overrides=${REGISTRY_OVERRIDES}\""
+      else
+        NEW_ARGS=$(echo "${EXISTING_ARGS}" | sed "s#(--registry-overrides=)[^\"]+#--registry-overrides=${REGISTRY_OVERRIDES}#")
+      fi
+      {{ ah_oc_cli_path }} patch deployment -n hypershift operator \
+      --type=json \
+      -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/args", "value": ['"${NEW_ARGS}"']}]'
+  register: _patch_result
+  changed_when: _patch_result.rc != 0
+  when:
+    - mc_idms is defined
+    - mc_idms.resources | length > 0
+    - ah_disconnected | bool
+
+- name: pause
+  pause:
+    minutes: 1
+
+- name: Check for Cluster-Plane Operator pods to be running
+  vars:
+    status_query: "resources[*].status.conditions[?type=='Ready'].status"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "hypershift"
+  register: cpo_pods
+  until:
+    - cpo_pods is defined
+    - cpo_pods.resources is defined
+    - cpo_pods.resources | length > 0
+    - cpo_pods | json_query(status_query) | flatten | unique == ["True"]
+  retries: 30
+  delay: 10
+
 - name: Get management cluster facts
   ansible.builtin.include_tasks: get-mc-facts.yml
 
-- name: "Validate the target a release image"
+- name: "Validate the target release image"
   ansible.builtin.assert:
     that:
       - ah_release_image is defined
@@ -58,7 +103,7 @@
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
       set -x -o pipefail;
-      oc adm release info
+      {{ ah_oc_cli_path }} adm release info
       {{ ah_release_image }}
       --output json
       --registry-config={{ ah_pullsecret_file }} |
