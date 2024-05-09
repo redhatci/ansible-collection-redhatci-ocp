@@ -2,6 +2,9 @@
 mor_base_version: "{{ mor_version.split('.')[:2] | join('.') }}"
 mor_cache_dir: "/var/lib/dci-openshift-agent/releases"
 mor_install_type: "ipi"
+mor_installer: >-
+  {{ mor_version is version('4.16', '>=') |
+  ternary('openshift-install', 'openshift-baremetal-install') }}
 mor_owner: "{{ ansible_user_uid }}"
 mor_group: "{{ ansible_user_gid }}"
 mor_force: false

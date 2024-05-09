@@ -10,15 +10,8 @@
 - name: "Write rhcos.json from command 4.8+"
   when:
     - mor_version is version("4.8", ">=")
-  vars:
-    _cmd: >-
-      {%- if ansible_distribution_major_version == '8' and mor_version is version("4.16", ">=") -%}
-      openshift-install
-      {%- else -%}
-      openshift-baremetal-install
-      {%- endif -%}
   ansible.builtin.shell: >
-    {{ mor_cache_dir }}/{{ mor_version }}/{{ _cmd }} coreos print-stream-json >
+    {{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }} coreos print-stream-json >
     {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json
   changed_when: true
 
