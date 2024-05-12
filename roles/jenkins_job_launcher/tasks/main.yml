@@ -39,7 +39,7 @@
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
   register: in_progress
-  until: in_progress.json.inProgress|default("true") == "false"
+  until: in_progress.json.inProgress == "false"
   retries: 200
   delay: "{{ jjl_delay_seconds }}" # total of 3hrs 20 minutes.
 
