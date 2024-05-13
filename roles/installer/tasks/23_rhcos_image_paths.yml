@@ -3,7 +3,7 @@
   block:
     - name: Get COMMIT_ID
       shell: |
-        /usr/local/bin/openshift-baremetal-install version | grep '^built from commit' | awk '{print $4}'
+        /usr/local/bin/{{ installer_cmd }} version | grep '^built from commit' | awk '{print $4}'
       register: commit_id
       tags: rhcospath
 
@@ -40,7 +40,7 @@
   block:
     - name: Extract rhcos.json
       shell: |
-        /usr/local/bin/openshift-baremetal-install coreos print-stream-json
+        /usr/local/bin/{{ installer_cmd }} coreos print-stream-json
       register: rhcos_json_stream
       retries: 3
       delay: 10

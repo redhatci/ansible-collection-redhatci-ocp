@@ -23,7 +23,7 @@
 - name: Find any existing /usr/local/bin OpenShift binaries on registry host
   find:
     paths: /usr/local/bin
-    patterns: 'oc,openshift-baremetal-install,kubectl'
+    patterns: "oc,{{ installer_cmd }},kubectl"
   register: binary_results
   when: groups['registry_host'][0] != groups['provisioner'][0]
   delegate_to: "{{ groups['registry_host'][0] }}"

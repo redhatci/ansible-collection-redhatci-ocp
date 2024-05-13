@@ -29,7 +29,7 @@
 - name: Find any existing /usr/local/bin OpenShift binaries
   find:
     paths: /usr/local/bin
-    patterns: 'oc,openshift-baremetal-install,kubectl'
+    patterns: "oc,{{ installer_cmd }},kubectl"
   register: binary_results
   tags:
     - cleanup

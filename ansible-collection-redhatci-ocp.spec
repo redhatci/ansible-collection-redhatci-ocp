@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.9.EPOCH
+Version:        0.10.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu May  9 2024 Tony Garcia <tonyg@redhat.com> - 0.10.EPOCH-VERS
+- Version bump in the collection due to baremetal installer 4.16+
+
 * Tue Apr 30 2024 Beto Rodriguez <josearod@redhat.com> - 0.9.EPOCH-VERS
 - Dependency for acm_* roles
 

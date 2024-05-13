@@ -81,12 +81,11 @@
   tags:
     - extract
 
-# on my other system tempdir_loc required .path (in case you need to revert)
 - name: Extracting the installer
   command: >
     /usr/local/bin/oc adm release extract
     --registry-config {{ pullsecret_file | quote }}
-    --command={{ cmd |quote }}
+    --command={{ installer_cmd |quote }}
     --to {{ tempdir_loc }} {{ disconnected_installer | ternary(disconnected_installer, release_image) }}
   args:
     chdir: "{{ tempdir }}"
@@ -105,21 +104,10 @@
   tags:
     - extract
 
-# - name: Extracting the installer
-#   shell: >
-#     /usr/local/bin/oc adm release extract
-#     --registry-config {{ pullsecret_file | quote }}
-#     --command={{ cmd |quote }}
-#     --to {{ tempdir | quote }} {{ disconnected_installer | ternary(disconnected_installer, release_image) }}
-#  args:
-#    chdir: "{{ tempdir }}"
-#    executable: /bin/bash
-#  tags: extract
-
-- name: OFFLINE mode requires openshift-baremetal-install pre-extracted
+- name: OFFLINE mode requires installer pre-extracted
   get_url:
-    url: "{{ webserver_url }}/{{ version }}/openshift-baremetal-install"
-    dest: "{{ tempdir }}/openshift-baremetal-install"
+    url: "{{ webserver_url }}/{{ version }}/{{ installer_cmd }}"
+    dest: "{{ tempdir }}/{{ installer_cmd }}"
   register: result
   retries: 3
   delay: 10
@@ -128,10 +116,9 @@
   tags:
     - extract
 
-- name: Copy openshift-baremetal-install binary to /usr/local/bin
+- name: Copy install binary to /usr/local/bin
   copy:
-    # src: "{{ tempdir_loc.path }}/openshift-baremetal-install"
-    src: "{{ tempdir_loc }}/openshift-baremetal-install"
+    src: "{{ tempdir_loc }}/{{ installer_cmd }}"
     dest: /usr/local/bin/
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -141,21 +128,20 @@
   become: true
   tags: extract
 
-- name: Get the openshift-baremetal-install from registry host into temp file on control machine
+- name: Get the install from registry host into temp file on control machine
   fetch:
     dest: /tmp/
     flat: true
-    # src: "{{ tempdir_loc.path }}/openshift-baremetal-install"
-    src: "{{ tempdir_loc }}/openshift-baremetal-install"
+    src: "{{ tempdir_loc }}/{{ installer_cmd }}"
   when: registry_creation|bool
   delegate_to: "{{ groups['registry_host'][0] }}"
   tags:
     - extract
 
-- name: Copy the openshift-baremetal-install binary from control machine to the provisioner host
+- name: Copy the install binary from control machine to the provisioner host
   copy:
-    src: /tmp/openshift-baremetal-install
-    dest: "/usr/local/bin/openshift-baremetal-install"
+    src: /tmp/{{ installer_cmd }}
+    dest: "/usr/local/bin/{{ installer_cmd }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0755
@@ -166,9 +152,9 @@
   tags:
     - extract
 
-- name: Remove the temporary copy of the openshift-baremetal-install binary on control machine
+- name: Remove the temporary copy of the install binary on control machine
   file:
-    path: "/tmp/openshift-baremetal-install"
+    path: "/tmp/{{ installer_cmd }}"
     state: absent
   when:
     - registry_creation|bool
