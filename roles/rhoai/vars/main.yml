@@ -1,0 +1,15 @@
+---
+rhoai_default_operator_map:
+  servicemesh:
+    package: servicemeshoperator
+    channel: stable
+    namespace: openshift-servicemesh
+  serverless:
+    package: serverless-operator
+    channel: stable-1.32
+    namespace: openshift-serverless
+  rhods:
+    package: rhods-operator
+    channel: stable-2.8
+    namespace: redhat-ods-operator
+...
