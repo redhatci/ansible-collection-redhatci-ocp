@@ -49,4 +49,4 @@
 - name: Fail if result is not SUCCESS
   ansible.builtin.fail:
     msg: job failed
-  when: in_progress.result != "SUCCESS"
+  when: in_progress.json.result != "SUCCESS"
