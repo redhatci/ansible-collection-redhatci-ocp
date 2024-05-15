@@ -1,0 +1,69 @@
+---
+- name: "Creating Namespace for {{ rhoai_op_name }}"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: Namespace
+      apiVersion: v1
+      metadata:
+        name: "{{ rhoai_op_namespace }}"
+
+- name: "Create OperatorGroup for {{ rhoai_op_name }}"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: OperatorGroup
+      apiVersion: operators.coreos.com/v1
+      metadata:
+        name: "{{ rhoai_op_package }}"
+        namespace: "{{ rhoai_op_namespace }}"
+
+- name: "Create Subscription for {{ rhoai_op_name }}"
+  community.kubernetes.k8s:
+    state: present
+    wait: true
+    definition:
+      kind: Subscription
+      apiVersion: operators.coreos.com/v1alpha1
+      metadata:
+        name: "{{ rhoai_op_package }}"
+        namespace: "{{ rhoai_op_namespace }}"
+        labels:
+          app: "{{ rhoai_op_package }}"
+      spec:
+        name: "{{ rhoai_op_package }}"
+        channel: "{{ rhoai_op_channel }}"
+        source: "{{ rhoai_source_catalog }}"
+        sourceNamespace: "{{ rhoai_source_namespace }}"
+
+- name: "Wait for Subscription to be installed for {{ rhoai_op_name }}"
+  community.kubernetes.k8s_info:
+    name: "{{ rhoai_op_package }}"
+    kind: Subscription
+    api_version: operators.coreos.com/v1alpha1
+    namespace: "{{ rhoai_op_namespace }}"
+  register: _rhoai_sub
+  retries: 50
+  delay: 5
+  until:
+    - "_rhoai_sub.resources is defined"
+    - "_rhoai_sub.resources | length == 1"
+    - "'status' in _rhoai_sub.resources[0]"
+    - "'installedCSV' in _rhoai_sub.resources[0].status"
+
+- name: "Wait for ClusterServiceVersion to succeed for {{ rhoai_op_name }}"
+  community.kubernetes.k8s_info:
+    name: "{{ _rhoai_sub.resources[0].status.installedCSV }}"
+    kind: ClusterServiceVersion
+    api_version: operators.coreos.com/v1alpha1
+    namespace: "{{ rhoai_op_namespace }}"
+  register: _rhoai_csv
+  retries: 50
+  delay: 5
+  until:
+    - "_rhoai_csv.resources is defined"
+    - "_rhoai_csv.resources | length == 1"
+    - "'status' in _rhoai_csv.resources[0]"
+    - "'phase' in _rhoai_csv.resources[0].status"
+    - "_rhoai_csv.resources[0].status.phase == 'Succeeded'"
+...
