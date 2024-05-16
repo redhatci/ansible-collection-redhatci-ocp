@@ -2,7 +2,7 @@
 tnf_stage: "tests"
 tnf_check_commit_sha: false
 test_network_function_repo: "https://github.com/test-network-function/cnf-certification-test"
-test_network_function_version: v5.0.8
+test_network_function_version: v5.1.0
 test_network_function_project_name: cnf-certification-test
 tnf_labels: "all"
 # By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
@@ -23,7 +23,7 @@ tnf_image_suffix: "{{ lookup('community.general.random_string', length=16, speci
 # Provide feedback for each tnf test launched. Just copy this template in your pipeline file and fill the value for the
 # tests you want to provide feedback. You don't need to include the tests that you don't want to provide feedback.
 # To insert line breaks, use \\n (you need to escape it). Same for quotes and so on.
-# List of tests updated until tnf v5.0.8
+# List of tests updated until tnf v5.1.0
 tnf_feedback:
   access-control-bpf-capability-check: ""
   access-control-cluster-role-bindings: ""
