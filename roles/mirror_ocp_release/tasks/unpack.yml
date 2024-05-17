@@ -55,6 +55,16 @@
       delay: 10
       changed_when: false
 
+    # redhatci.ocp.installer 4.16+ for el8 expects a rhel8 tarball
+    # required only for nightly builds
+    - name: Create a client tarball for el8 on 4.16+
+      community.general.archive:
+        path:
+          - "{{ mor_cache_dir }}/{{ mor_version }}/oc"
+          - "{{ mor_cache_dir }}/{{ mor_version }}/kubectl"
+        dest: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
+        format: gz
+
     - name: Delete temporary directory for oc client
       ansible.builtin.file:
         path: "{{ _mor_tmp_dir.path }}"
