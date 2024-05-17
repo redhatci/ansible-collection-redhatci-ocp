@@ -57,13 +57,17 @@
 
     # redhatci.ocp.installer 4.16+ for el8 expects a rhel8 tarball
     # required only for nightly builds
+    # using community.general.archive generates the tarball but
+    # throws an exception: load_file_common_arguments() unexpected keyword argument 'path'
     - name: Create a client tarball for el8 on 4.16+
-      community.general.archive:
-        path:
-          - "{{ mor_cache_dir }}/{{ mor_version }}/oc"
-          - "{{ mor_cache_dir }}/{{ mor_version }}/kubectl"
-        dest: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
-        format: gz
+      ansible.builtin.shell: >
+        tar czf
+        "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
+        -C "{{ mor_cache_dir }}/{{ mor_version }}"
+        oc
+        kubectl
+      warn: false
+      changed_when: true
 
     - name: Delete temporary directory for oc client
       ansible.builtin.file:
