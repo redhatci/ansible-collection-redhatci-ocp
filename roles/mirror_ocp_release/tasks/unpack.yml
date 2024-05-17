@@ -59,7 +59,7 @@
     # required only for nightly builds
     # using community.general.archive generates the tarball but
     # throws an exception: load_file_common_arguments() unexpected keyword argument 'path'
-    - name: Create a client tarball for el8 on 4.16+
+    - name: Create a client tarball for el8 on 4.16+ # noqa command-instead-of-module
       ansible.builtin.shell: >
         tar czf
         "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
