@@ -66,7 +66,6 @@
         -C "{{ mor_cache_dir }}/{{ mor_version }}"
         oc
         kubectl
-      warn: false
       changed_when: true
 
     - name: Delete temporary directory for oc client
