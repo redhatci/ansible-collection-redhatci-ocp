@@ -20,6 +20,7 @@ preflight_test_certified_image  | false                                         
 catalog_url                       | https://catalog.redhat.com/api/containers/v1         | Optional. This is a Pyxis API that used during the check if the image is certified.
 preflight_run_health_check      | true                                                 | Optional. Run health check on every container and generate oval reports both in xml and HTML formats.
 preflight_dci_all_components_are_ga | true                                             | Optional. Only submit test results when all components in the list `dci_ga_components_for_certification` are GA.
+max_images_per_batch | 1                                             | Optional. This variable allows the user to adjust the number of images processed per batch for running preflight in parallel. By default, it is set to `1`.
 
 
 ## Variables to define for each operator in preflight_operators_to_certify

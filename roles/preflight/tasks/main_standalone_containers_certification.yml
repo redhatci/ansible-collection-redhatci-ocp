@@ -28,13 +28,55 @@
           version: "{{ current_operator_image.split(':')[-1] }}"
           pyxis_container_identifier: "{{ c.pyxis_container_identifier | default('') }}"
           create_container_project: "{{ c.create_container_project | default(false) }}"
-          short_description: "{{ c.short_description | default(omit) }}"
-          pyxis_product_lists: "{{ c.pyxis_product_lists | default(omit) }}"
+          short_description: "{{ c.short_description | default('') }}"
+          pyxis_product_lists: "{{ c.pyxis_product_lists | default([]) }}"
       ansible.builtin.include_tasks: test_preflight_check_container_one_image.yml
       loop: "{{ preflight_containers_to_certify }}"
       loop_control:
         loop_var: c
+      when:
+        - not do_container_parallel_test
+        - max_images_per_batch <= 1
+
+    - name: "Execute Preflight Checks in Parallel"
+      when:
+        - do_container_parallel_test
+        - max_images_per_batch > 1
+      block:
+        - name: Create Certification Projects in Loop
+          ansible.builtin.include_tasks: create_cert_projects_loop.yml
+
+        - name: Check if New Certification Project IDs are Defined and Not Empty
+          ansible.builtin.set_fact:
+            preflight_use_new_cert_project_ids: "{{ (ccp_new_cert_project_ids | default([])) | length > 0 }}"
+
+        - name: Assign Certification Projects from existing Pyxis Container Identifiers
+          ansible.builtin.set_fact:
+            preflight_cert_projects: >-
+              {% set projects = [] %}
+              {% for container_image in preflight_containers_to_certify %}
+                {% if 'pyxis_container_identifier' in container_image %}
+                  {% set _ = projects.append(container_image.pyxis_container_identifier) %}
+                {% else %}
+                  {% set _ = projects.append('') %}
+                {% endif %}
+              {% endfor %}
+              {{ projects }}
+          when: not preflight_use_new_cert_project_ids
+
+        - name: Assign Certification Projects from New Certification Project IDs
+          ansible.builtin.set_fact:
+            preflight_cert_projects: "{{ ccp_new_cert_project_ids }}"
+          when: preflight_use_new_cert_project_ids
+
+        - name: "Execute Preflight Checks in Batches of {{ max_images_per_batch }}"
+          ansible.builtin.include_tasks: test_preflight_container_parallel.yml
+          loop: "{{ preflight_containers_to_certify | batch(max_images_per_batch) | list }}"
+          loop_control:
+            loop_var: batched_images
+            index_var: batch_index
+          vars:
+            preflight_current_project_batch: "{{ preflight_cert_projects[(batch_index * max_images_per_batch) : (batch_index * max_images_per_batch + batched_images | length)] }}"
   always:
     - name: Teardown
       ansible.builtin.include_tasks: teardown.yml
-...
