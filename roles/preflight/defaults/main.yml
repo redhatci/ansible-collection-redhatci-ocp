@@ -8,4 +8,6 @@ preflight_podman_ca: ""
 catalog_url: "https://catalog.redhat.com/api/containers/v1"
 preflight_test_certified_image: false
 preflight_run_health_check: true
+do_container_parallel_test: false
+max_images_per_batch: 1
 ...

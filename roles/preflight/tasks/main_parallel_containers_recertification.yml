@@ -1,0 +1,30 @@
+---
+- name: "Testing containers in parallel"
+  block:
+    - name: Create tmp directory for custom configurations and preflight binary
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: preflight_tmp_dir.
+      register: _preflight_tmp_dir
+
+    - name: Copy registry authentication into config folder for standalone flow
+      ansible.builtin.copy:
+        src: "{{ partner_creds }}"
+        dest: "{{ _preflight_tmp_dir.path }}/config.json"
+        mode: "0644"
+      when: partner_creds | length
+
+    # Use custom certificate for self sign registry
+    - name: Get custom ca certificate for preflight
+      ansible.builtin.include_tasks: prepare_custom_certificate.yml
+      when: preflight_custom_ca | length
+
+    - name: "Run preflight checks in batches of {{ max_images_per_batch }}"
+      ansible.builtin.include_tasks: test_preflight_container_parallel.yml
+      loop: "{{ preflight_containers_to_certify | batch(max_images_per_batch) | list }}"
+      loop_control:
+        loop_var: batched_images
+  always:
+    - name: Teardown
+      ansible.builtin.include_tasks: teardown.yml
+...
