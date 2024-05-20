@@ -35,6 +35,7 @@
       docker://{{ mfd_local_registry }}/{{ mfd_local_registry_path }}
       --skip-metadata-check
       --dest-skip-tls
+      --max-nested-paths={{ mfd_max_nested_paths }}
   retries: 3
   delay: 10
   register: result
