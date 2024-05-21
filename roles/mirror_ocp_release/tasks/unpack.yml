@@ -31,9 +31,17 @@
         prefix: _mor_tmp_dir.
       register: _mor_tmp_dir
 
+    - name: Set fact openshift-client-linux tar prefix
+      ansible.builtin.set_fact:
+        mirror_ocp_release_prefix: >-
+          {{ (mor_version is ansible.builtin.version('4.16.0', '>=') and
+              ansible_facts['os_family'] == 'RedHat' and
+              ansible_facts['distribution_major_version'] == '8') |
+              ternary('openshift-client-linux-amd64-rhel8', 'openshift-client-linux') }}
+
     - name: Download required latest openshift client for el8 in 4.16+
       ansible.builtin.unarchive:
-        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz"
+        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/{{ mirror_ocp_release_prefix }}.tar.gz"
         dest: "{{ _mor_tmp_dir.path }}"
         remote_src: true
         mode: "0755"
@@ -54,6 +62,19 @@
       retries: 9
       delay: 10
       changed_when: false
+
+    # redhatci.ocp.installer 4.16+ for el8 expects a rhel8 tarball
+    # required only for nightly builds
+    # using community.general.archive generates the tarball but
+    # throws an exception: load_file_common_arguments() unexpected keyword argument 'path'
+    - name: Create a client tarball for el8 on 4.16+ # noqa command-instead-of-module
+      ansible.builtin.shell: >
+        tar czf
+        "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
+        -C "{{ mor_cache_dir }}/{{ mor_version }}"
+        oc
+        kubectl
+      changed_when: true
 
     - name: Delete temporary directory for oc client
       ansible.builtin.file:
