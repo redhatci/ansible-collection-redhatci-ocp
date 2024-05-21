@@ -2,15 +2,30 @@
 - name: RHCOS image path (pre 4.8)
   block:
     - name: Get COMMIT_ID
-      shell: |
-        /usr/local/bin/{{ installer_cmd }} version | grep '^built from commit' | awk '{print $4}'
-      register: commit_id
+      changed_when: false
+      ansible.builtin.command: |
+        /usr/local/bin/{{ installer_cmd }} version
+      register: installer_cmd_output
+      tags: rhcospath
+
+    - name: Parse openshift_baremetal_install command with TTP
+      ansible.utils.cli_parse:
+        text: "{{ installer_cmd_output['stdout'] }}"
+        parser:
+          name: ansible.utils.ttp
+          template_path: "{{ role_path }}/templates/cmd_openshift-baremetal-install.ttp"
+        set_fact: installer_openshift_baremetal_install_fact
+      tags: rhcospath
+
+    - name: Set commit_id
+      ansible.builtin.set_fact:
+        commit_id: "{{ installer_openshift_baremetal_install_fact[0][0].commit }}"
       tags: rhcospath
 
     - name: Get the URLs
       set_fact:
         offline_url: "{{ webserver_url }}/{{ version }}/rhcos.json"
-        online_url: "https://raw.githubusercontent.com/openshift/installer/{{ commit_id.stdout }}/data/data/rhcos.json"
+        online_url: "https://raw.githubusercontent.com/openshift/installer/{{ commit_id }}/data/data/rhcos.json"
 
     - name: Get RHCOS JSON File
       uri:
