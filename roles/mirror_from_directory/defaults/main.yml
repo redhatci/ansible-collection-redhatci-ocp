@@ -1,4 +1,5 @@
 ---
 mfd_delete_workspace: true
 mfd_local_registry_path: ""
+mfd_max_nested_paths: 2
 ...
