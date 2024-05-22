@@ -8,18 +8,9 @@
       register: _installer_cmd_output
       tags: rhcospath
 
-    - name: Parse openshift_baremetal_install command with TTP
-      ansible.utils.cli_parse:
-        text: "{{ _installer_cmd_output['stdout'] }}"
-        parser:
-          name: ansible.utils.ttp
-          template_path: "{{ role_path }}/templates/cmd_openshift-baremetal-install.ttp"
-        set_fact: installer_openshift_baremetal_install_fact
-      tags: rhcospath
-
     - name: Set commit_id
       ansible.builtin.set_fact:
-        installer_commit_id: "{{ installer_openshift_baremetal_install_fact[0][0].commit }}"
+        installer_commit_id: "{{ _installer_cmd_output.stdout | regex_search('commit [0-9a-f]{40}$', multiline=True) | split(' ') | last }}"
       tags: rhcospath
 
     - name: Get the URLs
