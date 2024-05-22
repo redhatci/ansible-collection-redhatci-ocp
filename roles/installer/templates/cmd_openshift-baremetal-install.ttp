@@ -1,4 +1,0 @@
-{{ignore}} {{ version }}
-built from commit {{ commit }}
-release image {{ image }}
-release architecture {{ architecture }}
