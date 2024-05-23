@@ -40,7 +40,7 @@
         rhcos_uri: "{{ rhcos_json.json | json_query('images.openstack.path') }}"
         rhcos_path: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-{{ base_version }}/{{ build_id }}/x86_64/"
       tags: rhcospath
-  when: (release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int <= 7)
+  when: release_version is ansible.builtin.version('4.7', '<=')
 
 - name: RHCOS image path (4.8+)
   block:
