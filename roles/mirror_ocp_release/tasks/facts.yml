@@ -1,7 +1,7 @@
 ---
 - name: "Read release_image from release.txt"
   ansible.builtin.set_fact:
-    release_image: "{{ lookup('file', (mor_cache_dir + '/' + mor_version + '/release.txt')) | regex_search('(?<=^Pull From: )(.*)$', multiline=true) }}"
+    mor_release_image: "{{ lookup('file', (mor_cache_dir + '/' + mor_version + '/release.txt')) | regex_search('(?<=^Pull From: )(.*)$', multiline=true) }}"
 
 - name: "Write rhcos.json from command 4.8+"
   when:
@@ -37,7 +37,7 @@
 - name: "Set image facts"
   ansible.builtin.set_fact:
     ocp_release_data:
-      container_image: "{{ release_image }}"
+      container_image: "{{ mor_release_image }}"
       rhcos_version: "{{ rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.metal.release') }}"
       rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.' + item.path))}) }}"
   with_items:
@@ -78,7 +78,7 @@
     base_uri: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-{{ mor_base_version }}/{{ rhcos_ver }}/x86_64/"
   ansible.builtin.set_fact:
     ocp_release_data:
-      container_image: "{{ release_image }}"
+      container_image: "{{ mor_release_image }}"
       rhcos_version: "{{ rhcos_ver }}"
       rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (item.baseURI | default('')) + (rhcos.stdout | from_json | json_query('images.' + item.path))}) }}"
   with_items:
