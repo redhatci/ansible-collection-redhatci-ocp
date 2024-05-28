@@ -159,7 +159,7 @@
 
 - name: "Unarchive client tarball"
   ansible.builtin.unarchive:
-    src: "{{ cache_dir }}/{{ version }}/{{ installer_oc_installer_prefix }}.tar.gz"
+    src: "{{ cache_dir }}/{{ version }}/{{ installer_oc_installer_prefix }}-{{ version }}.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
