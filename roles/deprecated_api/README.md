@@ -23,8 +23,7 @@ The role requires the following:
 | Parameter               | Choices/Defaults      | Comments                                             |
 |-------------------------|-----------------------|------------------------------------------------------|
 | `kubeconfig`            | `~/.kube/config.json` | Path to an existing Kubernetes config file to be used by k8s_info dependency. If not provided, the OpenShift client will attempt to load the default configuration file from `~/.kube/config.json`. Can also be specified via `K8S_AUTH_KUBECONFIG` environment variable.                                                                                                |
-| `deprecated_namespaces` | `undefined`           | Optional. List of namespaces the role will check for deprecated APIs. Typically, it should include the namespaces where you deploy the workload. If left undefined, the role will check all namespaces, excluding those starting with the `openshift` and `kube-` prefixes.                                                |
-| `ocp_version`           | `"4.9"/"4.10"/etc`    | OpenShift version currently running on your cluster. |
+| `deprecated_api_namespaces` | `undefined`           | Optional. List of namespaces the role will check for deprecated APIs. Typically, it should include the namespaces where you deploy the workload. If left undefined, the role will check all namespaces, excluding those starting with the `openshift` and `kube-` prefixes.                                                |
 | `deprecated_api_logs.path` | `/tmp`             | Optional. Directory to store the output JUnit file containing the 'Workload Compatibility with OCP Versions' test suite.                                                              |
 
 # Examples
@@ -33,8 +32,6 @@ The role requires the following:
 - name: Detect to-be-removed APIs in all namespaces excluding ones starting with openshift and kube
   include_role:
     name: redhatci.ocp.deprecated_api
-  vars:
-    ocp_version: "4.9"
 ```
 
 ```
@@ -42,7 +39,6 @@ The role requires the following:
   include_role:
     name: redhatci.ocp.deprecated_api
   vars:
-    ocp_version: "4.9"
     deprecated_api_logs:
       path: "/path/to/my/log/folder"
 ```

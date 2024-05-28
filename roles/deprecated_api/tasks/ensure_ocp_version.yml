@@ -1,0 +1,19 @@
+---
+- name: "Set da_ocp_version to ocp_version if defined"
+  ansible.builtin.set_fact:
+    da_ocp_version: "{{ ocp_version }}"
+  when: ocp_version is defined
+
+- name: "Get cluster version"
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: _deprecated_api_cluster_version
+  when: ocp_version is not defined
+
+- name: "Set OCP version in major.minor format"
+  ansible.builtin.set_fact:
+    da_ocp_version: "{{ _deprecated_api_cluster_version.resources[0].status.desired.version.split('.')[:2] | join('.') }}"
+  when: ocp_version is not defined
+...

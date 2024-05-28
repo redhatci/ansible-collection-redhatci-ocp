@@ -1,20 +1,23 @@
 ---
-- name: Discover all namespaces
+- name: "Ensure OCP version to be set"
+  ansible.builtin.include_tasks: ensure_ocp_version.yml
+
+- name: "Discover all namespaces"
   community.kubernetes.k8s_info:
     kind: Namespace
-  register: cluster_namespaces
+  register: _da_cluster_namespaces
 
-- name: Build namespace list excluding namespaces starting with openshift and kube
-  set_fact:
-    all_namespaces: "{{ cluster_namespaces.resources
+- name: "Build namespace list excluding namespaces starting with openshift and kube"
+  ansible.builtin.set_fact:
+    da_all_namespaces: "{{ _da_cluster_namespaces.resources
                       | map(attribute='metadata.name')
                       | select('match', '^(?!openshift|kube-).*')
                       | list }}"
 
-- name: Loop over deprecated_namespaces to get API request counts
+- name: "Loop over deprecated_namespaces to get API request counts"
   ansible.builtin.include_tasks: get_api_request_counts_per_namespace.yml
   # Check all namespaces by default unless otherwise requested
-  loop: "{{ deprecated_namespaces | default(all_namespaces) }}"
+  loop: "{{ deprecated_api_namespaces | default(da_all_namespaces) }}"
   loop_control:
-    loop_var: deprecated_ns
+    loop_var: da_ns
 ...
