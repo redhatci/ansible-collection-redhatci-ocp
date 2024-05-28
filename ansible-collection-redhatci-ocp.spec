@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.10.EPOCH
+Version:        0.11.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -18,7 +18,7 @@ Requires: ansible-collection-ansible-posix
 Requires: ansible-collection-ansible-utils
 Requires: ansible-collection-community-crypto
 Requires: ansible-collection-community-general
-Requires: ansible-collection-community-kubernetes
+Requires: ansible-collection-kubernetes-core >= 2.3.2
 Requires: ansible-collection-community-libvirt
 Requires: ansible-collection-containers-podman
 Requires: git
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri May 24 2024 Tony Garcia <tonyg@redhat.com> - 0.11.EPOCH-VER
+- Switch to kubernetes.core
+
 * Thu May  9 2024 Tony Garcia <tonyg@redhat.com> - 0.10.EPOCH-VERS
 - Version bump in the collection due to baremetal installer 4.16+
 

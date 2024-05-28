@@ -15,7 +15,7 @@
       source: "{{ catalog_source }}"
       sourceNamespace: "openshift-marketplace"
       startingCSV: "{{ me_csv }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: operator.open-cluster-management.io/v1
       kind: MultiClusterHub
@@ -27,7 +27,7 @@
         disableHubSelfManagement: "{{ hub_disable_selfmanagement }}"
 
 - name: "Wait for search-postgres deployment"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Deployment
     namespace: "{{ hub_namespace }}"
     name: search-postgres
@@ -45,7 +45,7 @@
     - has_defined_hugepage | default(false) | bool
   block:
     - name: "Annotate the Search Object"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           kind: Search
           apiVersion: search.open-cluster-management.io/v1alpha1
@@ -76,12 +76,12 @@
                   resources:
                     limits:
                       {{ hub_hugepages_type }}: {{ hub_hugepages_size }}
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ dep_definition }}"
 
 - name: "Wait for ACM pods to be Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "{{ hub_namespace }}"
@@ -91,7 +91,7 @@
   delay: 15
 
 - name: "Wait up to 20 mins for MCH to be ready"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: operator.open-cluster-management.io/v1
     kind: MultiClusterHub
     name: "{{ hub_instance }}"
@@ -111,7 +111,7 @@
     - hub_disconnected | bool
   block:
     - name: "Disable ClusterImageSet subscription"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: operator.open-cluster-management.io/v1
           kind: MultiClusterHub
@@ -122,7 +122,7 @@
             disableUpdateClusterImageSets: true
 
     - name: "Delete AppSub to fast channel"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api: apps.open-cluster-management.io/v1
         state: absent
         kind: Subscription
@@ -131,7 +131,7 @@
         namespace: "{{ hub_namespace }}"
 
     - name: "Get available ClusterImageSets"
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: hive.openshift.io/v1
         kind: ClusterImageSet
       register: cis_list
@@ -140,7 +140,7 @@
       vars:
         subs_details: "resources[*].{ app_subs_name: metadata.name }"
         app_subs: "{{ cis_list | json_query(subs_details) }}"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api: hive.openshift.io/v1
         state: absent
         kind: ClusterImageSet
@@ -154,7 +154,7 @@
         - cis_list | length
 
 - name: "Enable feature gate for Central Infrastructure Management service"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: hive.openshift.io/v1
       kind: HiveConfig
@@ -170,7 +170,7 @@
           featureSet: Custom
 
 - name: "Wait for Hive pods to be Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "hive"
@@ -180,7 +180,7 @@
   delay: 15
 
 - name: "Update the provisioning resource to watch all Namespaces"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: metal3.io/v1alpha1
       kind: Provisioning
@@ -190,7 +190,7 @@
         watchAllNamespaces: true
 
 - name: "Get cluster version"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: config.openshift.io/v1
     kind: ClusterVersion
     name: version
@@ -206,7 +206,7 @@
     - ocp_version is version( hub_hypershift_supported , ">=")
   block:
     - name: "Enable Hypershift component"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: multicluster.openshift.io/v1
           kind: MultiClusterEngine
@@ -219,7 +219,7 @@
                   name: hypershift-preview
 
     - name: "Enable hypershift Cluster-Addon"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: addon.open-cluster-management.io/v1alpha1
           kind: ManagedClusterAddOn
@@ -230,7 +230,7 @@
             installNamespace: open-cluster-management-agent-addon
 
     - name: "Enable Ingress Wildcards for Hosted Clusters subdomains"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: operator.openshift.io/v1
           kind: IngressController
@@ -242,7 +242,7 @@
               wildcardPolicy: WildcardsAllowed
 
 - name: "Check the AgentServiceConfig instance"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: agent-install.openshift.io/v1beta1
     kind: AgentServiceConfig
     name: agent
@@ -289,14 +289,14 @@
       {% if hub_os_images is defined %}
         osImages: {{ hub_os_images }}
       {% endif %}
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ agent_def }}"
 
 # In connected envs, it takes some time to generate the ISOs
 # for multiple OCP versions and Architectures
 - name: "Wait for assisted-image-service pods to be Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     label_selectors:
@@ -315,7 +315,7 @@
   delay: 15
 
 - name: "Wait for assisted-service pods to be Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     label_selectors:

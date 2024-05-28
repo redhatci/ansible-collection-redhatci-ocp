@@ -1,6 +1,6 @@
 ---
 - name: "Get cluster install status"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: extensions.hive.openshift.io/v1beta1
     kind: AgentClusterInstall
     name: "{{ acm_cluster_name }}"

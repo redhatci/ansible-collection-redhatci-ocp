@@ -7,7 +7,7 @@
       - hub_os_images | type_debug == 'list'
       - hub_os_images | length
 - name: "Get Storage Classes"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: StorageClass
   register: storage_class
@@ -40,7 +40,7 @@
     - hub_sc is undefined
 
 - name: "Get available CSVs"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: operators.coreos.com/v1alpha1
     kind: ClusterServiceVersion
   register: current_csvs
@@ -56,7 +56,7 @@
   when: not csvs is search('advanced-cluster-management')
 
 - name: "Get workers information"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Node
   register: node_info
   no_log: true

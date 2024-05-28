@@ -9,7 +9,7 @@ name: ocp
 # Always leave patch version as .0
 # Patch version is replaced from commit date in UNIX epoch format
 # example: 0.3.2147483647
-version: 0.10.0
+version: 0.11.0
 
 # The path to the Markdown (.md) readme file.
 readme: README.md
@@ -100,7 +100,7 @@ dependencies:
   "ansible.utils": "*"
   "community.crypto": "2.18.0"
   "community.general": "7.0.1"
-  "community.kubernetes": "1.2.1"
+  "kubernetes.core": "2.3.2"
   "community.libvirt": "*"
   "containers.podman": "*"
 

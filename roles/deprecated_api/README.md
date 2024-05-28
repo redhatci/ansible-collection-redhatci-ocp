@@ -3,7 +3,7 @@
 # Synopsis
 
 - Connect to a running K8s cluster with an application workload already deployed.
-- Utilize the community.kubernetes.k8s_info module to access K8s APIs.
+- Utilize the k8s_info module to access K8s APIs.
 - Parse workload APIs using the APIRequestCount object.
 - Detect to-be-removed APIs by filtering through APIRequestCount.status.removedInRelease.
 - Verify compatibility with the current Kubernetes version, the next version, and all versions up to the latest release mentioned in removedInRelease.
@@ -14,7 +14,7 @@
 
 The role requires the following:
 
-- Install `community.kubernetes.k8s_info` to access K8s APIs.
+- [kubernetes.core](https://galaxy.ansible.com/ui/repo/published/kubernetes/core) Ansible collection
 - Ensure the availability of the K8s [APIRequestCount](https://github.com/openshift/cluster-kube-apiserver-operator/blob/master/bindata/assets/kube-apiserver/apiserver.openshift.io_apirequestcount.yaml) object. For OpenShift, APIRequestCount is included in the standard distribution from OCP 4.9 onwards. For other distributions, deploy the required CRD and CR before using the role.
 - Python version 3.6 or higher is needed to parse the APIs.
 

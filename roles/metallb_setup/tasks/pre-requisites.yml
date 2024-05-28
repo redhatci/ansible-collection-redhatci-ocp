@@ -1,6 +1,6 @@
 ---
 - name: "Check if the main MetalLB CRD is present"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: metallbs.metallb.io
   register: metal_crd
@@ -12,7 +12,7 @@
   when: metal_crd.resources | list | count == 0
 
 - name: "Check for metallb instances"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: metallb.io/v1beta1
     kind: MetalLB
   register: mlb_instance
@@ -49,7 +49,7 @@
     - mlb_ipaddr_pool
 
 - name: "Confirm that MetalLB controller pods are Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "{{ mlb_namespace }}"
@@ -81,7 +81,7 @@
     - mlb_bgp_peers is defined
 
 - name: "Get cluster version"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: config.openshift.io/v1
     kind: ClusterVersion
     name: version

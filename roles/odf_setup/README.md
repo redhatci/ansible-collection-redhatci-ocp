@@ -7,7 +7,7 @@ Requirements
 ------------
 
 - oc client
-- python3-kubernetes (community.kubernetes.k8s)
+- [kubernetes.core](https://galaxy.ansible.com/ui/repo/published/kubernetes/core) Ansible collection
 - Bash session and OCP account with cluster-admin privileges
 - In ODF External Mode requires access to RHCS cluster
 

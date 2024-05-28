@@ -27,7 +27,7 @@
         tnf_debug_ds_ns: "cnf-suite"
 
     - name: Ensure tnf-debug DaemonSet is absent
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         kind: DaemonSet
         name: tnf-debug
@@ -35,14 +35,14 @@
         state: absent
 
     - name: Ensure tnf namespace is absent
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         kind: Namespace
         name: tnf
         state: absent
 
     - name: Ensure tnf debug namespace is absent
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         kind: Namespace
         name: "{{ tnf_debug_ds_ns }}"
