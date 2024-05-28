@@ -136,6 +136,17 @@
     - getoc
     - cache
 
+- name: "Set fact oc installer prefix"
+  ansible.builtin.set_fact:
+    installer_oc_installer_prefix: >-
+      {{ (version is ansible.builtin.version('4.16.0', '>=') and
+          ansible_facts['os_family'] == 'RedHat' and
+          ansible_facts['distribution_major_version'] == '8') |
+          ternary('openshift-client-linux-amd64-rhel8', 'openshift-client-linux') }}
+  tags:
+    - getoc
+    - cache
+
 - name: "Check if clients exists"
   ansible.builtin.stat:
     path: "{{ cache_dir }}/{{ version }}/client_tools.done"
@@ -148,7 +159,7 @@
 
 - name: "Unarchive client tarball"
   ansible.builtin.unarchive:
-    src: "{{ cache_dir }}/{{ version }}/openshift-client-linux-{{ version }}.tar.gz"
+    src: "{{ cache_dir }}/{{ version }}/{{ installer_oc_installer_prefix }}.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
