@@ -138,7 +138,7 @@
 
 - name: "Set fact oc installer prefix"
   ansible.builtin.set_fact:
-    installer_oc_installer_prefix: >-
+    sno_installer_oc_installer_prefix: >-
       {{ (version is ansible.builtin.version('4.16.0', '>=') and
           ansible_facts['os_family'] == 'RedHat' and
           ansible_facts['distribution_major_version'] == '8') |
@@ -159,7 +159,7 @@
 
 - name: "Unarchive client tarball"
   ansible.builtin.unarchive:
-    src: "{{ cache_dir }}/{{ version }}/{{ installer_oc_installer_prefix }}-{{ version }}.tar.gz"
+    src: "{{ cache_dir }}/{{ version }}/{{ sno_installer_oc_installer_prefix }}-{{ version }}.tar.gz"
     dest: "{{ cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
