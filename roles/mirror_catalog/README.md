@@ -4,15 +4,16 @@ Mirrors a catalog and its related images. Produces a file that can be used to se
 
 ## Role Variables
 
-Name            | Required | Type     | Default | Description
---------------- | -------- | -------- | ------- | -----------
-mc_oc_tool_path | Yes      | string   |         | The path to the oc<sup>1</sup> binary, e.g. '/path/to/oc'
-mc_catalog      | Yes      | string   |         | The Fully Qualified Artifact Reference, e.g. 'example.com/namespace/web:v1.0'
-mc_registry     | Yes      | string   |         | The registry where the catalog will be mirrored, e.g. 'registry.example.com' or 'reg.example.com:4443'
-mc_pullsecret   | No       | string   | ""      | The credential file to pull and/or push the images, e.g. '/path/to/pullsecret.json'
-mc_is_type      | No       | string   | icsp    | The type of image source to use, choose between icsp (imageContentsourcePolicy) (default) or idms (imageDigestMirrorSet).
-mc_continue_on_error|  No  | boolean  | false   | Continue even if there if there are errors during mirroring
-mc_allow_unsecure_registry| No| boolean| true   | Allow mirror from/to insecure registries
+Name                       | Required | Type    | Default | Description
+-------------------------- | -------- | ------- | ------- | -----------
+mc_oc_tool_path            | Yes      | string  |         | The path to the oc<sup>1</sup> binary, e.g. '/path/to/oc'
+mc_catalog                 | Yes      | string  |         | The Fully Qualified Artifact Reference, e.g. 'example.com/namespace/web:v1.0'
+mc_registry                | Yes      | string  |         | The registry where the catalog will be mirrored, e.g. 'registry.example.com' or 'reg.example.com:4443'
+mc_pullsecret              | No       | string  | ""      | The credential file to pull and/or push the images, e.g. '/path/to/pullsecret.json'
+mc_is_type                 | No       | string  | icsp    | The type of image source to use, choose between icsp (imageContentsourcePolicy) (default) or idms (imageDigestMirrorSet).
+mc_continue_on_error       | No       | boolean | false   | Continue even if there if there are errors during mirroring
+mc_manifest_only           | No       | boolean | false   | Calculate the manifests required for mirroring, but do not actually mirror image content.
+mc_allow_unsecure_registry | No       | boolean | true    | Allow mirror from/to insecure registries
 
 <sup>1</sup> It's recommended to use a [stable version of oc](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/)
 
