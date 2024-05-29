@@ -184,7 +184,7 @@
         - always
         - validation
   when:
-    - version.split('.')[0]|int == 4 and version.split('.')[1]|int >= 12
+    - version is ansible.builtin.version('4.12', '>=')
     - ipv6_enabled | bool
     - dualstack_baremetal | bool
     - dualstack_vips | bool
@@ -348,7 +348,9 @@
 - name: Fail if dual-stack is requested and build does not support it
   fail:
     msg: This release {{ release_version }} does not support dual-stack deployments
-  when: release_version.split('.')[0]|int == 4 and release_version.split('.')[1]|int < 6 and dualstack_baremetal
+  when:
+    - release_version is ansible.builtin.version('4.6', '<')
+    - dualstack_baremetal | bool
   tags:
     - always
     - validation
@@ -441,7 +443,7 @@
   fail:
     msg: "dnsvip variable is undefined or empty."
   when:
-    - ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int < 5))
+    - release_version is ansible.builtin.version('4.5', '<')
     - ((dnsvip is undefined) or (dnsvip|length == 0))
   tags:
     - always
@@ -529,7 +531,7 @@
   when:
     - enable_virtualmedia|bool
     - provisioningHostIP is undefined
-    - release_version.split('.')[0]|int == 4 and release_version.split('.')[1]|int == 6
+    - release_version is ansible.builtin.version('4.6', '==')
   tags:
     - always
     - validation
