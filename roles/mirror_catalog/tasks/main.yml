@@ -54,7 +54,7 @@
       {% if mc_allow_unsecure_registry | bool %}
       --insecure
       {% endif %}
-      --max-components=3
+      --max-components={{ mc_max_components | int }}
       --continue-on-error={{ mc_continue_on_error }}
       {% if mc_manifest_only | bool %}
       --manifests-only=true

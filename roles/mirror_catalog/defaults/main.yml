@@ -3,4 +3,5 @@ mc_is_type: "icsp"
 mc_continue_on_error: false
 mc_allow_unsecure_registry: true
 mc_manifest_only: false
+mc_max_components: 3
 ...

@@ -14,6 +14,7 @@ mc_is_type                 | No       | string  | icsp    | The type of image so
 mc_continue_on_error       | No       | boolean | false   | Continue even if there if there are errors during mirroring
 mc_manifest_only           | No       | boolean | false   | Calculate the manifests required for mirroring, but do not actually mirror image content.
 mc_allow_unsecure_registry | No       | boolean | true    | Allow mirror from/to insecure registries
+mc_max_components          | No       | int     | 3       | The maximum number of path components allowed in a destination mapping, `quay.io/org/repo` has two components.
 
 <sup>1</sup> It's recommended to use a [stable version of oc](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/)
 
