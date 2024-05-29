@@ -16,6 +16,7 @@
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
     force_basic_auth: true
+    body_format: "{{ jjl_body_format | default('form-urlencoded') }}"
     status_code: [200, 201]
     body: "{{ jjl_job_params }}"
     headers:
