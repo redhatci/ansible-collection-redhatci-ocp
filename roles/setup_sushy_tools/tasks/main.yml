@@ -38,7 +38,7 @@
         zone: "{{ item.1 }}"
         permanent: true
         immediate: true
-      loop: "{{ [sushy_tools_port] | product(['internal', 'public']) | list }}"
+      loop: "{{ [sushy_tools_port] | product(['internal', 'public', 'libvirt']) | list }}"
 
     - name: Secure sushy tools
       when: secure_sushy_tools | bool
