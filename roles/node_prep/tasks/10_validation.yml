@@ -295,37 +295,42 @@
   tags: validation
 
 - name: Validations for IPv6 VIPs in OCP >= 4.12
+  when:
+    - release_version is ansible.builtin.version('4.12', '>=')
+    - ipv6_enabled | bool
+    - dualstack_baremetal | bool
+    - dualstack_vips | bool
   block:
     - name: Verify DNS records for Wildcard (Ingress) IPv6 VIP
-      set_fact:
-        ingressvip6: "{{ lookup('dig', 'foo.apps.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA' ) }}"
+      ansible.builtin.set_fact:
+        ingressvip6: "{{ lookup('dig', 'foo.apps.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA' ) }}"  # noqa: redhat-ci[no-role-prefix]
       when: ((ingressvip6 is undefined) or (ingressvip6|length == 0))
       tags:
         - always
         - validation
 
     - name: Verify DNS records for API IPv6 VIP
-      set_fact:
-        apivip6: "{{ lookup('dig', 'api.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA' ) }}"
+      ansible.builtin.set_fact:
+        apivip6: "{{ lookup('dig', 'api.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA' ) }}"  # noqa: redhat-ci[no-role-prefix]
       when: ((apivip6 is undefined) or (apivip6|length == 0))
       tags:
         - always
         - validation
 
     - name: Display API IPv6 VIP
-      debug:
+      ansible.builtin.debug:
         msg: "The API IPv6 VIP is {{ apivip6 }}"
         verbosity: 2
       tags: validation
 
     - name: Display Ingress IPv6 VIP
-      debug:
+      ansible.builtin.debug:
         msg: "The Wildcard (Ingress) IPv6 VIP is {{ ingressvip6 }}"
         verbosity: 2
       tags: validation
 
     - name: Fail if incorrect API IPv6 VIP
-      fail:
+      ansible.builtin.fail:
         msg: "The API IPv6 VIP seems to be incorrect. Value was NXDOMAIN or empty string."
       when: (apivip6 == 'NXDOMAIN') or (apivip6|length == 0)
       tags:
@@ -333,17 +338,12 @@
         - validation
 
     - name: Fail if incorrect Ingress IPv6 VIP
-      fail:
+      ansible.builtin.fail:
         msg: "The Ingress IPv6 VIP seems to be incorrect. Value was NXDOMAIN or empty string."
       when: (ingressvip6 == 'NXDOMAIN') or (ingressvip6|length == 0)
       tags:
         - always
         - validation
-  when:
-    - release_version is ansible.builtin.version('4.12', '>=')
-    - ipv6_enabled | bool
-    - dualstack_baremetal | bool
-    - dualstack_vips | bool
 
 - name: Fail if dual-stack is requested and build does not support it
   fail:
