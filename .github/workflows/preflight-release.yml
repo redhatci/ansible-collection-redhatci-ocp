@@ -1,0 +1,89 @@
+name: Check for new Preflight release and create PR
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # daily at 8 AM
+  workflow_dispatch:
+
+jobs:
+  check-new-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for new release
+        id: check_release
+        run: |
+          preflight_latest=$(curl -s https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/releases/latest | jq -r .tag_name)
+          echo "Preflight latest release: $preflight_latest"
+          echo "preflight_latest=$preflight_latest" >> $GITHUB_OUTPUT
+
+      - name: Get current release version
+        id: get_current_release
+        run: |
+          preflight_current=$(grep 'preflight_image:' roles/preflight/defaults/main.yml | awk -F: '{print $3}' | tr -d ' "')
+          echo "Preflight current release: $preflight_current"
+          echo "preflight_current=$preflight_current" >> $GITHUB_OUTPUT
+
+      - name: Compare versions
+        id: compare_versions
+        env:
+          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+          PREFLIGHT_CURRENT: ${{ steps.get_current_release.outputs.preflight_current }}
+        run: |
+          if [ "$PREFLIGHT_LATEST" != "$PREFLIGHT_CURRENT" ]; then
+            echo "New Preflight release found: $PREFLIGHT_LATEST, current: $PREFLIGHT_CURRENT"
+            echo "new_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "Both Preflight latest and current are the same: $PREFLIGHT_LATEST"
+            echo "new_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if branch exists
+        id: check_branch
+        if: steps.compare_versions.outputs.new_release == 'true'
+        env:
+          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+        run: |
+          git ls-remote --exit-code --heads origin preflight-release-$PREFLIGHT_LATEST
+          if [ $? -eq 0 ]; then
+            echo "Branch preflight-release-$PREFLIGHT_LATEST already exists"
+            echo "branch_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Branch preflight-release-$PREFLIGHT_LATEST does not exist"
+            echo "branch_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install GitHub CLI
+        if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
+        run: sudo apt-get install -y gh
+
+      - name: Create new branch with updated Preflight version
+        if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
+        env:
+          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+        run: |
+          # Configure git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # Pull the latest changes from the main branch
+          git fetch origin main
+          git checkout main
+          git pull origin main
+          # Create a new branch from the main branch
+          git checkout -b preflight-release-$PREFLIGHT_LATEST
+          # Update preflight version
+          sed -i "s|quay.io/opdev/preflight:[0-9]*\.[0-9]*\.[0-9]*|quay.io/opdev/preflight:${PREFLIGHT_LATEST}|" roles/preflight/defaults/main.yml
+          sed -i "s|quay.io/opdev/preflight:[0-9]*\.[0-9]*\.[0-9]*|quay.io/opdev/preflight:${PREFLIGHT_LATEST}|" roles/preflight/README.md
+          git add roles/preflight/defaults/main.yml roles/preflight/README.md
+          git commit --allow-empty -m "Update Preflight to release $PREFLIGHT_LATEST"
+          git push --set-upstream origin preflight-release-$PREFLIGHT_LATEST
+
+      - name: Create PR moving to the latest Preflight
+        if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
+        env:
+          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create --title "Move to Preflight release $PREFLIGHT_LATEST" --body "This pull request was opened by a bot.\n\nCheckDallasWorkload: preflight-green" --base main --head preflight-release-$PREFLIGHT_LATEST
