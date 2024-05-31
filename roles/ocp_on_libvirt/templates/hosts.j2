@@ -10,6 +10,9 @@ dir="{{ '{{' }} ansible_user_dir {{ '}}' }}/clusterconfigs"
 {% if customize_extramanifests_path | default("") | length > 0 %}
 customize_extramanifests_path={{ customize_extramanifests_path }}
 {% endif %}
+{% if pullsecret_file | default("") | length > 0 %}
+pullsecret_file={{ pullsecret_file }}
+{% endif %}
 #local_registry_host={{ ansible_fqdn }}
 #local_registry_port=4443
 #provision_cache_store="/opt/cache"
