@@ -28,7 +28,7 @@
 
 - name: Get processor family
   ansible.builtin.set_fact:
-    proc_family: >
+    proc_family: >-
       {{ ('AMD' in (ansible_processor | join)) | ternary('amd', 'intel') }}
 
 - name: Check on nested KVM status
