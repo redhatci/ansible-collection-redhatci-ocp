@@ -1,15 +1,15 @@
 ---
 # Always submit these files to DCI:
 # - Configuration files - tnf_config.yml
-# - Execution logs - dci-tnf-execution.log and cnf-certsuite.log, if exists
+# - Execution logs - dci-tnf-execution.log and certsuite.log, if they exist
 - name: Copy config and log files related to CNF Cert Suite execution
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ job_logs.path }}"
     mode: "0750"
   with_fileglob:
-    - "{{ tnf_dir }}/{{ test_network_function_project_name }}/tnf_config.yml"
-    - "{{ tnf_dir }}/{{ test_network_function_project_name }}/*.log"
+    - "{{ tnf_dir }}/config_files/tnf_config.yml"
+    - "{{ tnf_dir }}/result_files/*.log"
 
 # Clean images just after finishing the execution
 - name: Remove local tnf image

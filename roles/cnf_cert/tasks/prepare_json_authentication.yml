@@ -2,10 +2,10 @@
 - name: Copy authentication config
   ansible.builtin.copy:
     src: "{{ partner_creds }}"
-    dest: "{{ tnf_dir }}/config.json"
+    dest: "{{ tnf_dir }}/config_files/config.json"
     mode: "0750"
 
 - name: Update tnf_dockercfg_path variable
   ansible.builtin.set_fact:
-    tnf_dockercfg_path: "{{ tnf_dir }}/config.json"
+    tnf_dockercfg_path: "{{ tnf_dir }}/config_files/config.json"
 ...
