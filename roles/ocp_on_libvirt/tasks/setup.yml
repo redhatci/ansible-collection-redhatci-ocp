@@ -28,8 +28,7 @@
 
 - name: Get processor family
   ansible.builtin.set_fact:
-    proc_family: >-
-      {{ ('AMD' in (ansible_processor | join)) | ternary('amd', 'intel') }}
+    proc_family: "{{ ('AMD' in (ansible_processor | join)) | ternary('amd', 'intel') }}"
 
 - name: Check on nested KVM status
   ansible.builtin.command: |
@@ -51,9 +50,12 @@
 
 - name: Reload KVM module
   become: true
-  ansible.builtin.shell: |
-    modprobe -r kvm_{{ proc_family }}
-    modprobe -a kvm_{{ proc_family }}
+  loop:
+    - absent
+    - present
+  community.general.modprobe:
+    name: kvm_{{ proc_family }
+    state: "{{ item }}"
   when: nested_kvm.stdout != 'Y'
 
 - name: Enable and Start libvirtd
