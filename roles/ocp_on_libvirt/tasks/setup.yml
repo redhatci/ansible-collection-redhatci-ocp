@@ -10,7 +10,7 @@
 
 - name: Set python prefix for packages
   ansible.builtin.set_fact:
-    _ool_python_packages_prefix: "{{ ansible_python.version.major == 3 | teranry('ptrhon3', 'python') }}"
+    _ool_python_packages_prefix: "{{ (ansible_python.version.major == 3) | ternary('python3', 'python') }}"
 
 - name: Install packages required for libvirt
   become: true
@@ -35,10 +35,9 @@
     proc_family: "{{ ('AMD' in (ansible_processor | join)) | ternary('amd', 'intel') }}"
 
 - name: Check on nested KVM status
-  ansible.builtin.command: |
-    cat /sys/module/kvm_{{ proc_family }}/parameters/nested
+  ansible.builtin.set_fact:
+    _ool_nested_kvm: "{{ lookup('file', '/sys/module/kvm_' + proc_family + '/parameters/nested') }}"
   ignore_errors: true
-  register: nested_kvm
 
 - name: Enable nested Virt
   become: true
@@ -50,7 +49,7 @@
       options kvm-{{ proc_family }} ept=1
     dest: /etc/modprobe.d/kvm_nested.conf
     mode: "0644"
-  when: nested_kvm.stdout != 'Y'
+  when: _ool_nested_kvm != 'Y'
 
 - name: Reload KVM module
   become: true
@@ -58,9 +57,9 @@
     - absent
     - present
   community.general.modprobe:
-    name: kvm_{{ proc_family }
+    name: "kvm_{{ proc_family }}"
     state: "{{ item }}"
-  when: nested_kvm.stdout != 'Y'
+  when: _ool_nested_kvm != 'Y'
 
 - name: Enable and Start libvirtd
   become: true
