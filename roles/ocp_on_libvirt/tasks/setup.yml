@@ -8,6 +8,10 @@
     name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   when: ansible_distribution_major_version == '7'
 
+- name: Set python prefix for packages
+  ansible.builtin.set_fact:
+    _ool_python_packages_prefix: "{{ ansible_python.version.major == 3 | teranry('ptrhon3', 'python') }}"
+
 - name: Install packages required for libvirt
   become: true
   ansible.builtin.package:
@@ -20,11 +24,11 @@
       - virt-install
       - langpacks-en
       - glibc-all-langpacks
-      - "libvirt-python{% if ansible_python.version.major == 3 %}3{% endif %}"
-      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-netaddr"
-      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-lxml"
-      - "python{{ ansible_python.version.major }}-pip"
-      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-virtualenv"
+      - "libvirt-{{ _ool_python_packages_prefix }}"
+      - "{{ _ool_python_packages_prefix }}-netaddr"
+      - "{{ _ool_python_packages_prefix }}-lxml"
+      - "{{ _ool_python_packages_prefix }}-pip"
+      - "{{ _ool_python_packages_prefix }}-virtualenv"
 
 - name: Get processor family
   ansible.builtin.set_fact:
