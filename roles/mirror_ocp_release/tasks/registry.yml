@@ -33,7 +33,7 @@
         --from={{ ocp_release_data['container_image'] | quote }}
         --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
         --to={{ mor_registry_url }}/{{ mor_registry_path }}
-        {% if mor_version is version("4.14", ">=") %}
+        {% if mor_version is version("4.14", ">=") and mor_is_type | lower == "idms" %}
         --print-mirror-instructions=idms
         {% endif %}
       retries: 3

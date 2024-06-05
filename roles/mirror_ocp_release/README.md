@@ -13,6 +13,7 @@ If enabled, the role requires an container registry to mirror the OCP container 
 | mor_force                    | false                                 | No       | If passed as true, the role will re-download all the OCP release resources                     |
 | mor_install_type             | "ipi"                                 | No       | Mirrors image required for the install type (ipi, acm, assisted, sno, upi, vsphere)            |
 | mor_installer                | \<See Description\>                   | No       | Depending on the OCP 4.16+:openshift-install, 4.16-:openshift-baremetal-install                |
+| mor_is_type                  | "icsp"                                | No       | Image Source file type (icsp (default), idms).                                                 |
 | mor_mirror_container_images  | true                                  | No       | Mirror all container images from upstream container registries to the provided registry        |
 | mor_mirror_disk_images       | true                                  | No       | Download all disk images depending on which install type                                       |
 | mor_oc                       | undefined                             | Yes      | Path to the oc binary (stable is recommended).                                                 |
@@ -37,7 +38,7 @@ See below for some examples of how to use the mirror_ocp_release role.
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_ocp_release
   vars:
-    mor_version: "4.13.0-ec.1"
+    mor_version: "4.15.0-ec.1"
     mor_pull_url: "quay.io/openshift-release-dev/ocp-release@sha256:bb0d79219a876d87e994149c835033f8dcbf3433505a44a9e7e871b1b816b760"
     mor_cache_dir: "/opt/cache"
     mor_webserver_url: "https://<mywebserver>"
@@ -46,6 +47,7 @@ See below for some examples of how to use the mirror_ocp_release role.
     mor_auths_file: "/var/<pull_secret>"
     mor_force: true
     mor_install_type: "ipi"
+    mor_is_type: "idms"
     mor_mirror_disk_images: true
     mor_mirror_container_images: true
     mor_write_custom_config: true
@@ -57,10 +59,11 @@ See below for some examples of how to use the mirror_ocp_release role.
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_ocp_release
   vars:
-    mor_version: "4.12.0-0.nightly-2023-01-10-062211"
+    mor_version: "4.14.0-0.nightly-2024-01-10-123456"
     mor_pull_url: "registry.ci.openshift.org/ocp/release@sha256:86b4185571e403a9bfcf82c4b363c4aaa41751976e60c1c10d1961e4b67ed9ab"
     mor_auths_file: "{{ dci_pullsecret_file }}"
+    mor_is_type: "icsp"
     mor_webserver_url: "{{ webserver_url }}"
     mor_registry_url: "{{ dci_local_registry }}"
-    mor_registry_path: "ocp-4.10/4.10.0-0.nightly-2023-02-16-193851"
+    mor_registry_path: "ocp-4.14/4.14.0-0.nightly-2024-01-10-123456"
 ```

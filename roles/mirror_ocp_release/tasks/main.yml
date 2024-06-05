@@ -6,6 +6,7 @@
       - mor_version | string
       - mor_pull_url | string
       - mor_oc | string
+      - mor_is_type | lower in mor_is_types
 
 - name: "Check if authentication file exists"
   ansible.builtin.stat:
