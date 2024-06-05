@@ -2,10 +2,10 @@
 
 - name: Set tnf_logs_location variable
   ansible.builtin.set_fact:
-    tnf_logs_location: "{{ tnf_dir }}/{{ test_network_function_project_name }}"
+    tnf_logs_location: "{{ tnf_dir }}/result_files"
 
 # Copy the results of the execution (only generated if tnf execution was correct) -
-#   JUnit XML report and claim.json file
+# JUnit XML report and claim.json file
 - name: Copy files related to CNF Cert Suite result execution
   ansible.builtin.copy:
     src: "{{ item }}"
