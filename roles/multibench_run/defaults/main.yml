@@ -1,0 +1,5 @@
+nb_iterations: "{{ multibench_sample | default('3') }}"
+multibench_tags:
+  automation: ansible
+multibench_script_dir: "/root/crucible-examples/multibench/openshift/example-A"
+multibench_script: "run.sh"

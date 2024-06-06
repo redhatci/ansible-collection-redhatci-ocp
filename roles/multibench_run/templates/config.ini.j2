@@ -1,0 +1,3 @@
+ocp_host={{ ocp_host }}
+num_samples={{ multibench_sample | default(3) }}
+tags={{ multibench_tags.keys()|zip(multibench_tags.values())|map('join',':')|join(',') }}
