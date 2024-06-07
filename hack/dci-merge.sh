@@ -71,17 +71,17 @@ for PR in $PRS; do
         # extract TestBos2 commands
         if grep -qE "^\s*TestBos2:\s*" <<< "$DESC"; then
             # shellcheck disable=SC2001,SC2086
-            CMD+=("$(sed -e 's/^\s*TestBos2:\s*//' <<< $DESC)")
+            CMD+=("$(sed -ne 's/^\s*TestBos2:\s*//p' <<< $DESC)")
         fi
         # extract TestBos2Sno commands
         if grep -qE "^\s*TestBos2Sno:\s*" <<< "$DESC"; then
             # shellcheck disable=SC2001,SC2086
-            CMD_SNO+=("$(sed -e 's/^\s*TestBos2Sno:\s*//' <<< $DESC)")
+            CMD_SNO+=("$(sed -ne 's/^\s*TestBos2Sno:\s*//p' <<< $DESC)")
         fi
         # extract TestBos2Baremetal commands
         if grep -qE "^\s*TestBos2Baremetal:\s*" <<< "$DESC"; then
             # shellcheck disable=SC2001,SC2086
-            CMD_SNO_BM+=("$(sed -e 's/^\s*TestBos2Baremetal:\s*//' <<< $DESC)")
+            CMD_SNO_BM+=("$(sed -ne 's/^\s*TestBos2Baremetal:\s*//p' <<< $DESC)")
         fi
     fi
 done
