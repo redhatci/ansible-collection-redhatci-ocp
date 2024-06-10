@@ -10,6 +10,8 @@
 
 - name: Install packages required for libvirt
   become: true
+  vars:
+    _ool_python_packages_prefix: "{{ (ansible_python.version.major == 3) | ternary('python3', 'python') }}"
   ansible.builtin.package:
     name:
       - libvirt-daemon-kvm
@@ -20,41 +22,46 @@
       - virt-install
       - langpacks-en
       - glibc-all-langpacks
-      - "libvirt-python{% if ansible_python.version.major == 3 %}3{% endif %}"
-      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-netaddr"
-      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-lxml"
+      - "libvirt-{{ _ool_python_packages_prefix }}"
+      - "{{ _ool_python_packages_prefix }}-netaddr"
+      - "{{ _ool_python_packages_prefix }}-lxml"
       - "python{{ ansible_python.version.major }}-pip"
-      - "python{% if ansible_python.version.major == 3 %}3{% endif %}-virtualenv"
+      - "{{ _ool_python_packages_prefix }}-virtualenv"
 
 - name: Get processor family
   ansible.builtin.set_fact:
-    proc_family: >
+    ool_proc_family: >-
       {{ ('AMD' in (ansible_processor | join)) | ternary('amd', 'intel') }}
 
 - name: Check on nested KVM status
-  ansible.builtin.command: |
-    cat /sys/module/kvm_{{ proc_family }}/parameters/nested
-  ignore_errors: true
-  register: nested_kvm
+  ansible.builtin.set_fact:
+    ool_nested_kvm: "{{ lookup('file', '/sys/module/kvm_' + ool_proc_family + '/parameters/nested') }}"
 
 - name: Enable nested Virt
   become: true
   ansible.builtin.copy:
     content: |
-      options kvm-{{ proc_family }} nested=1
-      options kvm-{{ proc_family }} enable_shadow_vmcs=1
-      options kvm-{{ proc_family }} enable_apicv=1
-      options kvm-{{ proc_family }} ept=1
+      options kvm-{{ ool_proc_family }} nested=1
+      options kvm-{{ ool_proc_family }} enable_shadow_vmcs=1
+      options kvm-{{ ool_proc_family }} enable_apicv=1
+      options kvm-{{ ool_proc_family }} ept=1
     dest: /etc/modprobe.d/kvm_nested.conf
     mode: "0644"
-  when: nested_kvm.stdout != 'Y'
+  when: ool_nested_kvm != 'Y'
 
 - name: Reload KVM module
   become: true
-  ansible.builtin.shell: |
-    modprobe -r kvm_{{ proc_family }}
-    modprobe -a kvm_{{ proc_family }}
-  when: nested_kvm.stdout != 'Y'
+  failed_when:
+    - _ool_result.rc is defined
+    - _ool_result.stderr is not ansible.builtin.regex('^.*Module kvm_(amd|intel) is in use.*$')
+  register: _ool_result
+  loop:
+    - absent
+    - present
+  community.general.modprobe:
+    name: "kvm_{{ ool_proc_family }}"
+    state: "{{ item }}"
+  when: ool_nested_kvm != 'Y'
 
 - name: Enable and Start libvirtd
   become: true
