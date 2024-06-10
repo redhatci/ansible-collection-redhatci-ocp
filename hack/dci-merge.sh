@@ -69,19 +69,22 @@ for PR in $PRS; do
         fi
 
         # extract TestBos2 commands
+        # Remove \r character if present
         if grep -qE "^\s*TestBos2:\s*" <<< "$DESC"; then
             # shellcheck disable=SC2001,SC2086
-            CMD+=("$(sed -ne 's/^\s*TestBos2:\s*//p' <<< $DESC)")
+            CMD+=("$(sed -ne 's/^\s*TestBos2:\s*//p' <<< $DESC | sed 's/\r$//')")
         fi
         # extract TestBos2Sno commands
+        # Remove \r character if present
         if grep -qE "^\s*TestBos2Sno:\s*" <<< "$DESC"; then
             # shellcheck disable=SC2001,SC2086
-            CMD_SNO+=("$(sed -ne 's/^\s*TestBos2Sno:\s*//p' <<< $DESC)")
+            CMD_SNO+=("$(sed -ne 's/^\s*TestBos2Sno:\s*//p' <<< $DESC | sed 's/\r$//')")
         fi
         # extract TestBos2Baremetal commands
+        # Remove \r character if present
         if grep -qE "^\s*TestBos2Baremetal:\s*" <<< "$DESC"; then
             # shellcheck disable=SC2001,SC2086
-            CMD_SNO_BM+=("$(sed -ne 's/^\s*TestBos2Baremetal:\s*//p' <<< $DESC)")
+            CMD_SNO_BM+=("$(sed -ne 's/^\s*TestBos2Baremetal:\s*//p' <<< $DESC | sed 's/\r$//')")
         fi
     fi
 done
