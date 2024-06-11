@@ -13,11 +13,11 @@ Requirements
 Role Variables
 --------------
 
-Variable | Type | Required | Default | Description
----------|------|-----------|---------|------------
-gcr_ssh_key_path | String | yes | | Path to the SSH private key file used to log into the GitOps manifest repository.
-gcr_ssh_known_hosts | String | no | "" | Should be the ssh known hosts. It is required by ArgoCD when working with a SSH key.
-gcr_ztp_gitops_repo | String | yes | | URL to the ZTP GitOps Git repository.
+Name                        | Type   | Required | Default                                            | Description
+--------------------------- | ------ | -------- | -------------------------------------------------- | -------------------------------------------------------------
+gcr_ssh_key_path            | string | yes      | `{{ lookup('env', 'HOME') }}/.ssh/id_rsa`          | Path to the SSH private key file used to log into the GitOps manifest repository.
+gcr_ssh_known_hosts         | string | no       | -                                                  | Should be the ssh known hosts. It is required by ArgoCD when working with a SSH key.
+gcr_ztp_gitops_repo         | string | yes      | -                                                  | URL to the ZTP GitOps Git repository.
 
 Dependencies
 ------------
