@@ -1,3 +1,7 @@
 ---
 
+czga_podman_runner_host: podman-runner
+czga_clusters_namespace: clusters-sub
+czga_kubeconfig_path: "{{ omit }}"
+czga_policies_namespace: policies-sub
 czga_oc_tool_path: "{{ oc_tool_path | default('/usr/loca/bin/oc') }}"

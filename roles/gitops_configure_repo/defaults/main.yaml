@@ -1,2 +1,2 @@
 ---
-gor_oc_tool_path: "{{ oc_tool_path | default('/usr/local/bin/oc') }}"
+gcr_ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
