@@ -2,6 +2,28 @@
 
 # Create site and policies in ArgoCD
 
+- name: Assert the required variables are defined
+  ansible.builtin.assert:
+    that:
+      - czga_sites_gitops_repo is defined
+      - czga_sites_gitops_repo | length > 0
+      - czga_sites_branch is defined
+      - czga_sites_branch | length > 0
+      - czga_sites_path is defined
+      - czga_sites_path | length > 0
+      - czga_policies_gitops_repo is defined
+      - czga_policies_gitops_repo | length > 0
+      - czga_policies_branch is defined
+      - czga_policies_branch | length > 0
+      - czga_policies_path is defined
+      - czga_policies_path | length > 0
+      - czga_site_generator_image is defined
+      - czga_site_generator_image | length > 0
+      - czga_site_generator_version is defined
+      - czga_site_generator_version | length > 0
+      - czga_ocp_pull_secret is defined
+      - czga_ocp_pull_secret | length > 0
+
 - name: Run all comands in the podman runner
   delegate_to: "{{ czga_podman_runner_host }}"
   block:
@@ -34,7 +56,7 @@
     - name: Download ZTP cluster and policies applications from ztp site generator
       ansible.builtin.shell: |
         set -o pipefail
-        podman run --authfile "{{ temp_dir.path }}"/temp-pull-secret.json --rm --log-driver=none "{{ ztp_site_generator_image }}:{{ ztp_site_generator_version }}" extract /home/ztp --tar | tar x -C "{{ temp_dir.path }}"/ztp/
+        podman run --authfile "{{ temp_dir.path }}"/temp-pull-secret.json --rm --log-driver=none "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}" extract /home/ztp --tar | tar x -C "{{ temp_dir.path }}"/ztp/
 
     - name: Set the proper permissions
       ansible.builtin.shell: |
@@ -51,19 +73,19 @@
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
         regexp: "path.*"
-        replace: "path: {{ ztp_sites_path }}"
+        replace: "path: {{ czga_sites_path }}"
 
     - name: Replace repoURL in clusters-app.yaml
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
         regexp: "repoURL.*"
-        replace: "repoURL: {{ ztp_sites_gitops_repo }}"
+        replace: "repoURL: {{ czga_sites_gitops_repo }}"
 
     - name: Replace targetRevision in clusters-app.yaml
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
         regexp: "targetRevision.*"
-        replace: "targetRevision: {{ ztp_sites_branch }}"
+        replace: "targetRevision: {{ czga_sites_branch }}"
 
     - name: Allow empty in the clusters-app.yaml
       ansible.builtin.lineinfile:
@@ -91,19 +113,19 @@
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
         regexp: "path.*"
-        replace: "path: {{ ztp_policies_path }}"
+        replace: "path: {{ czga_policies_path }}"
 
     - name: Replace repoURL in policies-app.yaml
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
         regexp: "repoURL.*"
-        replace: "repoURL: {{ ztp_policies_gitops_repo }}"
+        replace: "repoURL: {{ czga_policies_gitops_repo }}"
 
     - name: Replace targetRevision in policies-app.yaml
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
         regexp: "targetRevision.*"
-        replace: "targetRevision: {{ ztp_policies_branch }}"
+        replace: "targetRevision: {{ czga_policies_branch }}"
 
     - name: Allow empty in the policies-app.yaml
       ansible.builtin.lineinfile:
@@ -135,8 +157,8 @@
     - name: Replace image container URL in argocd-openshift-gitops-patch.json
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json"
-        regexp: "{{ ztp_site_generator_image }}.*/"
-        replace: "{{ ztp_site_generator_image }}:{{ ztp_site_generator_version }}"
+        regexp: "{{ czga_site_generator_image }}.*/"
+        replace: "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}"
 
     - name: Patch the ArgoCD instance to install the GitOps ZTP plugin
       ansible.builtin.shell: |
