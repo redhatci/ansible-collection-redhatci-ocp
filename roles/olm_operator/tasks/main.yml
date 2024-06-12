@@ -15,6 +15,7 @@
 
 - name: Check CatalogSource is Ready
   community.kubernetes.k8s_info:
+    kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
     api: operators.coreos.com/v1alpha1
     kind: CatalogSource
     name: "{{ source }}"
@@ -27,6 +28,7 @@
 
 - name: Create Namespace for OLM operator
   community.kubernetes.k8s:
+    kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
     definition:
       apiVersion: v1
       kind: Namespace
@@ -36,6 +38,7 @@
 
 - name: Labeling namespace to cover PodSecurity requirements
   community.kubernetes.k8s:
+    kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
     definition:
       apiVersion: v1
       kind: Namespace
@@ -50,6 +53,7 @@
   block:
     - name: "Get operator's package manifests"
       community.kubernetes.k8s_info:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         api: packages.operators.coreos.com/v1
         kind: PackageManifest
         namespace: default
@@ -74,6 +78,7 @@
         group_spec: "{{  {'targetNamespaces': []} if all_namespaces |
                      default(false) else {'targetNamespaces': [namespace]} }}"
       community.kubernetes.k8s:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         definition:
           apiVersion: operators.coreos.com/v1
           kind: OperatorGroup
@@ -90,6 +95,7 @@
 
     - name: Create subscription for OLM operator
       community.kubernetes.k8s:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: Subscription
@@ -108,6 +114,7 @@
 
     - name: Wait for subscription to be ready
       community.kubernetes.k8s_info:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         api: operators.coreos.com/v1alpha1
         kind: Subscription
         namespace: "{{ namespace }}"
@@ -132,6 +139,7 @@
       block:
         - name: Get Install plans for {{ operator }}
           community.kubernetes.k8s_info:
+            kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
             api: operators.coreos.com/v1alpha1
             kind: InstallPlan
             namespace: "{{ namespace }}"
@@ -144,6 +152,7 @@
 
         - name: Approve install plan for specific CSV  # noqa: jinja[invalid]
           community.kubernetes.k8s:
+            kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
             definition:
               apiVersion: operators.coreos.com/v1alpha1
               kind: InstallPlan
@@ -158,6 +167,7 @@
 
     - name: Wait for CSV to be ready
       community.kubernetes.k8s_info:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         api: operators.coreos.com/v1alpha1
         namespace: "{{ namespace }}"
         kind: ClusterServiceVersion
@@ -175,6 +185,7 @@
 
     - name: Fail if not all pods reach a successful state
       community.kubernetes.k8s_info:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         kind: Pod
         namespace: "{{ namespace }}"
       register: olm_pod
@@ -187,12 +198,14 @@
   rescue:
     - name: Catalog sources information
       community.kubernetes.k8s_info:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         api: operators.coreos.com/v1alpha1
         kind: CatalogSource
       register: catalog_info
 
     - name: Subscriptions information
       community.kubernetes.k8s_info:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         api: operators.coreos.com/v1alpha1
         kind: Subscription
         namespace: "{{ namespace }}"
@@ -200,6 +213,7 @@
 
     - name: Install plan information
       community.kubernetes.k8s_info:
+        kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
         api: operators.coreos.com/v1alpha1
         kind: InstallPlan
         namespace: "{{ namespace }}"
@@ -225,6 +239,7 @@
 
 - name: Patch subscription according to install_approval
   community.kubernetes.k8s:
+    kubeconfig: "{{ olm_operator_kubeconfig | default(omit, true) }}"
     definition:
       apiVersion: operators.coreos.com/v1alpha1
       kind: Subscription

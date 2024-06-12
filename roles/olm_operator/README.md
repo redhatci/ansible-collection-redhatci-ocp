@@ -6,6 +6,7 @@ Role to deploy an OLM-based operator.
 
 Name                        | Required  | Default                | Description
 --------------------------- |-----------|------------------------|--------------------------------------
+olm_operator_kubeconfig     | No        | empty                  | Path to kubeconfig file to use. If not specified, then omitted.
 channel                     | No        | \<defaultChannel\>     | The default channel of the operator is calculated and used when undefined
 install_approval            | No        | Manual                 | Operator install plan approval mode, either Automatic or Manual (default)
 namespace                   | Yes       | undefined              | Namespace where the operator will be installed

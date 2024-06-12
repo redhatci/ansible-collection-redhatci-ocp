@@ -3,4 +3,6 @@ channel: ""
 source: redhat-operators
 source_ns: openshift-marketplace
 operator_group_name: "{{ operator }}"
+# Specify kubeconfig file to use:
+# olm_operator_kubeconfig: /path/to/file
 ...
