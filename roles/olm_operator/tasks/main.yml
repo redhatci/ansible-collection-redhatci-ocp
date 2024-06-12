@@ -50,23 +50,25 @@
   block:
     - name: "Get operator's package manifests"
       community.kubernetes.k8s_info:
-        api: packages.operators.coreos.com/v1
+        api_version: packages.operators.coreos.com/v1
         kind: PackageManifest
-        namespace: default
-        name: "{{ operator }}"
+        label_selectors:
+          - catalog={{ source }}
+          - catalog-namespace={{ source_ns }}
+        field_selectors:
+          - metadata.name={{ operator }}
       register: operator_packagemanifest
-      retries: 10
+      retries: 3
       delay: 5
       until:
+        - operator_packagemanifest is defined
         - operator_packagemanifest.resources is defined
         - operator_packagemanifest.resources | length
-        - operator_packagemanifest.resources[0].status is defined
-        - operator_packagemanifest.resources[0].status.catalogSource == source
       failed_when: operator_packagemanifest is skipped
         or operator_packagemanifest.resources is undefined
         or operator_packagemanifest.resources | length != 1
 
-    - name: Create OperatorGroup for OLM operator  # noqa: jinja[invalid]
+    - name: Create OperatorGroup for OLM operator
       vars:
         all_namespaces: "{{ operator_packagemanifest |
           json_query('resources[*].status.channels[0].currentCSVDesc.installModes[3].supported') |
