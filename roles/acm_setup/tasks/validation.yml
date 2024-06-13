@@ -6,11 +6,13 @@
       - hub_os_images is defined
       - hub_os_images | type_debug == 'list'
       - hub_os_images | length
+
 - name: "Get Storage Classes"
   community.kubernetes.k8s_info:
     api_version: v1
     kind: StorageClass
   register: storage_class
+  no_log: true
 
 - name: "Fail when there is no storage class available"
   ansible.builtin.fail:
@@ -46,6 +48,7 @@
   register: current_csvs
   retries: 5
   delay: 5
+  no_log: true
 
 - name: "Fail if ACM csv is not present"
   vars:
