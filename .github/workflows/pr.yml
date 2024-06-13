@@ -107,6 +107,24 @@ jobs:
         run: |
           set -x
           EXCLUDE="--exclude hack/"
+          # Container image used with stable-2.9 is disabled by default in Docker v26.0
+          # because of "Pushing and pulling with image manifest v2 schema 1"
+          # This feature will be definitely removed in Docker v27.0
+          # See https://docs.docker.com/engine/deprecated/#pushing-and-pulling-with-image-manifest-v2-schema-1
+          # Workaround (while not using v27.0): declare DOCKER_ENABLE_DEPRECATED_PULL_SCHEMA_1_IMAGE with a non-empty value
+          # See https://docs.docker.com/config/daemon/systemd/ for providing environment variables to Docker daemon
+          if [ "${{ matrix.ansible }}" == "stable-2.9" ]; then
+            DOCKER_SERVICE_DIR="/etc/systemd/system/docker.service.d"
+            sudo mkdir -p $DOCKER_SERVICE_DIR
+
+            echo '[Service]' | sudo tee -a $DOCKER_SERVICE_DIR/deprecated-pull-schema.conf > /dev/null
+            echo 'Environment="DOCKER_ENABLE_DEPRECATED_PULL_SCHEMA_1_IMAGE=true"' | sudo tee -a $DOCKER_SERVICE_DIR/deprecated-pull-schema.conf > /dev/null
+
+            sudo systemctl daemon-reload
+            sudo systemctl restart docker
+
+            sudo systemctl show --property=Environment docker
+          fi          
           git checkout -b branch
           git fetch --unshallow origin main
           # extract all the supported python versions from the error message, excluding 3.5
