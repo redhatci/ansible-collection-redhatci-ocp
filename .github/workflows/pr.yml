@@ -106,6 +106,9 @@ jobs:
       - name: Run ansible-test sanity/units
         run: |
           set -x
+          # Prefer using podman over docker
+          apt-get download podman-docker
+          sudo dpkg --force-all -i podman-docker*.deb 2>/dev/null
           EXCLUDE="--exclude hack/"
           git checkout -b branch
           git fetch --unshallow origin main
@@ -117,12 +120,12 @@ jobs:
           for version in $PY_VERS; do
             ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
             ansible-test units $EXCLUDE --verbose --docker --python $version --color --coverage || :
-          done 2>&1 | tee -a branch.output
+          done 2> >(tee -a branch.output >&2)
           git checkout main
           for version in $PY_VERS; do
             ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
             ansible-test units $EXCLUDE --verbose --docker --python $version --color --coverage || :
-          done >> main.output 2>&1
+          done 2> main.output 1>/dev/null
           for key in branch main; do
             grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |
             grep -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
