@@ -8,13 +8,39 @@
 
 - name: "Extract deprecated and to-be-deprecated API for {{ da_ns }}"
   vars:
-    query: "resources[*].{name: metadata.name, removedInRelease: status.removedInRelease}[?removedInRelease != null]"
+    query: >
+      resources[?status.removedInRelease != null].{
+        name: metadata.name,
+        removedInRelease: status.removedInRelease,
+        serviceAccounts: status.last24h[].byNode[].byUser[].username
+      }
   ansible.builtin.set_fact:
-    da_removed_api: "{{ deprecated_api_apirequestcount | json_query(query) | flatten | unique }}"
+    da_removed_api_dupes: "{{ deprecated_api_apirequestcount | json_query(query) }}"
+
+- name: "Reset da_removed_api before processing new namespace {{ da_ns }}"
+  ansible.builtin.set_fact:
+    da_removed_api: []
+
+- name: "Remove duplicates from serviceAccounts for {{ da_ns }}"
+  ansible.builtin.set_fact:
+    da_removed_api: >-
+      {{
+        da_removed_api +
+        [{
+          'name': item.name,
+          'removedInRelease': item.removedInRelease,
+          'serviceAccounts': item.serviceAccounts | unique
+        }] | unique(attribute='name')
+      }}
+  loop: "{{ da_removed_api_dupes }}"
+
+- name: "Display cleaned API data for {{ da_ns }}"
+  ansible.builtin.debug:
+    var: da_removed_api
 
 - name: "Compute OCP compatibility of the workload API for {{ da_ns }}"
   vars:
     ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility_{{ da_ns }}_junit.xml"
-  set_fact:
+  ansible.builtin.set_fact:
     ocp_compatibility: "{{ da_removed_api | redhatci.ocp.ocp_compatibility(da_ocp_version, ocp_filename) }}"
 ...

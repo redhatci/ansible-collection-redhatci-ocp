@@ -39,24 +39,34 @@ class TestOcpCompatibility(unittest.TestCase):
 
     def test_filter_with_deprecated_api_in_non_empty_list(self):
         filter = ocp_compatibility.FilterModule()
-        json_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'test_ocp_compatibility_data.json')
+        json_file_path = os.path.join(
+            os.path.dirname(__file__), '..', 'data', 'test_ocp_compatibility_data.json'
+        )
 
         with open(json_file_path, 'r') as json_file:
             json_data = json.load(json_file)
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             actual_result = filter.filters()["ocp_compatibility"](
-                json_data, "4.13", os.path.join(tmpdirname, "junit.xml"))
-
-            # The order of elements in a dictionary is not guaranteed in Python.
-            # Have to sort before comparing to avoid random failures.
-            actual_result["4.16"] = ", ".join(sorted(actual_result["4.16"].split(", ")))
+                json_data, "4.11", os.path.join(tmpdirname, "junit.xml")
+            )
 
             expected_result = {
-                "4.13": "compatible",
-                "4.14": "compatible",
-                "4.15": "compatible",
-                "4.16": "flowschemas.v1beta2.flowcontrol.apiserver.k8s.io, prioritylevelconfigurations.v1beta2.flowcontrol.apiserver.k8s.io",
+                "4.11": "compatible",
+                "4.12": " ".join([
+                    "events.v1beta1.events.k8s.io (service accounts: system:serviceaccount:default:",
+                    "eventtest-operator-service-account), podsecuritypolicies.v1beta1.policy ",
+                    "(service accounts: system:kube-controller-manager)"
+                ]),
+                "4.13": " ".join([
+                    "events.v1beta1.events.k8s.io (service accounts: system:serviceaccount:default:",
+                    "eventtest-operator-service-account), podsecuritypolicies.v1beta1.policy ",
+                    "(service accounts: system:kube-controller-manager), flowschemas.v1beta1.",
+                    "flowcontrol.apiserver.k8s.io (service accounts: system:serviceaccount:",
+                    "openshift-cluster-version:default), prioritylevelconfigurations.v1beta1.",
+                    "flowcontrol.apiserver.k8s.io (service accounts: system:serviceaccount:",
+                    "openshift-cluster-version:default)"
+                ])
             }
 
             self.assertEqual(actual_result, expected_result)
