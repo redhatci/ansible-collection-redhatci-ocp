@@ -101,13 +101,15 @@
         replace: "{{ czga_policies_namespace }}"
 
     - name: Add namespace to the policies-app-project.yaml
-      ansible.builtin.lineinfile:
+      ansible.builtin.blockinfile:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app-project.yaml"
-        line: "{{ item }}"
+        block: |
+          {% filter indent(width=2, first=true) %}
+          - namespace: '{{ czga_policies_namespace }}'
+            server: '*'
+          {% endfilter %}
         insertafter: destinations.*
-      loop:
-        - "  - namespace: '{{ czga_policies_namespace }}'"
-        - "    server: '*'"
+        marker: ""
 
     - name: Replace path in policies-app.yaml
       ansible.builtin.replace:
@@ -132,7 +134,6 @@
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app.yaml"
         line: "      allowEmpty: true"
         insertafter: selfHeal.*
-
 
     ## Add adaptation due to https://issues.redhat.com/browse/CNF-7840
     ## based on https://redhat-internal.slack.com/archives/C02EG99MR9C/p1679006883470389?thread_ts=1678887461.410819&cid=C02EG99MR9C
@@ -173,6 +174,35 @@
         merge_type:
           - merge
         definition: "{{ lookup('file', temp_dir.path + '/ztp/argocd/deployment/disable-cluster-proxy-addon.json') | from_json }}"
+
+    # Before launching the SiteConfig, provide the OCP pull secret extracted from the hub cluster
+    # For this, we need to create the cluster namespace in advance
+    - name: Create the Spoke cluster namespace
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ czga_clusters_namespace }}"
+
+    - name: Save pull-secret in a variable
+      ansible.builtin.slurp:
+        src: "{{ temp_dir.path }}/temp-pull-secret.json"
+      register: _czga_encoded_pull_secret
+      no_log: true
+
+    - name: Create the Spoke cluster pull-secret
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: assisted-deployment-pull-secret
+            namespace: "{{ czga_clusters_namespace }}"
+          type: kubernetes.io/dockerconfigjson
+          data:
+            .dockerconfigjson: "{{ _czga_encoded_pull_secret['content'] }}"
+      no_log: true
 
     - name: Run the policies and cluster apps
       ansible.builtin.shell: |

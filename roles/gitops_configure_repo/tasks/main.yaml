@@ -8,7 +8,7 @@
       - gcr_ztp_gitops_repo is defined
       - gcr_ztp_gitops_repo | length > 0
 
-- name: Add Git repository SSH key to argoCD
+- name: Add ssh_known_hosts to ArgoCD
   community.kubernetes.k8s:
     api_version: v1
     kind: ConfigMap
@@ -19,9 +19,11 @@
         app.kubernetes.io/name: argocd-cm
         app.kubernetes.io/part-of: argocd
       data:
-        gcr_ssh_known_hosts: |
+        ssh_known_hosts: |
           {{ gcr_ssh_known_hosts }}
-  when: gcr_ssh_known_hosts is defined
+  when:
+    - gcr_ssh_known_hosts is defined
+    - gcr_ssh_known_hosts | length > 0
   no_log: true
 
 - name: Register key
