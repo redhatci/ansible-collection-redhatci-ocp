@@ -13,7 +13,7 @@ If enabled, the role requires an container registry to mirror the OCP container 
 | mor_force                    | false                                 | No       | If passed as true, the role will re-download all the OCP release resources                     |
 | mor_install_type             | "ipi"                                 | No       | Mirrors image required for the install type (ipi, acm, assisted, sno, upi, vsphere)            |
 | mor_installer                | \<See Description\>                   | No       | Depending on the OCP 4.16+:openshift-install, 4.16-:openshift-baremetal-install                |
-| mor_is_type                  | "icsp"                                | No       | Image Source file type (icsp (default), idms).                                                 |
+| mor_is_type                  | \<See Description\>                   | No       | Image Source file type. Default: `icsp` for 4.13 and below, `idms` for 4.14 and above          |
 | mor_mirror_container_images  | true                                  | No       | Mirror all container images from upstream container registries to the provided registry        |
 | mor_mirror_disk_images       | true                                  | No       | Download all disk images depending on which install type                                       |
 | mor_oc                       | undefined                             | Yes      | Path to the oc binary (stable is recommended).                                                 |
