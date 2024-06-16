@@ -19,12 +19,12 @@
 
 - name: Set ipv4 management bmc address
   ansible.builtin.set_fact:
-    vbmc_management_address: "{{ hostvars[vbmc_host].ansible_default_ipv4.address }}"
+    vbmc_management_address: "{{ hostvars[ansible_host].ansible_default_ipv4.address }}"
   when: not baremetal_net_ipv6|bool
 
 - name: Set ipv6 management bmc address
   ansible.builtin.set_fact:
-    vbmc_management_address: "{{ hostvars[vbmc_host].ansible_default_ipv6.address }}"
+    vbmc_management_address: "{{ hostvars[ansible_host].ansible_default_ipv6.address }}"
   when: baremetal_net_ipv6|bool
 
 - name: Setup firewall
@@ -97,7 +97,7 @@
   delay: 5
 
 - name: Get information about vm from hypervisor
-  delegate_to: "{{ vbmc_host }}"
+  delegate_to: "{{ ansible_host }}"
   ansible.builtin.shell: |
     set -eo pipefail
     NODE_XML=`virsh dumpxml {{ item }}`
