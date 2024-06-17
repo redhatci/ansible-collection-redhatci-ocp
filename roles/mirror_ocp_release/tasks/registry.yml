@@ -1,58 +1,57 @@
 ---
-- name: "OCP release mirror"
-  block:
-    - name: "Check if the release image is pullable from the local registry"
-      ansible.builtin.command: >
-        skopeo inspect
-        --no-tags
-        --authfile {{ mor_auths_file }}
-        docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
+- name: Check if the release image is pullable from the local registry
+  ansible.builtin.command: >
+    skopeo inspect
+    --no-tags
+    --authfile {{ mor_auths_file }}
+    docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
+  register: _mor_release_image
+  failed_when: false
+  when: not mor_force | bool
 
-    - name: "Check for cached Image Source file"
-      ansible.builtin.stat:
-        path: "{{ mor_cache_dir }}/{{ mor_version }}/imagesource.yaml"
-        get_checksum: false
-      register: target
+- name: Mirror release images to local registry
+  ansible.builtin.command: >-
+    {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
+    --registry-config={{ mor_auths_file }}
+    --from={{ ocp_release_data['container_image'] | quote }}
+    --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
+    --to={{ mor_registry_url }}/{{ mor_registry_path }}
+  retries: 3
+  delay: 10
+  register: _mor_result
+  until: _mor_result.rc == 0
+  changed_when: _mor_result.rc == 0
+  when: _mor_release_image.rc != 0 or mor_force | bool
 
-    - name: "Force mirroring if image source does not exist"
-      ansible.builtin.fail:
-        msg: "Cached image contents does not exits, forcing mirroring"
-      when: not target.stat.exists
+- name: Generate Image Source manifest
+  ansible.builtin.command: >-
+    {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
+    --registry-config={{ mor_auths_file }}
+    --from={{ ocp_release_data['container_image'] | quote }}
+    --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
+    --to={{ mor_registry_url }}/{{ mor_registry_path }}
+    --print-mirror-instructions={{ mor_is_type | lower }}
+  retries: 3
+  delay: 10
+  register: _mor_result
+  until: _mor_result.rc == 0
+  changed_when: _mor_result.rc == 0
 
-    - name: "Force mirroring is enabled"
-      ansible.builtin.fail:
-        msg: "Forcing the release mirroring"
-      when:
-        - mor_force | bool
+- name: Grab generated Image Source manifest
+  ansible.builtin.shell: >
+    set -o pipefail;
+    echo -e "{{ _mor_result.stdout }}" |
+    sed -n '/apiVersion/,$p' |
+    sed -e 's/name:.*/name: release-{{ mor_version }}/'
+  register: is_release
 
-  rescue:
-    - name: "Mirror release images to local registry"
-      ansible.builtin.command: >
-        {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
-        --registry-config={{ mor_auths_file }}
-        --from={{ ocp_release_data['container_image'] | quote }}
-        --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
-        --to={{ mor_registry_url }}/{{ mor_registry_path }}
-      retries: 3
-      delay: 10
-      register: result
-      until: result.rc == 0
-
-    - name: Generate Image Source manifest
-      ansible.builtin.shell: >
-        set -o pipefail;
-        echo -e "{{ result.stdout }}" |
-        sed -n '/apiVersion/,$p' |
-        sed -e 's/name:.*/name: release-{{ mor_version }}/'
-      register: is_release
-
-    - name: Write Image Source manifest
-      ansible.builtin.copy:
-        dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagesource.yaml"
-        owner: "{{ mor_owner }}"
-        group: "{{ mor_group }}"
-        mode: "0644"
-        setype: httpd_sys_content_t
-        content: "{{ is_release.stdout }}"
-      become: true
+- name: Write Image Source manifest
+  ansible.builtin.copy:
+    dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagesource.yaml"
+    owner: "{{ mor_owner }}"
+    group: "{{ mor_group }}"
+    mode: "0644"
+    setype: httpd_sys_content_t
+    content: "{{ is_release.stdout }}"
+  become: true
 ...
