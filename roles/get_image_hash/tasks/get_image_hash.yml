@@ -5,6 +5,9 @@
     shell: "skopeo inspect --authfile {{ local_pull_secret_path }} docker://{{ item.value.url }}"
     register: result
     changed_when: false
+    until: result.rc == 0
+    retries: 5
+    delay: 5
 
   - name: Update hashes
     set_fact:
