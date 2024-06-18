@@ -11,7 +11,7 @@
 
 - name: Mirror release images to local registry
   ansible.builtin.command: >-
-    {{ mor_oc }}/oc adm release mirror
+    {{ mor_oc }} adm release mirror
     --registry-config={{ mor_auths_file }}
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
@@ -25,7 +25,7 @@
 
 - name: Generate Image Source manifest
   ansible.builtin.command: >-
-    {{ mor_oc }}/oc adm release mirror
+    {{ mor_oc }} adm release mirror
     --registry-config={{ mor_auths_file }}
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
