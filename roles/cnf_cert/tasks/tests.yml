@@ -73,19 +73,21 @@
       vars:
         tnf_partner_repo: "{{ (dci_local_registry | length) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
         support_image: "debug-partner:{{ support_image_version }}"
+        certsuite_binary: "{{ (test_network_function_version == 'HEAD') | ternary('./certsuite', './cnf-certification-test/certsuite') }}"
+        container_file_path: "{{ (test_network_function_version == 'HEAD') | ternary('/usr/certsuite', '/usr/tnf') }}"
         container_command: |
-          ./cnf-certification-test/certsuite run \
+          {{ certsuite_binary }} run \
           {% if tnf_labels | length > 0 %}
           --label-filter='{{ tnf_labels }}' \
           {% endif %}
           {% if tnf_dockercfg_path is defined %}
-          --preflight-dockerconfig=/usr/tnf/config/config.json \
+          --preflight-dockerconfig={{ container_file_path }}/config/config.json \
           --allow-preflight-insecure=${TNF_ALLOW_PREFLIGHT_INSECURE:-false} \
           {% endif %}
-          --output-dir=/usr/tnf/results \
+          --output-dir={{ container_file_path }}/results \
           --offline-db=/usr/offline-db \
-          --config-file=/usr/tnf/config/tnf_config.yml \
-          --kubeconfig=/usr/tnf/config/kubeconfig \
+          --config-file={{ container_file_path }}/config/tnf_config.yml \
+          --kubeconfig={{ container_file_path }}/config/kubeconfig \
           --tnf-image-repository={{ tnf_partner_repo }} \
           --tnf-debug-image={{ support_image }} \
           --create-xml-junit-file=${TNF_ENABLE_XML_CREATION:-true} \
@@ -99,13 +101,14 @@
         podman run \
         --rm \
         --network host \
-        -v {{ tnf_dir }}/config_files:/usr/tnf/config:Z \
-        -v {{ tnf_dir }}/result_files:/usr/tnf/results:Z \
+        -v {{ tnf_dir }}/config_files:{{ container_file_path }}/config:Z \
+        -v {{ tnf_dir }}/result_files:{{ container_file_path }}/results:Z \
         {{ tnf_image }} \
         {{ container_command }}
       register: _cc_output
       no_log: true
 
+  always:
     - name: Save output in a file
       ansible.builtin.copy:
         content: "{{ _cc_output.stdout }}"
