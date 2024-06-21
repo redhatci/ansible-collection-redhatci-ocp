@@ -27,6 +27,8 @@ NOTES:
 | mlb_ipv6_enabled       | false          | Boolean      | No          | If IPv6 Pools are defined for BGP, enable this boolean                   |
 | mlb_namespace          | metallb-system | String       | No          | Default name of the namespace to use to install operator resources       |
 | mlb_bfd_profile        | bfd-fastest    | String       | No          | Name of the BFD profile to use for BGP                                   |
+| mlb_wait_retries       | 18             | Int          | No          | How many times to retry OCP operations that fail |
+| mlb_wait_delay         | 10             | Int          | No          | How long to wait between retries of OCP operations that fail |
 | mlb_settings           | ""             | File Path    | No          | An optional YAML file with the variables listed above.                   |
 
 ## Role requirements for BGP mode

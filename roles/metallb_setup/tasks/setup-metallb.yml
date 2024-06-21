@@ -24,8 +24,8 @@
       - component = speaker
   register: pod_list
   until: pod_list | json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 18
-  delay: 10
+  retries: "{{ mlb_wait_retries }}"
+  delay: "{{ mlb_wait_delay }}"
   no_log: true
 
 - name: "Create MetalLB IP Address Pool"
@@ -41,8 +41,8 @@
         addresses: "{{ mlb_ipaddr_pool }}"
   register: address_pool
   until: address_pool is succeeded
-  retries: 6
-  delay: 10
+  retries: "{{ mlb_wait_retries }}"
+  delay: "{{ mlb_wait_delay }}"
   no_log: true
 
 - name: "Setup BGP mode objects"
@@ -68,8 +68,8 @@
             minimumTtl: 254
       register: bfdprof
       until: bfdprof is succeeded
-      retries: 6
-      delay: 10
+      retries: "{{ mlb_wait_retries }}"
+      delay: "{{ mlb_wait_delay }}"
       no_log: true
 
     - name: "Create MetalLB BGP Peers"
@@ -81,8 +81,8 @@
         loop_var: peer
       register: bgppeer
       until: bgppeer is succeeded
-      retries: 6
-      delay: 10
+      retries: "{{ mlb_wait_retries }}"
+      delay: "{{ mlb_wait_delay }}"
       no_log: true
 
     - name: "Create MetalLB BGP Advertisements"
@@ -107,8 +107,8 @@
         definition: "{{ bgpadvert }}"
       register: bgpadver
       until: bgpadver is succeeded
-      retries: 6
-      delay: 10
+      retries: "{{ mlb_wait_retries }}"
+      delay: "{{ mlb_wait_delay }}"
       no_log: true
 
 - name: "Create MetalLB L2 Advertisements"
@@ -125,8 +125,8 @@
           - "{{ mlb_setup_name | default('metallb') }}"
   register: l2adver
   until: l2adver is succeeded
-  retries: 6
-  delay: 10
+  retries: "{{ mlb_wait_retries }}"
+  delay: "{{ mlb_wait_delay }}"
   no_log: true
   when:
     - mlb_bgp_peers is undefined
@@ -138,7 +138,7 @@
     namespace: "{{ mlb_namespace }}"
   register: pod_list
   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 9
-  delay: 10
+  retries: "{{ mlb_wait_retries }}"
+  delay: "{{ mlb_wait_delay }}"
   no_log: true
 ...
