@@ -48,6 +48,13 @@
   loop:
     - mlb_ipaddr_pool
 
+- name: "Validate values of mlb_wait_* are positive integers"
+  ansible.builtin.assert:
+    that:
+      - mlb_wait_delay | int > 0
+      - mlb_wait_retries | int > 0
+    fail_msg: "The parameters mlb_wait_delay and mlb_wait_retries must both be integers"
+
 - name: "Confirm that MetalLB controller pods are Running"
   community.kubernetes.k8s_info:
     api_version: v1
@@ -57,8 +64,8 @@
       - control-plane = controller-manager
   register: pod_list
   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 9
-  delay: 10
+  retries: "{{ mlb_wait_retries }}"
+  delay: "{{ mlb_wait_delay }}"
   no_log: true
 
 - name: "Validate parameter mlb_ipaddr_pool is a list"

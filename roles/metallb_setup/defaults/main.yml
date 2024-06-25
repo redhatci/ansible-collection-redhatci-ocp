@@ -5,4 +5,6 @@ mlb_bfd_profile: bfd-fastest
 mlb_ipv4_enabled: true
 mlb_ipv6_enabled: false
 mlb_action: install
+mlb_wait_delay: 10
+mlb_wait_retries: 18
 ...
