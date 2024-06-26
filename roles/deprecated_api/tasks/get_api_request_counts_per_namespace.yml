@@ -43,4 +43,9 @@
     ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility_{{ da_ns }}_junit.xml"
   ansible.builtin.set_fact:
     ocp_compatibility: "{{ da_removed_api | redhatci.ocp.ocp_compatibility(da_ocp_version, ocp_filename) }}"
+
+- name: "Extract max compatible OCP version"
+  set_fact:
+    max_compatible_ocp_version: >-
+      {{ ocp_compatibility | dict2items | selectattr('value', 'equalto', 'compatible') | map(attribute='key') | list | max }}
 ...
