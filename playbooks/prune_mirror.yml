@@ -1,0 +1,50 @@
+# A playbook that prunes and mirror operators to a local registry
+# The config.json file must contain credentials with permisions to pull imagse from the catalog pc_source_catalog
+# and push privileges for target registry for the pruned_catalog image.
+# The auths_wrapper is required, in case dci-openshift-agent is not installed, get a copy from
+# [opm-auths](https://github.com/redhat-cip/dci-openshift-agent/blob/master/utils/opm-auths)
+---
+- name: Prune and Mirror
+  hosts: localhost
+  vars:
+    docker_config: /home/<user>/.docker/
+    auths_file: "{{ docker_config }}/config.json"
+    catalog_source: "registry.redhat.io/redhat/redhat-operator-index:v4.15"
+    local_registry: "<local_registry>:<local_registry_port>"
+    pruned_catalog: "{{ local_registry }}/<namespace>/<my_catalog>:latest"
+    opm_auths: /home/<user>/opm-auths
+    oc_bin_path: /usr/bin/oc
+    prune_operators:
+      - sriov-network-operator
+  environment:
+    DOCKER_CONFIG: "{{ docker_config }}"
+
+  tasks:
+    - name: Prune operators
+      ansible.builtin.include_role:
+        name: redhatci.ocp.prune_catalog
+      vars:
+        pc_source_catalog: "{{ catalog_source }}"
+        pc_destination_catalog: "{{ pruned_catalog }}"
+        pc_operators: "{{ prune_operators }}"
+        pc_opm_args: "--skip-tls-verify=false"
+        pc_opm_auths: "{{ opm_auths }}"
+
+    - name: Push the catalog image to registry
+      containers.podman.podman_image:
+        push: true
+        auth_file: "{{ auths_file }}"
+        name: "{{ pruned_catalog }}"
+        validate_certs: false
+      retries: 3
+      delay: 10
+
+    - name: Mirror pruned catalog
+      ansible.builtin.include_role:
+        name: redhatci.ocp.mirror_catalog
+      vars:
+        mc_catalog: "{{ pruned_catalog }}"
+        mc_registry: "{{ local_registry }}"
+        mc_pullsecret: "{{ auths_file }}"
+        mc_oc_tool_path: "{{ oc_bin_path }}"
+...
