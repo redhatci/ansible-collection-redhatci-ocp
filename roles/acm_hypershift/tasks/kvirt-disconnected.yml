@@ -6,6 +6,9 @@
       set -x -o pipefail ;
       oc adm release info
       {{ ah_release_image }}
+      {%- if ah_allow_insecure_registry | bool %}
+      --insecure
+      {%- endif %}
       --registry-config={{ ah_pullsecret_file }} |
       grep -w hypershift |
       awk '{print $2}'
@@ -40,6 +43,9 @@
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
+    {%- if ah_allow_insecure_registry | bool %}
+    --tls-verify=false
+    {%- endif %}
     docker://{{ cpo_image_path }}
   no_log: true
   register: skopeo_result
@@ -56,6 +62,9 @@
       --confirm
       --file /release-manifests/0000_50_installer_coreos-bootimages.yaml
       --registry-config={{ ah_pullsecret_file }}
+      {%- if ah_allow_insecure_registry | bool %}
+      --insecure
+      {%- endif %}
   retries: 3
   delay: 10
   register: hs_boot_images
@@ -92,6 +101,9 @@
       {{ kvirt_rhcos_digest }}
       {{ local_registry_path }}:{{ rhcos_tag }}
       --registry-config={{ ah_pullsecret_file }}
+      {%- if ah_allow_insecure_registry | bool %}
+      --insecure
+      {%- endif %}
   retries: 3
   delay: 10
   register: hs_boot_images

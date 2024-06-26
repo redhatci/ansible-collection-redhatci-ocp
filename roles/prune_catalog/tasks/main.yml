@@ -11,16 +11,18 @@
       - pc_destination_catalog | length > 0
     fail_msg: "At least one of the parameters requirements is missing"
 
-- name: "Check if image is pullable - {{ pc_source_catalog }} "
-  ansible.builtin.shell: >
-    if [ -n "$DOCKER_CONFIG" ]; then
-      skopeo inspect --no-tags \
-      --authfile "$DOCKER_CONFIG/config.json" \
-      --tls-verify=false docker://{{ pc_source_catalog }}
-    else
-      skopeo inspect --no-tags \
-      --tls-verify=false docker://{{ pc_source_catalog }}
-    fi
+- name: "Check if image is pullable - {{ pc_source_catalog }}"
+  vars:
+    docker_config_defined: "{{ DOCKER_CONFIG is defined }}"
+  ansible.builtin.command: >
+    skopeo inspect --no-tags
+    {%- if pc_allow_insecure_registry | bool %}
+    --tls-verify=false
+    {%- endif %}
+    {%- if docker_config_defined | bool %}
+    --authfile "$DOCKER_CONFIG/config.json"
+    {%- endif %}
+    docker://{{ pc_source_catalog }}
   register: skopeo_result
   changed_when: skopeo_result.rc == 0
   retries: 3
@@ -67,13 +69,11 @@
         mode: "0755"
 
     - name: "Render the source catalog"
-      vars:
-        opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
       ansible.builtin.shell:
         chdir: "{{ pc_tmp_dir }}"
         cmd: >
           set -x;
-          {{ opm_auths }}
+          {{ pc_opm_auths }}
           {{ pc_opm_cmd }} render {{ pc_source_catalog }} >
           index-packages
       register: prune_result

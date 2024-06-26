@@ -15,6 +15,7 @@ mor_mirror_disk_images: true
 mor_mirror_container_images: true
 mor_write_custom_config: true
 mor_registry_path: "ocp-{{ mor_base_version }}/{{ mor_version }}"
+mor_allow_insecure_registry: true
 # Required images according install type
 mor_ipi:
  - openstack

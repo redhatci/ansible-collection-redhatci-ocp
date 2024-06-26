@@ -23,6 +23,8 @@ If enabled, the role requires an container registry to mirror the OCP container 
 | mor_version                  | undefined                             | Yes      | An OpenShift version number e.g. 4.10.45                                                       |
 | mor_webserver_url            | undefined                             | Yes      | URL of the web server where the installation artifact are stored                               |
 | mor_write_custom_config      | true                                  | No       | Writes the OCP configuration files and sets the custom URL facts                               |
+| mor_allow_insecure_registry  | true                                  | No       | Allow interacting with registries that are using an unknown CA certificate                     |
+
 
 ## Requirements
 
