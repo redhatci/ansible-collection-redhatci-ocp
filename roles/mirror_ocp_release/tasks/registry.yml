@@ -28,9 +28,9 @@
   until: _mor_result.rc == 0
   changed_when: _mor_result.rc == 0
   when:
-    - _mor_release_image is defined
-    - _mor_release_image.rc is defined
-    - _mor_release_image.rc != 0
+    - (_mor_release_image is defined and
+      _mor_release_image.rc is defined and
+      _mor_release_image.rc != 0)
       or mor_force | bool
 
 - name: Generate Image Source manifest
