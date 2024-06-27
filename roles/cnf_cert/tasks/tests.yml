@@ -73,8 +73,8 @@
       vars:
         tnf_partner_repo: "{{ (dci_local_registry | length) | ternary(dci_local_registry, 'quay.io') }}/testnetworkfunction"
         support_image: "debug-partner:{{ support_image_version }}"
-        certsuite_binary: "{{ (test_network_function_version == 'HEAD') | ternary('./certsuite', './cnf-certification-test/certsuite') }}"
-        container_file_path: "{{ (test_network_function_version == 'HEAD') | ternary('/usr/certsuite', '/usr/tnf') }}"
+        certsuite_binary: "{{ (test_network_function_version is version('v5.1.3', '>=') or test_network_function_version == 'HEAD') | ternary('./certsuite', './cnf-certification-test/certsuite') }}"
+        container_file_path: "{{ (test_network_function_version is version('v5.1.3', '>=') or test_network_function_version == 'HEAD') | ternary('/usr/certsuite', '/usr/tnf') }}"
         container_command: |
           {{ certsuite_binary }} run \
           {% if tnf_labels | length > 0 %}
