@@ -1,4 +1,4 @@
-# A playbook that mirror an OCP release. The install artifacts are mirred to the
+# A playbook that mirror an OCP release. The install artifacts are mirrored to the
 # path of more_cache_dir.
 ---
 - name: Mirror OCP
