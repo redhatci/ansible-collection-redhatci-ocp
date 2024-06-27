@@ -1,4 +1,6 @@
 ---
+# OCPBUGS-32139 workaround suggests to retry the creation of the SRIOV policy if failing.
+# Trying this during 1 minute in case any of them fails.
 - name: Create SriovNetworkNodePolicy
   community.kubernetes.k8s:
     definition: "{{ lookup('template', 'templates/sriov-network-node-policy.yml.j2') }}"
@@ -6,6 +8,10 @@
   loop_control:
     loop_var: sriov
     label: "{{ sriov.resource }}"
+  retries: 6
+  delay: 10
+  register: _sc_node_policy_retry
+  until: _sc_node_policy_retry.error is not defined
   when: sriov.node_policy is defined
 
 - name: Check for SRIOV Node Policy
