@@ -7,7 +7,7 @@
   vars:
     source_ns: "openshift-marketplace"
     catalog_name: "<my_catalog>"
-    catalog_image: "<local_registry>:<local_registry_port>/beto/lca:latest"
+    catalog_image: "<local_registry>:<local_registry_port>/<org>/<catalog>:latest"
   tasks:
 
     - name: Create a CatalogSource
