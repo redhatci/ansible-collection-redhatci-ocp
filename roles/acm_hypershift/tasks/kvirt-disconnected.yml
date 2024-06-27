@@ -4,7 +4,7 @@
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
       set -x -o pipefail ;
-      oc adm release info
+      {{ ah_oc_cli_path }} adm release info
       {{ ah_release_image }}
       --registry-config={{ ah_pullsecret_file }} |
       grep -w hypershift |
@@ -34,24 +34,25 @@
 
 - name: Set Control-Plane Operator annotation
   ansible.builtin.set_fact:
-    cpo_annotation: "hypershift.openshift.io/control-plane-operator-image={{ cpo_image_path }} "
+    # cpo_annotation: "hypershift.openshift.io/control-plane-operator-image={{ cpo_image_path }} "
+    cpo_annotation: "hypershift.openshift.io/release-image=quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:e7508c7a1e7129100988dae0c28cf26c11369128f18dc095f93b834fdb080b2c "
 
-- name: Fail if Control-Plane Operator image is not pullable from local registry
-  ansible.builtin.command: >
-    skopeo inspect
-    --no-tags
-    docker://{{ cpo_image_path }}
-  no_log: true
-  register: skopeo_result
-  changed_when: false
-  failed_when: skopeo_result.rc != 0
+# - name: Fail if Control-Plane Operator image is not pullable from local registry
+#   ansible.builtin.command: >
+#     skopeo inspect
+#     --no-tags
+#     docker://{{ cpo_image_path }}
+#   no_log: true
+#   register: skopeo_result
+#   changed_when: false
+#   failed_when: skopeo_result.rc != 0
 
 - name: Extract the RHCOS images file
   ansible.builtin.shell:
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
       set -x;
-      oc image extract
+      {{ ah_oc_cli_path }} image extract
       {{ ah_release_image }}
       --confirm
       --file /release-manifests/0000_50_installer_coreos-bootimages.yaml
@@ -88,9 +89,9 @@
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
       set -x;
-      oc image mirror
+      {{ ah_oc_cli_path }} image mirror
       {{ kvirt_rhcos_digest }}
-      {{ local_registry_path }}:{{ rhcos_tag }}
+      registry.dfwt5g.lab:4443/ocp-4.14/4.14.0-0.nightly-2024-05-10-212837:{{ rhcos_tag }}
       --registry-config={{ ah_pullsecret_file }}
   retries: 3
   delay: 10

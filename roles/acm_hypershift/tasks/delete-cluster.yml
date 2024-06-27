@@ -15,8 +15,21 @@
       --name={{ ah_cluster_generated_name }}
       --namespace={{ ah_clusters_ns }}
       --infra-id={{ ah_cluster_generated_name }}
-      --cluster-grace-period 0
   changed_when: false
   when:
     - hosted_cluster.resources | length == 1
+
+- name: Wait for HCP to be deleted
+  community.kubernetes.k8s_info:
+    api_version: hypershift.openshift.io/v1beta1
+    kind: HostedCluster
+    namespace: "{{ ah_clusters_ns }}"
+    name: "{{ ah_cluster_generated_name }}"
+  retries: 10
+  delay: 6
+  register: _hosted_cluster
+  until:
+    - _hosted_cluster is defined
+    - _hosted_cluster.resources is defined
+    - _hosted_cluster.resources | length == 0
 ...

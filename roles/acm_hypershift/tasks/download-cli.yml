@@ -50,4 +50,8 @@
 - name: Set hcp cli path
   ansible.builtin.set_fact:
     ah_hcp_cli_path: "{{ ah_tmp_dir }}/hcp"
+
+- name: Set oc cli path
+  ansible.builtin.set_fact:
+    ah_oc_cli_path: "{{ ah_tmp_dir }}/oc"
 ...
