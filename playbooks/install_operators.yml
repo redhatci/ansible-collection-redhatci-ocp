@@ -1,11 +1,12 @@
 # A playbook to create a catalog source and install some of its operators
 # For disconnected environments, it is required that the IDMS/ICSP are applied in advance
+# Please update the <placeholder> variables according your environment before running
 ---
 - name: Install Operators
   hosts: localhost
   vars:
     source_ns: "openshift-marketplace"
-    catalog_name: "my-catalog"
+    catalog_name: "<my_catalog>"
     catalog_image: "<local_registry>:<local_registry_port>/beto/lca:latest"
   tasks:
 
@@ -31,7 +32,7 @@
           targetNamespaces:
             - openshift-storage
 
-    - name: Install OCS Operator
+    - name: Install the ACM operator
       ansible.builtin.include_role:
         name: redhatci.ocp.olm_operator
       vars:
