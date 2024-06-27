@@ -1,5 +1,6 @@
 # A playbook that mirror an OCP release. The install artifacts are mirrored to the
 # path of more_cache_dir.
+# Please update the <placeholder> variables according your environment before running
 ---
 - name: Mirror OCP
   hosts: localhost

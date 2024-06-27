@@ -3,6 +3,7 @@
 # and push privileges for target registry for the pruned_catalog image.
 # The auths_wrapper is required, in case dci-openshift-agent is not installed, get a copy from
 # [opm-auths](https://github.com/redhat-cip/dci-openshift-agent/blob/master/utils/opm-auths)
+# Please update the <placeholder> variables according your environment before running
 ---
 - name: Prune and Mirror
   hosts: localhost
