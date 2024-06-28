@@ -101,7 +101,7 @@
   vars:
     ocp_stable_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
   ansible.builtin.unarchive:
-    src: "{{ ocp_stable_url }}/stable/openshift-client-linux.tar.gz"
+    src: "{{ ocp_stable_url }}/stable/openshift-client-linux-amd64-rhel{{ ansible_distribution_major_version }}.tar.gz"
     dest: "{{ sno_tmp_dir.path }}"
     remote_src: true
     mode: "0755"
