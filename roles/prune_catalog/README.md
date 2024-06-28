@@ -15,7 +15,7 @@ pc_expire              | No       | false                                       
 pc_expire_time         | No       | 5h                                            | The amount of time to set for the expiration label
 pc_maintainer          | No       | redhatci.ocp                                  | Value for catalog's image maintainer label
 pc_ignore_pull_errors  | No       | false                                         | Makes the role fail if the image to prune is not available
-
+pc_allow_insecure_registry | No   | true                                          | Allow interacting with registries that are using an unknown CA certificate
 ## Requirements
 
 The following application must be already present on the system.
