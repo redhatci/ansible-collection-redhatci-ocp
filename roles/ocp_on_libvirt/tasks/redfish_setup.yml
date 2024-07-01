@@ -20,15 +20,29 @@
     sushy_ignore_boot_device: false
     inventory_validated: true
 
-- name: Get KVM hosts UUID
-  shell: >
-    set -o pipefail; virsh list --all --name --uuid |
-    sed -e 's/^\([^ ]*\) \([^ ]*\)$/"\2": "\1",/g' |
-    tr -d '\n' |
-    sed -e 's/^\(.*\),$/{\1}/g'
-  register: all_vms
+- name: Get KVM host list
   become: true
+  register: _ool_vms
+  community.libvirt.virt:
+    command: list_vms
+
+- name: Get KVM hosts xml
+  become: true
+  register: _ool_vms_xml
+  loop: "{{ _ool_vms.list_vms }}"
+  community.libvirt.virt:
+    command: get_xml
+    name: "{{ item }}"
+
+- name: Extract UUID from xmls
+  loop: "{{ range(0, _ool_vms.list_vms | length ,1) | list }}"
+  register: _ool_host_uuid
+  community.general.xml:
+    xmlstring: "{{ _ool_vms_xml.results[item].get_xml }}"
+    xpath: /domain/uuid
+    content: text
 
 - name: Store KVM hosts UUID
-  set_fact:
-    redfish_kvm_uuid: "{{ all_vms.stdout | from_json }}"
+  loop: '{{ range(0, _ool_vms.list_vms | length ,1) | list  }}'
+  ansible.builtin.set_fact:
+    ool_redfish_kvm_uuid: "{{ ool_redfish_kvm_uuid | default({}) | combine({ _ool_vms.list_vms[item]: _ool_host_uuid.results[item].matches[0].uuid }) }}"
