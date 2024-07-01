@@ -103,6 +103,7 @@ dependencies:
   "community.kubernetes": "1.2.1"
   "community.libvirt": "*"
   "containers.podman": "*"
+  "kubernetes.core": "2.3.2"
 
 # The URL of the originating SCM repository
 repository: https://github.com/redhatci/ansible-collection-redhatci-ocp
