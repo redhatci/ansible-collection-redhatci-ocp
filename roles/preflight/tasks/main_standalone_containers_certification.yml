@@ -34,6 +34,18 @@
       loop: "{{ preflight_containers_to_certify }}"
       loop_control:
         loop_var: c
+      when:
+        - not do_container_parallel_test
+        - max_images_per_batch <= 1
+
+    - name: "Run preflight checks in batches of {{ max_images_per_batch }}"
+      ansible.builtin.include_tasks: test_preflight_container_parallel.yml
+      loop: "{{ preflight_containers_to_certify | batch(max_images_per_batch) | list }}"
+      loop_control:
+        loop_var: batched_images
+      when:
+        - do_container_parallel_test
+        - max_images_per_batch > 1
   always:
     - name: Teardown
       ansible.builtin.include_tasks: teardown.yml

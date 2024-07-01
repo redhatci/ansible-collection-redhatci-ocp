@@ -1,0 +1,102 @@
+---
+- name: Create unique directory for each image
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: "preflight_container_artifacts_"
+  loop: "{{ batched_images }}"
+  register: _preflight_batch_dirs
+
+- name: "Run Preflight Checks on Multiple Containers in Parallel"
+  block:
+    - name: "Run preflight container in parallel"
+      ansible.builtin.command: >
+        podman run --rm --privileged
+        -e PFLT_JUNIT=true
+        -e PFLT_LOGLEVEL=trace
+        -e PFLT_ARTIFACTS=/artifacts
+        -e PFLT_LOGFILE=/artifacts/preflight.log
+        {% if partner_creds | length %}
+        -e PFLT_DOCKERCONFIG=/opt/config.json
+        {% endif %}
+        {% if item.0.pyxis_container_identifier | default('') | length %}
+        -e PFLT_PYXIS_API_TOKEN={{ lookup('file', pyxis_apikey_path) }}
+        -e PFLT_CERTIFICATION_PROJECT_ID={{ item.0.pyxis_container_identifier }}
+        {% endif %}
+        -v {{ item.1.path }}:/artifacts
+        {% if partner_creds | length %}
+        -v {{ preflight_tmp_dir.path }}/config.json:/opt/config.json
+        {% endif %}
+        {{ preflight_podman_ca | default('') }}
+        {{ preflight_image }}
+        check container
+        {{ item.0.container_image }}
+        {% if item.0.pyxis_container_identifier | default('') | length %}
+        --submit
+        {% endif %}
+      loop: "{{ batched_images | zip(_preflight_batch_dirs.results) | map('flatten') | list }}"
+      async: 600
+      poll: 0
+      register: _preflight_results
+
+    - name: Check back on preflight tasks
+      ansible.builtin.async_status:
+        jid: "{{ async_result_item.ansible_job_id }}"
+      loop: "{{ _preflight_results.results }}"
+      register: _preflight_async_results
+      loop_control:
+        loop_var: "async_result_item"
+      until: _preflight_async_results.finished
+      retries: 120
+      delay: 10
+  rescue:
+    - name: Handle errors from preflight check container
+      ansible.builtin.debug:
+        msg: "An error occurred while running the preflight check container"
+  always:
+    - name: Find all files for each completed job
+      ansible.builtin.find:
+        paths: "{{ dir.path }}"
+        patterns: '*'
+        recurse: true
+      register: _preflight_found_files
+      loop: "{{ _preflight_batch_dirs.results }}"
+      loop_control:
+        loop_var: "dir"
+
+    - name: Set up files with directory context
+      ansible.builtin.set_fact:
+        preflight_files_context: "{{ preflight_files_context | default([]) + [{'files': item.files, 'container_image': item.dir.item.container_image, 'path': item.dir.path}] }}"
+      loop: "{{ _preflight_found_files.results }}"
+      loop_control:
+        loop_var: "item"
+
+    - name: "Copy execution artifacts"
+      vars:
+        image_name: "{{ item.0.container_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
+        tmp_prefix: "/tmp/preflight_container_artifacts"
+        file_basename: "{{ item.1.path | regex_replace(tmp_prefix ~ '_[^/]+/(?:([^/]+)/)?([^/]+)$', '\\1_\\2') | replace('__', '') }}"
+        preflight_prefix: "preflight_container_{{ image_name }}_{{ file_basename }}"
+      ansible.builtin.copy:
+        src: "{{ item.1.path }}"
+        dest: "{{ job_logs.path }}/{{ preflight_prefix }}"
+        mode: "0644"
+      loop: "{{ preflight_files_context | subelements('files') }}"
+      when: "item.1.path | regex_search('\\.(json|log|xml)$')"
+
+    - name: "Find all temporary directories preflight_container_ in /tmp/ to remove"
+      ansible.builtin.find:
+        paths: "/tmp/"
+        patterns: 'preflight_container_*'
+        file_type: directory
+      register: _preflight_tmp_dirs_to_remove
+
+    - name: Remove found temporary directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ _preflight_tmp_dirs_to_remove.files }}"
+
+    - name: Unset files context contents before starting the next batch of images
+      ansible.builtin.set_fact:
+        preflight_files_context: []
+...
