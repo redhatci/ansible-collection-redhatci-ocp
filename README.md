@@ -35,6 +35,7 @@ Name | Description
 [redhatci.ocp.acm_hypershift](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_hypershift/README.md) | Deployment of Hypershift (Hosted Control Planes) through ACM (Advanced Cluster Management).
 [redhatci.ocp.acm_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_setup/README.md) | Performs the Advanced Cluster Management (ACM) post-installation tasks
 [redhatci.ocp.acm_sno](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_sno/README.md) | Deployment of SNO (Single Node OpenShift) instances using ACM (Advanced Cluster Management)
+[redhatci.ocp.acm_spoke_mgmt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_spoke_mgmt/README.md) | This role allows to perform multiple management operations related to a spoke cluster,e.g. attach a spoke cluster to a given hub cluster, or detach a spoke cluster from a given hub cluster.
 [redhatci.ocp.add_day2_node](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/add_day2_node/README.md) | Adds as nodes to a pre-existing cluster using a pre-existing on-prem assisted installer instance.
 [redhatci.ocp.apply_nmstate](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/apply_nmstate/README.md) | Applies nmstate network configuration to a host.
 [redhatci.ocp.approve_csrs](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/approve_csrs/README.md) |Checks for Cert Signing Requests in the pending state and approves them until nodes in the day2_workers group are present in the oc nodes output.
@@ -110,6 +111,7 @@ Name | Description
 [redhatci.ocp.prune_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/prune_catalog/README.md) | Create a pruned catalog, leaving only the specified operators.
 [redhatci.ocp.pyxis](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/pyxis/README.md) | Interacts with Pyxis API to submit Preflight certification results
 [redhatci.ocp.redhat_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/redhat_tests/README.md) | [Openshift End to End tests](https://github.com/openshift/openshift-tests)
+[redhatci.ocp.remove_ztp_gitops_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/remove_ztp_gitops_resources/README.md) | Remove all GitOps related resources for a given spoke cluster, excepting the cluster namespace, which is not deleted because this will imply the spoke cluster is detached from the hub cluster.
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
 [redhatci.ocp.rhoai](roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
 [redhatci.ocp.setup_assisted_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_assisted_installer/README.md) | Deploys an on-prem assisted installer

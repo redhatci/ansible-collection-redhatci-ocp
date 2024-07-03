@@ -1,0 +1,18 @@
+---
+
+rzgr_gitops_applications:
+  - clusters
+  - policies
+rzgr_gitops_appprojects:
+  - ztp-app-project
+  - policy-app-project
+rzgr_policies_namespace: policies-sub
+rzgr_extra_namespaces:
+  - ztp-common
+  - ztp-group
+  - ztp-site
+rzgr_cluster_role_bindings:
+  - gitops-policy
+  - gitops-cluster
+rzgr_private_repo_secret: "private-repo"
+rzgr_argo_cd_known_host_cm: "argocd-ssh-known-hosts-cm"
