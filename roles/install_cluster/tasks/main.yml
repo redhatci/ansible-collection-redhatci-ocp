@@ -197,7 +197,7 @@
   when: install | bool == True
 
 
-- name: Allow up to 5 minutes for cluster to begin installing
+- name: Allow up to 10 minutes for cluster to begin installing
   uri:
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
     method: GET
@@ -208,6 +208,6 @@
   when: install | bool == True
   register: cluster_output
   until: cluster_output.json.status in cluster_installation_states
-  retries: 5
+  retries: 10
   delay: 60
 ...
