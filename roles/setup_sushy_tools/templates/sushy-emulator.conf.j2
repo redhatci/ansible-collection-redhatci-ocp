@@ -49,7 +49,7 @@ SUSHY_EMULATOR_IGNORE_BOOT_DEVICE = {{ (sushy_ignore_boot_device | bool) | terna
 # system architecture
 SUSHY_EMULATOR_BOOT_LOADER_MAP = {
     u'UEFI': {
-        u'x86_64': u'{{ sushy_x86_64_ovmf_code_path }}',
+        u'x86_64': u'{{ sst_sushy_x86_64_ovmf_code_path }}',
         u'aarch64': u'/usr/share/AAVMF/AAVMF_CODE.fd'
     },
     u'Legacy': {

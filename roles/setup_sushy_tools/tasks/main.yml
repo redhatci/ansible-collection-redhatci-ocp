@@ -82,21 +82,32 @@
             privatekey_path: "{{ sushy_cert_dir }}/sushy_tools.key"
             cert_common_name: "{{ sushy_fqdn }}"
 
-    - name: Set X86_64 OVMF code path
-      set_fact:
-        sushy_x86_64_ovmf_code_path: "/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd"
+    # Default behavior
+    - name: Set X86_64 OVMF code path (secure boot enabled)
+      when: not setup_sushy_tools_disable_secure_boot | bool
+      block:
+        - name: Set X86_64 OVMF code path
+          ansible.builtin.set_fact:
+            sst_sushy_x86_64_ovmf_code_path: "/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd"
 
-    - name: Check x86_64 OVMF code path
-      stat:
-        path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
-      register: OVMF_X86_64_CODE_STAT
+        - name: Check x86_64 OVMF code path
+          ansible.builtin.stat:
+            path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+          register: OVMF_X86_64_CODE_STAT
 
-    - name: Set x86_64 OVMF code path (legacy)
-      set_fact:
-        sushy_x86_64_ovmf_code_path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
-      when:
-        - OVMF_X86_64_CODE_STAT.stat.exists
-        - not OVMF_X86_64_CODE_STAT.stat.islnk
+        - name: Set x86_64 OVMF code path (legacy)
+          ansible.builtin.set_fact:
+            sst_sushy_x86_64_ovmf_code_path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+          when:
+            - OVMF_X86_64_CODE_STAT.stat.exists
+            - not OVMF_X86_64_CODE_STAT.stat.islnk
+
+    # In case secure boot is disabled, OVMF code path must be
+    # "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+    - name: Set X86_64 OVMF code path (secure boot disabled)
+      ansible.builtin.set_fact:
+        sst_sushy_x86_64_ovmf_code_path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+      when: setup_sushy_tools_disable_secure_boot | bool
 
     - name: Create sushy-tools conf
       template:

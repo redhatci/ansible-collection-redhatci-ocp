@@ -30,4 +30,8 @@ secure_sushy_tools: "{{ secure | default(true) }}"
 sushy_fqdn: "{{ ansible_fqdn }}"
 
 is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"
+
+# disable secure boot, false by default
+setup_sushy_tools_disable_secure_boot: false
+
 ...

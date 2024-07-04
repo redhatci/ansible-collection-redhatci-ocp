@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.11.EPOCH
+Version:        0.12.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Wed Jul 10 2024 Ramon Perez <raperez@redhat.com> - 0.12.EPOCH-VERS
+- Version bump due to create_vms and setup_sushy_tools roles
+
 * Fri Jun 14 2024 Tony Garcia <tonyg@redhat.com> - 0.11.EPOCH-VERS
 - Version bump due to mirror_ocp_release role
 
