@@ -1,25 +1,35 @@
 # A playbook that mirror an OCP release. The install artifacts are mirrored to the
 # path of more_cache_dir.
 # Please update the <placeholder> variables according your environment before running
+#
+# Usage
+# Populate the vars.yml with your desired values. See README for more settings available.
+#
+# vars.yml
+#
+# mor_version: "4.12.45"
+# mor_pull_url: "quay.io/openshift-release-dev/ocp-release@sha256:faf0aebc0abce8890e046eecfa392c24bc24f6c49146c45447fb0977e692db6e"
+# mor_cache_dir: "/opt/cache"
+# mor_auths_file: "/home/<user>/auths.json"
+# mor_force: true
+# mor_install_type: "ipi"
+# mor_webserver_url: "http://localhost"
+# mor_mirror_disk_images: true
+# mor_mirror_container_images: true
+# mor_write_custom_config: true
+# mor_registry_url: "<local_registry>:<local_registry_port>"
+# mor_oc: "/usr/bin/oc"
+#
+# $ ansible-playbook ocp_mirror.yaml
 ---
 - name: Mirror OCP
   hosts: localhost
+  gather_facts: true
+  vars_files:
+    - vars.yml
   tasks:
 
     - name: Mirror release - All
       ansible.builtin.include_role:
         name: redhatci.ocp.mirror_ocp_release
-      vars:
-        mor_version: "4.12.45"
-        mor_pull_url: "quay.io/openshift-release-dev/ocp-release@sha256:faf0aebc0abce8890e046eecfa392c24bc24f6c49146c45447fb0977e692db6e"
-        mor_cache_dir: "/opt/cache"
-        mor_auths_file: "/home/<user>/auths.json"
-        mor_force: true
-        mor_install_type: "ipi"
-        mor_webserver_url: http://localhost
-        mor_mirror_disk_images: true
-        mor_mirror_container_images: true
-        mor_write_custom_config: true
-        mor_registry_url: <local_registry>:<local_registry_port>
-        mor_oc: /usr/bin/oc
 ...

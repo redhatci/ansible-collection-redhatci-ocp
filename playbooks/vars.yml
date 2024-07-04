@@ -1,0 +1,14 @@
+---
+mor_version: "4.12.45"
+mor_pull_url: "quay.io/openshift-release-dev/ocp-release@sha256:faf0aebc0abce8890e046eecfa392c24bc24f6c49146c45447fb0977e692db6e"
+mor_cache_dir: "/opt/cache"
+mor_auths_file: /home/beto/ps.json # "/home/<user>/auths.json"
+mor_force: true
+mor_install_type: "ipi"
+mor_webserver_url: "http://localhost"
+mor_mirror_disk_images: true
+mor_mirror_container_images: true
+mor_write_custom_config: true
+mor_registry_url: registry.dfwt5g.lab:4443 # "<local_registry>:<local_registry_port>"
+mor_oc: "/usr/bin/oc"
+...

@@ -4,13 +4,6 @@ This directory contains playbooks for common use cases of the OpenShift Containe
 
 # Requirements
 
-The Ansible collection must be installed either using an RPM package or via Ansible Galaxy. It is required that the ansible.cfg file has an entry pointing to the OpenShift Container Platform (OCP) roles location. For example:
-
-Installation using galaxy
-```ShellSession
-$ ansible-galaxy collection install redhatci.ocp
-```
-
 Example of playbook's `ansible.cfg` file.
 ```ShellSession
 $ cat ansible.cfg
@@ -31,12 +24,3 @@ $ ansible-playbook <playbook-file> <options>
 Some roles may have dependencies script distributed as part or `dci-openshift-agent`, so it is recommended to have the RPM installed.
 
 See the corresponding README and variables defined in de playbook for additional information.
-
-## Playbook list
-
-| Playbook                                                                  | Description
-|-------------------------------------------------------------------------- | ---------------------------
-| [Multibench Setup Host](multibench_setup_host/multibench_setup_host.yml)  |  Installs the crucible binaries needed for the execution of the Multi-bench role. See [Readme](multibench_setup_host/README.md)
-| [Prune and Mirror Operators](prune_mirror.yml)                            |  Prunes and mirror operators to a local registry
-| [Mirror OCP](mirror_ocp.yml)                                              |  Mirror and OCP release
-| [Install Operators](install_operators.yml)                                |  Creates a catalog source and install and operator
