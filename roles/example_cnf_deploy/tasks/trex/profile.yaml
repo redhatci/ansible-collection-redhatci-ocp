@@ -1,0 +1,75 @@
+---
+- name: Set Trex profile Variables
+  ansible.builtin.set_fact:
+    trex_profile_path: "{{ trex_test_config_item.trex_profile_path | default('') }}"
+    trex_profile_name: "{{ trex_test_config_item.trex_profile_name | default('') }}"
+    trex_profile_cm_name: "{{ trex_test_config_item.trex_profile_cm_name | default('') }}"
+    random_str: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=5') }}"
+    packet_rate: ''
+    packet_size: ''
+    duration: ''
+
+- name: Set packet rate if defined
+  ansible.builtin.set_fact:
+    packet_rate: "{{ trex_test_config_item.packet_rate }}"
+  when: "'packet_rate' in trex_test_config_item"
+
+- name: Set packet size if defined
+  ansible.builtin.set_fact:
+    packet_size: "{{ trex_test_config_item.packet_size }}"
+  when: "'packet_size' in trex_test_config_item"
+
+- name: Set duration if defined
+  ansible.builtin.set_fact:
+    duration: "{{ trex_test_config_item.duration }}"
+  when: "'duration' in trex_test_config_item"
+
+- name: Create configmap for trex profile if provided
+  when: trex_profile_path|default('')|length > 0
+  block:
+    - name: Check if trex_profile_path is valid
+      ansible.builtin.stat:
+        path: "{{ trex_profile_path }}"
+      register: path_stat
+
+    - name: Fail if the path does not existt
+      ansible.builtin.fail:
+        msg: "Provide a valid file - {{ trex_profile_path }}"
+      when: not path_stat.stat.exists
+
+    - name: Set cm name for trex profile
+      ansible.builtin.set_fact:
+        trex_profile_cm_name: "{{ 'trex-profile-' + random_str }}"
+        trex_profile_name: "{{ trex_profile_path | basename }}"
+
+    - name: Create config map
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            namespace: "{{ cnf_namespace }}"
+            name: "{{ trex_profile_cm_name }}"
+          data:
+            name: "{{ trex_profile_name }}"
+            content: |
+              {{ lookup('file', trex_profile_path) }}
+
+- name: Create job for trex app
+  ansible.builtin.include_tasks: job.yaml
+  when: enable_trex_profile_direct|default(false)|bool
+
+- name: Set trex app cr name
+  ansible.builtin.set_fact:
+    trex_app_cr_name: "trex-app-{{ trex_test_config_item.name }}"
+  when: "'name' in trex_test_config_item"
+
+- name: Set trex app cr name - random
+  ansible.builtin.set_fact:
+    trex_app_cr_name: "trex-app-{{ random_str }}"
+  when: "'name' not in trex_test_config_item"
+
+- name: Create cr for trex app
+  kubernetes.core.k8s:
+    definition: "{{ lookup('template', 'trex-app-cr.yaml.j2') }}"
+  when: not enable_trex_profile_direct|default(false)|bool

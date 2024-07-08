@@ -1,0 +1,180 @@
+---
+- name: Check if there is a TRexServer already created
+  community.kubernetes.k8s_info:
+    api_version: examplecnf.openshift.io/v1
+    kind: TRexConfig
+    namespace: "{{ cnf_namespace }}"
+    name: "{{ trex_cr_name }}"
+  register: trexconfig_cr
+
+# If there is a TRexServer CR created, then do not create a new one
+- name: Create and check TRexServer CR
+  when: trexconfig_cr.resources|length == 0
+  block:
+    - name: Set local fact for trex pod networks
+      ansible.builtin.set_fact:
+        networks_trex: []
+        packet_gen_net: "{{ packet_generator_networks if enable_lb | bool else cnf_app_networks }}"
+
+    - name: Create network list for trex with hardcoded macs
+      ansible.builtin.set_fact:
+        networks_trex: "{{ networks_trex + [ item | combine({'mac': trex_mac_list[idx:idx+item.count]})] }}"
+      loop: "{{ packet_gen_net }}"
+      loop_control:
+        index_var: idx
+
+    - name: Create CR for trex server
+      community.kubernetes.k8s:
+        definition: "{{ lookup('template', 'trex-server-cr.yaml.j2') }}"
+
+    - name: Check TRex pod status to be running
+      community.kubernetes.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: Pod
+        label_selectors:
+          - example-cnf-type=pkt-gen
+      register: trex_result
+      vars:
+        container_state_running_query: "resources[0].status.containerStatuses[?name=='trex-server'].state.running"
+        container_started_query: "resources[0].status.containerStatuses[?name=='trex-server'].started"
+        container_ready_query: "resources[0].status.containerStatuses[?name=='trex-server'].ready"
+        container_state_running: "{{ trex_result | json_query(container_state_running_query) }}"
+        container_started: "{{ trex_result | json_query(container_started_query) }}"
+        container_ready: "{{ trex_result | json_query(container_ready_query) }}"
+      retries: 60
+      delay: 5
+      until:
+        - trex_result.resources | length == 1
+        - trex_result.resources[0].status.phase == 'Running'
+        - container_state_running | length > 0
+        - container_started | length > 0
+        - container_started[0] | bool
+        - container_ready | length > 0
+        - container_ready[0] | bool
+
+- name: Get logs from example-cnf deployment before starting the job
+  environment:
+    OC_BINARY: "{{ oc_tool_path | default('oc') }}"
+    APP_NAMESPACE: "{{ cnf_namespace }}"
+    SRIOV_NAMESPACE: openshift-sriov-network-operator
+  ansible.builtin.script:
+    cmd: >
+      ../../scripts/get-example-cnf-status.sh > example-cnf-pre-job-status.log
+  args:
+    chdir: "{{ job_logs.path }}"
+  ignore_errors: true
+  no_log: true
+
+- name: TRexApp block
+  when: enable_trex_app | bool
+  block:
+    - name: Set TRex app duration
+      ansible.builtin.set_fact:
+        duration: "{{ trex_duration }}"
+
+    - name: Create CR for TRex app
+      community.kubernetes.k8s:
+        definition: "{{ lookup('template', 'trex-app-cr.yaml.j2') }}"
+      vars:
+        packet_rate: 10kpps
+        packet_size: 64
+
+    - name: Wait for TRex app CR to be created
+      ansible.builtin.shell: |
+        {{ oc_tool_path }} get trexapp.examplecnf.openshift.io -o yaml -n {{ cnf_namespace }} {{ trex_app_cr_name }}
+      register: trex_app_cr_installation
+      retries: 30
+      delay: 10
+      until:
+        - "'True' in trex_app_cr_installation.stdout"
+        - "'Running' in trex_app_cr_installation.stdout"
+        - "'Successful' in trex_app_cr_installation.stdout"
+
+    - name: Wait for the TRex app TestStarted event
+      community.kubernetes.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: Event
+        field_selectors:
+          - "reason==TestStarted"
+          - "involvedObject.name={{ trex_app_cr_name }}"
+      register: trex_event
+      retries: "{{ (duration | int / 2)| round | int }}"
+      delay: 5
+      until: trex_event.resources | length > 0
+
+    # Omit this check if we are running TRex job in continuous mode
+    - name: Wait for the TRex app TestCompleted event
+      community.kubernetes.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: Event
+        field_selectors:
+          - "reason==TestCompleted"
+          - "involvedObject.name={{ trex_app_cr_name }}"
+      register: trex_event
+      retries: "{{ (duration | int / 2)| round | int }}"
+      delay: 5
+      until: trex_event.resources|length > 0
+      when: not ecd_trex_continuous_mode|bool
+
+    # Omit this check if we are running TRex job in continuous mode
+    - name: Wait for the TRex app TestPassed or TestFailed event
+      community.kubernetes.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: Event
+        field_selectors: "involvedObject.name={{ trex_app_cr_name }}"
+      register: trex_result
+      retries: 5
+      delay: 5
+      until: "trex_result.resources | selectattr('reason', 'in', ['TestPassed', 'TestFailed']) | list | length > 0"
+      when: not ecd_trex_continuous_mode|bool
+
+    - name: Get logs from example-cnf deployment after running the job
+      environment:
+        OC_BINARY: "{{ oc_tool_path | default('oc') }}"
+        APP_NAMESPACE: "{{ cnf_namespace }}"
+        SRIOV_NAMESPACE: openshift-sriov-network-operator
+      ansible.builtin.script:
+        cmd: >
+          ../../scripts/get-example-cnf-status.sh > example-cnf-post-job-status.log
+      args:
+        chdir: "{{ job_logs.path }}"
+      ignore_errors: true
+      no_log: true
+
+    # Omit this check if we are running TRex job in continuous mode
+    - name: Fail if TestFailed event is present
+      ansible.builtin.fail:
+        msg: "TestFailed event detected"
+      when:
+        - trex_result is defined
+        - trex_result.resources is defined
+        - "'TestFailed' in trex_result.resources | map(attribute='reason') | list"
+        - not trex_tests_skip_failures|bool
+        - not ecd_trex_continuous_mode|bool
+
+    # Omit this check if we are running TRex job in continuous mode
+    - name: Wait for the TRex app PacketMatched event
+      community.kubernetes.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: Event
+        field_selectors:
+          - "reason==PacketMatched"
+          - "involvedObject.name={{ trex_app_cr_name }}"
+      register: trex_result
+      retries: "{{ (duration|int/2)|round|int }}"
+      delay: 5
+      until: "trex_result.resources | length > 0"
+      when:
+        - not trex_tests_skip_failures|bool
+        - not ecd_trex_continuous_mode|bool
+
+    # Omit this check if we are running TRex job in continuous mode
+    - name: Set TRex run status if passed
+      ansible.builtin.set_fact:
+        trex_app_run_passed: true
+      when:
+        - trex_result is defined
+        - trex_result.resources is defined
+        - trex_result.resources | length > 0
+        - not ecd_trex_continuous_mode|bool
+...

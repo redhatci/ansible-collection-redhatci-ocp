@@ -1,0 +1,23 @@
+apiVersion: examplecnf.openshift.io/v1
+kind: TestPMD
+metadata:
+  name: testpmd
+  namespace: {{ cnf_namespace }}
+spec:
+  privileged: false
+  imagePullPolicy: {{ image_pull_policy }}
+{% if enable_lb|bool %}
+  ethpeerMaclist: {{ lb_cnf_port_mac_list }}
+  size: {{ testpmd_app_size|default(2) }}
+{% else %}
+  ethpeerMaclist: {{ trex_mac_list }}
+  size: 1  
+{% endif %}
+  networks: {{ networks_testpmd_app }}
+  terminationGracePeriodSeconds: {{ termination_grace_period_seconds }}
+{% if high_perf_runtime is defined and high_perf_runtime|length %}
+  runtime_class_name: "{{ high_perf_runtime }}"
+{% endif %}
+{% if numa_aware_topology is defined and numa_aware_topology | length %}
+  numa_aware_topology: "{{ numa_aware_topology }}"
+{% endif %}

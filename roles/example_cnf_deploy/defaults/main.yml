@@ -1,0 +1,90 @@
+---
+
+operator_version: ""
+registry_url: quay.io
+repo_name: rh-nfv-int
+cnf_namespace: example-cnf
+
+# Internal variables
+image_pull_policy: IfNotPresent
+catalog_name: nfv-example-cnf-catalog
+catalog_image: "{{ registry_url }}/{{ repo_name }}/{{ catalog_name }}:{{ operator_version }}"
+
+### deploy.yml ###
+
+enable_lb: true
+enable_mac_fetch: true
+enable_testpmd: true
+enable_trex: true
+enable_trex_app: true
+
+# Main TRexApp job duration. If set to -1, it will run in continuous burst mode
+trex_duration: 120
+
+# If set to true, the automation behaves as if TRex job is deployed in continuous mode,
+# even if trex_duration is not -1. This is to leave a job running with a given duration
+# to perform some extra checks in different jobs.
+ecd_trex_continuous_mode: false
+
+# If set to true, even if TRex job fails, the job will progress
+trex_tests_skip_failures: false
+
+# If set to true, wait until the end of the profile duration before continue
+trex_tests_wait: true
+
+# By default, till having a positive result, it is supposed that TRex job failed
+trex_app_run_passed: false
+
+# Internal variables
+termination_grace_period_seconds: 30
+
+trex_cr_name: trexconfig
+
+# Static MAC addresses used by the deployed workloads
+trex_mac_list:
+  - "20:04:0f:f1:89:01"
+  - "20:04:0f:f1:89:02"
+lb_gen_port_mac_list:
+  - "40:04:0f:f1:89:01"
+  - "40:04:0f:f1:89:02"
+lb_cnf_port_mac_list:
+  - "60:04:0f:f1:89:01"
+  - "60:04:0f:f1:89:02"
+## These ones are only used in the direct mode case
+testpmd_app_mac_list:
+  - "80:04:0f:f1:89:01"
+  - "80:04:0f:f1:89:02"
+
+# Variables for gathering the network info from the scenario
+## Connection between LB-CNF in LB mode (or TRex-CNF in direct mode)
+cnf_app_networks: []
+## Connection between TRex-LB in LB mode (not used in direct mode)
+packet_generator_networks: []
+## Networks for the CNF, including the hardcoded MAC addresses for direct mode case
+networks_testpmd_app: []
+
+# RuntimeClass that should be used for running DPDK application,
+# if the var is empty, the annotation irq-load-balancing.crio.io: "disable" is not applied
+# high_perf_runtime: "performance-blueprint-profile"
+
+
+packet_rate: 10kpps
+# some nics like x540 supports only 2 queues, as number of cores will be
+# used to create tx queues, restrict the cores to the trex parameter as per need
+# 540 nics require this value to be set to 2
+trex_core_count: 0
+
+# When duration is '-1', the trex will run in continous burst mode
+#  - name: pkt-64-10kpps
+#    packet_size: 64
+#    packet_rate: 10kpps
+#    duration: 120
+#    trex_profile_name: ''
+#    trex_profile_path: ''
+#    trex_profile_cm_name: ''
+trex_test_config: []
+
+oc_tool_path: oc
+trex_app_cr_name: trex-app
+trex_job_failed: false
+default_trex_duration: 1800

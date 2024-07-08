@@ -1,0 +1,214 @@
+---
+#### Gather facts ####
+- name: "Get testpmd-app pod"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ cnf_namespace }}"
+    label_selectors:
+      - example-cnf-type=cnf-app
+  register: _ecd_cnf_pod
+
+- name: "Get trex-server pod"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ cnf_namespace }}"
+    label_selectors:
+      - example-cnf-type=pkt-gen
+  register: _ecd_pktgen_pod
+
+- name: "Retrieve context information from testpmd and trex pods"
+  ansible.builtin.set_fact:
+    ecd_cnf_existing_node: "{{ _ecd_cnf_pod.resources[0].spec.nodeName }}"
+    ecd_cnf_existing_pod: "{{ _ecd_cnf_pod.resources[0].metadata.name }}"
+    ecd_pktgen_existing_node: "{{ _ecd_pktgen_pod.resources[0].spec.nodeName }}"
+
+#### Drain the worker where testpmd is running ####
+- name: "Cordon the node where testpmd-app is running"
+  ansible.builtin.shell: |
+    {{ oc_tool_path }} adm cordon {{ ecd_cnf_existing_node }}
+
+- name: "Wait until node changes to SchedulingDisabled status"
+  ansible.builtin.shell: >
+    set -eo pipefail;
+    {{ oc_tool_path }} get nodes --no-headers=true |
+    grep {{ ecd_cnf_existing_node }}
+  register: _ecd_nodes
+  until: '"SchedulingDisabled" in _ecd_nodes.stdout'
+  retries: 6
+  delay: 10
+
+# Not really needing a complete draining, just removing testpmd-app pod
+# Running this in asynchronous mode, then we will wait until pod is deleted
+- name: "Drain the node to remove testpmd-app pod"
+  ansible.builtin.shell: |
+    {{ oc_tool_path }} adm drain {{ ecd_cnf_existing_node }} --pod-selector example-cnf-type=cnf-app --delete-emptydir-data
+  async: 60
+  poll: 0
+
+#### Validate allocation of new testpmd pod ####
+- name: "Wait until testpmd-app pod is deleted from the drained node"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ cnf_namespace }}"
+    name: "{{ ecd_cnf_existing_pod }}"
+  register: _ecd_cnf_pod
+  until: _ecd_cnf_pod.resources|length == 0
+  retries: 24
+  delay: 5
+
+- name: "Get timestamp to save the time when testpmd-app was removed"
+  ansible.builtin.shell: |
+    "date +%s"
+  register: _ecd_timestamp_pod_deletion
+
+- name: "Wait until new testpmd-app pod is allocated in a new worker node"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Pod
+    label_selectors:
+      - example-cnf-type=cnf-app
+  register: _ecd_cnf_pod
+  vars:
+    container_state_running_query: "resources[0].status.containerStatuses[?name=='testpmd'].state.running"
+    container_started_query: "resources[0].status.containerStatuses[?name=='testpmd'].started"
+    container_ready_query: "resources[0].status.containerStatuses[?name=='testpmd'].ready"
+    container_state_running: "{{ _ecd_cnf_pod | json_query(container_state_running_query) }}"
+    container_started: "{{ _ecd_cnf_pod | json_query(container_started_query) }}"
+    container_ready: "{{ _ecd_cnf_pod | json_query(container_ready_query) }}"
+  retries: 12
+  delay: 10
+  until:
+    - _ecd_cnf_pod.resources[0].status.phase == 'Running'
+    - container_state_running | length > 0
+    - container_started | length > 0
+    - container_started[0] | bool
+    - container_ready | length > 0
+    - container_ready[0] | bool
+
+- name: "Get timestamp to save the time when testpmd-app was recreated"
+  ansible.builtin.shell: |
+    "date +%s"
+  register: ecd_timestamp_pod_recreation
+
+- name: "Retrieve context information from new testpmd pod"
+  ansible.builtin.set_fact:
+    ecd_cnf_new_node: "{{ _ecd_cnf_pod.resources[0].spec.nodeName }}"
+    ecd_cnf_new_pod: "{{ _ecd_cnf_pod.resources[0].metadata.name }}"
+
+- name: "Confirm that a new testpmd-app pod has been created, and in a different worker node"
+  ansible.builtin.assert:
+    that:
+      - ecd_cnf_new_node != ecd_cnf_existing_node
+      - ecd_cnf_new_node != ecd_pktgen_existing_node
+      - ecd_cnf_new_pod != ecd_cnf_existing_pod
+    fail_msg: "New testpmd-app pod does not match the conditions defined to consider it is a new one"
+
+- name: "Uncordon the node after finishing the draining and rescheduling process"
+  ansible.builtin.shell: |
+    {{ oc_tool_path }} adm uncordon {{ ecd_cnf_existing_node }}
+
+#### Validate TRex job ####
+- name: "Extract TRexApp job duration"
+  block:
+    - name: Retrieve TRexApp information
+      community.kubernetes.k8s_info:
+        api_version: examplecnf.openshift.io/v1
+        kind: TRexApp
+        namespace: "{{ cnf_namespace }}"
+        name: "{{ trex_app_cr_name }}"
+      register: _ecd_trex_app_cr
+
+    # If continuous burst mode is activated, then set up a default value to avoid issues in next tasks.
+    # TODO: follow a different procedure for continuous burst mode if provided.
+    - name: Retrieve duration from TRexApp job
+      vars:
+        _ecd_trex_retrieved_duration: "{{ _ecd_trex_app_cr.resources[0].spec.duration }}"
+      ansible.builtin.set_fact:
+        ecd_trex_duration: "{{ (_ecd_trex_retrieved_duration == -1)|ternary(default_trex_duration,trex_retrieved_duration) }}"
+
+- name: "Wait for the TRex app TestCompleted event"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - "reason==TestCompleted"
+      - "involvedObject.name={{ trex_app_cr_name }}"
+  register: _ecd_trex_event
+  retries: "{{ (ecd_trex_duration|int/2)|round|int }}"
+  delay: 10
+  until: _ecd_trex_event.resources|length > 0
+
+- name: "Wait for the TRex app TestPassed or TestFailed event"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Event
+    field_selectors: "involvedObject.name={{ trex_app_cr_name }}"
+  register: _ecd_trex_result
+  retries: 5
+  delay: 5
+  until: "_ecd_trex_result.resources | selectattr('reason', 'in', ['TestPassed', 'TestFailed']) | list | length > 0"
+
+- name: "Determine if TRexApp job has failed"
+  ansible.builtin.set_fact:
+    ecd_trex_job_failed: true
+  when:
+    - _ecd_trex_result is defined
+    - _ecd_trex_result.resources is defined
+    - "'TestFailed' in trex_result.resources | map(attribute='reason') | list"
+
+# Only if TRexApp job passed
+- name: "Wait for the TRex app PacketMatched event"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - "reason==PacketMatched"
+      - "involvedObject.name={{ trex_app_cr_name }}"
+  register: _ecd_trex_result
+  retries: "{{ (ecd_trex_duration|int/2)|round|int }}"
+  delay: 5
+  until: "_ecd_trex_result.resources | length > 0"
+  when:
+    - not ecd_trex_job_failed|bool
+
+- name: "Retrieve TRex app logs"
+  community.kubernetes.k8s_log:
+    namespace: "{{ cnf_namespace }}"
+    label_selectors:
+      - example-cnf-type=pkt-gen-app
+      - job-name=job-{{ trex_app_cr_name }}
+  register: _ecd_trex_app_logs
+  ignore_errors: true
+
+- name: "Store logs when jobs_logs is defined"
+  ansible.builtin.copy:
+    content: "{{ _ecd_trex_app_logs.log }}"
+    dest: "{{ job_logs.path }}/{{ trex_app_cr_name }}.log"
+    mode: "0755"
+  when:
+    - job_logs is defined
+    - job_logs.path is defined
+    - not trex_app_logs.failed
+  ignore_errors: true
+
+- name: "Calculate the downtime for TRex job execution"
+  vars:
+    pod_deletion_time: "{{ _ecd_timestamp_pod_deletion.stdout }}"
+    pod_recreation_time: "{{ _ecd_timestamp_pod_recreation.stdout }}"
+    pod_downtime: "{{ pod_recreation_time|float - pod_deletion_time|float }}"
+    trex_downtime_unit: "{{ pod_downtime|float / ecd_trex_duration|float }}"
+  ansible.builtin.set_fact:
+    ecd_trex_downtime_seconds: "{{ pod_downtime }}"
+    ecd_trex_downtime_percentage: "{{ trex_downtime_unit|float * 100.0 }}"
+
+- name: "Create a file to save downtime value"
+  ansible.builtin.copy:
+    dest: "{{ job_logs.path }}/trex-downtime.log"
+    content: "Downtime is {{ ecd_trex_downtime_seconds }} seconds, \
+      representing the {{ ecd_trex_downtime_percentage }} % of TRex \
+      job duration, which is {{ ecd_trex_duration }} seconds"
+    mode: "0755"
+  when:
+    - job_logs is defined
+    - job_logs.path is defined
+  ignore_errors: true

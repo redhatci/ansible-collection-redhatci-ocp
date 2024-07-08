@@ -1,0 +1,102 @@
+---
+#### Migrate ####
+- name: "Get TestPMD CR info"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: TestPMD
+  register: _ecd_testpmd_list
+
+- name: "Validate number of TestPMD CRs"
+  ansible.builtin.fail:
+    msg: "TestPMD CRs count ({{ _ecd_testpmd_list.resources | length }}) is invalid "
+  when: "_ecd_testpmd_list.resources|length != 1"
+
+# This means that the TRex job may have failed, so we don't want to run the migration
+# tests in that case
+- name: "Check if previous TRex job worked when trex_tests_skip_failures is activated"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - reason==PacketMatched
+  register: _ecd_matched
+  when: trex_tests_skip_failures|bool
+
+- name: "Do not try migration tests if previous TRex job failed"
+  ansible.builtin.set_fact:
+    ecd_try_running_migration_tests: false
+  when:
+    - trex_tests_skip_failures|bool
+    - _ecd_matched.resources is defined
+    - _ecd_matched.resources|length == 0
+
+- name: "Try to run migration tests"
+  when: ecd_try_running_migration_tests|bool
+  block:
+    - name: "Wait for at least one PacketMatched event from TRex"
+      community.kubernetes.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: Event
+        field_selectors:
+          - reason==PacketMatched
+      register: _ecd_matched
+      retries: 12
+      delay: 5
+      until: _ecd_matched.resources | length > 0
+
+    - name: "Fail if Kubeconfig path if not available"
+      ansible.builtin.fail:
+        msg: "Failed to find kubeconfig"
+      when: "kubeconfig_path | default('') | length == 0"
+
+    - name: "Run pod deletion test"
+      ansible.builtin.include_tasks: pod-delete.yml
+      when: "validate_pod_delete | default(true) | bool"
+
+#### Validate ####
+- name: "Set event list variable"
+  ansible.builtin.set_fact:
+    ecd_event_list: []
+    ecd_dropped_new: []
+    ecd_matched_new: []
+
+- name: "Get trexconfig matched events"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - reason==PacketMatched
+  register: _ecd_matched
+  no_log: true
+
+- name: "Get trexconfig dropped events"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - reason==PacketDropped
+  register: _ecd_dropped
+  no_log: true
+
+- name: "Merge dropped events to custom object list"
+  ansible.builtin.set_fact:
+    ecd_dropped_new: "{{ ecd_dropped_new + [{ 'eventTime': item.eventTime, 'reason': item.reason }] }}"
+  loop: "{{ _ecd_dropped.resources }}"
+  no_log: true
+
+- name: "Merge matched events to custom object list"
+  ansible.builtin.set_fact:
+    ecd_matched_new: "{{ ecd_matched_new + [{ 'eventTime': item.eventTime, 'reason': item.reason }] }}"
+  loop: "{{ _ecd_matched.resources }}"
+  no_log: true
+
+- name: "Find packet missing details"
+  packet_missing:
+    dropped: "{{ ecd_dropped_new }}"
+    matched: "{{ ecd_matched_new }}"
+  register: _ecd_packet_details
+
+- name: "Show Packet Missing"
+  ansible.builtin.debug:
+    var: _ecd_packet_details.missing
+    verbosity: 3

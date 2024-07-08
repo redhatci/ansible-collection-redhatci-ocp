@@ -1,0 +1,29 @@
+---
+- name: "Create cr for loadbalancer"
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'lb-cr.yaml.j2') }}"
+
+- name: "Check loadbalancer pod status to be running"
+  community.kubernetes.k8s_info:
+    namespace: "{{ cnf_namespace }}"
+    kind: Pod
+    label_selectors:
+      - example-cnf-type=lb-app
+  register: _ecd_lb_pods
+  vars:
+    container_state_running_query: "resources[0].status.containerStatuses[?name=='loadbalancer'].state.running"
+    container_started_query: "resources[0].status.containerStatuses[?name=='loadbalancer'].started"
+    container_ready_query: "resources[0].status.containerStatuses[?name=='loadbalancer'].ready"
+    container_state_running: "{{ _ecd_lb_pods | json_query(container_state_running_query) }}"
+    container_started: "{{ _ecd_lb_pods | json_query(container_started_query) }}"
+    container_ready: "{{ _ecd_lb_pods | json_query(container_ready_query) }}"
+  retries: 60
+  delay: 5
+  until:
+    - _ecd_lb_pods.resources | length == 1
+    - _ecd_lb_pods.resources[0].status.phase == 'Running'
+    - container_state_running | length > 0
+    - container_started | length > 0
+    - container_started[0] | bool
+    - container_ready | length > 0
+    - container_ready[0] | bool

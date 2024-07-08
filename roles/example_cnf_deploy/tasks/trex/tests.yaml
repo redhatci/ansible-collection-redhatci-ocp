@@ -1,0 +1,42 @@
+---
+- name: Deploy TREX profiles
+  ansible.builtin.include_tasks: trex/profile.yaml
+  loop: "{{ trex_test_config }}"
+  loop_control:
+    loop_var: trex_test_config_item
+
+- name: Run additional tests
+  when:
+   - trex_tests_wait | bool
+  block:
+    - name: Get all trexapps
+      kubernetes.core.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: TRexApp
+      register: trex_apps
+
+    - name: Set trex app count to default 0
+      ansible.builtin.set_fact:
+        trex_apps_count: 0
+
+    - name: Increment trex_app_count for apps with valid duration
+      ansible.builtin.set_fact:
+        trex_apps_count: "{{ trex_apps_count | int + 1 }}"
+      loop: "{{ trex_apps.resources }}"
+      when: "'duration' in item.spec and item.spec.duration != -1"
+
+    - name: Print Trex_apps_count
+      ansible.builtin.debug:
+        var: trex_apps_count
+
+    - name: Wait trex app run complete event
+      kubernetes.core.k8s_info:
+        namespace: "{{ cnf_namespace }}"
+        kind: Event
+        field_selectors:
+          - "reason==TestCompleted"
+          - "involvedObject.kind=TRexApp"
+      register: evts
+      retries: "{{ trex_tests_retry_mins_count | default(60) }}"
+      delay: 60
+      until: "evts.resources | length >= trex_apps_count | int"

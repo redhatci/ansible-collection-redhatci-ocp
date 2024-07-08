@@ -1,0 +1,36 @@
+---
+- name: "Set list of example-cnf operators to be installed"
+  ansible.builtin.set_facts:
+    ex_cnf_operators:
+      - name: cnf-app-mac-operator
+        namespace: "{{ cnf_namespace }}"
+        channel: "{{ testpmd_channel | default('') }}"
+        source: "{{ catalog_name }}"
+        source_ns: "openshift-marketplace"
+      - name: testpmd-lb-operator
+        namespace: "{{ cnf_namespace }}"
+        channel: "{{ testpmd_channel | default('') }}"
+        source: "{{ catalog_name }}"
+        source_ns: "openshift-marketplace"
+      - name: testpmd-operator
+        namespace: "{{ cnf_namespace }}"
+        channel: "{{ testpmd_channel | default('') }}"
+        source: "{{ catalog_name }}"
+        source_ns: "openshift-marketplace"
+      - name: trex-operator
+        namespace: "{{ cnf_namespace }}"
+        channel: "{{ trex_channel | default('') }}"
+        source: "{{ catalog_name }}"
+        source_ns: "openshift-marketplace"
+
+- name: "Install enabled operators"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: "{{ ex_cnf_operator.name }}"
+    source: "{{ ex_cnf_operator.source }}"
+    namespace: "{{ ex_cnf_operator.source_ns }}"
+    channel: "{{ ex_cnf_operator.channel }}"
+  loop: "{{ ex_cnf_operators }}"
+  loop_control:
+    loop_var: ex_cnf_operator

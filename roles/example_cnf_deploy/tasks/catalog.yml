@@ -1,0 +1,80 @@
+---
+- name: "Check if catalogsource crd is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: catalogsources.operators.coreos.com
+  register: _ecd_crd_info
+  retries: 1
+  delay: 5
+  until: _ecd_crd_info.resources|length != 0
+  failed_when: _ecd_crd_info.resources|length == 0
+
+- name: "Inspect index image"
+  ansible.builtin.shell:
+    cmd: >
+      skopeo inspect docker://{{ catalog_image }}
+  register: _ecd_skopeo_inspect
+  until: _ecd_skopeo_inspect.rc == 0
+  retries: 5
+  delay: 5
+
+- name: "Get index digest"
+  ansible.builtin.set_fact:
+    ecd_index_digest: "{{ _ecd_skopeo_inspect.stdout | from_json | json_query('Digest') }}"
+
+- name: "Create a CatalogSource for example-cnf"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.catalog_source
+  vars:
+    cs_name: "{{ catalog_name }}"
+    cs_namespace: "openshift-marketplace"
+    cs_image: "{{ registry_url }}/{{ repo_name }}/{{ catalog_name }}@{{ index_digest }}"
+    cs_publisher: "Red Hat"
+
+- name: "Create namespace"
+  community.kubernetes.k8s:
+    definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ cnf_namespace }}"
+        labels:
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+
+- name: "Create operatorgroup"
+  community.kubernetes.k8s:
+    api_version: operators.coreos.com/v1
+    name: example-cnf-operator-group
+    kind: OperatorGroup
+    namespace: "{{ cnf_namespace }}"
+    definition:
+      spec:
+        targetNamespaces:
+          - "{{ cnf_namespace }}"
+
+- name: "Wait for testpmd-operator packagemanifests availability"
+  community.kubernetes.k8s_info:
+    api_version: packages.operators.coreos.com/v1
+    kind: PackageManifest
+    name: testpmd-operator
+    namespace: default
+  register: _ecd_pkg_manifest_testpmd
+  retries: 60
+  delay: 5
+  until: _ecd_pkg_manifest_testpmd.resources|length != 0
+  failed_when: _ecd_pkg_manifest_testpmd.resources|length == 0
+
+- name: "Wait for trex-operator packagemanifests availability"
+  community.kubernetes.k8s_info:
+    api_version: packages.operators.coreos.com/v1
+    kind: PackageManifest
+    name: trex-operator
+    namespace: default
+  register: _ecd_pkg_manifest_trex
+  retries: 30
+  delay: 5
+  until: _ecd_pkg_manifest_trex.resources|length != 0
+  failed_when: _ecd_pkg_manifest_trex.resources|length == 0
+...
