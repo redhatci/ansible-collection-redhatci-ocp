@@ -11,7 +11,7 @@
 
 - name: "Set qemu_path"
   ansible.builtin.set_fact:
-    qemu_path: "{{ (ansible_distribution in ['CentOS', 'RedHat']) | ternary('/usr/libexec/', '/usr/bin/') }}"
+    ool_qemu_path: "{{ (ansible_distribution in ['CentOS', 'RedHat']) | ternary('/usr/libexec/', '/usr/bin/') }}"
 
 - name: "Copy image_src:"
   ansible.builtin.include_tasks: copy_image_src.yml
