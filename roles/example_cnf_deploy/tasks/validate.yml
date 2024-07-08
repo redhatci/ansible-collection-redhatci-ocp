@@ -1,0 +1,8 @@
+---
+
+- name: "Migrate tasks"
+  ansible.builtin.include_tasks: validate/migrate.yml
+
+- name: "Validate tasks"
+  ansible.builtin.include_tasks: validate/validate.yml
+  when: ecd_try_running_migration_tests|bool

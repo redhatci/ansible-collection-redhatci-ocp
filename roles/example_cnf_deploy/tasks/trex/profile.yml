@@ -1,0 +1,75 @@
+---
+- name: Set TRex profile variables
+  ansible.builtin.set_fact:
+    ecd_trex_profile_path: "{{ ecd_trex_test_config_item.trex_profile_path | default('') }}"
+    ecd_trex_profile_name: "{{ ecd_trex_test_config_item.trex_profile_name | default('') }}"
+    ecd_trex_profile_cm_name: "{{ ecd_trex_test_config_item.trex_profile_cm_name | default('') }}"
+    ecd_random_str: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=5') }}"
+    ecd_packet_rate: ''
+    ecd_packet_size: ''
+    ecd_duration: ''
+
+- name: Set packet rate if defined
+  ansible.builtin.set_fact:
+    ecd_packet_rate: "{{ ecd_trex_test_config_item.packet_rate }}"
+  when: "'packet_rate' in ecd_trex_test_config_item"
+
+- name: Set packet size if defined
+  ansible.builtin.set_fact:
+    ecd_packet_size: "{{ ecd_trex_test_config_item.packet_size }}"
+  when: "'packet_size' in ecd_trex_test_config_item"
+
+- name: Set duration if defined
+  ansible.builtin.set_fact:
+    ecd_duration: "{{ ecd_trex_test_config_item.duration }}"
+  when: "'duration' in ecd_trex_test_config_item"
+
+- name: Create configmap for trex profile if provided
+  when: ecd_trex_profile_path|default('')|length > 0
+  block:
+    - name: Check if trex_profile_path is valid
+      ansible.builtin.stat:
+        path: "{{ ecd_trex_profile_path }}"
+      register: _ecd_path_stat
+
+    - name: Fail if the path does not existt
+      ansible.builtin.fail:
+        msg: "Provide a valid file - {{ ecd_trex_profile_path }}"
+      when: not _ecd_path_stat.stat.exists
+
+    - name: Set cm name for trex profile
+      ansible.builtin.set_fact:
+        ecd_trex_profile_cm_name: "{{ 'trex-profile-' + ecd_random_str }}"
+        ecd_trex_profile_name: "{{ ecd_trex_profile_path | basename }}"
+
+    - name: Create config map
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            namespace: "{{ ecd_cnf_namespace }}"
+            name: "{{ ecd_trex_profile_cm_name }}"
+          data:
+            name: "{{ ecd_trex_profile_name }}"
+            content: |
+              {{ lookup('file', ecd_trex_profile_path) }}
+
+- name: Create job for trex app
+  ansible.builtin.include_tasks: trex/job.yml
+  when: ecd_enable_trex_profile_direct|default(false)|bool
+
+- name: Set trex app cr name
+  ansible.builtin.set_fact:
+    ecd_trex_app_cr_name: "trex-app-{{ ecd_trex_test_config_item.name }}"
+  when: "'name' in ecd_trex_test_config_item"
+
+- name: Set trex app cr name - random
+  ansible.builtin.set_fact:
+    ecd_trex_app_cr_name: "trex-app-{{ ecd_random_str }}"
+  when: "'name' not in ecd_trex_test_config_item"
+
+- name: Create cr for trex app
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'trex-app-cr.yaml.j2') }}"
+  when: not ecd_enable_trex_profile_direct|default(false)|bool

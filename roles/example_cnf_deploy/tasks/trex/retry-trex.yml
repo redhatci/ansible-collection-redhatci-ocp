@@ -1,0 +1,42 @@
+---
+- name: "Set retry variables"
+  ansible.builtin.set_fact:
+    ecd_trex_app_cr_name: trex-app
+  when: ecd_trex_app_cr_name is not defined
+
+- name: "Update ecd_trex_continuous_mode if ecd_trex_duration is set to -1"
+  ansible.builtin.set_fact:
+    ecd_trex_continuous_mode: true
+  when: ecd_trex_duration == -1
+
+- name: "Deploy TRex app"
+  block:
+    - name: "Include TRex tasks to create app"
+      ansible.builtin.include_tasks: trex/app.yml
+
+    # Omit this check if we are running TRex job in continuous mode
+    - name: "Fail when run did not pass"
+      ansible.builtin.fail:
+        msg: "TRex App run has failed"
+      when:
+        - not ecd_trex_app_run_passed | bool
+        - not ecd_trex_tests_skip_failures|bool
+        - not ecd_trex_continuous_mode|bool
+  always:
+    - name: "Retrieve TRex app logs"
+      community.kubernetes.k8s_log:
+        namespace: "{{ ecd_cnf_namespace }}"
+        label_selectors:
+          - example-cnf-type=pkt-gen-app
+          - job-name=job-{{ ecd_trex_app_cr_name }}
+      register: _ecd_trex_app_logs
+      ignore_errors: true
+
+    - name: "Store logs"
+      ansible.builtin.copy:
+        content: "{{ _ecd_trex_app_logs.log }}"
+        dest: "{{ ecd_job_logs_path }}/{{ ecd_trex_app_cr_name }}.log"
+        mode: "0750"
+      when: not _ecd_trex_app_logs.failed
+      ignore_errors: true
+...

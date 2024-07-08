@@ -1,0 +1,31 @@
+apiVersion: examplecnf.openshift.io/v1
+kind: TRexConfig
+metadata:
+  namespace: {{ ecd_cnf_namespace }}
+  name: {{ ecd_trex_cr_name }}
+  annotations:
+    "ansible.sdk.operatorframework.io/verbosity": "4"
+spec:
+{% if ecd_trex_core_count|int > 0 %}
+  environments:
+    trexCoreCount: {{ ecd_trex_core_count }}
+{% endif %}
+  registry: {{ ecd_registry_url }}
+  org: {{ ecd_repo_name }}
+  version: {{ ecd_trex_server_version }}
+  imagePullPolicy: {{ ecd_image_pull_policy }}
+  networks: {{ ecd_networks_trex }}
+  enableLb: {{ ecd_enable_lb }}
+{% if ecd_enable_lb|bool %}  
+  lbMacs: {{ ecd_lb_gen_port_mac_list }}
+{% endif %}  
+  cpu: 6
+{% if ecd_trex_config_skip|default(false)|bool %}
+  trex_config_skip: true
+{% endif %}
+{% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
+  runtime_class_name: "{{ ecd_high_perf_runtime }}"
+{% endif %}
+{% if ecd_numa_aware_topology is defined and ecd_numa_aware_topology | length %}
+  numa_aware_topology: "{{ ecd_numa_aware_topology }}"
+{% endif %}

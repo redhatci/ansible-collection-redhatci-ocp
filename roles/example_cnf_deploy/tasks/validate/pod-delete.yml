@@ -1,0 +1,73 @@
+---
+- name: "Get cnf app pod"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ ecd_cnf_namespace }}"
+    label_selectors:
+      - example-cnf-type=cnf-app
+  register: _ecd_cnf_pod
+
+- name: "Fail if the cnf app pod is not found"
+  ansible.builtin.fail:
+    msg: "Unable to find cnf app pod"
+  when:
+    - "_ecd_cnf_pod.resources|length == 0"
+
+- name: "Set cnf app pod's node name"
+  ansible.builtin.set_fact:
+    ecd_cnf_existing_node: "{{ _ecd_cnf_pod.resources[0].spec.nodeName }}"
+    ecd_cnf_existing_pod_name: "{{ _ecd_cnf_pod.resources[0].metadata.name }}"
+    ecd_cnf_app_count: "{{ _ecd_cnf_pod.resources|length }}"
+    ecd_cnf_app_list: "{{ _ecd_cnf_pod | json_query('resources[*].metadata.name') }}"
+
+- name: "Show current node of testpmd"
+  ansible.builtin.debug:
+    msg: "CNF App is running on node {{ ecd_cnf_existing_node }}"
+
+- name: "Cordon the node"
+  ansible.builtin.shell: |
+    {{ ecd_oc_path }} adm cordon {{ ecd_cnf_existing_node }}
+
+- name: Delete the cnf app pod
+  community.kubernetes.k8s:
+    kind: Pod
+    namespace: "{{ ecd_cnf_namespace }}"
+    name: "{{ ecd_cnf_existing_pod_name }}"
+    state: absent
+    wait: true
+    wait_timeout: 300
+
+- name: "Check cnf app pod count to match and running"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Pod
+    label_selectors:
+      - example-cnf-type=cnf-app
+    field_selectors:
+      - status.phase=Running
+  register: _ecd_cnf_new_pods
+  retries: 60
+  delay: 5
+  until:
+    - "_ecd_cnf_new_pods.resources|length == ecd_cnf_app_count|int"
+
+- name: "Set new testpmd node name"
+  ansible.builtin.set_fact:
+    ecd_testpmd_new_node: "{{ pod.spec.nodeName }}"
+  loop: "{{ _ecd_cnf_new_pods.resources }}"
+  loop_control:
+    loop_var: pod
+  when: "pod.metadata.name not in ecd_cnf_app_list"
+
+- name: "Uncordon the node"
+  ansible.builtin.shell: |
+    {{ ecd_oc_path }} adm uncordon {{ ecd_cnf_existing_node }}
+
+- name: "Fail if TestPMD pod is not migrated"
+  ansible.builtin.fail:
+    msg: "TestPMD pod is not migrated"
+  when: ecd_testpmd_new_node == ecd_cnf_existing_node
+
+- name: "Debug new TestPMD pod"
+  ansible.builtin.debug:
+    msg: "TestPMD pod is migrated from {{ ecd_cnf_existing_node }} to {{ ecd_testpmd_new_node }}"

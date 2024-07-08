@@ -1,0 +1,23 @@
+---
+
+- name: "Get testpmd-app pod"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ ecd_cnf_namespace }}"
+    label_selectors:
+      - example-cnf-type=cnf-app
+  register: _ecd_cnf_pod
+
+- name: "Get trex-server pod"
+  community.kubernetes.k8s_info:
+    kind: Pod
+    namespace: "{{ ecd_cnf_namespace }}"
+    label_selectors:
+      - example-cnf-type=pkt-gen
+  register: _ecd_pktgen_pod
+
+- name: "Retrieve context information from testpmd and trex pods"
+  ansible.builtin.set_fact:
+    ecd_cnf_existing_node: "{{ _ecd_cnf_pod.resources[0].spec.nodeName }}"
+    ecd_cnf_existing_pod: "{{ _ecd_cnf_pod.resources[0].metadata.name }}"
+    ecd_pktgen_existing_node: "{{ _ecd_pktgen_pod.resources[0].spec.nodeName }}"

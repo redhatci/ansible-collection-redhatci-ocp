@@ -1,0 +1,49 @@
+---
+
+- name: "Get TestPMD CR info"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: TestPMD
+  register: _ecd_testpmd_list
+
+- name: "Validate number of TestPMD CRs"
+  ansible.builtin.fail:
+    msg: "TestPMD CRs count ({{ _ecd_testpmd_list.resources | length }}) is invalid"
+  when: "_ecd_testpmd_list.resources|length != 1"
+
+# This means that the TRex job may have failed, so we don't want to run the migration
+# tests in that case
+- name: "Check if previous TRex job worked when ecd_trex_tests_skip_failures is activated"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - reason==PacketMatched
+  register: _ecd_matched
+  when: ecd_trex_tests_skip_failures|bool
+
+- name: "Do not try migration tests if previous TRex job failed"
+  ansible.builtin.set_fact:
+    ecd_try_running_migration_tests: false
+  when:
+    - ecd_trex_tests_skip_failures|bool
+    - _ecd_matched.resources is defined
+    - _ecd_matched.resources|length == 0
+
+- name: "Try to run migration tests"
+  when: ecd_try_running_migration_tests|bool
+  block:
+    - name: "Wait for at least one PacketMatched event from TRex"
+      community.kubernetes.k8s_info:
+        namespace: "{{ ecd_cnf_namespace }}"
+        kind: Event
+        field_selectors:
+          - reason==PacketMatched
+      register: _ecd_matched
+      retries: 12
+      delay: 5
+      until: _ecd_matched.resources | length > 0
+
+    - name: "Run pod deletion test"
+      ansible.builtin.include_tasks: validate/pod-delete.yml
+      when: "ecd_validate_pod_delete | default(true) | bool"

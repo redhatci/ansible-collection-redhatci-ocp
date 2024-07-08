@@ -1,0 +1,168 @@
+---
+# NetworkAttachmentDefintions should be created on the namespace, it
+# will be created by sriov operator, when SriovNetwork resource is created
+- name: "Check for net-attach-def presence in the namespace"
+  community.kubernetes.k8s_info:
+    api_version: k8s.cni.cncf.io/v1
+    kind: NetworkAttachmentDefinition
+    namespace: "{{ ecd_cnf_namespace }}"
+  register: _ecd_net_list
+  until: _ecd_net_list.resources | length > 0
+  retries: 9
+  delay: 10
+
+- name: "Get the clusterversion info"
+  community.kubernetes.k8s_info:
+    kind: ClusterVersion
+  register: _ecd_cluster_version
+
+- name: "Fail ClusterVersion when is not available"
+  ansible.builtin.fail:
+    msg: "ClusterVersion object version is not available"
+  when: _ecd_cluster_version.resources[0].spec.channel|length == 0
+
+- name: "Get all nodes"
+  community.kubernetes.k8s_info:
+    kind: Node
+  register: _ecd_nodes
+  no_log: true
+
+- name: "Fail when the minimum workers are not met"
+  ansible.builtin.fail:
+    msg: "Minimum 2 worker nodes are required to run example-cnf applications"
+  when: "_ecd_nodes.resources|length < 2"
+
+- name: "Fail when packet generator network is not available"
+  ansible.builtin.fail:
+    msg: "'ecd_packet_generator_networks' is required when deployed with LB"
+  when:
+    - "ecd_enable_lb|bool"
+    - "ecd_packet_generator_networks|length == 0"
+
+- name: "Fail when cnf app networks is not available"
+  ansible.builtin.fail:
+    msg: "'ecd_cnf_app_networks' is required"
+  when:
+    - "ecd_cnf_app_networks|length == 0"
+
+- name: "Set facts of modifying networks"
+  ansible.builtin.set_fact:
+    ecd_pack_nw: []
+    ecd_cnf_nw: []
+  when: ecd_enable_lb|bool
+
+- name: "Create packet gen network list for lb with hardcoded macs"
+  ansible.builtin.set_fact:
+    ecd_pack_nw: "{{ ecd_pack_nw + [ item | combine({'mac': ecd_lb_gen_port_mac_list[idx:idx+item.count]})] }}"
+  loop: "{{ ecd_packet_generator_networks }}"
+  loop_control:
+    index_var: idx
+  when: ecd_enable_lb|bool
+
+- name: "Create cnf app network list for lb with hardcoded macs"
+  ansible.builtin.set_fact:
+    ecd_cnf_nw: "{{ ecd_cnf_nw + [ item | combine({'mac': ecd_lb_cnf_port_mac_list[idx:idx+item.count]})] }}"
+  loop: "{{ ecd_cnf_app_networks }}"
+  loop_control:
+    index_var: idx
+  when: ecd_enable_lb|bool
+
+- name: "Include lb tasks"
+  ansible.builtin.include_tasks: deploy/lb-app.yml
+  when: ecd_enable_lb|bool
+
+# In this case, do not include hardcoded MAC addresses
+- name: "(LB mode) Set local fact for cnf-app pod networks"
+  ansible.builtin.set_fact:
+    ecd_networks_testpmd_app: "{{ ecd_cnf_app_networks }}"
+  when: ecd_enable_lb|bool
+
+# In this case, include hardcoded MAC addresses
+- name: "(Direct mode) Create network list for cnfapp with hardcoded macs"
+  ansible.builtin.set_fact:
+    ecd_networks_testpmd_app: "{{ ecd_networks_testpmd_app + [item | combine({'mac': ecd_testpmd_app_mac_list[idx:idx+item.count]})] }}"
+  loop: "{{ ecd_cnf_app_networks }}"
+  loop_control:
+    index_var: idx
+  when: not ecd_enable_lb|bool
+
+- name: "Create cr for cnf application"
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'testpmd-cr.yaml.j2') }}"
+
+- name: "Check testpmd pod count to be greater than 0"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Pod
+    label_selectors:
+      - example-cnf-type=cnf-app
+  register: _ecd_testpmd_pods
+  retries: 60
+  delay: 5
+  until:
+    - _ecd_testpmd_pods.resources|length > 0
+
+# At least confirm that the first testpmd pod is up and running
+- name: "Check testpmd pod status to be running"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Pod
+    label_selectors:
+      - example-cnf-type=cnf-app
+  register: _ecd_testpmd_pods
+  vars:
+    ecd_container_state_running_query: "resources[0].status.containerStatuses[?name=='testpmd'].state.running"
+    ecd_container_started_query: "resources[0].status.containerStatuses[?name=='testpmd'].started"
+    ecd_container_ready_query: "resources[0].status.containerStatuses[?name=='testpmd'].ready"
+    ecd_container_state_running: "{{ _ecd_testpmd_pods | json_query(ecd_container_state_running_query) }}"
+    ecd_container_started: "{{ _ecd_testpmd_pods | json_query(ecd_container_started_query) }}"
+    ecd_container_ready: "{{ _ecd_testpmd_pods | json_query(ecd_container_ready_query) }}"
+  retries: 60
+  delay: 5
+  until:
+    - _ecd_testpmd_pods.resources[0].status.phase == 'Running'
+    - ecd_container_state_running | length > 0
+    - ecd_container_started | length > 0
+    - ecd_container_started[0] | bool
+    - ecd_container_ready | length > 0
+    - ecd_container_ready[0] | bool
+
+- name: "Check cnfappmac resource (created by testpmd app) count to be greater than 0"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: CNFAppMac
+  register: _ecd_cnfappmac
+  retries: 120
+  delay: 5
+  until:
+    - _ecd_cnfappmac.resources is defined
+    - _ecd_cnfappmac.resources|length > 0
+
+# CNFAppMac and testpmd pods share the same name, so we can use it for doing
+# some extra checks
+- name: "Check that at least the cnfappmac resource for the first testpmd pod has the required data"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: CNFAppMac
+    name: "{{ _ecd_testpmd_pods.resources[0].metadata.name }}"
+  register: _ecd_first_cnfappmac
+  retries: 120
+  delay: 5
+  until:
+    - _ecd_first_cnfappmac.resources is defined
+    - _ecd_first_cnfappmac.resources|length > 0
+    - _ecd_first_cnfappmac.resources[0].spec.resources is defined
+    - _ecd_first_cnfappmac.resources[0].spec.resources|length > 0
+
+- name: "Trex cr block"
+  ansible.builtin.include_tasks: trex/retry-trex.yml
+  when: ecd_enable_trex|bool
+
+# We need to check ecd_trex_continuous_mode here to avoid running extra tests, where we would have two or
+# more possible TRex jobs that are running in continuous burst mode.
+- name: "Trex additional tests"
+  ansible.builtin.include_tasks: trex/tests.yml
+  when:
+    - ecd_enable_trex_app|bool
+    - ecd_trex_test_config|length > 0
+    - not ecd_trex_continuous_mode|bool

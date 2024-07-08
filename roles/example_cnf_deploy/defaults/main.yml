@@ -1,0 +1,115 @@
+---
+
+# Default namespace
+ecd_cnf_namespace: example-cnf
+
+# Catalog/Image-related variables
+ecd_registry_url: quay.io
+ecd_repo_name: rh-nfv-int
+ecd_catalog_name: nfv-example-cnf-catalog
+ecd_operator_version: ""
+ecd_catalog_image: "{{ ecd_registry_url }}/{{ ecd_repo_name }}/{{ ecd_catalog_name }}:{{ ecd_operator_version }}"
+ecd_image_pull_policy: IfNotPresent
+
+# Default path for binaries
+ecd_oc_path: /usr/local/bin/oc
+ecd_opm_path: /usr/local/bin/opm
+
+# Logs folder
+ecd_job_logs_path: /tmp
+
+# Operators/apps to enable
+ecd_enable_lb: true
+ecd_enable_mac_fetch: true
+ecd_enable_testpmd: true
+ecd_enable_trex: true
+ecd_enable_trex_app: true
+
+# Operator installation
+ecd_testpmd_channel: alpha
+ecd_trex_channel: alpha
+
+# Static MAC addresses used by the deployed workloads
+ecd_trex_mac_list:
+  - "20:04:0f:f1:89:01"
+  - "20:04:0f:f1:89:02"
+ecd_lb_gen_port_mac_list:
+  - "40:04:0f:f1:89:01"
+  - "40:04:0f:f1:89:02"
+ecd_lb_cnf_port_mac_list:
+  - "60:04:0f:f1:89:01"
+  - "60:04:0f:f1:89:02"
+## These ones are only used in the direct mode case
+ecd_testpmd_app_mac_list:
+  - "80:04:0f:f1:89:01"
+  - "80:04:0f:f1:89:02"
+
+# Variables for gathering the network info from the scenario
+## Connection between LB-CNF in LB mode (or TRex-CNF in direct mode)
+ecd_cnf_app_networks: []
+## Connection between TRex-LB in LB mode (not used in direct mode)
+ecd_packet_generator_networks: []
+## Networks for the CNF, including the hardcoded MAC addresses for direct mode case
+ecd_networks_testpmd_app: []
+
+# RuntimeClass that should be used for running DPDK application,
+# if the var is empty, the annotation irq-load-balancing.crio.io: "disable" is not applied
+# ecd_high_perf_runtime: "performance-blueprint-profile"
+
+# Testpmd related variables
+
+## Termination grace period for testpmd
+ecd_termination_grace_period_seconds: 30
+
+# TRex related variables
+
+## Test configuration
+## When duration is '-1', the trex will run in continous burst mode
+##  - name: pkt-64-10kpps
+##    packet_size: 64
+##    packet_rate: 10kpps
+##    duration: 120
+##    trex_profile_name: ''
+##    trex_profile_path: ''
+##    trex_profile_cm_name: ''
+ecd_trex_test_config: []
+
+## Name of the TRex CR
+ecd_trex_cr_name: trexconfig
+
+## Name of the TRexApp CR
+ecd_trex_app_cr_name: trex-app
+
+## Main TRexApp job duration. If set to -1, it will run in continuous burst mode
+ecd_trex_duration: 120
+
+## Default duration of TRex execution
+ecd_default_trex_duration: 1800
+
+## Default packet rate from TRex
+ecd_packet_rate: 10kpps
+
+## Some nics like x540 supports only 2 queues, as number of cores will be
+## used to create tx queues, restrict the cores to the trex parameter as per need
+## 540 nics require this value to be set to 2
+ecd_trex_core_count: 0
+
+## If set to true, the automation behaves as if TRex job is deployed in continuous mode,
+## even if ecd_trex_duration is not -1. This is to leave a job running with a given duration
+## to perform some extra checks in different jobs.
+ecd_trex_continuous_mode: false
+
+## If set to true, wait until the end of the profile duration before continue
+ecd_trex_tests_wait: true
+
+## By default, till having a positive result, it is supposed that TRex job failed
+ecd_trex_app_run_passed: false
+
+## Track if TRex job has failed or not
+ecd_trex_job_failed: false
+
+## If set to true, even if TRex job fails, the job will progress
+ecd_trex_tests_skip_failures: false
+
+## The idea is always to try to run the migration test, unless TRex job failed before
+ecd_try_running_migration_tests: true

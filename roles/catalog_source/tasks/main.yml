@@ -24,6 +24,7 @@
         image: "{{ cs_image }}"
         publisher: "{{ cs_publisher }}"
         sourceType: "{{ cs_type }}"
+        updateStrategy: "{{ cs_update_strategy }}"
 
 - name: Wait for CatalogSource to be Ready
   community.kubernetes.k8s_info:

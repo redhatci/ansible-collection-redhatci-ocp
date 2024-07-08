@@ -3,15 +3,17 @@
 A Role to deploy an OLM-based CatalogSource
 
 ## Parameters
-Name             | Required | Default        | Description
------------------|----------| ---------------|-------------
-cs_name          | Yes      |                | Name of the CatalogSource to create
-cs_image         | Yes      |                | Catalog Image URL
-cs_namespace     | No       | openshift-marketplace  | Namespace where the CatalogSource will be defined
-cs_publisher     | No       | Third Party    | CatalogSource publisher
-cs_type          | No       | grpc           | CatalogSource type
+Name               | Required | Default        | Description
+-------------------|----------| ---------------|-------------
+cs_name            | Yes      |                | Name of the CatalogSource to create
+cs_image           | Yes      |                | Catalog Image URL
+cs_namespace       | No       | openshift-marketplace  | Namespace where the CatalogSource will be defined
+cs_publisher       | No       | Third Party    | CatalogSource publisher
+cs_type            | No       | grpc           | CatalogSource type
+cs_update_strategy | No       | {}             | CatalogSource update strategy
 
 ## Example of usage
+
 ```yaml
 - name: "Create a CatalogSource"
   ansible.builtin.include_role:
@@ -21,6 +23,9 @@ cs_type          | No       | grpc           | CatalogSource type
     cs_namespace: "openshift-marketplace"
     cs_image: "registry.redhat.io/redhat/redhat-operator-index:v4.12"
     cs_publisher: "Red Hat"
+    cs_update_strategy:
+      registryPoll:
+        interval: 30m
 ```
 
 ## Authentication

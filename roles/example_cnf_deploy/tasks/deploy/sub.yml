@@ -1,0 +1,42 @@
+---
+- name: "Set list of example-cnf operators to be installed"
+  ansible.builtin.set_fact:
+    ecd_operators:
+      - name: cnf-app-mac-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ ecd_testpmd_channel }}"
+        source: "{{ ecd_catalog_name }}"
+        enable: "{{ ecd_enable_mac_fetch | bool}}"
+      - name: testpmd-lb-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ ecd_testpmd_channel }}"
+        source: "{{ ecd_catalog_name }}"
+        enable: "{{ ecd_enable_lb | bool}}"
+      - name: testpmd-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ ecd_testpmd_channel }}"
+        source: "{{ ecd_catalog_name }}"
+        enable: "{{ ecd_enable_testpmd | bool}}"
+      - name: trex-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ ecd_trex_channel }}"
+        source: "{{ ecd_catalog_name }}"
+        enable: "{{ ecd_enable_trex | bool}}"
+
+- name: "Install enabled operators"
+  vars:
+    operator: "{{ ecd_operator.name }}" # noqa: redhat-ci[no-role-prefix]
+    source: "{{ ecd_operator.source }}" # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ ecd_operator.namespace }}" # noqa: redhat-ci[no-role-prefix]
+    channel: "{{ ecd_operator.channel | default(omit) }}" # noqa: redhat-ci[no-role-prefix]
+    operator_group_name: example-cnf-operator-group # noqa: redhat-ci[no-role-prefix]
+    install_approval: "Automatic" # noqa: redhat-ci[no-role-prefix]
+    operator_group_spec: # noqa: redhat-ci[no-role-prefix]
+      targetNamespaces: # noqa: redhat-ci[no-role-prefix]
+        - "{{ ecd_operator.namespace }}"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  loop: "{{ ecd_operators }}"
+  loop_control:
+    loop_var: ecd_operator
+  when: ecd_operator.enable

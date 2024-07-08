@@ -1,0 +1,26 @@
+---
+- name: "Requirements validation for example-cnf actions"
+  ansible.builtin.assert:
+    that:
+      - ecd_action is defined
+      - ecd_action in ['catalog', 'deploy', 'validate', 'deploy_extra_trex', 'draining']
+
+- name: "Deploy Example CNF catalog"
+  ansible.builtin.include_tasks: catalog.yml
+  when: ecd_action == 'catalog'
+
+- name: "Deploy Example CNF App"
+  ansible.builtin.include_tasks: deploy.yml
+  when: ecd_action == 'deploy'
+
+- name: "Validate Example CNF App"
+  ansible.builtin.include_tasks: validate.yml
+  when: ecd_action == 'validate'
+
+- name: "Deploy an extra TRex job"
+  ansible.builtin.include_tasks: deploy_extra_trex.yml
+  when: ecd_action == 'deploy_extra_trex'
+
+- name: "Drain - Example CNF"
+  ansible.builtin.include_tasks: draining.yml
+  when: ecd_action == 'draining'
