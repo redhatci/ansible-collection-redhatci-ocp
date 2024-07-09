@@ -1,8 +1,10 @@
-# Development guide
+# redhatci.ocp
 
-## Cloning the repository
+## Prerequisites
 
-To be able to run the sanity tests, the recommended way to extract the repository is like this:
+### Clonning the repository
+
+To be able to [run the sanity tests](#running-the-sanity-tests-locally), the recommended way to extract the repository is like this:
 
 ```ShellSession
 $ cd <your workspace>
@@ -13,7 +15,13 @@ $ cd ocp
 ...
 ```
 
-## Running the sanity tests locally
+### Sign commits
+
+[Follow this documentation to sign your commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)
+
+For traceability and delivering software in a secure manner this repository requires *all* the commits to be signed (not to be confused with sign-off). Because of that, don't edit or rebase from the GitHub UI as it will not be signed doing it this way.
+
+### Running the sanity tests locally
 
 The sanity tests are run using the [`ansible-test`](https://docs.ansible.com/ansible/latest/dev_guide/testing_sanity.html) tool. It comes from the `ansible-core` package. This is what is run in [the CI pipeline](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/.github/workflows/pr.yml#L40).
 
@@ -27,7 +35,9 @@ Legacy code is expected to fail some sanity tests. The ask is to not introduce n
 
 The collection is using the [GitHub Flow](https://guides.github.com/introduction/flow/) for the development. The main branch is `main`. The `main` branch is protected and requires a PR to be merged. The PRs are reviewed by the maintainers of the collection.
 
-Keep the PRs small and focused on a single topic. It is easier to review and merge. It also helps to keep the git history clean. Keep as few commits as possible. Here are the 2 things to consider when updating a PR:
+Keep the PRs small and focused on a single topic. Write a [good commit message](https://cbea.ms/git-commit/). It is easier to review and merge. It also helps to keep the git history clean. Keep as few commits as possible.
+
+When updating a PR follow these approaches:
 
 1. Use `git commit --amend` and `git push --force` to update the PR. It will update the PR automatically. Do this when you iterate by yourself on a PR. When someone else has reviewed the PR, it is better to create a new commit to keep the history of the PR.
 2. Squash the commits when you are ready to merge the PR.
@@ -37,10 +47,6 @@ PRs can be created as a [Draft](https://docs.github.com/en/pull-requests/collabo
 ### Ready for review
 
 Your PR is considered ready for review if all the CI checks are green. If you don't want a review yet, convert your PR to a Draft.
-
-### Sign commits
-
-[Sign your commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) for traceability and delivering software in a secure manner. Because of that, don't edit or rebase from the GitHub UI as it will not be signed doing it this way.
 
 ## Bumping the version
 
@@ -72,9 +78,9 @@ The following `Test-Hints` can be specified if needed in the description of the 
   * `Test-Hint: no-check` when no test is needed in DCI. For a doc only change this is detected automatically.
   * `Test-Hint: force-check` to bypass the automatic no code change detection. Useful for CI testing.
 
-Example:
+Examples:
 
-```
+```yaml
 TestDallas: ocp-4.14-vanilla example-cnf
 TestDallasWorkload: preflight-green
 TestBos2: virt control-plane
@@ -88,3 +94,10 @@ Reach out to the Telco Partner CI team if you need more information.
 ### Merge Queue
 
 There is a set of CI pipelines that are run just before merging by [the merge queue mechanism of GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request-with-a-merge-queue). This allows to validate the merged PR before pushing them to main. This is important to avoid parallel merge of PRs that would break the collection.
+
+
+## Issues
+
+We welcome feedback! Open [issues](https://github.com/redhatci/ansible-collection-redhatci-ocp/issues) filling out as much as possible in the issue template. Providing an accurate way of reproducing the issue is critical in helping us identify the problem quicker.
+
+Before opening a new issue, please use the search feature to see if someone has not reported something similar. If there is an open issue you're experimenting and have additional information, please comment. Using "thumbs up" in an issue help us to give an indication on how many people is facing that problem.

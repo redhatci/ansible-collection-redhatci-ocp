@@ -1,0 +1,24 @@
+---
+name: 🐞 Bug report
+description: Create a bug report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your feedback! Please provide a clear and concise description of what the bug is.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug Summary
+      description: Briefly describe the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Provide the steps to reproduce or any additional information on what was expected.
+    validations:
+      required: true
