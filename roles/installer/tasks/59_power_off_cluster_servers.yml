@@ -15,12 +15,38 @@
         ( item not in groups['dell_hosts_redfish'] | default([]) )
           and
         ( item not in groups['hp_hosts_redfish'] | default([]) )
-      with_items:
-        - "{{ groups.masters }}"
-        - "{{ groups.workers | default([]) }}"
+      loop: "{{ groups.masters + groups.workers | default([]) }}"
+
+    - name: Check node power status via ipmi to filter off nodes
+      ansible.builtin.command: >-
+        ipmitool -I lanplus -H {{ hostvars[item]['ipmi_address'] }}
+        -L ADMINISTRATOR -U {{ hostvars[item]['ipmi_user'] }}
+        -R7 -N 5 -P {{ hostvars[item]['ipmi_password'] }}
+        -p {{ hostvars[item]['ipmi_port'] | default(623) }}
+        power status
+      register: _installer_power_status_hosts
+      until: _installer_power_status_hosts is not failed
+      retries: 10
+      delay: 5
+      loop: "{{ groups['poweroff_hosts'] }}"
+      no_log: true
+      when:
+        - groups['poweroff_hosts'] is defined
+      changed_when: false
+
+    - name: Create list of powered-on hosts to turn off via IPMI
+      ansible.builtin.set_fact:
+        installer_powered_on_hosts: "{{ installer_powered_on_hosts | default([]) + [node.item] }}"
+      loop: "{{ _installer_power_status_hosts.results }}"
+      loop_control:
+        loop_var: node
+        label: "{{ node.item }}"
+      when:
+        - groups['poweroff_hosts'] is defined
+        - node.stdout == "Chassis Power is on"
 
     - name: Power off hosts via IPMI
-      ansible.builtin.command: >
+      ansible.builtin.command: >-
         ipmitool -I lanplus -H {{ hostvars[item]['ipmi_address'] }}
         -L ADMINISTRATOR -U {{ hostvars[item]['ipmi_user'] }}
         -R7 -N 5 -P {{ hostvars[item]['ipmi_password'] }}
@@ -30,8 +56,11 @@
       until: _installer_power_off_hosts is not failed
       retries: 10
       delay: 5
-      with_items: "{{ groups['poweroff_hosts'] }}"
-      when: groups['poweroff_hosts'] is defined
+      loop: "{{ groups['poweroff_hosts'] }}"
+      no_log: true
+      when:
+        - groups['poweroff_hosts'] is defined
+        - item in installer_powered_on_hosts | default([])
       changed_when: false
 
 - name: Power Off via Redfish
