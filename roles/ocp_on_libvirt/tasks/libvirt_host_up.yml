@@ -5,7 +5,7 @@
     command: list_vms
   register: _ool_vms_list
 
-- name: Set node_not_exists
+- name: "Set node_not_exists"
   ansible.builtin.set_fact:
     ool_node_not_exists: "{{ host['name'] not in _ool_vms_list }}"
 
