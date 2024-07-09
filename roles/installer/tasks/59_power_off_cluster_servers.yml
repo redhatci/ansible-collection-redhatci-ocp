@@ -29,7 +29,7 @@
       retries: 10
       delay: 5
       loop: "{{ groups['poweroff_hosts'] }}"
-      no_log: True
+      no_log: true
       when:
         - groups['poweroff_hosts'] is defined
       changed_when: false
@@ -57,7 +57,7 @@
       retries: 10
       delay: 5
       loop: "{{ groups['poweroff_hosts'] }}"
-      no_log: True
+      no_log: true
       when:
         - groups['poweroff_hosts'] is defined
         - item in installer_powered_on_hosts | default([])
