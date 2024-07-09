@@ -1,27 +1,27 @@
 ---
-- name: "Does node exist"
+- name: "List nodes for {{ host['name'] }}"
   community.libvirt.virt:
     command: list_vms
   register: _ool_vms_list
 
-- name: "Set node_not_exists"
+- name: "Set ool_node_exists"
   ansible.builtin.set_fact:
     ool_node_exists: "{{ host['name'] in _ool_vms_list.list_vms }}"
 
-- name: "Get node status if exists"
+- name: "Get status if exists - {{ host['name'] }}"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
   register: _ool_node_status
   when: ool_node_exists
 
-- name: "Destroy node"
+- name: "Destroy {{ host.name }}"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: destroy
   when: _ool_node_status['status'] is defined and _ool_node_status['status'] == 'running'
 
-- name: "Undefine node"
+- name: "Undefine {{ host.name }}"
   become: true
   community.libvirt.virt:
     name: "{{ host['name'] }}"

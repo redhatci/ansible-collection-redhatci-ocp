@@ -1,15 +1,15 @@
 ---
-- name: "Does node already exist"
+- name: "List nodes for {{ host['name'] }}"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: list_vms
   register: _ool_vms_list
 
-- name: "Set node_not_exists"
+- name: "Set ool_node_not_exists"
   ansible.builtin.set_fact:
     ool_node_not_exists: "{{ host['name'] not in _ool_vms_list.list_vms }}"
 
-- name: "Set qemu_path"
+- name: "Set ool_qemu_path"
   ansible.builtin.set_fact:
     ool_qemu_path: "{{ (ansible_distribution in ['CentOS', 'RedHat']) | ternary('/usr/libexec/', '/usr/bin/') }}"
 
