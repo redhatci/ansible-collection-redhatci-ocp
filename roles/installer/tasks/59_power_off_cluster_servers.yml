@@ -18,7 +18,7 @@
       loop: "{{ groups.masters + groups.workers | default([]) }}"
 
     - name: Check node power status via ipmi to filter off nodes
-      ansible.builtin.command: >
+      ansible.builtin.command: >-
         ipmitool -I lanplus -H {{ hostvars[item]['ipmi_address'] }}
         -L ADMINISTRATOR -U {{ hostvars[item]['ipmi_user'] }}
         -R7 -N 5 -P {{ hostvars[item]['ipmi_password'] }}
