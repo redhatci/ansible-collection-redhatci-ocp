@@ -5,8 +5,8 @@
   register: _ool_vms_list
 
 - name: "Set node_not_exists"
-   ansible.builtin.set_fact:
-     ool_node_exists: "{{ host['name'] in _ool_vms_list }}"
+  ansible.builtin.set_fact:
+    ool_node_exists: "{{ host['name'] in _ool_vms_list.list_vms }}"
 
 - name: "Get node status if exists"
   community.libvirt.virt:
@@ -19,11 +19,13 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: destroy
-  when: _ool_node_status is defined and _ool_node_status['status'] == 'running'
+  when: _ool_node_status['status'] is defined and _ool_node_status['status'] == 'running'
 
 - name: "Undefine node"
   become: true
-  ansible.builtin.command:
-    # community.libvirt.virt undefine can't specify --nvram
-    cmd: "virsh undefine --remove-all-storage --nvram {{ host['name'] }}"
+  community.libvirt.virt:
+    name: "{{ host['name'] }}"
+    command: undefine
+    flags: nvram
   when: ool_node_exists
+...

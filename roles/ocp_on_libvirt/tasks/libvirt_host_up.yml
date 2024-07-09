@@ -7,7 +7,7 @@
 
 - name: "Set node_not_exists"
   ansible.builtin.set_fact:
-    ool_node_not_exists: "{{ host['name'] not in _ool_vms_list }}"
+    ool_node_not_exists: "{{ host['name'] not in _ool_vms_list.list_vms }}"
 
 - name: "Set qemu_path"
   ansible.builtin.set_fact:
