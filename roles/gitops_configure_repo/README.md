@@ -16,8 +16,10 @@ Role Variables
 Name                        | Type   | Required | Default                                            | Description
 --------------------------- | ------ | -------- | -------------------------------------------------- | -------------------------------------------------------------
 gcr_ssh_key_path            | string | yes      | `{{ lookup('env', 'HOME') }}/.ssh/id_rsa`          | Path to the SSH private key file used to log into the GitOps manifest repository.
-gcr_ssh_known_hosts         | string | no       | -                                                  | Should be the ssh known hosts. It is required by ArgoCD when working with a SSH key.
+gcr_ssh_known_hosts         | string | no       | -                                                  | Should be the SSH known hosts. It is required by ArgoCD when working with a SSH key.
 gcr_ztp_gitops_repo         | string | yes      | -                                                  | URL to the ZTP GitOps Git repository.
+gcr_argo_cd_known_host_cm   | string | no       | argocd-ssh-known-hosts-cm                          | ConfigMap that will save the ArgoCD SSH known hosts.
+gcr_private_repo_secret     | string | no       | private-repo                                       | Secret that will hold the private repo credentials.
 
 Dependencies
 ------------

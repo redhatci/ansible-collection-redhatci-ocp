@@ -1,0 +1,23 @@
+---
+
+- name: Check if the selected action is allowed
+  vars:
+    asm_actions:
+      - detach
+      - attach
+  ansible.builtin.assert:
+    that:
+      - asm_action | lower in asm_actions
+    fail_msg: "{{ asm_action }} is not a supported action"
+
+- name: Detach a spoke cluster
+  ansible.builtin.include_tasks: detach.yaml
+  when:
+    - asm_action == 'detach'
+
+- name: Attach a spoke cluster
+  ansible.builtin.include_tasks: attach.yaml
+  when:
+    - asm_action == 'attach'
+
+...

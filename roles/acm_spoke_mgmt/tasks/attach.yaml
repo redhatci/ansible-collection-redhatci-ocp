@@ -1,0 +1,104 @@
+---
+
+- name: Assert the required variables are defined
+  ansible.builtin.assert:
+    that:
+      - asm_cluster_kubeconfig_path is defined
+      - asm_cluster_kubeconfig_path | length > 0
+      - asm_cluster_name is defined
+      - asm_cluster_name | length > 0
+
+# This will automatically create the cluster namespace, called
+# asm_cluster_name too.
+- name: Create ManagedCluster
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: cluster.open-cluster-management.io/v1
+      kind: ManagedCluster
+      metadata:
+        name: "{{ asm_cluster_name }}"
+        labels:
+          name: "{{ asm_cluster_name }}"
+          cloud: auto-detect
+          vendor: auto-detect
+        annotations: {}
+      spec:
+        hubAcceptsClient: true
+
+- name: Ensure spoke cluster namespace has been created
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Namespace
+    name: "{{ asm_cluster_name }}"
+  register: _asm_namespace_status
+  until:
+    - _asm_namespace_status.resources | length > 0
+  retries: 60
+  delay: 10
+
+# To import the spoke cluster to the hub cluster, we need to create
+# a secret that contains the spoke cluster's kubeconfig.
+# This requires a special formatting, including double line breaks
+# and a correct indentation.
+- name: Create autoimport secret
+  block:
+    - name: Get kubeconfig content
+      ansible.builtin.slurp:
+        src: "{{ asm_cluster_kubeconfig_path }}"
+      register: _asm_kubeconfig_content
+      no_log: true
+
+    - name: Save kubeconfig content in a variable
+      ansible.builtin.set_fact:
+        asm_kubeconfig: "{{ _asm_kubeconfig_content['content'] | b64decode }}"
+      no_log: true
+
+    - name: Apply Secret to attach spoke cluster to hub cluster
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('ansible.builtin.template', 'autoimport_secret.yml.j2') | from_yaml }}"
+      no_log: true
+
+# To correctly join the hub cluster, ManagedClusterJoined condition must be True.
+- name: Ensure ManagedCluster has joined the hub cluster
+  community.kubernetes.k8s_info:
+    api: cluster.open-cluster-management.io/v1
+    kind: ManagedCluster
+    name: "{{ asm_cluster_name }}"
+  register: _asm_managedcluster_status
+  vars:
+    _asm_status_query: "resources[0].status.conditions[?type=='ManagedClusterJoined'].status"
+    _asm_update_status: "{{ _asm_managedcluster_status | json_query(_asm_status_query) | flatten | unique }}"  # noqa: jinja[invalid]
+  until:
+    - _asm_managedcluster_status.resources is defined
+    - _asm_managedcluster_status.resources | length > 0
+    - _asm_update_status == ['True']
+  retries: 30
+  delay: 10
+
+- name: Create KlusterletAddonConfig
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: agent.open-cluster-management.io/v1
+      kind: KlusterletAddonConfig
+      metadata:
+        name: "{{ asm_cluster_name }}"
+        namespace: "{{ asm_cluster_name }}"
+      spec:
+        clusterName: "{{ asm_cluster_name }}"
+        clusterNamespace: "{{ asm_cluster_name }}"
+        clusterLabels:
+          cloud: auto-detect
+          vendor: auto-detect
+        applicationManager:
+          enabled: false
+        certPolicyController:
+          enabled: false
+        iamPolicyController:
+          enabled: false
+        policyController:
+          enabled: true
+        searchCollector:
+          enabled: false
+
+...

@@ -1,2 +1,4 @@
 ---
 gcr_ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+gcr_argo_cd_known_host_cm: "argocd-ssh-known-hosts-cm"
+gcr_private_repo_secret: "private-repo"

@@ -57,10 +57,12 @@
 /roles/sideload_kernel               @redhatci/platform
 
 # ztp
+/roles/acm_spoke_mgmt                @redhatci/ztp
 /roles/configure_ztp_gitops_repo     @redhatci/ztp
 /roles/configure_ztp_gitops_apps     @redhatci/ztp
 /roles/gitops_configure_repo         @redhatci/ztp
 /roles/install_operator_gitops       @redhatci/ztp
+/roles/remove_ztp_gitops_resources   @redhatci/ztp
 
 # maintainers
 /.github                             @redhatci/maintain

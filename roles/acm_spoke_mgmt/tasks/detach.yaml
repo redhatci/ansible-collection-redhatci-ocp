@@ -1,0 +1,56 @@
+---
+
+- name: Assert the required variables are defined
+  ansible.builtin.assert:
+    that:
+      - asm_cluster_name is defined
+      - asm_cluster_name | length > 0
+
+- name: Delete spoke's ManagedCluster
+  community.kubernetes.k8s:
+    api_version: cluster.open-cluster-management.io/v1
+    kind: ManagedCluster
+    name: "{{ asm_cluster_name }}"
+    state: absent
+    wait: true
+    wait_sleep: 5
+    wait_timeout: 300
+
+- name: Ensure ManagedCluster resource has been deleted
+  community.kubernetes.k8s_info:
+    api: cluster.open-cluster-management.io/v1
+    kind: ManagedCluster
+    name: "{{ asm_cluster_name }}"
+  register: _asm_managed_cluster_status
+  until:
+    - _asm_managed_cluster_status.resources | length == 0
+  retries: 18
+  delay: 10
+
+# Normally, the namespace is deleted after removing the ManagedCluster, excepting
+# ZTP-based spoke clusters, since there are more resources living in the namespace.
+# For this case, we need to explicitly remove the namespace.
+# This may take some time.
+- name: Delete spoke cluster namespace
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ asm_cluster_name }}"
+    state: absent
+    wait: true
+    wait_sleep: 5
+    wait_timeout: 600
+
+# Same, this may take some time.
+- name: Ensure spoke cluster namespace has been deleted
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Namespace
+    name: "{{ asm_cluster_name }}"
+  register: _asm_namespace_status
+  until:
+    - _asm_namespace_status.resources | length == 0
+  retries: 60
+  delay: 10
+
+...
