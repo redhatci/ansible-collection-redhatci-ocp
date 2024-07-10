@@ -1,5 +1,10 @@
 #! /bin/bash
 
+{% if create_vms_disable_secure_boot %}
+# Copy VARS.fd file related to non secure boot mode if that's the case
+cp {{ create_vms_non_secure_ovmf_vars_path }} {{ create_vms_ovmf_vars_path }}
+{% endif %}
+
 virt-install \
     --virt-type=kvm \
     --name "{{ item.name }}" \
@@ -20,7 +25,12 @@ virt-install \
     --noautoconsole \
     --wait=-1 \
     {% if not is_on_rhel9 %}
-    --boot uefi \
+    {% if create_vms_disable_secure_boot %}
+    --boot loader={{ create_vms_x86_64_ovmf_code_path }},loader.readonly=yes,loader.secure='no',loader.type=pflash,nvram={{ create_vms_ovmf_vars_path }} \
+    {% else %}
+    --boot loader={{ create_vms_x86_64_ovmf_code_path }},loader.readonly=yes,loader.secure='yes',loader.type=pflash,nvram={{ create_vms_ovmf_vars_path }},nvram.template={{ create_vms_secure_ovmf_vars_path }} \
+    --features smm=on \
+    {% endif %}
     {% endif %}
     --events on_reboot=restart \
     --autostart \

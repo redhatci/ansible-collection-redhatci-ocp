@@ -19,3 +19,12 @@ is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribu
 
 # allowed modes: 'bridge', 'nat', using 'bridge' as default
 create_vms_network_mode: bridge
+
+# disable secure boot, false by default
+create_vms_disable_secure_boot: false
+
+# Path to default OVMF_VARS.fd file used for non secure boot
+create_vms_non_secure_ovmf_vars_path: /usr/share/edk2/ovmf/OVMF_VARS.fd
+
+# Path to default OVMF_VARS.fd file used for secure boot
+create_vms_secure_ovmf_vars_path: /usr/share/edk2/ovmf/OVMF_VARS.secboot.fd
