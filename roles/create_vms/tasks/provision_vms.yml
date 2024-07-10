@@ -14,37 +14,6 @@
         state: directory
         recurse: yes
 
-    # `create_vms_x86_64_ovmf_code_path` variable is used in
-    # `create_vm.sh.j2` script
-    # Using the same logic that we have in setup_sushy_tools
-    # to be aligned
-    # Default behavior
-    - name: Set X86_64 OVMF code path (secure boot enabled)
-      when: not create_vms_disable_secure_boot | bool
-      block:
-        - name: Set X86_64 OVMF code path
-          ansible.builtin.set_fact:
-            create_vms_x86_64_ovmf_code_path: "/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd"
-
-        - name: Check x86_64 OVMF code path
-          ansible.builtin.stat:
-            path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
-          register: _cv_ovmf_x86_64_code_stat
-
-        - name: Set x86_64 OVMF code path (legacy)
-          ansible.builtin.set_fact:
-            create_vms_x86_64_ovmf_code_path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
-          when:
-            - _cv_ovmf_x86_64_code_stat.stat.exists
-            - not _cv_ovmf_x86_64_code_stat.stat.islnk
-
-    # In case secure boot is disabled, OVMF code path must be
-    # "/usr/share/OVMF/OVMF_CODE.secboot.fd"
-    - name: Set X86_64 OVMF code path (secure boot disabled)
-      ansible.builtin.set_fact:
-        create_vms_x86_64_ovmf_code_path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
-      when: create_vms_disable_secure_boot | bool
-
     - name: Create vm creation_scripts
       vars:
         create_vms_ovmf_vars_path: "/var/lib/libvirt/qemu/nvram/{{ item.name }}_VARS.fd"
