@@ -8,4 +8,5 @@ microshift_generate_iso_fast_datapath_repo_url: "https://cdn.redhat.com/content/
 microshift_generate_iso_localhost_folder: "/tmp"
 microshift_generate_iso_microshift_iso_name: "microshift.iso"
 microshift_generate_iso_kickstart_post: []
+microshift_generate_iso_additional_blueprints: {}
 ...

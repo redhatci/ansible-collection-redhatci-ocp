@@ -1,0 +1,8 @@
+id = "{{ _bp_id }}"
+name = "{{ _bp_data.name | default(_bp_id) }}"
+type = "yum-baseurl"
+url = "{{ _bp_data.url }}"
+check_gpg = {{ _bp_data.check_gpg | default(False) | ternary("true", "false") }}
+check_ssl = {{ _bp_data.check_ssl | default(True) | ternary("true", "false") }}
+system = {{ _bp_data.system | default(False) | ternary("true", "false") }}
+rhsm = {{ _bp_data.rhsm | default(False) | ternary("true", "false") }}
