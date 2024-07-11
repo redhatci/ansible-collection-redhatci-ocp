@@ -7,44 +7,49 @@
 
 - name: Add the microshift installer blueprint to image builder
   become: true
-  ansible.builtin.command:
-    composer-cli blueprints push {{ microshift_generate_iso_folder }}/microshift-installer.toml
+  ansible.builtin.command: >
+    composer-cli
+    blueprints
+    push
+    {{ microshift_generate_iso_folder }}/microshift-installer.toml
   changed_when: true
 
 - name: Start the ostree ISO build
   become: true
   ansible.builtin.command: >
-    composer-cli -j compose start-ostree --url http://localhost:8085/repo/
-     --ref "rhel/{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/edge"
+    composer-cli
+    -j compose
+    start-ostree
+    --url http://localhost:8085/repo/
+    --ref "rhel/{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/edge"
      microshift-installer edge-installer
-  register: composed_image
+  register: _mgi_composed_image
   changed_when: true
 
 - name: Set build id installer
   ansible.builtin.set_fact:
-    build_id_installer: "{{ composed_image.stdout | from_json | json_query('[].body.build_id') | first }}"
+    mgi_build_id_installer: "{{ _mgi_composed_image.stdout | from_json | json_query('[].body.build_id') | first }}"
 
 - name: Wait for image build to complete
   become: true
-  ansible.builtin.command:
-    composer-cli -j compose status
+  ansible.builtin.command: composer-cli -j compose status
   delay: 30
   retries: 200
   changed_when: false
   until:
-    (image_build_status.stdout | from_json | json_query(query_finished)) == "FINISHED"
-  register: image_build_status
+    (_mgi_build_status.stdout | from_json | json_query(query_finished)) == "FINISHED"
+  register: _mgi_build_status
   vars:
-    query_finished: "[].body.finished[?id=='{{ build_id_installer }}']|[0][0].queue_status"
+    query_finished: "[].body.finished[?id=='{{ mgi_build_id_installer }}']|[0][0].queue_status"
 
 - name: Set fact download the iso path
-  set_fact:
-    downloaded_iso_path: "{{ microshift_generate_iso_folder }}/{{ build_id_installer }}.iso"
+  ansible.builtin.set_fact:
+    mgi_downloaded_iso_path: "{{ microshift_generate_iso_folder }}/{{ mgi_build_id_installer }}.iso"
 
 - name: Download the iso
   become: true
   ansible.builtin.command:
-    composer-cli compose image {{ build_id_installer }} --filename {{ downloaded_iso_path }}
+    composer-cli compose image {{ mgi_build_id_installer }} --filename {{ mgi_downloaded_iso_path }}
   changed_when: true
 
 - name: Create the microshift installer file
@@ -56,7 +61,7 @@
 - name: Create the iso with the kickstart file
   ansible.builtin.command: >
     mkksiso {{ microshift_generate_iso_folder }}/kickstart.ks
-      {{ downloaded_iso_path }}
+      {{ mgi_downloaded_iso_path }}
       {{ microshift_generate_iso_folder }}/microshift_installer.iso
   changed_when: true
 
