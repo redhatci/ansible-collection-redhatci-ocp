@@ -1,5 +1,5 @@
 ---
-- name: "List nodes for {{ host['name'] }}"
+- name: "List nodes"
   community.libvirt.virt:
     command: list_vms
   register: _ool_vms_list
@@ -46,13 +46,10 @@
 
 - name: "Create directories"
   ansible.builtin.file:
-    path: "/tmp/vm-{{ host['name'] }}"
+    path: "/tmp/vm-{{ item }}"
     state: "directory"
     mode: "0755"
-  loop: "{{ hosts }}"
-  loop_control:
-    loop_var: host
-  when: host['name'] in ool_nodes_list
+  loop: "{{ ool_nodes_list }}"
 
 - name: "Prepare cloud-config/user-data-local"
   ansible.builtin.template:
@@ -76,14 +73,11 @@
 
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   ansible.builtin.command: |
-    mkisofs -o /tmp/vm-{{ host['name'] }}.iso -V cidata -r -J
-      --quiet /tmp/vm-{{ host['name'] }}/user-data
-      /tmp/vm-{{ host['name'] }}/meta-data
+    mkisofs -o /tmp/vm-{{ item }}.iso -V cidata -r -J
+      --quiet /tmp/vm-{{ item }}/user-data
+      /tmp/vm-{{ item }}/meta-data
   become: "{{ libvirt_become }}"
-  loop: "{{ hosts }}"
-  loop_control:
-    loop_var: host
-  when: host['name'] in ool_nodes_list
+  loop: "{{ ool_nodes_list }}"
 
 - name: "Define node"
   community.libvirt.virt:
@@ -100,9 +94,31 @@
 
 - name: "Start VM"
   community.libvirt.virt:
-    name: "{{ host['name'] }}"
+    name: "{{ item }}"
     state: "running"
-  loop: "{{ hosts }}"
-  loop_control:
-    loop_var: host
-  when: host['name'] in ool_nodes_list
+  loop: "{{ ool_nodes_list }}"
+
+- name: "Wait for VM to shut down"
+  community.libvirt.virt:
+    name: "{{ item }}"
+    command: status
+  register: _ool_vmstatus
+  until: _ool_vmstatus.status == 'shutdown'
+  retries: 1500
+  delay: 10
+  loop: "{{ ool_nodes_list }}"
+
+- name: "Remove cdrom (cloud-init)"
+  ansible.builtin.command: virsh change-media {{ item }} hda --eject --config
+  become: "{{ libvirt_become }}"
+  loop: "{{ ool_nodes_list }}"
+
+- name: Sync memory data to disk
+  ansible.builtin.command: sync
+
+- name: "Start VM again"
+  community.libvirt.virt:
+    name: "{{ item }}"
+    state: "running"
+  loop: "{{ ool_nodes_list }}"
+...
