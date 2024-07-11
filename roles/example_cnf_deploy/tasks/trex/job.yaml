@@ -5,7 +5,7 @@
   when: ecd_trex_app_version is not defined
 
 - name: Get the list of incomplete jobs
-  kubernetes.core.k8s_info:
+  community.kubernetes.k8s_info:
     kind: Job
     api_version: batch/v1
     label_selectors:
@@ -39,14 +39,14 @@
   when: image_app is not defined
 
 - name: Create job for the provided test config
-  kubernetes.core.k8s:
+  community.kubernetes.k8s:
     definition: "{{ lookup('template', 'trex-app-job.yaml.j2') }}"
   vars:
     environments: "{{ test_config_item }}"
     trex_app_job_name: "{{ test_config_item.name | default('test-' + 1000 | random | string) }}"
 
 - name: Wait for the job to complete
-  kubernetes.core.k8s_info:
+  community.kubernetes.k8s_info:
     kind: Job
     api_version: batch/v1
     label_selectors:

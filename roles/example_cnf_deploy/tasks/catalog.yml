@@ -1,4 +1,10 @@
 ---
+- name: "Check if Operator version is defined"
+  ansible.builtin.assert:
+    that:
+      - ecd_operator_version is defined
+      - ecd_operator_version | length
+
 - name: "Check if catalogsource crd is present"
   community.kubernetes.k8s_info:
     kind: CustomResourceDefinition
@@ -28,7 +34,7 @@
   vars:
     cs_name: "{{ catalog_name }}"
     cs_namespace: "openshift-marketplace"
-    cs_image: "{{ registry_url }}/{{ repo_name }}/{{ catalog_name }}@{{ index_digest }}"
+    cs_image: "{{ registry_url }}/{{ repo_name }}/{{ catalog_name }}@{{ ecd_index_digest }}"
     cs_publisher: "Red Hat"
 
 - name: "Create namespace"

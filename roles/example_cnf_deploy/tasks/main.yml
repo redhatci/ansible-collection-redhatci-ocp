@@ -2,23 +2,21 @@
 - name: "Requirements validation for example-cnf actions"
   ansible.builtin.assert:
     that:
-      - ex_cnf_action is defined
-      - ex_cnf_action in ["deploy", "validate, "draining" "catalog"]
-      - ex_cnf_operator_version is defined
-      - ex_cnf_operator_version | length
+      - ecd_action is defined
+      - ecd_action in ['deploy', 'validate', 'draining', 'catalog']
 
 - name: "Deploy Example CNF catalog"
   ansible.builtin.include_tasks: catalog.yml
-  when: ex_cnf_action == 'catalog'
+  when: ecd_action == 'catalog'
 
 - name: "Deploy Example CNF App"
   ansible.builtin.include_tasks: deploy.yml
-  when: ex_cnf_action == 'deploy'
+  when: ecd_action == 'deploy'
 
 - name: "Validate Example CNF App"
   ansible.builtin.include_tasks: validate.yml
-  when: ex_cnf_action == 'validate'
+  when: ecd_action == 'validate'
 
 - name: "Drain - Example CNF"
   ansible.builtin.include_tasks: draining.yml
-  when: ex_cnf_action == 'draining'
+  when: ecd_action == 'draining'

@@ -1,25 +1,25 @@
 ---
 - name: "Set list of example-cnf operators to be installed"
-  ansible.builtin.set_facts:
+  ansible.builtin.set_fact:
     ex_cnf_operators:
       - name: cnf-app-mac-operator
         namespace: "{{ cnf_namespace }}"
-        channel: "{{ testpmd_channel | default('') }}"
+        channel: "{{ testpmd_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
         source_ns: "openshift-marketplace"
       - name: testpmd-lb-operator
         namespace: "{{ cnf_namespace }}"
-        channel: "{{ testpmd_channel | default('') }}"
+        channel: "{{ testpmd_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
         source_ns: "openshift-marketplace"
       - name: testpmd-operator
         namespace: "{{ cnf_namespace }}"
-        channel: "{{ testpmd_channel | default('') }}"
+        channel: "{{ testpmd_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
         source_ns: "openshift-marketplace"
       - name: trex-operator
         namespace: "{{ cnf_namespace }}"
-        channel: "{{ trex_channel | default('') }}"
+        channel: "{{ trex_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
         source_ns: "openshift-marketplace"
 
@@ -30,7 +30,7 @@
     operator: "{{ ex_cnf_operator.name }}"
     source: "{{ ex_cnf_operator.source }}"
     namespace: "{{ ex_cnf_operator.source_ns }}"
-    channel: "{{ ex_cnf_operator.channel }}"
+    channel: "{{ ex_cnf_operator.channel | default(omit) }}"
   loop: "{{ ex_cnf_operators }}"
   loop_control:
     loop_var: ex_cnf_operator

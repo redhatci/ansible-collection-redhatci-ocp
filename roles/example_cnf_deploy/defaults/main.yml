@@ -1,6 +1,6 @@
 ---
 
-operator_version: ""
+ecd_operator_version: ""
 registry_url: quay.io
 repo_name: rh-nfv-int
 cnf_namespace: example-cnf
@@ -8,11 +8,11 @@ cnf_namespace: example-cnf
 # Internal variables
 image_pull_policy: IfNotPresent
 catalog_name: nfv-example-cnf-catalog
-catalog_image: "{{ registry_url }}/{{ repo_name }}/{{ catalog_name }}:{{ operator_version }}"
+catalog_image: "{{ registry_url }}/{{ repo_name }}/{{ catalog_name }}:{{ ecd_operator_version }}"
 
 ### deploy.yml ###
 
-enable_lb: true
+enable_lb: false |
 enable_mac_fetch: true
 enable_testpmd: true
 enable_trex: true
@@ -57,9 +57,9 @@ testpmd_app_mac_list:
 
 # Variables for gathering the network info from the scenario
 ## Connection between LB-CNF in LB mode (or TRex-CNF in direct mode)
-cnf_app_networks: []
+ecd_cnf_app_networks: []
 ## Connection between TRex-LB in LB mode (not used in direct mode)
-packet_generator_networks: []
+ecd_packet_generator_networks: []
 ## Networks for the CNF, including the hardcoded MAC addresses for direct mode case
 networks_testpmd_app: []
 

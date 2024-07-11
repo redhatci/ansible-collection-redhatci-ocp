@@ -8,8 +8,8 @@ spec:
   org: "{{ repo_name }}"
   version: "{{ ecd_testpmd_app_version }}"
   imagePullPolicy: {{ image_pull_policy }}
-  cnf_app_networks: {{ _excnf_cnf_nw }}
-  packet_generator_networks: {{ _excnf_pack_nw }}
+  ecd_cnf_app_networks: {{ _excnf_cnf_nw }}
+  ecd_packet_generator_networks: {{ _excnf_pack_nw }}
   packet_generator_macs: {{ trex_mac_list }}
   rx_queues: {{ queues|default(1) }}
   tx_queues: {{ queues|default(1) }}

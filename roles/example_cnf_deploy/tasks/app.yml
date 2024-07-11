@@ -34,16 +34,16 @@
 
 - name: "Fail when packet generator network is not available"
   ansible.builtin.fail:
-    msg: "'packet_generator_networks' is required when deployed with LB"
+    msg: "'ecd_packet_generator_networks' is required when deployed with LB"
   when:
     - "enable_lb|bool"
-    - "packet_generator_networks|length == 0"
+    - "ecd_packet_generator_networks|length == 0"
 
 - name: "Fail when cnf app networks is not available"
   ansible.builtin.fail:
-    msg: "'cnf_app_networks' is required"
+    msg: "'ecd_cnf_app_networks' is required"
   when:
-    - "cnf_app_networks|length == 0"
+    - "ecd_cnf_app_networks|length == 0"
 
 - name: "Set facts of modifying networks"
   ansible.builtin.set_fact:
@@ -54,7 +54,7 @@
 - name: "Create packet gen network list for lb with hardcoded macs"
   ansible.builtin.set_fact:
     ecd_pack_nw: "{{ ecd_pack_nw + [ item | combine({'mac': lb_gen_port_mac_list[idx:idx+item.count]})] }}"
-  loop: "{{ packet_generator_networks }}"
+  loop: "{{ ecd_packet_generator_networks }}"
   loop_control:
     index_var: idx
   when: enable_lb|bool
@@ -62,7 +62,7 @@
 - name: "Create cnf app network list for lb with hardcoded macs"
   ansible.builtin.set_fact:
     ecd_cnf_nw: "{{ ecd_cnf_nw + [ item | combine({'mac': lb_cnf_port_mac_list[idx:idx+item.count]})] }}"
-  loop: "{{ cnf_app_networks }}"
+  loop: "{{ ecd_cnf_app_networks }}"
   loop_control:
     index_var: idx
   when: enable_lb|bool
@@ -74,14 +74,14 @@
 # In this case, do not include hardcoded MAC addresses
 - name: "(LB mode) Set local fact for cnf-app pod networks"
   ansible.builtin.set_fact:
-    ecd_networks_testpmd_app: "{{ cnf_app_networks }}"
+    ecd_networks_testpmd_app: "{{ ecd_cnf_app_networks }}"
   when: enable_lb|bool
 
 # In this case, include hardcoded MAC addresses
 - name: "(Direct mode) Create network list for cnfapp with hardcoded macs"
   ansible.builtin.set_fact:
     ecd_networks_testpmd_app: "{{ ecd_networks_testpmd_app + [item | combine({'mac': testpmd_app_mac_list[idx:idx+item.count]})] }}"
-  loop: "{{ cnf_app_networks }}"
+  loop: "{{ ecd_cnf_app_networks }}"
   loop_control:
     index_var: idx
   when: not enable_lb|bool
