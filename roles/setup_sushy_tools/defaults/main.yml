@@ -31,7 +31,8 @@ sushy_fqdn: "{{ ansible_fqdn }}"
 
 is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"
 
-# disable secure boot, false by default
-setup_sushy_tools_disable_secure_boot: false
+# Default OVMF_CODE path.
+# This should be a symlink to `/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd`
+setup_sushy_tools_x86_64_ovmf_code_path: "/usr/share/OVMF/OVMF_CODE.secboot.fd"
 
 ...
