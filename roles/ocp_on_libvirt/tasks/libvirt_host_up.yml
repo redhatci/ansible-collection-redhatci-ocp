@@ -1,13 +1,19 @@
 ---
 - name: "List nodes for {{ host['name'] }}"
   community.libvirt.virt:
-    name: "{{ host['name'] }}"
     command: list_vms
   register: _ool_vms_list
 
-- name: "Set ool_node_not_exists"
+- name: "Set ool_hosts_names"
   ansible.builtin.set_fact:
-    ool_node_not_exists: "{{ host['name'] not in _ool_vms_list.list_vms }}"
+    ool_hosts_names: "{{ ool_hosts_names | default([]) + [host['name']]}}"
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+
+- name: "Set ool_nodes_list"
+  ansible.builtin.set_fact:
+    ool_nodes_list: "{{ ool_hosts_names | difference(_ool_vms_list.list_vms) }}"
 
 - name: "Set ool_qemu_path"
   ansible.builtin.set_fact:
@@ -15,18 +21,27 @@
 
 - name: "Copy image_src:"
   ansible.builtin.include_tasks: copy_image_src.yml
-  when: ool_node_not_exists
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['name'] in ool_nodes_list
 
 - name: "Resize OS disk"
-  ansible.builtin.command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
   become: "{{ libvirt_become }}"
-  when: host['disk_size'] is defined and ool_node_not_exists
+  ansible.builtin.command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['disk_size'] is defined and host['name'] in ool_nodes_list
 
 - name: "Create an additional disk"
-  ansible.builtin.command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }} "
+  ansible.builtin.command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }}"
   become: "{{ libvirt_become }}"
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
   when:
-    - host['disk2_size'] is defined and ool_node_not_exists
+    - host['disk_size'] is defined and host['name'] in ool_nodes_list
     - '"worker" in host["name"]'
 
 - name: "Create directories"
@@ -34,21 +49,30 @@
     path: "/tmp/vm-{{ host['name'] }}"
     state: "directory"
     mode: "0755"
-  when: ool_node_not_exists
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['name'] in ool_nodes_list
 
 - name: "Prepare cloud-config/user-data-local"
   ansible.builtin.template:
     src: "templates/cloud-config/user-data"
     dest: "/tmp/vm-{{ host['name'] }}/user-data"
     mode: "0644"
-  when: ool_node_not_exists
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['name'] in ool_nodes_list
 
 - name: "Prepare cloud-config/meta-data"
   ansible.builtin.template:
     src: "templates/cloud-config/meta-data"
     dest: "/tmp/vm-{{ host['name'] }}/meta-data"
     mode: "0644"
-  when: ool_node_not_exists
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['name'] in ool_nodes_list
 
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   ansible.builtin.command: |
@@ -56,14 +80,20 @@
       --quiet /tmp/vm-{{ host['name'] }}/user-data
       /tmp/vm-{{ host['name'] }}/meta-data
   become: "{{ libvirt_become }}"
-  when: ool_node_not_exists
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['name'] in ool_nodes_list
 
 - name: "Define node"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: define
     xml: "{{ lookup('template', 'libvirt_node.xml.j2') }}"
-  when: ool_node_not_exists
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['name'] in ool_nodes_list
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync
@@ -72,3 +102,7 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     state: "running"
+  loop: "{{ hosts }}"
+  loop_control:
+    loop_var: host
+  when: host['name'] in ool_nodes_list
