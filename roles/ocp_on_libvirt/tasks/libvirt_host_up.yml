@@ -1,29 +1,32 @@
 ---
-- name: "Does node already exist"
+- name: "List nodes for {{ host['name'] }}"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
-    command: status
-  ignore_errors: true
-  register: node_exists
+    command: list_vms
+  register: _ool_vms_list
 
-- name: "Set qemu_path"
+- name: "Set ool_node_not_exists"
   ansible.builtin.set_fact:
-    qemu_path: "{{ (ansible_distribution in ['CentOS', 'RedHat']) | ternary('/usr/libexec/', '/usr/bin/') }}"
+    ool_node_not_exists: "{{ host['name'] not in _ool_vms_list.list_vms }}"
+
+- name: "Set ool_qemu_path"
+  ansible.builtin.set_fact:
+    ool_qemu_path: "{{ (ansible_distribution in ['CentOS', 'RedHat']) | ternary('/usr/libexec/', '/usr/bin/') }}"
 
 - name: "Copy image_src:"
   ansible.builtin.include_tasks: copy_image_src.yml
-  when: node_exists.failed
+  when: ool_node_not_exists
 
 - name: "Resize OS disk"
   ansible.builtin.command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
   become: "{{ libvirt_become }}"
-  when: host['disk_size'] is defined and node_exists.failed
+  when: host['disk_size'] is defined and ool_node_not_exists
 
 - name: "Create an additional disk"
   ansible.builtin.command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }} "
   become: "{{ libvirt_become }}"
   when:
-    - host['disk2_size'] is defined and node_exists.failed
+    - host['disk2_size'] is defined and ool_node_not_exists
     - '"worker" in host["name"]'
 
 - name: "Create directories"
@@ -31,21 +34,21 @@
     path: "/tmp/vm-{{ host['name'] }}"
     state: "directory"
     mode: "0755"
-  when: node_exists.failed
+  when: ool_node_not_exists
 
 - name: "Prepare cloud-config/user-data-local"
   ansible.builtin.template:
     src: "templates/cloud-config/user-data"
     dest: "/tmp/vm-{{ host['name'] }}/user-data"
     mode: "0644"
-  when: node_exists.failed
+  when: ool_node_not_exists
 
 - name: "Prepare cloud-config/meta-data"
   ansible.builtin.template:
     src: "templates/cloud-config/meta-data"
     dest: "/tmp/vm-{{ host['name'] }}/meta-data"
     mode: "0644"
-  when: node_exists.failed
+  when: ool_node_not_exists
 
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   ansible.builtin.command: |
@@ -53,14 +56,14 @@
       --quiet /tmp/vm-{{ host['name'] }}/user-data
       /tmp/vm-{{ host['name'] }}/meta-data
   become: "{{ libvirt_become }}"
-  when: node_exists.failed
+  when: ool_node_not_exists
 
 - name: "Define node"
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: define
     xml: "{{ lookup('template', 'libvirt_node.xml.j2') }}"
-  when: node_exists.failed
+  when: ool_node_not_exists
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync

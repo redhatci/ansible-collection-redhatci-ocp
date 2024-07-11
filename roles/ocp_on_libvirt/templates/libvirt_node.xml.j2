@@ -36,7 +36,7 @@
 {% if host['driver'] == 'qemu' %}
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
 {% else %}
-    <emulator>{{ qemu_path }}qemu-kvm</emulator>
+    <emulator>{{ ool_qemu_path }}qemu-kvm</emulator>
 {% endif %}
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
