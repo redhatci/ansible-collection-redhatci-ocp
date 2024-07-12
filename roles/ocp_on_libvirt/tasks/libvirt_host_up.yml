@@ -1,8 +1,8 @@
 ---
 - name: "Assert that host name exists"
-  ansible.builtin.asseert:
+  ansible.builtin.assert:
     that: item['name'] is defined
-    success_msg: "{{ item['name'] }} have a name attribute]"
+    success_msg: "{{ item['name'] }} have a name attribute"
     fail_msg: "{{ item }} missing name attribute"
   loop: "{{ hosts }}"
 
@@ -13,7 +13,7 @@
 
 - name: "Set ool_hosts_names"
   ansible.builtin.set_fact:
-    ool_hosts_names: "{{ ool_hosts_names | default([]) + [host['name']]}}"
+    ool_hosts_names: "{{ ool_hosts_names | default([]) + [host['name']] }}"
   loop: "{{ hosts }}"
   loop_control:
     loop_var: host
@@ -33,23 +33,22 @@
     loop_var: host
   when: host['name'] in ool_nodes_list
 
-- name: "Resize OS disk"
-  become: "{{ libvirt_become }}"
-  ansible.builtin.command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
-  loop: "{{ hosts }}"
-  loop_control:
-    loop_var: host
-  when: host['disk_size'] is defined and host['name'] in ool_nodes_list
+- name: "Create nodes disks sizes dictionary"
+  vars:
+    disks:
+      disk_size: resize
+      disk2_size: create
+    qemu_action: "{{ disks[item[1]] | default(None) }}"
+    disk_number: "{{ (item[1] == 'disk2_size') | ternary('-disk2', '') }}"
+  ansible.builtin.set_fact:
+    ool_nodes_disks_sizes: "{{ ool_nodes_disks_sizes | default({}) | combine({ item[0]['name']: {'name': item[0]['name'], 'action': qemu_action, 'size': item[0][item[1]], 'suffix': disk_number }}) }}"
+  loop: "{{ hosts | product(['disk_size', 'disk2_size']) | list }}"
+  when: item[0]['name'] in ool_nodes_list and item[0][item[1]] is defined
 
-- name: "Create an additional disk"
-  ansible.builtin.command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }}"
+- name: "OS disk {{ item['action'] }}"
   become: "{{ libvirt_become }}"
-  loop: "{{ hosts }}"
-  loop_control:
-    loop_var: host
-  when:
-    - host['disk_size'] is defined and host['name'] in ool_nodes_list
-    - '"worker" in host["name"]'
+  ansible.builtin.command: "qemu-img {{ item['action'] }} {{ libvirt_image_path }}/{{ item['name'] }}{{ item['suffix'] }}.qcow2 +{{ item['size'] }}"
+  loop: "{{ ool_nodes_disks_sizes | ansible.builtin.dict2items }}"
 
 - name: "Create directories"
   ansible.builtin.file:
