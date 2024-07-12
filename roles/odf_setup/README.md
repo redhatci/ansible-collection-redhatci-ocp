@@ -30,6 +30,8 @@ Role Variables
 | local_storage_devices            |                               | List         | No          | For LSO, a list of local devices that will be use as backend             |
 | ocs_default_storage_class        | storagecluster-cephfs         | String       | No          | Default storage class name                                               |
 | gatherer_image                   | registry.access.redhat.com/ubi8/ubi | String | No          | Image for disk-gatherer deployment                                       |
+| odf_setup_oc_tool_path                   | '/usr/local/bin/oc` | String | No          | Path to the OpenShift Command Line Interface binary.
+
 
 Inventory Groups and Variables
 --------------
