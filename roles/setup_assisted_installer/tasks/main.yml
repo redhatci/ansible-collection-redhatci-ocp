@@ -40,14 +40,23 @@
     - name: Open ports zone internal and public, for firewalld
       firewalld:
         port: "{{ item.1 }}/tcp"
-        permanent: yes
-        immediate: yes
+        permanent: true
+        immediate: true
         state: enabled
         zone: "{{ item.0 }}"
       loop: "{{ ['internal', 'public'] | product(['8000', port, assisted_service_gui_port, assisted_service_image_service_port]) | list }}"
 
-    - name: Create directories for assisted-installer
+    - name: Delete previous assisted-installer directories
       file:
+        path: "{{ item }}"
+        state: absent
+        force: true
+      with_items:
+        - "{{ assisted_installer_dir }}"
+      failed_when: false
+
+    - name: Create directories for assisted-installer
+      ansible.builtin.file:
         path: "{{ item }}"
         mode: 0775
         state: directory
