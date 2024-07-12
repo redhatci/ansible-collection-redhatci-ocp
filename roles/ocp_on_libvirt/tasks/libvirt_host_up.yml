@@ -1,4 +1,11 @@
 ---
+- name: "Assert that host name exists"
+  ansible.builtin.asseert:
+    that: item['name'] is defined
+    success_msg: "{{ item['name'] }} have a name attribute]"
+    fail_msg: "{{ item }} missing name attribute"
+  loop: "{{ hosts }}"
+
 - name: "List nodes"
   community.libvirt.virt:
     command: list_vms
