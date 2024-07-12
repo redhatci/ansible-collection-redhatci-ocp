@@ -29,16 +29,16 @@
     cmd: >
       set -x -o pipefail;
       mkdir -p idms icsp;
-      for f in $(oc get imageContentSourcePolicy -o name); do
-        oc get ${f} -o yaml > icsp/$(basename ${f}).yaml;
+      for f in $({{ ah_oc_cli_path }} get imageContentSourcePolicy -o name); do
+        {{ ah_oc_cli_path }} get ${f} -o yaml > icsp/$(basename ${f}).yaml;
       done;
       for f in icsp/*.yaml; do
-        oc adm migrate icsp ${f} --dest-dir idms;
+        {{ ah_oc_cli_path }} adm migrate icsp ${f} --dest-dir idms;
       done;
       for f in idms/*.yaml; do
         sed -i '/creationTimestamp\|generation\|resourceVersion\|uid\|annotations\|last-applied-configuration/d' "${f}";
       done;
-      oc apply --force --overwrite=true -f idms
+      {{ ah_oc_cli_path }} apply --force --overwrite=true -f idms
   register: migration_result
   changed_when: migration_result.rc != 0
   when:
@@ -48,7 +48,7 @@
 - name: Get management cluster facts
   ansible.builtin.include_tasks: get-mc-facts.yml
 
-- name: "Validate the target a release image"
+- name: "Validate the target release image"
   ansible.builtin.assert:
     that:
       - ah_release_image is defined
