@@ -1,13 +1,9 @@
 ---
 - name: Download stable openshift client
   vars:
-    ocp_client_url: >
-      https://mirror.openshift.com/pub/openshift-v4/
-      x86_64/clients/ocp
+    ocp_client_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.14/openshift-client-linux.tar.gz"
   ansible.builtin.unarchive:
-    src: >
-      {{ ocp_client_url }}/stable/openshift-client-linux-amd64-rhel
-      {{ ansible_distribution_major_version }}.tar.gz
+    src: "{{ ocp_client_url }}"
     dest: "{{ ah_tmp_dir }}"
     remote_src: true
     mode: "0755"
