@@ -93,10 +93,14 @@
   when: host['name'] in ool_nodes_list
 
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
-  ansible.builtin.command: |
-    mkisofs -o /tmp/vm-{{ item }}.iso -V cidata -r -J
-      --quiet /tmp/vm-{{ item }}/user-data
-      /tmp/vm-{{ item }}/meta-data
+  community.general.iso_create:
+    dest_iso: "/tmp/vm-{{ item }}.iso"
+    vol_ident: cidata
+    joliet: 3
+    rock_ridge: 1.09
+    src_files:
+      - "/tmp/vm-{{ item }}/user-data"
+      - "/tmp/vm-{{ item }}/meta-data"
   become: "{{ libvirt_become }}"
   loop: "{{ ool_nodes_list }}"
 
