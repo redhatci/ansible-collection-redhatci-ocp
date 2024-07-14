@@ -95,7 +95,8 @@
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   community.general.iso_create:
     dest_iso: "/tmp/vm-{{ item }}.iso"
-    vol_ident: cidata
+    vol_ident: "cidata"
+    interchange_level: 4
     joliet: 3
     rock_ridge: 1.09
     src_files:
@@ -116,6 +117,7 @@
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync
+  changed_when: false
 
 - name: "Start VM"
   community.libvirt.virt:
@@ -142,6 +144,7 @@
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync
+  changed_when: false
 
 - name: "Start VM again"
   community.libvirt.virt:
