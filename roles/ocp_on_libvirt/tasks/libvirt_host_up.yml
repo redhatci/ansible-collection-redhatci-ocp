@@ -133,6 +133,8 @@
   ansible.builtin.command: virsh change-media {{ item }} hda --eject --config
   become: "{{ libvirt_become }}"
   loop: "{{ ool_nodes_list }}"
+  register: _ool_eject
+  changed_when: _ool_eject.stdout == "Successfully ejected media."
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync
