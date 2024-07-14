@@ -56,10 +56,14 @@
   become: "{{ libvirt_become }}"
   ansible.builtin.command: >-
     qemu-img {{ _ool_action }}
-      {{ (_ool_action=='create') | ternary('-f qcow2', '') }}
+      {{ (_ool_action == 'create') | ternary('-f qcow2', '') }}
       {{ libvirt_image_path }}/{{ item['key'] }}.qcow2
       +{{ item['value']['size'] }}
   loop: "{{ ool_nodes_disks_sizes | ansible.builtin.dict2items }}"
+  register: _ool_cmd_output
+  changed_when: >-
+    _ool_cmd_output.stdout == "Image resized." or
+    _ool_cmd_output.stdout == "^Formatting .* fmt=qcow .*"
 
 - name: "Create directories"
   ansible.builtin.file:
