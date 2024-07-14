@@ -41,13 +41,19 @@
     qemu_action: "{{ disks[item[1]] | default(None) }}"
     disk_number: "{{ (item[1] == 'disk2_size') | ternary('-disk2', '') }}"
   ansible.builtin.set_fact:
-    ool_nodes_disks_sizes: "{{ ool_nodes_disks_sizes | default({}) | combine({ item[0]['name']: { 'action': qemu_action, 'size': item[0][item[1]], 'suffix': disk_number }}) }}"
+    ool_nodes_disks_sizes: >-
+      {{ ool_nodes_disks_sizes | default({}) |
+         combine({ item[0]['name'] + '_' + item[0][item[1]]: { 'name':  item[0]['name'],
+           'action': qemu_action,
+           'size': item[0][item[1]],
+           'suffix': disk_number }},
+         recursive=true) }}
   loop: "{{ hosts | product(['disk_size', 'disk2_size']) | list }}"
   when: item[0]['name'] in ool_nodes_list and item[0][item[1]] is defined
 
 - name: "OS disk create/resize"
   become: "{{ libvirt_become }}"
-  ansible.builtin.command: "qemu-img {{ item['value']['action'] }} {{ libvirt_image_path }}/{{ item['key'] }}{{ item['value']['suffix'] }}.qcow2 +{{ item['value']['size'] }}"
+  ansible.builtin.command: "qemu-img {{ item['value']['action'] }} {{ libvirt_image_path }}/{{ item['value']['name'] }}{{ item['value']['suffix'] }}.qcow2 +{{ item['value']['size'] }}"
   loop: "{{ ool_nodes_disks_sizes | ansible.builtin.dict2items }}"
 
 - name: "Create directories"
