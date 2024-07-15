@@ -92,6 +92,12 @@
     loop_var: host
   when: host['name'] in ool_nodes_list
 
+- name: Install virtualenv pycdlib module
+  delegate_to: localhost
+  ansible.builtin.pip:
+    name: pycdlib
+    extra_args: "--user"
+
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   community.general.iso_create:
     dest_iso: "/tmp/vm-{{ item }}.iso"
