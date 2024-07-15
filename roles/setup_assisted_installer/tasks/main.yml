@@ -52,6 +52,7 @@
         state: absent
         force: true
       with_items:
+        - "{{ assisted_installer_data_dir }}"
         - "{{ assisted_installer_dir }}"
       failed_when: false
 
