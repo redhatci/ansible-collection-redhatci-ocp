@@ -11,6 +11,7 @@ assisted_service_installer_image: "{{ assisted_service_image_repo_url }}/assiste
 assisted_postgres_image: quay.io/centos7/postgresql-12-centos7:centos7
 assisted_installer_dir: /opt/assisted-installer
 assisted_installer_data_dir: "{{ assisted_installer_dir }}/data"
+setup_assisted_installer_keep_data: true
 assisted_installer_pod_volumes: {}
 # Useful if you want to e.g. install extra certificate chains in the pods prior
 # to setting up the AI service, e.g. you built your own AI images and pushed
@@ -58,3 +59,4 @@ podman_ipv6_network_subnet: 'fd00::1:8:0/112'
 podman_ipv6_network_gateway: 'fd00::1:8:1'
 assisted_service_extra_config: {}
 insecure_skip_verify: false
+...
