@@ -55,6 +55,8 @@
         - "{{ assisted_installer_data_dir }}"
         - "{{ assisted_installer_dir }}"
       failed_when: false
+      when:
+        - setup_assisted_installer_keep_data | bool
 
     - name: Create directories for assisted-installer
       ansible.builtin.file:
