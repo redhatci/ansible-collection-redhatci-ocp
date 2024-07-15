@@ -157,4 +157,7 @@ Name | Type | Description
 
 ## License
 
-See [LICENSES](./LICENSES) directory for the list of licences used in this repository
+See roles or module documentation to find their license. This is a list of the different licenses used in this repository
+
+- [Apache License 2.0](./LICENSE-Apache-2.0)
+- [GNU General Public License v3.0](./LICENSE-GPL-3.0)
