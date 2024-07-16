@@ -10,6 +10,9 @@
     dest: "{{ ah_tmp_dir }}"
     remote_src: true
     mode: "0755"
+    extra_opts:
+      - oc
+      - kubectl
   register: result
   retries: 3
   delay: 10
