@@ -5,20 +5,6 @@
   when:
     - ah_cluster_type | lower not in ah_cluster_types
 
-- name: Assert ah_hcp_cli_path is defined and not empty
-  assert:
-    that:
-      - ah_hcp_cli_path is defined
-      - ah_hcp_cli_path | length > 0
-    fail_msg: "The variable ah_hcp_cli_path is either not defined or is empty"
-
-- name: Assert ah_oc_cli_path is defined and not empty
-  assert:
-    that:
-      - ah_oc_cli_path is defined
-      - ah_oc_cli_path | length > 0
-    fail_msg: "The variable ah_oc_cli_path is either not defined or is empty"
-
 - name: "Check for metallb instances"
   community.kubernetes.k8s_info:
     api_version: metallb.io/v1beta1

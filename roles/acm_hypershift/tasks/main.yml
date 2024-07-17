@@ -14,6 +14,20 @@
   when:
     - ah_download_cli | bool
 
+- name: Assert ah_hcp_cli_path is defined and not empty
+  ansible.builtin.assert:
+    that:
+      - ah_hcp_cli_path is defined
+      - ah_hcp_cli_path | length > 0
+    fail_msg: "The variable ah_hcp_cli_path is either not defined or is empty"
+
+- name: Assert ah_oc_cli_path is defined and not empty
+  ansible.builtin.assert:
+    that:
+      - ah_oc_cli_path is defined
+      - ah_oc_cli_path | length > 0
+    fail_msg: "The variable ah_oc_cli_path is either not defined or is empty"
+
 - name: Restart HCP pods to pick latest Management cluster state
   ansible.builtin.include_tasks: restart-cpo.yml
 
