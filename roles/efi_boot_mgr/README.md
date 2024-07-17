@@ -2,6 +2,8 @@
 
 Remove the non-active UEFI boot entries from OCP nodes.
 
+> IMPORTANT: This role removes permantently UEFI boot entries, use it with care.
+
 ## Requirements
 
 A valid *KUBECONFIG* env variable pointing to a kubeconfig file.

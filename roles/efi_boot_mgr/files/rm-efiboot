@@ -3,6 +3,11 @@
 echo "=== Current Boot order ==="
 efibootmgr --verbose
 
+if [[ $? -ne 0 ]]; then
+    echo "Warning: efibootmgr can't remove boot entries"
+    exit
+fi
+
 boot_current=$(efibootmgr --verbose | sed -n -e 's,BootCurrent: \(.*\),\1,p')
 boot_list=($(efibootmgr --verbose | sed -n -e 's/,/ /g' -e 's,BootOrder: \(.*\),\1,p'))
 
