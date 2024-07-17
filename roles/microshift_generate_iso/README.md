@@ -24,6 +24,7 @@ The role has the following variables:
 - `microshift_generate_iso_ssh_key`: The SSH public key to use for accessing servers. Default is the content of `~/.ssh/id_rsa.pub`.
 - `microshift_generate_iso_kickstart_post`: A list of commands to be appended to the %post section in the installation kickstart file. Default is empty.
 - `microshift_generate_iso_additional_blueprints`: A dictionary of extra blueprints to be added to the install image. Default is empty.
+- `microshift_generate_iso_customization_fragment`: A text fragment to be appended to the installation blueprint, rendered in jinja. Default is empty.
 
 ## Example Playbook
 
