@@ -9,4 +9,5 @@ microshift_generate_iso_localhost_folder: "/tmp"
 microshift_generate_iso_microshift_iso_name: "microshift.iso"
 microshift_generate_iso_kickstart_post: []
 microshift_generate_iso_additional_blueprints: {}
+microshift_generate_iso_customization_fragment: ""
 ...

@@ -6,3 +6,5 @@ check_gpg = {{ _bp_data.check_gpg | default(False) | ternary("true", "false") }}
 check_ssl = {{ _bp_data.check_ssl | default(True) | ternary("true", "false") }}
 system = {{ _bp_data.system | default(False) | ternary("true", "false") }}
 rhsm = {{ _bp_data.rhsm | default(False) | ternary("true", "false") }}
+check_repogpg = {{ _bp_data.check_repogpg | default(False) | ternary("true", "false") }}
+gpgkeys = {{ _bp_data.gpgkeys | default([]) | to_json }}
