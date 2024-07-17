@@ -31,19 +31,22 @@
     _bp_data:
       name: "Microshift {{ microshift_generate_iso_microshift_version }}"
       url: "{{ microshift_generate_iso_microshift_repo_url }}"
-      check_gpg: true
   ansible.builtin.template:
     src: blueprint.toml.j2
     dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/002-microshift.toml"
     mode: '0644'
 
+- name: Print all additional blueprints
+  ansible.builtin.debug:
+    var: microshift_generate_iso_additional_blueprints
+
 - name: Create any additional custom blueprints
   vars:
-    _bp_id: "{{ key }}"
-    _bp_data: "{{ item }}"
+    _bp_id: "{{ item.key }}"
+    _bp_data: "{{ item.value }}"
   ansible.builtin.template:
     src: blueprint.toml.j2
-    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/{{ '%02d' | format(idx) }}-{{ key }}.toml"
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/{{ '%02d' | format(idx) }}-{{ item.key }}.toml"
     mode: '0644'
   loop: "{{ microshift_generate_iso_additional_blueprints | dict2items }}"
   loop_control:
