@@ -59,6 +59,7 @@ Name | Description
 [redhatci.ocp.deprecated_api](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/deprecated_api/README.md) | Extracts deprecated API calls in a cluster
 [redhatci.ocp.destroy_vms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/destroy_vms/README.md) | Destroys libvirt network, storage pools and the KVM Nodes and the network bridge connection.
 [redhatci.ocp.display_deployment_plan](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/display_deployment_plan/README.md) | Displays the crucible deployment plan and waits for user confirmation.
+[redhatci.ocp.efi_boot_mgr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/efi_boot_mgr/README.md) | Remove the non-active UEFI boot entries from OCP nodes.
 [redhatci.ocp.extract_openshift_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/extract_openshift_installer/README.md) | Extracts openshift_installer binary from the release image.
 [redhatci.ocp.generate_agent_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_agent_iso/README.md) | Creates the boot ISO using OpenShift_installer's agent sub-command
 [redhatci.ocp.generate_discovery_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_discovery_iso/README.md) | Creates the discovery ISO for a pre-existing cluster definition using a pre-existing on-prem assisted installer
