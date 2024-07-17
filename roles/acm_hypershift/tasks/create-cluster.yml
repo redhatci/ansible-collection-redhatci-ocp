@@ -3,7 +3,7 @@
   ansible.builtin.shell:
     cmd: >
       set -e;
-      {{ ah_hcp_cli_path }} create cluster {{ ah_cluster_type }}
+      echo {{ ah_hcp_cli_path }} create cluster {{ ah_cluster_type }}
       --name={{ ah_cluster_generated_name }}
       {%- if ah_base_domain is defined %} --base_domain={{ ah_base_domain }}{%- endif %}
       --pull-secret={{ ah_pullsecret_file }}

@@ -155,6 +155,17 @@ Name | Type | Description
 [redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
 [redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
 
+
+## Playbooks
+
+| Playbook                                                                        | Description
+|-------------------------------------------------------------------------------- | ---------------------------
+| [Multibench Setup Host](playbooks/multibench_setup_host/multibench_setup_host.yml)  |  Installs the crucible binaries needed for the execution of the Multi-bench role. See [Readme](multibench_setup_host/README.md)
+| [Prune and Mirror Operators](playbooks/prune_mirror.yml)                            |  Prunes and mirror operators to a local registry
+| [Mirror OCP](playbooks/mirror_ocp.yml)                                              |  Mirror and OCP release
+| [Install Operators](playbooks/install_operators.yml)                                |  Creates a catalog source and install and operator
+
+
 ## License
 
 See roles or module documentation to find their license. This is a list of the different licenses used in this repository
