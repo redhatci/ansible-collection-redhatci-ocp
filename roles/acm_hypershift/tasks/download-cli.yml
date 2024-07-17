@@ -1,12 +1,18 @@
 ---
 - name: Download stable openshift client
   vars:
-    ocp_client_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.14/openshift-client-linux.tar.gz"
+    ocp_client_url:
+      "https://mirror.openshift.com/pub/openshift-v4/\
+      x86_64/clients/ocp/stable/openshift-client-linux-amd64-rhel\
+      {{ ansible_distribution_major_version }}.tar.gz"
   ansible.builtin.unarchive:
     src: "{{ ocp_client_url }}"
     dest: "{{ ah_tmp_dir }}"
     remote_src: true
     mode: "0755"
+    extra_opts:
+      - oc
+      - kubectl
   register: result
   retries: 3
   delay: 10
@@ -50,4 +56,8 @@
 - name: Set hcp cli path
   ansible.builtin.set_fact:
     ah_hcp_cli_path: "{{ ah_tmp_dir }}/hcp"
+
+- name: Set oc cli path
+  ansible.builtin.set_fact:
+    ah_oc_cli_path: "{{ ah_tmp_dir }}/oc"
 ...
