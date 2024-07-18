@@ -1,0 +1,80 @@
+---
+- name: Create a directory to place config files
+  ansible.builtin.file:
+    path: "{{ kbpc_certsuite_dir }}/config_files"
+    state: directory
+    mode: '0755'
+
+- name: Create a directory to place result files
+  ansible.builtin.file:
+    path: "{{ kbpc_certsuite_dir }}/result_files"
+    state: directory
+    mode: '0755'
+
+- name: Template tnf_config.yml
+  ansible.builtin.template:
+    src: templates/tnf_config.yml.j2
+    dest: "{{ kbpc_certsuite_dir }}/config_files/tnf_config.yml"
+    mode: '0755'
+
+# Just do this in case preflight test suite is used.
+# Use authentication file for private registry
+- name: Set authentication for registry access
+  when: "'preflight' in kbpc_test_labels and kbpc_partner_creds | length > 0"
+  ansible.builtin.include_tasks: prepare_json_authentication.yml
+
+- name: Copy kubeconfig file in config folder
+  ansible.builtin.copy:
+    src: "{{ kbpc_kubeconfig }}"
+    dest: "{{ kbpc_certsuite_dir }}/config_files/kubeconfig"
+    mode: '0640'
+
+- name: Common tasks for Red Hat Best Practices Test Suite for Kubernetes execution
+  block:
+    - name: Run the Red Hat Best Practices Test Suite for Kubernetes test cases
+      vars:
+        kbpc_partner_repo: "{{ (kbpc_registry | length) | ternary(kbpc_registry, 'quay.io') }}/testnetworkfunction"
+        kbpc_support_image: "debug-partner:{{ kbpc_support_image_version }}"
+        kbpc_container_command: |
+          ./certsuite run \
+          {% if kbpc_test_labels | length > 0 %}
+          --label-filter='{{ kbpc_test_labels }}' \
+          {% endif %}
+          {% if kbpc_dockercfg_path is defined %}
+          --preflight-dockerconfig=/usr/certsuite/config/config.json \
+          --allow-preflight-insecure={{ kbpc_allow_preflight_insecure }} \
+          {% endif %}
+          --output-dir=/usr/certsuite/results \
+          --offline-db=/usr/offline-db \
+          --config-file=/usr/certsuite/config/tnf_config.yml \
+          --kubeconfig=/usr/certsuite/config/kubeconfig \
+          --tnf-image-repository={{ kbpc_partner_repo }} \
+          --tnf-debug-image={{ kbpc_support_image }} \
+          --create-xml-junit-file={{ kbpc_enable_xml_creation }} \
+          --non-intrusive={{ kbpc_non_intrusive_only }} \
+          --log-level={{ kbpc_log_level }} \
+          --include-web-files=true
+      ansible.builtin.shell: |
+        set -x
+
+        podman run \
+        --rm \
+        --network host \
+        -v {{ kbpc_certsuite_dir }}/config_files:/usr/certsuite/config:Z \
+        -v {{ kbpc_certsuite_dir }}/result_files:/usr/certsuite/results:Z \
+        {{ kbpc_certsuite_image }} \
+        {{ kbpc_container_command }}
+      register: _kbpc_exec_output
+      no_log: true
+
+  always:
+    - name: Save output in a file
+      ansible.builtin.copy:
+        content: "{{ _kbpc_exec_output.stdout }}"
+        dest: "{{ kbpc_certsuite_dir }}/result_files/certsuite-stdout.log"
+        mode: '0750'
+      no_log: true
+
+- name: Logging tasks after finishing the execution of certsuite
+  ansible.builtin.include_tasks: logging.yml
+...

@@ -1,0 +1,11 @@
+---
+- name: Copy authentication config
+  ansible.builtin.copy:
+    src: "{{ kbpc_partner_creds }}"
+    dest: "{{ kbpc_certsuite_dir }}/config_files/config.json"
+    mode: "0750"
+
+- name: Update kbpc_dockercfg_path variable
+  ansible.builtin.set_fact:
+    kbpc_dockercfg_path: "{{ kbpc_certsuite_dir }}/config_files/config.json"
+...

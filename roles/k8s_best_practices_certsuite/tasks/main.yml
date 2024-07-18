@@ -1,0 +1,13 @@
+---
+- name: Run k8s_best_practices_certsuite stages
+  block:
+    - name: Execute k8s_best_practices_certsuite pre-run stage
+      ansible.builtin.include_tasks: pre-run.yml
+
+    - name: Execute k8s_best_practices_certsuite tests stage
+      ansible.builtin.include_tasks: tests.yml
+
+  always:
+    - name: Execute k8s_best_practices_certsuite teardown stage
+      ansible.builtin.include_tasks: teardown.yml
+...

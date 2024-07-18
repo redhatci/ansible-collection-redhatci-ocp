@@ -21,23 +21,6 @@
       else CNF Cert Suite execution will fail.
   ignore_errors: true
 
-# For HEAD version, the support_image_version should be 'latest'
-- name: Set support_image_version variable
-  ansible.builtin.set_fact:
-    support_image_version: "{{ test_network_function_version[1:] if test_network_function_version is version('v4.4.0', '>=') else 'latest' }}"
-
-- name: "Save images in local registry"
-  ansible.builtin.include_role:
-    name: redhatci.ocp.mirror_images
-  vars:
-    images:
-      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
-      - "quay.io/testnetworkfunction/debug-partner:{{ support_image_version }}"
-    authfile: "{{ pullsecret_tmp_file }}"
-  when:
-    - dci_disconnected | default(false) | bool
-    - dci_local_registry | length
-
 # Depending on the presence or not of `test_network_function_src_dir` variable,
 # defined by test-runner script when testing a PR from cnf-certification-test
 # repository, we will use a custom tnf image or not.
@@ -46,6 +29,11 @@
     - test_network_function_src_dir is defined
     - test_network_function_src_dir | length > 0
   block:
+    # When testing a PR, use 'latest' for support_image_version
+    - name: Set support_image_version variable
+      ansible.builtin.set_fact:
+        support_image_version: latest # noqa: redhat-ci[no-role-prefix]
+
     # In this case, test_network_function_src_dir already points to
     # cnf-certification-test
     - name: Define variable to refer to the directory where tnf code is placed
@@ -165,6 +153,14 @@
       delay: 30
       until: not test_network_function_gitref.failed
 
+    # For HEAD version, the support_image_version should be 'latest'. Else, check version.json file
+    # from certsuite repo
+    - name: Set support_image_version variable
+      vars:
+        _cc_version_json_file: "{{ lookup('file', tnf_dir + '/version.json') | from_json }}"
+      ansible.builtin.set_fact:
+        support_image_version: "{{ 'latest' if test_network_function_version == 'HEAD' else _cc_version_json_file.partner_tag[1:] }}" # noqa: redhat-ci[no-role-prefix]
+
     # We need to pull the original image to tag it. Then, we remove the pulled
     # image
     - name: Pull and tag tnf image for the version under test
@@ -201,4 +197,17 @@
         ic_gits:
           - "{{ tnf_dir }}"
         ic_dev_gits: []
+
+- name: "Save images in local registry"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
+  vars:
+    images: # noqa: redhat-ci[no-role-prefix]
+      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
+      - "quay.io/testnetworkfunction/debug-partner:{{ support_image_version }}"
+    authfile: "{{ pullsecret_tmp_file }}" # noqa: redhat-ci[no-role-prefix]
+  when:
+    - dci_disconnected | default(false) | bool
+    - dci_local_registry | length
+
 ...

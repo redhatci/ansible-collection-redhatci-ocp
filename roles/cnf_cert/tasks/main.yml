@@ -1,4 +1,9 @@
 ---
+- name: Deprecation message
+  ansible.builtin.fail:  # noqa
+    msg: "[DEPRECATED] This module has been deprecated in favor of k8s_best_practices_certsuite and will be removed in a future release"
+  failed_when: false
+
 - name: Run tnf stages
   block:
     - name: Execute cnf_cert pre-run stage
