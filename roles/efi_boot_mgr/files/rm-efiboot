@@ -15,7 +15,7 @@ for bootnum in ${boot_list[*]}; do
     if [[ "${boot_id}" == "${boot_current}" ]]; then
         continue
     fi
-    echo efibootmgr --bootnum ${bootnum} --delete-bootnum
+    efibootmgr --bootnum ${bootnum} --delete-bootnum
 done
 
 echo "=== New Boot order ==="
