@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.13.EPOCH
+Version:        0.14.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Jul 26 2024 Tony Garcia <tonyg@redhat.com> - 0.14.EPOCH-VERS
+- Version bump due to efi_boot_mgr role
+
 * Fri Jul 26 2024 Ramon Perez <raperez@redhat.com> - 0.13.EPOCH-VERS
 - Version bump due to deprecation of cnf_cert role, moving in favour of
   k8s_best_practices_certsuite role
