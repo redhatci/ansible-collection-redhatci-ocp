@@ -387,16 +387,6 @@
     - always
     - validation
 
-- name: Check if openshift-client-linux-{{ version }}.tar.gz exists
-  ansible.builtin.uri:
-    url: "{{ release_url }}/{{ version }}/openshift-client-linux-{{ release_version }}.tar.gz"
-  until: ocp_client_chk.status == 200
-  retries: 6
-  delay: 10
-  register: ocp_client_chk
-  delegate_to: "{{ (not dra_set and not drm_set and registry_host_exists) | ternary(groups['registry_host'][0], groups['provisioner'][0]) }}"
-  tags: validation
-
 - name: Fail if hostgroups not defined in inventory/hosts file
   fail:
     msg: "The masters group is not defined. Please add masters to the inventory/hosts file"
