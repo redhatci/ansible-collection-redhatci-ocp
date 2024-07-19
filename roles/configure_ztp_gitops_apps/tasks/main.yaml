@@ -137,23 +137,27 @@
 
     ## Add adaptation due to https://issues.redhat.com/browse/CNF-7840
     ## based on https://redhat-internal.slack.com/archives/C02EG99MR9C/p1679006883470389?thread_ts=1678887461.410819&cid=C02EG99MR9C
-    - name: Add ClusterImageSet to the app-project.yaml
-      ansible.builtin.lineinfile:
-        path: "{{ temp_dir.path }}/ztp/argocd/deployment/app-project.yaml"
-        line: "{{ item }}"
-        insertafter: clusterResourceWhitelist.*
-      loop:
-        - "    kind: ClusterImageSet"
-        - "  - group: hive.openshift.io"
+    ## Not required from 4.16 in advance
+    - name: Add ClusterImageSet to projects
+      when: czga_site_generator_version is version ("v4.15", "<=")
+      block:
+        - name: Add ClusterImageSet to the app-project.yaml
+          ansible.builtin.lineinfile:
+            path: "{{ temp_dir.path }}/ztp/argocd/deployment/app-project.yaml"
+            line: "{{ item }}"
+            insertafter: clusterResourceWhitelist.*
+          loop:
+            - "    kind: ClusterImageSet"
+            - "  - group: hive.openshift.io"
 
-    - name: Add ClusterImageSet to the policies-app-project.yaml
-      ansible.builtin.lineinfile:
-        path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app-project.yaml"
-        line: "{{ item }}"
-        insertafter: clusterResourceWhitelist.*
-      loop:
-        - "    kind: ClusterImageSet"
-        - "  - group: hive.openshift.io"
+        - name: Add ClusterImageSet to the policies-app-project.yaml
+          ansible.builtin.lineinfile:
+            path: "{{ temp_dir.path }}/ztp/argocd/deployment/policies-app-project.yaml"
+            line: "{{ item }}"
+            insertafter: clusterResourceWhitelist.*
+          loop:
+            - "    kind: ClusterImageSet"
+            - "  - group: hive.openshift.io"
 
     - name: Replace image container URL in argocd-openshift-gitops-patch.json
       ansible.builtin.replace:
