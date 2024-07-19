@@ -116,8 +116,7 @@ class CollectionNamingConvention(AnsibleLintRule):
         # fail if the task didnt' start with any of the allowed prefixes
         return MatchError(
             tag="redhat-ci[no-role-prefix]",
-            message="Variable names from within roles "
-            + "should use a prefix related to the role. "
+            message="Variable names should use a prefix related to the role. "
             + f"({possible_prefix} are possible)",
             rule=self,
         )
@@ -136,13 +135,8 @@ class CollectionNamingConvention(AnsibleLintRule):
         if file and file.parent and file.parent.kind == "role":
             role_name = file.parent.path.name
 
-        # If we're importing roles/tasks
-        if ansible_module in (
-            "include_role",
-            "import_role",
-            "include_tasks",
-            "import_tasks",
-        ):
+        # If we're importing tasks
+        if ansible_module in ("include_tasks", "import_tasks"):
             # If the task uses the 'vars' section to set variables
             our_vars = task.get("vars", {})
             for key in our_vars:
@@ -153,8 +147,20 @@ class CollectionNamingConvention(AnsibleLintRule):
                     match_error.message += f" (vars: {key})"
                     results.append(match_error)
 
+        # if the task imports a role, then prefix should match the target role
+        elif ansible_module in ("include_role", "import_role"):
+            ext_role = task.get("action")["name"].split(".")[-1]
+            our_vars = task.get("vars", {})
+            for key in our_vars:
+                match_error = self.get_var_naming_matcherror(key, role=ext_role)
+                if match_error:
+                    match_error.filename = filename
+                    match_error.lineno = our_vars[LINE_NUMBER_KEY]
+                    match_error.message += f" (vars: {key})"
+                    results.append(match_error)
+
         # If the task uses the 'set_fact' module
-        if ansible_module == "set_fact":
+        elif ansible_module == "set_fact":
             for key in filter(
                 lambda x: isinstance(x, str)
                 and not x.startswith("__")
@@ -167,6 +173,8 @@ class CollectionNamingConvention(AnsibleLintRule):
                     match_error.lineno = task["action"][LINE_NUMBER_KEY]
                     match_error.message += f" (set_fact: {key})"
                     results.append(match_error)
+        else:
+            pass
 
         # If the task registers a variable
         registered_var = task.get("register", None)
