@@ -1,0 +1,4 @@
+- name: Clear mirror temp dir
+  ansible.builtin.file:
+    path: "{{ _sg_mirror_repo.path }}"
+    state: absent

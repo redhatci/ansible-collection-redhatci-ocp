@@ -1,0 +1,18 @@
+---
+- name: "Delete Gitea Namespace"
+  community.kubernetes.k8s:
+    state: absent
+    api: "v1"
+    kind: "Namespace"
+    name: "{{ sg_namespace }}"
+
+- name: "Wait for the Gitea Namespace to be terminated"
+  community.kubernetes.k8s_info:
+    api: "v1"
+    kind: "Namespace"
+    name: "{{ sg_namespace }}"
+  register: _sg_gitea_namespace
+  retries: 10
+  delay: 5
+  until: _sg_gitea_namespace.resources | length == 0
+...

@@ -1,0 +1,19 @@
+---
+- name: Validate the input variables
+  ansible.builtin.assert:
+    that:
+      - sg_repo_mirror_url is undefined or sg_repository is defined
+      - sg_repository is undefined or sg_username is defined
+      - sg_username is undefined or sg_password is defined
+      - sg_username is undefined or sg_email is defined
+
+- name: Create the Gitea deployment
+  ansible.builtin.include_tasks: install.yml
+  when:
+    - sg_action == 'install'
+
+- name: Remove the Gitea deployment
+  ansible.builtin.include_tasks: cleanup.yml
+  when:
+    - sg_action == 'cleanup'
+...
