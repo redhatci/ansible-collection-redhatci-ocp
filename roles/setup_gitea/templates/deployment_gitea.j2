@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea
+  namespace: "{{ sg_namespace }}"
+spec:
+  selector:
+    matchLabels:
+      app: gitea
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      volumes:
+        - name: gitea-app-ini
+          secret:
+            secretName: gitea-app-ini
+      containers:
+        - name: gitea
+          volumeMounts:
+            - name: gitea-app-ini
+              subPath: app.ini
+              mountPath: /etc/gitea/app.ini
+          image: "{{ sg_gitea_image }}"
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /api/healthz
+              port: http
+            initialDelaySeconds: 200
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+      serviceAccountName: anyuid

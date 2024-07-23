@@ -1,0 +1,8 @@
+---
+sg_namespace: gitea
+sg_action: install
+sg_gitea_image: docker.io/gitea/gitea:latest-rootless
+sg_repo_branch: main
+sg_repo_mirror_branch: main
+sg_url: http://localhost:3000
+...
