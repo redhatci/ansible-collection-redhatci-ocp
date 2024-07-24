@@ -6,22 +6,14 @@
         namespace: "{{ cnf_namespace }}"
         channel: "{{ testpmd_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
-        source_ns: "openshift-marketplace"
-      - name: testpmd-lb-operator
-        namespace: "{{ cnf_namespace }}"
-        channel: "{{ testpmd_channel | default('alpha') }}"
-        source: "{{ catalog_name }}"
-        source_ns: "openshift-marketplace"
       - name: testpmd-operator
         namespace: "{{ cnf_namespace }}"
         channel: "{{ testpmd_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
-        source_ns: "openshift-marketplace"
       - name: trex-operator
         namespace: "{{ cnf_namespace }}"
         channel: "{{ trex_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
-        source_ns: "openshift-marketplace"
 
 - name: "Install enabled operators"
   ansible.builtin.include_role:
@@ -29,7 +21,7 @@
   vars:
     operator: "{{ ex_cnf_operator.name }}"
     source: "{{ ex_cnf_operator.source }}"
-    namespace: "{{ ex_cnf_operator.source_ns }}"
+    namespace: "{{ ex_cnf_operator.namespace }}"
     channel: "{{ ex_cnf_operator.channel | default(omit) }}"
   loop: "{{ ex_cnf_operators }}"
   loop_control:
