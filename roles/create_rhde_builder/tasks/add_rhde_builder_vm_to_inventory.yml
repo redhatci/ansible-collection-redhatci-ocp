@@ -24,4 +24,6 @@
   ansible.builtin.setup:
   delegate_to: "{{ rhde_builder_vm_name }}"
   delegate_facts: true
+  retries: 3
+  delay: 5
 ...

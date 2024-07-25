@@ -1,32 +1,67 @@
 ---
 - name: Create the rhocp toml file needed by Microshift
+  vars:
+    _bp_id: "rhocp"
+    _bp_data:
+      name: "Red Hat OpenShift Container Platform for RHEL {{ ansible_distribution_major_version }}"
+      url: "{{ microshift_generate_iso_rhocp_repo_url }}"
+      check_gpg: true
+      rhsm: true
   ansible.builtin.template:
-    src: rhocp.toml.j2
-    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/rhocp.toml"
+    src: blueprint.toml.j2
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/000-rhocp.toml"
     mode: '0644'
 
 - name: Create the fast-datapath.toml file needed by Microshift
+  vars:
+    _bp_id: "fast-datapath"
+    _bp_data:
+      name: "Fast Datapath for RHEL {{ ansible_distribution_major_version }}"
+      url: "{{ microshift_generate_iso_fast_datapath_repo_url }}"
+      check_gpg: true
+      rhsm: true
   ansible.builtin.template:
-    src: fast-datapath.toml.j2
-    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/fast-datapath.toml"
+    src: blueprint.toml.j2
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/001-fast-datapath.toml"
     mode: '0644'
 
 - name: Create the microshift.toml file needed by Microshift
+  vars:
+    _bp_id: "microshift"
+    _bp_data:
+      name: "Microshift {{ microshift_generate_iso_microshift_version }}"
+      url: "{{ microshift_generate_iso_microshift_repo_url }}"
   ansible.builtin.template:
-    src: microshift.toml.j2
-    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/microshift.toml"
+    src: blueprint.toml.j2
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/002-microshift.toml"
     mode: '0644'
+
+- name: Print all additional blueprints
+  ansible.builtin.debug:
+    var: microshift_generate_iso_additional_blueprints
+
+- name: Create any additional custom blueprints
+  vars:
+    _bp_id: "{{ item.key }}"
+    _bp_data: "{{ item.value }}"
+  ansible.builtin.template:
+    src: blueprint.toml.j2
+    dest: "{{ microshift_generate_iso_folder_blueprints_dir }}/{{ '%02d' | format(idx) }}-{{ item.key }}.toml"
+    mode: '0644'
+  loop: "{{ microshift_generate_iso_additional_blueprints | dict2items }}"
+  loop_control:
+    index_var: idx
 
 - name: Register all the sources blueprint files
   ansible.builtin.find:
     path: "{{ microshift_generate_iso_folder_blueprints_dir }}"
     patterns: '*.toml'
-  register: blueprint_files
+  register: _mgi_blueprint_files
 
 - name: Add the source to image builder
   become: true
   ansible.builtin.command:
     composer-cli sources add {{ item.path }}
-  loop: "{{ blueprint_files.files }}"
+  loop: "{{ _mgi_blueprint_files.files }}"
   changed_when: true
 ...

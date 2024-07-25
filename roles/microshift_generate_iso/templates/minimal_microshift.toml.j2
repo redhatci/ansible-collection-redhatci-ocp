@@ -11,3 +11,7 @@ version = "{{ microshift_generate_iso_microshift_version | default('*') }}"
 
 [customizations.services]
 enabled = ["microshift"]
+
+# BEGIN customizations
+{{ microshift_generate_iso_customization_fragment }}
+# END customizations

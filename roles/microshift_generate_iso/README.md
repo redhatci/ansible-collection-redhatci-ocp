@@ -9,7 +9,7 @@ This Ansible role automates the process of generating a MicroShift ISO image.
 
 ## Role Variables
 
-The role requires the following variables to be defined:
+The role has the following variables:
 
 - `microshift_generate_iso_microshift_repo_url`: The location of the MicroShift repo.
 - `microshift_generate_iso_rhocp_repo_url`: The location of the GA RHOCP repo.
@@ -22,6 +22,9 @@ The role requires the following variables to be defined:
 - `microshift_generate_iso_folder`: The directory where MicroShift files will be stored. Default is `"/home/{{ ansible_user }}/microshift"`.
 - `microshift_generate_iso_folder_blueprints_dir`: The directory within `microshift_generate_iso_folder` where blueprints will be stored. Default is `"{{ microshift_generate_iso_folder }}/blueprints"`.
 - `microshift_generate_iso_ssh_key`: The SSH public key to use for accessing servers. Default is the content of `~/.ssh/id_rsa.pub`.
+- `microshift_generate_iso_kickstart_post`: A list of commands to be appended to the %post section in the installation kickstart file. Default is empty.
+- `microshift_generate_iso_additional_blueprints`: A dictionary of extra blueprints to be added to the install image. Default is empty.
+- `microshift_generate_iso_customization_fragment`: A text fragment to be appended to the installation blueprint, rendered in jinja. Default is empty.
 
 ## Example Playbook
 
