@@ -5,7 +5,7 @@
 
 - name: "Check loadbalancer pod status to be running"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
       - example-cnf-type=lb-app

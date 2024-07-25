@@ -3,15 +3,15 @@
   ansible.builtin.set_fact:
     ex_cnf_operators:
       - name: cnf-app-mac-operator
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ testpmd_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
       - name: testpmd-operator
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ testpmd_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
       - name: trex-operator
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ trex_channel | default('alpha') }}"
         source: "{{ catalog_name }}"
 
@@ -24,6 +24,7 @@
     namespace: "{{ ex_cnf_operator.namespace }}"
     channel: "{{ ex_cnf_operator.channel | default(omit) }}"
     operator_group_name: example-cnf-operator-group
+    install_approval: "Automatic"
     operator_group_spec:
       targetNamespaces:
         - "{{ ex_cnf_operator.namespace }}"

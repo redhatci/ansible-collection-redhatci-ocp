@@ -1,7 +1,7 @@
 apiVersion: examplecnf.openshift.io/v1
 kind: TRexConfig
 metadata:
-  namespace: {{ cnf_namespace }}
+  namespace: {{ ecd_cnf_namespace }}
   name: {{ trex_cr_name }}
   annotations:
     "ansible.sdk.operatorframework.io/verbosity": "4"

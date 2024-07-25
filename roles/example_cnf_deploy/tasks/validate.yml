@@ -2,7 +2,7 @@
 #### Migrate ####
 - name: "Get TestPMD CR info"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: TestPMD
   register: _ecd_testpmd_list
 
@@ -15,7 +15,7 @@
 # tests in that case
 - name: "Check if previous TRex job worked when trex_tests_skip_failures is activated"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
       - reason==PacketMatched
@@ -35,7 +35,7 @@
   block:
     - name: "Wait for at least one PacketMatched event from TRex"
       community.kubernetes.k8s_info:
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:
           - reason==PacketMatched
@@ -62,7 +62,7 @@
 
 - name: "Get trexconfig matched events"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
       - reason==PacketMatched
@@ -71,7 +71,7 @@
 
 - name: "Get trexconfig dropped events"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
       - reason==PacketDropped

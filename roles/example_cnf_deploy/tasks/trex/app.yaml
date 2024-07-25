@@ -3,7 +3,7 @@
   community.kubernetes.k8s_info:
     api_version: examplecnf.openshift.io/v1
     kind: TRexConfig
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     name: "{{ trex_cr_name }}"
   register: trexconfig_cr
 
@@ -29,7 +29,7 @@
 
     - name: Check TRex pod status to be running
       community.kubernetes.k8s_info:
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         kind: Pod
         label_selectors:
           - example-cnf-type=pkt-gen
@@ -55,7 +55,7 @@
 - name: Get logs from example-cnf deployment before starting the job
   environment:
     OC_BINARY: "{{ oc_tool_path | default('oc') }}"
-    APP_NAMESPACE: "{{ cnf_namespace }}"
+    APP_NAMESPACE: "{{ ecd_cnf_namespace }}"
     SRIOV_NAMESPACE: openshift-sriov-network-operator
   ansible.builtin.script:
     cmd: >
@@ -81,7 +81,7 @@
 
     - name: Wait for TRex app CR to be created
       ansible.builtin.shell: |
-        {{ oc_tool_path }} get trexapp.examplecnf.openshift.io -o yaml -n {{ cnf_namespace }} {{ trex_app_cr_name }}
+        {{ oc_tool_path }} get trexapp.examplecnf.openshift.io -o yaml -n {{ ecd_cnf_namespace }} {{ trex_app_cr_name }}
       register: trex_app_cr_installation
       retries: 30
       delay: 10
@@ -92,7 +92,7 @@
 
     - name: Wait for the TRex app TestStarted event
       community.kubernetes.k8s_info:
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:
           - "reason==TestStarted"
@@ -105,7 +105,7 @@
     # Omit this check if we are running TRex job in continuous mode
     - name: Wait for the TRex app TestCompleted event
       community.kubernetes.k8s_info:
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:
           - "reason==TestCompleted"
@@ -119,7 +119,7 @@
     # Omit this check if we are running TRex job in continuous mode
     - name: Wait for the TRex app TestPassed or TestFailed event
       community.kubernetes.k8s_info:
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors: "involvedObject.name={{ trex_app_cr_name }}"
       register: trex_result
@@ -131,7 +131,7 @@
     - name: Get logs from example-cnf deployment after running the job
       environment:
         OC_BINARY: "{{ oc_tool_path | default('oc') }}"
-        APP_NAMESPACE: "{{ cnf_namespace }}"
+        APP_NAMESPACE: "{{ ecd_cnf_namespace }}"
         SRIOV_NAMESPACE: openshift-sriov-network-operator
       ansible.builtin.script:
         cmd: >
@@ -155,7 +155,7 @@
     # Omit this check if we are running TRex job in continuous mode
     - name: Wait for the TRex app PacketMatched event
       community.kubernetes.k8s_info:
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:
           - "reason==PacketMatched"

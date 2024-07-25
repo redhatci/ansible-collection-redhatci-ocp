@@ -3,7 +3,7 @@
 ecd_operator_version: ""
 registry_url: quay.io
 repo_name: rh-nfv-int
-cnf_namespace: example-cnf
+ecd_cnf_namespace: example-cnf
 
 # Internal variables
 image_pull_policy: IfNotPresent
@@ -61,7 +61,7 @@ ecd_cnf_app_networks: []
 ## Connection between TRex-LB in LB mode (not used in direct mode)
 ecd_packet_generator_networks: []
 ## Networks for the CNF, including the hardcoded MAC addresses for direct mode case
-networks_testpmd_app: []
+ecd_networks_testpmd_app: []
 
 # RuntimeClass that should be used for running DPDK application,
 # if the var is empty, the annotation irq-load-balancing.crio.io: "disable" is not applied

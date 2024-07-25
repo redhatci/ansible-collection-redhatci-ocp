@@ -48,7 +48,7 @@
           apiVersion: v1
           kind: ConfigMap
           metadata:
-            namespace: "{{ cnf_namespace }}"
+            namespace: "{{ ecd_cnf_namespace }}"
             name: "{{ trex_profile_cm_name }}"
           data:
             name: "{{ trex_profile_name }}"

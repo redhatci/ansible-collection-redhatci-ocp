@@ -25,7 +25,7 @@
   always:
     - name: "Retrieve TRex app logs"
       community.kubernetes.k8s_log:
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         label_selectors:
           - example-cnf-type=pkt-gen-app
           - job-name=job-{{ ecd_trex_app_cr_name }}

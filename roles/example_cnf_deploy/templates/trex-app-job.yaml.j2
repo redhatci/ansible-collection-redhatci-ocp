@@ -2,7 +2,7 @@ kind: Job
 apiVersion: batch/v1
 metadata:
   name: "job-{{ trex_app_job_name }}"
-  namespace: "{{ cnf_namespace }}"
+  namespace: "{{ ecd_cnf_namespace }}"
 spec:
   backoffLimit: 0
   template:

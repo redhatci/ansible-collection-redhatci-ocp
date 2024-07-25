@@ -2,7 +2,7 @@ apiVersion: examplecnf.openshift.io/v1
 kind: LoadBalancer
 metadata:
   name: lb
-  namespace: {{ cnf_namespace }}
+  namespace: {{ ecd_cnf_namespace }}
 spec:
   registry: "{{ registry_url }}"
   org: "{{ repo_name }}"

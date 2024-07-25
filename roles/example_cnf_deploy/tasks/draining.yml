@@ -3,7 +3,7 @@
 - name: "Get testpmd-app pod"
   community.kubernetes.k8s_info:
     kind: Pod
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     label_selectors:
       - example-cnf-type=cnf-app
   register: _ecd_cnf_pod
@@ -11,7 +11,7 @@
 - name: "Get trex-server pod"
   community.kubernetes.k8s_info:
     kind: Pod
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     label_selectors:
       - example-cnf-type=pkt-gen
   register: _ecd_pktgen_pod
@@ -49,7 +49,7 @@
 - name: "Wait until testpmd-app pod is deleted from the drained node"
   community.kubernetes.k8s_info:
     kind: Pod
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     name: "{{ ecd_cnf_existing_pod }}"
   register: _ecd_cnf_pod
   until: _ecd_cnf_pod.resources|length == 0
@@ -63,7 +63,7 @@
 
 - name: "Wait until new testpmd-app pod is allocated in a new worker node"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
       - example-cnf-type=cnf-app
@@ -114,7 +114,7 @@
       community.kubernetes.k8s_info:
         api_version: examplecnf.openshift.io/v1
         kind: TRexApp
-        namespace: "{{ cnf_namespace }}"
+        namespace: "{{ ecd_cnf_namespace }}"
         name: "{{ trex_app_cr_name }}"
       register: _ecd_trex_app_cr
 
@@ -128,7 +128,7 @@
 
 - name: "Wait for the TRex app TestCompleted event"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
       - "reason==TestCompleted"
@@ -140,7 +140,7 @@
 
 - name: "Wait for the TRex app TestPassed or TestFailed event"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors: "involvedObject.name={{ trex_app_cr_name }}"
   register: _ecd_trex_result
@@ -159,7 +159,7 @@
 # Only if TRexApp job passed
 - name: "Wait for the TRex app PacketMatched event"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
       - "reason==PacketMatched"
@@ -173,7 +173,7 @@
 
 - name: "Retrieve TRex app logs"
   community.kubernetes.k8s_log:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     label_selectors:
       - example-cnf-type=pkt-gen-app
       - job-name=job-{{ trex_app_cr_name }}

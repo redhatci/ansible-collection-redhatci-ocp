@@ -19,7 +19,7 @@ OpenShift 4 Cluster should be deployed with additional operators:
 | ecd_packet_generator_networks | []                                                               | no       | Connection between TRex-LB in LB mode (not used in direct mode)                                |
 | ecd_operator_version          | ""                                                               | yes      | Version of the index to be used                                                                |
 | example_cnf_index_image       | quay.io/rh-nfv-int/nfv-example-cnf-catalog:{{ operator_version}} | yes      | Index image to be used                                                                         |
-| cnf_namespace                 | "example-cnf"                                                    | no       | Name of the namespace where example-cnf is deployed                                            |                                                              |
+| ecd_cnf_namespace                 | "example-cnf"                                                    | no       | Name of the namespace where example-cnf is deployed                                            |                                                              |
 | enable_lb                     | false                                                            | no       | [WIP] enabling a builtin loadbalancer                                                          |
 | trex_duration                 | 120                                                              | no       | Main TRexApp job duration. If set to -1, it will run in continuous burst mode                  |
 

@@ -5,7 +5,7 @@
   community.kubernetes.k8s_info:
     api_version: k8s.cni.cncf.io/v1
     kind: NetworkAttachmentDefinition
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
   register: _ecd_net_list
   until: _ecd_net_list.resources | length > 0
   retries: 9
@@ -92,7 +92,7 @@
 
 - name: "Check testpmd pod count to be greater than 0"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
       - example-cnf-type=cnf-app
@@ -105,7 +105,7 @@
 # At least confirm that the first testpmd pod is up and running
 - name: "Check testpmd pod status to be running"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
       - example-cnf-type=cnf-app
@@ -129,7 +129,7 @@
 
 - name: "Check cnfappmac resource (created by testpmd app) count to be greater than 0"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: CNFAppMac
   register: _ecd_cnfappmac
   retries: 120
@@ -142,7 +142,7 @@
 # some extra checks
 - name: "Check that at least the cnfappmac resource for the first testpmd pod has the required data"
   community.kubernetes.k8s_info:
-    namespace: "{{ cnf_namespace }}"
+    namespace: "{{ ecd_cnf_namespace }}"
     kind: CNFAppMac
     name: "{{ _ecd_testpmd_pods.resources[0].metadata.name }}"
   register: _ecd_first_cnfappmac
