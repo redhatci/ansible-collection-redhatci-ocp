@@ -24,6 +24,9 @@
     namespace: "{{ ex_cnf_operator.namespace }}"
     channel: "{{ ex_cnf_operator.channel | default(omit) }}"
     operator_group_name: example-cnf-operator-group
+    operator_group_spec:
+      targetNamespaces:
+        - "{{ ex_cnf_operator.namespace }}"
   loop: "{{ ex_cnf_operators }}"
   loop_control:
     loop_var: ex_cnf_operator
