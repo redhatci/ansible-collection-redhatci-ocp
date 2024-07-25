@@ -45,8 +45,16 @@
     set_fact:
       cluster_config_patch_request_body: {
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation | bool }}",
-        "ingress_vip": "{{ ingress_vip }}",
-        "api_vip": "{{ api_vip }}",
+        "ingress_vips": [
+          {
+            "ip": "{{ ingress_vip }}",
+          }
+        ],
+        "api_vips": [
+          {
+            "ip": "{{ api_vip }}",
+          }
+        ],
       }
     when: not single_node_openshift_enabled
 
