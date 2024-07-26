@@ -1,4 +1,8 @@
 ---
+- name: Task to trigger CI job
+  ansible.builtin.debug:
+    msg: ":)"
+
 # cert_item is a complex nested variable,
 # it could be container, operator, cnf, or helmchart
 - name: Validate cert_item to be defined
