@@ -1,0 +1,219 @@
+---
+- name: Verify that kubeconfig is provided
+  ansible.builtin.assert:
+    that:
+      - kbpc_kubeconfig is defined
+      - kbpc_kubeconfig|length
+    fail_msg: "kubeconfig is required to run certsuite"
+
+- name: Fail if certsuite version is lower than v5.1.3
+  when:
+    - kbpc_version is version("v5.1.3", "<")
+    - kbpc_version != "HEAD"
+  ansible.builtin.fail:
+    msg: "This role is not compatible with certsuite version < v5.1.3"
+
+# Just do this in case preflight test suite is used. This happens if using
+# preflight label. This check is included as a warning for users in case of not
+# defining kbpc_partner_creds properly
+- name: Verify if kbpc_partner_creds is provided when running preflight on certsuite
+  when: "'preflight' in kbpc_test_labels"
+  ansible.builtin.assert:
+    that: "kbpc_partner_creds|length > 0"
+    fail_msg: >
+      WARNING.
+      Note that certsuite includes preflight.
+      If you need credentials to pull the images under test,
+      you need to set up kbpc_partner_creds variable,
+      else certsuite execution will fail.
+  ignore_errors: true
+
+# Depending on the presence or not of `kbpc_code_src_dir` variable,
+# defined by test-runner script when testing a PR from cnf-certification-test
+# repository, we will use a custom certsuite image or not.
+- name: Tasks when testing a PR from cnf-certification-test repository
+  when:
+    - kbpc_code_src_dir is defined
+    - kbpc_code_src_dir | length > 0
+  block:
+    # When testing a PR, use 'latest' for kbpc_support_image_version
+    - name: Set kbpc_support_image_version variable
+      ansible.builtin.set_fact:
+        kbpc_support_image_version: latest
+
+    # In this case, kbpc_code_src_dir already points to
+    # cnf-certification-test
+    - name: Define variable to refer to the directory where certsuite code is placed
+      ansible.builtin.set_fact:
+        kbpc_certsuite_dir: "{{ kbpc_code_src_dir }}"
+
+    # Add proper permissions to the folder recursively.  This is needed since
+    # extract-dependencies script downloads the code without write
+    # permissions/exec permissions, and they are required for creating new files
+    # (e.g. the output from certsuite execution) or execute scripts (e.g. the script
+    # that runs the certification suites).
+    - name: Set proper permissions to the certsuite folder
+      ansible.builtin.file:
+        path: "{{ kbpc_certsuite_dir }}"
+        state: directory
+        mode: u+wx,g+wx
+        recurse: true
+
+    # We need to check the SHA in this way, because extract-dependencies
+    # changes the commit id when creating the new branch based on the PR, but
+    # only if new PRs are merged in the repo and we have not included them in
+    # our change. In these cases, the original id is saved in .git/ORIG_HEAD
+    # file. Else, we can find it in the location called `.git/refs/heads/prXXX`
+    - name: "Check if .git/ORIG_HEAD file exists"
+      ansible.builtin.stat:
+        path: "{{ kbpc_certsuite_dir }}/.git/ORIG_HEAD"
+      register: _kbpc_orig_head_file
+
+    - name: Actions when .git/ORIG_HEAD file exists
+      when: _kbpc_orig_head_file.stat.exists
+      block:
+        - name: Retrieve commit SHA from the downloaded repo - from ORIG_HEAD
+          ansible.builtin.slurp:
+            src: "{{ kbpc_certsuite_dir }}/.git/ORIG_HEAD"
+          register: _kbpc_repo_info_head
+
+        - name: Create variable with cersuite version name
+          ansible.builtin.set_fact:
+            kbpc_version_image: "{{ _kbpc_repo_info_head['content'] | b64decode | trim }}"
+
+    - name: Actions when .git/ORIG_HEAD file does not exist
+      when: not _kbpc_orig_head_file.stat.exists
+      block:
+        - name: Retrieve commit SHA from the downloaded repo - from refs
+          ansible.builtin.shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
+          register: _kbpc_repo_info_branch
+          args:
+            chdir: "{{ kbpc_certsuite_dir }}"
+
+        - name: Create variable with certsuite version name
+          ansible.builtin.set_fact:
+            kbpc_version_image: "{{ _kbpc_repo_info_branch.stdout }}"
+
+    - name: Create variable with certsuite image name
+      vars:
+        kbpc_image_tag: "{{ kbpc_version_image }}-{{ kbpc_image_suffix }}"
+      ansible.builtin.set_fact:
+        kbpc_certsuite_image: "{{ kbpc_project_name }}:{{ kbpc_image_tag }}"
+
+    - name: Build the certsuite image locally
+      ansible.builtin.shell: |
+        set -x
+        podman build -t {{ kbpc_certsuite_image }} .
+      args:
+        chdir: "{{ kbpc_certsuite_dir }}"
+
+- name: Tasks when testing a cnf-certification-test stable version
+  when:
+    - kbpc_code_src_dir is not defined
+  block:
+    - name: Create temporary directory for certsuite repository
+      ansible.builtin.tempfile:
+        state: directory
+      register: _kbpc_git_dir
+
+    - name: Define variable to refer to the directory where certsuite code is placed
+      ansible.builtin.set_fact:
+        kbpc_certsuite_dir: "{{ _kbpc_git_dir.path }}/{{ kbpc_project_name }}"
+
+    # In
+    # https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
+    # there are two main tags to take into account:
+    # -latest: linked to the latest certsuite release.
+    # -unstable: related to the HEAD version of the main branch in the certsuite repository
+    # (https://github.com/test-network-function/cnf-certification-test).
+    # So, if a version is provided in kbpc_version, that version
+    # will be used. In case we are on the master branch (HEAD version),
+    # unstable tag is used.
+    - name: Create variable with certsuite version name
+      ansible.builtin.set_fact:
+        kbpc_version_image: "{{ (kbpc_version | regex_search('HEAD')) | ternary('unstable', kbpc_version) }}"
+
+    - name: Create variable with certsuite image name
+      vars:
+        kbpc_image_tag: "{{ kbpc_version_image }}-{{ kbpc_image_suffix }}"
+      ansible.builtin.set_fact:
+        kbpc_certsuite_image: "{{ kbpc_project_name }}:{{ kbpc_image_tag }}"
+
+    - name: Clone certsuite repository
+      ansible.builtin.git:
+        repo: "{{ kbpc_repository }}"
+        version: "{{ kbpc_version }}"
+        dest: "{{ kbpc_certsuite_dir }}"
+        force: true
+        # Fetch only the latest commit to reduce the data
+        # to transfer when cloning the large repo
+        depth: 1
+        # Reuse objects from an existing repository to speed up cloning
+        reference: "{{ kbpc_certsuite_dir }}"
+      # On RHEL8 git clone can sporadically fail with OpenSSL SSL_read:
+      # SSL_ERROR_SYSCALL, errno 104. This is a workaround to try cloning the
+      # repo multiple times.
+      register: _kbpc_gitref
+      retries: 3
+      delay: 30
+      until: not _kbpc_gitref.failed
+
+    # For HEAD version, the kbpc_support_image_version should be 'latest'. Else, check version.json file
+    # from certsuite repo
+    - name: Set kbpc_support_image_version variable
+      vars:
+        _kbpc_version_json_file: "{{ lookup('file', kbpc_certsuite_dir + '/version.json') | from_json }}"
+      ansible.builtin.set_fact:
+        kbpc_support_image_version: "{{ (kbpc_version == 'HEAD') | ternary('latest', _kbpc_version_json_file.partner_tag[1:]) }}"
+
+    # We need to pull the original image to tag it. Then, we remove the pulled
+    # image
+    - name: Pull and tag certsuite image for the version under test
+      ansible.builtin.shell: |
+        set -ex
+        podman pull quay.io/testnetworkfunction/{{ kbpc_project_name }}:{{ kbpc_version_image }}
+        podman tag quay.io/testnetworkfunction/{{ kbpc_project_name }}:{{ kbpc_version_image }} \
+        {{ kbpc_certsuite_image }}
+        podman image rm {{ kbpc_project_name }}:{{ kbpc_version_image }}
+      register: _kbpc_pull_result
+      retries: 2
+      delay: 10
+      until: _kbpc_pull_result.rc == 0
+
+    # This is used to lately check if we are really testing the version we are
+    # cloning from the cnf-certification-test repo, checking in certsuite logs if the
+    # commit SHA is present. This is only useful to lately compare with the
+    # output from a downloaded cnf-certification-test repo, so this is not
+    # meant to be used with images built from a PR
+    - name: Retrieve last commit SHA
+      ansible.builtin.command: git rev-parse HEAD  # noqa: command-instead-of-module
+      register: _kbpc_commit_sha_cmd
+      args:
+        chdir: "{{ kbpc_certsuite_dir }}"
+
+    - name: Create variable with certsuite commit SHA
+      ansible.builtin.set_fact:
+        kbpc_commit_sha: "{{ _kbpc_commit_sha_cmd.stdout }}"
+
+    - name: Create DCI component for cnf-certification-test
+      ansible.builtin.include_role:
+        name: redhatci.ocp.include_components
+      vars:
+        ic_gits: # noqa: redhat-ci[no-role-prefix]
+          - "{{ kbpc_certsuite_dir }}"
+        ic_dev_gits: [] # noqa: redhat-ci[no-role-prefix]
+
+- name: "Save images in local registry"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
+  vars:
+    images: # noqa: redhat-ci[no-role-prefix]
+      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
+      - "quay.io/testnetworkfunction/debug-partner:{{ kbpc_support_image_version }}"
+    authfile: "{{ kbpc_pullsecret }}" # noqa: redhat-ci[no-role-prefix]
+    dci_local_registry: "{{ kbpc_registry }}" # noqa: redhat-ci[no-role-prefix]
+  when:
+    - kbpc_pullsecret | length
+    - kbpc_registry | length
+
+...

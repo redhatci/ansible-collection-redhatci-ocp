@@ -1,0 +1,10 @@
+var feedback={
+{% for key, value in kbpc_feedback.items() %}
+  "source-telco-{{ key }}": "{{ value }}",
+  "source-nontelco-{{ key }}": "{{ value }}",
+  "source-faredge-{{ key }}": "{{ value }}",
+  "source-extended-{{ key }}": "{{ value }}",
+  "source-all-{{ key }}": "{{ value }}"{% if not loop.last %},{% endif %}
+
+{% endfor %}
+}
