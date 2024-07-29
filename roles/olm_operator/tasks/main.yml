@@ -6,13 +6,6 @@
       - namespace | string
       - source | string
 
-- name: Print install parameters
-  ansible.builtin.debug:
-    msg:
-      - "Operator: {{ operator }}"
-      - "Target namespace: {{ namespace }}"
-      - "Catalog: {{ source }}"
-
 - name: Check CatalogSource is Ready
   community.kubernetes.k8s_info:
     api: operators.coreos.com/v1alpha1
@@ -46,27 +39,49 @@
           pod-security.kubernetes.io/enforce-version: latest
           security.openshift.io/scc.podSecurityLabelSync: "false"
 
-- name: Installing Operator
+- name: Get operator's package manifests
+  community.kubernetes.k8s_info:
+    api_version: packages.operators.coreos.com/v1
+    kind: PackageManifest
+    label_selectors:
+      - catalog={{ source }}
+      - catalog-namespace={{ source_ns }}
+    field_selectors:
+      - metadata.name={{ operator }}
+  register: operator_packagemanifest
+  retries: 3
+  delay: 5
+  until:
+    - operator_packagemanifest is defined
+    - operator_packagemanifest.resources is defined
+    - operator_packagemanifest.resources | length
+  failed_when: operator_packagemanifest is skipped
+    or operator_packagemanifest.resources is undefined
+    or operator_packagemanifest.resources | length != 1
+
+- name: "Installing Operator {{ operator }}"
+  vars:
+    default_channel: "{{ operator_packagemanifest.resources[0].status.defaultChannel }}"
+    desired_channel: "{{ channel if channel is defined and channel |
+                          length > 0 else default_channel }}"
+    default_csv: >-
+      {{
+        operator_packagemanifest.resources[0].status.channels
+        | selectattr('name', 'equalto', desired_channel)
+        | map(attribute='currentCSV')
+        | first
+      }}
+    operator_csv: "{{ starting_csv | default(default_csv, true) }}"
   block:
-    - name: "Get operator's package manifests"
-      community.kubernetes.k8s_info:
-        api_version: packages.operators.coreos.com/v1
-        kind: PackageManifest
-        label_selectors:
-          - catalog={{ source }}
-          - catalog-namespace={{ source_ns }}
-        field_selectors:
-          - metadata.name={{ operator }}
-      register: operator_packagemanifest
-      retries: 3
-      delay: 5
-      until:
-        - operator_packagemanifest is defined
-        - operator_packagemanifest.resources is defined
-        - operator_packagemanifest.resources | length
-      failed_when: operator_packagemanifest is skipped
-        or operator_packagemanifest.resources is undefined
-        or operator_packagemanifest.resources | length != 1
+
+    - name: Print install parameters
+      ansible.builtin.debug:
+        msg:
+          - "Operator: {{ operator }}"
+          - "Target namespace: {{ namespace }}"
+          - "Catalog: {{ source }}"
+          - "Channel: {{ desired_channel }}"
+          - "CSV: {{ operator_csv }}"
 
     - name: Create OperatorGroup for OLM operator
       vars:
@@ -84,12 +99,6 @@
             namespace: "{{ namespace }}"
           spec: "{{ operator_group_spec | default(group_spec, true) }}"
 
-    - name: Set operator's channel
-      vars:
-        default_channel: "{{ operator_packagemanifest.resources[0].status.defaultChannel }}"
-      ansible.builtin.set_fact:
-        desired_channel: "{{ (channel | length) | ternary(channel, default_channel) }}"
-
     - name: Create subscription for OLM operator
       community.kubernetes.k8s:
         definition:
@@ -106,7 +115,7 @@
             name: "{{ operator }}"
             source: "{{ source }}"
             sourceNamespace: "{{ source_ns }}"
-            startingCSV: "{{ starting_csv | default('') | length | ternary(starting_csv, omit) }}"
+            startingCSV: "{{ operator_csv }}"
 
     - name: Wait for subscription to be ready
       community.kubernetes.k8s_info:
@@ -124,10 +133,6 @@
         - "'currentCSV' in sub.resources[0].status"
         - sub.resources[0].status.currentCSV | length > 0
 
-    - name: Get operator CSV for desired channel
-      ansible.builtin.set_fact:
-        operator_csv: "{{ starting_csv | default('') | length | ternary(starting_csv, sub.resources[0].status.currentCSV) }}"
-
     - name: Handle with a starting CSV
       when:
         - starting_csv | default('') | length
@@ -144,7 +149,7 @@
             - install_plans.resources is defined
             - install_plans.resources | length
 
-        - name: Approve install plan for specific CSV  # noqa: jinja[invalid]
+        - name: Approve install plan for specific CSV
           community.kubernetes.k8s:
             definition:
               apiVersion: operators.coreos.com/v1alpha1
@@ -174,6 +179,7 @@
         - "'phase' in csv.resources[0].status"
         - csv.resources[0].status.phase == 'Succeeded' or
           csv.resources[0].status.phase == 'Present'
+      no_log: true
 
     - name: Fail if not all pods reach a successful state
       community.kubernetes.k8s_info:
@@ -225,20 +231,22 @@
           There where issues during the operator deployment. See debug info in
           the above tasks
 
-- name: Patch subscription according to install_approval
-  community.kubernetes.k8s:
-    definition:
-      apiVersion: operators.coreos.com/v1alpha1
-      kind: Subscription
-      metadata:
-        name: "{{ operator }}"
-        namespace: "{{ namespace }}"
-      spec:
-        installPlanApproval: "{{ install_approval | default('Manual') }}"
-        channel: "{{ desired_channel }}"
-        config:
-          resources: {}
-        name: "{{ operator }}"
-        source: "{{ source }}"
-        sourceNamespace: "{{ source_ns }}"
+    - name: Patch subscription according to install_approval
+      community.kubernetes.k8s:
+        definition:
+          apiVersion: operators.coreos.com/v1alpha1
+          kind: Subscription
+          metadata:
+            name: "{{ operator }}"
+            namespace: "{{ namespace }}"
+          spec:
+            installPlanApproval: "{{ install_approval | default('Manual') }}"
+            channel: "{{ desired_channel }}"
+            startingCSV: "{{ operator_csv }}"
+            config:
+              resources: {}
+            name: "{{ operator }}"
+            source: "{{ source }}"
+            sourceNamespace: "{{ source_ns }}"
+      no_log: true
 ...
