@@ -23,8 +23,8 @@
 
 - name: "Download stable opm client"
   vars:
-    ocp_clients_url: >-
-      https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/
+    ocp_clients_url:
+      "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/\
       opm-linux{{ ansible_distribution_major_version is version('9', '==') | ternary('-rhel9', '') }}.tar.gz"
   ansible.builtin.unarchive:
     src: "{{ ocp_clients_url }}"
