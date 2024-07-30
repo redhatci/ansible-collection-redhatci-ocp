@@ -5,7 +5,7 @@
     command: status
   register: vmstatus
   until: vmstatus.status == 'shutdown'
-  retries: 1500
+  retries: 150
   delay: 10
   when: ool_node_not_exists
 
