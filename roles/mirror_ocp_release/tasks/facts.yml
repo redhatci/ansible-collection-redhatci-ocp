@@ -7,8 +7,9 @@
   when:
     - mor_version is version("4.8", ">=")
   ansible.builtin.shell: >
-    {{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }} coreos print-stream-json >
-    {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json
+    flock -x -w 30 "{{ mor_cache_dir }}/{{ mor_version }}/.installer.lock" -c
+    '{{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }} coreos print-stream-json >
+    {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json'
   changed_when: true
 
 # TODO: Remove this block when 4.7 is no longer supported
