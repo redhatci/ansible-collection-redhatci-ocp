@@ -202,10 +202,10 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
   vars:
-    images: # noqa: redhat-ci[no-role-prefix]
+    mi_images:
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"
       - "quay.io/testnetworkfunction/debug-partner:{{ support_image_version }}"
-    authfile: "{{ pullsecret_tmp_file }}" # noqa: redhat-ci[no-role-prefix]
+    mi_authfile: "{{ pullsecret_tmp_file }}"
   when:
     - dci_disconnected | default(false) | bool
     - dci_local_registry | length

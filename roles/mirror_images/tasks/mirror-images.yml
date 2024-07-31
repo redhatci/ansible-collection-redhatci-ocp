@@ -1,9 +1,9 @@
 ---
 - name: "Mirror image"
   vars:
-    image_tag: "{{ image | regex_search('(?<=sha256)(.{12})') | default('', True) }}"
-    image_name: "{{ '/'.join(image.split('@')[0].split('/')[1:]) }}"
-    local_image_location: "{{ dci_local_registry }}/{{ image_name }}{%- if image_tag | length %}{{ image_tag }}{% endif %}"
+    _image_tag: "{{ image | regex_search('(?<=sha256)(.{12})') | default('', True) }}"
+    _image_name: "{{ '/'.join(image.split('@')[0].split('/')[1:]) }}"
+    _tgt_image_location: "{{ mi_registry }}/{{ _image_name }}{%- if _image_tag | length %}{{ _image_tag }}{% endif %}"
   block:
     - name: "Mirror image"
       ansible.builtin.command:
@@ -14,35 +14,35 @@
           {{ mi_options }}
           {% endif %}
           --remove-signatures
-          {% if authfile is defined %}
-          --authfile {{ authfile }}
+          {% if mi_authfile is defined %}
+          --authfile {{ mi_authfile }}
           {% endif %}
-          {% if src_authfile is defined %}
-          --src-authfile {{ src_authfile }}
+          {% if mi_src_authfile is defined %}
+          --src-authfile {{ mi_src_authfile }}
           {% endif %}
-          {% if dest_authfile is defined %}
-          --dest-authfile {{ dest_authfile }}
+          {% if mi_dst_authfile is defined %}
+          --dest-authfile {{ mi_dst_authfile }}
           {% endif %}
           --dest-tls-verify=false
           docker://{{ image }}
-          docker://{{ local_image_location }}
-      register: skopeo_copy
+          docker://{{ _tgt_image_location }}
+      register: _mi_skopeo_copy
       retries: 5
       delay: 5
-      until: skopeo_copy is not failed
+      until: _mi_skopeo_copy is not failed
 
   rescue:
     - name: "Image already mirrored"
       ansible.builtin.command: >
         skopeo inspect
-        {% if authfile is defined %}
-        --authfile {{ authfile }}
+        {% if mi_authfile is defined %}
+        --authfile {{ mi_authfile }}
         {% endif %}
-        {% if dest_authfile is defined %}
-        --authfile {{ dest_authfile }}
+        {% if mi_dst_authfile is defined %}
+        --authfile {{ mi_dst_authfile }}
         {% endif %}
         --tls-verify=false
-        docker://{{ local_image_location }}
-      register: mg_inspect
-      failed_when: mg_inspect.rc != 0
+        docker://{{ _tgt_image_location }}
+      register: _mi_inspect
+      failed_when: _mi_inspect.rc != 0
 ...

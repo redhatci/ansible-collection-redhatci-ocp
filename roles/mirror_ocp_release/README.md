@@ -63,9 +63,9 @@ See below for some examples of how to use the mirror_ocp_release role.
   vars:
     mor_version: "4.14.0-0.nightly-2024-01-10-123456"
     mor_pull_url: "registry.ci.openshift.org/ocp/release@sha256:86b4185571e403a9bfcf82c4b363c4aaa41751976e60c1c10d1961e4b67ed9ab"
-    mor_auths_file: "{{ dci_pullsecret_file }}"
+    mor_auths_file: "{{ my_pullsecret_file }}"
     mor_is_type: "icsp"
     mor_webserver_url: "{{ webserver_url }}"
-    mor_registry_url: "{{ dci_local_registry }}"
+    mor_registry_url: "{{ my_local_registry }}"
     mor_registry_path: "ocp-4.14/4.14.0-0.nightly-2024-01-10-123456"
 ```

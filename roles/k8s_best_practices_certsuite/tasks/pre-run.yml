@@ -237,11 +237,11 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
   vars:
-    images: # noqa: redhat-ci[no-role-prefix]
+    mi_images:
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"
       - "quay.io/testnetworkfunction/{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
-    authfile: "{{ kbpc_pullsecret }}" # noqa: redhat-ci[no-role-prefix]
-    dci_local_registry: "{{ kbpc_registry }}" # noqa: redhat-ci[no-role-prefix]
+    mi_authfile: "{{ kbpc_pullsecret }}"
+    mi_registry: "{{ kbpc_registry }}"
   when:
     - kbpc_pullsecret | length
     - kbpc_registry | length

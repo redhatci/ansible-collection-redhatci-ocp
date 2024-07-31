@@ -12,8 +12,8 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
   vars:
-    images: "{{ preflight_images }}"
-    authfile: "{{ partner_creds }}"
+    mi_images: "{{ preflight_images }}"
+    mi_authfile: "{{ partner_creds }}"
     mi_options: "--preserve-digests"
 
 - name: "Define catalog tag"

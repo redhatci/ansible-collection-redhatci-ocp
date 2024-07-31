@@ -1,9 +1,13 @@
 ---
+- name: Validate inputs
+  ansible.builtin.assert:
+    that:
+      - mi_registry is defined
+      - mi_images is defined
+      - mi_images | length
+
 - name: "Mirror images"
   ansible.builtin.include_tasks: mirror-images.yml
-  loop: "{{ images }}"
+  loop: "{{ mi_images }}"
   loop_control:
     loop_var: image
-  when:
-    - images is defined
-    - images | length

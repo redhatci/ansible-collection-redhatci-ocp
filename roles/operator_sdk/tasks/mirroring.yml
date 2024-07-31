@@ -10,8 +10,8 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
   vars:
-    images: "{{ scorecard_images }}"
-    authfile: "{{ scorecard_partner_creds }}"
+    mi_images: "{{ scorecard_images }}"
+    mi_authfile: "{{ scorecard_partner_creds }}"
     mi_options: "--preserve-digests"
 
 - name: Generate catalog path

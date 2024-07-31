@@ -22,6 +22,6 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
   vars:
-    images: "{{ all_images }}"
-    authfile: "{{ pullsecret_tmp_file }}"
+    mi_images: "{{ all_images }}"
+    mi_authfile: "{{ pullsecret_tmp_file }}"
 ...
