@@ -68,12 +68,14 @@
     # using community.general.archive generates the tarball but
     # throws an exception: load_file_common_arguments() unexpected keyword argument 'path'
     - name: Create a client tarball for el8 on 4.16+ # noqa command-instead-of-module
-      ansible.builtin.shell: >
-        tar czf
-        "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
-        -C "{{ mor_cache_dir }}/{{ mor_version }}"
-        oc
-        kubectl
+      ansible.builtin.shell:
+        cmd: >
+          tar czf
+          "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
+          -C "{{ mor_cache_dir }}/{{ mor_version }}"
+          oc
+          kubectl
+        creates: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
       changed_when: true
 
     - name: Delete temporary directory for oc client
