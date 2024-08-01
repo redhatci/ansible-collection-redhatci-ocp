@@ -14,6 +14,7 @@
   vars:
     mi_images: "{{ preflight_images }}"
     mi_authfile: "{{ partner_creds }}"
+    mi_registry: "{{ dci_local_registry }}"
     mi_options: "--preserve-digests"
 
 - name: "Define catalog tag"
