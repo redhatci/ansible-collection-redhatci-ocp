@@ -28,6 +28,22 @@
       else certsuite execution will fail.
   ignore_errors: true
 
+# Use https://quay.io/repository/testnetworkfunction/k8s-best-practices-certsuite?tab=tags for
+# newer certsuite releases, starting from v5.2.2.
+# Note https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags is deprecated
+# and its support will be removed at some point.
+- name: Set kbpc_image_name
+  ansible.builtin.set_fact:
+    kbpc_image_name: "{{ (kbpc_version is version('v5.2.2', '>=') or kbpc_version == 'HEAD') | ternary('k8s-best-practices-certsuite', kbpc_project_name) }}"
+
+# Use https://quay.io/repository/testnetworkfunction/k8s-best-practices-debug?tab=tags for
+# newer certsuite releases, starting from v5.2.3.
+# Note https://quay.io/repository/testnetworkfunction/debug-partner?tab=tags is deprecated
+# and its support will be removed at some point.
+- name: Set kbpc_support_image_name
+  ansible.builtin.set_fact:
+    kbpc_support_image_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('k8s-best-practices-debug', 'debug-partner') }}"
+
 # Depending on the presence or not of `kbpc_code_src_dir` variable,
 # defined by test-runner script when testing a PR from cnf-certification-test
 # repository, we will use a custom certsuite image or not.
@@ -98,7 +114,7 @@
       vars:
         kbpc_image_tag: "{{ kbpc_version_image }}-{{ kbpc_image_suffix }}"
       ansible.builtin.set_fact:
-        kbpc_certsuite_image: "{{ kbpc_project_name }}:{{ kbpc_image_tag }}"
+        kbpc_certsuite_image: "{{ kbpc_image_name }}:{{ kbpc_image_tag }}"
 
     - name: Build the certsuite image locally
       ansible.builtin.shell: |
@@ -121,7 +137,7 @@
         kbpc_certsuite_dir: "{{ _kbpc_git_dir.path }}/{{ kbpc_project_name }}"
 
     # In
-    # https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
+    # https://quay.io/repository/testnetworkfunction/k8s-best-practices-certsuite?tab=tags,
     # there are two main tags to take into account:
     # -latest: linked to the latest certsuite release.
     # -unstable: related to the HEAD version of the main branch in the certsuite repository
@@ -137,7 +153,7 @@
       vars:
         kbpc_image_tag: "{{ kbpc_version_image }}-{{ kbpc_image_suffix }}"
       ansible.builtin.set_fact:
-        kbpc_certsuite_image: "{{ kbpc_project_name }}:{{ kbpc_image_tag }}"
+        kbpc_certsuite_image: "{{ kbpc_image_name }}:{{ kbpc_image_tag }}"
 
     - name: Clone certsuite repository
       ansible.builtin.git:
@@ -158,23 +174,37 @@
       delay: 30
       until: not _kbpc_gitref.failed
 
-    # For HEAD version, the kbpc_support_image_version should be 'latest'. Else, check version.json file
-    # from certsuite repo
+    # For HEAD version, the kbpc_support_image_version should be 'latest'.
+    # Else, check version.json file from certsuite repo:
+    # - Until v5.2.2, you need to check 'partner_tag' field
+    # - From v5.2.3, you need to check 'debugTag' field
     - name: Set kbpc_support_image_version variable
       vars:
         _kbpc_version_json_file: "{{ lookup('file', kbpc_certsuite_dir + '/version.json') | from_json }}"
-      ansible.builtin.set_fact:
-        kbpc_support_image_version: "{{ (kbpc_version == 'HEAD') | ternary('latest', _kbpc_version_json_file.partner_tag[1:]) }}"
+      block:
+        # The support of this 'partner_tag' field is deprecated and will be removed at some point.
+        - name: Set kbpc_support_image_version variable (certsuite <= v5.2.2)
+          ansible.builtin.set_fact:
+            kbpc_support_image_version: "{{ _kbpc_version_json_file.partner_tag[1:] }}"
+          when:
+            - kbpc_version is version("v5.2.2", "<=")
+            - kbpc_version != "HEAD"
+
+        - name: Set kbpc_support_image_version variable (certsuite >= v5.2.3 or HEAD)
+          ansible.builtin.set_fact:
+            kbpc_support_image_version: "{{ (kbpc_version == 'HEAD') | ternary('latest', _kbpc_version_json_file.debugTag) }}"
+          when:
+            - kbpc_version is version("v5.2.3", ">=") or kbpc_version == "HEAD"
 
     # We need to pull the original image to tag it. Then, we remove the pulled
     # image
     - name: Pull and tag certsuite image for the version under test
       ansible.builtin.shell: |
         set -ex
-        podman pull quay.io/testnetworkfunction/{{ kbpc_project_name }}:{{ kbpc_version_image }}
-        podman tag quay.io/testnetworkfunction/{{ kbpc_project_name }}:{{ kbpc_version_image }} \
+        podman pull quay.io/testnetworkfunction/{{ kbpc_image_name }}:{{ kbpc_version_image }}
+        podman tag quay.io/testnetworkfunction/{{ kbpc_image_name }}:{{ kbpc_version_image }} \
         {{ kbpc_certsuite_image }}
-        podman image rm {{ kbpc_project_name }}:{{ kbpc_version_image }}
+        podman image rm {{ kbpc_image_name }}:{{ kbpc_version_image }}
       register: _kbpc_pull_result
       retries: 2
       delay: 10
@@ -209,7 +239,7 @@
   vars:
     images: # noqa: redhat-ci[no-role-prefix]
       - "quay.io/testnetworkfunction/cnf-test-partner:latest"
-      - "quay.io/testnetworkfunction/debug-partner:{{ kbpc_support_image_version }}"
+      - "quay.io/testnetworkfunction/{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
     authfile: "{{ kbpc_pullsecret }}" # noqa: redhat-ci[no-role-prefix]
     dci_local_registry: "{{ kbpc_registry }}" # noqa: redhat-ci[no-role-prefix]
   when:

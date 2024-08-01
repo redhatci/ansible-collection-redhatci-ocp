@@ -34,7 +34,7 @@
     - name: Run the Red Hat Best Practices Test Suite for Kubernetes test cases
       vars:
         kbpc_partner_repo: "{{ (kbpc_registry | length) | ternary(kbpc_registry, 'quay.io') }}/testnetworkfunction"
-        kbpc_support_image: "debug-partner:{{ kbpc_support_image_version }}"
+        kbpc_support_image: "{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
         kbpc_container_command: |
           ./certsuite run \
           {% if kbpc_test_labels | length > 0 %}
