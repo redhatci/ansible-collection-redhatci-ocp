@@ -45,11 +45,13 @@
 
     - name: "Set opm cmd"
       ansible.builtin.set_fact:
-        pc_opm_cmd: "{{ pc_tmp_dir }}/opm {{ pc_opm_args }}"
+        pc_opm_cmd: "{{ pc_tmp_dir }}/opm-rhel{{ ansible_distribution_major_version }} {{ pc_opm_args }}"
 
     - name: "Download stable opm client"
       vars:
-        ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.14/opm-linux.tar.gz"
+        ocp_clients_url:
+          "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable\
+          /opm-linux{{ ansible_distribution_major_version is version('9', '==') | ternary('-rhel9', '') }}.tar.gz"
       ansible.builtin.unarchive:
         src: "{{ ocp_clients_url }}"
         dest: "{{ pc_tmp_dir }}"
