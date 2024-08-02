@@ -46,8 +46,8 @@ jobs:
         env:
           PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
         run: |
-          git ls-remote --exit-code --heads origin preflight-release-$PREFLIGHT_LATEST
-          if [ $? -eq 0 ]; then
+          branch_exists=$(git ls-remote --heads origin preflight-release-$PREFLIGHT_LATEST)
+          if [ -n "$branch_exists" ]; then
             echo "Branch preflight-release-$PREFLIGHT_LATEST already exists"
             echo "branch_exists=true" >> $GITHUB_OUTPUT
           else
@@ -63,6 +63,8 @@ jobs:
         if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
         env:
           PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+          GIT_AUTHOR_NAME: "github-actions[bot]"
+          GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
         run: |
           # Configure git
           git config --global user.name "github-actions[bot]"
@@ -77,7 +79,7 @@ jobs:
           sed -i "s|quay.io/opdev/preflight:[0-9]*\.[0-9]*\.[0-9]*|quay.io/opdev/preflight:${PREFLIGHT_LATEST}|" roles/preflight/defaults/main.yml
           sed -i "s|quay.io/opdev/preflight:[0-9]*\.[0-9]*\.[0-9]*|quay.io/opdev/preflight:${PREFLIGHT_LATEST}|" roles/preflight/README.md
           git add roles/preflight/defaults/main.yml roles/preflight/README.md
-          git commit --allow-empty -m "Update Preflight to release $PREFLIGHT_LATEST"
+          git commit -s -m "Update Preflight to release $PREFLIGHT_LATEST"
           git push --set-upstream origin preflight-release-$PREFLIGHT_LATEST
 
       - name: Create PR moving to the latest Preflight
@@ -86,4 +88,8 @@ jobs:
           PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create --title "Move to Preflight release $PREFLIGHT_LATEST" --body "This pull request was opened by a bot.\n\nCheckDallasWorkload: preflight-green" --base main --head preflight-release-$PREFLIGHT_LATEST
+          gh pr create \
+            --title "Move to Preflight release $PREFLIGHT_LATEST" \
+            --body "This pull request was opened by a bot." \
+            --base main \
+            --head preflight-release-$PREFLIGHT_LATEST
