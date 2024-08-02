@@ -56,9 +56,9 @@
           ansible.builtin.include_role:
             name: redhatci.ocp.mirror_images
           vars:
-            images: "{{ ts_kubevirt_images }}"
-            local_registry: "{{ ts_registry }}"
-            authfile: "{{ ts_registry_auth }}"
+            mi_images: "{{ ts_kubevirt_images }}"
+            mi_registry: "{{ ts_registry }}"
+            mi_authfile: "{{ ts_registry_auth }}"
 
         - name: "test_ redhat_tests: Run the sonobuoy conformance tests (disconnected)"  # noqa: name[casing]
           environment:
