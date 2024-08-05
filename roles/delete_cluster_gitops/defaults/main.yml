@@ -1,0 +1,7 @@
+---
+# Path to kubeconfig file to use for deletion, or K8S_AUTH_KUBECONFIG environment variable is used
+# dcg_kubeconfig_file:
+dcg_cluster_name:
+dcg_namespace:
+dcg_timeout: 60
+dcg_finalizers_timeout: 60
