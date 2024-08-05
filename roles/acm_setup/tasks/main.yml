@@ -181,6 +181,8 @@
 
 - name: "Update the provisioning resource to watch all Namespaces"
   community.kubernetes.k8s:
+    merge_type:
+      - merge
     definition:
       apiVersion: metal3.io/v1alpha1
       kind: Provisioning
@@ -188,6 +190,7 @@
         name: provisioning-configuration
       spec:
         watchAllNamespaces: true
+        disableVirtualMediaTLS: true
 
 - name: "Get cluster version"
   community.kubernetes.k8s_info:
@@ -258,6 +261,10 @@
       metadata:
         name: agent
         namespace: multicluster-engine
+        {% if hub_skip_verify_tls %}
+        annotations:
+          unsupported.agent-install.openshift.io/assisted-image-service-skip-verify-tls: "true"
+        {% endif %}
       spec:
         databaseStorage:
       {% if hub_sc is defined %}
