@@ -1,0 +1,106 @@
+# {{ role.name }}
+
+{% if role.meta and role.meta.galaxy_info and role.meta.galaxy_info.description -%}
+{{ role.meta.galaxy_info.description }}
+{% else -%}
+No description found for this role
+{%- endif %}
+
+## Requirements
+
+Role Requirements go here
+
+{% if role.meta and role.meta.dependencies -%}
+### Dependencies
+
+{%- for key, value in role.meta.dependencies.items() -%}
+"{{ key }}": "{{ value }}"
+{%- endfor -%}
+{% endif -%}
+
+{% if role.args -%}
+## Inputs
+
+| Var  | Type  | Required | Default  | Description
+| ---- | ----- | -------- | -------- | -----------
+{% for key in role.args.keys() -%}
+{% for input_var, details in role.args[key].options.items() -%}
+| {{ input_var }} | {{ details.type }} | {{ details.required }} | {{ details.default | default('\<undefined\>') }} | {{ " ".join(details.description) }}
+{% endfor -%}
+{% endfor -%}
+{% endif -%}
+
+{% if role.defaults|length > 0 or role.vars|length > 0 -%} {# vars (default, vars) #}
+{% set default_vars = role.defaults | default([]) + role.vars | default([]) -%}
+## Variables
+
+{%- for def_var in default_vars %} {# Loop vars for table #}
+{% set ns = namespace(details_required = false, details_title = false) %}
+{%- for key, details in def_var.data.items() -%}
+    {%- if details.required is not none -%}{%- set ns.details_required = true -%}{%- endif -%}
+    {%- if details.title is not none -%}{%- set ns.details_title = true -%}{%- endif -%}
+{%- endfor -%}
+| Var          | Type         | Value       |{% if ns.details_required %} Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
+|--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
+{%- for key, details in def_var.data.items() %}
+{%- set var_type = details.value.__class__.__name__ %}
+| [{{ key }}](defaults/{{ def_var.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '\|') }}`  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '\|') }} |{% endif %}
+{%- endfor %}
+{%- endfor %} {# end loop vars table #}
+
+{%- for def_var in default_vars -%}
+{%- set ns = namespace(has_descriptions = false) -%}
+{%- for key, details in def_var.data.items() -%}
+    {%- if details.description != "n/a" -%}{%- set ns.has_descriptions = true -%}{% endif -%}
+{%- endfor -%}
+{%- if ns.has_descriptions %}
+<details>
+<summary>🖇️ Full descriptions for vars in defaults/{{ def_var.file }}</summary>
+<br>
+{%- for key, details in def_var.data.items() %}
+    {%- if details.description != "n/a" %}
+<b>{{ key }}:</b> {{ details.description }}
+<br>
+    {%- endif %}
+{%- endfor %}
+<br>
+</details>
+{%- endif %}
+{%- endfor %}
+{% endif %}   {# end vars #}
+
+{% if mermaid_code_per_file -%}
+## Task Flow Graphs
+{% for task_file, mermaid_code in mermaid_code_per_file.items() %}
+### Graph for {{ task_file }}
+
+```mermaid
+{{ mermaid_code }}
+```
+{% endfor %}
+{%- endif %}
+
+{%- if role.playbook.content -%}
+## Playbook
+
+```yml
+{{ role.playbook.content }}
+```
+{%- endif %}
+{%- if role.playbook.graph -%}
+## Playbook graph
+```mermaid
+{{ role.playbook.graph }}
+```
+{% endif -%}
+
+## Examples
+
+Examples go here
+
+{% if role.meta.galaxy_info and role.meta.galaxy_info.license -%}
+## License
+
+{{ role.meta.galaxy_info.license }}
+
+{% endif -%}

@@ -1,0 +1,6 @@
+---
+galaxy_info:
+  author: Tony García
+  description: Remove the non-active UEFI boot entries from OCP nodes.
+  license: Apache-2.0
+  min_ansible_version: "2.9"

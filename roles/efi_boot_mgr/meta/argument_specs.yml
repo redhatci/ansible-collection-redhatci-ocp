@@ -1,0 +1,20 @@
+---
+argument_specs:
+  main:
+    short_description: Main entrypoint for the efi_boot_mgr role
+    description:
+      - This role removes non-active UEFI boot entries from OCP nodes
+      - /!\ IMPORTANT /!\ This role removes permantently UEFI boot entries, use it with care.
+    options:
+      ebm_nodes:
+        type: "list"
+        required: true
+        description:
+          - A list of OCP node names to manage their Boot order.
+      ebm_oc_path:
+        type: "str"
+        required: false
+        default: "/usr/local/bin/oc"
+        description:
+          - Path to oc client.
+...
