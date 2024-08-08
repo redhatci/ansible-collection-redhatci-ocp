@@ -1,9 +1,9 @@
 ---
 tnf_stage: "tests"
 tnf_check_commit_sha: false
-test_network_function_repo: "https://github.com/test-network-function/cnf-certification-test"
+test_network_function_repo: "https://github.com/test-network-function/certsuite"
 test_network_function_version: v5.2.2
-test_network_function_project_name: cnf-certification-test
+test_network_function_project_name: certsuite
 tnf_labels: "all"
 # By default, tnf_config takes the dci_openshift_app_ns namespace as it is already created by dci-openshift-app-agent,
 # and set the other items as empty values. Under these conditions (i.e. no pods are discovered), no CNF Cert Suite tests are run.

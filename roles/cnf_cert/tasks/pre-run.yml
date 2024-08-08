@@ -94,7 +94,7 @@
         tnf_image: "{{ test_network_function_project_name }}:{{ tnf_image_tag }}"
 
     # Steps from
-    # https://test-network-function.github.io/cnf-certification-test/test-container/#build-locally
+    # https://redhat-best-practices-for-k8s.github.io/certsuite/test-container/#build-locally
     - name: Build the tnf image locally
       ansible.builtin.shell: |
         set -x
@@ -116,11 +116,11 @@
         tnf_dir: "{{ tnf_git_dir.path }}/{{ test_network_function_project_name }}"
 
     # In
-    # https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags,
+    # https://quay.io/repository/redhat-best-practices-for-k8s/cnf-certification-test?tab=tags,
     # there are two main tags to take into account: -latest: linked to the
     # latest tnf release.  -unstable: related to the HEAD version of the main
     # branch in the tnf repository
-    # (https://github.com/test-network-function/cnf-certification-test).  So,
+    # (https://github.com/redhat-best-practices-for-k8s/certsuite).  So,
     # if a version is provided in test_network_function_version, that version
     # will be used. In case we are on the master branch (HEAD version),
     # unstable tag is used.
@@ -166,8 +166,8 @@
     - name: Pull and tag tnf image for the version under test
       ansible.builtin.shell: |
         set -ex
-        podman pull quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }}
-        podman tag quay.io/testnetworkfunction/{{ test_network_function_project_name }}:{{ tnf_version_image }} \
+        podman pull quay.io/redhat-best-practices-for-k8s/{{ test_network_function_project_name }}:{{ tnf_version_image }}
+        podman tag quay.io/redhat-best-practices-for-k8s/{{ test_network_function_project_name }}:{{ tnf_version_image }} \
         {{ tnf_image }}
         podman image rm {{ test_network_function_project_name }}:{{ tnf_version_image }}
       register: result
@@ -203,8 +203,8 @@
     name: redhatci.ocp.mirror_images
   vars:
     mi_images:
-      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
-      - "quay.io/testnetworkfunction/debug-partner:{{ support_image_version }}"
+      - "quay.io/testnetworkfunction/cnf-test-partner:latest" # TODO: Change this to the correct image when the new image is available
+      - "quay.io/redhat-best-practices-for-k8s/certsuite-probe:{{ support_image_version }}"
     mi_authfile: "{{ pullsecret_tmp_file }}"
   when:
     - dci_disconnected | default(false) | bool
