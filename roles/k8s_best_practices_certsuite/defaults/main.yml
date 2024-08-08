@@ -1,8 +1,8 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_repository: "https://github.com/test-network-function/cnf-certification-test"
+kbpc_repository: "https://github.com/redhat-best-practices-for-k8s/certsuite"
 kbpc_version: v5.2.3
-kbpc_project_name: cnf-certification-test
+kbpc_project_name: certsuite
 kbpc_test_labels: "all"
 kbpc_test_config:
   - namespace: ""

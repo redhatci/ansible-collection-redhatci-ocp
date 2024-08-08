@@ -28,26 +28,26 @@
       else certsuite execution will fail.
   ignore_errors: true
 
-# Use https://quay.io/repository/testnetworkfunction/k8s-best-practices-certsuite?tab=tags for
-# newer certsuite releases, starting from v5.2.2.
+# Use https://quay.io/repository/redhat-best-practices-for-k8s/certsuite?tab=tags for
+# newer certsuite releases, starting from v5.2.3.
 # Note https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags is deprecated
 # and its support will be removed at some point.
 - name: Set kbpc_image_name
   ansible.builtin.set_fact:
-    kbpc_image_name: "{{ (kbpc_version is version('v5.2.2', '>=') or kbpc_version == 'HEAD') | ternary('k8s-best-practices-certsuite', kbpc_project_name) }}"
+    kbpc_image_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite', 'cnf-certification-test') }}"
 
-# Use https://quay.io/repository/testnetworkfunction/k8s-best-practices-debug?tab=tags for
+# Use https://quay.io/repository/redhat-best-practices-for-k8s/certsuite-probe?tab=tags for
 # newer certsuite releases, starting from v5.2.3.
 # Note https://quay.io/repository/testnetworkfunction/debug-partner?tab=tags is deprecated
 # and its support will be removed at some point.
 - name: Set kbpc_support_image_name
   ansible.builtin.set_fact:
-    kbpc_support_image_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('k8s-best-practices-debug', 'debug-partner') }}"
+    kbpc_support_image_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite-probe', 'debug-partner') }}"
 
 # Depending on the presence or not of `kbpc_code_src_dir` variable,
-# defined by test-runner script when testing a PR from cnf-certification-test
+# defined by test-runner script when testing a PR from certsuite
 # repository, we will use a custom certsuite image or not.
-- name: Tasks when testing a PR from cnf-certification-test repository
+- name: Tasks when testing a PR from certsuite repository
   when:
     - kbpc_code_src_dir is defined
     - kbpc_code_src_dir | length > 0
@@ -58,7 +58,7 @@
         kbpc_support_image_version: latest
 
     # In this case, kbpc_code_src_dir already points to
-    # cnf-certification-test
+    # certsuite
     - name: Define variable to refer to the directory where certsuite code is placed
       ansible.builtin.set_fact:
         kbpc_certsuite_dir: "{{ kbpc_code_src_dir }}"
@@ -123,7 +123,7 @@
       args:
         chdir: "{{ kbpc_certsuite_dir }}"
 
-- name: Tasks when testing a cnf-certification-test stable version
+- name: Tasks when testing a certsuite stable version
   when:
     - kbpc_code_src_dir is not defined
   block:
@@ -137,11 +137,11 @@
         kbpc_certsuite_dir: "{{ _kbpc_git_dir.path }}/{{ kbpc_project_name }}"
 
     # In
-    # https://quay.io/repository/testnetworkfunction/k8s-best-practices-certsuite?tab=tags,
+    # https://quay.io/repository/redhat-best-practices-for-k8s/certsuite?tab=tags,
     # there are two main tags to take into account:
     # -latest: linked to the latest certsuite release.
     # -unstable: related to the HEAD version of the main branch in the certsuite repository
-    # (https://github.com/test-network-function/cnf-certification-test).
+    # (https://github.com/redhat-best-practices-for-k8s/certsuite).
     # So, if a version is provided in kbpc_version, that version
     # will be used. In case we are on the master branch (HEAD version),
     # unstable tag is used.
@@ -199,10 +199,12 @@
     # We need to pull the original image to tag it. Then, we remove the pulled
     # image
     - name: Pull and tag certsuite image for the version under test
+      vars:
+        _kbpc_repo_org_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('redhat-best-practices-for-k8s', 'testnetworkfunction') }}"
       ansible.builtin.shell: |
         set -ex
-        podman pull quay.io/testnetworkfunction/{{ kbpc_image_name }}:{{ kbpc_version_image }}
-        podman tag quay.io/testnetworkfunction/{{ kbpc_image_name }}:{{ kbpc_version_image }} \
+        podman pull quay.io/{{ _kbpc_repo_org_name }}/{{ kbpc_image_name }}:{{ kbpc_version_image }}
+        podman tag quay.io/{{ _kbpc_repo_org_name }}/{{ kbpc_image_name }}:{{ kbpc_version_image }} \
         {{ kbpc_certsuite_image }}
         podman image rm {{ kbpc_image_name }}:{{ kbpc_version_image }}
       register: _kbpc_pull_result
@@ -211,9 +213,9 @@
       until: _kbpc_pull_result.rc == 0
 
     # This is used to lately check if we are really testing the version we are
-    # cloning from the cnf-certification-test repo, checking in certsuite logs if the
+    # cloning from the certsuite repo, checking in certsuite logs if the
     # commit SHA is present. This is only useful to lately compare with the
-    # output from a downloaded cnf-certification-test repo, so this is not
+    # output from a downloaded certsuite repo, so this is not
     # meant to be used with images built from a PR
     - name: Retrieve last commit SHA
       ansible.builtin.command: git rev-parse HEAD  # noqa: command-instead-of-module
@@ -225,7 +227,7 @@
       ansible.builtin.set_fact:
         kbpc_commit_sha: "{{ _kbpc_commit_sha_cmd.stdout }}"
 
-    - name: Create DCI component for cnf-certification-test
+    - name: Create DCI component for certsuite
       ansible.builtin.include_role:
         name: redhatci.ocp.include_components
       vars:
@@ -237,9 +239,10 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
   vars:
+    _kbpc_repo_org_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('redhat-best-practices-for-k8s', 'testnetworkfunction') }}" # noqa: redhat-ci[no-role-prefix]
     mi_images:
-      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
-      - "quay.io/testnetworkfunction/{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
+      - "quay.io/redhat-best-practices-for-k8s/certsuite-sample-workload:latest"
+      - "quay.io/{{ _kbpc_repo_org_name }}/{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
     mi_authfile: "{{ kbpc_pullsecret }}"
     mi_registry: "{{ kbpc_registry }}"
   when:

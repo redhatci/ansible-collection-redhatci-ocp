@@ -51,7 +51,7 @@
         name: "{{ kbpc_debug_ds_ns }}"
         state: absent
 
-# This is just done when testing a cnf-certification-test stable version
+# This is just done when testing a certsuite stable version
 - name: Delete temporary directory for git repos
   ansible.builtin.file:
     path: "{{ _kbpc_git_dir.path }}"

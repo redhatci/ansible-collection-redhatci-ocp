@@ -70,7 +70,7 @@
   register: _kbpc_claim_json_present
 
 # This must be done after executing certsuite, since logs allows us to retrieve the commit SHA from
-# cnf-certification-test repo in which the image is based, so that we can compare it with the one
+# certsuite repo in which the image is based, so that we can compare it with the one
 # extracted from the cloned repo.
 # Make the job to fail if the commit SHA is not found in the proper place in the logs, and if
 # this feature is enabled (disabled by default).
