@@ -1,0 +1,22 @@
+---
+- name: "Create certification projects in the loop for parallel test"
+  ansible.builtin.include_role:
+    name: create_certification_project
+  vars:
+    product_type: "container" # noqa: redhat-ci[no-role-prefix]
+    cert_item: "{{ operator }}" # noqa: redhat-ci[no-role-prefix]
+    current_operator_image: "{{ item.container_image }}" # noqa: redhat-ci[no-role-prefix]
+    operator: # noqa: redhat-ci[no-role-prefix]
+      name: "{{ item.container_image.split('/')[-1].split(':')[0].split('@')[0] }}"
+      version: "{{ item.container_image.split(':')[0] }}"
+      pyxis_container_identifier: "{{ item.pyxis_container_identifier | default('') }}"
+      create_container_project: "{{ item.create_container_project | default(false) }}"
+      short_description: "{{ item.short_description | default('') }}"
+      pyxis_product_lists: "{{ item.pyxis_product_lists | default([]) }}"
+  loop: "{{ preflight_containers_to_certify }}"
+  loop_control:
+    loop_var: item
+  when:
+    - item.create_container_project | default(false) | bool
+    - item.pyxis_container_identifier | default('') | length == 0
+...
