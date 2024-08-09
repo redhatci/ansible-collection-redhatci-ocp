@@ -186,7 +186,7 @@
         kind: Pod
         namespace: "{{ namespace }}"
       register: olm_pod
-      retries: 12
+      retries: 30
       delay: 10
       until:
         olm_pod.resources | map(attribute='status.phase') | difference(['Succeeded', 'Running']) | length == 0
