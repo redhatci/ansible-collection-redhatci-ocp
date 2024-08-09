@@ -1,0 +1,39 @@
+---
+- name: "Check if Operator version is defined"
+  ansible.builtin.assert:
+    that:
+      - ecd_operator_version is defined
+      - ecd_operator_version | length
+
+- name: "Check if catalogsource crd is present"
+  community.kubernetes.k8s_info:
+    kind: CustomResourceDefinition
+    name: catalogsources.operators.coreos.com
+  register: _ecd_crd_info
+  retries: 1
+  delay: 5
+  until: _ecd_crd_info.resources|length != 0
+  failed_when: _ecd_crd_info.resources|length == 0
+
+- name: "Inspect index image"
+  ansible.builtin.shell:
+    cmd: >
+      skopeo inspect docker://{{ catalog_image }}
+  register: _ecd_skopeo_inspect
+  until: _ecd_skopeo_inspect.rc == 0
+  retries: 5
+  delay: 5
+
+- name: "Get index digest"
+  ansible.builtin.set_fact:
+    ecd_index_digest: "{{ _ecd_skopeo_inspect.stdout | from_json | json_query('Digest') }}"
+
+- name: "Create a CatalogSource for example-cnf"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.catalog_source
+  vars:
+    cs_name: "{{ catalog_name }}"
+    cs_namespace: "openshift-marketplace"
+    cs_image: "{{ registry_url }}/{{ repo_name }}/{{ catalog_name }}@{{ ecd_index_digest }}"
+    cs_publisher: "Red Hat"
+...

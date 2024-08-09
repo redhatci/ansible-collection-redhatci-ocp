@@ -1,0 +1,33 @@
+---
+- name: "Set list of example-cnf operators to be installed"
+  ansible.builtin.set_fact:
+    ex_cnf_operators:
+      - name: cnf-app-mac-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ testpmd_channel | default('alpha') }}"
+        source: "{{ catalog_name }}"
+      - name: testpmd-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ testpmd_channel | default('alpha') }}"
+        source: "{{ catalog_name }}"
+      - name: trex-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ trex_channel | default('alpha') }}"
+        source: "{{ catalog_name }}"
+
+- name: "Install enabled operators"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: "{{ ex_cnf_operator.name }}"
+    source: "{{ ex_cnf_operator.source }}"
+    namespace: "{{ ex_cnf_operator.namespace }}"
+    channel: "{{ ex_cnf_operator.channel | default(omit) }}"
+    operator_group_name: example-cnf-operator-group
+    install_approval: "Automatic"
+    operator_group_spec:
+      targetNamespaces:
+        - "{{ ex_cnf_operator.namespace }}"
+  loop: "{{ ex_cnf_operators }}"
+  loop_control:
+    loop_var: ex_cnf_operator
