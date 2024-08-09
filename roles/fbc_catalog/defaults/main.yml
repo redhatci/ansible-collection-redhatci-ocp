@@ -2,5 +2,4 @@
 fbc_opm_args: ""
 fbc_expire: true
 fbc_expire_time: 5h
-fbc_opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
 ...
