@@ -1,0 +1,337 @@
+---
+- name: Create namespace for Gitea
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ sg_namespace }}"
+
+- name: Create Service Account
+  community.kubernetes.k8s:
+    definition:
+      kind: ServiceAccount
+      apiVersion: v1
+      metadata:
+        name: anyuid
+        namespace: "{{ sg_namespace }}"
+
+- name: Create Role
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: scc-anyuid
+        namespace: "{{ sg_namespace }}"
+      rules:
+        - apiGroups:
+            - security.openshift.io
+          resourceNames:
+            - anyuid
+          resources:
+            - securitycontextconstraints
+          verbs:
+            - use
+
+- name: Create RoleBinding
+  community.kubernetes.k8s:
+    definition:
+      kind: RoleBinding
+      apiVersion: rbac.authorization.k8s.io/v1
+      metadata:
+        name: sa-to-scc-anyuid
+        namespace: "{{ sg_namespace }}"
+      subjects:
+        - kind: ServiceAccount
+          name: anyuid
+      roleRef:
+        kind: Role
+        name: scc-anyuid
+        apiGroup: rbac.authorization.k8s.io
+
+- name: Generate JWT secret
+  ansible.builtin.command: /usr/bin/podman run -ti {{ sg_gitea_image }} /usr/local/bin/gitea generate secret JWT_SECRET
+  changed_when: false
+  register: _sg_jwt_secret
+
+- name: Generate the LFS JWT secret
+  ansible.builtin.command: /usr/bin/podman run -ti {{ sg_gitea_image }} /usr/local/bin/gitea generate secret LFS_JWT_SECRET
+  changed_when: false
+  register: _sg_lfs_jwt_secret
+
+- name: Generate the internal token
+  ansible.builtin.command: /usr/bin/podman run -ti {{ sg_gitea_image }} /usr/local/bin/gitea generate secret INTERNAL_TOKEN
+  changed_when: false
+  register: _sg_internal_token
+
+- name: Generate the secret key
+  ansible.builtin.command: /usr/bin/podman run -ti {{ sg_gitea_image }} /usr/local/bin/gitea generate secret SECRET_KEY
+  changed_when: false
+  register: _sg_secret_key
+
+- name: Create Config Map with the Gitea configuration
+  community.kubernetes.k8s:
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: gitea-app-ini
+        namespace: "{{ sg_namespace }}"
+      data:
+        app.ini: |
+          APP_NAME = Gitea: Git with a cup of tea
+          RUN_USER = git
+          RUN_MODE = prod
+          WORK_PATH = /var/lib/gitea
+
+          [repository]
+          ROOT = /var/lib/gitea/git/repositories
+
+          [repository.local]
+          LOCAL_COPY_PATH = /tmp/gitea/local-repo
+
+          [repository.upload]
+          TEMP_PATH = /tmp/gitea/uploads
+
+          [server]
+          APP_DATA_PATH = /var/lib/gitea
+          SSH_DOMAIN = localhost
+          HTTP_PORT = 3000
+          ROOT_URL = {{ sg_url }}
+          DISABLE_SSH = false
+          ; In rootless gitea container only internal ssh server is supported
+          START_SSH_SERVER = true
+          SSH_PORT = 2222
+          SSH_LISTEN_PORT = 2222
+          BUILTIN_SSH_SERVER_USER = git
+          LFS_START_SERVER = true
+          DOMAIN = localhost
+          LFS_JWT_SECRET = {{ _sg_lfs_jwt_secret.stdout_lines[-1] }}
+          OFFLINE_MODE = true
+
+          [database]
+          DB_TYPE = sqlite3
+          PATH = /var/lib/gitea/data/gitea.db
+
+          [session]
+          PROVIDER_CONFIG = /var/lib/gitea/data/sessions
+          PROVIDER = file
+
+          [picture]
+          AVATAR_UPLOAD_PATH = /var/lib/gitea/data/avatars
+          REPOSITORY_AVATAR_UPLOAD_PATH = /var/lib/gitea/data/repo-avatars
+
+          [attachment]
+          PATH = /var/lib/gitea/data/attachments
+
+          [log]
+          ROOT_PATH = /var/lib/gitea/data/log
+          MODE = console
+          LEVEL = info
+
+          [security]
+          INSTALL_LOCK = true
+          SECRET_KEY = {{ _sg_secret_key.stdout_lines[-1] }}
+          REVERSE_PROXY_LIMIT = 1
+          REVERSE_PROXY_TRUSTED_PROXIES = *
+          INTERNAL_TOKEN = {{ _sg_internal_token.stdout_lines[-1] }}
+          PASSWORD_HASH_ALGO = pbkdf2
+
+          [service]
+          DISABLE_REGISTRATION = false
+          REQUIRE_SIGNIN_VIEW = false
+          REGISTER_EMAIL_CONFIRM = false
+          ENABLE_NOTIFY_MAIL = false
+          ALLOW_ONLY_EXTERNAL_REGISTRATION = false
+          ENABLE_CAPTCHA = false
+          DEFAULT_KEEP_EMAIL_PRIVATE = false
+          DEFAULT_ALLOW_CREATE_ORGANIZATION = true
+          DEFAULT_ENABLE_TIMETRACKING = true
+          NO_REPLY_ADDRESS = noreply.localhost
+
+          [lfs]
+          PATH = /var/lib/gitea/git/lfs
+
+          [mailer]
+          ENABLED = false
+
+          [openid]
+          ENABLE_OPENID_SIGNIN = true
+          ENABLE_OPENID_SIGNUP = true
+
+          [cron.update_checker]
+          ENABLED = false
+
+          [repository.pull-request]
+          DEFAULT_MERGE_STYLE = merge
+
+          [repository.signing]
+          DEFAULT_TRUST_MODEL = committer
+
+          [oauth2]
+          JWT_SECRET = {{ _sg_jwt_secret.stdout_lines[-1] }}
+
+- name: Create the Gitea deployment
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gitea
+        namespace: "{{ sg_namespace }}"
+      spec:
+        selector:
+          matchLabels:
+            app: gitea
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: gitea
+          spec:
+            volumes:
+              - name: gitea-app-ini
+                configMap:
+                  name: gitea-app-ini
+            containers:
+              - name: gitea
+                volumeMounts:
+                  - name: gitea-app-ini
+                    subPath: app.ini
+                    mountPath: /etc/gitea/app.ini
+                image: "{{ sg_gitea_image }}"
+                ports:
+                  - containerPort: 3000
+                livenessProbe:
+                  httpGet:
+                    path: /api/healthz
+                    port: http
+                  initialDelaySeconds: 200
+                  timeoutSeconds: 5
+                  periodSeconds: 10
+                  successThreshold: 1
+                  failureThreshold: 10
+            serviceAccountName: anyuid
+
+- name: Create the gitea service
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: "gitea"
+        namespace: "{{ sg_namespace }}"
+      spec:
+        type: "ClusterIP"
+        ports:
+          - name: http
+            port: 3000
+            targetPort: 3000
+            protocol: TCP
+        selector:
+          app: gitea
+
+- name: Create the Gitea route
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: route.openshift.io/v1
+      kind: Route
+      metadata:
+        name: gitea
+        namespace: gitea
+      spec:
+        port:
+          targetPort: http
+        to:
+          kind: Service
+          name: gitea
+          weight: 100
+        wildcardPolicy: None
+  register: _sg_gitea_route
+
+- name: Export Gitea service domain
+  ansible.builtin.set_fact:
+    sg_gitea_domain: "{{ _sg_gitea_route.result.spec.host }}"
+
+- name: Wait for Pod to become ready
+  ansible.builtin.uri:
+    url: "http://{{ sg_gitea_domain }}/api/healthz"
+  register: _sg_gitea_healthz
+  retries: 10
+  delay: 10
+  until: _sg_gitea_healthz is not failed
+
+- name: Create the initial user
+  when: sg_username | default("") != ""
+  block:
+    - name: Get Pod name
+      community.kubernetes.k8s_info:
+        kind: Pod
+        namespace: "{{ sg_namespace }}"
+        label_selectors:
+          - "app = gitea"
+      register: _sg_gitea_pod
+
+    - name: Create the Gitea initial user
+      community.kubernetes.k8s_exec:
+        namespace: "{{ sg_namespace }}"
+        pod: "{{ _sg_gitea_pod.resources[0].metadata.name }}"
+        command: >
+          /usr/local/bin/gitea
+          --config /etc/gitea/app.ini
+          admin user create
+          --username {{ sg_username }}
+          --password {{ sg_password }}
+          --email {{ sg_email }}
+
+- name: Create the initial repository
+  when: sg_repository | default("") != ""
+  block:
+    - name: Create the initial repository
+      ansible.builtin.uri:
+        url: "http://{{ sg_gitea_domain }}/api/v1/user/repos"
+        force_basic_auth: true
+        user: "{{ sg_username }}"
+        password: "{{ sg_password }}"
+        status_code: 201
+        method: POST
+        body_format: json
+        body:
+          auto_init: false
+          default_branch: "{{ sg_repo_branch }}"
+          description: ""
+          gitignores: ""
+          issue_labels: ""
+          license: ""
+          name: "{{ sg_repository }}"
+          private: true
+          readme: ""
+          template: false
+          trust_model: "default"
+
+- name: Mirror the reference remote repository
+  when: sg_repo_mirror_url | default("") != ""
+  block:
+    - name: Create temp dir to mirror reference repository
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: setup_gitea
+      register: _sg_mirror_repo
+      notify: Clear mirror temp dir
+
+    - name: Clone reference repository
+      ansible.builtin.git:
+        dest: "{{ _sg_mirror_repo.path }}/mirror"
+        repo: "{{ sg_repo_mirror_url }}"
+        version: "{{ sg_repo_mirror_branch }}"
+
+    - name: Mirror de repository # noqa command-instead-of-module
+      ansible.builtin.shell:
+        cmd: |
+          /usr/bin/git remote add mirror http://{{ sg_username }}:{{ sg_password }}@{{ sg_gitea_domain }}/{{ sg_username }}/{{ sg_repository }}.git
+          /usr/bin/git push mirror main
+        chdir: "{{ _sg_mirror_repo.path }}/mirror"
+      changed_when: false
+...
