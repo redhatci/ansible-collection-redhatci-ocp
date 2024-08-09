@@ -1,12 +1,9 @@
 ---
 - name: "Render bundle operator image"
-  vars:
-    opm_auths: "/usr/share/dci-openshift-agent/utils/opm-auths"
   ansible.builtin.shell: >
     {% if partner_creds | length %}
     DOCKER_CONFIG={{ preflight_tmp_dir.path }}
     {% endif %}
-    {{ opm_auths }}
     {{ opm_tool_path }} render {{ operator.bundle_image }}
   register: rendered_bundle
   retries: 2
