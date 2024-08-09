@@ -28,21 +28,21 @@
       else certsuite execution will fail.
   ignore_errors: true
 
-# Use https://quay.io/repository/testnetworkfunction/k8s-best-practices-certsuite?tab=tags for
+# Use https://quay.io/repository/redhat-best-practices-for-k8s/certsuite?tab=tags for
 # newer certsuite releases, starting from v5.2.2.
-# Note https://quay.io/repository/testnetworkfunction/cnf-certification-test?tab=tags is deprecated
+# Note https://quay.io/repository/redhat-best-practices-for-k8s/cnf-certification-test?tab=tags is deprecated
 # and its support will be removed at some point.
 - name: Set kbpc_image_name
   ansible.builtin.set_fact:
-    kbpc_image_name: "{{ (kbpc_version is version('v5.2.2', '>=') or kbpc_version == 'HEAD') | ternary('k8s-best-practices-certsuite', kbpc_project_name) }}"
+    kbpc_image_name: "{{ (kbpc_version is version('v5.2.2', '>=') or kbpc_version == 'HEAD') | ternary('certsuite', kbpc_project_name) }}"
 
-# Use https://quay.io/repository/testnetworkfunction/k8s-best-practices-debug?tab=tags for
+# Use https://quay.io/repository/redhat-best-practices-for-k8s/certsuite-probe?tab=tags for
 # newer certsuite releases, starting from v5.2.3.
-# Note https://quay.io/repository/testnetworkfunction/debug-partner?tab=tags is deprecated
+# Note https://quay.io/repository/redhat-best-practices-for-k8s/debug-partner?tab=tags is deprecated
 # and its support will be removed at some point.
 - name: Set kbpc_support_image_name
   ansible.builtin.set_fact:
-    kbpc_support_image_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('k8s-best-practices-debug', 'debug-partner') }}"
+    kbpc_support_image_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite-probe', 'certsuite-probe') }}"
 
 # Depending on the presence or not of `kbpc_code_src_dir` variable,
 # defined by test-runner script when testing a PR from cnf-certification-test
@@ -137,11 +137,11 @@
         kbpc_certsuite_dir: "{{ _kbpc_git_dir.path }}/{{ kbpc_project_name }}"
 
     # In
-    # https://quay.io/repository/testnetworkfunction/k8s-best-practices-certsuite?tab=tags,
+    # https://quay.io/repository/redhat-best-practices-for-k8s/certsuite?tab=tags,
     # there are two main tags to take into account:
     # -latest: linked to the latest certsuite release.
     # -unstable: related to the HEAD version of the main branch in the certsuite repository
-    # (https://github.com/test-network-function/cnf-certification-test).
+    # (https://github.com/redhat-best-practices-for-k8s/certsuite).
     # So, if a version is provided in kbpc_version, that version
     # will be used. In case we are on the master branch (HEAD version),
     # unstable tag is used.
@@ -201,8 +201,8 @@
     - name: Pull and tag certsuite image for the version under test
       ansible.builtin.shell: |
         set -ex
-        podman pull quay.io/testnetworkfunction/{{ kbpc_image_name }}:{{ kbpc_version_image }}
-        podman tag quay.io/testnetworkfunction/{{ kbpc_image_name }}:{{ kbpc_version_image }} \
+        podman pull quay.io/redhat-best-practices-for-k8s/{{ kbpc_image_name }}:{{ kbpc_version_image }}
+        podman tag quay.io/redhat-best-practices-for-k8s/{{ kbpc_image_name }}:{{ kbpc_version_image }} \
         {{ kbpc_certsuite_image }}
         podman image rm {{ kbpc_image_name }}:{{ kbpc_version_image }}
       register: _kbpc_pull_result
@@ -238,8 +238,8 @@
     name: redhatci.ocp.mirror_images
   vars:
     mi_images:
-      - "quay.io/testnetworkfunction/cnf-test-partner:latest"
-      - "quay.io/testnetworkfunction/{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
+      - "quay.io/testnetworkfunction/cnf-test-partner:latest" # TODO: Change this when the image's new repo is available
+      - "quay.io/redhat-best-practices-for-k8s/{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
     mi_authfile: "{{ kbpc_pullsecret }}"
     mi_registry: "{{ kbpc_registry }}"
   when:
