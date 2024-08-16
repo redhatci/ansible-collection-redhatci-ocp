@@ -179,6 +179,13 @@
   retries: 20
   delay: 15
 
+- name: "Check if Metal3 provisioning is available"
+  community.kubernetes.k8s_info:
+    api_version: metal3.io/v1alpha1
+    kind: Provisioning
+    name: provisioning-configuration
+  register: _as_prov_conf
+
 - name: "Update the provisioning resource to watch all Namespaces"
   community.kubernetes.k8s:
     definition:
@@ -188,6 +195,8 @@
         name: provisioning-configuration
       spec:
         watchAllNamespaces: true
+  when:
+    - _as_prov_conf.resources | default([]) | length == 1
 
 - name: "Get cluster version"
   community.kubernetes.k8s_info:
