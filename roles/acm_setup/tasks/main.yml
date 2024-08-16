@@ -196,7 +196,7 @@
       spec:
         watchAllNamespaces: true
   when:
-    - _as_prov_conf.resources | default([0]) | length == 1
+    - _as_prov_conf.resources | default([]) | length == 1
 
 - name: "Get cluster version"
   community.kubernetes.k8s_info:
