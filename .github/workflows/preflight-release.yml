@@ -46,8 +46,8 @@ jobs:
         env:
           PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
         run: |
-          git ls-remote --exit-code --heads origin preflight-release-$PREFLIGHT_LATEST
-          if [ $? -eq 0 ]; then
+          branch_exists=$(git ls-remote --heads origin preflight-release-$PREFLIGHT_LATEST)
+          if [ -n "$branch_exists" ]; then
             echo "Branch preflight-release-$PREFLIGHT_LATEST already exists"
             echo "branch_exists=true" >> $GITHUB_OUTPUT
           else
@@ -59,14 +59,30 @@ jobs:
         if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
         run: sudo apt-get install -y gh
 
+      - name: Import GPG key
+        if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
+        env:
+          GPG_PRIVATE_KEY_DCIBOT: ${{ secrets.GPG_PRIVATE_KEY_DCIBOT }}
+        run: |
+          echo "$GPG_PRIVATE_KEY_DCIBOT" | gpg --batch --import
+
+      - name: Configure git for GPG
+        if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
+        env:
+          DCIBOT_EMAIL: ${{ secrets.DCIBOT_EMAIL }}
+        run: |
+          GPG_KEY=$(gpg --list-secret-keys --keyid-format LONG | grep sec | awk '{print $2}' | cut -d '/' -f 2)
+          git config --global user.signingkey "$GPG_KEY"
+          git config --global gpg.program gpg
+          git config --global commit.gpgSign true
+          git config --global user.name "dcibot"
+          git config --global user.email "$DCIBOT_EMAIL"
+
       - name: Create new branch with updated Preflight version
         if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
         env:
           PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
         run: |
-          # Configure git
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           # Pull the latest changes from the main branch
           git fetch origin main
           git checkout main
@@ -77,13 +93,17 @@ jobs:
           sed -i "s|quay.io/opdev/preflight:[0-9]*\.[0-9]*\.[0-9]*|quay.io/opdev/preflight:${PREFLIGHT_LATEST}|" roles/preflight/defaults/main.yml
           sed -i "s|quay.io/opdev/preflight:[0-9]*\.[0-9]*\.[0-9]*|quay.io/opdev/preflight:${PREFLIGHT_LATEST}|" roles/preflight/README.md
           git add roles/preflight/defaults/main.yml roles/preflight/README.md
-          git commit --allow-empty -m "Update Preflight to release $PREFLIGHT_LATEST"
+          git commit -S -m "Update Preflight to release $PREFLIGHT_LATEST"
           git push --set-upstream origin preflight-release-$PREFLIGHT_LATEST
 
       - name: Create PR moving to the latest Preflight
         if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
         env:
           PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DCIBOT_TOKEN }}
         run: |
-          gh pr create --title "Move to Preflight release $PREFLIGHT_LATEST" --body "This pull request was opened by a bot.\n\nCheckDallasWorkload: preflight-green" --base main --head preflight-release-$PREFLIGHT_LATEST
+          gh pr create \
+            --title "Move to Preflight release $PREFLIGHT_LATEST" \
+            --body "This pull request was opened by a bot." \
+            --base main \
+            --head preflight-release-$PREFLIGHT_LATEST
