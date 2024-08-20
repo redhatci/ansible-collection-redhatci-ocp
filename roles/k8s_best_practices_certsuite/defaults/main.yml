@@ -1,7 +1,7 @@
 ---
 kbpc_check_commit_sha: false
 kbpc_repository: "https://github.com/redhat-best-practices-for-k8s/certsuite"
-kbpc_version: v5.2.3
+kbpc_version: v5.3.0
 kbpc_project_name: certsuite
 kbpc_test_labels: "all"
 kbpc_test_config:
@@ -25,7 +25,7 @@ kbpc_image_suffix: "{{ lookup('community.general.random_string', length=16, spec
 # Provide feedback for each certsuite test launched. Just copy this template and fill the value for the
 # tests you want to provide feedback. You don't need to include the tests that you don't want to provide feedback.
 # To insert line breaks, use \\n (you need to escape it). Same for quotes and so on.
-# List of tests updated until certsuite v5.2.3
+# List of tests updated until certsuite v5.3.0
 kbpc_feedback:
   access-control-bpf-capability-check: ""
   access-control-cluster-role-bindings: ""
