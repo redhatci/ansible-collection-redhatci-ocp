@@ -342,4 +342,20 @@
   retries: 20
   delay: 15
   no_log: true
+
+- name: "Create an initial ClusterImageSet based on Hub release info"
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: hive.openshift.io/v1
+      kind: ClusterImageSet
+      metadata:
+        labels:
+          channel: "{{ cluster_version.resources[0].spec.channel }}"
+          visible: 'true'
+        name: "img-{{ cluster_version.resources[0].status.desired.version }}"
+        namespace: open-cluster-management
+      spec:
+        releaseImage: "{{ cluster_version.resources[0].status.desired.image }}"
+  when:
+    - hub_disconnected | bool
 ...
