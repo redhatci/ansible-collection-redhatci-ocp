@@ -25,20 +25,14 @@
 
 - name: "Get the rhcos.json from cache server into temp file on control machine"
   ansible.builtin.fetch:
-    dest: /tmp/
+    dest: "{{ _si_tmp_dir.path }}/"
     flat: true
     src: "{{ cache_dir }}/{{ version }}/rhcos.json"
   delegate_to: "{{ cache_server }}"
 
 - name: "Load variables from rhcos.json"
   ansible.builtin.include_vars:
-    file: "/tmp/rhcos.json"
+    file: "{{ _si_tmp_dir.path }}/rhcos.json"
     name: rhcos_json_vars
   tags: rhcospath
-
-- name: "Remove the temporary copy of rhcos.json on control machine"
-  ansible.builtin.file:
-    path: "/tmp/rhcos.json"
-    state: absent
-  delegate_to: localhost
 ...

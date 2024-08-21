@@ -21,24 +21,18 @@
   block:
     - name: "Get the ignition file from the provisione host into temp file on control machine"
       ansible.builtin.fetch:
-        dest: /tmp/
+        dest: "{{ _si_tmp_dir.path }}/"
         flat: true
         src: "{{ dir }}/bootstrap-in-place-for-live-iso.ign"
 
     - name: "Copy the ignition file from control machine to the registry host"
       ansible.builtin.copy:
-        src: "/tmp/bootstrap-in-place-for-live-iso.ign"
+        src: "{{ _si_tmp_dir.path }}/bootstrap-in-place-for-live-iso.ign"
         dest: "{{ coreos_sno_ignition }}"
         mode: "0644"
         setype: httpd_sys_content_t
       become: true
       delegate_to: "{{ groups['registry_host'][0] }}"
-
-    - name: "Remove the temporary copy of ignition file on control machine"
-      ansible.builtin.file:
-        path: "/tmp/bootstrap-in-place-for-live-iso.ign"
-        state: absent
-      delegate_to: localhost
 
 - name: "Extra tasks to get ignition file for baremetal SNO"
   when:
