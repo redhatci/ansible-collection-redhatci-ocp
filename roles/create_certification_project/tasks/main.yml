@@ -27,6 +27,9 @@
     # The only update for cnf project is to add email
     # and it's done during the project creation
     - product_type != 'cnf'
+    # To avoid multiple PRs request to Charts repo,
+    # no project update during helm chart project creation
+    - product_type != 'helmchart'
     - cert_project_id | default('') | length
 
 - name: Attach all product listings

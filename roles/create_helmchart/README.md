@@ -34,38 +34,58 @@ pyxis_product_lists       | None                                                
 ## Example Configuration of Helm Chart certification project creation
 ```yaml
 ---
-# Generic DCI config
-dci_topic: OCP-4.15
-dci_name: Automatic to create,update and attach certification Project for Helm Chart with DCI
-dci_configuration: Use DCI to Automate Helm Chart Project Creation
-dci_config_dirs: [/etc/dci-openshift-agent]
-dci_gits_to_components: []
+# Generic DCI Pipeline config
+- name: create-helmchart
+  stage: workload
+  topic: OCP-4.16
+  ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
+  ansible_cfg: ~/my-dci-pipeline-test/pipelines/ansible.cfg
+  ansible_inventory: ~/my-dci-pipeline-test/inventories/@QUEUE/@RESOURCE-workload.yml
+  dci_credentials: ~/.config/dci-pipeline/dci_credentials.yml
+  #ansible_skip_tags:
+  #  - post-run
+  ansible_extravars:
+    dci_cache_dir: ~/dci-cache-dir
+    dci_config_dir: ~/my-dci-pipeline-test/ocp-workload
+    dci_gits_to_components:
+      - ~/my-dci-pipeline-test
+    dci_local_log_dir: ~/upload-errors
+    dci_tags: ["helmchart", "cnf", "debug", "create-helmchart"]
+    dci_workarounds: []
 
-# Certification-related config
-pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/demo-pyxis-apikey.txt"
-organization_id: 12345678
+    # Certification-related config
+    pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/demo-pyxis-apikey.txt"
+    organization_id: 12345678
 
-helmchart_to_certify:
-  # Mandatory variables
-  - repository: "https://github.com/xxxx/demochart1"
-    chart_name: "demochart1"
-    short_description: "This is a short description demochart1"
-    # Optional, define list of Product Listings
-    # if you want to attach PLs to your cert project
-    pyxis_product_lists:
-      - "xxxxxxxxxxxxxxxxxxxxxxxx"
-      - "yyyyyyyyyyyyyyyyyyyyyyyy"
-  - repository: "https://github.com/xxxx/demochart2"
-    chart_name: "demochart2"
-    short_description: "This is a short 50+ characters description demochart2"
+    helmchart_to_certify:
+      # Mandatory variables
+      - repository: "https://github.com/xxxx/demochart1"
+        chart_name: "demochart1"
+        create_helmchart_project: true
+        short_description: "This is a short description demochart1"
+        # Optional, define list of Product Listings
+        # if you want to attach PLs to your cert project
+        pyxis_product_lists:
+          - "xxxxxxxxxxxxxxxxxxxxxxxx"
+          - "yyyyyyyyyyyyyyyyyyyyyyyy"
+      - repository: "https://github.com/xxxx/demochart2"
+        chart_name: "demochart2"
+        create_helmchart_project: true
+        short_description: "This is a short 50+ characters description demochart2"
 
-cert_settings:
-  email_address: "mail@example.com"
-  distribution_method: "undistributed" #undistributed==>Web catalog only, external==> charts.openshift.io
-  github_usernames: "xusername"
-  application_categories: "Networking"
-  long_description: "This is a long 100+ characters description about this sample chart"
-  application_categories: "Networking"
-  distribution_instructions: "Instruction how to get this helm-chart"
+    cert_settings:
+      email_address: "mail@example.com"
+      distribution_method: "undistributed" #undistributed==>Web catalog only, external==> charts.openshift.io
+      github_usernames: "xusername"
+      application_categories: "Networking"
+      long_description: "This is a long 100+ characters description about this sample chart"
+      application_categories: "Networking"
+      distribution_instructions: "Instruction how to get this helm-chart"
+  use_previous_topic: true
+  inputs:
+    kubeconfig: kubeconfig_path
+  success_tag: helm-charts-ok
 ...
 ```
+
+Note: For helm chart project creation, all mandatory parameters are now included at the beginning, and it can not be used to update helm chart project parameters, e.g., github user, after the helm chart project is created in order to minimize PRs request to Charts repo.
