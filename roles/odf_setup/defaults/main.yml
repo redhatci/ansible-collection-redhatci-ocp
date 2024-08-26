@@ -30,3 +30,6 @@ default_storageclass_annotation: '{"storageclass.kubernetes.io/is-default-class"
 
 # OCS gatherer_image
 gatherer_image: registry.access.redhat.com/ubi8/ubi
+
+# OpenShift Command Line Interface path
+odf_setup_oc_tool_path: /usr/local/bin/oc

@@ -27,7 +27,7 @@
   ansible.builtin.shell:
     cmd: >
       sleep 90;
-      {{ oc_tool_path }} logs
+      {{ odf_setup_oc_tool_path }} logs
       --selector name=ocs-disk-gatherer
       --tail=-1
       --since=10m

@@ -52,4 +52,11 @@
           There are less than 3 nodes with the label
           cluster.ocs.openshift.io/openshift-storage
       when: nodes_info.resources | length < 3
+
+- name: Assert that local_storage_devices is defined and is a list with at least one item
+  ansible.builtin.assert:
+    that:
+      - local_storage_devices is defined
+      - local_storage_devices | length > 0
+    fail_msg: "local_storage_devices must be a list with at least one item"
 ...

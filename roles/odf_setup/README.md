@@ -27,9 +27,11 @@ Role Variables
 | default_storageclass_annotation  | '{"storageclass.kubernetes.io/is-default-class": "true"}'  | String       | No          | Default storageclass annotation             |
 | external_ceph_data               |                               | JSON         | No          | A JSON payload generated from RHCS                                       |
 | ocs_install_type                 |                               | String       | Yes         | `internal` for LSO, `external` for Ceph/RHCS                             |
-| local_storage_devices            |                               | List         | No          | For LSO, a list of local devices that will be use as backend             |
+| local_storage_devices            |                               | List         | Yes          | For LSO, a list of local devices that will be use as backend             |
 | ocs_default_storage_class        | storagecluster-cephfs         | String       | No          | Default storage class name                                               |
 | gatherer_image                   | registry.access.redhat.com/ubi8/ubi | String | No          | Image for disk-gatherer deployment                                       |
+| odf_setup_oc_tool_path                   | '/usr/local/bin/oc` | String | No          | Path to the OpenShift Command Line Interface binary.
+
 
 Inventory Groups and Variables
 --------------
@@ -43,9 +45,8 @@ ocs_install_type=
 # with ceph-external-cluster-details-exporter.py script
 external_ceph_data='JSON_PAYLOAD'
 
-# (Optional) when enable_lso=true List of disk devices per node to use for LSO
-# If not specified, it will use all the local disks available
-# comma separated, all servers must have the same
+# When enable_lso=true, list of disk devices per node to use for LSO
+# Comma separated, all servers must have the same
 local_storage_devices=["/dev/sdX", "/dev/sdY", "/dev/sdZ"]
 
 # (Optional) Default storage class name
