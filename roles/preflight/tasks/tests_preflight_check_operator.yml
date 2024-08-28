@@ -116,6 +116,10 @@
   with_fileglob:
     - "{{ preflight_operator_artifacts.path }}/*"
 
+- name: Validate annotations.yaml
+  ansible.builtin.include_tasks: test_validate_annotations.yml
+  when: validate_annotations_yaml | default(true) | bool
+
 - name: Cleanup
   block:
     - name: Delete preflight namespace

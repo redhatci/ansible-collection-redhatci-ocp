@@ -43,4 +43,27 @@
     ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility_{{ da_ns }}_junit.xml"
   ansible.builtin.set_fact:
     ocp_compatibility: "{{ da_removed_api | redhatci.ocp.ocp_compatibility(da_ocp_version, ocp_filename) }}"
+
+# 99.99 is used when the deprecated API check imposes no limitations
+- name: "Extract the OCP version up to which the workload is compatible in {{ da_ns }}"
+  ansible.builtin.set_fact:
+    da_current_ns_ocp_limit: "{{ max_compatible_version }}"
+  vars:
+    compatible_versions: >-
+      {{ ocp_compatibility | dict2items | selectattr('value', 'equalto', 'compatible') | map(attribute='key') | map('trim') | list }}
+    all_values: >-
+      {{ ocp_compatibility | dict2items | map(attribute='value') | list | unique }}
+    highest_compatible_version: >-
+      {{ compatible_versions | max | trim }}
+    max_compatible_version: >-
+      {{ "99.99" if all_values | length == 1 and 'compatible' in all_values else highest_compatible_version }}
+
+- name: Compare the OCP limit for the current ns with previously examined ns and select the min
+  ansible.builtin.set_fact:
+    da_max_compatible_ocp_version: >-
+      {%- if da_max_compatible_ocp_version is defined -%}
+        {{ da_current_ns_ocp_limit if da_current_ns_ocp_limit is version(da_max_compatible_ocp_version, '<') else da_max_compatible_ocp_version }}
+      {%- else -%}
+        {{ da_current_ns_ocp_limit }}
+      {%- endif %}
 ...

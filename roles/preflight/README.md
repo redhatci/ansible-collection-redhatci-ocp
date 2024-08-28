@@ -21,6 +21,7 @@ catalog_url                       | https://catalog.redhat.com/api/containers/v1
 preflight_run_health_check      | true                                                 | Optional. Run health check on every container and generate oval reports both in xml and HTML formats.
 preflight_dci_all_components_are_ga | true                                             | Optional. Only submit test results when all components in the list `dci_ga_components_for_certification` are GA.
 max_images_per_batch | 1                                             | Optional. This variable allows the user to adjust the number of images processed per batch for running preflight in parallel. By default, it is set to `1`.
+validate_annotations_yaml | true | Optional. Enable or disable validation of operators' annotations.yaml against deprecated API check limitations.
 
 
 ## Variables to define for each operator in preflight_operators_to_certify

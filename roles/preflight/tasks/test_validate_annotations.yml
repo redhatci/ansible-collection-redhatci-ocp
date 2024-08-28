@@ -1,0 +1,68 @@
+---
+- name: Retrieve annotations.yaml file from bundle image
+  ansible.builtin.shell:
+    cmd: >
+      podman cp
+      $(podman create --rm {{ operator.bundle_image }} bash):/metadata/annotations.yaml .
+    chdir: "{{ preflight_operator_artifacts.path }}"
+
+- name: Read annotations.yaml file
+  ansible.builtin.slurp:
+    src: "{{ preflight_operator_artifacts.path }}/annotations.yaml"
+  register: _preflight_annotations_file
+
+- name: Convert annotations.yaml content to string
+  ansible.builtin.set_fact:
+    preflight_annotations_content: "{{ _preflight_annotations_file['content'] | b64decode }}"
+
+# Possible formats of the OCP version range:
+# https://redhat-connect.gitbook.io/certified-operator-guide/ocp-deployment/operator-metadata/bundle-directory/managing-openshift-versions
+- name: Extract OCP version range or pinned version from annotations.yaml
+  ansible.builtin.set_fact:
+    preflight_ocp_range: "{{ preflight_annotations_content | regex_search(preflight_range_pattern) | trim }}"
+  vars:
+    preflight_range_pattern: "com.redhat.openshift.versions:\\s*(=?.*)"
+
+# Range pattern "v4.11-v4.16" declares operator compatibility from 4.11 to 4.16, inclusive.
+# Pinned pattern "=v4.16" declares pinned compatibility with version 4.16.
+# Unlimited pattern "v4.16" declares compatibility with version 4.16 and all later versions.
+- name: Extract max OCP version from annotations.yaml
+  ansible.builtin.set_fact:
+    preflight_max_ocp: "{{ preflight_ocp_range | regex_replace('=v', 'v') | regex_search(preflight_max_pattern) | regex_replace('v', '') | regex_replace('.*-', '') }}"
+  vars:
+    preflight_max_pattern: "v[0-9]+\\.[0-9]+(-v[0-9]+\\.[0-9]+)?"
+
+# Handle OCP version validation when com.redhat.openshift.versions is defined in annotations.yaml
+# If not, just skip the validation.
+- name: Handle OCP version validation when com.redhat.openshift.versions is defined
+  when: preflight_max_ocp != 'None'
+  block:
+    - name: Check if OCP version is unlimited
+      ansible.builtin.set_fact:
+        preflight_unlimited_ocp_version: "{{
+          preflight_ocp_range is regex(preflight_unlimited_pattern)
+          and not (preflight_ocp_range is regex(preflight_range_pattern)
+          or preflight_ocp_range is regex(preflight_pinned_pattern)) }}"
+      vars:
+        preflight_range_pattern: ".*v[0-9]+\\.[0-9]+-v[0-9]+\\.[0-9]+.*"
+        preflight_pinned_pattern: ".*=v[0-9]+\\.[0-9]+.*"
+        preflight_unlimited_pattern: ".*v[0-9]+\\.[0-9]+.*"
+
+    - name: Ensure that unlimited OCP version declared in the annotations.yaml passing deprecated API check
+      ansible.builtin.fail:
+        msg: >-
+          Defined OCP range {{ preflight_ocp_range }} is invalid, there is a workload API deprecated in {{ da_max_compatible_ocp_version }}.
+          The incompatible API could be found in apirequestcounts_ocp_compatibility_*_junit.xml.
+      when:
+        - preflight_unlimited_ocp_version | bool
+        - da_max_compatible_ocp_version != '99.99'
+
+    - name: Compare max version from annotations.yaml with limitations by deprecated API check
+      ansible.builtin.fail:
+        msg: >-
+          Defined OCP range {{ preflight_ocp_range }} is invalid, there is a workload API deprecated in {{ da_max_compatible_ocp_version }}.
+          The incompatible API could be found in apirequestcounts_ocp_compatibility_*_junit.xml.
+      when:
+        - not preflight_unlimited_ocp_version | bool
+        - da_max_compatible_ocp_version is version(preflight_max_ocp, '<=')
+...
