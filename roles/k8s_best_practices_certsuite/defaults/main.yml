@@ -1,7 +1,7 @@
 ---
 kbpc_check_commit_sha: false
 kbpc_repository: "https://github.com/redhat-best-practices-for-k8s/certsuite"
-kbpc_version: v5.3.1
+kbpc_version: v5.3.2
 kbpc_project_name: certsuite
 kbpc_test_labels: "all"
 kbpc_test_config:
