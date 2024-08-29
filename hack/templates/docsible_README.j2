@@ -18,13 +18,13 @@ Role Requirements go here
 {%- endfor -%}
 {% endif -%}
 
-{% if role.args -%}
+{% if role.argument_specs-%}
 ## Inputs
 
 | Var  | Type  | Required | Default  | Description
 | ---- | ----- | -------- | -------- | -----------
-{% for key in role.args.keys() -%}
-{% for input_var, details in role.args[key].options.items() -%}
+{% for key in role.argument_specs.argument_specs.keys() -%}
+{% for input_var, details in role.argument_specs.argument_specs[key].options.items() -%}
 | {{ input_var }} | {{ details.type }} | {{ details.required }} | {{ details.default | default('\<undefined\>') }} | {{ " ".join(details.description) }}
 {% endfor -%}
 {% endfor -%}
@@ -93,10 +93,6 @@ Role Requirements go here
 {{ role.playbook.graph }}
 ```
 {% endif -%}
-
-## Examples
-
-Examples go here
 
 {% if role.meta.galaxy_info and role.meta.galaxy_info.license -%}
 ## License

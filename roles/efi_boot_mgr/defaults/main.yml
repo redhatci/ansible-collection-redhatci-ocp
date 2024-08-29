@@ -1,2 +1,6 @@
 ---
+# title: Path to oc binary
+# required: false
+# description-lines:
+# Allow to override the path of oc binary
 ebm_oc_path: "/usr/local/bin/oc"
