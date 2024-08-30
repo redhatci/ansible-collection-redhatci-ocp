@@ -1,0 +1,28 @@
+---
+- name: Validate the input variables
+  ansible.builtin.assert:
+    that:
+        # if we're mirroring an external repository (sg_repo_mirror_url) we
+        # must create an initial repository (sg_repository) within the Gitea
+        # service.
+      - sg_repo_mirror_url is undefined or sg_repository is defined
+        # if we're setting an initial repository (sg_repository) in the Gitea
+        # service, we must also define it's owner (sg_username).
+      - sg_repository is undefined or sg_username is defined
+        # if we're setting an initial user (sg_username) we must provide a
+        # password for it (sg_password).
+      - sg_username is undefined or sg_password is defined
+        # if we're setting an initial user (sg_username) we must provide an
+        # e-mail for it (sg_email).
+      - sg_username is undefined or sg_email is defined
+
+- name: Create the Gitea deployment
+  ansible.builtin.include_tasks: install.yml
+  when:
+    - sg_action == 'install'
+
+- name: Remove the Gitea deployment
+  ansible.builtin.include_tasks: cleanup.yml
+  when:
+    - sg_action == 'cleanup'
+...
