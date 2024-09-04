@@ -4,5 +4,4 @@ source: redhat-operators
 source_ns: openshift-marketplace
 operator_group_name: "{{ operator }}"
 olm_operator_skippable: false
-olm_operator_found: true
 ...
