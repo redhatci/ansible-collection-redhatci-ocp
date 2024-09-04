@@ -1,0 +1,73 @@
+---
+targetNameSpaces:
+{% for item in kbpc_test_config %}
+{% if item.namespace is defined and item.namespace|length %}
+  - name: {{ item.namespace }}
+{% endif %}
+{% endfor %}
+
+podsUnderTestLabels:
+{% for item in kbpc_test_config %}
+{% if item.targetpodlabels is defined and item.targetpodlabels is iterable %}
+{% for label in item.targetpodlabels %}
+{% if label|length %}
+  - "{{ label|regex_search('.+?=')|regex_replace('=', '') }}: {{ label|regex_search('=.*')|regex_replace('=', '') }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+operatorsUnderTestLabels:
+{% for item in kbpc_test_config %}
+{% if item.targetoperatorlabels is defined and item.targetoperatorlabels is iterable %}
+{% for label in item.targetoperatorlabels %}
+{% if label|length %}
+  - "{{ label|regex_search('.+?=')|regex_replace('=', '') }}: {{ label|regex_search('=.*')|regex_replace('=', '') }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+targetCrdFilters:
+{% for item in kbpc_test_config %}
+{% if item.target_crds is defined and item.target_crds is iterable %}
+{% for crd in item.target_crds %}
+  - nameSuffix: {{ crd.nameSuffix }}
+    scalable: {{ crd.scalable }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+acceptedKernelTaints:
+{% for item in kbpc_accepted_kernel_taints %}
+{% if item.module is defined and item.module|length %}
+  - module: {{ item.module }}
+{% endif %}
+{% endfor %}
+
+servicesignorelist:
+{% for item in kbpc_services_ignore_list %}
+  - {{ item }}
+{% endfor %}
+
+## fields below are not currently used, leaving placeholder in case they were needed in the future
+#managedDeployments:
+
+#managedStatefulsets:
+
+#skipScalingTestDeployments:
+
+#skipScalingTestStatefulSetNames:
+
+#skipHelmChartList:
+
+#validProtocolNames:
+
+#collectorAppEndPoint: ""
+
+#executedBy: ""
+
+#partnerName: ""
+
+#collectorAppPassword: ""
+...
