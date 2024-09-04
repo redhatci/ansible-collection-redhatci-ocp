@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  name: {{ gcr_private_repo_secret }}
+  namespace: openshift-gitops
+stringData:
+# Set project to restrict the access to these credentials
+#  project: default
+  type: git
+  url: {{ gcr_ztp_gitops_repo }}
+  username: {{ gcr_repo_username }}
+  password: {{ gcr_repo_password }}
