@@ -1,6 +1,6 @@
 ---
 # Always submit these files to DCI:
-# - Configuration files - tnf_config.yml
+# - Configuration files - tnf_config.yml (or certsuite_config.yml)
 # - Execution logs - certsuite-stdout.log and certsuite.log, if they exist
 - name: Copy config and log files related to certsuite execution
   ansible.builtin.copy:
@@ -8,7 +8,7 @@
     dest: "{{ kbpc_log_path }}"
     mode: "0750"
   with_fileglob:
-    - "{{ kbpc_certsuite_dir }}/config_files/tnf_config.yml"
+    - "{{ kbpc_certsuite_dir }}/config_files/*_config.yml"
     - "{{ kbpc_certsuite_dir }}/result_files/*.log"
   when:
     - kbpc_log_path is defined
@@ -25,16 +25,18 @@
 - name: Clean certsuite resources
   when: kbpc_postrun_delete_resources|bool
   block:
-    - name: Define tnf-debug daemonset namespace
+    - name: Define probe daemonset namespace
       ansible.builtin.set_fact:
-        kbpc_debug_ds_ns: "cnf-suite"
+        kbpc_probe_ds_ns: "{{ (kbpc_version == 'HEAD') | ternary('certsuite', 'cnf-suite') }}"
 
-    - name: Ensure tnf-debug DaemonSet is absent
+    - name: Ensure probe DaemonSet is absent
+      vars:
+        kbpc_probe_ds_name: "{{ (kbpc_version == 'HEAD') | ternary('certsuite-debug', 'tnf-debug') }}"
       community.kubernetes.k8s:
         api_version: v1
         kind: DaemonSet
-        name: tnf-debug
-        namespace: "{{ kbpc_debug_ds_ns }}"
+        name: "{{ kbpc_probe_ds_name }}"
+        namespace: "{{ kbpc_probe_ds_ns }}"
         state: absent
 
     - name: Ensure tnf namespace is absent
@@ -44,11 +46,11 @@
         name: tnf
         state: absent
 
-    - name: Ensure tnf-debug namespace is absent
+    - name: Ensure probe daemonset namespace is absent
       community.kubernetes.k8s:
         api_version: v1
         kind: Namespace
-        name: "{{ kbpc_debug_ds_ns }}"
+        name: "{{ kbpc_probe_ds_ns }}"
         state: absent
 
 # This is just done when testing a certsuite stable version
