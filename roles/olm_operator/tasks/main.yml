@@ -61,6 +61,7 @@
     - operator_packagemanifest.resources is defined
     - operator_packagemanifest.resources | length
   ignore_errors: true
+  no_log: true
 
 - name: Set package as not found
   ansible.builtin.set_fact:
