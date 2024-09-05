@@ -12,7 +12,7 @@ This repository hosts the `redhatci.ocp` Ansible collection.
 The collection includes Ansible roles and modules to help automate OpenShift Platform interactions, as well as the deployment, testing and continuous integration of the clusters or related components.
 
 > [!IMPORTANT]
-> Red Hat does not provide commercial support for the content of this repo
+> Red Hat does not provide commercial support for the content of this repository
 
 ## Installing the collection
 
