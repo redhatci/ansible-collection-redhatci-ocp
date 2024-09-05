@@ -134,7 +134,7 @@ Name | Description
 [redhatci.ocp.sriov_config](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sriov_config/README.md) | Configure SR-IOV node policies and/or networks.
 [redhatci.ocp.storage_tester](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/storage_tester/README.md) | Storage Service tests during cluster upgrade
 [redhatci.ocp.upi_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/upi_installer/README.md) | UPI Installer
-[redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Stup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)
+[redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Setup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)
 [redhatci.ocp.validate_dns_records](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_dns_records/README.md) | Checks for the required dns entries for ingress and api VIPs
 [redhatci.ocp.validate_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_http_store/README.md) | Checks via a round trip that http store is functional
 [redhatci.ocp.validate_inventory](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_inventory/README.md) | Validates a crucible inventory
