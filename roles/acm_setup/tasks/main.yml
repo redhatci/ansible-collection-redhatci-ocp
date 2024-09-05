@@ -179,7 +179,8 @@
   retries: 20
   delay: 15
 
-- name: "Update the provisioning resource to watch all Namespaces"
+
+- name: "Disable provisioning network and update to watch all Namespaces"
   community.kubernetes.k8s:
     definition:
       apiVersion: metal3.io/v1alpha1
@@ -187,6 +188,9 @@
       metadata:
         name: provisioning-configuration
       spec:
+        provisioningDHCPRange: null
+        provisioningIP: null
+        provisioningNetworkCIDR: null
         provisioningNetwork: "Disabled"
         watchAllNamespaces: true
 
