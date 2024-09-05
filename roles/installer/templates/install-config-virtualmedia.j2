@@ -74,8 +74,21 @@ platform:
     provisioningNetwork: "Disabled"
 {% if ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int == 6)) %}
     provisioningHostIP: {{ provisioningHostIP }}
-{% endif %}
     bootstrapProvisioningIP: {{ bootstrapProvisioningIP }}
+{% endif %}
+{% if (((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int >= 12)) and (static_bootstrap_extnet | default(false) | bool)) %}
+{% if bootstrapExternalStaticIP is defined %}
+    bootstrapExternalStaticIP: {{ bootstrapExternalStaticIP }}
+{% endif %}
+{% if bootstrapExternalStaticGateway is defined %}
+    bootstrapExternalStaticGateway: {{ bootstrapExternalStaticGateway }}
+{% endif %}
+{% endif %}
+{% if (((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int >= 14)) and (static_bootstrap_extnet | default(false) | bool)) %}
+{% if bootstrapExternalStaticDNS is defined %}
+    bootstrapExternalStaticDNS: {{ bootstrapExternalStaticDNS }}
+{% endif %}
+{% endif %}
 {% if externalMACAddress is defined %}
     externalMACAddress: {{ externalMACAddress }}
 {% endif %}
