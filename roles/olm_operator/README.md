@@ -16,6 +16,7 @@ operator_group_spec         | No        | {}                     | The operator 
 source                      | No        | redhat-operators       | CatalogSource where to pull operator from
 source_ns                   | No        | openshift-marketplace  | Namespace where the CatalogSource is (default: )
 starting_csv                | No        | \<latest\>             | Operator version to install different than the latest published in the catalog.
+olm_operator_skippable      | No        | false                  | When set to `true`, avoids failing if the `operator` is not present in the `source`.
 
 ## Examples of usage
 
@@ -54,4 +55,5 @@ Installing an operator's specific version:
       targetNamespaces:
         - openshift-storage
     starting_csv: 4.7.2
+    olm_operator_skippable: true
 ```

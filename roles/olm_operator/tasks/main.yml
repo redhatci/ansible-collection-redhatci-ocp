@@ -1,4 +1,9 @@
 ---
+
+- name: Initialize operator found fact
+  ansible.builtin.set_fact:
+    olm_operator_found: true
+
 - name: Assert all required fields are present
   ansible.builtin.assert:
     that:
@@ -55,9 +60,23 @@
     - operator_packagemanifest is defined
     - operator_packagemanifest.resources is defined
     - operator_packagemanifest.resources | length
-  failed_when: operator_packagemanifest is skipped
+  ignore_errors: true
+
+- name: Set package as not found
+  ansible.builtin.set_fact:
+    olm_operator_found: false
+  when: operator_packagemanifest is skipped
     or operator_packagemanifest.resources is undefined
     or operator_packagemanifest.resources | length != 1
+
+- name: Fail if not found and nor skippable
+  ansible.builtin.fail:
+    msg: >
+      The operator {{ operator }} is not found in the catalog
+      and skippable is {{ olm_operator_skippable }}.
+  when:
+    - not olm_operator_skippable
+    - not olm_operator_found
 
 - name: "Installing Operator {{ operator }}"
   vars:
@@ -72,8 +91,9 @@
         | first
       }}
     operator_csv: "{{ starting_csv | default(default_csv, true) }}"
+  when:
+    - olm_operator_found | bool
   block:
-
     - name: Print install parameters
       ansible.builtin.debug:
         msg:
