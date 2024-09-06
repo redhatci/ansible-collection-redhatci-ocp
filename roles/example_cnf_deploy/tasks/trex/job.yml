@@ -1,0 +1,59 @@
+---
+- name: Fail if ecd_trex_app_version is not defined
+  ansible.builtin.fail:
+    msg: "ecd_trex_app_version is required"
+  when: ecd_trex_app_version is not defined
+
+- name: Get the list of incomplete jobs
+  community.kubernetes.k8s_info:
+    kind: Job
+    api_version: batch/v1
+    label_selectors:
+      - example-cnf-type=pkt-gen-app
+    field_selectors:
+      - status.successful!=1
+  register: _ecd_jobs_running
+
+- name: Set default active job fact
+  ansible.builtin.set_fact:
+    ecd_active_jobs: 0
+
+- name: Find active jobs
+  ansible.builtin.set_fact:
+    ecd_active_jobs: "{{ ecd_active_jobs + 1 }}"
+  loop: "{{ _ecd_jobs_running.resources }}"
+  when: "item.status.failed != 1"
+
+- name: Fail if any one of pkt gen job is running
+  ansible.builtin.fail:
+    msg: "All pkt gen job should be complete before starting next"
+  when: "ecd_active_jobs|int > 0"
+
+- name: Log the test config
+  ansible.builtin.debug:
+    var: ecd_test_config_item
+
+- name: Set the image name
+  ansible.builtin.set_fact:
+    ecd_image_app: "{{ ecd_registry_url }}/{{ ecd_repo_name }}/trex-container-app:{{ ecd_trex_app_version }}"
+  when: ecd_image_app is not defined
+
+- name: Create job for the provided test config
+  vars:
+    ecd_environments: "{{ ecd_test_config_item }}"
+    ecd_trex_app_job_name: "{{ ecd_test_config_item.name | default('test-' + 1000 | random | string) }}"
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'trex-app-job.yaml.j2') }}"
+
+- name: Wait for the job to complete
+  community.kubernetes.k8s_info:
+    kind: Job
+    api_version: batch/v1
+    label_selectors:
+      - example-cnf-type=pkt-gen-app
+    field_selectors:
+      - status.successful!=1
+  register: _ecd_jobs_running
+  retries: 120
+  delay: 5
+  until: _ecd_jobs_running.resources|length == 0

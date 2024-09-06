@@ -1,0 +1,42 @@
+---
+- name: Deploy TRex profiles
+  ansible.builtin.include_tasks: trex/profile.yml
+  loop: "{{ ecd_trex_test_config }}"
+  loop_control:
+    loop_var: ecd_trex_test_config_item
+
+- name: Run additional tests
+  when:
+    - ecd_trex_tests_wait | bool
+  block:
+    - name: Get all trexapps
+      community.kubernetes.k8s_info:
+        namespace: "{{ ecd_cnf_namespace }}"
+        kind: TRexApp
+      register: _ecd_trex_apps
+
+    - name: Set trex app count to default 0
+      ansible.builtin.set_fact:
+        ecd_trex_apps_count: 0
+
+    - name: Increment trex_app_count for apps with valid duration
+      ansible.builtin.set_fact:
+        ecd_trex_apps_count: "{{ ecd_trex_apps_count | int + 1 }}"
+      loop: "{{ _ecd_trex_apps.resources }}"
+      when: "'duration' in item.spec and item.spec.duration != -1"
+
+    - name: Print ecd_trex_apps_count
+      ansible.builtin.debug:
+        var: ecd_trex_apps_count
+
+    - name: Wait trex app run complete event
+      community.kubernetes.k8s_info:
+        namespace: "{{ ecd_cnf_namespace }}"
+        kind: Event
+        field_selectors:
+          - "reason==TestCompleted"
+          - "involvedObject.kind=TRexApp"
+      register: _ecd_evts
+      retries: "{{ ecd_trex_tests_retry_mins_count | default(60) }}"
+      delay: 60
+      until: "_ecd_evts.resources | length >= ecd_trex_apps_count | int"

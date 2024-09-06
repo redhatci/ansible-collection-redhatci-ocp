@@ -1,0 +1,32 @@
+apiVersion: examplecnf.openshift.io/v1
+kind: TRexApp
+metadata:
+  namespace: {{ ecd_cnf_namespace }}
+  name: {{ ecd_trex_app_cr_name }}
+  annotations:
+    "ansible.sdk.operatorframework.io/verbosity": "4"
+    "ansible.sdk.operatorframework.io/reconcile-period": "1m"
+spec:
+{% if ecd_packet_rate|default('') %}
+  packetRate: {{ ecd_packet_rate }}
+{% endif %}
+{% if ecd_duration|default(None) %}
+  duration: {{ ecd_duration }}
+{% endif %}
+{% if ecd_packet_size|default('') %}
+  packetSize: {{ ecd_packet_size }}
+{% endif %}
+  registry: {{ ecd_registry_url }}
+  org: {{ ecd_repo_name }}
+  version: {{ ecd_trex_app_version }}
+  imagePullPolicy: {{ ecd_image_pull_policy }}
+  enableLb: {{ ecd_enable_lb }}
+{% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
+  runtime_class_name: "{{ ecd_high_perf_runtime }}"
+{% endif %}
+{% if ecd_enable_lb|bool %}  
+  lbMacs: {{ ecd_lb_gen_port_mac_list }}
+{% endif %}  
+  trexProfileConfigMap: {{ ecd_trex_profile_cm_name|default('') }}
+  trexProfileName: {{ ecd_trex_profile_name|default('') }}
+  trexApp: false

@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.16.EPOCH
+Version:        0.17.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,12 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Sep  6 2024 Ramon Perez <raperez@redhat.com> - 0.17.EPOCH-VERS
+- Version bump for example_cnf_deploy role
+
+* Wed Aug 28 2024 Tatiana Krishtop <tkrishto@redhat.com> - 0.16.EPOCH-VERS
+- Limit max OCP version in operator annotations by deprecated API check
+
 * Wed Jul 31 2024 Tony Garcia <tonyg@redhat.com> - 0.15.EPOCH-VERS
 - Version bump for mirror_images role
 

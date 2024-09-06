@@ -1,0 +1,92 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: "job-{{ ecd_trex_app_job_name }}"
+  namespace: "{{ ecd_cnf_namespace }}"
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        example-cnf-type: pkt-gen-app
+    spec:
+      restartPolicy: Never
+      serviceAccountName: trex-app-account
+      containers:
+      - name: trex-app
+        image: "{{ ecd:image_app }}"
+        imagePullPolicy: "{{ ecd_image_pull_policy }}"
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+{% if ecd_trex_profile_cm_name|default('') %}
+        - name: profile
+          mountPath: /opt/trexprofile
+{% endif %}
+        env:
+        - name: MODE
+          value: "{{ 'lb' if ecd_enable_lb else 'direct' }}"
+        - name: LB_MACS
+          value: "{{ ecd_lb_gen_port_mac_list|join(',') }}"
+        - name: CR_NAME
+          value: "{{ ecd_trex_app_job_name }}"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+{% for key, value in ecd_environments.items() %}
+        - name: {{ key }}
+          value: "{{ value }}"
+{% endfor %}
+        - name: TREX_SERVER_URL
+          value: trex-server
+{% if ecd_trex_profile_name %}
+        - name: TREX_PROFILE_NAME
+          value: "{{ ecd_trex_profile_name }}"
+{% endif %}
+{% if ecd_duration %}
+        - name: DURATION
+          value: "{{ ecd_duration }}"
+{% endif %}
+{% if ecd_packet_size %}
+        - name: PACKET_SIZE
+          value: "{{ ecd_packet_size }}"
+{% endif %}
+{% if ecd_packet_rate %}
+        - name: PACKET_RATE
+          value: "{{ ecd_packet_rate }}"
+{% endif %}
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "echo Hello from the preStop handler"]
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8095
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8095
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        startupProbe:
+          httpGet:
+            path: /startz
+            port: 8095
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        terminationMessagePolicy: FallbackToLogsOnError
+      volumes:
+      - name: varlog
+        emptyDir: {}
+{% if ecd_trex_profile_cm_name|default('') %}
+      - name: profile
+        configMap:
+          name: {{ ecd_trex_profile_cm_name }}
+{% endif %}

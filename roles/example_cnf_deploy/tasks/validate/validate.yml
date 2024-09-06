@@ -1,0 +1,48 @@
+---
+
+- name: "Set event list variable"
+  ansible.builtin.set_fact:
+    ecd_event_list: []
+    ecd_dropped_new: []
+    ecd_matched_new: []
+
+- name: "Get trexconfig matched events"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - reason==PacketMatched
+  register: _ecd_matched
+  no_log: true
+
+- name: "Get trexconfig dropped events"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - reason==PacketDropped
+  register: _ecd_dropped
+  no_log: true
+
+- name: "Merge dropped events to custom object list"
+  ansible.builtin.set_fact:
+    ecd_dropped_new: "{{ ecd_dropped_new + [{ 'eventTime': item.eventTime, 'reason': item.reason }] }}"
+  loop: "{{ _ecd_dropped.resources }}"
+  no_log: true
+
+- name: "Merge matched events to custom object list"
+  ansible.builtin.set_fact:
+    ecd_matched_new: "{{ ecd_matched_new + [{ 'eventTime': item.eventTime, 'reason': item.reason }] }}"
+  loop: "{{ _ecd_matched.resources }}"
+  no_log: true
+
+- name: "Find packet missing details"
+  packet_missing:
+    dropped: "{{ ecd_dropped_new }}"
+    matched: "{{ ecd_matched_new }}"
+  register: _ecd_packet_details
+
+- name: "Show Packet Missing"
+  ansible.builtin.debug:
+    var: _ecd_packet_details.missing
+    verbosity: 3

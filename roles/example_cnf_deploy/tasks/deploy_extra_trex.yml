@@ -1,0 +1,4 @@
+---
+# Directly call to retry-trex.yml playbook
+- name: "Deploy an extra TRex job"
+  ansible.builtin.include_tasks: trex/retry-trex.yml

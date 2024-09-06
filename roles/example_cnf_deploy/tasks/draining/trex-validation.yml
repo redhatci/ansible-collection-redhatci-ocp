@@ -1,0 +1,100 @@
+---
+
+- name: "Extract TRexApp job duration"
+  block:
+    - name: Retrieve TRexApp information
+      community.kubernetes.k8s_info:
+        api_version: examplecnf.openshift.io/v1
+        kind: TRexApp
+        namespace: "{{ ecd_cnf_namespace }}"
+        name: "{{ ecd_trex_app_cr_name }}"
+      register: _ecd_trex_app_cr
+
+    # If continuous burst mode is activated, then set up a default value to avoid issues in next tasks.
+    # TODO: follow a different procedure for continuous burst mode if provided.
+    - name: Retrieve duration from TRexApp job
+      vars:
+        _ecd_trex_retrieved_duration: "{{ _ecd_trex_app_cr.resources[0].spec.duration }}"
+      ansible.builtin.set_fact:
+        ecd_trex_duration: "{{ (_ecd_trex_retrieved_duration == -1)|ternary(ecd_default_trex_duration,_ecd_trex_retrieved_duration) }}"
+
+- name: "Wait for the TRex app TestCompleted event"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - "reason==TestCompleted"
+      - "involvedObject.name={{ ecd_trex_app_cr_name }}"
+  register: _ecd_trex_event
+  retries: "{{ (ecd_trex_duration|int/2)|round|int }}"
+  delay: 10
+  until: _ecd_trex_event.resources|length > 0
+
+- name: "Wait for the TRex app TestPassed or TestFailed event"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Event
+    field_selectors: "involvedObject.name={{ ecd_trex_app_cr_name }}"
+  register: _ecd_trex_result
+  retries: 5
+  delay: 5
+  until: "_ecd_trex_result.resources | selectattr('reason', 'in', ['TestPassed', 'TestFailed']) | list | length > 0"
+
+- name: "Determine if TRexApp job has failed"
+  ansible.builtin.set_fact:
+    ecd_trex_job_failed: true
+  when:
+    - _ecd_trex_result is defined
+    - _ecd_trex_result.resources is defined
+    - "'TestFailed' in _ecd_trex_result.resources | map(attribute='reason') | list"
+
+# Only if TRexApp job passed
+- name: "Wait for the TRex app PacketMatched event"
+  community.kubernetes.k8s_info:
+    namespace: "{{ ecd_cnf_namespace }}"
+    kind: Event
+    field_selectors:
+      - "reason==PacketMatched"
+      - "involvedObject.name={{ ecd_trex_app_cr_name }}"
+  register: _ecd_trex_result
+  retries: "{{ (ecd_trex_duration|int/2)|round|int }}"
+  delay: 5
+  until: "_ecd_trex_result.resources | length > 0"
+  when:
+    - not ecd_trex_job_failed|bool
+
+- name: "Retrieve TRex app logs"
+  community.kubernetes.k8s_log:
+    namespace: "{{ ecd_cnf_namespace }}"
+    label_selectors:
+      - example-cnf-type=pkt-gen-app
+      - job-name=job-{{ ecd_trex_app_cr_name }}
+  register: _ecd_trex_app_logs
+  ignore_errors: true
+
+- name: "Store logs when jobs_logs is defined"
+  ansible.builtin.copy:
+    content: "{{ _ecd_trex_app_logs.log }}"
+    dest: "{{ ecd_job_logs_path }}/{{ ecd_trex_app_cr_name }}.log"
+    mode: "0755"
+  when: not _ecd_trex_app_logs.failed
+  ignore_errors: true
+
+- name: "Calculate the downtime for TRex job execution"
+  vars:
+    _ecd_pod_deletion_time: "{{ _ecd_timestamp_pod_deletion.stdout }}"
+    _ecd_pod_recreation_time: "{{ _ecd_timestamp_pod_recreation.stdout }}"
+    _ecd_pod_downtime: "{{ _ecd_pod_recreation_time|float - _ecd_pod_deletion_time|float }}"
+    _ecd_trex_downtime_unit: "{{ _ecd_pod_downtime|float / ecd_trex_duration|float }}"
+  ansible.builtin.set_fact:
+    ecd_trex_downtime_seconds: "{{ _ecd_pod_downtime }}"
+    ecd_trex_downtime_percentage: "{{ _ecd_trex_downtime_unit|float * 100.0 }}"
+
+- name: "Create a file to save downtime value"
+  ansible.builtin.copy:
+    dest: "{{ ecd_job_logs_path }}/trex-downtime.log"
+    content: "Downtime is {{ ecd_trex_downtime_seconds }} seconds, \
+      representing the {{ ecd_trex_downtime_percentage }} % of TRex \
+      job duration, which is {{ ecd_trex_duration }} seconds"
+    mode: "0755"
+  ignore_errors: true
