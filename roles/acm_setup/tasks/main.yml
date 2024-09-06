@@ -89,6 +89,7 @@
   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
   retries: 20
   delay: 15
+  no_log: true
 
 - name: "Wait up to 30 mins for MCH to be ready"
   community.kubernetes.k8s_info:
@@ -178,7 +179,7 @@
   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
   retries: 20
   delay: 15
-
+  no_log: true
 
 - name: "Disable provisioning network and update to watch all Namespaces"
   community.kubernetes.k8s:
