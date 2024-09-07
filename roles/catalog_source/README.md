@@ -10,7 +10,7 @@ cs_image           | Yes      |                | Catalog Image URL
 cs_namespace       | No       | openshift-marketplace  | Namespace where the CatalogSource will be defined
 cs_publisher       | No       | Third Party    | CatalogSource publisher
 cs_type            | No       | grpc           | CatalogSource type
-cs_update_strategy | No       | {}             | CatalogSource update strategy
+cs_update_strategy | No       | undefined      | CatalogSource update strategy
 
 ## Example of usage
 

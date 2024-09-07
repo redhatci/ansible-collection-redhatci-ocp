@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.17.EPOCH
+Version:        0.18.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Sat Sep  7 2024 Tony Garcia <tonyg@rehat.com> - 0.18.EPOCH-VERS
+- New version with fix to catalog_source role
+
 * Fri Sep  6 2024 Ramon Perez <raperez@redhat.com> - 0.17.EPOCH-VERS
 - Version bump for example_cnf_deploy role
 
