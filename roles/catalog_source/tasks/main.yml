@@ -12,8 +12,8 @@
     msg: CatalogSource {{ cs_name }}
 
 - name: Create CatalogSource
-  community.kubernetes.k8s:
-    definition:
+  vars:
+    _cs_definition: |-
       apiVersion: operators.coreos.com/v1alpha1
       kind: CatalogSource
       metadata:
@@ -24,7 +24,12 @@
         image: "{{ cs_image }}"
         publisher: "{{ cs_publisher }}"
         sourceType: "{{ cs_type }}"
-        updateStrategy: "{{ cs_update_strategy }}"
+      {% if cs_update_strategy is defined %}
+        updateStrategy:
+          {{ cs_update_strategy }}
+      {% endif %}
+  community.kubernetes.k8s:
+    definition: "{{ _cs_definition }}"
 
 - name: Wait for CatalogSource to be Ready
   community.kubernetes.k8s_info:
