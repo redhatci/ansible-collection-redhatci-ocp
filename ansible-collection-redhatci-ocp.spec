@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.18.EPOCH
+Version:        0.19.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Sep  9 2024 Ramon Perez <raperez@redhat.com> - 0.19.EPOCH-VERS
+- Removed cnf_cert deprecated role
+
 * Sat Sep  7 2024 Tony Garcia <tonyg@redhat.com> - 0.18.EPOCH-VERS
 - New version with fix to catalog_source role
 
