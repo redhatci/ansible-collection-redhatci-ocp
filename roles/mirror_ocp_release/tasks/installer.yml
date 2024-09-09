@@ -10,12 +10,23 @@
 - name: "Extract installer command from release image"
   when:
     - mor_force | bool or not target.stat.exists
-  ansible.builtin.command: >
-    {{ mor_oc }} adm release extract
-    --registry-config={{ mor_auths_file }}
-    --command={{ mor_installer }}
-    --from {{ mor_pull_url }}
-    --to "{{ mor_cache_dir }}/{{ mor_version }}"
+  ansible.builtin.shell: |
+    flock -x -n -E 200 "{{ mor_cache_dir }}/{{ mor_version }}/.installer.lock" -c '
+    {{ mor_oc }} adm release extract \
+    --registry-config="{{ mor_auths_file }}" \
+    --command="{{ mor_installer }}" \
+    --from "{{ mor_pull_url }}" \
+    --to "{{ mor_cache_dir }}/{{ mor_version }}"'
+
+    RESULT="$?"
+
+    if [ "$RESULT" -eq 200 ]
+    then
+      echo "Waiting for lock release"
+      flock -x -w 30 "{{ mor_cache_dir }}/{{ mor_version }}/.installer.lock" -c 'echo "Lock release"'
+    else
+      exit $RESULT
+    fi
   register: extract_cmd
   until: extract_cmd is succeeded
   retries: 9

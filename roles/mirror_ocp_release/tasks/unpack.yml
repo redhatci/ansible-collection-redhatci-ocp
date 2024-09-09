@@ -50,31 +50,44 @@
       delay: 10
       until: _mor_result is not failed
 
-    - name: Extract el8 client for 4.16+
-      ansible.builtin.command: >
-        {{ _mor_tmp_dir.path }}/oc adm release extract
-        --registry-config={{ mor_auths_file }}
-        --command=oc.rhel8
-        --from {{ mor_pull_url }}
-        --to "{{ mor_cache_dir }}/{{ mor_version }}"
-      register: _mor_extract_cmd
-      until: _mor_extract_cmd is succeeded
-      retries: 9
-      delay: 10
-      changed_when: false
-
     # redhatci.ocp.installer 4.16+ for el8 expects a rhel8 tarball
     # required only for nightly builds
     # using community.general.archive generates the tarball but
     # throws an exception: load_file_common_arguments() unexpected keyword argument 'path'
     - name: Create a client tarball for el8 on 4.16+ # noqa command-instead-of-module
-      ansible.builtin.shell: >
-        tar czf
-        "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz"
-        -C "{{ mor_cache_dir }}/{{ mor_version }}"
-        oc
-        kubectl
+      ansible.builtin.shell:
+        cmd: |
+          if [ ! -f "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz" ]
+          then
+            flock -x -n -E 200 {{ mor_cache_dir }}/{{ mor_version }}/.tar.lock -c '
+            {{ _mor_tmp_dir.path }}/oc adm release extract \
+            --registry-config={{ mor_auths_file }} \
+            --command=oc.rhel8 \
+            --from {{ mor_pull_url }} \
+            --to "{{ mor_cache_dir }}/{{ mor_version }}" \
+            && \
+            tar czf \
+            "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz" \
+            -C "{{ mor_cache_dir }}/{{ mor_version }}" \
+            oc \
+            kubectl
+            '
+
+            RESULT="$?"
+
+            if [ "$RESULT" -eq 200 ]
+            then
+              echo "Waiting for lock release"
+              flock -x -w 30 {{ mor_cache_dir }}/{{ mor_version }}/.tar.lock -c 'echo "Lock released"'
+            else
+              exit $RESULT
+            fi
+          fi
       changed_when: true
+      register: _mor_create_tarball
+      until: _mor_create_tarball is succeeded
+      retries: 9
+      delay: 10
 
     - name: Delete temporary directory for oc client
       ansible.builtin.file:
