@@ -27,11 +27,11 @@
   block:
     - name: Define probe daemonset namespace
       ansible.builtin.set_fact:
-        kbpc_probe_ds_ns: "{{ (kbpc_version == 'HEAD') | ternary('certsuite', 'cnf-suite') }}"
+        kbpc_probe_ds_ns: "{{ (kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite', 'cnf-suite') }}"
 
     - name: Ensure probe DaemonSet is absent
       vars:
-        kbpc_probe_ds_name: "{{ (kbpc_version == 'HEAD') | ternary('certsuite-debug', 'tnf-debug') }}"
+        kbpc_probe_ds_name: "{{ (kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite-debug', 'tnf-debug') }}"
       community.kubernetes.k8s:
         api_version: v1
         kind: DaemonSet
