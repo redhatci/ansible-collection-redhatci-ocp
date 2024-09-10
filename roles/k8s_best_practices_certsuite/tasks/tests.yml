@@ -13,7 +13,7 @@
 
 - name: Template config file
   vars:
-    kbpc_config_file_name: "{{ (kbpc_version == 'HEAD') | ternary('certsuite_config', 'tnf_config') }}"
+    kbpc_config_file_name: "{{ (kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite_config', 'tnf_config') }}"
   ansible.builtin.template:
     src: "templates/{{ kbpc_config_file_name }}.yml.j2"
     dest: "{{ kbpc_certsuite_dir }}/config_files/{{ kbpc_config_file_name }}.yml"
@@ -38,7 +38,7 @@
         _kbpc_repo_org_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('redhat-best-practices-for-k8s', 'testnetworkfunction') }}"
         kbpc_partner_repo: "{{ (kbpc_registry | length) | ternary(kbpc_registry, 'quay.io') }}/{{ _kbpc_repo_org_name }}"
         kbpc_support_image: "{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
-        kbpc_config_file_name: "{{ (kbpc_version == 'HEAD') | ternary('certsuite_config', 'tnf_config') }}"
+        kbpc_config_file_name: "{{ (kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite_config', 'tnf_config') }}"
         kbpc_container_command: |
           ./certsuite run \
           {% if kbpc_test_labels | length > 0 %}
@@ -52,7 +52,7 @@
           --offline-db=/usr/offline-db \
           --config-file=/usr/certsuite/config/{{ kbpc_config_file_name }}.yml \
           --kubeconfig=/usr/certsuite/config/kubeconfig \
-          {% if kbpc_version == 'HEAD' %}
+          {% if kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD' %}
           --certsuite-probe-image={{ kbpc_partner_repo }}/{{ kbpc_support_image }} \
           {% else %}
           --tnf-image-repository={{ kbpc_partner_repo }} \
