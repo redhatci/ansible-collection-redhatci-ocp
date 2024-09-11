@@ -57,31 +57,28 @@
     - name: Create a client tarball for el8 on 4.16+ # noqa command-instead-of-module
       ansible.builtin.shell:
         cmd: |
-          if [ ! -f "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz" ]
+          flock -x -n -E 200 {{ mor_cache_dir }}/{{ mor_version }}/.tar.lock -c '
+          {{ _mor_tmp_dir.path }}/oc adm release extract \
+          --registry-config={{ mor_auths_file }} \
+          --command=oc.rhel8 \
+          --from {{ mor_pull_url }} \
+          --to "{{ mor_cache_dir }}/{{ mor_version }}" \
+          && \
+          tar czf \
+          "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz" \
+          -C "{{ mor_cache_dir }}/{{ mor_version }}" \
+          oc \
+          kubectl
+          '
+
+          RESULT="$?"
+
+          if [ "$RESULT" -eq 200 ]
           then
-            flock -x -n -E 200 {{ mor_cache_dir }}/{{ mor_version }}/.tar.lock -c '
-            {{ _mor_tmp_dir.path }}/oc adm release extract \
-            --registry-config={{ mor_auths_file }} \
-            --command=oc.rhel8 \
-            --from {{ mor_pull_url }} \
-            --to "{{ mor_cache_dir }}/{{ mor_version }}" \
-            && \
-            tar czf \
-            "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz" \
-            -C "{{ mor_cache_dir }}/{{ mor_version }}" \
-            oc \
-            kubectl
-            '
-
-            RESULT="$?"
-
-            if [ "$RESULT" -eq 200 ]
-            then
               echo "Waiting for lock release"
               flock -x -w 30 {{ mor_cache_dir }}/{{ mor_version }}/.tar.lock -c 'echo "Lock released"'
-            else
+          else
               exit $RESULT
-            fi
           fi
       changed_when: true
       register: _mor_create_tarball
