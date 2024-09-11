@@ -1,10 +1,10 @@
 - name: Find vm creation scripts
-  find:
+  ansible.builtin.find:
     path: "{{ vm_create_scripts_dir }}"
   register: creation_to_remove
 
-- name: Remove file in {{ vm_create_scripts_dir }} dir
-  file:
+- name: Remove file in dir {{ vm_create_scripts_dir }}
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   loop: "{{ creation_to_remove.files | map(attribute='path') | select('match', prefix_regex) | list }}"
@@ -17,7 +17,22 @@
     state: destroyed
   loop: "{{ vms_to_remove | default([]) }}"
 
-- name: Undefine VM # The 'loop' default will prevent action when none is needed.
-  shell:
+# The 'loop' default will prevent action when none is needed.
+- name: Undefine VM  # noqa: command-instead-of-shell
+  ansible.builtin.shell:
     cmd: "virsh undefine --remove-all-storage --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
   loop: "{{ vms_to_remove | default([]) }}"
+
+# In some cases the disks removed through the "Undefine" task does not correspond to the disks that
+# could be created with the *current* inventory. This task will remove the disk files that would have
+# been created with the current inventory.
+- name: Remove disk files  # noqa: command-instead-of-shell
+  ansible.builtin.shell:
+    cmd: >-
+      rm -f
+      {% for disk_name, _ in item.disks.items() %}
+      {{ images_dir }}/{{ item.name }}_{{ disk_name }}.qcow2
+      {% endfor %}
+  loop: "{{ kvm_nodes | default([]) }}"
+  loop_control:
+    label: item.name

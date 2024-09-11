@@ -1,7 +1,7 @@
 virt_packages:
   - python3
   - libvirt
-  -  virt-install
+  - virt-install
   - qemu-kvm
   - virt-manager
   - python3-pip
