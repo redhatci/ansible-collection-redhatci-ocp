@@ -21,7 +21,8 @@ image_name_registry: ocpdiscon-registry
 #   Stable client is also used to extract the artifacts from release image
 # - opm tar always has to come from stable release URL, so that its name is well known
 stable_release_url: "https://mirror.openshift.com/pub/openshift-v{{ openshift_version_parts[0] }}/clients/ocp/stable-4.14"
-oc_tar: "openshift-client-linux-{{ openshift_full_version }}.tar.gz"
+oc_tar_prefix: "{{ (openshift_full_version is ansible.builtin.version('4.16', '>=')) | ternary('amd64-rhel' + ansible_distribution_major_version + '-', '') }}" # noqa: redhat-ci[no-role-prefix]
+oc_tar: "openshift-client-linux-{{ oc_tar_prefix }}{{ openshift_full_version }}.tar.gz" # noqa: redhat-ci[no-role-prefix]
 stable_oc_tar: "openshift-client-linux.tar.gz"
 stable_opm_tar: "opm-linux.tar.gz"
 
