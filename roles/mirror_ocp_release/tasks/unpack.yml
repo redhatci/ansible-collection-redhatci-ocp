@@ -8,8 +8,12 @@
     - not mor_force  # we don't care to stat files if we're forcing
 
 - name: "Unarchive client tarball"
+  vars:
+    _mor_client_suffix: >-
+      {{ mor_version is ansible.builtin.version('4.16', '>=') |
+      ternary('-amd64-rhel' + ansible_distribution_major_version, '') }}
   ansible.builtin.unarchive:
-    src: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-{{ mor_version }}.tar.gz"
+    src: "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux{{ _mor_client_suffix }}-{{ mor_version }}.tar.gz"
     dest: "{{ mor_cache_dir }}/{{ mor_version }}"
     owner: "{{ mor_owner }}"
     group: "{{ mor_group }}"
@@ -19,76 +23,5 @@
       - README.md
   when:
     - mor_force or not unpacked.stat.exists
-
-- name: Tasks for el8 on 4.16+
-  when:
-    - ansible_distribution_major_version == '8'
-    - mor_version is version("4.16", ">=")
-  block:
-    - name: Create temporary directory for oc client
-      ansible.builtin.tempfile:
-        state: directory
-        prefix: _mor_tmp_dir.
-      register: _mor_tmp_dir
-
-    - name: Set fact openshift-client-linux tar prefix
-      ansible.builtin.set_fact:
-        mirror_ocp_release_prefix: >-
-          {{ (mor_version is ansible.builtin.version('4.16.0', '>=') and
-              ansible_facts['os_family'] == 'RedHat' and
-              ansible_facts['distribution_major_version'] == '8') |
-              ternary('openshift-client-linux-amd64-rhel8', 'openshift-client-linux') }}
-
-    - name: Download required latest openshift client for el8 in 4.16+
-      ansible.builtin.unarchive:
-        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/{{ mirror_ocp_release_prefix }}.tar.gz"
-        dest: "{{ _mor_tmp_dir.path }}"
-        remote_src: true
-        mode: "0755"
-      register: _mor_result
-      retries: 3
-      delay: 10
-      until: _mor_result is not failed
-
-    # redhatci.ocp.installer 4.16+ for el8 expects a rhel8 tarball
-    # required only for nightly builds
-    # using community.general.archive generates the tarball but
-    # throws an exception: load_file_common_arguments() unexpected keyword argument 'path'
-    - name: Create a client tarball for el8 on 4.16+ # noqa command-instead-of-module
-      ansible.builtin.shell:
-        cmd: |
-          flock -x -n -E 200 {{ mor_cache_dir }}/{{ mor_version }}/.tar.lock -c '
-          {{ _mor_tmp_dir.path }}/oc adm release extract \
-          --registry-config={{ mor_auths_file }} \
-          --command=oc.rhel8 \
-          --from {{ mor_pull_url }} \
-          --to "{{ mor_cache_dir }}/{{ mor_version }}" \
-          && \
-          tar czf \
-          "{{ mor_cache_dir }}/{{ mor_version }}/openshift-client-linux-amd64-rhel8-{{ mor_version }}.tar.gz" \
-          -C "{{ mor_cache_dir }}/{{ mor_version }}" \
-          oc \
-          kubectl
-          '
-
-          RESULT="$?"
-
-          if [ "$RESULT" -eq 200 ]
-          then
-              echo "Waiting for lock release"
-              flock -x -w 30 {{ mor_cache_dir }}/{{ mor_version }}/.tar.lock -c 'echo "Lock released"'
-          else
-              exit $RESULT
-          fi
-      changed_when: true
-      register: _mor_create_tarball
-      until: _mor_create_tarball is succeeded
-      retries: 9
-      delay: 10
-
-    - name: Delete temporary directory for oc client
-      ansible.builtin.file:
-        path: "{{ _mor_tmp_dir.path }}"
-        state: absent
 
 ...
