@@ -1,4 +1,8 @@
 ---
+- name: fail properly
+  ansible.builtin.fail:
+    msg: fail properly
+
 - name: Assert required fields exist
   ansible.builtin.assert:
     that:
