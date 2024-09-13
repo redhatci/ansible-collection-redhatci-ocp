@@ -1,0 +1,116 @@
+---
+- name: "Deploy-operators : Install Metallb Operator on the Guest Cluster"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+    apply:
+      environment:
+        KUBECONFIG: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+  vars:
+    channel: stable # noqa: redhat-ci[no-role-prefix]
+    install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
+    operator: metallb-operator # noqa: redhat-ci[no-role-prefix]
+    namespace: metallb-system # noqa: redhat-ci[no-role-prefix]
+    source: redhat-operators # noqa: redhat-ci[no-role-prefix]
+    source_ns: openshift-marketplace # noqa: redhat-ci[no-role-prefix]
+
+- name: "Set the MetalLB Instance on the Guest Cluster"
+  community.kubernetes.k8s:
+    state: present
+    kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: MetalLB
+      metadata:
+        name: metallb
+        namespace: metallb-system
+
+- name: "Create MetalLB IP Address Pool for Wildcard(Ingress) IP"
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    state: present
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: IPAddressPool
+      metadata:
+        name: ingress-public-ip
+        namespace: metallb-system
+      spec:
+        protocol: layer2
+        autoAssign: false
+        addresses:
+          - "{{ hostedbm_guest_ingress_ip }}-{{ hostedbm_guest_ingress_ip }}"
+
+- name: "Create MetalLB L2 Advertisements"
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    state: present
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: L2Advertisement
+      metadata:
+        name: ingress-public-ip
+        namespace: metallb-system
+      spec:
+        ipAddressPools:
+          - ingress-public-ip
+
+- name: Create metallb-ingress service
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        annotations:
+          metallb.universe.tf/address-pool: ingress-public-ip
+        name: metallb-ingress
+        namespace: openshift-ingress
+      spec:
+        ports:
+          - name: http
+            protocol: TCP
+            port: 80
+            targetPort: 80
+          - name: https
+            protocol: TCP
+            port: 443
+            targetPort: 443
+        selector:
+          ingresscontroller.operator.openshift.io/deployment-ingresscontroller: default
+        type: LoadBalancer
+
+- name: Wait for guest cluster to be Ready
+  community.kubernetes.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: ClusterVersion
+    kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    name: version
+  register: _hostedbm_cluster_version_info
+  until:
+    - "'resources' in _hostedbm_cluster_version_info"
+    - _hostedbm_cluster_version_info.resources | length > 0
+    - _hostedbm_cluster_version_info.resources[0].status.conditions | json_query("[?type=='Available' && status=='True']") | length > 0
+  retries: 20
+  delay: 60
+
+- name: Get Hosted cluster Console resource
+  community.kubernetes.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: Console
+    kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    name: cluster
+  register: _hostedbm_console_info
+
+- name: Write console URL to file
+  ansible.builtin.copy:
+    content: "{{ _hostedbm_console_info.resources[0].status.consoleURL }}"
+    dest: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-console-url"
+    mode: "0644"
+
+- name: Set output facts of role
+  ansible.builtin.set_fact:
+    hostedbm_guest_kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    hostedbm_guest_kubeadmin_path: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-password"
+    hostedbm_guest_kubeadmin_password: "{{ hostedbm_acm_kubeconfig_pass }}"
+    hostedbm_guest_console_url: "{{ _hostedbm_console_info.resources[0].status.consoleURL }}"

@@ -1,0 +1,126 @@
+---
+- name: Run hcp create cluster agent --render
+  environment:
+    KUBECONFIG: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+  ansible.builtin.command: >
+    {{ hostedbm_working_dir }}/hcp create cluster agent
+    --pull-secret={{ hostedbm_working_dir }}/openshift_pull.json
+    --name={{ hostedbm_cluster_name }}
+    --agent-namespace={{ hostedbm_agent_ns }}
+    --node-pool-replicas={{ hostedbm_node_pool_replicas }}
+    --base-domain={{ hostedbm_cluster_base_domain }}
+    --etcd-storage-class={{ hostedbm_storage_class }}
+    --ssh-key={{ hostedbm_working_dir }}/id_rsa.pub
+    --control-plane-availability-policy={{ hostedbm_availability_policy }}
+    --release-image={{ hostedbm_release_image }}
+    --annotations hypershift.openshift.io/skip-release-image-validation=true
+    {% if hostedbm_bm_cpo_override_image is defined and hostedbm_bm_cpo_override_image | length > 0 %}
+    --annotations hypershift.openshift.io/control-plane-operator-image={{ hostedbm_bm_cpo_override_image }}{% endif %}
+    --namespace={{ hostedbm_cluster_ns }}
+    --render
+  register: _hostedbm_hcp_output
+
+- name: Save output to YAML file
+  ansible.builtin.copy:
+    content: "{{ _hostedbm_hcp_output.stdout }}"
+    dest: "{{ hostedbm_working_dir }}/hosted_cluster_rendered.yaml"
+    mode: "0644"
+
+- name: Replace NodePort with LoadBalancer for Kubeapiservice
+  ansible.builtin.replace:
+    path: "{{ hostedbm_working_dir }}/hosted_cluster_rendered.yaml"
+    regexp: >
+      (.*service: APIServer\n.*servicePublishingStrategy:\n.*)
+      (nodePort:\n.*address: [0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}\n.*
+      type: NodePort)
+    replace: '\1 type: LoadBalancer\n'
+
+- name: Create Guest Cluster
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_kubeconfig_file }}"
+    state: present
+    src: "{{ hostedbm_working_dir }}/hosted_cluster_rendered.yaml"
+
+- name: Pause for 3 minutes before checking for hosted cluster readyness
+  ansible.builtin.pause:
+    minutes: 3
+
+- name: Check if hosted cluster is Ready
+  community.kubernetes.k8s_info:
+    api_version: hypershift.openshift.io/v1alpha1
+    kind: HostedCluster
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "{{ hostedbm_cluster_name }}"
+    namespace: "{{ hostedbm_cluster_ns }}"
+  register: _hostedbm_cluster_info
+  until:
+    - "'resources' in _hostedbm_cluster_info"
+    - _hostedbm_cluster_info.resources | length > 0
+    - _hostedbm_cluster_info.resources[0].status.conditions | json_query("[?type=='Available' && status=='True']") | length > 0
+  retries: 20
+  delay: 60
+
+- name: Get Kubeconfig secret
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Secret
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "{{ hostedbm_cluster_name }}-admin-kubeconfig"
+    namespace: "{{ hostedbm_cluster_ns }}"
+  register: _hostedbm_kubeconfig_secret
+  retries: 15
+  delay: 10
+  until:
+    - _hostedbm_kubeconfig_secret.resources is defined
+    - _hostedbm_kubeconfig_secret.resources | length
+  no_log: "{{ hostedbm_no_log | bool }}"
+
+- name: Get kubeadmin credentials
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Secret
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "{{ hostedbm_cluster_name }}-kubeadmin-password"
+    namespace: "{{ hostedbm_cluster_ns }}"
+  register: _hostedbm_kubeconfig_password
+  retries: 15
+  delay: 10
+  until:
+    - _hostedbm_kubeconfig_password.resources is defined
+    - _hostedbm_kubeconfig_password.resources | length
+
+- name: "Set credentials facts"
+  ansible.builtin.set_fact:
+    hostedbm_acm_kubeconfig_text: '{{ _hostedbm_kubeconfig_secret.resources[0].data["kubeconfig"] | b64decode }}'
+    hostedbm_acm_kubeconfig_pass: '{{ _hostedbm_kubeconfig_password.resources[0].data["password"] | b64decode }}'
+    hostedbm_acm_kubeconfig_user: "kubeadmin"
+  no_log: "{{ hostedbm_no_log | bool }}"
+
+- name: Save the guest cluster kubeadmin's kubeconfig to a file
+  ansible.builtin.copy:
+    content: "{{ hostedbm_acm_kubeconfig_text }}"
+    dest: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
+    mode: "0644"
+  no_log: "{{ hostedbm_no_log | bool }}"
+
+- name: Save the guest cluster kubeadmin's password to a file
+  ansible.builtin.copy:
+    content: "{{ hostedbm_acm_kubeconfig_pass }}"
+    dest: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-password"
+    mode: "0644"
+  no_log: "{{ hostedbm_no_log | bool }}"
+
+- name: Check if Nodepool is Ready
+  community.kubernetes.k8s_info:
+    api_version: hypershift.openshift.io/v1alpha1
+    kind: NodePool
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "{{ hostedbm_cluster_name }}"
+    namespace: "{{ hostedbm_cluster_ns }}"
+  register: _hostedbm_nodepool_info
+  until:
+    - "'resources' in _hostedbm_nodepool_info"
+    - _hostedbm_nodepool_info.resources | length > 0
+    - _hostedbm_nodepool_info.resources[0].status.conditions | json_query("[?type=='AllMachinesReady' && status=='True']") | length > 0
+  retries: 30
+  delay: 60

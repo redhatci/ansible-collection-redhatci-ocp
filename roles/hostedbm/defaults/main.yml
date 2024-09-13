@@ -1,0 +1,17 @@
+---
+# defaults file for hostedbm
+hostedbm_agent_ns: "{{ hostedbm_cluster_name }}-agent"
+hostedbm_availability_policy: SingleReplica
+hostedbm_cluster_ns: clusters
+hostedbm_infraenv_name: "{{ hostedbm_cluster_name }}-infraenv"
+hostedbm_location_label: ""
+hostedbm_node_pool_replicas: 1
+hostedbm_no_log: false
+hostedbm_out_dir: "{{ hostedbm_working_dir }}/out"
+hostedbm_release_image: quay.io/openshift-release-dev/ocp-release:4.15.11-multi
+hostedbm_storage_class: lvms-vg1
+hostedbm_working_root_dir: "/tmp/hostedcluster"
+hostedbm_working_dir: "{{ hostedbm_working_root_dir }}/{{ hostedbm_cluster_name }}"
+hostedbm_inject_dns: false
+# hostedbm_inject_dns_nameserver:
+# hostedbm_bm_cpo_override_image:

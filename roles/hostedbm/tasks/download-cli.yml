@@ -1,0 +1,30 @@
+---
+- name: Get ConsoleCLIDownload link
+  community.kubernetes.k8s_info:
+    api_version: console.openshift.io/v1
+    kind: ConsoleCLIDownload
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: hcp-cli-download
+    namespace: openshift-console
+  register: _hostedbm_cli_download_info
+
+- name: Extract CLI download link
+  ansible.builtin.set_fact:
+    hostedbm_download_link: "{{ _hostedbm_cli_download_info.resources[0].spec.links[0].href }}"
+
+- name: Download hcp.tar.gz
+  ansible.builtin.uri:
+    url: "{{ hostedbm_download_link }}"
+    dest: "{{ hostedbm_working_dir }}/hcp.tar.gz"
+    validate_certs: false
+
+- name: Extract hcp.tar.gz
+  ansible.builtin.unarchive:
+    src: "{{ hostedbm_working_dir }}/hcp.tar.gz"
+    dest: "{{ hostedbm_working_dir }}"
+    remote_src: true
+
+- name: Set executable permissions for hcp
+  ansible.builtin.file:
+    path: "{{ hostedbm_working_dir }}/hcp"
+    mode: '+x'

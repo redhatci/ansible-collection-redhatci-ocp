@@ -1,0 +1,209 @@
+---
+- name: Create a namespace for Agent
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Namespace
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "{{ hostedbm_agent_ns }}"
+
+- name: "Get hub cluster pull_secret details"
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Secret
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "pull-secret"
+    namespace: openshift-config
+  register: _hostedbm_acm_pull_secret
+
+- name: "Get current worker's MCP"
+  community.kubernetes.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: worker
+  register: _hostedbm_worker_mcp
+
+- name: "Get current worker's Machine config Pools"
+  ansible.builtin.set_fact:
+    hostedbm_acm_mc: "{{ _hostedbm_worker_mcp.resources[0].spec.configuration.name }}"
+
+- name: "Get current worker's Machine configs"
+  community.kubernetes.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfig
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "{{ hostedbm_acm_mc }}"
+  register: _hostedbm_worker_mc
+
+- name: "Setting config facts based on Hub Cluster configs"
+  ansible.builtin.set_fact:
+    hostedbm_sshkey: "{{ _hostedbm_worker_mc.resources[0].spec.config.passwd.users[0].sshAuthorizedKeys[0] | regex_replace('\n', '') }}"
+    hostedbm_pull_secret: '{{ _hostedbm_acm_pull_secret.resources[0].data[".dockerconfigjson"] }}'
+
+- name: Save the pull secret to a file to be used later by hcp client
+  ansible.builtin.copy:
+    content: "{{ hostedbm_pull_secret | b64decode }}"
+    dest: "{{ hostedbm_working_dir }}/openshift_pull.json"
+    mode: "0644"
+  no_log: "{{ hostedbm_no_log | bool }}"
+
+- name: Save the public ssh key to a file to be used later by hcp client
+  ansible.builtin.copy:
+    content: "{{ hostedbm_sshkey }}"
+    dest: "{{ hostedbm_working_dir }}/id_rsa.pub"
+    mode: "0644"
+  no_log: "{{ hostedbm_no_log | bool }}"
+
+- name: "Set pull secret for Assisted installer and Cluster deployment"
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ hostedbm_cluster_name }}-pull-secret"
+        namespace: "{{ hostedbm_agent_ns }}"
+      data:
+        .dockerconfigjson: "{{ hostedbm_pull_secret }}"
+      type: kubernetes.io/dockerconfigjson
+
+- name: Define InfraEnv spec without kernelArguments
+  ansible.builtin.set_fact:
+    hostedbm_infraenv_spec:
+      agentLabels:
+        agentclusterinstalls.extensions.hive.openshift.io/location: "{{ hostedbm_location_label }}"
+      cpuArchitecture: x86_64
+      ipxeScriptType: DiscoveryImageAlways
+      nmStateConfigLabelSelector:
+        matchLabels:
+          infraenvs.agent-install.openshift.io: "{{ hostedbm_agent_ns }}"
+      pullSecretRef:
+        name: "{{ hostedbm_cluster_name }}-pull-secret"
+      sshAuthorizedKey: "{{ hostedbm_sshkey }}"
+
+- name: Define InfraEnv spec with kernelArguments
+  ansible.builtin.set_fact:
+    hostedbm_infraenv_spec: >-
+      {{
+        hostedbm_infraenv_spec | combine({
+          "kernelArguments": [
+            {
+              "operation": "append",
+              "value": "nameserver=" + hostedbm_inject_dns_nameserver
+            }
+          ]
+        }, recursive=True)
+      }}
+  when: hostedbm_inject_dns | bool
+
+- name: Create InfraEnv YAML file
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: agent-install.openshift.io/v1beta1
+      kind: InfraEnv
+      metadata:
+        annotations:
+          infraenv.agent-install.openshift.io/enable-ironic-agent: "true"
+        labels:
+          agentclusterinstalls.extensions.hive.openshift.io/location: "{{ hostedbm_location_label }}"
+          networkType: dhcp
+        name: "{{ hostedbm_infraenv_name }}"
+        namespace: "{{ hostedbm_agent_ns }}"
+      spec: "{{ hostedbm_infraenv_spec }}"
+
+- name: Pause for sometime before checking for Discovery iso image.
+  ansible.builtin.pause:
+    seconds: 20
+
+- name: Check if Discovery iso image is Ready
+  community.kubernetes.k8s_info:
+    api_version: agent-install.openshift.io/v1beta1
+    kind: InfraEnv
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    name: "{{ hostedbm_infraenv_name }}"
+    namespace: "{{ hostedbm_agent_ns }}"
+  register: _hostedbm_infraenv_info
+  until:
+    - _hostedbm_infraenv_info != none
+    - "'resources' in _hostedbm_infraenv_info"
+    - _hostedbm_infraenv_info.resources != none
+    - _hostedbm_infraenv_info.resources | length > 0
+    - _hostedbm_infraenv_info.resources[0].status.conditions | json_query("[?type=='ImageCreated' && status=='True']") != none
+    - _hostedbm_infraenv_info.resources[0].status.conditions | json_query("[?type=='ImageCreated' && status=='True']") | length > 0
+  retries: 3
+  delay: 20
+
+- name: Create Secrets with creds of hardware inventory
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ item.name }}-creds"
+        namespace: "{{ hostedbm_agent_ns }}"
+      type: Opaque
+      data:
+        username: "{{ item.username | b64encode }}"
+        password: "{{ item.password | b64encode }}"
+    state: present
+  loop: "{{ hostedbm_inventory }}"
+  loop_control:
+    loop_var: item
+
+- name: Set initial annotations for bmh without installer-args
+  ansible.builtin.set_fact:
+    hostedbm_dynamic_annotation:
+      'inspect.metal3.io': 'disabled'
+
+- name: Add installer-args annotation incase custom dns server is used
+  ansible.builtin.set_fact:
+    hostedbm_dynamic_annotation: |
+      {{
+        hostedbm_dynamic_annotation | combine({
+          'bmac.agent-install.openshift.io/installer-args':
+            '["--append-karg", "nameserver=' ~ hostedbm_inject_dns_nameserver ~ '"]'
+        })
+      }}
+  when: hostedbm_inject_dns | bool
+
+- name: Loop through bm_inventory and create BareMetalHost resources
+  community.kubernetes.k8s:
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: BareMetalHost
+      metadata:
+        annotations: "{{ hostedbm_dynamic_annotation }}"
+        labels:
+          infraenvs.agent-install.openshift.io: "{{ hostedbm_infraenv_name }}"
+        name: "{{ item.name }}"
+        namespace: "{{ hostedbm_agent_ns }}"
+      spec:
+        automatedCleaningMode: disabled
+        bmc:
+          address: "{{ item.address }}"
+          credentialsName: "{{ item.name }}-creds"
+          disableCertificateVerification: true
+        bootMACAddress: "{{ item.bootMACAddress }}"
+        customDeploy:
+          method: start_assisted_install
+        online: true
+    state: present
+  loop: "{{ hostedbm_inventory }}"
+  loop_control:
+    loop_var: item
+
+- name: Check if the desired agent appears
+  community.kubernetes.k8s_info:
+    api_version: agent-install.openshift.io/v1beta1
+    kind: Agent
+    kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
+    namespace: "{{ hostedbm_agent_ns }}"
+  register: _hostedbm_agent_info
+  until:
+    - "'resources' in _hostedbm_agent_info"
+    - _hostedbm_agent_info.resources | length == hostedbm_inventory | length
+  retries: 20
+  delay: 60
