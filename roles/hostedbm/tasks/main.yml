@@ -1,0 +1,17 @@
+---
+# tasks file for hostedbm
+
+- name: Run Pre validations
+  ansible.builtin.include_tasks: validations.yml
+
+- name: Boot hosts with a discovery image, ready to be provisioned
+  ansible.builtin.include_tasks: create-agent.yml
+
+- name: Download CLIs
+  ansible.builtin.include_tasks: download-cli.yml
+
+- name: Hypershift cluster creation
+  ansible.builtin.include_tasks: create-cluster.yml
+
+- name: Configure Metallb and Create Ingress service on Guest cluster
+  ansible.builtin.include_tasks: post-deploy-step-on-guest-cluster.yml

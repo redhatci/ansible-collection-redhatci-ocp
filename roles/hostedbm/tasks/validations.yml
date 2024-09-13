@@ -1,0 +1,26 @@
+---
+- name: Ensure required variables are defined
+  ansible.builtin.assert:
+    that:
+      - "{{ item }} is defined"
+    fail_msg: "The variable {{ item }} is not defined. Please define it to proceed."
+  loop:
+    - hostedbm_cluster_name
+    - hostedbm_cluster_base_domain
+    - hostedbm_guest_ingress_ip
+    - hostedbm_kubeconfig_file
+
+- name: Manage directories for deployment
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: "{{ item.mode | default(omit) }}"
+    state: "{{ item.state }}"
+  loop:
+    - path: "{{ hostedbm_working_dir }}"
+      state: absent
+    - path: "{{ hostedbm_working_dir }}"
+      state: directory
+      mode: "0755"
+    - path: "{{ hostedbm_out_dir }}"
+      state: directory
+      mode: "0755"
