@@ -536,12 +536,26 @@
     - always
     - validation
 
-- name: Fail when bootstrapProvisioningIP are not set when virtualmedia option is enabled
-  fail:
-    msg: "bootstrapProvisioningIP must be set when enable_virtualmedia is set"
+- name: Fail when bootstrapExternalStatic* variables are not set when virtualmedia option and static bootstrap booleans are enabled
+  ansible.builtin.fail:
+    msg: "bootstrapExternalStaticIP and bootstrapExternalStaticGateway variables must be set when enable_virtualmedia and static_bootstrap_extnet are set"
   when:
+    - release_version is ansible.builtin.version('4.12', '>=')
     - enable_virtualmedia|bool
-    - bootstrapProvisioningIP is undefined
+    - static_bootstrap_extnet|bool
+    - bootstrapExternalStaticIP is undefined or bootstrapExternalStaticGateway is undefined
+  tags:
+    - always
+    - validation
+
+- name: Fail when bootstrapExternalStaticDNS variable is not set when virtualmedia option and static bootstrap booleans are enabled in OCP 4.14 and above
+  fail:
+    msg: "bootstrapExternalStaticDNS variable must be set when enable_virtualmedia and static_bootstrap_extnet are set in OCP >= 4.14"
+  when:
+    - release_version is ansible.builtin.version('4.14', '>=')
+    - enable_virtualmedia|bool
+    - static_bootstrap_extnet|bool
+    - bootstrapExternalStaticDNS is undefined
   tags:
     - always
     - validation

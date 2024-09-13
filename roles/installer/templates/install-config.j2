@@ -78,6 +78,9 @@ platform:
 {% if prov_dhcp_range is defined and prov_dhcp_range|length %}
     provisioningDHCPRange: {{ prov_dhcp_range }}
 {% endif %}    
+{% if bootstrapProvisioningIP is defined and bootstrapProvisioningIP|length %}
+    bootstrapProvisioningIP: {{ bootstrapProvisioningIP }}
+{% endif %}
 {% if externalMACAddress is defined and externalMACAddress|length %}
     externalMACAddress: '{{ externalMACAddress }}'
 {% endif %}
