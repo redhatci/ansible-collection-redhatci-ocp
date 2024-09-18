@@ -1,8 +1,9 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_repository: "https://github.com/redhat-best-practices-for-k8s/certsuite"
 kbpc_version: v5.3.4
+kbpc_repo_org_name: redhat-best-practices-for-k8s
 kbpc_project_name: certsuite
+kbpc_repository: "https://github.com/{{ kbpc_repo_org_name }}/{{ kbpc_project_name }}"
 kbpc_test_labels: "all"
 kbpc_test_config:
   - namespace: ""
@@ -21,7 +22,9 @@ kbpc_postrun_delete_resources: true
 kbpc_pullsecret: ""
 kbpc_registry: ""
 kbpc_partner_creds: ""
+kbpc_image_name: certsuite
 kbpc_image_suffix: "{{ lookup('community.general.random_string', length=16, special=false) }}"
+kbpc_support_image_name: certsuite-probe
 # Provide feedback for each certsuite test launched. Just copy this template and fill the value for the
 # tests you want to provide feedback. You don't need to include the tests that you don't want to provide feedback.
 # To insert line breaks, use \\n (you need to escape it). Same for quotes and so on.
