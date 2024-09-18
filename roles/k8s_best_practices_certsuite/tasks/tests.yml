@@ -35,8 +35,7 @@
   block:
     - name: Run the Red Hat Best Practices Test Suite for Kubernetes test cases
       vars:
-        _kbpc_repo_org_name: "{{ (kbpc_version is version('v5.2.3', '>=') or kbpc_version == 'HEAD') | ternary('redhat-best-practices-for-k8s', 'testnetworkfunction') }}"
-        kbpc_partner_repo: "{{ (kbpc_registry | length) | ternary(kbpc_registry, 'quay.io') }}/{{ _kbpc_repo_org_name }}"
+        kbpc_partner_repo: "{{ (kbpc_registry | length) | ternary(kbpc_registry, 'quay.io') }}/{{ kbpc_repo_org_name }}"
         kbpc_support_image: "{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
         kbpc_config_file_name: "{{ (kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite_config', 'tnf_config') }}"
         kbpc_container_command: |
