@@ -140,7 +140,7 @@
         kbpc_certsuite_image: "{{ kbpc_image_name }}:{{ kbpc_image_tag }}"
 
     - name: Clone certsuite repository
-      ansible.builtin.git:
+      ansible.legacy.git:
         repo: "{{ kbpc_repository }}"
         version: "{{ kbpc_version }}"
         dest: "{{ kbpc_certsuite_dir }}"
