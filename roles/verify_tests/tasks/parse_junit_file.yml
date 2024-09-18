@@ -12,32 +12,14 @@
     # Do not fail when the option to skip missing files is on
     - not skip_absent_testfiles | bool
 
-- name: Parse JUnit file
-  when: junit_file.stat.exists
-  block:
-    - name: Verify JUnit format and fix wrapping testsuites tags if required
-      when: junit_fix_tags | default(false) | bool
-      block:
-        - name: "Insert opening <testsuites> tag"
-          ansible.builtin.lineinfile:
-            path: "{{ item }}"
-            insertbefore: '<testsuite'
-            line: '<testsuites>'
+- name: "Retrieve the actual test results from {{ item | basename }}"
+  ansible.builtin.set_fact:
+    actual_results: "{{ item | redhatci.ocp.junit2dict }}"
 
-        - name: "Insert closing </testsuites> tag"
-          ansible.builtin.lineinfile:
-            path: "{{ item }}"
-            insertafter: EOF
-            line: '</testsuites>'
-
-    - name: "Retrieve the actual test results from {{ item | basename }}"
-      ansible.builtin.set_fact:
-        actual_results: "{{ item | redhatci.ocp.junit2dict }}"
-
-    - name: "Fail if not all test results are as expected for {{ item | basename }}"
-      vars:
-        expectation_failed: "{{ t.expected_results | redhatci.ocp.regex_diff(actual_results) }}"
-      ansible.builtin.fail:
-        msg: "The following expectations failed: {{ expectation_failed }}"
-      when: expectation_failed | length > 0
+- name: "Fail if not all test results are as expected for {{ item | basename }}"
+  vars:
+    expectation_failed: "{{ t.expected_results | redhatci.ocp.regex_diff(actual_results) }}"
+  ansible.builtin.fail:
+    msg: "The following expectations failed: {{ expectation_failed }}"
+  when: expectation_failed | length > 0
 ...
