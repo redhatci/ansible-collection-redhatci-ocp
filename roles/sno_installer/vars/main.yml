@@ -4,3 +4,5 @@ pullsecret_file: "{{ si_cache_dir }}/pull-secret.txt"
 default_libvirt_pool_dir: "/var/lib/libvirt/images"
 force_mirroring: false
 ocp_binary_path: "/usr/local/bin"
+
+snp_cache_dir: "{{ si_cache_dir }}"
