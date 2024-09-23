@@ -35,7 +35,7 @@
   tags: rhcospath
 
 - name: Setup RHCOS image cache
-  delegate_to: "{{ cache_server }}"  # This fact was defined in 10_get_oc.yml
+  delegate_to: "{{ si_cache_server }}"  # This fact was defined in 10_get_oc.yml
   when:
     - sno_install_type is defined
     - sno_install_type == "baremetal"

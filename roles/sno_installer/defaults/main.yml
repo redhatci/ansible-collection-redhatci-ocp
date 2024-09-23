@@ -1,7 +1,8 @@
 ---
 # defaults file for sno_installer
 cache_enabled: true
-provision_cache_store: "{{ cache_dir }}"
+si_cache_dir: "/opt/cache"
+provision_cache_store: "{{ si_cache_dir }}"
 webserver_caching_image: "quay.io/fedora/httpd-24:latest"
 webserver_caching_port_container: 8080
 webserver_caching_port: "{{ webserver_caching_port_container }}"

@@ -1,24 +1,24 @@
 ---
 - name: "Check if rhcos.json exists"
   ansible.builtin.stat:
-    path: "{{ cache_dir }}/{{ version }}/rhcos.json"
+    path: "{{ si_cache_dir }}/{{ version }}/rhcos.json"
     get_checksum: false
   register: rhcos_json
-  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  delegate_to: "{{ si_cache_server }}" # This fact was defined in 10_get_oc.yml
   tags: rhcospath
 
 - name: "Fetch rhcos.json File"
   ansible.builtin.shell: >
     set -o pipefail &&
-    {{ cache_dir }}/{{ version }}/openshift-install coreos print-stream-json |
-    tee {{ cache_dir }}/{{ version }}/rhcos.json
+    {{ si_cache_dir }}/{{ version }}/openshift-install coreos print-stream-json |
+    tee {{ si_cache_dir }}/{{ version }}/rhcos.json
   register: rhcos_json_file
   retries: 3
   delay: 10
   until: rhcos_json_file is not failed
   changed_when: false
   no_log: true
-  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  delegate_to: "{{ si_cache_server }}" # This fact was defined in 10_get_oc.yml
   when:
     - not rhcos_json.stat.exists or force_mirroring
   tags: rhcospath
@@ -27,8 +27,8 @@
   ansible.builtin.fetch:
     dest: "{{ _si_tmp_dir.path }}/"
     flat: true
-    src: "{{ cache_dir }}/{{ version }}/rhcos.json"
-  delegate_to: "{{ cache_server }}"
+    src: "{{ si_cache_dir }}/{{ version }}/rhcos.json"
+  delegate_to: "{{ si_cache_server }}"
 
 - name: "Load variables from rhcos.json"
   ansible.builtin.include_vars:
