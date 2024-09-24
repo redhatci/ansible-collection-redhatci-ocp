@@ -98,6 +98,15 @@
     - getoc
     - cache
 
+- name: "Get the distro major version in the cache server"
+  ansible.builtin.setup:
+    gather_subset:
+      - distribution_major_version
+  delegate_to: "{{ si_cache_server }}"
+  tags:
+    - getoc
+    - cache
+
 - name: "Download stable client"
   vars:
     ocp_stable_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
