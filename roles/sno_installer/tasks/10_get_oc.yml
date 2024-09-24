@@ -20,14 +20,6 @@
     - cleanup
     - getoc
 
-- name: "Set fact with the host providing the webserver"
-  ansible.builtin.set_fact:
-    si_cache_server: "{{ cache_provisioner | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
-  when: si_cache_server is undefined
-  tags:
-    - getoc
-    - cache
-
 - name: "Validate that master cache directory exists"
   ansible.builtin.stat:
     path: "{{ si_cache_dir }}"
@@ -98,20 +90,11 @@
     - getoc
     - cache
 
-- name: "Get the distro major version in the cache server"
-  ansible.builtin.setup:
-    gather_subset:
-      - distribution_major_version
-  delegate_to: "{{ si_cache_server }}"
-  tags:
-    - getoc
-    - cache
-
 - name: "Download stable client"
   vars:
     ocp_stable_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
   ansible.builtin.unarchive:
-    src: "{{ ocp_stable_url }}/stable/openshift-client-linux-amd64-rhel{{ ansible_distribution_major_version }}.tar.gz"
+    src: "{{ ocp_stable_url }}/stable/openshift-client-linux-amd64-rhel{{ si_cache_server_major_version }}.tar.gz"
     dest: "{{ sno_tmp_dir.path }}"
     remote_src: true
     mode: "0755"
@@ -171,8 +154,8 @@
   ansible.builtin.unarchive:
     src: "{{ si_cache_dir }}/{{ version }}/{{ sno_installer_oc_installer_prefix }}-{{ version }}.tar.gz"
     dest: "{{ si_cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ si_cache_server_user_id }}"
+    group: "{{ si_cache_server_user_gid }}"
     mode: "0755"
     remote_src: true
     exclude:
@@ -191,11 +174,19 @@
 # If the registry host got the oc tools, lets just copy it to the prov host
 - name: "Copy the openshift client tools from control machine to the provisioner host"
   when:
-    - not cache_provisioner | bool
+    - si_cache_server != groups['provisioner'][0]
   tags:
     - getoc
     - cache
   block:
+    - name: "Check that the provision host cluster configs directory exists"
+      ansible.builtin.file:
+        path: "{{ dir }}"
+        state: directory
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: "0755"
+
     - name: "Get the openshift client tools from registry host into temp file on control machine"
       ansible.builtin.fetch:
         dest: "{{ _si_tmp_dir.path }}/"
@@ -204,7 +195,7 @@
       loop:
         - kubectl
         - oc
-      delegate_to: "{{ groups['registry_host'][0] }}"
+      delegate_to: "{{ si_cache_server }}"
 
     - name: "Copy the openshift client tools from control machine to the provisioner host"
       ansible.builtin.copy:
@@ -250,7 +241,7 @@
   become: true
   loop: "{{ files | product(dest) | list }}"
   when:
-    - cache_provisioner | bool
+    - si_cache_server == groups['provisioner'][0]
   tags:
     - getoc
     - cache

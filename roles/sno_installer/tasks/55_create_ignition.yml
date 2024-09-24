@@ -13,7 +13,7 @@
 
 - name: "Extra tasks to get ignition file for baremetal SNO in disconnected mode"
   when:
-    - not cache_provisioner | bool
+    - si_cache_server != groups['provisioner'][0]
     - sno_install_type is defined
     - sno_install_type == "baremetal"
   tags:
@@ -36,7 +36,7 @@
 
 - name: "Extra tasks to get ignition file for baremetal SNO"
   when:
-    - cache_provisioner | bool
+    - si_cache_server == groups['provisioner'][0]
     - sno_install_type is defined
     - sno_install_type == "baremetal"
   tags:

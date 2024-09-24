@@ -43,14 +43,14 @@
     remote_src: true
   become: true
   when:
-    - cache_provisioner | bool
+    - si_cache_server == groups['provisioner'][0]
   tags:
     - extract
 
 # If the registry host got the installer, lets just copy it to the prov host
 - name: "Copy PullSecret and extract/copy openshit installer in disconnected mode"
   when:
-    - not cache_provisioner | bool
+    - si_cache_server != groups['provisioner'][0]
   tags:
     - extract
   block:
@@ -59,7 +59,7 @@
         dest: "{{ _si_tmp_dir.path }}/"
         flat: true
         src: "{{ si_cache_dir }}/{{ version }}/openshift-install"
-      delegate_to: "{{ groups['registry_host'][0] }}"
+      delegate_to: "{{ si_cache_server }}"
 
     - name: "Copy the openshift installer from control machine to the provisioner host"
       ansible.builtin.copy:

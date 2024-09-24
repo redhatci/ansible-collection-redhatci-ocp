@@ -98,7 +98,7 @@
     - name: "Download PXE rootfs for cache"
       ansible.builtin.get_url:
         url: "{{ rhcos_pxe_rootfs_url }}"
-        dest: "{{ provision_cache_store }}/{{ rhcos_pxe_rootfs_name }}"
+        dest: "{{ si_cache_dir }}/{{ rhcos_pxe_rootfs_name }}"
         mode: '0644'
         setype: httpd_sys_content_t
         checksum: "sha256:{{ rhcos_pxe_rootfs_sha256 }}"
