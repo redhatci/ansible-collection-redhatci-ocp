@@ -105,4 +105,52 @@
       subjects:
         - kind: User
           name: "admin"
+
+- name: Add SSH keys to cluster nodes at day2
+  when:
+    - oc_ssh_extra_keys_paths is defined
+    - oc_ssh_extra_keys_paths | length > 0
+  block:
+    - name: Check if SSH keys exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop: "{{ oc_ssh_extra_keys_paths }}"
+      register: _os_ssh_path
+
+    - name: "Fail if any ssh path does not exist"
+      ansible.builtin.fail:
+        msg: "SSH public key {{ key.item }} file does not exist"
+      when: not key.stat.exists
+      loop: "{{ _os_ssh_path.results }}"
+      loop_control:
+        loop_var: key
+        label: "{{ key.item }}"
+
+    - name: Set SSH Keys manifests in master group
+      vars:
+        os_role: master
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '99_ssh_mc.yml.j2') }}"
+
+    - name: Set SSH Keys manifests in worker group
+      vars:
+        os_role: worker
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '99_ssh_mc.yml.j2') }}"
+
+    - name: Pause 60 seconds to wait for MC triggered by SSH pub key config
+      ansible.builtin.pause:
+        seconds: 60
+      no_log: true
+
+    - name: Wait for MCP status
+      ansible.builtin.include_role:
+        name: redhatci.ocp.check_resource
+      vars:
+        resource_to_check: "MachineConfigPool" # noqa: redhat-ci[no-role-prefix]
+        check_wait_retries: 10 # noqa: redhat-ci[no-role-prefix]
+        check_wait_delay: 30 # noqa: redhat-ci[no-role-prefix]
+        check_reason: "SSH Key updates" # noqa: redhat-ci[no-role-prefix]
 ...

@@ -1,0 +1,22 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: {{ os_role }}
+  name: 99-{{ os_role }}-ssh
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    passwd:
+      users:
+      - name: core
+        sshAuthorizedKeys:
+  {% for ssh_key_path in oc_ssh_extra_keys_paths %}
+      - '{{ lookup('file', ssh_key_path ) }}'
+  {% endfor %}
+  extensions: null
+  fips: false
+  kernelArguments: null
+  kernelType: ""
+  osImageURL: ""
