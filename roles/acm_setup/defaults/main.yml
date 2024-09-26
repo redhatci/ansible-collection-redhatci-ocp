@@ -8,6 +8,6 @@ hub_hugepages_type: hugepages-2Mi
 hub_hugepages_size: 1024Mi
 hub_db_volume_size: 40Gi
 hub_fs_volume_size: 50Gi
-hub_img_volume_size: 40Gi
+hub_img_volume_size: 80Gi
 hub_vm_external_network: true
 ...
