@@ -14,7 +14,7 @@
 
 - name: Set Fact for the ssh key of {{ ansible_user }}
   set_fact:
-    key: "{{ sshkey['content'] | b64decode }}"
+    key: "{{ sshkey['content'] | b64decode | trim }}"
   tags: installconfig
 
 - name: Generate install-config.yaml
