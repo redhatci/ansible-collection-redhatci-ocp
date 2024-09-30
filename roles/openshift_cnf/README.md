@@ -28,29 +28,53 @@ email_address                 | "mail@example.com"                   | String. E
 ## Example Configuration of Openshift-cnf certification project creation
 ```yaml
 ---
-# Generic DCI config
-dci_topic: OCP-4.15
-dci_name: Testing Openshift-cnf auto creation and attach
-dci_configuration: Using DCI create cnf project and attach product-list
-dci_config_dirs: [/etc/dci-openshift-agent]
-dci_gits_to_components: []
+# Generic DCI Pipeline config
+- name: create-openshift-cnf
+  stage: workload
+  topic: OCP-4.16
+  ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
+  ansible_cfg: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/pipelines/ansible.cfg
+  ansible_inventory: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/inventories/@QUEUE/@RESOURCE-workload.yml
+  dci_credentials: /var/lib/dci-openshift-app-agent/.config/dci-pipeline/dci_credentials.yml
+  #ansible_skip_tags:
+  #  - post-run
+  ansible_extravars:
+    dci_cache_dir: /var/lib/dci-openshift-app-agent/dci-cache-dir
+    dci_config_dir: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/ocp-workload
+    dci_gits_to_components:
+      - /var/lib/dci-openshift-app-agent/my-dci-pipeline-test
+    dci_local_log_dir: /var/lib/dci-openshift-app-agent/upload-errors
+    dci_tags: ["openshift-cnf", "cnf", "debug", "create"]
+    dci_workarounds: []
 
-# Certification config
-partner_creds: "/var/lib/dci-openshift-app-agent/auth.json"
-pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/pyxis-apikey.txt"
-organization_id: 12345678
-check_for_existing_projects: true
+    # custom settings
+    check_for_existing_projects: true
+    organization_id: 12345678
+    page_size: 200
 
-# cnf_name is a free-text formatted as following:
-# CNF-version + OCP-version e.g "CNF23.5 OCP4.12.9"
-cnf_to_certify:
-  - cnf_name: "test-smf23.5 OCP4.11.5"
-    pyxis_product_lists:
-      - "xxxxxxxxxxxxxxxxxxxxxxxx"
-      - "yyyyyyyyyyyyyyyyyyyyyyyy"
-  - cnf_name: "test-upf23.5 OCP4.11.5"
+    # Reduce the job duration
+    do_must_gather: false
+    check_workload_api: false
 
-cert_settings:
-  email_address: "email@example.com"
+    # Backend access
+    pyxis_apikey_path: "/var/lib/dci-openshift-app-agent/demo-pyxis-apikey.txt"
+
+    cnf_to_certify:
+      # Mandatory variables
+      - cnf_name: "test-smf23.5 OCP4.16.8"
+        create_cnf_project: true
+        # Optional, define list of Product Listings
+        # if you want to attach PLs to your cert project
+        pyxis_product_lists:
+          - "xxxxxxxxxxxxxxxxxxxxxxxx"
+      - cnf_name: "test-upf23.5 OCP4.16.8"
+        create_cnf_project: true
+
+    cert_settings:
+      email_address: "email@example.com"
+
+  use_previous_topic: true
+  inputs:
+    kubeconfig: kubeconfig_path
 ...
 ```
