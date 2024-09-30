@@ -10,7 +10,6 @@
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 30
     check_wait_delay: 10
-    check_reason: "Before running RedHat tests"
 
 - name: "redhat_tests : Run openshift conformance tests"  # noqa: name[casing]
   ansible.builtin.include_tasks: conformance.yml

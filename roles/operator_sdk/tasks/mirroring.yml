@@ -88,5 +88,4 @@
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 30
     check_wait_delay: 10
-    check_reason: "Image Source update in operator_sdk role"
 ...

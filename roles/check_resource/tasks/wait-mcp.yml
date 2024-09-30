@@ -3,69 +3,18 @@
   ansible.builtin.pause:
     seconds: 60
 
-- name: "Check MCP application"
-  block:
-    # MachineConfigPool check
-    - name: Get Machine config pools status
-      community.kubernetes.k8s_info:
-        api_version: machineconfiguration.openshift.io/v1
-        kind: MachineConfigPool
-      register: reg_mcpool_status
-      vars:
-        status_query: "resources[*].status.conditions[?type=='Updated'].status"
-        update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"  # noqa: jinja[invalid]
-      until:
-        - reg_mcpool_status.resources is defined
-        - update_status == ['True']
-      retries: "{{ check_wait_retries }}"
-      delay: "{{ check_wait_delay }}"
+- name: Wait for MCP to be udpated
+  community.kubernetes.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+  register: _cr_mcp_status
+  vars:
+    _cr_status_query: "resources[*].status.conditions[?type=='Updated'].status"
+    _cr_update_status: "{{ _cr_mcp_status | json_query(_cr_status_query) | flatten | unique }}"
+  until:
+    - _cr_mcp_status.resources is defined
+    - _cr_update_status == ['True']
+  retries: "{{ check_wait_retries }}"
+  delay: "{{ check_wait_delay }}"
 
-  # If the last check failed, let's do some more checks to confirm the real status of the nodes
-  rescue:
-    # If nodes are NotReady, we cannot do much more than failing at this point.
-    # There may be cases where it takes some time to move from NotReady to
-    # Ready, so retrying this task during 10 minutes maximum.
-    - name: Check for nodes with NotReady,SchedulingDisabled status
-      ansible.builtin.shell: >
-        {{ cr_oc }} get nodes --no-headers=true |
-        grep 'NotReady,SchedulingDisabled' | awk '{ print $1 }'
-      register: not_ready_disabled_nodes
-      until: not_ready_disabled_nodes.stdout | length == 0
-      retries: 30
-      delay: 20
-
-    # If there is any node in SchedulingDisabled status, make the job to fail
-    # Run this check during 3 minutes maximum.
-    - name: Check for nodes with Ready,SchedulingDisabled status
-      ansible.builtin.shell: >
-        {{ cr_oc }} get nodes --no-headers=true |
-        grep 'Ready,SchedulingDisabled' | awk '{ print $1 }'
-      register: reg_disabled_nodes
-      until: reg_disabled_nodes.stdout | length == 0
-      retries: 9
-      delay: 20
-
-    # If the previous checks passed because there were no nodes in NotReady or
-    # SchedulngDisabled status, then let's retry the check. We will only allow
-    # one more attempt (num_repetitions = 1 by default)
-    - name: Fail if the maximum number of retries have been reached
-      ansible.builtin.fail:
-        msg: >
-          Maximum number of retries without success have been reached
-          ({{ num_repetitions }})
-      when: retry_count | int > num_repetitions
-
-    # Keeping this call to uncordon_workers just in case this issue appears
-    # again in the near future.
-    # TODO. Remove it if this issue is no longer appearing.
-    # TODO. If required again, extend this to master nodes.
-    # - name: Check for workers with Ready,SchedulingDisabled status
-    #   include_tasks: uncordon_workers.yml
-
-    - name: Increment retry count
-      ansible.builtin.set_fact:
-        retry_count: "{{ retry_count | int + 1 }}"
-
-    - name: Try a new attempt of this check
-      ansible.builtin.include_tasks: wait-mcp.yml
 ...
