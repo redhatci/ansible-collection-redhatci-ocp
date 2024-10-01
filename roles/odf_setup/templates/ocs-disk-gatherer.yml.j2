@@ -81,11 +81,11 @@ spec:
           while true;
           do
 {% if local_storage_devices is defined and local_storage_devices | length != 0 %}
-          for disk in $(readlink -f $(ls -1 /dev/disk/by-id/* | egrep -v 'DVD|dm|ceph|luks|part|lvm') | grep '{% for dev in local_storage_devices%}{{ dev }}{% if not loop.last%}\|{% endif %}{% endfor %}' | sort|uniq); do
+          for disk in $(ls -1 /dev/disk/by-id/* | egrep -v 'DVD|dm|ceph|luks|part|lvm' | grep '{% for dev in local_storage_devices%}{{ dev }}{% if not loop.last%}\|{% endif %}{% endfor %}' | sort|uniq); do
 {% else %}
-          for disk in $(readlink -f $(ls -1 /dev/disk/by-id/* | egrep -v 'DVD|dm|ceph|luks|part|lvm') | sort|uniq); do
+          for disk in $(ls -1 /dev/disk/by-id/* | egrep -v 'DVD|dm|ceph|luks|part|lvm' | sort|uniq); do
 {% endif %}
-            DISKNAME=$(basename $disk)
+            DISKNAME=$(basename $disk);
             echo " - $(ls -l /dev/disk/by-id/*|grep "$DISKNAME" | head -n1 | awk '{print $9}')";
           done;
           sleep '600';
