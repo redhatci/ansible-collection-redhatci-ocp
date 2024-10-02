@@ -130,7 +130,7 @@
             namespace: "{{ namespace }}"
           spec:
             channel: "{{ desired_channel }}"
-            installPlanApproval: "{{ starting_csv | default('') | length | ternary('Manual', 'Automatic') }}"
+            installPlanApproval: "Automatic"
             config:
               resources: {}
             name: "{{ operator }}"
@@ -151,38 +151,8 @@
         - sub.resources is defined
         - sub.resources | length == 1
         - "'status' in sub.resources[0]"
-        - "'currentCSV' in sub.resources[0].status"
-        - sub.resources[0].status.currentCSV | length > 0
-
-    - name: Handle with a starting CSV
-      when:
-        - starting_csv | default('') | length
-      block:
-        - name: Get Install plans for {{ operator }}
-          community.kubernetes.k8s_info:
-            api: operators.coreos.com/v1alpha1
-            kind: InstallPlan
-            namespace: "{{ namespace }}"
-          register: install_plans
-          retries: 5
-          delay: 5
-          until:
-            - install_plans.resources is defined
-            - install_plans.resources | length
-
-        - name: Approve install plan for specific CSV
-          community.kubernetes.k8s:
-            definition:
-              apiVersion: operators.coreos.com/v1alpha1
-              kind: InstallPlan
-              metadata:
-                name: "{{ install_plan }}"
-                namespace: "{{ namespace }}"
-              spec:
-                approved: true
-          vars:
-            query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ operator_csv }}')]"
-            install_plan: "{{ (install_plans | json_query(query) | first).metadata.name }}"
+        - "'installedCSV' in sub.resources[0].status"
+        - sub.resources[0].status.installedCSV == operator_csv
 
     - name: Wait for CSV to be ready
       community.kubernetes.k8s_info:
