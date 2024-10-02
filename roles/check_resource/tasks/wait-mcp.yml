@@ -3,7 +3,7 @@
   ansible.builtin.pause:
     seconds: 60
 
-- name: Wait for MCP to be udpated
+- name: Wait for MCP to be updated
   community.kubernetes.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
