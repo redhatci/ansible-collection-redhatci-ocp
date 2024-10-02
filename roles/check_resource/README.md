@@ -1,6 +1,6 @@
 # check_resource role
 
-Role to wait for the deployment of a given resource; applying workarounds based on the `dci_workaround` list for the case of `MachineConfigPool` resources.
+Role to wait for the deployment of a given resource.
 
 Supported resources:
 
@@ -11,11 +11,9 @@ Supported resources:
 
 Name                        | Required  | Default                | Description
 --------------------------- |-----------|------------------------|-----------------------------------------------------------------------
-resource\_to\_check         | Yes       | MachineConfigPool      | Name of the resource to check. Possible values: "MachineConfigPool", or "SriovNetworkNodeState".
+resource\_to\_check         | No        | MachineConfigPool      | Name of the resource to check. Possible values: "MachineConfigPool", or "SriovNetworkNodeState".
 check\_wait\_retries        | Yes       | Undefined              | Number of times in which the wait task is performed.
 check\_wait\_delay          | Yes       | Undefined              | Time spent between wait tasks' iterations.
-cr_oc                       | Yes       | Undefined              | Path to oc binary
-check\_reason               | No        | Undefined              | Reason for the check to be done.
 
 ## Requirements
 
@@ -32,8 +30,6 @@ Confirm that Machine Config Pools are not updating
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 120
     check_wait_delay: 10
-    check_reason: "Apply ICSPs for mirrored catalogs"
-    cr_oc: "/path/to/oc"
 ```
 
 Confirming SRIOV node state
@@ -45,6 +41,4 @@ Confirming SRIOV node state
     resource_to_check: "SriovNetworkNodeState"
     check_wait_retries: 120
     check_wait_delay: 10
-    check_reason: "Apply SRIOV policies"
-    cr_oc: "/path/to/oc"
 ```

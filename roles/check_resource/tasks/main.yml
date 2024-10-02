@@ -1,24 +1,17 @@
 ---
-# Depending on "resource_to_check" variable, do one check or another Wrapping
-# the checks in a block to be able to use "delegate_to: localhost" clause
-- name: Do the check
-  delegate_to: localhost
-  block:
-    # Check MCP application
-    - name: Check MCP application
-      ansible.builtin.include_tasks:
-        file: wait-mcp.yml
-      when: resource_to_check == "MachineConfigPool"
-
-    # Check SriovNetworkNodeState application
-    - name: Check SriovNetworkNodeState application
-      ansible.builtin.include_tasks:
-        file: wait-sriov.yml
-      when: resource_to_check == "SriovNetworkNodeState"
-
-# If reached this point, the check passed, so reinitialize retry_count for
-# future executions, as this is a shared role
-- name: Reinitialize the retry count
+- name: Set resource kind
   ansible.builtin.set_fact:
-    retry_count: 1
+    cr_kind: "{{ resource_to_check }}"
+  when: resource_to_check is defined
+
+- name: Check MachineConfigPool
+  ansible.builtin.include_tasks:
+    file: wait-mcp.yml
+  when: cr_kind == "MachineConfigPool"
+
+- name: Check SriovNetworkNodeState
+  ansible.builtin.include_tasks:
+    file: wait-sriov.yml
+  when: cr_kind == "SriovNetworkNodeState"
+
 ...

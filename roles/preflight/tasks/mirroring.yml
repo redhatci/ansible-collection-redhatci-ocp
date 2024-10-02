@@ -88,5 +88,4 @@
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 45
     check_wait_delay: 20
-    check_reason: "Image Source update in preflight role"
 ...

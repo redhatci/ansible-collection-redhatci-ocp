@@ -11,7 +11,6 @@
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 60
     check_wait_delay: 20
-    check_reason: "Delete Image Sources in operator_sdk role"
 
 - name: Remove tmp directory
   ansible.builtin.file:

@@ -105,4 +105,12 @@
       subjects:
         - kind: User
           name: "admin"
+
+- name: Wait for MCP status  # noqa: redhat-ci[no-role-prefix]
+  ansible.builtin.include_role:
+    name: redhatci.ocp.check_resource
+  vars:
+    resource_to_check: "MachineConfigPool"
+    check_wait_retries: 10
+    check_wait_delay: 30
 ...
