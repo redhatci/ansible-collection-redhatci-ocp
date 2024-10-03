@@ -1,0 +1,195 @@
+---
+- name: Create a namespace for Agents
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ setup_acm_agents_infraenv_name }}"
+
+- name: Get hub cluster pull_secret details
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Secret
+    name: "pull-secret"
+    namespace: openshift-config
+  register: _setup_acm_agents_acm_pull_secret
+
+- name: Get first Master MCP
+  community.kubernetes.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+    name: master
+  register: _setup_acm_agents_master_mcp
+
+- name: Get first Master's Machine config Pools
+  ansible.builtin.set_fact:
+    setup_acm_agents_acm_mc: "{{ _setup_acm_agents_master_mcp.resources[0].spec.configuration.name }}"
+
+- name: Get first Master Machine configs
+  community.kubernetes.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfig
+    name: "{{ setup_acm_agents_acm_mc }}"
+  register: _setup_acm_agents_master_mc
+
+- name: Setting config facts based on Hub Cluster configs
+  ansible.builtin.set_fact:
+    setup_acm_agents_sshkey: "{{ _setup_acm_agents_master_mc.resources[0].spec.config.passwd.users[0].sshAuthorizedKeys[0] |
+                              regex_replace('\n', '') }}"
+    setup_acm_agents_pull_secret: '{{ _setup_acm_agents_acm_pull_secret.resources[0].data[".dockerconfigjson"] }}'
+
+- name: Set pull secret for Assisted installer and Cluster deployment
+  community.kubernetes.k8s:
+    kubeconfig: "{{ setup_acm_agents_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ setup_acm_agents_infraenv_name }}-pull-secret"
+        namespace: "{{ setup_acm_agents_infraenv_name }}"
+      data:
+        .dockerconfigjson: "{{ setup_acm_agents_pull_secret }}"
+      type: kubernetes.io/dockerconfigjson
+
+- name: Define InfraEnv spec without kernelArguments
+  ansible.builtin.set_fact:
+    setup_acm_agents_infraenv_spec:
+      agentLabels:
+        agentclusterinstalls.extensions.hive.openshift.io/location: "{{ setup_acm_agents_location_label }}"
+      cpuArchitecture: x86_64
+      ipxeScriptType: DiscoveryImageAlways
+      nmStateConfigLabelSelector:
+        matchLabels:
+          infraenvs.agent-install.openshift.io: "{{ setup_acm_agents_infraenv_name }}"
+      pullSecretRef:
+        name: "{{ setup_acm_agents_infraenv_name }}-pull-secret"
+      sshAuthorizedKey: "{{ setup_acm_agents_sshkey }}"
+
+- name: Define InfraEnv spec with kernelArguments
+  ansible.builtin.set_fact:
+    setup_acm_agents_infraenv_spec: >-
+      {{
+        setup_acm_agents_infraenv_spec | combine({
+          "kernelArguments": [
+            {
+              "operation": "append",
+              "value": "nameserver=" + setup_acm_agents_inject_dns_nameserver
+            }
+          ]
+        }, recursive=True)
+      }}
+  when: setup_acm_agents_inject_dns | bool
+
+- name: Create InfraEnv YAML file
+  community.kubernetes.k8s:
+    kubeconfig: "{{ setup_acm_agents_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: agent-install.openshift.io/v1beta1
+      kind: InfraEnv
+      metadata:
+        annotations:
+          infraenv.agent-install.openshift.io/enable-ironic-agent: "true"
+        labels:
+          agentclusterinstalls.extensions.hive.openshift.io/location: "{{ setup_acm_agents_location_label }}"
+          networkType: dhcp
+        name: "{{ setup_acm_agents_infraenv_name }}"
+        namespace: "{{ setup_acm_agents_infraenv_name }}"
+      spec: "{{ setup_acm_agents_infraenv_spec }}"
+
+- name: Pause for sometime before checking for Discovery iso image.
+  ansible.builtin.pause:
+    seconds: 20
+
+- name: Check if Discovery iso image is Ready
+  community.kubernetes.k8s_info:
+    api_version: agent-install.openshift.io/v1beta1
+    kind: InfraEnv
+    kubeconfig: "{{ setup_acm_agents_kubeconfig_file | default(omit) }}"
+    name: "{{ setup_acm_agents_infraenv_name }}"
+    namespace: "{{ setup_acm_agents_infraenv_name }}"
+  register: _setup_acm_agents_infraenv_info
+  until:
+    - _setup_acm_agents_infraenv_info != none
+    - "'resources' in _setup_acm_agents_infraenv_info"
+    - _setup_acm_agents_infraenv_info.resources != none
+    - _setup_acm_agents_infraenv_info.resources | length > 0
+    - _setup_acm_agents_infraenv_info.resources[0].status.conditions |
+      json_query("[?type=='ImageCreated' && status=='True']") != none
+    - _setup_acm_agents_infraenv_info.resources[0].status.conditions |
+      json_query("[?type=='ImageCreated' && status=='True']") | length > 0
+  retries: 3
+  delay: 20
+
+- name: Create Secrets with creds of hardware inventory
+  community.kubernetes.k8s:
+    kubeconfig: "{{ setup_acm_agents_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ bmc.name }}-creds"
+        namespace: "{{ setup_acm_agents_infraenv_name }}"
+      type: Opaque
+      data:
+        username: "{{ bmc.username | b64encode }}"
+        password: "{{ bmc.password | b64encode }}"
+    state: present
+  loop: "{{ setup_acm_agents_inventory }}"
+  loop_control:
+    loop_var: bmc
+
+- name: Set initial annotations for BMH without installer-args
+  ansible.builtin.set_fact:
+    setup_acm_agents_dynamic_annotation:
+      'inspect.metal3.io': 'disabled'
+
+- name: Add installer-args annotation in ase custom dns server is used
+  ansible.builtin.set_fact:
+    setup_acm_agents_dynamic_annotation: |
+      {{
+        setup_acm_agents_dynamic_annotation | combine({
+          'bmac.agent-install.openshift.io/installer-args':
+            '["--append-karg", "nameserver=' ~ setup_acm_agents_inject_dns_nameserver ~ '"]'
+        })
+      }}
+  when: setup_acm_agents_inject_dns | bool
+
+- name: Loop through bm_inventory and create BareMetalHost resources
+  community.kubernetes.k8s:
+    kubeconfig: "{{ setup_acm_agents_kubeconfig_file | default(omit) }}"
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: BareMetalHost
+      metadata:
+        annotations: "{{ setup_acm_agents_dynamic_annotation }}"
+        labels:
+          infraenvs.agent-install.openshift.io: "{{ setup_acm_agents_infraenv_name }}"
+        name: "{{ bmc.name }}"
+        namespace: "{{ setup_acm_agents_infraenv_name }}"
+      spec:
+        automatedCleaningMode: disabled
+        bmc:
+          address: "{{ bmc.address }}"
+          credentialsName: "{{ bmc.name }}-creds"
+          disableCertificateVerification: true
+        bootMACAddress: "{{ bmc.bootMACAddress }}"
+        customDeploy:
+          method: start_assisted_install
+        online: true
+    state: present
+  loop: "{{ setup_acm_agents_inventory }}"
+  loop_control:
+    loop_var: bmc
+
+- name: Check if the desired agents appear
+  community.kubernetes.k8s_info:
+    api_version: agent-install.openshift.io/v1beta1
+    kind: Agent
+    kubeconfig: "{{ setup_acm_agents_kubeconfig_file | default(omit) }}"
+    namespace: "{{ setup_acm_agents_infraenv_name }}"
+  register: _setup_acm_agents_agent_info
+  until:
+    - "'resources' in _setup_acm_agents_agent_info"
+    - _setup_acm_agents_agent_info.resources | length == setup_acm_agents_inventory | length
+  retries: 20
+  delay: 60
+...
