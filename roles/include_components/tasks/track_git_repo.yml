@@ -21,6 +21,7 @@
   when:
     - _ic_search_git_component is defined
     - _ic_search_git_component is not changed
+    - last_commit_id.rc == 0
   block:
     - name: Create git repo component
       ansible.legacy.dci_component:
