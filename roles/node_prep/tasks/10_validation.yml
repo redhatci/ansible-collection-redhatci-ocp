@@ -601,3 +601,26 @@
   tags:
     - always
     - validation
+
+- name: Check if ssh_extra_keys_paths is defined and paths exist
+  when:
+    - ssh_extra_keys_paths is defined
+    - ssh_extra_keys_paths | length > 0
+  tags:
+    - always
+    - validation
+  block:
+    - name: Check if SSH keys exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop: "{{ ssh_extra_keys_paths }}"
+      register: _np_ssh_path
+
+    - name: Fail if any ssh path does not exist
+      ansible.builtin.fail:
+        msg: "SSH public key {{ key.item }} file does not exist"
+      when: not key.stat.exists
+      loop: "{{ _np_ssh_path.results }}"
+      loop_control:
+        loop_var: key
+        label: "{{ key.item }}"
