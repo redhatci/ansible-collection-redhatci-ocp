@@ -207,50 +207,11 @@
         kind: Pod
         namespace: "{{ namespace }}"
       register: olm_pod
-      retries: 45
-      delay: 10
+      retries: 30
+      delay: 20
       until:
         olm_pod.resources | map(attribute='status.phase') | difference(['Succeeded', 'Running']) | length == 0
       no_log: true
-
-  rescue:
-    - name: Catalog sources information
-      community.kubernetes.k8s_info:
-        api: operators.coreos.com/v1alpha1
-        kind: CatalogSource
-      register: catalog_info
-
-    - name: Subscriptions information
-      community.kubernetes.k8s_info:
-        api: operators.coreos.com/v1alpha1
-        kind: Subscription
-        namespace: "{{ namespace }}"
-      register: subs_info
-
-    - name: Install plan information
-      community.kubernetes.k8s_info:
-        api: operators.coreos.com/v1alpha1
-        kind: InstallPlan
-        namespace: "{{ namespace }}"
-      register: ip_info
-
-    - name: Print catalog information
-      ansible.builtin.debug:
-        msg: "{{ catalog_info.resources }}"
-
-    - name: Print Subscription information
-      ansible.builtin.debug:
-        msg: "{{ subs_info.resources }}"
-
-    - name: Print InstallPlan information
-      ansible.builtin.debug:
-        msg: "{{ ip_info.resources }}"
-
-    - name: Issues during {{ operator }} operator installation
-      ansible.builtin.fail:
-        msg: >
-          There where issues during the operator deployment. See debug info in
-          the above tasks
 
     - name: Patch subscription according to install_approval
       community.kubernetes.k8s:
@@ -270,4 +231,47 @@
             source: "{{ source }}"
             sourceNamespace: "{{ source_ns }}"
       no_log: true
+
+  rescue:
+    - name: Catalog sources information
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+      register: catalog_info
+      no_log: true
+
+    - name: Subscriptions information
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: Subscription
+        namespace: "{{ namespace }}"
+      register: subs_info
+      no_log: true
+
+    - name: Install plan information
+      community.kubernetes.k8s_info:
+        api: operators.coreos.com/v1alpha1
+        kind: InstallPlan
+        namespace: "{{ namespace }}"
+      register: ip_info
+      no_log: true
+
+    - name: Print catalog information
+      ansible.builtin.debug:
+        msg: "{{ catalog_info.resources }}"
+
+    - name: Print Subscription information
+      ansible.builtin.debug:
+        msg: "{{ subs_info.resources }}"
+
+    - name: Print InstallPlan information
+      ansible.builtin.debug:
+        msg: "{{ ip_info.resources }}"
+
+    - name: Issues during {{ operator }} operator installation
+      ansible.builtin.fail:
+        msg: >
+          There where issues during the operator deployment. See debug info in
+          the above tasks
+
 ...
