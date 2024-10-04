@@ -27,7 +27,7 @@ Role Variables
 | default_storageclass_annotation  | '{"storageclass.kubernetes.io/is-default-class": "true"}'  | String       | No          | Default storageclass annotation             |
 | external_ceph_data               |                               | JSON         | No          | A JSON payload generated from RHCS                                       |
 | ocs_install_type                 |                               | String       | Yes         | `internal` for LSO, `external` for Ceph/RHCS                             |
-| local_storage_devices            |                               | List         | Yes          | For LSO, a list of local devices that will be use as backend             |
+| local_storage_devices            |                               | List         | Yes         | For LSO, a list of local devices that will be use as backend             |
 | ocs_default_storage_class        | storagecluster-cephfs         | String       | No          | Default storage class name                                               |
 | gatherer_image                   | registry.access.redhat.com/ubi8/ubi | String | No          | Image for disk-gatherer deployment                                       |
 | odf_setup_oc_tool_path                   | '/usr/local/bin/oc` | String | No          | Path to the OpenShift Command Line Interface binary.
@@ -47,7 +47,9 @@ external_ceph_data='JSON_PAYLOAD'
 
 # When enable_lso=true, list of disk devices per node to use for LSO
 # Comma separated, all servers must have the same
-local_storage_devices=["/dev/sdX", "/dev/sdY", "/dev/sdZ"]
+# RHCOS (RHEL 9.x) detects the disk devices in an asynchronous manner.  One can no longer rely on /dev/sd* since they are not guaranteed to persist across reboots.
+# The most reliable for physical and logical devices is the HCTL Device ID
+local_storage_devices=["scsi0-0-0-1", "scsi0-0-0-2", "scsi0-2-1-0"]
 
 # (Optional) Default storage class name
 ocs_default_storage_class=ocs-storagecluster-cephfs
@@ -79,7 +81,7 @@ File: /etc/dci-openshift-agent/hosts
 [all:vars]
 ...
 ocs_install_type=internal
-local_storage_devices=["/dev/sdb", "/dev/sdc", "/dev/sdd"]
+local_storage_devices=["scsi0-0-0-1", "scsi0-0-0-2", "scsi0-2-1-0"]
 
 [ocs_nodes:children]
 workers

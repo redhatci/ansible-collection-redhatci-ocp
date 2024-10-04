@@ -25,7 +25,7 @@ externalMACAddress={{ externalMACAddress }}
 
 {% if enable_lso | default(false) | bool %}
 ocs_install_type=internal
-local_storage_devices=["/dev/sdb"]
+local_storage_devices=["scsi0-0-0-1"]
 
 [ocs_nodes:children]
 workers
