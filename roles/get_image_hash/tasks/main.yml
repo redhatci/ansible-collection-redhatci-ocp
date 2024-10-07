@@ -95,7 +95,7 @@
         var: release_images
         verbosity: 1
 
-    - name: Set values on assiste host
+    - name: Set values on assisted host
       set_fact:
         assisted_installer_os_images: "{{ os_images }}"
         assisted_installer_release_images: "{{ release_images }}"
@@ -103,7 +103,7 @@
       delegate_facts: true
       loop: "{{ destination_hosts }}"
 
-- name: "Set image hashes in {{ item }}"
+- name: "Set image hashes for all hosts"
   set_fact:
     image_hashes: "{{ image_hashes }}"
   delegate_to: "{{ item }}"
