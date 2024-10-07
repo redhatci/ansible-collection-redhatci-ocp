@@ -1,0 +1,60 @@
+---
+- name: Validation for etcd data
+  ansible.builtin.assert:
+    that:
+      - ed_action | lower in ed_valid_actions
+      - ed_enc | lower in ed_valid_encryption_types
+
+- name: Query etcd data
+  community.kubernetes.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: APIServer
+    name: cluster
+  register: _ed_query
+  no_log: true
+
+- name: Set etcd data status
+  vars:
+    _ed_type: "{{ _ed_query.resources[0].spec.encryption.type | default('') }}"
+    _ed_status: "{{ (_ed_type in ed_valid_encryption_types) | ternary('encrypted', 'unencrypted') }}"
+    _ed_enc:
+      status: "{{ _ed_status }}"
+      type: "{{ _ed_type }}"
+    _ed_dec:
+      status: "{{ _ed_status }}"
+  ansible.builtin.set_fact:
+    ed_result: "{{ (_ed_status == 'encrypted') | ternary(_ed_enc, _ed_dec) }}"
+
+- name: Encrypt etcd data
+  community.kubernetes.k8s:
+    definition:
+      api_version: config.openshift.io/v1
+      kind: APIServer
+      metadata:
+        name: cluster
+      spec:
+        encryption:
+          type: "{{ ed_enc | lower }}"
+  when:
+    - ed_result.status == 'unencrypted' or ed_force | bool
+    - ed_action | lower == 'encrypt'
+
+- name: Decrypt etcd data
+  community.kubernetes.k8s:
+    definition:
+      api_version: config.openshift.io/v1
+      kind: APIServer
+      metadata:
+        name: cluster
+      spec:
+        encryption:
+          type: identity
+  when:
+    - ed_result.status == 'encrypted' or ed_force | bool
+    - ed_action | lower == 'decrypt'
+
+- name: Monitor etcd data status
+  ansible.builtin.include_tasks: monitor-etcd-data.yml
+  when:
+    - not ed_action | lower == 'query'
+    - (not ed_result.status == (ed_action | lower == 'encrypt') | ternary('encrypted', 'unencrypted')) or ed_force | bool
