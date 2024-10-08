@@ -1,8 +1,8 @@
 - name: "A hash wasn't provided, inspect the image to figure it out"
   when: (item.value.hash | default('')) == ''
   block:
-  - name: "Get {{ item.key }} image hash"
-    shell: "skopeo inspect --authfile {{ local_pull_secret_path }} docker://{{ item.value.url }}"
+  - name: "Get image hash - {{ item.key }}"
+    shell: "skopeo inspect --no-tags --authfile {{ local_pull_secret_path }} docker://{{ item.value.url }}"
     register: result
     changed_when: false
     until: result.rc == 0
