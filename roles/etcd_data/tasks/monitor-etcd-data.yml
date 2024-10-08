@@ -43,7 +43,7 @@
 
 - name: Set etcd data status
   vars:
-    _ed_status: "{{ ed_action | lower == 'encrypt' | ternary('encrypted', 'unencrypted') }}"
+    _ed_status: "{{ (ed_action | lower == 'encrypt') | ternary('encrypted', 'unencrypted') }}"
     _ed_enc:
       status: "{{ _ed_status }}"
       type: "{{ ed_enc | lower }}"
