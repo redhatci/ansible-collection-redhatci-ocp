@@ -9,11 +9,11 @@
 
 - name: "Set coreos sno ignition facts"
   ansible.builtin.set_fact:
-    coreos_sno_ignition: "{{ cache_dir }}/{{ cluster }}.ign"
+    coreos_sno_ignition: "{{ si_cache_dir }}/{{ cluster }}.ign"
 
 - name: "Extra tasks to get ignition file for baremetal SNO in disconnected mode"
   when:
-    - not cache_provisioner | bool
+    - si_cache_server != groups['provisioner'][0]
     - sno_install_type is defined
     - sno_install_type == "baremetal"
   tags:
@@ -36,7 +36,7 @@
 
 - name: "Extra tasks to get ignition file for baremetal SNO"
   when:
-    - cache_provisioner | bool
+    - si_cache_server == groups['provisioner'][0]
     - sno_install_type is defined
     - sno_install_type == "baremetal"
   tags:
@@ -56,7 +56,7 @@
 
 - name: "Set coreos_sno_ignition_url fact"
   ansible.builtin.set_fact:
-    coreos_sno_ignition_url: "http://{{ cache_server }}:{{ webserver_caching_port }}/{{ cluster }}.ign"
+    coreos_sno_ignition_url: "http://{{ si_cache_server }}:{{ webserver_caching_port }}/{{ cluster }}.ign"
   when:
     - (coreos_sno_ignition_url is not defined or coreos_sno_ignition_url|length < 1)
     - sno_install_type is defined

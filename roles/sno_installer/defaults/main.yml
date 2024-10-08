@@ -1,10 +1,16 @@
 ---
 # defaults file for sno_installer
 cache_enabled: true
-provision_cache_store: "{{ cache_dir }}"
+si_cache_dir: "/opt/cache"
 webserver_caching_image: "quay.io/fedora/httpd-24:latest"
 webserver_caching_port_container: 8080
 webserver_caching_port: "{{ webserver_caching_port_container }}"
 url_passed: false
 tftp_dir: "/var/lib/tftpboot"
 dnsmasq_enabled: true
+
+si_cache_server: "{{ cache_provisioner | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
+si_cache_server_major_version: "{{ ansible_distribution_major_version }}"
+si_cache_server_user_id: "{{ ansible_user_id }}"
+si_cache_server_user_gid: "{{ ansible_user_gid }}"
+si_cache_server_user_dir: "{{ ansible_user_dir }}"

@@ -16,6 +16,17 @@ For any type of SNO installation, these variables are always required
 - install_type # DCI use only, options: ipi (default), sno
 - pull_image # The "Pull From" `ocp_release` image to use from the release.txt file. In DCI this is provided in the OCP component.
 
+## Other variables used:
+
+Variable                      | Required | Default    | Description
+------------------------------|----------|------------|-------------
+si_cache_dir                  | no       | /opt/cache | Path to the directory in the registry host containing every OCP version installation artifacts.
+si_cache_server               | no       | *null*     | In disconnected environments, automatically resolves to the first member of the registry_host group, otherwise resolves to the provision host. If passed as an argument, it must be set to a FQDN for an SSH accessible host containing the cache directory and serving the installation artifacts.
+si_cache_server_major_version | no       | {{ ansible_distribution_major_version }} | Distribution major version for the cache server if it's different than the version in the provision host.
+si_cache_server_user_id       | no       | {{ ansible_user_id }} | User ID in the cache server if the value is different than for the provision host.
+si_cache_server_user_gid      | no       | {{ ansible_user_gid }} | User GID in the cache server if the value is different than for the provision host.
+si_cache_server_user_dir      | no       | {{ ansible_user_dir }} | Home directory for the cache server user if the value is different than the provision host.
+
 ## SNO Virtual
 
 Steps and playbooks to help you setup your environment are documented [here](https://github.com/redhat-cip/dci-openshift-agent/tree/master/samples/sno_on_libvirt#readme)

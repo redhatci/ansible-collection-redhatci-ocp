@@ -4,24 +4,24 @@
 # 2. Access to www.redhat.com has been confirmed
 
 # SELinux when already has httpd_sys_content_t giving issues changing,thus
-# leaving it the same for the provision_cache_store to prevent issues. Also
-# removing ":z" from podman_container for provision_cache_store in the later
+# leaving it the same for the si_cache_dir to prevent issues. Also
+# removing ":z" from podman_container for si_cache_dir in the later
 # task.
 - name: "Create provision cache store on host with online access"
   ansible.builtin.file:
     path: "{{ item[0] }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "{{ si_cache_server_user_id }}"
+    group: "{{ si_cache_server_user_gid }}"
     setype: "{{ item[1] }}"
     mode: '755'
   with_nested:
-    - ["{{ provision_cache_store }}"]
+    - ["{{ si_cache_dir }}"]
     - ['httpd_sys_content_t']
   tags: cache
 
 # Leaving SELinux details alone and not using ":z"
-# for the provision_cache_store due to issues attempting
+# for the si_cache_dir due to issues attempting
 # to revert context. Leaving behavior as it was previously
 # to avoid breaking other user environments.
 - name: "Start RHCOS image cache container"
@@ -32,7 +32,7 @@
     publish:
       - "{{ webserver_caching_port_container }}:8080"
     volumes:
-      - "{{ provision_cache_store }}:/var/www/html"
+      - "{{ si_cache_dir }}:/var/www/html"
   register: rhcos_image_cache_info
   tags: cache
 
@@ -47,14 +47,14 @@
   block:
     - name: "Ensure user specific systemd instance are persistent"
       ansible.builtin.command: |
-        /usr/bin/loginctl enable-linger {{ ansible_user }}
+        /usr/bin/loginctl enable-linger {{ si_cache_server_user_id }}
 
     - name: "Create systemd user directory"
       ansible.builtin.file:
-        path: "{{ ansible_user_dir }}/.config/systemd/user"
+        path: "{{ si_cache_server_user_dir }}/.config/systemd/user"
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ si_cache_server_user_id }}"
+        group: "{{ si_cache_server_user_gid }}"
         mode: '0775'
 
     - name: "Copy the systemd service file"
@@ -71,9 +71,9 @@
           PIDFile={{ rhcos_image_cache_pidfile }}
           [Install]
           WantedBy=default.target
-        dest: "{{ ansible_user_dir }}/.config/systemd/user/container-cache.service"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        dest: "{{ si_cache_server_user_dir }}/.config/systemd/user/container-cache.service"
+        owner: "{{ si_cache_server_user_id }}"
+        group: "{{ si_cache_server_user_gid }}"
         mode: '0644'
 
     - name: "Reload systemd service"

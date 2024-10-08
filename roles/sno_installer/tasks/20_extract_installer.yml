@@ -10,23 +10,23 @@
 
 - name: "Check if commands were extracted"
   ansible.builtin.stat:
-    path: "{{ cache_dir }}/{{ version }}/openshift-install"
+    path: "{{ si_cache_dir }}/{{ version }}/openshift-install"
     get_checksum: false
   register: extracted_cmd
-  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  delegate_to: "{{ si_cache_server }}" # This fact was defined in 10_get_oc.yml
   tags: extract
 
 - name: "Unarchive installer tarball"
   ansible.builtin.unarchive:
-    src: "{{ cache_dir }}/{{ version }}/openshift-install-linux-{{ version }}.tar.gz"
-    dest: "{{ cache_dir }}/{{ version }}"
+    src: "{{ si_cache_dir }}/{{ version }}/openshift-install-linux-{{ version }}.tar.gz"
+    dest: "{{ si_cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0755"
     remote_src: true
     exclude:
       - README.md
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   when:
     - not extracted_cmd.stat.exists
   tags:
@@ -35,7 +35,7 @@
 # If the provisioner host got the installer, lets just copy it to /usr/local/bin
 - name: "Copy openshift-install binary to binary path"
   ansible.builtin.copy:
-    src: "{{ cache_dir }}/{{ version }}/openshift-install"
+    src: "{{ si_cache_dir }}/{{ version }}/openshift-install"
     dest: "{{ ocp_binary_path }}/openshift-install"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
@@ -43,14 +43,14 @@
     remote_src: true
   become: true
   when:
-    - cache_provisioner | bool
+    - si_cache_server == groups['provisioner'][0]
   tags:
     - extract
 
 # If the registry host got the installer, lets just copy it to the prov host
 - name: "Copy PullSecret and extract/copy openshit installer in disconnected mode"
   when:
-    - not cache_provisioner | bool
+    - si_cache_server != groups['provisioner'][0]
   tags:
     - extract
   block:
@@ -58,8 +58,8 @@
       ansible.builtin.fetch:
         dest: "{{ _si_tmp_dir.path }}/"
         flat: true
-        src: "{{ cache_dir }}/{{ version }}/openshift-install"
-      delegate_to: "{{ groups['registry_host'][0] }}"
+        src: "{{ si_cache_dir }}/{{ version }}/openshift-install"
+      delegate_to: "{{ si_cache_server }}"
 
     - name: "Copy the openshift installer from control machine to the provisioner host"
       ansible.builtin.copy:

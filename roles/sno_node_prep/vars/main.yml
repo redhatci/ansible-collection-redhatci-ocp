@@ -25,4 +25,4 @@ snobm_pkg_list:
   - shim-x64
   - dnsmasq
 
-pullsecret_file: "{{ cache_dir }}/pull-secret.txt"
+pullsecret_file: "{{ snp_cache_dir }}/pull-secret.txt"

@@ -84,11 +84,11 @@
       tags: rhcospxe
 
 - name: "Setting rootfs image on cache server"
-  delegate_to: "{{ cache_server }}" # This fact was defined in 10_get_oc.yml
+  delegate_to: "{{ si_cache_server }}" # This fact was defined in 10_get_oc.yml
   block:
     - name: "Check if rootfs image exists"
       ansible.builtin.stat:
-        path: "{{ cache_dir }}/{{ rhcos_pxe_rootfs_name }}"
+        path: "{{ si_cache_dir }}/{{ rhcos_pxe_rootfs_name }}"
         get_checksum: false
       register: rootfs_img
       tags:
@@ -98,7 +98,7 @@
     - name: "Download PXE rootfs for cache"
       ansible.builtin.get_url:
         url: "{{ rhcos_pxe_rootfs_url }}"
-        dest: "{{ provision_cache_store }}/{{ rhcos_pxe_rootfs_name }}"
+        dest: "{{ si_cache_dir }}/{{ rhcos_pxe_rootfs_name }}"
         mode: '0644'
         setype: httpd_sys_content_t
         checksum: "sha256:{{ rhcos_pxe_rootfs_sha256 }}"
@@ -132,7 +132,7 @@
 
 - name: "Set rootfs image URL override if not provided by the user"
   ansible.builtin.set_fact:
-    coreos_pxe_rootfs_url: "http://{{ cache_server }}:{{ webserver_caching_port }}/{{ rhcos_pxe_rootfs_name }}"
+    coreos_pxe_rootfs_url: "http://{{ si_cache_server }}:{{ webserver_caching_port }}/{{ rhcos_pxe_rootfs_name }}"
   when: coreos_pxe_rootfs_url is not defined or coreos_pxe_rootfs_url|length < 1
   tags:
     - cache

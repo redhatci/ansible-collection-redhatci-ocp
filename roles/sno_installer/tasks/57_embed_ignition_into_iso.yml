@@ -8,7 +8,7 @@
       --rm
       -v /dev:/dev
       -v /run/udev:/run/udev
-      -v "{{ cache_dir }}:/iso_input"
+      -v "{{ si_cache_dir }}:/iso_input"
       -v "{{ dir }}:/data"
       --workdir /data
       quay.io/coreos/coreos-installer:release

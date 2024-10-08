@@ -161,7 +161,7 @@
 
 - name: "Ensure cache_dir is created"
   ansible.builtin.file:
-    path: "{{ cache_dir }}"
+    path: "{{ snp_cache_dir }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"

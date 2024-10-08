@@ -20,32 +20,25 @@
     - cleanup
     - getoc
 
-- name: "Set fact with the host providing the webserver"
-  ansible.builtin.set_fact:
-    cache_server: "{{ cache_provisioner | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
-  tags:
-    - getoc
-    - cache
-
 - name: "Validate that master cache directory exists"
   ansible.builtin.stat:
-    path: "{{ cache_dir }}"
+    path: "{{ si_cache_dir }}"
     get_checksum: false
   register: cachedir
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
 
 - name: "Create master cache directory"
   ansible.builtin.file:
-    path: "{{ cache_dir }}"
+    path: "{{ si_cache_dir }}"
     state: directory
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0755"
   become: true
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   when:
     - not cachedir.stat.exists | bool
   tags:
@@ -54,23 +47,23 @@
 
 - name: "Validate if cache dir for release exists"
   ansible.builtin.stat:
-    path: "{{ cache_dir }}/{{ version }}"
+    path: "{{ si_cache_dir }}/{{ version }}"
     get_checksum: false
   register: cachedir_rel
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
 
 - name: "Create cache directory for release"
   ansible.builtin.file:
-    path: "{{ cache_dir }}/{{ version }}"
+    path: "{{ si_cache_dir }}/{{ version }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0755"
     state: directory
   become: true
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   when:
     - not cachedir_rel.stat.exists | bool
   tags:
@@ -79,10 +72,10 @@
 
 - name: "Check if release.txt exists"
   ansible.builtin.stat:
-    path: "{{ cache_dir }}/{{ version }}/release.txt"
+    path: "{{ si_cache_dir }}/{{ version }}/release.txt"
     get_checksum: false
   register: release_txt
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
@@ -92,7 +85,7 @@
     state: directory
     prefix: sno_oc.
   register: sno_tmp_dir
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
@@ -101,7 +94,7 @@
   vars:
     ocp_stable_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
   ansible.builtin.unarchive:
-    src: "{{ ocp_stable_url }}/stable/openshift-client-linux-amd64-rhel{{ ansible_distribution_major_version }}.tar.gz"
+    src: "{{ ocp_stable_url }}/stable/openshift-client-linux-amd64-rhel{{ si_cache_server_major_version }}.tar.gz"
     dest: "{{ sno_tmp_dir.path }}"
     remote_src: true
     mode: "0755"
@@ -109,7 +102,7 @@
   retries: 3
   delay: 10
   until: result is not failed
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
@@ -121,8 +114,8 @@
       --registry-config {{ pullsecret_file }}
       --tools
       --from {{ pull_url }}
-      --to "{{ cache_dir }}/{{ version }}"
-  delegate_to: "{{ cache_server }}"
+      --to "{{ si_cache_dir }}/{{ version }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
@@ -131,7 +124,7 @@
   ansible.builtin.file:
     path: "{{ sno_tmp_dir.path }}"
     state: absent
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
@@ -149,20 +142,20 @@
 
 - name: "Check if clients exists"
   ansible.builtin.stat:
-    path: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    path: "{{ si_cache_dir }}/{{ version }}/client_tools.done"
     get_checksum: false
   register: client_tools_done
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   tags:
     - getoc
     - cache
 
 - name: "Unarchive client tarball"
   ansible.builtin.unarchive:
-    src: "{{ cache_dir }}/{{ version }}/{{ sno_installer_oc_installer_prefix }}-{{ version }}.tar.gz"
-    dest: "{{ cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    src: "{{ si_cache_dir }}/{{ version }}/{{ sno_installer_oc_installer_prefix }}-{{ version }}.tar.gz"
+    dest: "{{ si_cache_dir }}/{{ version }}"
+    owner: "{{ si_cache_server_user_id }}"
+    group: "{{ si_cache_server_user_gid }}"
     mode: "0755"
     remote_src: true
     exclude:
@@ -171,7 +164,7 @@
   retries: 3
   delay: 10
   until: result is not failed
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   when:
     - not client_tools_done.stat.exists or force_mirroring
   tags:
@@ -181,20 +174,28 @@
 # If the registry host got the oc tools, lets just copy it to the prov host
 - name: "Copy the openshift client tools from control machine to the provisioner host"
   when:
-    - not cache_provisioner | bool
+    - si_cache_server != groups['provisioner'][0]
   tags:
     - getoc
     - cache
   block:
+    - name: "Check that the provision host cluster configs directory exists"
+      ansible.builtin.file:
+        path: "{{ dir }}"
+        state: directory
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: "0755"
+
     - name: "Get the openshift client tools from registry host into temp file on control machine"
       ansible.builtin.fetch:
         dest: "{{ _si_tmp_dir.path }}/"
         flat: true
-        src: "{{ cache_dir }}/{{ version }}/{{ item }}"
+        src: "{{ si_cache_dir }}/{{ version }}/{{ item }}"
       loop:
         - kubectl
         - oc
-      delegate_to: "{{ groups['registry_host'][0] }}"
+      delegate_to: "{{ si_cache_server }}"
 
     - name: "Copy the openshift client tools from control machine to the provisioner host"
       ansible.builtin.copy:
@@ -231,7 +232,7 @@
       - "{{ ocp_binary_path }}"
       - "{{ dir }}"
   ansible.builtin.copy:
-    src: "{{ cache_dir }}/{{ version }}/{{ item[0] }}"
+    src: "{{ si_cache_dir }}/{{ version }}/{{ item[0] }}"
     dest: "{{ item[1] }}/{{ item[0] }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
@@ -240,17 +241,17 @@
   become: true
   loop: "{{ files | product(dest) | list }}"
   when:
-    - cache_provisioner | bool
+    - si_cache_server == groups['provisioner'][0]
   tags:
     - getoc
     - cache
 
 - name: "Marker for client tools downloaded"
   ansible.builtin.file:
-    dest: "{{ cache_dir }}/{{ version }}/client_tools.done"
+    dest: "{{ si_cache_dir }}/{{ version }}/client_tools.done"
     state: touch
     mode: "0644"
-  delegate_to: "{{ cache_server }}"
+  delegate_to: "{{ si_cache_server }}"
   when:
     - not client_tools_done.stat.exists or force_mirroring
   tags:

@@ -12,7 +12,7 @@
 
 - name: "Check if LIVE image exists"
   ansible.builtin.stat:
-    path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    path: "{{ si_cache_dir }}/{{ rhcos_live_iso_name }}"
     get_checksum: false
   register: live_img
   tags: rhcos_live
@@ -20,7 +20,7 @@
 - name: "Download LIVE image"
   ansible.builtin.get_url:
     url: "{{ rhcos_path }}"
-    dest: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    dest: "{{ si_cache_dir }}/{{ rhcos_live_iso_name }}"
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0644"
@@ -37,14 +37,14 @@
 
 - name: "Set a public SELinux context"
   ansible.builtin.file:
-    path: "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    path: "{{ si_cache_dir }}/{{ rhcos_live_iso_name }}"
     setype: "public_content_t"
   become: true
   tags: rhcos_live
 
 - name: "Apply new SELinux file context"
   ansible.builtin.command: >
-    /usr/sbin/restorecon -R "{{ cache_dir }}/{{ rhcos_live_iso_name }}"
+    /usr/sbin/restorecon -R "{{ si_cache_dir }}/{{ rhcos_live_iso_name }}"
   become: true
   tags: rhcos_live
 ...
