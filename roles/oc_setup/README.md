@@ -20,7 +20,9 @@ export KUBECONFIG=<kubeconfig_path>
 
 ## Users
 
-These are the users created and the roles associated to them. See [official documentation about the default roles](https://docs.openshift.com/container-platform/4.17/post_installation_configuration/preparing-for-users.html#default-roles_post-install-preparing-for-users)
+## Users
+
+These are the users created and the roles associated to them. See [official documentation about the default roles](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/postinstallation_configuration/post-install-preparing-for-users#default-roles_post-install-preparing-for-users)
 
 | Username      | Role          | Description
 | ------------- | ------------- | -----------
