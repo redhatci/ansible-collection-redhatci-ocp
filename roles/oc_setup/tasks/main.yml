@@ -10,18 +10,20 @@
   when: not path_check.stat.exists
 
 - name: Generate Random passwords for users htpasswd IdP
-  ansible.builtin.set_fact: # noqa: redhat-ci[no-role-prefix]
-    admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
-    cluster_admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
-    nonadmin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+  ansible.builtin.set_fact:
+    os_admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+    os_basic_user_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+    os_cluster_admin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+    os_nonadmin_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
 
 - name: "Save passwords to the cluster configs directory"
   ansible.builtin.copy:
     content: |
-      OCP automatically generated credentials for the API/GUI
-      admin:{{ admin_pass }}
-      cluster_admin:{{ cluster_admin_pass }}
-      nonadmin:{{ nonadmin_pass }}
+      # OCP automatically generated credentials for the API/GUI
+      admin:{{ os_admin_pass }}
+      basic_user:{{ os_basic_user_pass }}
+      cluster_admin:{{ os_cluster_admin_pass }}
+      nonadmin:{{ os_nonadmin_pass }}
     dest: "{{ os_config_dir }}/ocp_creds.txt"
     mode: '0640'
 
@@ -33,11 +35,13 @@
     mode: "0640"
   loop:
     - user: admin
-      password: "{{ admin_pass }}"
+      password: "{{ os_admin_pass }}"
+    - user: basic_user
+      password: "{{ os_basic_user_pass }}"
     - user: cluster_admin
-      password: "{{ cluster_admin_pass }}"
+      password: "{{ os_cluster_admin_pass }}"
     - user: nonadmin
-      password: "{{ nonadmin_pass }}"
+      password: "{{ os_nonadmin_pass }}"
 
 - name: "Encoding the password file"
   ansible.builtin.slurp:
@@ -55,6 +59,7 @@
       type: Opaque
       data:
         htpasswd: "{{ encoded_password.content }}"
+  no_log: true
 
 - name: "Setup htpasswd auth IDP backend in openshift"
   community.kubernetes.k8s:
@@ -74,37 +79,27 @@
               fileData:
                 name: htpass-secret
 
-- name: Grant cluster-admin permissions to cluster_admin user
+- name: Grant permissions to users
   community.kubernetes.k8s:
     state: present
     definition:
       apiVersion: rbac.authorization.k8s.io/v1
       kind: ClusterRoleBinding
       metadata:
-        name: cluster-admin-admin
+        name: "{{ user | replace('_', '-') }}-0"
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: ClusterRole
-        name: cluster-admin
+        name: "{{ user | replace('_', '-') }}"
       subjects:
         - kind: User
-          name: "cluster_admin"
-
-- name: Grant admin permissions to admin user
-  community.kubernetes.k8s:
-    state: present
-    definition:
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: ClusterRoleBinding
-      metadata:
-        name: admin-0
-      roleRef:
-        apiGroup: rbac.authorization.k8s.io
-        kind: ClusterRole
-        name: admin
-      subjects:
-        - kind: User
-          name: "admin"
+          name: "{{ user }}"
+  loop:
+    - "admin"
+    - "basic_user"
+    - "cluster_admin"
+  loop_control:
+    loop_var: user
 
 - name: Wait for MCP status  # noqa: redhat-ci[no-role-prefix]
   ansible.builtin.include_role:
