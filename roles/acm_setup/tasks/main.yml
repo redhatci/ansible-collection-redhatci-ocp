@@ -255,6 +255,11 @@
     namespace: multicluster-engine
   register: _asg
 
+- name: "Get Hub Cluster mirroring configuration"
+  ansible.builtin.include_tasks: get-mirroring-config.yml
+  when:
+    - hub_disconnected
+
 - name: "Create the Agent Service config"
   when: _asg.resources | length == 0
   vars:
@@ -294,6 +299,10 @@
               storage: "{{ hub_img_volume_size }}"
       {% if hub_os_images is defined %}
         osImages: {{ hub_os_images }}
+      {% endif %}
+      {% if hub_disconnected %}
+        mirrorRegistryRef:
+            name: mirror-registry-config-map
       {% endif %}
   community.kubernetes.k8s:
     state: present
