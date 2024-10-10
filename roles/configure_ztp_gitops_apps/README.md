@@ -20,8 +20,10 @@ czga_sites_path             | string | yes      | -                             
 czga_policies_gitops_repo   | string | yes      | -                                                  | Repository where Policies can be found.
 czga_policies_branch        | string | yes      | -                                                  | Policies repo's branch.
 czga_policies_path          | string | yes      | -                                                  | Path to find Policies' kustomize file in the repo.
-czga_site_generator_image   | string | yes      | -                                                  | ZTP site generator container image
 czga_site_generator_version | string | yes      | -                                                  | ZTP site generator container version
+czga_multicluster_version   | string | yes      | -                                                  | Multicluster operators subscription container version
+czga_site_generator_image   | string | no       | `registry.redhat.io/openshif4/ztp-site-generate-rhel8` | ZTP site generator container image
+czga_multicluster_image     | string | no       | `registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel9` | Multicluster operators subscription container image
 czga_podman_runner_host     | string | no       | podman-runner                                      |  Identity of the inventory host pulling the sites template generator image.
 czga_clusters_namespace     | string | no       | cluster-sub                                        | Namespace for the site config resources.
 czga_kubeconfig_path        | string | no       | `{{ omit }}`                                       | Path to the ACM hub kubeconfig file.
