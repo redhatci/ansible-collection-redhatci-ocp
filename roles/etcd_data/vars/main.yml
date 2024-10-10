@@ -1,0 +1,8 @@
+---
+ed_valid_actions:
+  - query
+  - encrypt
+  - decrypt
+ed_valid_encryption_types:
+  - aescbc
+  - aesgcm

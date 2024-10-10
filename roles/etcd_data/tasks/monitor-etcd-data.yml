@@ -1,0 +1,53 @@
+---
+- name: Monitor OpenShift API Server
+  vars:
+    _ed_is_encrypted: "{{ _ed_ocp_api.resources[0].status.conditions | json_query('[?type==`Encrypted`].status') | first }}"
+    _ed_want_encrypted: "{{ ed_action | lower == 'encrypt' }}"
+  community.kubernetes.k8s_info:
+    api_version: operator.openshift.io/v1
+    kind: OpenShiftAPIServer
+    name: cluster
+  register: _ed_ocp_api
+  retries: 30
+  delay: 60
+  until: _ed_is_encrypted == _ed_want_encrypted
+  no_log: true
+
+- name: Monitor Kube API Server
+  vars:
+    _ed_is_encrypted: "{{ _ed_kube_api.resources[0].status.conditions | json_query('[?type==`Encrypted`].status') | first }}"
+    _ed_want_encrypted: "{{ ed_action | lower == 'encrypt' }}"
+  community.kubernetes.k8s_info:
+    api_version: operator.openshift.io/v1
+    kind: KubeAPIServer
+    name: cluster
+  register: _ed_kube_api
+  retries: 30
+  delay: 60
+  until: _ed_is_encrypted == _ed_want_encrypted
+  no_log: true
+
+- name: Monitor Authenticaton
+  vars:
+    _ed_is_encrypted: "{{ _ed_auth.resources[0].status.conditions | json_query('[?type==`Encrypted`].status') | first }}"
+    _ed_want_encrypted: "{{ ed_action | lower == 'encrypt' }}"
+  community.kubernetes.k8s_info:
+    api_version: operator.openshift.io/v1
+    kind: Authentication
+    name: cluster
+  register: _ed_auth
+  retries: 30
+  delay: 60
+  until: _ed_is_encrypted == _ed_want_encrypted
+  no_log: true
+
+- name: Set etcd data status
+  vars:
+    _ed_status: "{{ (ed_action | lower == 'encrypt') | ternary('encrypted', 'unencrypted') }}"
+    _ed_enc:
+      status: "{{ _ed_status }}"
+      type: "{{ ed_enc | lower }}"
+    _ed_dec:
+      status: "{{ _ed_status }}"
+  ansible.builtin.set_fact:
+    ed_result: "{{ (_ed_status == 'encrypted') | ternary(_ed_enc, _ed_dec) }}"
