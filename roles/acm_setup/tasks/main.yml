@@ -300,7 +300,7 @@
       {% if hub_os_images is defined %}
         osImages: {{ hub_os_images }}
       {% endif %}
-      {% if hub_disconnected %}
+      {% if hub_disconnected | bool %}
         mirrorRegistryRef:
             name: mirror-registry-config-map
       {% endif %}
