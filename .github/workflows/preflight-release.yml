@@ -12,24 +12,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check for new release
-        id: check_release
-        run: |
-          preflight_latest=$(curl -s https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/releases/latest | jq -r .tag_name)
-          echo "Preflight latest release: $preflight_latest"
-          echo "preflight_latest=$preflight_latest" >> $GITHUB_OUTPUT
+      - name: Get Preflight latest release
+        id: preflight_latest
+        uses: pozetroninc/github-action-get-latest-release@v0.8.0
+        with:
+          owner: redhat-openshift-ecosystem
+          repo: openshift-preflight
+          excludes: prerelease, draft
 
-      - name: Get current release version
+      - name: Get preflight release in the repo
         id: get_current_release
         run: |
-          preflight_current=$(grep 'preflight_image:' roles/preflight/defaults/main.yml | awk -F: '{print $3}' | tr -d ' "')
+          preflight_current=$(awk -F: '/^preflight_image:/ {print $NF}' roles/preflight/defaults/main.yml | tr -d '"')
           echo "Preflight current release: $preflight_current"
           echo "preflight_current=$preflight_current" >> $GITHUB_OUTPUT
 
       - name: Compare versions
         id: compare_versions
         env:
-          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+          PREFLIGHT_LATEST: ${{ steps.preflight_latest.outputs.release }}
           PREFLIGHT_CURRENT: ${{ steps.get_current_release.outputs.preflight_current }}
         run: |
           if [ "$PREFLIGHT_LATEST" != "$PREFLIGHT_CURRENT" ]; then
@@ -44,7 +45,7 @@ jobs:
         id: check_branch
         if: steps.compare_versions.outputs.new_release == 'true'
         env:
-          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+          PREFLIGHT_LATEST: ${{ steps.preflight_latest.outputs.release }}
         run: |
           branch_exists=$(git ls-remote --heads origin preflight-release-$PREFLIGHT_LATEST)
           if [ -n "$branch_exists" ]; then
@@ -81,7 +82,7 @@ jobs:
       - name: Create new branch with updated Preflight version
         if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
         env:
-          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+          PREFLIGHT_LATEST: ${{ steps.preflight_latest.outputs.release }}
         run: |
           # Pull the latest changes from the main branch
           git fetch origin main
@@ -99,7 +100,7 @@ jobs:
       - name: Create PR moving to the latest Preflight
         if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
         env:
-          PREFLIGHT_LATEST: ${{ steps.check_release.outputs.preflight_latest }}
+          PREFLIGHT_LATEST: ${{ steps.preflight_latest.outputs.release }}
           GITHUB_TOKEN: ${{ secrets.DCIBOT_TOKEN }}
         run: |
           gh pr create \
