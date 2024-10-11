@@ -1,5 +1,5 @@
 ---
-preflight_image: "quay.io/opdev/preflight:1.10.1"
+preflight_image: "quay.io/opdev/preflight:null"
 preflight_repo_https: "https://github.com/redhat-openshift-ecosystem/openshift-preflight"
 preflight_namespace: preflight-testing
 preflight_sa: default
