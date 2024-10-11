@@ -17,6 +17,10 @@ jobs:
         run: |
           preflight_latest=$(curl -s https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/releases/latest | jq -r .tag_name)
           echo "Preflight latest release: $preflight_latest"
+          if [ "$preflight_latest" == "null" ]; then
+            echo "Failed to retrieve the latest release. Exiting."
+            exit 1
+          fi
           echo "preflight_latest=$preflight_latest" >> $GITHUB_OUTPUT
 
       - name: Get current release version
