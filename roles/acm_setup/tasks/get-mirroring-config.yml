@@ -1,20 +1,20 @@
 ---
-- name: "Get current worker's MCP"
+- name: "Get current master's MCP"
   community.kubernetes.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
-    name: worker
-  register: _acm_setup_worker_mcp
+    name: master
+  register: _acm_setup_master_mcp
   no_log: true
 
-- name: "Get current worker's Machine Configs"
+- name: "Get current master's Machine Configs"
   vars:
-    acm_mc: "{{ _acm_setup_worker_mcp.resources[0].spec.configuration.name }}"
+    acm_mc: "{{ _acm_setup_master_mcp.resources[0].spec.configuration.name }}"
   community.kubernetes.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfig
     name: "{{ acm_mc }}"
-  register: _acm_setup_worker_mc
+  register: _acm_setup_master_mc
   no_log: true
 
 - name: "Get cluster user-ca certificate"
@@ -29,8 +29,8 @@
 - name: "Create a Config map with registry entries and CA bundle"
   vars:
     acm_user_ca_bundle: '{{ _acm_setup_user_ca_bundle.resources[0].data["ca-bundle.crt"] }}'
-    registry_config: "{{ _acm_setup_worker_mc | json_query('resources[0].spec.config.storage.files[?path==`/etc/containers/registries.conf`].contents.source') |
-                  first | regex_replace('^data:.*;base64,', '') | b64decode }}"
+    registry_config: "{{ (_acm_setup_master_mc | json_query('resources[0].spec.config.storage.files[?path==`/etc/containers/registries.conf`].contents.source'))[0] |
+                      regex_replace('^data:.*;base64,', '') | b64decode }}"
     cm_def: |
       apiVersion: v1
       kind: ConfigMap
