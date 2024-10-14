@@ -5,7 +5,7 @@
     kind: MachineConfigPool
     name: master
   register: _acm_setup_master_mcp
-  no_log: true
+  no_log: false
 
 - name: "Get current master's Machine Configs"
   vars:
@@ -15,7 +15,7 @@
     kind: MachineConfig
     name: "{{ acm_mc }}"
   register: _acm_setup_master_mc
-  no_log: true
+  no_log: false
 
 - name: "Get cluster user-ca certificate"
   community.kubernetes.k8s_info:
@@ -24,7 +24,7 @@
     name: "user-ca-bundle"
     namespace: openshift-config
   register: _acm_setup_user_ca_bundle
-  no_log: true
+  no_log: false
 
 - name: "Create a Config map with registry entries and CA bundle"
   vars:
