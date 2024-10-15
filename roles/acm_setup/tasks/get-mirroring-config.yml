@@ -7,7 +7,7 @@
   register: _acm_setup_master_mcp
   no_log: false
 
-- name: "Get current master's Machine Configs"
+- name: "Get current master's Machine Config"
   vars:
     acm_mc: "{{ _acm_setup_master_mcp.resources[0].spec.configuration.name }}"
   community.kubernetes.k8s_info:
@@ -16,6 +16,12 @@
     name: "{{ acm_mc }}"
   register: _acm_setup_master_mc
   no_log: false
+  until: >
+    _acm_setup_master_mc is defined
+    and _acm_setup_master_mc.resources is defined
+    and _acm_setup_master_mc.resources | length == 1
+  retries: 10
+  delay: 15
 
 - name: "Get cluster user-ca certificate"
   community.kubernetes.k8s_info:
