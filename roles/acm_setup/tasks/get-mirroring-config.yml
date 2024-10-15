@@ -5,17 +5,17 @@
     kind: MachineConfigPool
     name: master
   register: _acm_setup_master_mcp
-  no_log: false
+  no_log: true
 
 - name: "Get current master's Machine Config"
   vars:
-    acm_mc: "{{ _acm_setup_master_mcp.resources[0].spec.configuration.name }}"
+    acm_machine_config: "{{ _acm_setup_master_mcp.resources[0].spec.configuration.name }}"
   community.kubernetes.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfig
-    name: "{{ acm_mc }}"
+    name: "{{ acm_machine_config }}"
   register: _acm_setup_master_mc
-  no_log: false
+  no_log: true
   until: >
     _acm_setup_master_mc is defined
     and _acm_setup_master_mc.resources is defined
@@ -30,14 +30,14 @@
     name: "user-ca-bundle"
     namespace: openshift-config
   register: _acm_setup_user_ca_bundle
-  no_log: false
+  no_log: true
 
 - name: "Create a Config map with registry entries and CA bundle"
   vars:
     acm_user_ca_bundle: '{{ _acm_setup_user_ca_bundle.resources[0].data["ca-bundle.crt"] }}'
     registry_config: "{{ (_acm_setup_master_mc | json_query('resources[0].spec.config.storage.files[?path==`/etc/containers/registries.conf`].contents.source'))[0] |
                       regex_replace('^data:.*;base64,', '') | b64decode }}"
-    cm_def: |
+    mirror_cm_def: |
       apiVersion: v1
       kind: ConfigMap
       metadata:
@@ -52,5 +52,5 @@
           {{ acm_user_ca_bundle | indent(4) }}
   community.kubernetes.k8s:
     state: present
-    definition: "{{ cm_def }}"
+    definition: "{{ mirror_cm_def }}"
 ...
