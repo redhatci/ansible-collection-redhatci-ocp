@@ -98,9 +98,9 @@ Name | Description
 [redhatci.ocp.multibench_run](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/multibench_run/README.md) | Launch a crucible scenario on OCP
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
+[redhatci.ocp.ocp_add_users](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_add_users/README.md) | Add users to an OpenShift cluster through htpasswd Identity Provider.
 [redhatci.ocp.ocp_logging](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_logging/README.md) | Enables the OCP logging subsystem.
 [redhatci.ocp.ocp_on_libvirt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_on_libvirt/README.md) | Creation of a libvirt environment to install OCP
-[redhatci.ocp.oc_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/oc_setup/README.md) | Setup additional credentials (httpasswd) for a running OCP cluster.
 [redhatci.ocp.odf_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/odf_setup/README.md) | Setup of [OpenShift Data Foundation (ODF)](https://www.redhat.com/en/technologies/cloud-computing/openshift-data-foundation)
 [redhatci.ocp.olm_operator](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/olm_operator/README.md) | Deploys an OLM-based operator.
 [redhatci.ocp.opcap_tool](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/opcap_tool/README.md) | Runs OPCAP tool to test the installation of the Openshift operators.

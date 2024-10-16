@@ -1,0 +1,47 @@
+---
+- name: Set all the users (new and current)
+  vars:
+    current_users: "{{ (_oau_secret.resources[0].data.htpasswd | default('Cg==') | b64decode).split() }}"
+    new_users: "{{ (_oau_new_users_encoded_password.content | b64decode).split() }}"
+  ansible.builtin.set_fact:
+    oau_all_users: "{{ _oau_all_users | default({}) | combine({item.split(':')[0]: item.split(':')[1]}) }}"
+  loop: "{{ current_users + new_users }}"
+  loop_control:
+    label: "{{ item.split(':')[0] }}"
+  no_log: "{{ oau_secure_log | bool }}"
+
+- name: Create/Update htpasswd secret
+  vars:
+    _all_users_text: |
+      {% for user, passwd in oau_all_users.items() %}
+      {{ user + ":" + passwd }}
+      {% endfor %}
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: htpass-secret
+        namespace: openshift-config
+      type: Opaque
+      data:
+        htpasswd: "{{ _all_users_text | b64encode }}"
+  no_log: "{{ oau_secure_log | bool }}"
+
+- name: Setup htpasswd auth IdP backend in OCP
+  community.kubernetes.k8s:
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: OAuth
+      metadata:
+        name: cluster
+      spec:
+        identityProviders:
+          - name: htpassidp
+            challenge: true
+            login: true
+            mappingMethod: claim
+            type: HTPasswd
+            htpasswd:
+              fileData:
+                name: htpass-secret

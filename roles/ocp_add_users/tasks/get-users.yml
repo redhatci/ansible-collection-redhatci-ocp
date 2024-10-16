@@ -1,0 +1,22 @@
+---
+- name: Read OAuth cluster
+  community.kubernetes.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: OAuth
+    name: cluster
+  register: _oau_oauth
+  no_log: "{{ oau_secure_log | bool }}"
+
+- name: Read Secret htpasswd
+  vars:
+    filter: "[?type==`{{ oau_idp_type }}`]"
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ _oau_oauth.resources[0].spec.identityProviders[0].htpasswd.fileData.name }}"
+    namespace: openshift-config
+  register: _oau_secret
+  when:
+    - _oau_oauth.resources | length
+    - _oau_oauth.resources[0].spec.identityProviders | json_query(filter) | length
+  no_log: "{{ oau_secure_log | bool }}"
