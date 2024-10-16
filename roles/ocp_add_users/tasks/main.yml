@@ -3,7 +3,6 @@
   ansible.builtin.assert:
     that:
       - oau_dir is defined
-      - oau_idp_type in oau_valid_idp_types
       - oau_users | default([]) | length
 
 - name: Check if directory exists

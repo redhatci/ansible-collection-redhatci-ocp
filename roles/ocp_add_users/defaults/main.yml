@@ -1,2 +1,2 @@
 ---
-oau_idp_type: "HTPasswd"
+oau_passwd_len: 15

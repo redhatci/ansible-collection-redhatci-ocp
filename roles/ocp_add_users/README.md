@@ -10,7 +10,8 @@ See the [Roles](./#Roles) for information about the type of roles used to create
 
 ## Requirements
 
-Access to a valid kubeconfig file via an `KUBECONFIG` environment variable.
+- Python [passlib](https://pypi.org/project/passlib) library
+- Access to a valid kubeconfig file via an `KUBECONFIG` environment variable.
 
 ```Shell
 export KUBECONFIG=<kubeconfig_path>
@@ -18,12 +19,12 @@ export KUBECONFIG=<kubeconfig_path>
 
 ## Variables
 
-| Variable           | Default    | Required  | Description
-| ------------------ | ---------- | --------- | -----------
-| oau_config_dir     | undefined  | Yes       | Directory where the credentials will be saved.
-| oau_users          | undefined  | Yes       | List of users to create and their associated [role](#roles). See [formatting](#formatting) for details.
-| oau_passwd_len     | 15         | No        | Password length.
-| oau_secure_log     | true       | No        | Whether or not hide sensitive logs.
+| Variable        | Default    | Required  | Description
+| --------------- | ---------- | --------- | -----------
+| oau_dir         | undefined  | Yes       | Directory where the credentials will be saved.
+| oau_users       | undefined  | Yes       | List of users to create and their associated [role](#roles). See [formatting](#formatting) for details.
+| oau_passwd_len  | 15         | No        | Password length.
+| oau_secure_log  | true       | No        | Whether or not hide sensitive logs.
 
 ## Formatting
 
