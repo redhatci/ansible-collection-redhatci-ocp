@@ -21,7 +21,7 @@
         - not enable_virtualmedia|bool
 
     - name: Delete {{ prov_con_name.stdout }} due to modify nmcli bug
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ prov_con_name.stdout }}"
         type: ethernet
         state: absent
@@ -30,7 +30,7 @@
         - prov_con_name.stdout != '--'
 
     - name: Delete {{ prov_nic }} due to modify nmcli bug
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ item }}"
         type: ethernet
         state: absent
@@ -42,7 +42,7 @@
         - prov_con_name.stdout != '--'
 
     - name: Delete provisioning bridge if it exists
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ provisioning_bridge }}"
         state: absent
       when:
@@ -55,13 +55,13 @@
         - prov_network is defined and prov_network
 
     - name: Create Bridge labeled provisioning bridge ipv4
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ provisioning_bridge }}"
         type: bridge
         ifname: "{{ provisioning_bridge }}"
         autoconnect: true
-        ip4_method: manual
-        ip6_method: disabled
+        method4: manual
+        method6: disabled
         stp: false
         ip4: "{{ prov_bridge_ip | default('172.22.0.1/21') }}"
         state: present
@@ -70,7 +70,7 @@
             (release_version is ansible.builtin.version('4.3', '==')))
 
     - name: Create Bridge slave on provisioning nic ipv4
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ prov_nic }}"
         type: bridge-slave
         hairpin: false
@@ -83,7 +83,7 @@
             (release_version is ansible.builtin.version('4.3', '==')))
 
     - name: Create Bridge labeled provisioning bridge ipv6
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ provisioning_bridge }}"
         type: bridge
         ifname: "{{ provisioning_bridge }}"
@@ -91,8 +91,8 @@
         stp: false
         ip6: fd00:1101::1/64
         state: present
-        ip4_method: disabled
-        ip6_method: manual
+        method4: disabled
+        method6: manual
       when:
         - not enable_virtualmedia|bool
         - ipv6_enabled|bool
@@ -100,7 +100,7 @@
         - not ipv4_provisioning|bool
 
     - name: Create Bridge slave on provisioning nic ipv6
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ prov_nic }}"
         type: bridge-slave
         hairpin: false
@@ -115,7 +115,7 @@
         - not ipv4_provisioning|bool
 
     - name: Create Bridge labeled {{ baremetal_bridge }} for ipv4
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ baremetal_bridge }}"
         type: bridge
         ifname: "{{ baremetal_bridge }}"
@@ -126,7 +126,7 @@
             (ipv4_baremetal|bool)
 
     - name: Create Bridge labeled {{ baremetal_bridge }} for ipv6/dual-stack
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ baremetal_bridge }}"
         type: bridge
         ifname: "{{ baremetal_bridge }}"
@@ -137,7 +137,7 @@
       when: ipv6_enabled|bool and not ipv4_baremetal|bool
 
     - name: Create Bridge slave on {{ pub_nic }}
-      redhatci.ocp.nmcli:
+      community.general.nmcli:
         conn_name: "{{ pub_con_name.stdout }}"
         type: bridge-slave
         hairpin: false

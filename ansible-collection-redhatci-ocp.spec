@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.22.EPOCH
+Version:        0.24.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -51,6 +51,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Oct 18 2024 Tony Garcia <tonyg@redhat.com> - 0.24.EPOCH-VERS
+- Deprecate redhatci.ocp.nmcli with community.general.nmcli
+
 * Tue Oct  8 2024 Tony Garcia <tonyg@redhat.com> - 0.22.EPOCH-VERS
 - Add etcd_data role
 
