@@ -22,5 +22,5 @@
   register: _oau_secret
   when:
     - _oau_oauth.resources | length
-    - _oau_oauth.resources[0].spec.identityProviders | json_query('[?type==`HTPasswd`]') | default([]) | length
+    - _oau_oauth.resources[0].spec.identityProviders | default([]) | json_query('[?type==`HTPasswd`]') | length
   no_log: "{{ oau_secure_log | bool }}"
