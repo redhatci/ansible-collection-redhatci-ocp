@@ -2,7 +2,7 @@
 - name: Generate Random passwords for new users
   vars:
     user: "{{ item.split(':')[0] }}"
-    passwd: "{{ lookup('password', '/dev/null length='+ oau_passwd_len + ' chars=ascii_letters,digits') }}"
+    passwd: "{{ lookup('password', '/dev/null length=' + oau_passwd_len + ' chars=ascii_letters,digits') }}"
   ansible.builtin.set_fact:
     oau_pass: "{{ _oau_pass | default({}) | combine({user: passwd}) }}"
   loop: "{{ oau_users }}"

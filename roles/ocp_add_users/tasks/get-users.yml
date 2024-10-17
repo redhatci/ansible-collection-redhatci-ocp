@@ -7,6 +7,12 @@
   register: _oau_oauth
   no_log: "{{ oau_secure_log | bool }}"
 
+- name: Set Secret name
+  ansible.builtin.set_fact:
+    oau_secret_name: "{{ _oau_oauth.resources[0].spec.identityProviders[0].htpasswd.fileData.name | default('htpass-secret') }}"
+  when:
+    - _oau_oauth.resources | length
+
 - name: Read Secret htpasswd
   community.kubernetes.k8s_info:
     api_version: v1
@@ -16,5 +22,5 @@
   register: _oau_secret
   when:
     - _oau_oauth.resources | length
-    - _oau_oauth.resources[0].spec.identityProviders | json_query('[?type==`HTPasswd`]') | length
+    - _oau_oauth.resources[0].spec.identityProviders | json_query('[?type==`HTPasswd`]') | default([]) | length
   no_log: "{{ oau_secure_log | bool }}"

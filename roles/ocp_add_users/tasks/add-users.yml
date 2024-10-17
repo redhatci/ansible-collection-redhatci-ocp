@@ -21,7 +21,7 @@
       apiVersion: v1
       kind: Secret
       metadata:
-        name: htpass-secret
+        name: "{{ oau_secret_name }}"
         namespace: openshift-config
       type: Opaque
       data:
@@ -44,4 +44,4 @@
             type: HTPasswd
             htpasswd:
               fileData:
-                name: htpass-secret
+                name: "{{ oau_secret_name }}"
