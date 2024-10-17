@@ -141,7 +141,6 @@
         conn_name: "{{ pub_con_name.stdout }}"
         type: bridge-slave
         hairpin: false
-        id: "{{ pub_nic }}"
         ifname: "{{ pub_nic }}"
         master: "{{ baremetal_bridge }}"
         autoconnect: true
