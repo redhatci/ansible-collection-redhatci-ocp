@@ -2,7 +2,7 @@
 - name: Set all the users (new and current)
   vars:
     current_users: "{{ (_oau_secret.resources[0].data.htpasswd | default('Cg==') | b64decode).split() }}"
-    new_users: "{{ (_oau_new_users_encoded_password.content | b64decode).split() }}"
+    new_users: "{{ (_oau_new_encoded_users.content | b64decode).split() }}"
   ansible.builtin.set_fact:
     oau_all_users: "{{ _oau_all_users | default({}) | combine({item.split(':')[0]: item.split(':')[1]}) }}"
   loop: "{{ current_users + new_users }}"
