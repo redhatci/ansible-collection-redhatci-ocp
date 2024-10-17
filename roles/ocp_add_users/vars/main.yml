@@ -1,0 +1,13 @@
+---
+oau_valid_idp_types:
+  - HTPasswd
+oau_valid_roles:
+  - admin
+  - basic-user
+  - cluster-admin
+  - cluster-status
+  - cluster-reader
+  - edit
+  - self-provisioner
+  - view
+  - none
