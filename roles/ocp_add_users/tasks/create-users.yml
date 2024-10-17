@@ -4,8 +4,10 @@
     user: "{{ item.split(':')[0] }}"
     passwd: "{{ lookup('password', '/dev/null length=' + oau_passwd_len | string + ' chars=ascii_letters,digits') }}"
   ansible.builtin.set_fact:
-    oau_pass: "{{ _oau_pass | default({}) | combine({user: passwd}) }}"
+    oau_pass: "{{ oau_pass | default({}) | combine({user: passwd}) }}"
   loop: "{{ oau_users }}"
+  loop_control:
+    label: "{{ user }}"
   no_log: "{{ oau_secure_log | bool }}"
 
 - name: Save passwords to the output directory
