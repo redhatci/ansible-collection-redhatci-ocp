@@ -1,11 +1,11 @@
 ---
 - name: "Get content of release.txt"
-  slurp:
+  ansible.builtin.slurp:
     src: "{{ mor_cache_dir }}/{{ mor_version }}/release.txt"
   register: mor_release_content
 
 - name: "Read release_image from release content"
-  set_fact:
+  ansible.builtin.set_fact:
     mor_release_image: "{{ mor_release_content.content | b64decode | regex_search('(?<=^Pull From: )(.*)$', multiline=true) }}"
 
 - name: "Write rhcos.json from command 4.8+"
