@@ -6,12 +6,12 @@
       - kbpc_kubeconfig|length
     fail_msg: "kubeconfig is required to run certsuite"
 
-- name: Fail if certsuite version is lower than v5.2.3
+- name: Fail if certsuite version is lower than v5.3.3
   when:
-    - kbpc_version is version("v5.2.3", "<")
+    - kbpc_version is version("v5.3.3", "<")
     - kbpc_version != "HEAD"
   ansible.builtin.fail:
-    msg: "This role is not compatible with certsuite version < v5.2.3"
+    msg: "This role is not compatible with certsuite version < v5.3.3"
 
 # Just do this in case preflight test suite is used. This happens if using
 # preflight label. This check is included as a warning for users in case of not

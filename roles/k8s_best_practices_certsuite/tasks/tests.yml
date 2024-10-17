@@ -12,11 +12,9 @@
     mode: '0755'
 
 - name: Template config file
-  vars:
-    kbpc_config_file_name: "{{ (kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite_config', 'tnf_config') }}"
   ansible.builtin.template:
-    src: "templates/{{ kbpc_config_file_name }}.yml.j2"
-    dest: "{{ kbpc_certsuite_dir }}/config_files/{{ kbpc_config_file_name }}.yml"
+    src: "templates/certsuite_config.yml.j2"
+    dest: "{{ kbpc_certsuite_dir }}/config_files/certsuite_config.yml"
     mode: '0755'
 
 # Just do this in case preflight test suite is used.
@@ -37,7 +35,6 @@
       vars:
         kbpc_partner_repo: "{{ (kbpc_registry | length) | ternary(kbpc_registry, 'quay.io') }}/{{ kbpc_repo_org_name }}"
         kbpc_support_image: "{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
-        kbpc_config_file_name: "{{ (kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD') | ternary('certsuite_config', 'tnf_config') }}"
         kbpc_container_command: |
           ./certsuite run \
           {% if kbpc_test_labels | length > 0 %}
@@ -49,14 +46,9 @@
           {% endif %}
           --output-dir=/usr/certsuite/results \
           --offline-db=/usr/offline-db \
-          --config-file=/usr/certsuite/config/{{ kbpc_config_file_name }}.yml \
+          --config-file=/usr/certsuite/config/certsuite_config.yml \
           --kubeconfig=/usr/certsuite/config/kubeconfig \
-          {% if kbpc_version is version('v5.3.3', '>=') or kbpc_version == 'HEAD' %}
           --certsuite-probe-image={{ kbpc_partner_repo }}/{{ kbpc_support_image }} \
-          {% else %}
-          --tnf-image-repository={{ kbpc_partner_repo }} \
-          --tnf-debug-image={{ kbpc_support_image }} \
-          {% endif %}
           --create-xml-junit-file={{ kbpc_enable_xml_creation }} \
           --non-intrusive={{ kbpc_non_intrusive_only }} \
           --log-level={{ kbpc_log_level }} \
