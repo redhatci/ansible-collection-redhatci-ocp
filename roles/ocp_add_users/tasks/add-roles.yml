@@ -1,0 +1,21 @@
+---
+- name: Add roles to users
+  vars:
+    user: "{{ item.split(':')[0] }}"
+    role: "{{ item.split(':')[1] }}"
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "{{ user | replace('_', '-') }}-0"
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: "{{ role }}"
+      subjects:
+        - kind: User
+          name: "{{ user }}"
+  loop: "{{ oau_users }}"
+  when: role != "none"
