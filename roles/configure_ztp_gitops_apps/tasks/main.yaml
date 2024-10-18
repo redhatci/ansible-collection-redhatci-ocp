@@ -208,6 +208,20 @@
             .dockerconfigjson: "{{ _czga_encoded_pull_secret['content'] }}"
       no_log: true
 
+    - name: Wait for the GitOps ZTP plugin activation
+      community.kubernetes.k8s_info:
+        api_version: v0
+        kind: Pod
+        namespace: openshift-gitops
+        label_selectors:
+          - app.kubernetes.io/name = openshift-gitops-repo-server
+      register: repo_server_pod
+      retries: 39
+      delay: 14
+      until:
+        - repo_server_pod.resources[-1] | community.general.json_query("status.conditions[?type=='Ready'].status") == ["True"]
+        - '"kustomize" in repo_server_pod.resources[-1] | community.general.json_query("spec.volumes[].name")'
+
     - name: Run the policies and cluster apps
       ansible.builtin.shell: |
         {{ czga_oc_tool_path }} --kubeconfig="{{ temp_dir.path }}/kubeconfig" apply -k "{{ temp_dir.path }}/ztp/argocd/deployment"
