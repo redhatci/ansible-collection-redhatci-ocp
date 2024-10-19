@@ -28,6 +28,7 @@ Requires: python3-jmespath
 Requires: python3-netaddr
 Requires: python3-pyyaml
 Requires: skopeo
+Conflicts: dci-openshift-agent < 0.23.0
 
 %description
 %{summary}.
