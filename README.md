@@ -35,6 +35,7 @@ dnf -y install ansible-collection-redhatci-ocp
 Name | Description
 --- | ---
 [redhatci.ocp.acm_hypershift](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_hypershift/README.md) | Deployment of Hypershift (Hosted Control Planes) through ACM (Advanced Cluster Management).
+[redhatci.ocp.setup_acm_agents](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_acm_agents/README.md) | This role allows to setup ACM agents used for Bare-metal deployments.
 [redhatci.ocp.acm_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_setup/README.md) | Performs the Advanced Cluster Management (ACM) post-installation tasks
 [redhatci.ocp.acm_sno](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_sno/README.md) | Deployment of SNO (Single Node OpenShift) instances using ACM (Advanced Cluster Management)
 [redhatci.ocp.acm_spoke_mgmt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_spoke_mgmt/README.md) | This role allows to perform multiple management operations related to a spoke cluster,e.g. attach a spoke cluster to a given hub cluster, or detach a spoke cluster from a given hub cluster.
