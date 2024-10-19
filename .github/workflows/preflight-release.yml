@@ -56,10 +56,6 @@ jobs:
             echo "branch_exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Install GitHub CLI
-        if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
-        run: sudo apt-get install -y gh
-
       - name: Import GPG key
         if: steps.compare_versions.outputs.new_release == 'true' && steps.check_branch.outputs.branch_exists == 'false'
         env:
