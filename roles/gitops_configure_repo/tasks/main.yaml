@@ -1,12 +1,19 @@
 ---
 
+- name: Identify the Git repo transport protocol
+  ansible.builtin.set_fact:
+    gcr_repo_protocol_http: "{{ gcr_ztp_gitops_repo | regex_search('https?://') | type_debug == 'str' }}"
+
 - name: Assert the required variables are defined
   ansible.builtin.assert:
     that:
-      - gcr_ssh_key_path is defined
-      - gcr_ssh_key_path | length > 0
       - gcr_ztp_gitops_repo is defined
       - gcr_ztp_gitops_repo | length > 0
+      - >
+          (gcr_repo_protocol_http and
+          gcr_repo_username is defined and gcr_repo_username | length > 0 and
+          gcr_repo_password is defined and gcr_repo_password | length > 0) or
+          (gcr_ssh_key_path is defined and gcr_ssh_key_path | length > 0)
 
 - name: Add ssh_known_hosts to ArgoCD
   community.kubernetes.k8s:
@@ -26,29 +33,14 @@
     - gcr_ssh_known_hosts | length > 0
   no_log: true
 
-- name: Register key
-  ansible.builtin.set_fact:
-    gcr_ssh_key: "{{ lookup('file', gcr_ssh_key_path) }}"
-  no_log: true
-
-- name: Create temporary template directory
-  ansible.builtin.tempfile:
-    state: directory
-    suffix: build
-  register: temp_dir
-
-- name: Template the private repo resource for Argo
-  ansible.builtin.template:
-    src: ssh_private_repo.yaml.j2
-    dest: "{{ temp_dir.path }}/ssh_private_repo.yaml"
-    mode: '0644'
-
-- name: Apply ssh private repo
+- name: Set up a SSH private repository
   community.kubernetes.k8s:
-    src: "{{ temp_dir.path }}/ssh_private_repo.yaml"
+    definition: "{{ lookup('template', 'ssh_private_repo.yaml.j2') | from_yaml }}"
+  when: not gcr_repo_protocol_http
   no_log: true
 
-- name: Remove temporary directory
-  ansible.builtin.file:
-    path: "{{ temp_dir.path }}"
-    state: absent
+- name: Set up a HTTP private repository
+  community.kubernetes.k8s:
+    definition: "{{ lookup('template', 'http_private_repo.yaml.j2') | from_yaml }}"
+  when: gcr_repo_protocol_http
+  no_log: true

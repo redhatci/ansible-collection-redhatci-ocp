@@ -17,10 +17,10 @@
       - czga_policies_branch | length > 0
       - czga_policies_path is defined
       - czga_policies_path | length > 0
-      - czga_site_generator_image is defined
-      - czga_site_generator_image | length > 0
       - czga_site_generator_version is defined
       - czga_site_generator_version | length > 0
+      - czga_multicluster_version is defined
+      - czga_multicluster_version | length > 0
       - czga_ocp_pull_secret is defined
       - czga_ocp_pull_secret | length > 0
 
@@ -159,11 +159,17 @@
             - "    kind: ClusterImageSet"
             - "  - group: hive.openshift.io"
 
-    - name: Replace image container URL in argocd-openshift-gitops-patch.json
+    - name: Replace ztp-site-generate image container URL in argocd-openshift-gitops-patch.json
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json"
-        regexp: "{{ czga_site_generator_image }}.*/"
+        regexp: '[^"]*ztp-site-generate[^"]*'
         replace: "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}"
+
+    - name: Replace multicluster-operators-subscription image container URL in argocd-openshift-gitops-patch.json
+      ansible.builtin.replace:
+        path: "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json"
+        regexp: '[^"]*multicluster-operators-subscription[^"]*'
+        replace: "{{ czga_multicluster_image }}:{{ czga_multicluster_version }}"
 
     - name: Patch the ArgoCD instance to install the GitOps ZTP plugin
       ansible.builtin.shell: |
