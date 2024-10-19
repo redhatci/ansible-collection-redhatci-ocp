@@ -109,7 +109,7 @@ jobs:
           # Prefer using podman over docker
           apt-get download podman-docker
           sudo dpkg --force-all -i podman-docker*.deb 2>/dev/null
-          EXCLUDE="--exclude hack/ --exclude plugins/modules/nmcli.py"
+          EXCLUDE="--exclude hack/"
           git checkout -b branch
           git fetch --unshallow origin main
           # extract all the supported python versions from the error message, excluding 3.5
