@@ -1,0 +1,40 @@
+---
+- name: Validate input variables
+  ansible.builtin.assert:
+    that:
+      - oau_dir is defined
+      - oau_users | default([]) | length
+
+- name: Check if directory exists
+  ansible.builtin.stat:
+    path: "{{ oau_dir }}"
+  register: _oau_path_check
+
+- name: Fail if the output directory does not exist
+  ansible.builtin.fail:
+    msg: Output directory does not exist
+  when: not _oau_path_check.stat.exists
+
+- name: Validate users and their roles are valid
+  vars:
+    _oau_user: "{{ item.split(':')[0] }}"
+    _oau_role: "{{ item.split(':')[1] }}"
+  ansible.builtin.assert:
+    that:
+      - _oau_user is match("^[a-z0-9-]+$")
+      - _oau_role | lower in oau_valid_roles
+  loop: "{{ oau_users }}"
+
+- name: Get current users
+  ansible.builtin.include_tasks: get-users.yml
+
+- name: Create new user
+  ansible.builtin.include_tasks: create-users.yml
+
+- name: Add users to OpenShift
+  ansible.builtin.include_tasks: add-users.yml
+
+- name: Add roles to users
+  ansible.builtin.include_tasks: add-roles.yml
+
+...

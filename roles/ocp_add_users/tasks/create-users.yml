@@ -1,0 +1,39 @@
+---
+- name: Generate Random passwords for new users
+  vars:
+    user: "{{ item.split(':')[0] }}"
+    passwd: "{{ lookup('password', '/dev/null length=' + oau_passwd_len | string + ' chars=ascii_letters,digits') }}"
+  ansible.builtin.set_fact:
+    oau_pass: "{{ oau_pass | default({}) | combine({user: passwd}) }}"
+  loop: "{{ oau_users }}"
+  loop_control:
+    label: "{{ user }}"
+  no_log: "{{ oau_secure_log | bool }}"
+
+- name: Save passwords to the output directory
+  ansible.builtin.copy:
+    content: |
+      # OCP automatically generated users for the API/GUI
+      {% for user, passwd in oau_pass.items() %}
+      {{ user + ":" + passwd }}
+      {% endfor %}
+    dest: "{{ oau_dir }}/ocp_creds.txt"
+    mode: '0640'
+  no_log: "{{ oau_secure_log | bool }}"
+
+- name: Create http auth file for new users
+  ansible.builtin.htpasswd:
+    path: "{{ oau_dir }}/new_users.htpasswd"
+    name: "{{ user }}"
+    password: "{{ oau_pass[user] }}"
+    mode: "0640"
+  loop: "{{ oau_pass.keys() | list }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user }}"
+  no_log: "{{ oau_secure_log | bool }}"
+
+- name: Read new encoded users
+  ansible.builtin.slurp:
+    src: "{{ oau_dir }}/new_users.htpasswd"
+  register: _oau_new_encoded_users
