@@ -42,7 +42,17 @@
   vars:
     ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility_{{ da_ns }}_junit.xml"
   ansible.builtin.set_fact:
-    ocp_compatibility: "{{ da_removed_api | redhatci.ocp.ocp_compatibility(da_ocp_version, ocp_filename) }}"
+    da_raw_ocp_compatibility: "{{ da_removed_api | redhatci.ocp.ocp_compatibility(da_ocp_version, ocp_filename) }}"
+
+- name: "Filter out openshift and kube related service accounts from OCP compatibility list for {{ da_ns }}"
+  ansible.builtin.set_fact:
+    ocp_compatibility: >-
+      {{
+        da_raw_ocp_compatibility | dict2items |
+        selectattr('value', 'search', 'serviceaccount:') |
+        selectattr('value', 'search', '^(?!.*(openshift|kube)).*') |
+        list | items2dict
+      }}
 
 # 99.99 is used when the deprecated API check imposes no limitations
 - name: "Extract the OCP version up to which the workload is compatible in {{ da_ns }}"
