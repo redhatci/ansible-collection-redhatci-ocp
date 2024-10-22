@@ -38,6 +38,16 @@
   ansible.builtin.debug:
     var: da_removed_api
 
+- name: "Filter out openshift and kube related service accounts from OCP compatibility list for {{ da_ns }}"
+  ansible.builtin.set_fact:
+    da_removed_api: >-
+      {{
+        da_removed_api |
+        selectattr('serviceAccounts', 'search', 'serviceaccount:') |
+        selectattr('serviceAccounts', 'search', '^(?!.*(openshift|kube)).*') |
+        list
+      }}
+
 - name: "Compute OCP compatibility of the workload API for {{ da_ns }}"
   vars:
     ocp_filename: "{{ deprecated_api_logs.path }}/apirequestcounts_ocp_compatibility_{{ da_ns }}_junit.xml"
