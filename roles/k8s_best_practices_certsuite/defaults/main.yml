@@ -1,6 +1,6 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_version: v5.3.6
+kbpc_version: v5.3.7
 kbpc_repo_org_name: redhat-best-practices-for-k8s
 kbpc_project_name: certsuite
 kbpc_repository: "https://github.com/{{ kbpc_repo_org_name }}/{{ kbpc_project_name }}"
@@ -52,6 +52,8 @@ kbpc_feedback:
   access-control-security-context: ""
   access-control-security-context-non-root-user-check: ""
   access-control-security-context-privilege-escalation: ""
+  access-control-security-context-read-only-file-system: ""
+  access-control-security-context-run-as-non-root-user-check: ""
   access-control-service-type: ""
   access-control-ssh-daemons: ""
   access-control-sys-admin-capability-check: ""
@@ -87,24 +89,24 @@ kbpc_feedback:
   networking-icmpv4-connectivity-multus: ""
   networking-icmpv6-connectivity: ""
   networking-icmpv6-connectivity-multus: ""
+  networking-network-attachment-definition-sriov-mtu: ""
   networking-network-policy-deny-all: ""
   networking-ocp-reserved-ports-usage: ""
   networking-reserved-partner-ports: ""
   networking-restart-on-reboot-sriov-pod: ""
   networking-undeclared-container-ports-usage: ""
+  observability-compatibility-with-next-ocp-release: ""
   observability-container-logging: ""
   observability-crd-status: ""
   observability-pod-disruption-budget: ""
   observability-termination-policy: ""
-  operator-automount-tokens: ""
   operator-crd-openapi-schema: ""
   operator-crd-versioning: ""
   operator-install-source: ""
   operator-install-status-no-privileges: ""
   operator-install-status-succeeded: ""
-  operator-read-only-file-system: ""
-  operator-run-as-non-root: ""
-  operator-run-as-user-id: ""
+  operator-olm-skip-range: ""
+  operator-pods-no-hugepages: ""
   operator-semantic-versioning: ""
   operator-single-crd-owner: ""
   performance-exclusive-cpu-pool: ""
