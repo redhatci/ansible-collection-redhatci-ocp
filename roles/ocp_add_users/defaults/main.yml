@@ -1,2 +1,3 @@
 ---
 oau_passwd_len: 15
+oau_secure_log: true
