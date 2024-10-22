@@ -73,6 +73,7 @@ The `sriov_config_file` **must** meet the following requirements
 | meta_plugins      | No       | String  | MetaPluginsConfig configuration to be used in order to chain metaplugins to the sriov interface returned by the operator.
 | min_tx_rate       | No       | Int     | Minimum tx rate, in Mbps, for the VF, min_tx_rate should be <= max_tx_rate.
 | network_namespace | No       | String  | Namespace of the NetworkAttachmentDefinition custom resource
+| plugins           | No       | String  | Plugins to be configured for this network.
 | spoof_chk         | No       | String  | VF spoof check, (on|off)
 | trust             | No       | String  | VF trust mode (on|off)
 | vlan              | No       | Int     | VLAN ID to assign for the VF.
@@ -122,6 +123,7 @@ sriov_network_configs:
       spoof_chk: on
       trust: on
       capabilities: '{ "mac": true, "ips": true }'
+      plugins: '[{"type": "sriov", "mtu": 9000}]'
 ```
 
 > NOTE: SR-IOV operator requires nodes to use the `worker` role.

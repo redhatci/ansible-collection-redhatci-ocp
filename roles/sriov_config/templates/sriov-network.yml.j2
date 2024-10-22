@@ -25,6 +25,9 @@ spec:
 {% if sriov.network.network_namespace is defined %}
   networkNamespace: "{{ sriov.network.network_namespace }}"
 {% endif %}
+{% if sriov.network.plugins is defined %}
+  plugins: {{ sriov.network.plugins | to_json }}
+{% endif %}
   resourceName: "{{ sriov.resource }}"
 {% if sriov.network.spoof_chk is defined %}
   spoofChk: "{{ sriov.network.spoof_chk }}"
