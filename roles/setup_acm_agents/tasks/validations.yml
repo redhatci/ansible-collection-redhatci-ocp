@@ -1,0 +1,10 @@
+---
+- name: "Assert parameters"
+  ansible.builtin.assert:
+    that:
+      - setup_acm_agents_inventory is defined
+      - setup_acm_agents_inventory | type_debug == "list"
+      - setup_acm_agents_inventory | length > 0
+      - setup_acm_agents_infraenv_name is defined
+    fail_msg: "At least one of the parameters requirements is missing"
+...
