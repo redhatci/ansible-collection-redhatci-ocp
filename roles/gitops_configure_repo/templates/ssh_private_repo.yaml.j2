@@ -9,4 +9,4 @@ stringData:
   type: git
   url: {{ gcr_ztp_gitops_repo }}
   sshPrivateKey: |
-    {{ gcr_ssh_key | indent(4)}}
+    {{ lookup('file', gcr_ssh_key_path) | indent(4)}}
