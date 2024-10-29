@@ -36,10 +36,10 @@
 
 - name: "Set default channel"
   vars:
-    query_channel: "Labels.\"operators.operatorframework.io.bundle.channels.v1\""
+    query_channel: "Labels.\"operators.operatorframework.io.bundle.channel.default.v1\""
     bundle_channel: "{{ bundle_inspect.stdout | from_json | json_query(query_channel) }}"
   ansible.builtin.set_fact:
-    fbc_default_channel: "{{ bundle_channel | length | ternary(bundle_channel.split(',')[0], 'latest') }}"
+    fbc_default_channel: "{{ bundle_channel | default('latest', true) }}"
 
 - name: "Initialize operators index"
   ansible.builtin.shell: >
