@@ -36,7 +36,7 @@
   ansible.builtin.assert:
     that:
       - mor_install_type | string
-      - mor_install_type in ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm']
+      - mor_install_type in ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm', 'abi']
 
 - name: "Validate conditional registry variables"
   ansible.builtin.assert:

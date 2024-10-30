@@ -33,6 +33,12 @@
   when:
     - mor_install_type == 'assisted'
 
+- name: "Add images for ABI"
+  ansible.builtin.set_fact:
+    mor_images: "{{ mor_images + mor_abi }}"
+  when:
+    - mor_install_type == 'abi'
+
 - name: "Cleanup images list"
   ansible.builtin.set_fact:
     mor_images: "{{ mor_images | unique | select | list }}"
