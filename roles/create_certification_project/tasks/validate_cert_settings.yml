@@ -1,5 +1,5 @@
 ---
-- name: Validate cert_settings for container project
+- name: Validate cert_settings for container project creation in-loop
   ansible.builtin.assert:
     that:
       - "operator.short_description is defined"
@@ -15,7 +15,30 @@
       - "cert_settings.repository_description is defined"
     fail_msg: "The parameter {{ item }} is required to update cert project"
     success_msg: "The parameter {{ item }} is present"
-  when: product_type == 'container'
+  when:
+    - product_type == 'container'
+    - do_container_parallel_test | bool
+
+- name: Validate cert_settings for container project
+  ansible.builtin.assert:
+    that: "{{ item }} is defined"
+    fail_msg: "The parameter {{ item }} is required to update cert project"
+    success_msg: "The parameter {{ item }} is present"
+  with_items:
+    - cert_item.short_description
+    - cert_item.short_description | length >= 50
+    - cert_settings.auto_publish
+    - cert_settings.email_address
+    - cert_settings.build_categories
+    - cert_settings.registry_override_instruct
+    - cert_settings.application_categories
+    - cert_settings.os_content_type
+    - cert_settings.privileged
+    - cert_settings.release_category
+    - cert_settings.repository_description
+  when:
+    - product_type == 'container'
+    - not do_container_parallel_test | bool
 
 - name: Validate cert_settings for operator project
   ansible.builtin.assert:
