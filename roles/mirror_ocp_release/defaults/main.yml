@@ -33,4 +33,7 @@ mor_acm:
 mor_assisted_installer:
  - metal_pxe_rootfs
  - metal_iso
+mor_abi:
+ - metal_pxe_rootfs
+ - metal_iso
 ...
