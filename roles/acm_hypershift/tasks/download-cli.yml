@@ -45,7 +45,7 @@
 - name: Get hcp cli version
   ansible.builtin.shell:
     cmd: >
-      {{ ah_tmp_dir }}/hcp --version
+      {{ ah_tmp_dir }}/hcp version
   register: result
   changed_when: false
 
