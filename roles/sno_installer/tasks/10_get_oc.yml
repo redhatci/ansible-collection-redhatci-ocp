@@ -1,25 +1,4 @@
 ---
-- name: "Find any existing OpenShift binaries"
-  ansible.builtin.find:
-    paths: "{{ ocp_binary_path }}"
-    patterns: 'oc,openshift-install,kubectl'
-  register: binary_results
-  tags:
-    - cleanup
-    - getoc
-
-- name: "Remove any existing OpenShift binaries"
-  ansible.builtin.file:
-    path: "{{ item['path'] }}"
-    state: absent
-  loop: "{{ binary_results['files'] }}"
-  loop_control:
-    label: "{{ item['path'] }}"
-  become: true
-  tags:
-    - cleanup
-    - getoc
-
 - name: "Validate that master cache directory exists"
   ansible.builtin.stat:
     path: "{{ si_cache_dir }}"
