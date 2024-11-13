@@ -5,18 +5,18 @@
   vars:
     product_type: "container" # noqa: redhat-ci[no-role-prefix]
     cert_item: "{{ operator }}" # noqa: redhat-ci[no-role-prefix]
-    current_operator_image: "{{ item.container_image }}" # noqa: redhat-ci[no-role-prefix]
+    current_operator_image: "{{ c_cert_p.container_image }}" # noqa: redhat-ci[no-role-prefix]
     operator: # noqa: redhat-ci[no-role-prefix]
-      name: "{{ item.container_image.split('/')[-1].split(':')[0].split('@')[0] }}"
-      version: "{{ item.container_image.split(':')[0] }}"
-      pyxis_container_identifier: "{{ item.pyxis_container_identifier | default('') }}"
-      create_container_project: "{{ item.create_container_project | default(false) }}"
-      short_description: "{{ item.short_description | default('') }}"
-      pyxis_product_lists: "{{ item.pyxis_product_lists | default([]) }}"
+      name: "{{ c_cert_p.container_image.split('/')[-1].split(':')[0].split('@')[0] }}"
+      version: "{{ c_cert_p.container_image.split(':')[0] }}"
+      pyxis_container_identifier: "{{ c_cert_p.pyxis_container_identifier | default('') }}"
+      create_container_project: "{{ c_cert_p.create_container_project | default(false) }}"
+      short_description: "{{ c_cert_p.short_description | default('') }}"
+      pyxis_product_lists: "{{ c_cert_p.pyxis_product_lists | default([]) }}"
   loop: "{{ preflight_containers_to_certify }}"
   loop_control:
-    loop_var: item
+    loop_var: c_cert_p
   when:
-    - item.create_container_project | default(false) | bool
-    - item.pyxis_container_identifier | default('') | length == 0
+    - c_cert_p.create_container_project | default(false) | bool
+    - c_cert_p.pyxis_container_identifier | default('') | length == 0
 ...
