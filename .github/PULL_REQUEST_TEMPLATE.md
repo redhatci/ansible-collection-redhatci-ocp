@@ -17,7 +17,7 @@
 
 <!-- Examples:
 - [ ] TestDallas: ocp-4.17-vanilla - <JobURL>
-- [ ] TestDallasHybrid: ocp-4.17-vanilla - <JobURL>
+- [ ] TestDallasHybrid: ocp-4.17-vanilla-hybrid - <JobURL>
 - [ ] TestDallasWorkload: preflight-green - <JobURL>
 - [ ] TestBos2: virt - <JobURL>
 - [ ] TestBos2Sno: sno - <JobURL>
