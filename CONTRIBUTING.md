@@ -68,6 +68,7 @@ The collection has multiple CI pipelines that run on every PR:
 To specify which DCI lab to use and which resources to use, you can use the following strings in the descrption of the PR:
 
   * `TestDallas`: baremetal clusters in the Dallas lab.
+  * `TestDallasHybrid`: hybrid clusters with a virtualized control-plane in the Dallas Lab.
   * `TestDallasWorkload`: workload on a pre-installed baremetal cluster in Dallas.
   * `TestBos2`: virtual setup in the BOS2 lab.
   * `TestBos2Sno`: virtual SNO setup in the BOS2 lab.
