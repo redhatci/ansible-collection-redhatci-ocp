@@ -307,6 +307,8 @@
         clusterRef:
           name: "{{ acm_cluster_name }}"
           namespace: "{{ acm_cluster_name }}"
+        additionalNTPSources:
+          - "{{ acm_ntp_server }}"
         agentLabels:
           agentclusterinstalls.extensions.hive.openshift.io/location: "{{ acm_cluster_location }}"
         cpuArchitecture: x86_64
