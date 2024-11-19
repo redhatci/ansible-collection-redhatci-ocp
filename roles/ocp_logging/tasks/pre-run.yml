@@ -66,10 +66,10 @@
   register: cl_crd
   no_log: true
 
-- name: "Fail if ClusterLogging CRD is not present"
-  ansible.builtin.fail:
-    msg: "ClusterLogging CRD is not present"
-  when: cl_crd.resources | list | count == 0
+#- name: "Fail if ClusterLogging CRD is not present"
+#  ansible.builtin.fail:
+#    msg: "ClusterLogging CRD is not present"
+#  when: cl_crd.resources | list | count == 0
 
 - name: "Get Storage Classes"
   community.kubernetes.k8s_info:
