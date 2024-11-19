@@ -1,0 +1,29 @@
+- name: Perform validations
+  ansible.builtin.include_tasks: pre-requisites.yaml
+
+- name: Install radvd
+  ansible.builtin.package:
+    name: radvd
+    state: present
+
+- name: Create sysctl file for ipv6 settings
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/ipv6.conf
+    src: sysctl.d/ipv6.conf
+    mode: "0644"
+    owner: root
+    group: root
+  notify: restart_service
+
+- name: Create radvd.conf file
+  ansible.builtin.template:
+    src: radvd.conf.j2
+    dest: "/etc/radvd.conf"
+    mode: "0644"
+  notify: restart_service
+
+- name: Start radv daemon
+  ansible.builtin.service:
+    name: radvd
+    state: started
+    enabled: true

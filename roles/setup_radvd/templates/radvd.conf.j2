@@ -1,0 +1,29 @@
+interface {{ setup_radvd_baremetal_bridge }}
+{
+    # When set, hosts use the administered (stateful) protocol for address autoconfiguration in addition to any addresses
+    # autoconfigured using stateless address autoconfiguration. The use of this flag is described in RFC 4862.
+    AdvManagedFlag on;
+    # A flag indicating whether or not the router sends periodic router advertisements and responds to router solicitations.
+    # It needs to be on to enable advertisement on this interface.
+    AdvSendAdvert on;
+    MinRtrAdvInterval {{ setup_radvd_min_interval }};
+    MaxRtrAdvInterval {{ setup_radvd_max_interval }};
+    AdvDefaultLifetime {{ setup_radvd_default_lifetime }};
+    prefix {{ setup_radvd_ipv6_network_cidr }}
+    {
+        # Indicates that this prefix can be used for on-link determination.
+        AdvOnLink on;
+        # Indicates that this prefix can be used for autonomous address configuration as specified in RFC 4862.
+        AdvAutonomous off;
+        # Indicates that the address of interface is sent instead of network prefix.
+        AdvRouterAddr on;
+    };
+    route ::/0 {
+        # The lifetime associated with the route in units of seconds.
+        AdvRouteLifetime {{ setup_radvd_default_lifetime }};
+        # The preference associated with the default router, as either "low", "medium", or "high".
+        AdvRoutePreference low;
+        # Upon shutdown, announce this route with a zero second lifetime.
+        RemoveRoute on;
+    };
+};

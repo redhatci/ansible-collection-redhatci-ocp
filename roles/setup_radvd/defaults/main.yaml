@@ -1,0 +1,12 @@
+# The interface name (usually a bridge) on which radvd will listen
+setup_radvd_baremetal_bridge: "baremetal"
+
+# The minimum time allowed between sending unsolicited multicast router advertisements from the interface, in seconds.
+setup_radvd_min_interval: 30
+
+# The maximum time allowed between sending unsolicited multicast router advertisements from the interface, in seconds.
+setup_radvd_max_interval: 100
+
+# The lifetime associated with the default router in units of seconds.
+# A lifetime of 0 indicates that the router is not a default router and should not appear on the default router list.
+setup_radvd_default_lifetime: 9000
