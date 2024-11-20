@@ -151,8 +151,8 @@
         - sub.resources is defined
         - sub.resources | length == 1
         - "'status' in sub.resources[0]"
-        - "'currentCSV' in sub.resources[0].status"
-        - sub.resources[0].status.currentCSV | length > 0
+        - sub.resources[0].status.installedCSV is defined
+        - sub.resources[0].status.installedCSV == operator_csv
 
     - name: Handle with a starting CSV
       when:
