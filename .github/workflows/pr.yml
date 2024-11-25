@@ -107,6 +107,7 @@ jobs:
         run: |
           set -x
           # Prefer using podman over docker
+          sudo apt-get update
           apt-get download podman-docker
           sudo dpkg --force-all -i podman-docker*.deb 2>/dev/null
           EXCLUDE="--exclude hack/ --exclude plugins/modules/nmcli.py"
