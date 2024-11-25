@@ -107,7 +107,9 @@
   delay: 15
 
 - name: Ensure the job completed successfully
+  vars:
+    query_complete: "status.conditions[?type=='Complete'].status"
   ansible.builtin.fail:
-    msg: "Job state is {{ job_state.resources[0].status.conditions[0].type }}"
-  when: job_state.resources[0].status.conditions[0].type != 'Complete'
+    msg: "Job state is {{ job_state.resources[0] | community.general.json_query(query_complete) }}"
+  when: "'True' not in job_state.resources[0] | community.general.json_query(query_complete)"
 ...
