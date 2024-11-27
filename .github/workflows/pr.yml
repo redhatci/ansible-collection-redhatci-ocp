@@ -12,6 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependent PRs if needed
+        uses: depends-on/depends-on-action@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -35,7 +40,7 @@ jobs:
           # fix randomness
           export PYTHONHASHSEED=42
           git checkout -b branch
-          git fetch --unshallow origin main
+          git fetch --unshallow origin main || :
           cmd="hack/ansible-lint.sh -d"
           # don't want to annotate through GHA
           unset GITHUB_ACTIONS
@@ -94,6 +99,12 @@ jobs:
         with:
           path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
 
+      - name: Install dependent PRs if needed
+        uses: depends-on/depends-on-action@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -112,7 +123,7 @@ jobs:
           sudo dpkg --force-all -i podman-docker*.deb 2>/dev/null
           EXCLUDE="--exclude hack/ --exclude plugins/modules/nmcli.py"
           git checkout -b branch
-          git fetch --unshallow origin main
+          git fetch --unshallow origin main || :
           # extract all the supported python versions from the error message, excluding 3.5
           PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
             grep -Po "invalid.*?\K'3.*\d'" |
@@ -166,6 +177,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install dependent PRs if needed
+        uses: depends-on/depends-on-action@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check roles are documented in main README
         run: |
