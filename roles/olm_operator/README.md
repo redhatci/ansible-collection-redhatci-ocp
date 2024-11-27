@@ -7,7 +7,7 @@ Role to deploy an OLM-based operator.
 Name                        | Required  | Default                | Description
 --------------------------- |-----------|------------------------|--------------------------------------
 channel                     | No        | \<defaultChannel\>     | The default channel of the operator is calculated and used when undefined
-install_approval            | No        | Manual                 | Operator install plan approval mode, either Automatic or Manual (default)
+install_approval            | No        | Manual                 | Operator install plan approval mode after initial installation, either Automatic or Manual
 namespace                   | Yes       | undefined              | Namespace where the operator will be installed
 ns_labels                   | No        | {}                     | Dictionary of labels (name: value) to be assigned to the operator namespace
 operator                    | Yes       | undefined              | Name of the operator to install
