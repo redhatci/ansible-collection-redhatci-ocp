@@ -127,6 +127,7 @@ Name | Description
 [redhatci.ocp.setup_mirror_registry](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_mirror_registry/README.md) | Deploys a local container registry
 [redhatci.ocp.setup_netobserv_stack](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_netobserv_stack/README.md) | Set up the OCP Network Observability subsystem
 [redhatci.ocp.setup_ntp](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_ntp/README.md) | Deploys chrony
+[redhatci.ocp.setup_radvd](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_radvd/README.md) | Deploys the router advertisement daemon (radvd) for IPV6 installations
 [redhatci.ocp.setup_selfsigned_cert](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_selfsigned_cert/README.md) | Generates self signed SSL certs
 [redhatci.ocp.setup_sushy_tools](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_sushy_tools/README.md) | deploys virtual redfish for kvm
 [redhatci.ocp.setup_tftp](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_tftp/README.md) | Deploys a TFTP server
