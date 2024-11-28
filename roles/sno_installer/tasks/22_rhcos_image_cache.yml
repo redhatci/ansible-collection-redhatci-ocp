@@ -20,11 +20,23 @@
     - ['httpd_sys_content_t']
   tags: cache
 
+- name: "Get status of the RHCOS image cache container"
+  containers.podman.podman_container:
+    name: sno_image_cache
+    image: "{{ webserver_caching_image }}"
+    state: started
+    publish:
+      - "{{ webserver_caching_port_container }}:8080"
+    volumes:
+      - "{{ si_cache_dir }}:/var/www/html"
+  check_mode: true
+  register: _si_image_cache_status
+
 # Leaving SELinux details alone and not using ":z"
 # for the si_cache_dir due to issues attempting
 # to revert context. Leaving behavior as it was previously
 # to avoid breaking other user environments.
-- name: "Start RHCOS image cache container"
+- name: "Create RHCOS image cache container"
   containers.podman.podman_container:
     name: sno_image_cache
     image: "{{ webserver_caching_image }}"
@@ -33,13 +45,17 @@
       - "{{ webserver_caching_port_container }}:8080"
     volumes:
       - "{{ si_cache_dir }}:/var/www/html"
-  register: rhcos_image_cache_info
+  register: _si_image_cache
+  when:
+    - _si_image_cache_status.changed # noqa: no-handler
   tags: cache
 
 - name: "Setting facts about container"
   ansible.builtin.set_fact:
-    rhcos_image_cache_name: "{{ rhcos_image_cache_info.container.Name }}"
-    rhcos_image_cache_pidfile: "{{ rhcos_image_cache_info.container.ConmonPidFile }}"
+    rhcos_image_cache_name: "{{ _si_container.Name }}"
+    rhcos_image_cache_pidfile: "{{ _si_container.ConmonPidFile }}"
+  vars:
+    _si_container: "{{ _si_image_cache_status.changed | ternary(_si_image_cache.container, _si_image_cache_status.container) }}"
   tags: cache
 
 - name: "Ensuring container restarts upon reboot"
@@ -75,6 +91,7 @@
         owner: "{{ si_cache_server_user_id }}"
         group: "{{ si_cache_server_user_gid }}"
         mode: '0644'
+      register: _si_service_unit
 
     - name: "Reload systemd service"
       ansible.builtin.systemd:
@@ -91,6 +108,16 @@
       environment:
         DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
 
+    - name: "Get status of the image cache service"
+      ansible.builtin.systemd:
+        name: container-cache.service
+        state: started
+        scope: user
+      environment:
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
+      check_mode: true
+      register: _si_cache_service_status
+
     - name: "Start container-cache.service"
       ansible.builtin.systemd:
         name: container-cache.service
@@ -98,6 +125,10 @@
         scope: user
       environment:
         DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
+      # Silenced ansible-lint rule "no-handler" since handlers would be run at
+      # the end of the playbook, but this task may be needed afterwards in the\
+      # same playbook.
+      when: _si_image_cache_status.changed or _si_service_unit.changed or _si_cache_service_status.changed # noqa: no-handler
 
     - name: "Allow HTTP cache traffic"
       ansible.posix.firewalld:
