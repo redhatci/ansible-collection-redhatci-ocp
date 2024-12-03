@@ -7,11 +7,6 @@
         channel: "{{ ecd_testpmd_channel }}"
         source: "{{ ecd_catalog_name }}"
         enable: "{{ ecd_enable_mac_fetch | bool}}"
-      - name: testpmd-lb-operator
-        namespace: "{{ ecd_cnf_namespace }}"
-        channel: "{{ ecd_testpmd_channel }}"
-        source: "{{ ecd_catalog_name }}"
-        enable: "{{ ecd_enable_lb | bool}}"
       - name: testpmd-operator
         namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ ecd_testpmd_channel }}"

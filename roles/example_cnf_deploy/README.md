@@ -26,7 +26,6 @@ Also, exported `kubeconfig` file is required to run the Ansible tasks on the tar
 | ecd_oc_path                           | /usr/local/bin/oc                                                                               | no       | File path to find the oc binary |
 | ecd_opm_path                          | /usr/local/bin/opm                                                                              | no       | File path to find the opm binary |
 | ecd_job_logs_path                     | /tmp                                                                                            | no       | File path to find the logs folder |
-| ecd_enable_lb                         | true                                                                                            | no       | Enable LoadBalancer, to deploy TestPMD LoadBalancer |
 | ecd_enable_mac_fetch                  | true                                                                                            | no       | Enable MAC fetch, which implies the creation of the CNFAppMac CR |
 | ecd_enable_testpmd                    | true                                                                                            | no       | Enable TestPMD, also known as CNFApp |
 | ecd_enable_trex                       | true                                                                                            | no       | Enable TRex server, to send traffic to TestPMD |
@@ -34,12 +33,9 @@ Also, exported `kubeconfig` file is required to run the Ansible tasks on the tar
 | ecd_testpmd_channel                   | alpha                                                                                           | no       | TestPMD operators channel |
 | ecd_trex_channel                      | alpha                                                                                           | no       | TRex operator channel |
 | ecd_trex_mac_list                     | ["20:04:0f:f1:89:01","20:04:0f:f1:89:02"]                                                       | no       | Static MAC addresses used by TRex |
-| ecd_lb_gen_port_mac_list              | ["40:04:0f:f1:89:01","40:04:0f:f1:89:02"]                                                       | no       | Static MAC addresses used by the LoadBalancer in its connection with TRex |
-| ecd_lb_cnf_port_mac_list              | ["60:04:0f:f1:89:01","60:04:0f:f1:89:02"]                                                       | no       | Static MAC addresses used by the LoadBalancer in its connection with CNFApp |
 | ecd_testpmd_app_mac_list              | ["80:04:0f:f1:89:01","80:04:0f:f1:89:02"]                                                       | no       | Static MAC addresses used by CNFApp |
-| ecd_cnf_app_networks                  | []                                                                                              | yes      | Connection between LB-CNF in LB mode (or TRex-CNF in direct mode) |
-| ecd_packet_generator_networks         | []                                                                                              | yes      | Connection between TRex-LB in LB mode (not used in direct mode). Required in LB mode |
-| ecd_networks_testpmd_app              | []                                                                                              | no       | Networks for the CNF, including the hardcoded MAC addresses for direct mode case |
+| ecd_sriov_networks                    | []                                                                                              | yes      | SRIOV networks used in the connection between TRex and CNF Application, together with the number of interfaces to be used per network. See example above
+| ecd_networks_testpmd_app              | []                                                                                              | no       | Networks for the CNF, including the hardcoded MAC addresses |
 | ecd_termination_grace_period_seconds  | 30                                                                                              | no       | Termination grace period for TestPMD |
 | ecd_trex_test_config                  | []                                                                                              | no       | TRex test configuration. See an example below |
 | ecd_trex_cr_name                      | trexconfig                                                                                      | no       | Name of the TRex CR |
@@ -54,8 +50,8 @@ Also, exported `kubeconfig` file is required to run the Ansible tasks on the tar
 | ecd_trex_job_failed                   | false                                                                                           | no       | Track if TRex job has failed or not |
 | ecd_trex_tests_skip_failures          | false                                                                                           | no       | If set to true, even if TRex job fails, the job will progress |
 | ecd_try_running_migration_tests       | true                                                                                            | no       | The idea is always to try to run the migration test, unless TRex job failed before |
-| ecd_numa_aware_topology               | None                                                                                            | no       | If defined, allows to provide the NUMA aware topology for LoadBalancer, TestPMD and TRexServer CRs |
-| ecd_high_perf_runtime                 | None                                                                                            | no       | If defined, allows to provide the RuntimeClass name for LoadBalancer, TestPMD, TRexApp and TRexServer CRs |
+| ecd_numa_aware_topology               | None                                                                                            | no       | If defined, allows to provide the NUMA aware topology for TestPMD and TRexServer CRs |
+| ecd_high_perf_runtime                 | None                                                                                            | no       | If defined, allows to provide the RuntimeClass name for TestPMD, TRexApp and TRexServer CRs |
 | ecd_trex_app_version                  | None                                                                                            | yes      | TRexApp version, required in deploy_extra_trex action |
 
 ## SR-IOV configuration
@@ -114,7 +110,7 @@ Each action allows you to do different operations with the example-cnf workload:
 - deploy: allows you to deploy the example-cnf operators and workloads.
 - validate: performs validations to the example-cnf workloads to address specific scenarios, e.g. validations after cluster upgrade.
 - deploy_extra_trex: gives you the chance to create a new TRex job, in an already deployed example-cnf instance.
-- draining: while a TRex job is running, runs a node cordoning-draining, selecting the node where TestPMD is running, then it measures the downtime in the TRex job and the packet loss. Only used in direct mode.
+- draining: while a TRex job is running, runs a node cordoning-draining, selecting the node where TestPMD is running, then it measures the downtime in the TRex job and the packet loss.
 
 ### Examples
 
@@ -137,15 +133,10 @@ Each action allows you to do different operations with the example-cnf workload:
 - name: Deploy the Example CNF applications
   vars:
     ecd_action: "deploy"
-    ecd_cnf_app_networks:
-      - name: intel-numa0-net1
+    ecd_sriov_networks:
+      - name: example-cnf-net1
         count: 1
-      - name: intel-numa0-net2
-        count: 1
-    ecd_packet_generator_networks:
-      - name: intel-numa0-net3
-        count: 1
-      - name: intel-numa0-net4
+      - name: example-cnf-net2
         count: 1
     ecd_operator_version: "latest"
     ecd_high_perf_runtime: "performance-blueprint"

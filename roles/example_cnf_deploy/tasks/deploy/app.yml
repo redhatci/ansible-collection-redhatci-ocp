@@ -32,59 +32,19 @@
     msg: "Minimum 2 worker nodes are required to run example-cnf applications"
   when: "_ecd_nodes.resources|length < 2"
 
-- name: "Fail when packet generator network is not available"
+- name: "Fail when SRIOV networks info is not available"
   ansible.builtin.fail:
-    msg: "'ecd_packet_generator_networks' is required when deployed with LB"
+    msg: "'ecd_sriov_networks' is required"
   when:
-    - "ecd_enable_lb|bool"
-    - "ecd_packet_generator_networks|length == 0"
-
-- name: "Fail when cnf app networks is not available"
-  ansible.builtin.fail:
-    msg: "'ecd_cnf_app_networks' is required"
-  when:
-    - "ecd_cnf_app_networks|length == 0"
-
-- name: "Set facts of modifying networks"
-  ansible.builtin.set_fact:
-    ecd_pack_nw: []
-    ecd_cnf_nw: []
-  when: ecd_enable_lb|bool
-
-- name: "Create packet gen network list for lb with hardcoded macs"
-  ansible.builtin.set_fact:
-    ecd_pack_nw: "{{ ecd_pack_nw + [ item | combine({'mac': ecd_lb_gen_port_mac_list[idx:idx+item.count]})] }}"
-  loop: "{{ ecd_packet_generator_networks }}"
-  loop_control:
-    index_var: idx
-  when: ecd_enable_lb|bool
-
-- name: "Create cnf app network list for lb with hardcoded macs"
-  ansible.builtin.set_fact:
-    ecd_cnf_nw: "{{ ecd_cnf_nw + [ item | combine({'mac': ecd_lb_cnf_port_mac_list[idx:idx+item.count]})] }}"
-  loop: "{{ ecd_cnf_app_networks }}"
-  loop_control:
-    index_var: idx
-  when: ecd_enable_lb|bool
-
-- name: "Include lb tasks"
-  ansible.builtin.include_tasks: deploy/lb-app.yml
-  when: ecd_enable_lb|bool
-
-# In this case, do not include hardcoded MAC addresses
-- name: "(LB mode) Set local fact for cnf-app pod networks"
-  ansible.builtin.set_fact:
-    ecd_networks_testpmd_app: "{{ ecd_cnf_app_networks }}"
-  when: ecd_enable_lb|bool
+    - "ecd_sriov_networks|length == 0"
 
 # In this case, include hardcoded MAC addresses
-- name: "(Direct mode) Create network list for cnfapp with hardcoded macs"
+- name: "Create network list for cnfapp with hardcoded macs"
   ansible.builtin.set_fact:
     ecd_networks_testpmd_app: "{{ ecd_networks_testpmd_app + [item | combine({'mac': ecd_testpmd_app_mac_list[idx:idx+item.count]})] }}"
-  loop: "{{ ecd_cnf_app_networks }}"
+  loop: "{{ ecd_sriov_networks }}"
   loop_control:
     index_var: idx
-  when: not ecd_enable_lb|bool
 
 - name: "Create cr for cnf application"
   community.kubernetes.k8s:

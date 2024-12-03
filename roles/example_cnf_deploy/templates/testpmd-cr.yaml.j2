@@ -6,13 +6,8 @@ metadata:
 spec:
   privileged: false
   imagePullPolicy: {{ ecd_image_pull_policy }}
-{% if ecd_enable_lb|bool %}
-  ethpeerMaclist: {{ ecd_lb_cnf_port_mac_list }}
-  size: {{ ecd_testpmd_app_size|default(2) }}
-{% else %}
   ethpeerMaclist: {{ ecd_trex_mac_list }}
   size: 1  
-{% endif %}
   networks: {{ ecd_networks_testpmd_app }}
   terminationGracePeriodSeconds: {{ ecd_termination_grace_period_seconds }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
