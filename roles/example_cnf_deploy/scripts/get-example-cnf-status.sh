@@ -42,7 +42,7 @@ done
 
 echo
 echo "--- CR status ---"
-CRS="cnfappmac loadbalancer testpmd trexconfig trexapp"
+CRS="cnfappmac testpmd trexconfig trexapp"
 for CR in $CRS; do 
    echo "> Status of $CR"
    $OC_BINARY get "$CR" -n "$APP_NAMESPACE"

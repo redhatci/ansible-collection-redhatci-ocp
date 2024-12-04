@@ -20,13 +20,9 @@ spec:
   org: {{ ecd_repo_name }}
   version: {{ ecd_trex_app_version }}
   imagePullPolicy: {{ ecd_image_pull_policy }}
-  enableLb: {{ ecd_enable_lb }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
   runtime_class_name: "{{ ecd_high_perf_runtime }}"
 {% endif %}
-{% if ecd_enable_lb|bool %}  
-  lbMacs: {{ ecd_lb_gen_port_mac_list }}
-{% endif %}  
   trexProfileConfigMap: {{ ecd_trex_profile_cm_name|default('') }}
   trexProfileName: {{ ecd_trex_profile_name|default('') }}
   trexApp: false

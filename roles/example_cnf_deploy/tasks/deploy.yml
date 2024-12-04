@@ -26,12 +26,6 @@
   when: '"trex-container-server@" in item'
   loop: "{{ _ecd_catalog_data_cmd.stdout_lines }}"
 
-- name: "Set testpmd-lb version from the catalog"
-  ansible.builtin.set_fact:
-    ecd_testpmd_app_version: "{{ item }}"
-  when: '"testpmd-container-app-testpmd@" in item'
-  loop: "{{ _ecd_catalog_data_cmd.stdout_lines }}"
-
 - name: "Installation of example-cnf operators"
   ansible.builtin.include_tasks: deploy/sub.yml
 

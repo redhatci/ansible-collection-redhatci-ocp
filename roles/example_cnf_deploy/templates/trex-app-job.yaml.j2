@@ -25,9 +25,7 @@ spec:
 {% endif %}
         env:
         - name: MODE
-          value: "{{ 'lb' if ecd_enable_lb else 'direct' }}"
-        - name: LB_MACS
-          value: "{{ ecd_lb_gen_port_mac_list|join(',') }}"
+          value: "direct"
         - name: CR_NAME
           value: "{{ ecd_trex_app_job_name }}"
         - name: NODE_NAME

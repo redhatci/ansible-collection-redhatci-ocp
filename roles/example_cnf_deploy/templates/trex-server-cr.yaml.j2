@@ -15,10 +15,6 @@ spec:
   version: {{ ecd_trex_server_version }}
   imagePullPolicy: {{ ecd_image_pull_policy }}
   networks: {{ ecd_networks_trex }}
-  enableLb: {{ ecd_enable_lb }}
-{% if ecd_enable_lb|bool %}  
-  lbMacs: {{ ecd_lb_gen_port_mac_list }}
-{% endif %}  
   cpu: 6
 {% if ecd_trex_config_skip|default(false)|bool %}
   trex_config_skip: true

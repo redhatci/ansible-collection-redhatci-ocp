@@ -14,7 +14,7 @@
     - name: Set local fact for trex pod networks
       ansible.builtin.set_fact:
         ecd_networks_trex: []
-        ecd_packet_gen_net: "{{ ecd_packet_generator_networks if ecd_enable_lb | bool else ecd_cnf_app_networks }}"
+        ecd_packet_gen_net: "{{ ecd_sriov_networks }}"
 
     - name: Create network list for trex with hardcoded macs
       ansible.builtin.set_fact:

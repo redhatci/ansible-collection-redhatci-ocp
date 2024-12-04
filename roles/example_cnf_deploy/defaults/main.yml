@@ -19,7 +19,6 @@ ecd_opm_path: /usr/local/bin/opm
 ecd_job_logs_path: /tmp
 
 # Operators/apps to enable
-ecd_enable_lb: true
 ecd_enable_mac_fetch: true
 ecd_enable_testpmd: true
 ecd_enable_trex: true
@@ -33,23 +32,14 @@ ecd_trex_channel: alpha
 ecd_trex_mac_list:
   - "20:04:0f:f1:89:01"
   - "20:04:0f:f1:89:02"
-ecd_lb_gen_port_mac_list:
-  - "40:04:0f:f1:89:01"
-  - "40:04:0f:f1:89:02"
-ecd_lb_cnf_port_mac_list:
-  - "60:04:0f:f1:89:01"
-  - "60:04:0f:f1:89:02"
-## These ones are only used in the direct mode case
 ecd_testpmd_app_mac_list:
   - "80:04:0f:f1:89:01"
   - "80:04:0f:f1:89:02"
 
 # Variables for gathering the network info from the scenario
-## Connection between LB-CNF in LB mode (or TRex-CNF in direct mode)
-ecd_cnf_app_networks: []
-## Connection between TRex-LB in LB mode (not used in direct mode)
-ecd_packet_generator_networks: []
-## Networks for the CNF, including the hardcoded MAC addresses for direct mode case
+## SRIOV networks used in the connection between TRex and CNF Application, together with the number of interfaces to be used per network
+ecd_sriov_networks: []
+## Networks for the CNF, including the hardcoded MAC addresses
 ecd_networks_testpmd_app: []
 
 # RuntimeClass that should be used for running DPDK application,
