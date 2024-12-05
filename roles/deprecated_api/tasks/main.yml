@@ -3,7 +3,7 @@
   ansible.builtin.include_tasks: ensure_ocp_version.yml
 
 - name: "Discover all namespaces"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Namespace
   register: _da_cluster_namespaces
 
