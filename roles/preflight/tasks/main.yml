@@ -60,6 +60,8 @@
     - name: Create a DCI component from Preflight image
       ansible.builtin.include_role:
         name: redhatci.ocp.include_components
+        apply:
+          delegate_to: localhost
       vars:
         ic_commit_urls:
           - "{{ preflight_repo_https }}/commit/{{ preflight_commit_id.stdout }}"

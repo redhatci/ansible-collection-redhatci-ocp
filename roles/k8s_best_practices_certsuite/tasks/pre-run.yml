@@ -198,6 +198,8 @@
     - name: Create DCI component for certsuite
       ansible.builtin.include_role:
         name: redhatci.ocp.include_components
+        apply:
+          delegate_to: localhost
       vars:
         ic_gits: # noqa: redhat-ci[no-role-prefix]
           - "{{ kbpc_certsuite_dir }}"
