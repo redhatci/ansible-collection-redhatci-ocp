@@ -10,7 +10,7 @@
     - acm_machine_cidr
 
 - name: "Create a managed cluster namespace"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
@@ -46,7 +46,7 @@
           {{ acm_user_registry | indent(4) }}
         ca-bundle.crt: |
           {{ acm_user_ca_bundle | indent(4) }}
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ cm_def }}"
     namespace: multicluster-engine
@@ -55,7 +55,7 @@
     - inherit_mirroring | bool
 
 - name: "Check the AgentServiceConfig instance"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: agent-install.openshift.io/v1beta1
     kind: AgentServiceConfig
     name: agent
@@ -81,13 +81,13 @@
         osImages: "{{ asg.resources[0].spec.osImages + [os_images] }}"
         mirrorRegistryRef:
             name: mirror-registry-config-map
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ as_def }}"
   when: (asg.resources | length == 1)
 
 - name: "Wait for assisted-image-service pods to be Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     label_selectors:
@@ -103,7 +103,7 @@
   no_log: true
 
 - name: "Wait for assisted-service to be Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     label_selectors:
@@ -119,7 +119,7 @@
   no_log: true
 
 - name: "Validate the Service config volumes binding"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: PersistentVolumeClaim
     namespace: "multicluster-engine"
@@ -129,7 +129,7 @@
   delay: 15
 
 - name: "Set pull secret for Assisted installer and Cluster deployment"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Secret
@@ -145,7 +145,7 @@
     img_release: "{{ lookup('password', '/dev/null length=15 chars=ascii_lowercase,digits') }}"
 
 - name: "Create the ClusterImageSet"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: hive.openshift.io/v1
       kind: ClusterImageSet
@@ -160,7 +160,7 @@
 
 # Keeping some placeholders related to IPv6 configuration
 - name: "Create the Agent cluster install"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: extensions.hive.openshift.io/v1beta1
       kind: AgentClusterInstall
@@ -190,7 +190,7 @@
         sshPublicKey: "{{ acm_ssh_key }}"
 
 - name: "Request the cluster deployment"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: hive.openshift.io/v1
       kind: ClusterDeployment
@@ -217,7 +217,7 @@
           name: "pullsecret-{{ acm_cluster_name }}"
 
 - name: "Create KlusterletAddonConfig"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: agent.open-cluster-management.io/v1
       kind: KlusterletAddonConfig
@@ -242,7 +242,7 @@
           enabled: false
 
 - name: "Create ManagedCluster"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: cluster.open-cluster-management.io/v1
       kind: ManagedCluster
@@ -293,7 +293,7 @@
     - acm_disconnected | bool
 
 - name: "Create the InfraEnv"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: agent-install.openshift.io/v1beta1
       kind: InfraEnv
@@ -320,7 +320,7 @@
         ignitionConfigOverride: "{{ ignition_config | default(omit) }}"
 
 - name: "Wait for the boot ISO creation"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: agent-install.openshift.io/v1beta1
     kind: InfraEnv
     name: "{{ acm_cluster_name }}-infra"
@@ -333,7 +333,7 @@
   delay: 6
 
 - name: "BMC credentials"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       data:
@@ -346,7 +346,7 @@
       type: Opaque
 
 - name: "Create BareMetalHost"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: metal3.io/v1alpha1
       kind: BareMetalHost
@@ -369,7 +369,7 @@
         online: true
 
 - name: "Wait for the Host Provisioning"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: metal3.io/v1alpha1
     kind: BareMetalHost
     name: "{{ acm_cluster_name }}"

@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.23.EPOCH
+Version:        0.24.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -21,6 +21,7 @@ Requires: ansible-collection-community-general
 Requires: ansible-collection-community-kubernetes
 Requires: ansible-collection-community-libvirt
 Requires: ansible-collection-containers-podman
+Requires: ansible-collection-kubernetes-core
 Requires: git
 Requires: jq
 Requires: podman
@@ -52,6 +53,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Dec  6 2024 Tony Garcia <tonyg@redhat.com> - 0.24.EPOCH-VERS
+- Introduce kubernetes.core collection as a dependency package
+
 * Wed Oct 16 2024 Tony Garcia <tonyg@redhat.com> - 0.23.EPOCH-VERS
 - Repurpose oc_setup role, into ocp_add_users role
 
