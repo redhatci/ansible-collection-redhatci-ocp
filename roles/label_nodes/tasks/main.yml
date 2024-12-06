@@ -1,6 +1,6 @@
 ---
 - name: Label nodes
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'node_label.yml') | from_yaml }}"
   loop: "{{ hosts_list }}"
   loop_control:

@@ -7,7 +7,7 @@
     - acm_cluster_name
 
 - name: "Delete managed cluster"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: cluster.open-cluster-management.io/v1
     kind: ManagedCluster
@@ -15,7 +15,7 @@
     namespace: "{{ acm_cluster_name }}"
 
 - name: "Delete cluster deployment"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api: hive.openshift.io/v1
     state: absent
     kind: ClusterDeployment
@@ -23,7 +23,7 @@
     namespace: "{{ acm_cluster_name }}"
 
 - name: "Disable BMC credentials finalizers"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Secret
@@ -35,7 +35,7 @@
   ignore_errors: true
 
 - name: "Delete BMC credentials"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: v1
     kind: Secret
@@ -44,7 +44,7 @@
   ignore_errors: true
 
 - name: "Disable BMH finalizers"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: metal3.io/v1alpha1
       kind: BareMetalHost
@@ -55,7 +55,7 @@
   ignore_errors: true
 
 - name: "Delete bare-metal host"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: metal3.io/v1alpha1
     kind: BareMetalHost
@@ -63,7 +63,7 @@
     namespace: "{{ acm_cluster_name }}"
 
 - name: "Wait for BMH to be deprovisioned"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: metal3.io/v1alpha1
     kind: BareMetalHost
     name: "{{ acm_cluster_name }}"
@@ -76,7 +76,7 @@
   delay: 15
 
 - name: "Delete infraEnv"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: agent-install.openshift.io/v1beta1
     kind: InfraEnv
@@ -85,7 +85,7 @@
   ignore_errors: true
 
 - name: "Delete agent cluster install"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: extensions.hive.openshift.io/v1beta1
     kind: AgentClusterInstall
@@ -93,7 +93,7 @@
     namespace: "{{ acm_cluster_name }}"
 
 - name: "Delete klusterlet addon config"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: agent.open-cluster-management.io/v1
     kind: KlusterletAddonConfig
@@ -101,14 +101,14 @@
     namespace: "{{ acm_cluster_name }}"
 
 - name: "Delete cluster namespace"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: v1
     kind: Namespace
     name: "{{ acm_cluster_name }}"
 
 - name: "Wait for cluster namespace to be deleted"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: Namespace
     name: "{{ acm_cluster_name }}"
