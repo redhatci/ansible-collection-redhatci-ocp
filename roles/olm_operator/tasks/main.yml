@@ -140,7 +140,7 @@
 
     - name: Approve the install plan for the desired StartingCSV
       when:
-        - starting_csv | default('') | length
+        - starting_csv | default('') | length > 0
       block:
         - name: Get created install plans
           community.kubernetes.k8s_info:
