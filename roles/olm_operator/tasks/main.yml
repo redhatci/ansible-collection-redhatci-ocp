@@ -130,13 +130,45 @@
             namespace: "{{ namespace }}"
           spec:
             channel: "{{ desired_channel }}"
-            installPlanApproval: "Automatic"
+            installPlanApproval: "{{ (starting_csv | default('') | length) | ternary('Manual', 'Automatic') }}"
             config:
               resources: {}
             name: "{{ operator }}"
             source: "{{ source }}"
             sourceNamespace: "{{ source_ns }}"
             startingCSV: "{{ operator_csv }}"
+
+    - name: Approve the install plan for the desired StartingCSV
+      when:
+        - starting_csv | default('') | length
+      block:
+        - name: Get created install plans
+          community.kubernetes.k8s_info:
+            api: operators.coreos.com/v1alpha1
+            kind: InstallPlan
+            namespace: "{{ namespace }}"
+          register: _oo_install_plans
+          retries: 5
+          delay: 5
+          until:
+            - _oo_install_plans.resources is defined
+            - _oo_install_plans.resources | length
+
+        - name: Approve the install plan for the specific CSV
+          vars:
+            query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ starting_csv }}')]"
+          community.kubernetes.k8s:
+            definition:
+              apiVersion: operators.coreos.com/v1alpha1
+              kind: InstallPlan
+              metadata:
+                name: "{{ install_plan.metadata.name }}"
+                namespace: "{{ namespace }}"
+              spec:
+                approved: true
+          loop: "{{ _oo_install_plans | json_query(query) }}"
+          loop_control:
+            loop_var: install_plan
 
     - name: Wait for CSV to be ready
       community.kubernetes.k8s_info:
