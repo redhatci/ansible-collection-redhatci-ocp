@@ -157,7 +157,6 @@
         - name: Approve the install plan for the specific CSV
           vars:
             query: "resources[? !spec.approved && contains(spec.clusterServiceVersionNames, '{{ starting_csv }}')]"
-``
           community.kubernetes.k8s:
             definition:
               apiVersion: operators.coreos.com/v1alpha1
