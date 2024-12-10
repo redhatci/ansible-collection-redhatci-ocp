@@ -10,7 +10,7 @@
     - acm_disconnected | bool
 
 - name: "Check if the ACM CRD is present"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: multiclusterengines.multicluster.openshift.io
   register: acm_crd
@@ -21,7 +21,7 @@
   when: acm_crd.resources | list | count == 0
 
 - name: "Check the AgentServiceConfig instance"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: agent-install.openshift.io/v1beta1
     kind: AgentServiceConfig
     name: agent
@@ -37,14 +37,14 @@
     - acm_vm_external_network | bool
   block:
     - name: "Get provisioning configuration"
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: metal3.io/v1alpha1
         kind: Provisioning
         name: provisioning-configuration
       register: provisioning_cr
 
     - name: "Allow to expose virtual media via external network"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: metal3.io/v1alpha1
           kind: Provisioning

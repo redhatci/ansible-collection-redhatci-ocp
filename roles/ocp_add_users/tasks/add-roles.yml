@@ -3,7 +3,7 @@
   vars:
     user: "{{ item.split(':')[0] }}"
     role: "{{ item.split(':')[1] }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: rbac.authorization.k8s.io/v1

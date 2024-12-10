@@ -31,7 +31,7 @@
     - ol_storage_class
 
 - name: "Get cluster version"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: config.openshift.io/v1
     kind: ClusterVersion
     name: version
@@ -48,7 +48,7 @@
   when: ocp_version is version( ol_ocp_supported , "<")
 
 - name: "Check if the Loki CRD is present"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: lokistacks.loki.grafana.com
   register: loki_crd
@@ -60,7 +60,7 @@
   when: loki_crd.resources | list | count == 0
 
 - name: "Check if the ClusterLogging CRD is present"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: clusterloggings.logging.openshift.io
   register: cl_crd
@@ -72,7 +72,7 @@
   when: cl_crd.resources | list | count == 0
 
 - name: "Get Storage Classes"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: StorageClass
     name: "{{ ol_storage_class }}"
