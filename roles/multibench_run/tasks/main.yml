@@ -42,15 +42,56 @@
 # The script launch a crucible cmd which start to build the container images used for the tests.
 # Then, the infrastructure is deployed in a dedicated namespace called crucible-rickshaw.
 # Once the tests are finished, the results are published in an OpenSearch DB and a summary is generated.
-- name: "Launch multibench workload"
-  ansible.builtin.shell:
-    cmd: >
-      ./{{ multibench_script }} config.ini
-    chdir: "{{ multibench_script_dir }}"
-    executable: /bin/bash
-  register: _multibench_run_out
-  delegate_to: "{{ multibench_host }}"
-  become: true
+- name: "Run and manage multibench workload"
+  block:
+    - name: "First try on launching multibench workload"
+      ansible.builtin.shell:
+        cmd: >
+          ./{{ multibench_script }} config.ini
+        chdir: "{{ multibench_script_dir }}"
+      delegate_to: "{{ multibench_host }}"
+      become: true
+
+  rescue:
+    - name: "Delete the output directory"
+      ansible.builtin.file:
+        path: "{{ multibench_run_output_dir.path | default('/tmp/multibench') }}"
+        state: absent
+
+    - name: "Create a new temporary directory"
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: multibench
+      register: _multibench_run_output
+
+    - name: "Set the new directory as multibench_run_output_dir"
+      ansible.builtin.set_fact:
+        multibench_run_output_dir: _multibench_run_output
+
+    - name: "Delete the crucible-rickshaw namespace and its resources"
+      community.kubernetes.k8s:
+        state: absent
+        api: v1
+        kind: Namespace
+        name: crucible-rickshaw
+
+    - name: "Wait for namespace to be deleted"
+      community.kubernetes.k8s_info:
+        api: v1
+        kind: Namespace
+        name: crucible-rickshaw
+      register: _multibench_run_namespace_info
+      until: _multibench_run_namespace_info.resources | length == 0
+      retries: 10
+      delay: 5
+
+    - name: "Retry launching the multibench workload"
+      ansible.builtin.shell:
+        cmd: >
+          ./{{ multibench_script }} config.ini
+        chdir: "{{ multibench_script_dir }}"
+      delegate_to: "{{ multibench_host }}"
+      become: true
 
 # The Summary is copied on the Ansible controller.
 # If you need to collect specific data, you can connect to the multibench_host and launch some crucible cmd.
