@@ -145,8 +145,8 @@
         namespace: "{{ namespace }}"
       register: _oo_install_plans
       no_log: true
-      retries: 5
-      delay: 5
+      retries: 6
+      delay: 15
       until:
         - _oo_install_plans.resources is defined
         - _oo_install_plans.resources | length
