@@ -2,7 +2,7 @@
   ansible.builtin.file:
     path: "{{ generated_dir }}/containers/"
     state: directory
-    mode: 0755
+    mode: '0755'
     recurse: true
 
 - name: Copy pull_secrets file.
@@ -12,22 +12,24 @@
     mode: "0644"
     remote_src: true
 
-- name: Generate an ISO and print message if there is a failure
-  block:
-    - name: Generate ISO
-      ansible.builtin.shell:
-        cmd: "{{ agent_based_installer_path }} --log-level=debug agent create image"
-        chdir: "{{ manifests_dir }}"
-      environment:
-        XDG_RUNTIME_DIR: "{{ generated_dir }}"
-      register: gen_iso
-  rescue:
-    - name: Print message about nmstate package missing
-      fail:
-        msg: "nmstate package missing in the bastion. See Dependencies section in README.md for more details."
-      when:
-        - gen_iso.stderr is defined
-        - gen_iso.stderr | regex_search("nmstatectl(.*) executable file not found")
+- name: Fail if required nmstatectl is not installed
+  ansible.builtin.command: type nmstatectl
+  register: _gai_nmstatectl_check
+  failed_when: _gai_nmstatectl_check.rc != 0
+  changed_when: _gai_nmstatectl_check.rc != 0
+
+- name: Generate agent ISO
+  ansible.builtin.command:
+    cmd: "{{ agent_based_installer_path }} --log-level=debug agent create image"
+    chdir: "{{ manifests_dir }}"
+  environment:
+    XDG_RUNTIME_DIR: "{{ generated_dir }}"
+  changed_when: _gai_gen_iso.rc != 0
+  register: _gai_gen_iso
+  retries: 3
+  delay: 15
+  until:
+    - _gai_gen_iso.rc == 0
 
 - name: Put discovery iso in http store
   delegate_to: http_store
@@ -43,4 +45,4 @@
       ansible.builtin.copy:
         src: "{{ manifests_dir }}/agent.{{ arch }}.iso"
         dest: "{{ download_dest_path }}/{{ download_agent_dest_file }}"
-        mode: 0644
+        mode: '0644'
