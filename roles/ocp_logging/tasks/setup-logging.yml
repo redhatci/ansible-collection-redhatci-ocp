@@ -1,6 +1,6 @@
 ---
 - name: "Setting Object Storage authentication"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Secret
@@ -15,7 +15,7 @@
         region: "{{ ol_region }}"
 
 - name: "Create a Loki Stack"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: loki.grafana.com/v1
       kind: LokiStack
@@ -36,7 +36,7 @@
           mode: "{{ ol_namespace }}"
 
 - name: "Create ClusterLogging instance"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: logging.openshift.io/v1
       kind: ClusterLogging
@@ -53,7 +53,7 @@
           type: vector
 
 - name: "Configuring RBACs"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: |
       apiVersion: v1
       kind: ServiceAccount
@@ -94,7 +94,7 @@
           }
 
 - name: "Create event router deployment"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: apps/v1
       kind: Deployment
@@ -138,7 +138,7 @@
                 name: config-volume
 
 - name: "Configure ClusterLogForwarder instance"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: logging.openshift.io/v1
       kind: ClusterLogForwarder
@@ -156,7 +156,7 @@
               - default
 
 - name: "Enable the Console logging-view-plugin"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: operator.openshift.io/v1
       kind: Console
