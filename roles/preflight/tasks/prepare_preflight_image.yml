@@ -15,6 +15,7 @@
     src: "{{ preflight_source_dir }}/"
     dest: "{{ preflight_tmp_dir.path }}/preflight-source/"
     mode: "0755"
+    remote_src: true
 
 - name: Set preflight_image name
   ansible.builtin.set_fact:
