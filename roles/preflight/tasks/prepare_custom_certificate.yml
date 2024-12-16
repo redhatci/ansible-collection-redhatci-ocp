@@ -19,12 +19,14 @@
     src: "{{ preflight_custom_ca }}"
     dest: "{{ preflight_ca_tmp_dir.path }}/ca.crt"
     mode: "0644"
+    remote_src: true
 
 - name: Copy ca in trusted directory
   ansible.builtin.copy:
     src: "{{ preflight_custom_ca }}"
     dest: "/etc/pki/ca-trust/source/anchors/preflight_ca.crt"
     mode: "0644"
+    remote_src: true
   become: true
 
 - name: Update trusted ca

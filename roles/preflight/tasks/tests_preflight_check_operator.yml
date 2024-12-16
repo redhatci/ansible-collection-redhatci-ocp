@@ -113,6 +113,7 @@
     src: "{{ item }}"
     dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
     mode: "0644"
+    remote_src: true
   with_fileglob:
     - "{{ preflight_operator_artifacts.path }}/*"
 

@@ -12,6 +12,7 @@
         src: "{{ partner_creds }}"
         dest: "{{ preflight_tmp_dir.path }}/config.json"
         mode: "0644"
+        remote_src: true
       when: partner_creds | length
 
     # Use custom certificate for self sign registry
