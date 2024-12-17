@@ -272,7 +272,7 @@
     - name: Create container to serve the registry
       containers.podman.podman_container:
         name: "{{ pod_name_registry }}"
-        image: docker.io/library/registry:2
+        image: mirror.gcr.io/library/registry:2
         state: stopped
         network: host
         volumes:
