@@ -15,8 +15,11 @@
   uri:
     url: "{{ http_host }}/{{ test_file_name }}"
     return_content: true
-  register: response
+  register: _vhs_response
   delegate_to: bastion
+  retries: 10
+  delay: 3
+  until: _vhs_response.status == 200
 
 - name: Check content matches
   assert:
