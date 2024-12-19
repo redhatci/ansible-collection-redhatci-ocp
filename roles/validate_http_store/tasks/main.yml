@@ -1,8 +1,4 @@
 ---
-- name: Create a random name for the test file
-  ansible.builtin.set_fact:
-    vhs_test_file_name: "{{ lookup('password', '/dev/null length=12 chars=ascii_letters,digits') }}"
-
 - name: Set test file contents
   set_fact:
     contents: "{{ lookup('template', 'test_file.j2') }}"
@@ -10,7 +6,7 @@
 - name: Copy file to http_store
   copy:
     content: "{{ contents }}"
-    dest: "{{ http_store_dir }}/{{ vhs_test_file_name }}"
+    dest: "{{ http_store_dir }}/{{ test_file_name }}"
     mode: 0644
     setype: httpd_sys_content_t
   become: true
@@ -18,7 +14,7 @@
 
 - name: Retrieve file from http_store
   uri:
-    url: "{{ http_host }}/{{ vhs_test_file_name }}"
+    url: "{{ http_host }}/{{ test_file_name }}"
     return_content: true
   register: _vhs_response
   delegate_to: bastion
@@ -34,7 +30,7 @@
 
 - name: Remove file on http_store
   file:
-    path: "{{ http_store_dir }}/{{ vhs_test_file_name }}"
+    path: "{{ http_store_dir }}/{{ test_file_name }}"
     state: absent
   become: true
   delegate_to: http_store
