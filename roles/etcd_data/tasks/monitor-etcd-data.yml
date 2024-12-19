@@ -3,7 +3,7 @@
   vars:
     _ed_is_encrypted: "{{ _ed_ocp_api.resources[0].status.conditions | json_query('[?type==`Encrypted`].status') | first }}"
     _ed_want_encrypted: "{{ ed_action | lower == 'encrypt' }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: operator.openshift.io/v1
     kind: OpenShiftAPIServer
     name: cluster
@@ -17,7 +17,7 @@
   vars:
     _ed_is_encrypted: "{{ _ed_kube_api.resources[0].status.conditions | json_query('[?type==`Encrypted`].status') | first }}"
     _ed_want_encrypted: "{{ ed_action | lower == 'encrypt' }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: operator.openshift.io/v1
     kind: KubeAPIServer
     name: cluster
@@ -31,7 +31,7 @@
   vars:
     _ed_is_encrypted: "{{ _ed_auth.resources[0].status.conditions | json_query('[?type==`Encrypted`].status') | first }}"
     _ed_want_encrypted: "{{ ed_action | lower == 'encrypt' }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: operator.openshift.io/v1
     kind: Authentication
     name: cluster
