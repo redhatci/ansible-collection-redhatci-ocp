@@ -1,6 +1,6 @@
 ---
 - name: Set a random name for the test file
-  set_fact:
+  ansible.builtin.set_fact:
     vhs_test_file_name: "{{ lookup('password', '/dev/null length=12 chars=ascii_letters,digits') }}"
 
 - name: Set test file contents
