@@ -107,9 +107,9 @@
     mode: cleanup
 
 - name: Get preflight log files
-  find:
+  ansible.builtin.find:
     paths: "{{ preflight_operator_artifacts.path }}"
-  register: preflight_operator_artifacts_logs
+  register: _preflight_operator_artifacts_logs
 
 - name: Upload logs for preflight check operator into DCI
   vars:
@@ -119,7 +119,7 @@
     dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item | basename }}"
     mode: "0644"
     remote_src: true
-  loop: "{{ preflight_operator_artifacts_logs | json_query('files[*].path') }}"
+  loop: "{{ _preflight_operator_artifacts_logs | json_query('files[*].path') }}"
 
 - name: Validate annotations.yaml
   ansible.builtin.include_tasks: test_validate_annotations.yml
