@@ -16,16 +16,16 @@
   uri:
     url: "{{ http_host }}/{{ test_file_name }}"
     return_content: true
-  register: _vhs_response
+  register: response
   delegate_to: bastion
   retries: 12
   delay: 5
-  until: _vhs_response.status == 200
+  until: response.status == 200
 
 - name: Check content matches
   assert:
     that:
-      _vhs_response.content == contents
+      response.content == contents
     quiet: true
 
 - name: Remove file on http_store
