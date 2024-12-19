@@ -57,7 +57,7 @@ dependencies:
 
 ```
 scorecard_operators:
-    - bundle_image: "docker.io/ibmcom/ibm-mq-operator-bundle@sha256:723e3abcf5f8e2eea1458289c35b67cdcef92c3c256d3f384d6e4275302f0a89" # v1.3.1
+    - bundle_image: "icr.io/cpopen/ibm-mq-operator-bundle@sha256:11639e73211324978bde65fbe35d7f71ee2b7efd96e4d5d1c8158855256c2cae" # v1.3.2
     - bundle_image: "quay.io/telcoci/simple-demo-operator-bundle@sha256:6cfbca9b14a51143cfc5d0d56494e7f26ad1cd3e662eedd2bcbebf207af59c86" # v0.0.6
 ```
 
@@ -65,8 +65,8 @@ scorecard_operators:
 
 ```
 scorecard_operators:
-    - bundle_image: "docker.io/ibmcom/ibm-mq-operator-bundle:v1.3.1"
-      index_image: "docker.io/ibmcom/ibm-mq-operator-catalog:v1.3.1"
+    - bundle_image: "icr.io/cpopen/ibm-mq-operator-bundle:v1.3.2"
+      index_image: "icr.io/cpopen/ibm-operator-catalog:v1.30"
     - bundle_image: "quay.io/telcoci/simple-demo-operator-bundle:v0.0.6"
       index_image: "quay.io/telcoci/simple-demo-operator-catalog:v0.0.6"
 ```
