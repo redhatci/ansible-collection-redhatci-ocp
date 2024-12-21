@@ -1,0 +1,70 @@
+---
+
+# - name: Extract cluster-compare tool from container
+#   when: cc_compare_container_source | length > 0
+#   block:
+#     - name: Extract cluster-compare tool from container
+#       ansible.builtin.shell: |
+#         podman pull {{ cc_compare_container_source }}
+#         podman rm -fi ofe-cc-kca
+#         podman cp $(podman create --name ofe-cc-kca {{ cc_compare_container_source }}):{{ cc_compare_container_executable }} kubectl-cluster_compare
+#         podman rm ofe-cc-kca
+#       args:
+#         chdir: "{{ cc_work_dir }}"
+
+#     - name: Remove temporary container
+#       ansible.builtin.command:
+#         cmd: "podman rm -fi ofe-cc-kca"
+
+# - name: Extract reference metadata from container
+#   when: cc_reference_container_source | length > 0
+#   block:
+#     - name: Pull container image
+#       containers.podman.podman_image:
+#         name: "{{ cc_reference_container_source }}"
+
+#     - name: Extract metadata from container
+#       ansible.builtin.shell: |
+#         podman rm -f ofe-cc-ref
+#         podman cp $(podman create --name ofe-cc-ref {{ cc_reference_container_source }}):{{ cc_reference_metadata_yaml_location }} {{ cc_work_dir }}/bin/
+
+# # - name: Clone reference metadata from Git
+# #   when: cc_reference_container_source | length == 0
+# #   block:
+# #     - name: Ensure reference directory is cleaned
+# #       ansible.builtin.file:
+# #         path: "{{ cc_reference_dir }}"
+# #         state: absent
+
+# #     - name: Clone reference repository
+# #       ansible.builtin.git:
+# #         repo: "{{ cc_reference_repository }}"
+# #         dest: "{{ cc_reference_dir }}"
+# #         version: "{{ cc_reference_branch }}"
+
+# - name: Run cluster-compare command
+#   ansible.builtin.shell: >
+#       ./bin/kubectl-cluster_compare -v
+#       -r reference/metadata.yaml
+#       -o json > {{ cc_compare_output_file }}
+#   args:
+#     chdir: "{{ cc_work_dir }}"
+#   ignore_errors: true
+#   register: compare_status
+
+# - name: Generate human-readable cluster-compare report
+#   when: compare_status.rc == 1
+#   ansible.builtin.shell: >
+#     kubectl-cluster_compare
+#     -r reference/metadata.yaml
+#     2>/dev/null || true
+#   args:
+#     chdir: "{{ cc_work_dir }}"
+
+# - name: Generate comparison report
+#   ansible.builtin.shell: >
+#     report-creator -j {{ cc_compare_output_file }}
+#     -o {{ cc_report_name }}
+#   args:
+#     chdir: "{{ cc_work_dir }}"
+...
