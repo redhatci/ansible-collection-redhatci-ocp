@@ -1,0 +1,71 @@
+---
+- name: Download and extract the latest binary files
+  vars:
+    cc_base_repo: https://github.com/openshift/kube-compare/releases/latest/download
+    cc_bins:
+      - kube-compare_addon_tools_linux_amd64.tar.gz
+      - kube-compare_linux_amd64.tar.gz
+  ansible.builtin.unarchive:
+    src: "{{ cc_base_repo }}/{{ binary }}"
+    dest: "{{ cc_work_dir }}"
+    remote_src: true
+    mode: '0755'
+  register: _cc_extract
+  retries: 1
+  delay: 10
+  until: _cc_extract is not failed
+  loop_control:
+    loop_var: binary
+  loop: "{{ cc_bins }}"
+  no_log: "{{ cc_logging }}"
+
+- name: Set core reference path for OCP-{{ cc_ocp_version }}
+  ansible.builtin.set_fact:
+    cc_reference:
+      "https://raw.githubusercontent.com/openshift-kni/telco-reference/refs/heads/release-{{ cc_ocp_version }}/\
+      telco-core/configuration/reference-crs-kube-compare/metadata.yaml"
+  when:
+    - cc_infra_type == "core"
+
+- name: Set ran reference path for OCP-{{ cc_ocp_version }}
+  ansible.builtin.set_fact:
+    cc_reference:
+      "https://raw.githubusercontent.com/openshift-kni/cnf-features-deploy/refs/heads/release-{{ cc_ocp_version }}/\
+      ztp/kube-compare-reference/metadata.yaml"
+  when:
+    - cc_infra_type == "ran"
+
+- name: Run cluster compare using manifest for current OCP {{ cc_ocp_version }}
+  block:
+    - name: Run cluster-compare using manifests for OCP-{{ cc_ocp_version }}
+      ansible.builtin.shell: >
+        ./kubectl-cluster_compare -v
+        -r {{ cc_reference }}
+        -o json > {{ cc_reports_dir }}/{{ cc_compare_output_file }}
+      args:
+        chdir: "{{ cc_work_dir }}"
+      ignore_errors: true
+      register: _cc_cmd_output
+      changed_when: _cc_cmd_output.rc != 0
+
+    - name: Generate human-readable cluster-compare report
+      ansible.builtin.shell: >
+        ./kubectl-cluster_compare
+        -r {{ cc_reference }}
+        > {{ cc_reports_dir }}/{{ cc_compare_human_file }}
+        2>/dev/null || true
+      args:
+        chdir: "{{ cc_work_dir }}"
+      register: _cc_cmd_output
+      changed_when: _cc_cmd_output.rc != 0
+      when: _cc_cmd_output.rc == 1
+
+    - name: Generate JUnit report
+      ansible.builtin.shell: >
+        ./report-creator -j {{ cc_reports_dir }}/{{ cc_compare_output_file }}
+        -o {{ cc_reports_dir }}/{{ cc_report_name }}
+      args:
+        chdir: "{{ cc_work_dir }}"
+      register: _cc_cmd_output
+      changed_when: _cc_cmd_output.rc != 0
+...

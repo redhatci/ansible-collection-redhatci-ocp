@@ -1,0 +1,6 @@
+---
+cc_reference_dir: "reference"
+cc_report_name: "cluster-compare-report.xml"
+cc_compare_output_file: "cluster-compare.json"
+cc_compare_human_file: "cluster-compare.txt"
+...

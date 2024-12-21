@@ -1,0 +1,38 @@
+---
+- name: Get cluster version
+  community.kubernetes.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: _cc_cluster_version
+  no_log: "{{ cc_logging }}"
+
+- name: Set cluster version
+  vars:
+    current_ver_query: "history[?state=='Completed'] | [0].version"
+    full_ver: "{{ _cc_cluster_version.resources[0].status | json_query(current_ver_query) }}"
+    current_ver: "{{ full_ver | string | regex_search('^\\d+\\.\\d+') }}"
+  ansible.builtin.set_fact:
+    cc_ocp_version: "{{ current_ver }}"
+
+- name: Validate if the Cluster Version is supported
+  ansible.builtin.fail:
+    msg: "OCP version must be >= {{ cc_ocp_supported }} to run cluster compare"
+  when: cc_ocp_version is version( cc_ocp_supported , "<")
+
+- name: Ensure report directory is defined
+  ansible.builtin.fail:
+    msg: "The variable 'cc_reports_dir' is not defined."
+  when: cc_reports_dir is not defined
+
+- name: Check if the directory exists
+  ansible.builtin.stat:
+    path: "{{ cc_reports_dir }}"
+  register: _cc_dir_stat
+  when: cc_reports_dir is defined
+
+- name: Fail if the report directory does not exist
+  ansible.builtin.fail:
+    msg: "The directory to save the reports '{{ cc_reports_dir }}' does not exist."
+  when: cc_reports_dir is defined and not _cc_dir_stat.stat.exists
+...
