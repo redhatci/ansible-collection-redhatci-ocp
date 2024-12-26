@@ -68,14 +68,13 @@
 - name: TRexApp block
   when: ecd_enable_trex_app | bool
   block:
-    - name: Set TRex app duration
+    - name: Set TRex app parameters
       ansible.builtin.set_fact:
         ecd_duration: "{{ ecd_trex_duration }}"
+        ecd_packet_rate: "{{ ecd_trex_packet_rate }}"
+        ecd_packet_size: "{{ ecd_trex_packet_size }}"
 
     - name: Create CR for TRex app
-      vars:
-        ecd_packet_rate: 10kpps
-        ecd_packet_size: 64
       community.kubernetes.k8s:
         definition: "{{ lookup('template', 'trex-app-cr.yaml.j2') }}"
 
