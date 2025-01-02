@@ -82,7 +82,7 @@
         name: crucible-rickshaw
       register: _multibench_run_namespace_info
       until: _multibench_run_namespace_info.resources | length == 0
-      retries: 10
+      retries: 20
       delay: 5
 
     - name: "Retry launching the multibench workload"
