@@ -1,0 +1,11 @@
+---
+cc_command_directory: "cluster-compare"
+cc_go_installation_dir: "go"
+cc_go_path: "gopath"
+cc_reference_dir: "reference"
+cc_report_name: "cluster-compare-report.xml"
+cc_compare_output_file: "cluster-compare.json"
+cc_compare_human_file: "cluster-compare.txt"
+cc_spoke_cluster_name_param: "${params.SPOKE_CLUSTER_NAME}"
+cc_kubeconfig: "${HOME}/clusterconfigs/${cc_spoke_cluster_name}/auth/kubeconfig"
+...

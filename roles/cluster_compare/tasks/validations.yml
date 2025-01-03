@@ -1,0 +1,17 @@
+---    
+- name: Ensure report directory is defined
+  fail:
+    msg: "The variable 'cc_reports_dir' is not defined."
+  when: cc_reports_dir is not defined
+
+- name: Check if the directory exists
+  stat:
+    path: "{{ cc_reports_dir }}"
+  register: _cc_dir_stat
+  when: cc_reports_dir is defined
+
+- name: Fail if the report directory does not exist
+  fail:
+    msg: "The directory '{{ cc_reports_dir }}' does not exist."
+  when: cc_reports_dir is defined and not _cc_dir_stat.stat.exists
+...
