@@ -115,6 +115,7 @@
             src: "{{ item.src }}"
             dest: "{{ job_logs.path }}/{{ preflight_prefix }}_{{ item.path | regex_replace('/', '_') }}"
             mode: "0644"
+            remote_src: true
           with_filetree:  # noqa: schema[moves]
             - "{{ preflight_container_artifacts.path }}"
           when:

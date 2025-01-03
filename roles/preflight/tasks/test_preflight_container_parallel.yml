@@ -83,6 +83,7 @@
         src: "{{ item.1.path }}"
         dest: "{{ job_logs.path }}/{{ preflight_prefix }}"
         mode: "0644"
+        remote_src: true
       loop: "{{ preflight_files_context | subelements('files') }}"
       when: "item.1.path | regex_search('\\.(json|log|xml)$')"
 
