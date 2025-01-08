@@ -9,7 +9,7 @@ name: ocp
 # Always leave patch version as .0
 # Patch version is replaced from commit date in UNIX epoch format
 # example: 0.3.2147483647
-version: 0.24.0
+version: 0.25.0
 
 # The path to the Markdown (.md) readme file.
 readme: README.md
@@ -103,6 +103,7 @@ dependencies:
   "community.kubernetes": "1.2.1"
   "community.libvirt": "*"
   "containers.podman": "*"
+  "kubernetes.core": "2.4.2"
 
 # The URL of the originating SCM repository
 repository: https://github.com/redhatci/ansible-collection-redhatci-ocp
