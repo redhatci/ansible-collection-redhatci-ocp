@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.23.EPOCH
+Version:        0.24.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -52,6 +52,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Jan  7 2025 Tony Garcia <tonyg@redhat.com> - 0.24.EPOCH-VERS
+- Version bump for setup_gitea role updates
+
 * Wed Oct 16 2024 Tony Garcia <tonyg@redhat.com> - 0.23.EPOCH-VERS
 - Repurpose oc_setup role, into ocp_add_users role
 

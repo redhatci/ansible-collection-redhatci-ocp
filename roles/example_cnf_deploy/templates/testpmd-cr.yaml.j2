@@ -10,6 +10,7 @@ spec:
   size: 1  
   networks: {{ ecd_networks_testpmd_app }}
   terminationGracePeriodSeconds: {{ ecd_termination_grace_period_seconds }}
+  reducedMode: {{ ecd_testpmd_reduced_mode }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
   runtime_class_name: "{{ ecd_high_perf_runtime }}"
 {% endif %}

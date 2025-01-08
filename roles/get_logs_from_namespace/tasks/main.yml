@@ -5,12 +5,12 @@
       - glfn_ns | string
       - glfn_oc | string
 
-- name: Check provided logs directory exists
-  ansible.builtin.stat:
+- name: Create the logs directory if defined but does not exist
+  ansible.builtin.file:
     path: "{{ glfn_dir }}"
-  register: dir_stat
+    state: directory
+    mode: '0775'
   when: glfn_dir is defined
-  failed_when: not dir_stat.stat.exists
 
 - name: Create logs directory when not provided
   when: glfn_dir is not defined
@@ -22,12 +22,16 @@
       register: logs
 
     - name: Set logs directory
-      set_fact:
+      ansible.builtin.set_fact:
         glfn_dir: "{{ logs.path }}"
 
     - name: Logs path
-      debug:
+      ansible.builtin.debug:
         msg: "{{ job_logs.path }}"
+
+- name: Display the logs directory path
+  ansible.builtin.debug:
+    msg: "Logs directory is set to: {{ glfn_dir }}"
 
 - name: "Get a list of all pods from {{ glfn_ns }}"
   community.kubernetes.k8s_info:

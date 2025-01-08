@@ -150,10 +150,14 @@
       notify: Clear mirror temp dir
 
     - name: Clone reference repository
+      # Use sshkey file when provided, otherwise omit it in the module
+      vars:
+        keyfile: "{{ sg_repo_sshkey | default('') }}"
       ansible.builtin.git:
         dest: "{{ _sg_mirror_repo.path }}/mirror"
         repo: "{{ sg_repo_mirror_url }}"
         version: "{{ sg_repo_mirror_branch }}"
+        key_file: "{{ keyfile | length | ternary(keyfile, omit) }}"
 
     - name: Mirror the repository # noqa command-instead-of-module
       ansible.builtin.shell:

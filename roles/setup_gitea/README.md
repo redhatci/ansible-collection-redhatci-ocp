@@ -14,19 +14,20 @@ Role tasks:
 
 ## Variables
 
-| Variable              | Default     | Required | Description                                             |
-| --------------------- | ----------- | -------- | ------------------------------------------------------- |
-| sg_action             | install     | No       | Default role's action                                   |
-| sg_gitea_image        | mirror.gcr.io/gitea/gitea:latest-rootless| No       | Default Gitea server image    |
-| sg_namespace          | gitea       | No       | Deployment Namespace                                    |
-| sg_url                | http://localhost:3000                 | No       | Root URL to the Gitea service |
-| sg_username           | *undefined* | No       | Gitea's initial username. Mandatory if the initial repository (sg_repository) is created. |
-| sg_password           | *undefined* | No       | Gitea's initial password. Mandatory if the initial user (sg_username) is created. |
-| sg_email              | *undefined* | No       | E-mail address for the initial user. Mandatory if the initial user (sg_username) is created. |
-| sg_repository         | *undefined* | No       | Initial repository name. Mandatory if an external repository to mirror (sg_repo_mirror_url) is set. |
-| sg_repo_branch        | main        | No       | Main branch in the initial repository                   |
-| sg_repo_mirror_url    | *undefined* | No       | Git URL to mirror into the initial repository           |
-| sg_repo_mirror_branch | main        | No       | Branch to mirror from the repository                    |
+| Variable              | Default                               | Required | Description
+| --------              | -------                               | -------- | -----------
+| sg_action             | install                               | No       | Default role's action
+| sg_gitea_image        | docker.io/gitea/gitea:latest-rootless | No       | Default Gitea server image
+| sg_namespace          | gitea                                 | No       | Deployment Namespace
+| sg_url                | http://localhost:3000                 | No       | Root URL to the Gitea service
+| sg_username           | *undefined*                           | No       | Gitea's initial username. Mandatory if the initial repository (sg_repository) is created.
+| sg_password           | *undefined*                           | No       | Gitea's initial password. Mandatory if the initial user (sg_username) is created.
+| sg_email              | *undefined*                           | No       | E-mail address for the initial user. Mandatory if the initial user (sg_username) is created.
+| sg_repository         | *undefined*                           | No       | Initial repository name. Mandatory if an external repository to mirror (sg_repo_mirror_url) is set.
+| sg_repo_branch        | main                                  | No       | Main branch in the initial repository
+| sg_repo_mirror_url    | *undefined*                           | No       | Git URL to mirror into the initial repository
+| sg_repo_mirror_branch | main                                  | No       | Branch to mirror from the repository
+| sg_repo_sshkey        | *undefined*                           | No       | The sshkey to clone the initial repository when the repo requires ssh authentication.
 
 ## Role requirements
   - The Ansible control node must have access to the registry where the `sg_gitea_image` is stored.
