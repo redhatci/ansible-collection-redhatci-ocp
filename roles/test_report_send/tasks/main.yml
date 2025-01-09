@@ -1,0 +1,175 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for redhatci.ocp.test_report_send
+
+- name: Use the first file (even if the result isn't 1 file)
+  ansible.builtin.set_fact:
+    trs_json_file_path: "{{ trs_report_file_path }}"
+  when:
+    - trs_json_file_path is not defined
+
+# - name: Warn the user - the result isn not a single file
+#   ansible.builtin.debug:
+#     msg: "WARNING: found too many json files [got: {{ trs_find_results.files | length }}, expected: 1]"
+#     verbosity: 1
+#   when:
+#     - trs_sorted_results.files | length > 1
+
+
+# Mostly copied from @cplacani PR: https://github.com/openshift-kni/eco-validation/pull/150/files
+- name: Read content from test data JSON file
+  ansible.builtin.slurp:
+    src: "{{ trs_json_file_path }}"
+  register: _trs_json_file_content
+
+- name: Decode JSON content for test file
+  ansible.builtin.set_fact:
+    trs_test_data: "{{ _trs_json_file_content.content | b64decode | from_json }}"
+
+- name: Set default empty metadata file name
+  ansible.builtin.set_fact:
+    trs_metadata_file_path: ""
+
+- name: Find metadata location
+  ansible.builtin.shell: |
+    file="metadata.json"; idx=0; limit=5; res="";
+    pushd "${PWD}" >/dev/null;
+    while [[ "${idx}" -le "${limit}" ]]; do
+      res="${PWD}/${file}"
+      [ -e "${res}" ] && break
+      cd ../
+    done
+    popd >/dev/null
+    [ "${idx}" -gt "${limit}" ] && exit 0
+    echo "${res}"
+    exit 0
+  args:
+    executable: /bin/bash
+    chdir: "{{ trs_json_file_path | dirname }}"
+  register: _trs_metadata_file_path_result
+  changed_when:
+    - _trs_metadata_file_path_result.rc == 0
+
+- name: Extract metadata file name
+  ansible.builtin.set_fact:
+    trs_metadata_file_path: "{{ _trs_metadata_file_path_result.stdout }}"
+  when:
+    - _trs_metadata_file_path_result.stdout | length > 0
+
+- name: Read content from metadata JSON file
+  ansible.builtin.slurp:
+    src: "{{ trs_metadata_file_path }}"
+  register: _trs_metadata_file_content
+  when:
+    - trs_metadata_file_path | length > 0
+
+- name: Setup content for metadata file
+  ansible.builtin.set_fact:
+    trs_meta_data: {}
+
+- name: Decode JSON content for metadata file
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ _trs_metadata_file_content.content | b64decode | from_json }}"
+  when:
+    - trs_metadata_file_path | length > 0
+
+- name: Create event data attributes
+  ansible.builtin.set_fact:
+    trs_data_event: '{{ {"test": trs_test_data} | combine(trs_meta_data) }}'
+    trs_event_time: "{{ now(fmt='%s') }}"
+
+- name: Setup timestamps broken down to int/float parts
+  ansible.builtin.set_fact:
+    trs_job_time_int: "{{ (trs_meta_data.metadata.job.created_at | regex_replace('\\..*$', '') | to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
+    trs_job_time_fraction: "{{ trs_meta_data.metadata.job.created_at | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+
+- name: Setup timestamps as floats
+  ansible.builtin.set_fact:
+    trs_job_time: "{{ (trs_job_time_int | int) + (trs_job_time_fraction | float) }}"
+
+- name: Set event time if we have job_time
+  ansible.builtin.set_fact:
+    trs_event_time: "{{ trs_job_time | float }}"
+    trs_event_channel: "{{ splunk.channels.get(global_partner, 'default') }}"
+  when:
+    - (trs_job_time_int | int) > 0
+
+- name: Update event data timestamps to be in epoch ms format
+  ansible.builtin.set_fact:
+    trs_data_event: "{{ trs_data_event | combine({'metadata': {'poc': global_data_poc | default(false), 'dataset': 'poc'}}, recursive=true) }}"
+
+- name: Print event data
+  ansible.builtin.debug:
+    var: trs_data_event
+  # loop:
+  #   - trs_data_event
+  #   - job_time
+
+# - name: Get currently set hostname
+#   ansible.builtin.shell: |
+#     hostname -f
+#   args:
+#     executable: /bin/bash
+#   register: hostname_result
+
+# - name: Build the payload for the request
+#   ansible.builtin.set_fact:
+#     trs_payload: >
+#       {{
+#         {
+#           "host": trs_full_url,
+#           "sourcetype": "_json",
+#           "event": event
+#         }
+#       }}
+
+- name: Combine additional attributes into the data
+  ansible.builtin.set_fact:
+    trs_payload: >
+      {{
+      {
+        "time": trs_event_time,
+        "_time": trs_event_time,
+        "source": trs_collector_target,
+        "event": trs_data_event,
+        "host": trs_collector_url,
+        "sourcetype": "_json"
+      }
+      }}
+
+- name: Print payload data
+  ansible.builtin.debug:
+    var: trs_payload
+
+  # when:
+  #   - trs_debug
+# - name: Print some vars
+#   ansible.builtin.debug:
+#     msg: "{{ item.name }}: '{{ item.value }}'"
+#   loop:
+#     - name: trs_collector_url
+#       value: "{{ trs_collector_url }}"
+#     - name: trs_collector_auth_token
+#       value: "{{ trs_collector_auth_token }}"
+#     - name: trs_collector_target
+#       value: "{{ trs_collector_target }}"
+#     - name: global_request_timeout
+#       value: "{{ global_request_timeout }}"
+
+# - name: fail on print
+#   ansible.builtin.fail:
+#     msg: "bla"
+
+- name: Send data to Splunk HEC
+  ansible.builtin.uri:
+    url: "{{ trs_collector_url }}"
+    method: POST
+    headers:
+      Authorization: "Splunk {{ trs_collector_auth_token | upper }}"
+      X-Splunk-Request-Channel: "{{ trs_collector_target | upper }}"
+    body: "{{ trs_payload }}"
+    body_format: json
+    follow_redirects: all
+    validate_certs: false
+    timeout: "{{ global_request_timeout | default(omit) }}"
+  register: _trs_splunk_response

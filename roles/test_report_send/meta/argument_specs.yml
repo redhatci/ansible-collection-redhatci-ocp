@@ -1,0 +1,49 @@
+---
+# arguments spec file for redhatci.ocp.test_report_send role
+argument_specs:
+  main:
+    short_description: Main entry point for the redhatci.ocp.test_report_send role
+    description: >
+      This is the main entrypoint for the `redhatci.ocp.test_report_send` role.
+      It sends data to the collector, currently only splunk is supported.
+    author:
+      - Max Kovgan
+    options:
+      trs_collector_url:
+        type: str
+        required: true
+        description: >
+          The URL of collector server (Splunk)
+
+      trs_collector_auth_token:
+        type: str
+        required: true
+        description: >
+          This is the collector auth token string as for basic http auth
+
+      trs_collector_target:
+        type: str
+        required: true
+        description: >
+          Target/Channel/Topic/Id/ of the collector
+
+      trs_report_file_path:
+        type: str
+        required: true
+        description: |
+          File to send. it is assumed to have `metadata.json` nearby or up in the filesystem.
+
+      trs_reports_path_patterns:
+        type: list
+        elements: str
+        required: false
+        default: ["*.json"]
+        description: |
+          The list of name regex to match only relevant XML files for consolidation
+
+      global_partner:
+        type: str
+        required: false
+        default: ""
+        description: |
+          Whether this is a partner
