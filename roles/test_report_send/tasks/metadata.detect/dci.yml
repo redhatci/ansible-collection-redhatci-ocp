@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# metadata.detect/dci.yml tasks file for redhatci.ocp.test_report_send
+
+- name: Set is_ci attribute
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | default({}) | combine({'is_ci': true}) }}"
+  when:
+    - lookup("env","CI") | lower == "true"
+    - lookup("env","DCI_CS_URL") is defined
+
+- name: Update trs_ci.type for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'type': trs_ci_system}) }}"
+
+- name: Update trs_ci.url for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'url': lookup('env', 'DCI_CS_URL')}) }}"

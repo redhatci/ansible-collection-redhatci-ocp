@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for redhatci.ocp.test_report_send
+
+- name: Validate collector connectivity var trs_collector_url is not empty
+  ansible.builtin.assert:
+    that:
+      - trs_collector_url | default("") | length > 0
+    fail_msg:
+      - "Variable trs_collector_url is either undefined or empty"
+  tags:
+    - inproc
+    - validation
+
+- name: Validate collector connectivity var trs_collector_auth_headers is not empty
+  ansible.builtin.assert:
+    that:
+      - trs_collector_auth_headers is defined
+      - trs_collector_auth_headers is mapping
+      - trs_collector_auth_headers.keys() | length > 0
+    fail_msg:
+      - "Variable trs_collector_auth_headers is either undefined or empty"
+  tags:
+    - inproc
+    - validation
+
+- name: Validate collector var for splunk trs_collector_auth_headers has the required keys and values
+  ansible.builtin.assert:
+    that:
+      - "'Authorization' in trs_collector_auth_headers"
+      - "'X-Splunk-Request-Channel' in trs_collector_auth_headers"
+      - trs_collector_auth_headers['Authorization'] | regex_search('^Splunk ')
+      - trs_collector_auth_headers['Authorization'] | length > 10
+      - trs_collector_auth_headers['X-Splunk-Request-Channel'] | length > 5
+    fail_msg:
+      - "Variable trs_collector_auth_headers contains incorrect data or misses required keys"
+  tags:
+    - inproc
+    - validation
