@@ -1,0 +1,9 @@
+---
+
+- name: Unsupported CI system
+  ansible.builtin.debug:
+    msg: "unsupported CI system"
+
+- name: Fail the role
+  ansible.builtin.fail:
+    msg: "Failing"

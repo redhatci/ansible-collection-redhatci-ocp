@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# reporting/splunk.yml tasks file for redhatci.ocp.test_report_send
+
+- name: Read content from test report JSON file
+  ansible.builtin.slurp:
+    src: "{{ trs_report_path }}"
+  register: _trs_json_file_content
+
+- name: Decode JSON content of test report file
+  ansible.builtin.set_fact:
+    trs_test_data: "{{ _trs_json_file_content.content | b64decode | from_json }}"
+    trs_default_dt: "{{ now(fmt='%Y-%m-%dT%H:%M:%S') }}"
+
+- name: Print current datetime
+  ansible.builtin.debug:
+    var: trs_default_dt
+
+- name: Setup timestamps broken down to int/float parts for {{ trs_collector_type }}
+  ansible.builtin.set_fact:
+    trs_job_time_int: "{{ (trs_meta_data.metadata.job.created_at | \
+      default(trs_default_dt) | \
+      regex_replace('\\..*$', '') | \
+      to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
+    trs_job_time_fraction: "{{ trs_meta_data.metadata.job.created_at | default(trs_default_dt) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+
+- name: Setup timestamps as floats for reporting
+  ansible.builtin.set_fact:
+    trs_job_time: "{{ (trs_job_time_int | int) + (trs_job_time_fraction | float) }}"
+
+- name: Update trs_collector_auth_headers with trs_collector_auth_token from the user for {{ trs_collector_type }}
+  ansible.builtin.set_fact:
+    trs_collector_auth_headers: "{{ trs_collector_auth_headers | default({}) | combine({'Authorization': 'Splunk ' + trs_collector_auth_token}) }}"
+  when:
+    - trs_collector_auth_token | default("") | length > 0
+
+- name: Update trs_collector_auth_headers with trs_event_channel from the user for {{ trs_collector_type }}
+  ansible.builtin.set_fact:
+    trs_collector_auth_headers: "{{ trs_collector_auth_headers | combine({'X-Splunk-Request-Channel': trs_event_channel}) }}"
+  when:
+    - trs_event_channel | default("") | length > 0
+
+- name: Dynamically detect metadata when it is missing
+  ansible.builtin.include_tasks:
+    file: validations.{{ trs_collector_type }}.yml
+  when:
+    - not(_trs_metadata_path_stat.stat.exists | default(false))
+    - lookup("env", "CI") | default("") == "true"
+
+- name: Create event data attributes
+  ansible.builtin.set_fact:
+    trs_data_event: '{{ {"test": trs_test_data} | combine(trs_meta_data) }}'
+    # trs_event_time: "{{ now(fmt='%s') }}"
+
+- name: Print event data before timestamp corrections
+  ansible.builtin.debug:
+    var: trs_data_event
+
+
+# data conversion copied from @cplacani PR: https://github.com/openshift-kni/eco-validation/pull/150/files
+
+- name: Combine additional attributes into the data at trs_collector_target for {{ trs_collector_type }}
+  ansible.builtin.set_fact:
+    trs_event_payload: >
+      {{
+      {
+        "source": trs_collector_source,
+        "event": trs_data_event,
+        "host": trs_collector_url,
+        "sourcetype": "_json"
+      }
+      }}
+
+- name: Print payload data
+  ansible.builtin.debug:
+    var: trs_event_payload
+
+- name: Send data to {{ trs_collector_type }}
+  ansible.builtin.uri:
+    url: "{{ trs_collector_url }}"
+    method: POST
+    headers: "{{ trs_collector_auth_headers | default(omit) }}"
+    body: "{{ trs_event_payload }}"
+    body_format: json
+    follow_redirects: all
+    validate_certs: false
+    timeout: "{{ global_request_timeout | default(omit) }}"
+  register: _trs_splunk_response
+  when:
+    - trs_do_send | default(false)
