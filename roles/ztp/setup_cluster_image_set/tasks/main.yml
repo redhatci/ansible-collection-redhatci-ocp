@@ -1,0 +1,26 @@
+- name: Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: scis-
+  register: scis_tmp
+
+- name: Git checkout
+  ansible.builtin.expect:
+    command: "git clone --single-branch --branch {{ scis_branch }} {{ scis_repo_url }} {{ scis_tmp.path }}/gitops"
+    responses:
+      Username: "{{ scis_username }}"
+      Passowrd: "{{ scis_password }}"
+  no_log: true
+
+- name: Get cluster image sets
+  ansible.builtin.shell:
+    #cmd: "grep -r clusterImageSetNameRef {{ scis_tmp.path }}/gitops/{{ scis_path }}"
+    cmd: |
+      set -eo pipefail
+      grep -r desinstalado {{ scis_tmp.path }}/gitops/{{ scis_path }} | awk '{ print $NF }' | sed -e 's/"//g'
+  register: scis_cluster_image_sets
+
+- name: Delete temporary directory
+  ansible.builtin.file:
+    path: "{{ scis_tmp.path }}"
+    state: absent
