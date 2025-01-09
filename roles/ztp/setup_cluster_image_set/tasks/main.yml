@@ -1,0 +1,75 @@
+- name: Identify the Git repo transport protocol
+  ansible.builtin.set_fact:
+    scis_repo_protocol_http: "{{ scis_repo_url | regex_search('https?://') | type_debug == 'str' }}"
+
+- name: "Validate required variables"
+  ansible.builtin.assert:
+    that:
+      - scis_repo_url is defined
+      - scis_repo_url | length > 0
+      - scis_sites_path is defined
+      - scis_sites_path | length > 0
+      - scis_branch is defined
+      - scis_branch | length > 0
+      - scis_release_image_url is defined
+      - scis_release_image_url | length > 0
+      - >
+        (scis_repo_protocol_http and
+        scis_username is defined and scis_username | length > 0 and
+        scis_password is defined and scis_password | length > 0) or
+        (scis_key_path is defined and scis_key_path | length > 0)
+
+- name: Process data from site config manifests
+  block:
+    - name: Create temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: scis-
+      register: scis_tmp
+
+    - name: Git checkout (HTTP)
+      ansible.builtin.expect:
+        command: "git clone --single-branch --branch {{ scis_branch }} {{ scis_repo_url }} {{ scis_tmp.path }}/gitops"
+        responses:
+          Username: "{{ scis_username }}"
+          Password: "{{ scis_password }}"
+      no_log: true
+      when: scis_repo_protocol_http
+
+    - name: Git checkout (SSH)
+      ansible.builtin.git:
+        repo: "{{ scis_repo_url }}"
+        dest: "{{ scis_tmp.path }}/gitops"
+        version: "{{ scis_branch }}"
+        key_file: "{{ scis_key_path }}"
+      when: not scis_repo_protocol_http
+
+    - name: Get cluster image sets
+      ansible.builtin.shell:
+        cmd: |
+          set -eo pipefail
+          grep -r clusterImageSetNameRef {{ scis_tmp.path }}/gitops/{{ scis_sites_path }} | awk '{ print $NF }' | sed -e 's/"//g'
+      register: scis_cluster_image_sets_output
+
+  always:
+    - name: Delete temporary directory
+      ansible.builtin.file:
+        path: "{{ scis_tmp.path }}"
+        state: absent
+
+- name: Set list of ClusterImageSets
+  ansible.builtin.set_fact:
+    scis_cluster_image_sets: "{{ scis_cluster_image_sets_output.stdout_lines | unique }}"
+
+- name: Create requested ClusterImageSets
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: hive.openshift.io/v1
+      kind: ClusterImageSet
+      metadata:
+        name: "{{ _scis_set }}"
+      spec:
+        releaseImage: "{{ scis_release_image_url }}"
+  loop: "{{ scis_cluster_image_sets }}"
+  loop_control:
+    loop_var: _scis_set
