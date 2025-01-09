@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for redhatci.ocp.test_report_send
+
+
+- name: Update trs_report_path if not passed
+  ansible.builtin.set_fact:
+    trs_report_path: "{{ junit2_output_dir }}/{{ junit2_output_merged_report }}"
+  when:
+    - not(trs_report_path | length)
+
+- name: Validate all required variables are defined
+  ansible.builtin.assert:
+    that: "{{ condition }}"
+    fail_msg:
+      - "The condition {{ condition }} does not happen"
+  loop:
+    - trs_collector_type | default("") in trs_supported_collector_types
+    - trs_report_path | default("") | length > 0
+    - trs_metadata_path | default("") | length >= 0
+    - trs_collector_url  | default("") | length > 0
+    - trs_collector_target | default("") | length > 0
+    - ((trs_collector_auth_token | default("") | length > 0) or
+        (trs_collector_auth_headers | default({}) | length > 0))
+  loop_control:
+    loop_var: condition
+
+- name: Collect trs_report_path file stat
+  ansible.builtin.stat:
+    path: "{{ trs_report_path }}"
+  register: _trs_report_path_stat
+
+- name: Ensure trs_report_path file exists
+  ansible.builtin.assert:
+    that: _trs_report_path_stat.stat.isreg | default(false)
+
+# data conversion copied from @cplacani PR: https://github.com/openshift-kni/eco-validation/pull/150/files
+
+- name: Collect trs_metadata_path file stat
+  ansible.builtin.stat:
+    path: "{{ trs_metadata_path }}"
+  register: _trs_metadata_path_stat
+  when:
+    - trs_metadata_path | default("") | length > 0
+
+- name: Read content of metadata JSON file
+  ansible.builtin.slurp:
+    src: "{{ trs_metadata_path }}"
+  register: _trs_metadata_file_content
+  when:
+    - _trs_metadata_path_stat.stat.isreg | default(false)
+
+- name: Setup content for metadata file
+  ansible.builtin.set_fact:
+    trs_meta_data: {}
+
+- name: Decode JSON content for metadata file
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ _trs_metadata_file_content.content | b64decode | from_json }}"
+  when:
+    - _trs_metadata_file_content.content | default("") | length > 0
+
+- name: Detect Metadata from the env
+  ansible.builtin.include_tasks: "metadata.detect.yml"
+
+- name: Send trs_data_event to collector {{ trs_collector_type }}
+  ansible.builtin.include_tasks:
+    file: "reporting/{{ trs_collector_type }}.yml"

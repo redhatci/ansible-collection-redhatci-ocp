@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# defaults file for redhatci.ocp.test_report_send
+
+trs_report_path: ""
+trs_metadata_path: ""
+trs_collector_type: splunk
+trs_supported_ci_systems:
+  - jenkins
+  - dci
+  - prow
+trs_supported_collector_types:
+  - splunk
+
+trs_ci_system: unknown
+trs_do_send: true
+trs_ci_detect_skip: false

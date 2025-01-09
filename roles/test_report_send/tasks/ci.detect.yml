@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# ci.detect tasks file for redhatci.ocp.test_report_send
+
+- name: Define default CI system name
+  ansible.builtin.set_fact:
+    trs_ci_system: "unknown"
+
+- name: Set DCI as trs_ci_system
+  ansible.builtin.set_fact:
+    trs_ci_system: dci
+  when:
+    - lookup("env", "DCI_CS_URL") | default("") | length > 0
+
+- name: Set Prow as trs_ci_system
+  ansible.builtin.set_fact:
+    trs_ci_system: prow
+  when:
+    - lookup("env", "PROW_JOB_ID") | default("") | length > 0
+
+- name: Set Jenkins as trs_ci_system
+  ansible.builtin.set_fact:
+    trs_ci_system: jenkins
+  when:
+    - lookup("env", "JENKINS_URL") | default("") | length > 0
+
+- name: Set GitHub as trs_ci_system
+  ansible.builtin.set_fact:
+    trs_ci_system: github
+  when:
+    - lookup("env", "GITHUB_API_URL") | default("") | length > 0
+
+- name: Set GitLab as trs_ci_system
+  ansible.builtin.set_fact:
+    trs_ci_system: gitlab
+  when:
+    - lookup("env", "GITLAB_CI") | default("") == "true"
