@@ -13,7 +13,7 @@
 
 - name: Create DataScienceCluster
   when: rhoai_create_dsc | bool
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     wait: "{{ rhoai_wait_for_dsc | bool }}"
     definition:

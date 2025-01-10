@@ -1,12 +1,12 @@
 ---
 - name: Get Cluster-Plane Operator pods
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Pod
     namespace: "hypershift"
   register: pods_info
 
 - name: Restart Cluster-Plane Operator pods
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     definition:
       apiVersion: v1
@@ -22,7 +22,7 @@
 - name: Check for Cluster-Plane Operator pods to be running
   vars:
     status_query: "resources[*].status.conditions[?type=='Ready'].status"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Pod
     namespace: "hypershift"
   register: cpo_pods

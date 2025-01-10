@@ -7,7 +7,7 @@ Requirements
 ------------
 
 - oc client
-- python3-kubernetes (community.kubernetes.k8s)
+- python3-kubernetes (kubernetes.core.k8s)
 - Bash session and OCP account with cluster-admin privileges
 - In ODF External Mode requires access to RHCS cluster
 

@@ -1,6 +1,6 @@
 ---
 - name: "Delete VM {{ vm.name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     kind: VirtualMachine
     api_version: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
     name: "{{ vm.name }}"
@@ -8,7 +8,7 @@
     state: absent
 
 - name: Wait for VirtualMachine to be deleted
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
     kind: VirtualMachine
     name: "{{ vm.name }}"

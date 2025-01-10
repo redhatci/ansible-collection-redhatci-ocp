@@ -1,6 +1,6 @@
 ---
 - name: Install hco
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: "hco.kubevirt.io/v1beta1"
       kind: HyperConverged
@@ -15,7 +15,7 @@
   until: result is not failed
 
 - name: test_ Check for hyperconverged  # noqa: name[casing]
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: "hco.kubevirt.io/v1beta1"
     namespace: "{{ hs_ns }}"
     kind: HyperConverged
@@ -30,7 +30,7 @@
   until: result is not failed
 
 - name: test_ Check for hyperconverged operator  # noqa: name[casing]
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     namespace: "{{ hs_ns }}"
     kind: Pod
