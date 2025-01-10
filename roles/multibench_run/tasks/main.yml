@@ -1,6 +1,5 @@
 ---
-# If this shell cmd has a correct rc, it means the multibench_host is ready
-- name: "Check the multi-bench host has the crucible binaries"
+- name: Check if multibench host has the crucible binaries
   ansible.builtin.shell: >
     crucible help
   delegate_to: "{{ multibench_host }}"
@@ -8,13 +7,12 @@
   ignore_errors: true
   become: true
 
-- name: "Fail if the host is not setup properly"
+- name: Fail if the host is not setup properly
   ansible.builtin.fail:
     msg: "Host does not have crucible installed. Please run playbooks/multibench_setup_host.yml before using this role."
   when: _multibench_run_binaries.rc != 0
 
-# This file contains some information about the execution like the number of iterations, the tags...
-- name: "Generate config file for multibench"
+- name: Generate config file for multibench
   ansible.builtin.template:
     src: templates/config.ini.j2
     dest: "{{ multibench_script_dir }}/config.ini"
@@ -22,19 +20,18 @@
   delegate_to: "{{ multibench_host }}"
   become: true
 
-- name: "Creating an output directory if needed"
+- name: Creating an output directory if needed
   when:
     - multibench_run_output_dir is undefined
     - multibench_run_output_dir.path is undefined
   block:
-    # If the multibench_output_dir is not defined, it generates a tmp directory to store the results.
-    - name: "Create working directory"
+    - name: Create working directory
       ansible.builtin.tempfile:
         state: directory
         prefix: multibench
       register: _multibench_run_output
 
-    - name: "Set the new directory as multibench_run_output_dir"
+    - name: Set the new directory as multibench_run_output_dir
       ansible.builtin.set_fact:
         multibench_run_output_dir: _multibench_run_output
 
@@ -42,18 +39,19 @@
 # The script launch a crucible cmd which start to build the container images used for the tests.
 # Then, the infrastructure is deployed in a dedicated namespace called crucible-rickshaw.
 # Once the tests are finished, the results are published in an OpenSearch DB and a summary is generated.
-- name: "Run and manage multibench workload"
+- name: Run and manage multibench workload
   block:
-    - name: "First try on launching multibench workload"
+    - name: First try on launching multibench workload
       ansible.builtin.shell:
         cmd: >
           ./{{ multibench_script }} config.ini
         chdir: "{{ multibench_script_dir }}"
       delegate_to: "{{ multibench_host }}"
       become: true
+      register: _multibench_run_results
 
   rescue:
-    - name: "Delete the output directory"
+    - name: Delete the output directory
       ansible.builtin.file:
         path: "{{ multibench_run_output_dir.path | default('/tmp/multibench') }}"
         state: absent
@@ -64,18 +62,18 @@
         prefix: multibench
       register: _multibench_run_output
 
-    - name: "Set the new directory as multibench_run_output_dir"
+    - name: Set the new directory as multibench_run_output_dir
       ansible.builtin.set_fact:
         multibench_run_output_dir: _multibench_run_output
 
-    - name: "Delete the crucible-rickshaw namespace and its resources"
+    - name: Delete the crucible-rickshaw namespace and its resources
       community.kubernetes.k8s:
         state: absent
         api: v1
         kind: Namespace
         name: crucible-rickshaw
 
-    - name: "Wait for namespace to be deleted"
+    - name: Wait for namespace to be deleted
       community.kubernetes.k8s_info:
         api: v1
         kind: Namespace
@@ -92,12 +90,20 @@
         chdir: "{{ multibench_script_dir }}"
       delegate_to: "{{ multibench_host }}"
       become: true
+      register: _multibench_run_results
 
-# The Summary is copied on the Ansible controller.
-# If you need to collect specific data, you can connect to the multibench_host and launch some crucible cmd.
-- name: "Retrieve summary results from Multibench VM"
+- name: Extract multibench result summary from output
+  ansible.builtin.set_fact:
+    multibench_run_regex_file: >-
+      {{ _multibench_run_results.stdout | regex_search('iperf-and-uperf--(.+?)run/result-summary') }}
+
+- name: Build filepath
+  ansible.builtin.set_fact:
+    multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}.txt"
+
+- name: Retrieve summary results from Multibench VM
   ansible.builtin.fetch:
-    src: /var/lib/crucible/run/latest/run/result-summary.txt
+    src: "{{ multibench_run_filepath }}"
     dest: "{{ multibench_run_output_dir.path }}/result-summary.txt"
     flat: true
   delegate_to: "{{ multibench_host }}"
