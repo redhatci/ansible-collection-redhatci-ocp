@@ -23,11 +23,11 @@
         hs_test_vm_image: "{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}"
 
 - name: "Create the test VirtualMachine"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', hs_vm_file) }}"
 
 - name: "test_ Create the test VirtualMachineInstance"  # noqa: name[casing]
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
@@ -39,7 +39,7 @@
         running: true
 
 - name: "test_ Get VMI status"  # noqa: name[casing]
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: kubevirt.io/{{ hs_kubevirt_api_version }}
     kind: VirtualMachineInstance
     name: test-vm
@@ -50,7 +50,7 @@
   until: vmi_test.resources[0].status.phase == "Running"
 
 - name: "Stopping the test VMI"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       kind: VirtualMachine
       apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}
@@ -61,7 +61,7 @@
         running: false
 
 - name: "Deleting the test VMI"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     definition:
       apiVersion: kubevirt.io/{{ hs_kubevirt_api_version }}

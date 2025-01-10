@@ -12,7 +12,7 @@
       - source | string
 
 - name: Check CatalogSource is Ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: operators.coreos.com/v1alpha1
     kind: CatalogSource
     name: "{{ source }}"
@@ -24,7 +24,7 @@
   delay: 10
 
 - name: Create Namespace for OLM operator
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
@@ -33,7 +33,7 @@
         labels: "{{ ns_labels | default(omit) }}"
 
 - name: Labeling namespace to cover PodSecurity requirements
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
@@ -45,7 +45,7 @@
           security.openshift.io/scc.podSecurityLabelSync: "false"
 
 - name: Get operator's package manifests
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: packages.operators.coreos.com/v1
     kind: PackageManifest
     label_selectors:
@@ -111,7 +111,7 @@
           first }}"
         group_spec: "{{  {'targetNamespaces': []} if all_namespaces |
                      default(false) else {'targetNamespaces': [namespace]} }}"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1
           kind: OperatorGroup
@@ -121,7 +121,7 @@
           spec: "{{ operator_group_spec | default(group_spec, true) }}"
 
     - name: Create subscription for OLM operator
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: Subscription
@@ -139,7 +139,7 @@
             startingCSV: "{{ operator_csv }}"
 
     - name: Check for install plans
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: InstallPlan
         namespace: "{{ namespace }}"
@@ -154,7 +154,7 @@
     - name: Approve only the install plan for the specific CSV
       vars:
         query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ starting_csv }}')]"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: InstallPlan
@@ -170,7 +170,7 @@
         - starting_csv | default('') | length > 0
 
     - name: Wait for CSV to be ready
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: operators.coreos.com/v1alpha1
         namespace: "{{ namespace }}"
         kind: ClusterServiceVersion
@@ -188,7 +188,7 @@
       no_log: true
 
     - name: Fail if not all pods reach a successful state
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         kind: Pod
         namespace: "{{ namespace }}"
       register: olm_pod
@@ -199,7 +199,7 @@
       no_log: true
 
     - name: Patch subscription according to install_approval
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: Subscription
@@ -219,14 +219,14 @@
 
   rescue:
     - name: Catalog sources information
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: CatalogSource
       register: catalog_info
       no_log: true
 
     - name: Subscriptions information
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: Subscription
         namespace: "{{ namespace }}"
@@ -234,7 +234,7 @@
       no_log: true
 
     - name: Install plan information
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: operators.coreos.com/v1alpha1
         kind: InstallPlan
         namespace: "{{ namespace }}"

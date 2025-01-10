@@ -34,7 +34,7 @@
     msg: "Logs directory is set to: {{ glfn_dir }}"
 
 - name: "Get a list of all pods from {{ glfn_ns }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "{{ glfn_ns }}"

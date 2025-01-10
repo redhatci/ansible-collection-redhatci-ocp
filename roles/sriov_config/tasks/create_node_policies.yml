@@ -2,7 +2,7 @@
 # OCPBUGS-32139 workaround suggests to retry the creation of the SRIOV policy if failing.
 # Trying this during 1 minute in case any of them fails.
 - name: Create SriovNetworkNodePolicy
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'templates/sriov-network-node-policy.yml.j2') }}"
   loop: "{{ sriov_network_configs }}"
   loop_control:
