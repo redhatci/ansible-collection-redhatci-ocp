@@ -32,7 +32,7 @@
     - name: Ensure probe DaemonSet is absent
       vars:
         kbpc_probe_ds_name: certsuite-debug
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         kind: DaemonSet
         name: "{{ kbpc_probe_ds_name }}"
@@ -40,14 +40,14 @@
         state: absent
 
     - name: Ensure tnf namespace is absent
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         kind: Namespace
         name: tnf
         state: absent
 
     - name: Ensure probe daemonset namespace is absent
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         kind: Namespace
         name: "{{ kbpc_probe_ds_ns }}"

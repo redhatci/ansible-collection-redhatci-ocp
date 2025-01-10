@@ -1,6 +1,6 @@
 ---
 - name: Get Hosted Cluster info
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: hypershift.openshift.io/v1beta1
     kind: HostedCluster
     namespace: "{{ ah_clusters_ns }}"
@@ -20,7 +20,7 @@
     - hosted_cluster.resources | default([]) | length == 1
 
 - name: Confirm that HCP is deleted
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: hypershift.openshift.io/v1beta1
     kind: HostedCluster
     namespace: "{{ ah_clusters_ns }}"

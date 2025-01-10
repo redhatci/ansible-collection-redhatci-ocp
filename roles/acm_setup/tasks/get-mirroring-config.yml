@@ -1,6 +1,6 @@
 ---
 - name: "Get current master's MCP"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
     name: master
@@ -10,7 +10,7 @@
 - name: "Get current master's Machine Config"
   vars:
     acm_machine_config: "{{ _acm_setup_master_mcp.resources[0].spec.configuration.name }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfig
     name: "{{ acm_machine_config }}"
@@ -18,7 +18,7 @@
   no_log: true
 
 - name: "Get cluster user-ca certificate"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: ConfigMap
     name: "user-ca-bundle"
@@ -44,7 +44,7 @@
           {{ registry_config | indent(4) }}
         ca-bundle.crt: |
           {{ acm_user_ca_bundle | indent(4) }}
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ mirror_cm_def }}"
 ...

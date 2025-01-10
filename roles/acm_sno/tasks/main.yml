@@ -3,7 +3,7 @@
   ansible.builtin.include_tasks: pre-run.yml
 
 - name: "Check cluster namespace"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Namespace
     name: "{{ acm_cluster_name }}"

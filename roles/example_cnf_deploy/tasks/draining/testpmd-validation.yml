@@ -1,7 +1,7 @@
 ---
 
 - name: "Wait until testpmd-app pod is deleted from the drained node"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Pod
     namespace: "{{ ecd_cnf_namespace }}"
     name: "{{ ecd_cnf_existing_pod }}"
@@ -16,7 +16,7 @@
   register: _ecd_timestamp_pod_deletion
 
 - name: "Wait until new testpmd-app pod is allocated in a new worker node"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:

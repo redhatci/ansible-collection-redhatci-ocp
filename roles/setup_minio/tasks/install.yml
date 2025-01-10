@@ -1,6 +1,6 @@
 ---
 - name: Create namespace for Minio
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
@@ -12,7 +12,7 @@
           security.openshift.io/scc.podSecurityLabelSync: "false"
 
 - name: Create Minio PVC
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: PersistentVolumeClaim
@@ -28,7 +28,7 @@
             storage: "{{ sm_claim_size }}"
 
 - name: Wait for Minio PVC to be Bound
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: PersistentVolumeClaim
     namespace: "{{ sm_namespace }}"
@@ -41,7 +41,7 @@
   delay: 10
 
 - name: Create the minio deployment
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: apps/v1
       kind: Deployment
@@ -93,7 +93,7 @@
                   periodSeconds: 20
 
 - name: Create the minio service
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Service
@@ -111,14 +111,14 @@
           app: minio
 
 - name: Get service info
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Service
     name: minio-service
     namespace: "{{ sm_namespace }}"
   register: service_info
 
 - name: "Create the initial bucket"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: batch/v1

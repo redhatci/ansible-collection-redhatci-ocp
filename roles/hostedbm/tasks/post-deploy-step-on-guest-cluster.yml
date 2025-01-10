@@ -14,7 +14,7 @@
     source_ns: openshift-marketplace # noqa: redhat-ci[no-role-prefix]
 
 - name: "Set the MetalLB Instance on the Guest Cluster"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
     definition:
@@ -25,7 +25,7 @@
         namespace: metallb-system
 
 - name: "Create MetalLB IP Address Pool for Wildcard(Ingress) IP"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
     state: present
     definition:
@@ -41,7 +41,7 @@
           - "{{ hostedbm_guest_ingress_ip }}-{{ hostedbm_guest_ingress_ip }}"
 
 - name: "Create MetalLB L2 Advertisements"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
     state: present
     definition:
@@ -55,7 +55,7 @@
           - ingress-public-ip
 
 - name: Create metallb-ingress service
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
     state: present
     definition:
@@ -81,7 +81,7 @@
         type: LoadBalancer
 
 - name: Wait for guest cluster to be Ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: config.openshift.io/v1
     kind: ClusterVersion
     kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"
@@ -95,7 +95,7 @@
   delay: 60
 
 - name: Get Hosted cluster Console resource
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: config.openshift.io/v1
     kind: Console
     kubeconfig: "{{ hostedbm_out_dir }}/{{ hostedbm_cluster_name }}-kubeadmin-kubeconfig"

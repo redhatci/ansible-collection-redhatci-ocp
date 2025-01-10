@@ -45,7 +45,7 @@
     scorecard_config_path: "{{ scorecard_artifacts }}/scorecard-test-config.yaml"
 
 - name: Create namespace for scorecard testing
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       api_version: v1
@@ -87,13 +87,13 @@
       register: scorecard_exec
   rescue:
     - name: Get Scorecard pods
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         kind: Pod
         namespace: "{{ scorecard_namespace }}"
       register: scorecard_pods
 
     - name: Get scorecard-related events
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         kind: Event
         namespace: "{{ scorecard_namespace }}"
       register: scorecard_events
@@ -139,7 +139,7 @@
     mode: "0644"
 
 - name: Delete namespace used for scorecard testing
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     name: "{{ scorecard_namespace }}"
     api_version: v1
     kind: Namespace
@@ -158,7 +158,7 @@
 - name: Check state of scorecard
   block:
     - name: Wait until namespace is unstuck
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Namespace
         name: "{{ scorecard_namespace }}"
@@ -168,13 +168,13 @@
       delay: 10
   rescue:
     - name: Get scorecard-related events
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         kind: Event
         namespace: "{{ scorecard_namespace }}"
       register: scorecard_events
 
     - name: Get pods from the scorecard namespace
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         kind: Pod
         namespace: "{{ scorecard_namespace }}"
       register: scorecard_pods

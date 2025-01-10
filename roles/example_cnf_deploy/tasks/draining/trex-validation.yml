@@ -3,7 +3,7 @@
 - name: "Extract TRexApp job duration"
   block:
     - name: Retrieve TRexApp information
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: examplecnf.openshift.io/v1
         kind: TRexApp
         namespace: "{{ ecd_cnf_namespace }}"
@@ -19,7 +19,7 @@
         ecd_trex_duration: "{{ (_ecd_trex_retrieved_duration == -1)|ternary(ecd_default_trex_duration,_ecd_trex_retrieved_duration) }}"
 
 - name: "Wait for the TRex app TestCompleted event"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
@@ -31,7 +31,7 @@
   until: _ecd_trex_event.resources|length > 0
 
 - name: "Wait for the TRex app TestPassed or TestFailed event"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors: "involvedObject.name={{ ecd_trex_app_cr_name }}"
@@ -50,7 +50,7 @@
 
 # Only if TRexApp job passed
 - name: "Wait for the TRex app PacketMatched event"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
@@ -64,7 +64,7 @@
     - not ecd_trex_job_failed|bool
 
 - name: "Retrieve TRex app logs"
-  community.kubernetes.k8s_log:
+  kubernetes.core.k8s_log:
     namespace: "{{ ecd_cnf_namespace }}"
     label_selectors:
       - example-cnf-type=pkt-gen-app

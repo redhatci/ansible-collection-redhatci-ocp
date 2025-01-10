@@ -16,7 +16,7 @@
           (gcr_ssh_key_path is defined and gcr_ssh_key_path | length > 0)
 
 - name: Add ssh_known_hosts to ArgoCD
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: ConfigMap
     name: "{{ gcr_argo_cd_known_host_cm }}"
@@ -34,13 +34,13 @@
   no_log: true
 
 - name: Set up a SSH private repository
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'ssh_private_repo.yaml.j2') | from_yaml }}"
   when: not gcr_repo_protocol_http
   no_log: true
 
 - name: Set up a HTTP private repository
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'http_private_repo.yaml.j2') | from_yaml }}"
   when: gcr_repo_protocol_http
   no_log: true

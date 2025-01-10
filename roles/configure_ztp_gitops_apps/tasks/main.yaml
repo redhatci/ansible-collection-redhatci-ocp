@@ -176,7 +176,7 @@
         {{ czga_oc_tool_path }} --kubeconfig="{{ temp_dir.path }}/kubeconfig" patch argocd openshift-gitops -n openshift-gitops --patch-file "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json" --type=merge
 
     - name: Disable proxy addon
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: multicluster.openshift.io/v1
         kubeconfig: "{{ temp_dir.path }}/kubeconfig"
         kind: MultiClusterEngine
@@ -188,7 +188,7 @@
     # Before launching the SiteConfig, provide the OCP pull secret extracted from the hub cluster
     # For this, we need to create the cluster namespace in advance
     - name: Create the Spoke cluster namespace
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: v1
           kind: Namespace
@@ -202,7 +202,7 @@
       no_log: true
 
     - name: Create the Spoke cluster pull-secret
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: v1
           kind: Secret
@@ -215,7 +215,7 @@
       no_log: true
 
     - name: Wait for the GitOps ZTP plugin activation
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Pod
         namespace: openshift-gitops

@@ -7,7 +7,7 @@
       - asm_cluster_name | length > 0
 
 - name: Delete spoke's ManagedCluster
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: cluster.open-cluster-management.io/v1
     kind: ManagedCluster
     name: "{{ asm_cluster_name }}"
@@ -17,7 +17,7 @@
     wait_timeout: 300
 
 - name: Ensure ManagedCluster resource has been deleted
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: cluster.open-cluster-management.io/v1
     kind: ManagedCluster
     name: "{{ asm_cluster_name }}"
@@ -32,7 +32,7 @@
 # For this case, we need to explicitly remove the namespace.
 # This may take some time.
 - name: Delete spoke cluster namespace
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
     name: "{{ asm_cluster_name }}"
@@ -43,7 +43,7 @@
 
 # Same, this may take some time.
 - name: Ensure spoke cluster namespace has been deleted
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: Namespace
     name: "{{ asm_cluster_name }}"

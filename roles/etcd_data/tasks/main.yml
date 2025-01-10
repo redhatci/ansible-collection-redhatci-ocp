@@ -6,7 +6,7 @@
       - ed_enc | lower in ed_valid_encryption_types
 
 - name: Query etcd data
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: config.openshift.io/v1
     kind: APIServer
     name: cluster
@@ -26,7 +26,7 @@
     ed_result: "{{ (_ed_status == 'encrypted') | ternary(_ed_enc, _ed_dec) }}"
 
 - name: Encrypt etcd data
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       api_version: config.openshift.io/v1
       kind: APIServer
@@ -40,7 +40,7 @@
     - ed_action | lower == 'encrypt'
 
 - name: Decrypt etcd data
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       api_version: config.openshift.io/v1
       kind: APIServer

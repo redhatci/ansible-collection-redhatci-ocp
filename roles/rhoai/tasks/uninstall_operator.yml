@@ -1,6 +1,6 @@
 ---
 - name: "Get Subscription info for {{ rhoai_op_name }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Subscription
     api_version: operators.coreos.com/v1alpha1
     name: "{{ rhoai_op_package }}"
@@ -8,7 +8,7 @@
   register: _rhoai_sub
 
 - name: "Removing Subscription for {{ rhoai_op_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     kind: Subscription
     api_version: operators.coreos.com/v1alpha1
@@ -18,7 +18,7 @@
 
 - name: "Removing ClusterServiceVersion for {{ rhoai_op_name }}"
   when: _rhoai_sub.resources | length == 1
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     kind: ClusterServiceVersion
     api_version: operators.coreos.com/v1alpha1
@@ -27,7 +27,7 @@
     wait: true
 
 - name: "Removing leftover webhook configs for {{ rhoai_op_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     kind: "{{ __kind }}"
     name: "{{ rhoai_op_namespace }}.{{ rhoai_op_name }}-resources.maistra.io"
@@ -38,7 +38,7 @@
     loop_var: __kind
 
 - name: "Removing OperatorGroup for {{ rhoai_op_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     kind: OperatorGroup
     api_version: operators.coreos.com/v1
@@ -46,7 +46,7 @@
     namespace: "{{ rhoai_op_namespace }}"
 
 - name: "Removing namespace for {{ rhoai_op_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     kind: Namespace
     api_version: v1

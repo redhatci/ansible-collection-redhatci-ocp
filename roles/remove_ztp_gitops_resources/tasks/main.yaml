@@ -4,7 +4,7 @@
 # resources if we decide to detach the spoke cluster from a
 # given hub.
 - name: Delete SiteConfig and Policy Applications
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: argoproj.io/v1alpha1
     kind: Application
     name: "{{ _rzgr_gitops_application }}"
@@ -18,7 +18,7 @@
     loop_var: _rzgr_gitops_application
 
 - name: Delete SiteConfig and Policy AppProjects
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: argoproj.io/v1alpha1
     kind: AppProject
     name: "{{ _rzgr_gitops_appproject }}"
@@ -38,7 +38,7 @@
 # acm_detach_spoke_cluster role.
 
 - name: Delete policies namespace
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
     name: "{{ rzgr_policies_namespace }}"
@@ -46,7 +46,7 @@
     wait: true
 
 - name: Delete extra namespaces created for GitOps Policy
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
     name: "{{ _rzgr_extra_namespace }}"
@@ -57,7 +57,7 @@
     loop_var: _rzgr_extra_namespace
 
 - name: Delete ClusterRoleBindings created for GitOps Policy and SiteConfig
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
     name: "{{ _rzgr_cluster_role_binding }}"
@@ -68,7 +68,7 @@
     loop_var: _rzgr_cluster_role_binding
 
 - name: Delete Secret from openshift-gitops repo
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: Secret
     name: "{{ rzgr_private_repo_secret }}"
@@ -77,7 +77,7 @@
     wait: true
 
 - name: Delete ConfigMap from openshift-gitops repo
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: ConfigMap
     name: "{{ rzgr_argo_cd_known_host_cm }}"

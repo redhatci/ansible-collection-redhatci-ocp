@@ -16,7 +16,7 @@
   when: metallb
 
 - name: Create Agent Service config
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: agent-install.openshift.io/v1beta1
     kind: AgentServiceConfig
     name: agent
@@ -46,13 +46,13 @@
   when: not (iog_configure_only | bool)
   block:
     - name: Create namespace for GitOps
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         kind: Namespace
         name: openshift-gitops
 
     - name: Create operator group for GitOps
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: operators.coreos.com/v1
         kind: OperatorGroup
         name: gitops-operator-group
@@ -65,7 +65,7 @@
       when: gitops_channel is not defined
       block:
         - name: Find recommended version of GitOps
-          community.kubernetes.k8s_info:
+          kubernetes.core.k8s_info:
             api_version: packages.operators.coreos.com/v1
             kind: PackageManifest
             name: openshift-gitops-operator
@@ -81,7 +81,7 @@
         seconds: 120
 
     - name: Subscribe to GitOps
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: operators.coreos.com/v1alpha1
         kind: Subscription
         name: openshift-gitops-operator

@@ -67,14 +67,14 @@
         multibench_run_output_dir: _multibench_run_output
 
     - name: Delete the crucible-rickshaw namespace and its resources
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: absent
         api: v1
         kind: Namespace
         name: crucible-rickshaw
 
     - name: Wait for namespace to be deleted
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: v1
         kind: Namespace
         name: crucible-rickshaw

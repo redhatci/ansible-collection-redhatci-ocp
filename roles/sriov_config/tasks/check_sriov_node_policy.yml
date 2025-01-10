@@ -1,6 +1,6 @@
 ---
 - name: Get SR-IOV Selected Nodes for resource {{ sriov_conf.resource }}
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Node
     label_selectors: >-
       {{ sriov_conf.node_policy.node_selector |
@@ -17,7 +17,7 @@
     sriov_policy_pf: "{{ sriov_conf.node_policy.nic_selector.pf_names[0].split('#') }}"
     sriov_policy_pf_range: "{{ (sriov_policy_pf[1] | default('')).split('-') }}"
     vfs: "{{ sriov_policy_pf_range[1] | default(sriov_conf.node_policy.num_vfs, true) | int - sriov_policy_pf_range[0] | default(1, true) | int + 1 }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Node
     label_selectors: >-
       {{ sriov_conf.node_policy.node_selector |

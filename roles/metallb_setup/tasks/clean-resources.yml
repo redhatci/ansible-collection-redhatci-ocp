@@ -1,6 +1,6 @@
 ---
 - name: "Delete MetalLB BGP Peers"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: metallb.io/v1beta2
     kind: BGPPeer
@@ -18,7 +18,7 @@
     - mlb_bgp_peers is defined
 
 - name: "Delete MetalLB resources"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: "{{ resource.apiVer }}"
     kind: "{{ resource.kind }}"

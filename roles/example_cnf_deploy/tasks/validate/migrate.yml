@@ -1,7 +1,7 @@
 ---
 
 - name: "Get TestPMD CR info"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: TestPMD
   register: _ecd_testpmd_list
@@ -14,7 +14,7 @@
 # This means that the TRex job may have failed, so we don't want to run the migration
 # tests in that case
 - name: "Check if previous TRex job worked when ecd_trex_tests_skip_failures is activated"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
@@ -34,7 +34,7 @@
   when: ecd_try_running_migration_tests|bool
   block:
     - name: "Wait for at least one PacketMatched event from TRex"
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:
