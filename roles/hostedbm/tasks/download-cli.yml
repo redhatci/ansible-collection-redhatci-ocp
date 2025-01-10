@@ -1,6 +1,6 @@
 ---
 - name: Get ConsoleCLIDownload link
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: console.openshift.io/v1
     kind: ConsoleCLIDownload
     kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"

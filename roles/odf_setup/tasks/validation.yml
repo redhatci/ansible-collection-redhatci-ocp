@@ -1,6 +1,6 @@
 ---
 - name: "Check if the OCS CRD is present"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: storageclusters.ocs.openshift.io
   register: req_crd
@@ -14,7 +14,7 @@
   when: req_crd.resources | list | count == 0
 
 - name: "Check if the main LSO CRD is present"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: localvolumes.local.storage.openshift.io
   register: req_crd
@@ -39,7 +39,7 @@
     - ocs_install_type == 'internal'
   block:
     - name: Get node information from Kubernetes
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Node
         label_selectors:

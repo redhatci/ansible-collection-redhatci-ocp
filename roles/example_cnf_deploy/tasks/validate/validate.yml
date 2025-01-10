@@ -7,7 +7,7 @@
     ecd_matched_new: []
 
 - name: "Get trexconfig matched events"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
@@ -16,7 +16,7 @@
   no_log: true
 
 - name: "Get trexconfig dropped events"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:

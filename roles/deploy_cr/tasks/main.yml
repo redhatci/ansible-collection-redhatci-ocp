@@ -22,7 +22,7 @@
       - spec is mapping
 
 - name: Deploy CR
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: "{{ api_version }}"
       kind: "{{ kind }}"
@@ -36,7 +36,7 @@
   until: result is not failed
 
 - name: test_ Check that the CR is ready  # noqa: name[casing]
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: "{{ api_version }}"
     name: "{{ name }}"
     namespace: "{{ namespace }}"

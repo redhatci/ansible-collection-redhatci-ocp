@@ -7,7 +7,7 @@
   no_log: "{{ ah_no_log | bool }}"
   block:
     - name: Get cluster pull_secret
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: v1
         kind: Secret
         name: "pull-secret"
@@ -27,7 +27,7 @@
         ah_pullsecret_file: "{{ ah_tmp_dir }}/{{ auths_file }}"
 
 - name: "Get Management Image Source"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: "config.openshift.io/v1"
     kind: "ImageDigestMirrorSet"
   register: mc_idms
@@ -59,7 +59,7 @@
     - ah_release_image is undefined
   block:
     - name: Get Management OCP release image
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: "config.openshift.io/v1"
         kind: "ClusterVersion"
       register: mc_cv
@@ -81,7 +81,7 @@
     - ah_ssh_key is undefined
   block:
     - name: Get cluster install-config
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: v1
         kind: ConfigMap
         name: cluster-config-v1
@@ -116,7 +116,7 @@
   no_log: "{{ ah_no_log | bool }}"
   block:
     - name: Get cluster user-ca cert
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: v1
         kind: ConfigMap
         name: "user-ca-bundle"

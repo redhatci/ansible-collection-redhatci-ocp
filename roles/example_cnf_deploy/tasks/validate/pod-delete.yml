@@ -1,6 +1,6 @@
 ---
 - name: "Get cnf app pod"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Pod
     namespace: "{{ ecd_cnf_namespace }}"
     label_selectors:
@@ -29,7 +29,7 @@
     {{ ecd_oc_path }} adm cordon {{ ecd_cnf_existing_node }}
 
 - name: Delete the cnf app pod
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     kind: Pod
     namespace: "{{ ecd_cnf_namespace }}"
     name: "{{ ecd_cnf_existing_pod_name }}"
@@ -38,7 +38,7 @@
     wait_timeout: 300
 
 - name: "Check cnf app pod count to match and running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:

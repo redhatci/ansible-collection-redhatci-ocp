@@ -1,6 +1,6 @@
 ---
 - name: Wait until sriovnetworknodestate becomes ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: sriovnetwork.openshift.io/v1
     kind: SriovNetworkNodeState
   register: sriovnetnode

@@ -1,6 +1,6 @@
 ---
 - name: Check if the CNV CRD is present
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: kubevirts.kubevirt.io
   register: kvirt_crd
