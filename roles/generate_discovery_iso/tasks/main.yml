@@ -1,6 +1,13 @@
 ---
 # tasks file for generate_discovery_iso
 
+- name: Deprecation warning
+  debug:
+    msg: |
+      [DEPRECATION WARNING]: This role will be removed from the collection in the future.
+      Deprecation warnings can be disabled by setting deprecation_warnings=False in
+      ansible.cfg.
+
 - name: Set discovery iso body
   set_fact:
     request_body:

@@ -1,3 +1,11 @@
+---
+- name: Deprecation warning
+  debug:
+    msg: |
+      [DEPRECATION WARNING]: This role will be removed from the collection in the future.
+      Deprecation warnings can be disabled by setting deprecation_warnings=False in
+      ansible.cfg.
+
 - name: "Install node: {{inventory_hostname }}"
   delegate_to: bastion
   block:

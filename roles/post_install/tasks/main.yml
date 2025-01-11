@@ -1,4 +1,11 @@
 ---
+- name: Deprecation warning
+  debug:
+    msg: |
+      [DEPRECATION WARNING]: This role will be removed from the collection in the future.
+      Deprecation warnings can be disabled by setting deprecation_warnings=False in
+      ansible.cfg.
+
 - name: Fetch kubeconfig for assisted installer
   ansible.builtin.include_tasks:
     file: fetch_kubeconfg_assisted_installer.yml
