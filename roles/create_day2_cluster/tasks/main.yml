@@ -1,3 +1,11 @@
+---
+- name: Deprecation warning
+  debug:
+    msg: |
+      [DEPRECATION WARNING]: This role will be removed from the collection in the future.
+      Deprecation warnings can be disabled by setting deprecation_warnings=False in
+      ansible.cfg.
+
 - name: Create day 2 cluster
   uri:
     url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/import"
