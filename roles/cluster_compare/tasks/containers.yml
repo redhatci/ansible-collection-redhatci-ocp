@@ -1,0 +1,30 @@
+---
+
+- name: Extract cluster-compare tool from container
+  when: cc_compare_container_source | length > 0
+  block:
+    - name: Extract cluster-compare tool from container
+      ansible.builtin.shell: |
+        podman pull {{ cc_compare_container_source }}
+        podman rm -fi ofe-cc-kca
+        podman cp $(podman create --name ofe-cc-kca {{ cc_compare_container_source }}):{{ cc_compare_container_executable }} kubectl-cluster_compare
+        podman rm ofe-cc-kca
+      args:
+        chdir: "{{ cc_work_dir }}"
+
+    - name: Remove temporary container
+      ansible.builtin.command:
+        cmd: "podman rm -fi ofe-cc-kca"
+
+- name: Extract reference metadata from container
+  when: cc_reference_container_source | length > 0
+  block:
+    - name: Pull container image
+      containers.podman.podman_image:
+        name: "{{ cc_reference_container_source }}"
+
+    - name: Extract metadata from container
+      ansible.builtin.shell: |
+        podman rm -f ofe-cc-ref
+        podman cp $(podman create --name ofe-cc-ref {{ cc_reference_container_source }}):{{ cc_reference_metadata_yaml_location }} {{ cc_work_dir }}/bin/
+...

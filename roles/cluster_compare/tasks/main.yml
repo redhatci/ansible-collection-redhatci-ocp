@@ -1,0 +1,25 @@
+---
+- name: Validate requirements
+  ansible.builtin.include_tasks: validations.yml
+
+- name: Create working directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: cluster_compare
+  register: _cc_tmp_dir
+
+- name: Set work directory path
+  ansible.builtin.set_fact:
+    cc_work_dir: "{{ _cc_tmp_dir.path }}"
+
+- name: Test with Upstream
+  ansible.builtin.include_tasks: upstream.yml
+
+# - name: Test with downstream container images
+#   ansible.builtin.include_tasks: containers.yml
+
+- name: Remove working directory
+  ansible.builtin.file:
+    path: "{{ cc_work_dir }}"
+    state: absent
+...

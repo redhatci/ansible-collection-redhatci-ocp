@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.25.EPOCH
+Version:        0.26.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -53,6 +53,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Jan 10 2025 Beto Rdz <joserod@redhat.com> - 0.26.EPOCH-VERS
+- Add cluster_compare role
+
 * Wed Jan  8 2025 Tony Garcia <tonyg@redhat.com> - 0.25.EPOCH-VERS
 - Introduce kubernetes.core collection as a dependency package
 
