@@ -2,6 +2,7 @@
 - name: prepare PXE
   become: true
   block:
+
     - name: Install syslinux
       package:
         name: syslinux

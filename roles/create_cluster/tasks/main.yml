@@ -1,6 +1,14 @@
 ---
 # tasks file for create_cluster
 
+- name: Deprecation warning
+  ansible.builtin.debug:
+    msg:
+      - "[DEPRECATION WARNING]: This role will be removed from the collection in the future."
+      - "Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg."
+  when:
+    - lookup('ansible.builtin.config', 'DEPRECATION_WARNINGS')
+
 - name: Set body for create cluster
   set_fact:
     # - `ingress_vip` is not provided in the request body because the value

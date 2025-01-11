@@ -1,5 +1,12 @@
 ---
 # tasks file for patch_host_config
+- name: Deprecation warning
+  ansible.builtin.debug:
+    msg:
+      - "[DEPRECATION WARNING]: This role will be removed from the collection in the future."
+      - "Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg."
+  when:
+    - lookup('ansible.builtin.config', 'DEPRECATION_WARNINGS')
 
 - name: Ensure host has inventory
   when: patch_host_config_discovered_host.inventory is not defined
