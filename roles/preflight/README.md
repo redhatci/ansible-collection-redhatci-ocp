@@ -47,7 +47,9 @@ There are two modes of certification:
 
   - End-to-end operator certification. Please use the variable `preflight_operators_to_certify` if you'd like to certify all container images to which you bundle image is referring and the operator itself.
 
-The idea is use one of them.
+The idea is use one of them. 
+
+Note: The DCI Pipeline configurations throughout the sections are just examples, where the Pipeline configs are saved in the `my-dci-pipeline-test/pipelines` folder.
 
 ## Certification of standalone containers
 
@@ -57,96 +59,184 @@ The idea is use one of them.
     export KUBECONFIG=/var/lib/dci-openshift-app-agent/kubeconfig
     ```
 
-- Create file settings.yml in /etc/dci-openshift-app-agent/settings.yml and provide all the information about your certification projects. Let’s consider two standard scenarios here.
+- Create dci-pipeline configuration files in the `my-dci-pipeline-test/pipelines` folder and provide all the information about your certification projects. Let's consider two standard scenarios here.
 
   a. If you have a connected environment with the private external registry. In the example below, we use the existing certification project for testpmd-operator container and create a new one for bla-bla-operator.
 
     ```yaml
-    $ cat /etc/dci-openshift-app-agent/settings.yml
+    $ cat my-dci-pipeline-test/pipelines/testpmd-container-preflight-pipeline.yml
     ---
-    # Job name and tags to be displayed in DCI UI
-    dci_name: "Testpmd-Container-Preflight"
-    dci_tags: ["debug", "testpmd-container"]
-    dci_topic: "OCP-4.7"
-    # DCI component for every OCP version
-    # could be checked here: https://www.distributed-ci.io/topics
-    dci_component: ['8cef32d9-bb90-465f-9b42-8b058878780a']
+    # Generic DCI Pipeline config
+    - name: testpmd-container-preflight
+      stage: workload
+      topic: OCP-4.16
+      ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
+      ansible_cfg: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/pipelines/ansible.cfg
+      ansible_inventory: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/inventories/@QUEUE/@RESOURCE-workload.yml
+      dci_credentials: /var/lib/dci-openshift-app-agent/.config/dci-pipeline/dci_credentials.yml
+      ansible_extravars:
+        dci_cache_dir: /var/lib/dci-openshift-app-agent/dci-cache-dir
+        dci_config_dir: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/ocp-workload
+        dci_gits_to_components:
+          - /var/lib/dci-openshift-app-agent/my-dci-pipeline-test
+        dci_local_log_dir: /var/lib/dci-openshift-app-agent/upload-errors
+        dci_tags: ["debug", "recertification", "cert-project-creation", "testpmd-container"]
+        dci_workarounds: []
 
-    # Optional, please provide these credentials
-    # if your registry is private.
-    partner_creds: "/opt/pull-secrets/partner_config.json"
+        # Required to create and update cert projects.
+        # Check the instructions below on where to retrieve it
+        organization_id: "12345678"
 
-    # List of images to certify,
-    # you could provide many containers at once.
-    preflight_containers_to_certify:
-      - container_image: "quay.io/rh-nfv-int/testpmd-operator:v0.2.9"
-        # Optional; provide it when you need to use
-        # the existing project to submit test results.
-        # It's an id of your Container Image Project
-        # https://connect.redhat.com/projects/my_nice_container_id
-        pyxis_container_identifier: "my_nice_container_id"
-      - container_image: "quay.io/rh-nfv-int/bla-bla-operator:v0.2.9"
-        # Optional; provide it when you need to create
-        # a new "Container Image project" and submit test results in it.
-        create_container_project: true
-        pyxis_product_lists:
-          - "65dc9e05f1f7e59bac573122"
-          - "65dc9dbb11956b89f14194e0"
+        # Reduce the job duration
+        do_must_gather: false
+        check_workload_api: false
+        preflight_run_health_check: false
 
-    # Optional; provide it when you need to submit test results.
-    # This token is shared between all your projects.
-    # To generate it: connect.redhat.com -> Product certification ->
-    # Container API Keys -> Generate new key
-    pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+        # Optional, please provide these credentials
+        # if your registry is private.
+        partner_creds: "/opt/pull-secrets/partner_config.json"
+
+        # Optional; provide it when you need to submit test results.
+        # This token is shared between all your projects.
+        # To generate it: connect.redhat.com -> Product certification ->
+        # Container API Keys -> Generate new key
+        pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+
+        # List of images to certify,
+        # you could provide many containers at once.
+        preflight_containers_to_certify:
+          - container_image: "quay.io/rh-nfv-int/testpmd-operator:v0.2.9"
+            # Optional; provide it when you need to use
+            # the existing project to submit test results.
+            # It's an id of your Container Image Project
+            # https://connect.redhat.com/projects/my_nice_container_id
+            pyxis_container_identifier: "my_nice_container_id"
+          - container_image: "quay.io/rh-nfv-int/bla-bla-operator:v0.2.9"
+            # Required when creating cert project but optional if not want to update mandatory parameters
+            short_description: "Add 50+ characters image description here"
+            # Optional; provide it when you need to create
+            # a new "Container Image project" and submit test results in it.
+            create_container_project: true
+            pyxis_product_lists:
+              - "xxx"
+              - "yyy"
+
+        # Project certification setting (Optional)
+        # This allows to fill the rest of the project settings after project creation
+        # Any project for containers images certifications can use them
+        # TODO: provide cert_settings example for every project type
+        cert_settings:
+          # Container
+          auto_publish: false
+          registry_override_instruct: "These are instructions of how to override settings"
+          email_address: "email@email.com"
+          application_categories: "Networking"
+          privileged: false
+          repository_description: "This is a test repository"
+          build_categories: "Standalone image"
+          os_content_type: "Red Hat Universal Base Image (UBI)"
+          release_category: "Generally Available"
+
+      use_previous_topic: true
+      inputs:
+        kubeconfig: kubeconfig_path
+    ...
     ```
 
   b. There is a disconnected environment with the self-signed local registry and operator images in the external private registry. In the case of a disconnected environment, DCI would handle all the mirroring and regenerate a catalog image.
 
     ```yaml
-    $ cat /etc/dci-openshift-app-agent/settings.yml
+    $ cat my-dci-pipeline-test/pipelines/testpmd-container-disconnected-pipeline.yml
     ---
-    # Job name and tags to be displayed in DCI UI
-    dci_name: "Testpmd-Container-Preflight"
-    dci_tags: ["debug", "testpmd-container"]
-    dci_topic: "OCP-4.7"
-    # DCI component for every OCP version
-    # could be checked here: https://www.distributed-ci.io/topics
-    dci_component: ['8cef32d9-bb90-465f-9b42-8b058878780a']
+    # Generic DCI Pipeline config
+    - name: testpmd-container-disconnected
+      stage: workload
+      topic: OCP-4.16
+      ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
+      ansible_cfg: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/pipelines/ansible.cfg
+      ansible_inventory: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/inventories/@QUEUE/@RESOURCE-workload.yml
+      dci_credentials: /var/lib/dci-openshift-app-agent/.config/dci-pipeline/dci_credentials.yml
+      ansible_extravars:
+        dci_cache_dir: /var/lib/dci-openshift-app-agent/dci-cache-dir
+        dci_config_dir: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/ocp-workload
+        dci_gits_to_components:
+          - /var/lib/dci-openshift-app-agent/my-dci-pipeline-test
+        dci_local_log_dir: /var/lib/dci-openshift-app-agent/upload-errors
+        dci_tags: ["debug","cert-project-creation", "testpmd-container"]
+        dci_workarounds: []
 
-    # Mandatory for disconnected environment,
-    # this registry is used for mirrored images
-    # and to store an index (catalog) image.
-    dci_local_registry: registry.local.lab:4443
+        # Required to create and update cert projects.
+        # Check the instructions below on where to retrieve it
+        organization_id: "12345678"
 
-    # Credentials for your private registries.
-    # You could have several private registries:
-    # local and another external, to store the operator.
-    # In this case, please provide all credentials here.
-    partner_creds: "/opt/pull-secrets/partner_config.json"
+        # Reduce the job duration
+        do_must_gather: false
+        check_workload_api: false
+        preflight_run_health_check: false
 
-    # Optional, provide it if your registry is self-signed.
-    preflight_custom_ca: "/var/lib/dci-openshift-agent/registry/certs/cert.ca"
+        # Credentials for your private registries.
+        # You could have several private registries:
+        # local and another external, to store the operator.
+        # In this case, please provide all credentials here.
+        partner_creds: "/opt/pull-secrets/partner_config.json"
 
-    # List of images to certify,
-    # you could provide many containers at once.
-    preflight_containers_to_certify:
-        # In disconnected environments provide a digest (SHA), not a tag.
-      - container_image: "quay.io/rh-nfv-int/testpmd-operator@sha256:339096a68f09eb42aa9bb8d72bf1d958fe14a15c93fb850e27ce18208fed23ed"
-        # Optional; provide it when you need to create
-        # a new "Container Image project" and submit test results in it.
-        create_container_project: true
+        # Optional; provide it when you need to submit test results.
+        # This token is shared between all your projects.
+        # To generate it: connect.redhat.com -> Product certification ->
+        # Container API Keys -> Generate new key
+        pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
 
-    # Optional; provide it when you need to submit test results.
-    # This token is shared between all your projects.
-    # To generate it: connect.redhat.com -> Product certification ->
-    # Container API Keys -> Generate new key
-    pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+        # Mandatory for disconnected environment,
+        # this registry is used for mirrored images
+        # and to store an index (catalog) image.
+        dci_local_registry: registry.local.lab:4443
+
+        # Optional, provide it if your registry is self-signed.
+        preflight_custom_ca: "/var/lib/dci-openshift-agent/registry/certs/cert.ca"
+
+        # List of images to certify,
+        # you could provide many containers at once.
+        preflight_containers_to_certify:
+            # In disconnected environments provide a digest (SHA), not a tag.
+          - container_image: "quay.io/rh-nfv-int/testpmd-operator@sha256:339096a68f09eb42aa9bb8d72bf1d958fe14a15c93fb850e27ce18208fed23ed"
+            # Required when creating cert project but optional if not want to update mandatory parameters
+            short_description: "Add 50+ characters image description here"
+            # Optional; provide it when you need to create
+            # a new "Container Image project" and submit test results in it.
+            create_container_project: true
+
+        # Project certification setting (Optional)
+        # This allows to fill the rest of the project settings after project creation
+        # Any project for containers images certifications can use them
+        # TODO: provide cert_settings example for every project type
+        cert_settings:
+          # Operator and Container
+          auto_publish: false
+          registry_override_instruct: "These are instructions of how to override settings"
+          email_address: "email@email.com"
+          application_categories: "Networking"
+          privileged: false
+          repository_description: "This is a test repository"
+          build_categories: "Standalone image"
+          os_content_type: "Red Hat Universal Base Image (UBI)"
+          release_category: "Generally Available"
+
+      use_previous_topic: true
+      inputs:
+        kubeconfig: kubeconfig_path
+    ...
     ```
 
 - Run dci-openshift-app-agent:
-
+  
+  a) Connected
     ```bash
-    dci-openshift-app-agent-ctl -s -- -v
+    KUBECONFIG=$KUBECONFIG dci-pipeline-schedule testpmd-container-preflight
+    ```
+
+  b) Disconnected
+    ```bash
+    KUBECONFIG=$KUBECONFIG dci-pipeline-schedule testpmd-container-disconnected
     ```
 
 
@@ -158,129 +248,226 @@ The idea is use one of them.
     export KUBECONFIG=/var/lib/dci-openshift-app-agent/kubeconfig
     ```
 
-- Create file settings.yml in /etc/dci-openshift-app-agent/settings.yml and provide all the information about your certification projects. Let’s consider two standard scenarios here.
+- Create dci-pipeline configuration files in the `my-dci-pipeline-test/pipelines` folder and provide all the information about your certification projects. Let's consider two standard scenarios here.
 
   a. If you have a connected environment with the private external registry. In the example below, we use existing certification projects for testpmd-operator and create new ones for bla-bla-operator.
 
     ```yaml
-    $ cat /etc/dci-openshift-app-agent/settings.yml
+    $ cat my-dci-pipeline-test/pipelines/testpmd-operator-e2e-pipeline.yml
     ---
-    # job name and tags to be displayed in DCI UI
-    dci_name: "Testpmd-Operator-Preflight"
-    dci_tags: ["debug", "testpmd-operator", "testpmd-container"]
-    dci_topic: "OCP-4.7"
-    # DCI component for every OCP version
-    # could be checked here: https://www.distributed-ci.io/topics
-    dci_component: ['8cef32d9-bb90-465f-9b42-8b058878780a']
+    # Generic DCI Pipeline config
+    - name: testpmd-operator-e2e
+      stage: workload
+      topic: OCP-4.16
+      ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
+      ansible_cfg: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/pipelines/ansible.cfg
+      ansible_inventory: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/inventories/@QUEUE/@RESOURCE-workload.yml
+      dci_credentials: /var/lib/dci-openshift-app-agent/.config/dci-pipeline/dci_credentials.yml
+      ansible_extravars:
+        dci_cache_dir: /var/lib/dci-openshift-app-agent/dci-cache-dir
+        dci_config_dir: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/ocp-workload
+        dci_gits_to_components:
+          - /var/lib/dci-openshift-app-agent/my-dci-pipeline-test
+        dci_local_log_dir: /var/lib/dci-openshift-app-agent/upload-errors
+        dci_tags: ["debug", "testpmd-operator", "testpmd-container"]
+        dci_workarounds: []
 
-    # Optional, please provide these credentials
-    # if your registry is private.
-    partner_creds: "/opt/pull-secrets/partner_config.json"
+        # Required to create and update cert projects.
+        # Check the instructions below on where to retrieve it
+        organization_id: "12345678"
 
-    # List of operators to certify,
-    # you could provide many operators at once.
-    preflight_operators_to_certify:
-      - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
-        # Mandatory for the connected environments.
-        index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
-        # Optional; provide it when you need to use
-        # the existing project to submit test results.
-        # It's an id of your Container Image Project
-        # https://connect.redhat.com/projects/my_nice_container_id
-        pyxis_container_identifier: "my_nice_container_id"
-        # Optional; provide it when you need to use
-        # the existing project to submit test results.
-        # It's an id of your Operator Bundle Image
-        # https://connect.redhat.com/projects/my_nice_container_id
-        pyxis_operator_identifier: "my_nice_operator_id"
-        # Optional; use it to automatically open cert PR
-        # at the certified-operators repository
-        create_pr: true
-      - bundle_image: "quay.io/rh-nfv-int/bla-bla-bundle:v0.2.1"
-        # Mandatory for the connected environments.
-        index_image: "quay.io/rh-nfv-int/bla-bla-catalog:v0.2.1"
-        # Optional; provide it when you need to create
-        # a new "Container Image project" and submit test results in it.
-        create_container_project: true
-        # Optional; provide it when you need to create
-        # a new "Operator Bundle Image" and submit test results in it.
-        create_operator_project: true
-        # Optional; use it to automatically open cert PR
-        # at the certified-operators repository
-        create_pr: true
-        # Optional; use it to automatically merge cert PR
-        # at the certified-operators repository
-        merge_pr: true
+        # Reduce the job duration
+        do_must_gather: false
+        check_workload_api: false
+        preflight_run_health_check: false
 
-    # Optional; provide it when you need to submit test results.
-    # This token is shared between all your projects.
-    # To generate it: connect.redhat.com -> Product certification ->
-    # Container API Keys -> Generate new key
-    pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+        # Optional, please provide these credentials
+        # if your registry is private.
+        partner_creds: "/opt/pull-secrets/partner_config.json"
 
-    # Optional; provide this token when using create_pr option
-    github_token_path: "/opt/cache/dcicertbot-token.txt"
+        # Optional; provide it when you need to submit test results.
+        # This token is shared between all your projects.
+        # To generate it: connect.redhat.com -> Product certification ->
+        # Container API Keys -> Generate new key
+        pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+
+        # Optional; provide this token when using create_pr option
+        # while creating operator or helm-chart project
+        # Check the instructions below on how to create it
+        github_token_path: "/opt/cache/dcicertbot-token.txt"
+
+        # List of operators to certify,
+        # you could provide many operators at once.
+        preflight_operators_to_certify:
+          - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle:v0.2.9"
+            # Mandatory for the connected environments.
+            index_image: "quay.io/rh-nfv-int/nfv-example-cnf-catalog:v0.2.9"
+            # Optional; provide it when you need to use
+            # the existing project to submit test results.
+            # It's an id of your Container Image Project
+            # https://connect.redhat.com/projects/my_nice_container_id
+            pyxis_container_identifier: "my_nice_container_id"
+            # Optional; provide it when you need to use
+            # the existing project to submit test results.
+            # It's an id of your Operator Bundle Image
+            # https://connect.redhat.com/projects/my_nice_container_id
+            pyxis_operator_identifier: "my_nice_operator_id"
+            # Optional; use it to automatically open cert PR
+            # at the certified-operators repository
+            create_pr: true
+          - bundle_image: "quay.io/rh-nfv-int/bla-bla-bundle:v0.2.1"
+            # Mandatory for the connected environments.
+            index_image: "quay.io/rh-nfv-int/bla-bla-catalog:v0.2.1"
+            # Optional; provide it when you need to create
+            # a new "Container Image project" and submit test results in it.
+            create_container_project: true
+            # Optional; provide it when you need to create
+            # a new "Operator Bundle Image" and submit test results in it.
+            create_operator_project: true
+            # Required when creating cert project
+            short_description: "Add 50+ characters image description here"
+            # Optional; use it to automatically open cert PR
+            # at the certified-operators repository
+            create_pr: true
+            # Optional; use it to automatically merge cert PR
+            # at the certified-operators repository
+            merge_pr: true
+            # Product Listings to attach to the cert project (Optional)
+            pyxis_product_lists:
+              - "yyy"
+              - "xxx"
+        # Project certification setting (Optional)
+        # This allows to fill the rest of the project settings after project creation
+        # Any project for containers images certifications can use them
+        # TODO: provide cert_settings example for every project type
+        cert_settings:
+          # Operator and Container
+          auto_publish: false
+          registry_override_instruct: "These are instructions of how to override settings"
+          email_address: "email@email.com"
+          application_categories: "Networking"
+          privileged: false
+          repository_description: "This is a test repository"
+          build_categories: "Standalone image"
+          os_content_type: "Red Hat Universal Base Image (UBI)"
+          release_category: "Generally Available"
+            
+      use_previous_topic: true
+      inputs:
+        kubeconfig: kubeconfig_path
+    ...
     ```
 
   b. There is a disconnected environment with the self-signed local registry and operator images in the external private registry. In the case of a disconnected environment, DCI would handle all the mirroring and regenerate a catalog image.
 
     ```yaml
-    $ cat /etc/dci-openshift-app-agent/settings.yml
+    $ cat my-dci-pipeline-test/pipelines/testpmd-operator-e2e-disconnected-pipeline.yml
     ---
-    # job name and tags to be displayed in DCI UI
-    dci_name: "Testpmd-Operator-Preflight"
-    dci_tags: ["debug", "testpmd-operator", "testpmd-container"]
-    dci_topic: "OCP-4.7"
-    # DCI component for every OCP version
-    # could be checked here: https://www.distributed-ci.io/topics
-    dci_component: ['8cef32d9-bb90-465f-9b42-8b058878780a']
+    # Generic DCI Pipeline config
+    - name: testpmd-operator-e2e-disconnected
+      stage: workload
+      topic: OCP-4.16
+      ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
+      ansible_cfg: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/pipelines/ansible.cfg
+      ansible_inventory: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/inventories/@QUEUE/@RESOURCE-workload.yml
+      dci_credentials: /var/lib/dci-openshift-app-agent/.config/dci-pipeline/dci_credentials.yml
+      ansible_extravars:
+        dci_cache_dir: /var/lib/dci-openshift-app-agent/dci-cache-dir
+        dci_config_dir: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/ocp-workload
+        dci_gits_to_components:
+          - /var/lib/dci-openshift-app-agent/my-dci-pipeline-test
+        dci_local_log_dir: /var/lib/dci-openshift-app-agent/upload-errors
+        dci_tags: ["debug", "testpmd-operator", "testpmd-container"]
+        dci_workarounds: []
 
-    # Mandatory for disconnected environment,
-    # this registry is used for mirrored images
-    # and to store an index (catalog) image.
-    dci_local_registry: registry.local.lab:4443
+        # Required to create and update cert projects.
+        # Check the instructions below on where to retrieve it
+        organization_id: "12345678"
 
-    # Optional, provide it if your registry is self-signed.
-    preflight_custom_ca: "/var/lib/dci-openshift-agent/registry/certs/cert.ca"
+        # Reduce the job duration
+        do_must_gather: false
+        check_workload_api: false
+        preflight_run_health_check: false
 
-    # Credentials for your private registries.
-    # You could have several private registries:
-    # local and another external, to store the operator.
-    # In this case, please provide all credentials here.
-    partner_creds: "/opt/pull-secrets/partner_config.json"
+        # Optional, please provide these credentials
+        # if your registry is private.
+        partner_creds: "/opt/pull-secrets/partner_config.json"
 
-    # List of operators to certify,
-    # you could provide many operators at once.
-    preflight_operators_to_certify:
-        # In disconnected environments provide a digest (SHA) and not a tag.
-      - bundle_image: "quay.io/rh-nfv-int/testpmd-operator-bundle@sha256:5e28f883faacefa847104ebba1a1a22ee897b7576f0af6b8253c68b5c8f42815"
-        # Optional; provide it when you need to create
-        # a new "Container Image project" and submit test results in it.
-        create_container_project: true
-        # Optional; provide it when you need to create
-        # a new "Operator Bundle Image" and submit test results in it.
-        create_operator_project: true
-        # Optional; use it to automatically open cert PR
-        # at the certified-operators repository
-        create_pr: true
-        # Optional; use it to automatically merge cert PR
-        # at the certified-operators repository
-        merge_pr: true
+        # Optional; provide it when you need to submit test results.
+        # This token is shared between all your projects.
+        # To generate it: connect.redhat.com -> Product certification ->
+        # Container API Keys -> Generate new key
+        pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
 
-    # Optional; provide it when you need to submit test results.
-    # This token is shared between all your projects.
-    # To generate it: connect.redhat.com -> Product certification ->
-    # Container API Keys -> Generate new key
-    pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+        # Optional; provide this token when using create_pr option
+        # while creating operator or helm-chart project
+        # Check the instructions below on how to create it
+        github_token_path: "/opt/cache/dcicertbot-token.txt"
 
-    # Optional; provide this token when using create_pr option
-    github_token_path: "/opt/cache/dcicertbot-token.txt"
+        # Mandatory for disconnected environment,
+        # this registry is used for mirrored images
+        # and to store an index (catalog) image.
+        dci_local_registry: registry.local.lab:4443
+
+        # Optional, provide it if your registry is self-signed.
+        preflight_custom_ca: "/var/lib/dci-openshift-agent/registry/certs/cert.ca"
+
+        # List of operators to certify,
+        # you could provide many operators at once.
+        preflight_operators_to_certify:
+          - bundle_image: "quay.io/rh-nfv-int/bla-bla-bundle:v0.2.1"
+            # Mandatory for the connected environments.
+            index_image: "quay.io/rh-nfv-int/bla-bla-catalog:v0.2.1"
+            # Optional; provide it when you need to create
+            # a new "Container Image project" and submit test results in it.
+            create_container_project: true
+            # Optional; provide it when you need to create
+            # a new "Operator Bundle Image" and submit test results in it.
+            create_operator_project: true
+            # Required when creating cert project
+            short_description: "Add 50+ characters image description here"
+            # Optional; use it to automatically open cert PR
+            # at the certified-operators repository
+            create_pr: true
+            # Optional; use it to automatically merge cert PR
+            # at the certified-operators repository
+            merge_pr: true
+            # Product Listings to attach to the cert project (Optional)
+            pyxis_product_lists:
+              - "yyy"
+              - "xxx"
+        # Project certification setting (Optional)
+        # This allows to fill the rest of the project settings after project creation
+        # Any project for containers images certifications can use them
+        # TODO: provide cert_settings example for every project type
+        cert_settings:
+          # Operator and Container
+          auto_publish: false
+          registry_override_instruct: "These are instructions of how to override settings"
+          email_address: "email@email.com"
+          application_categories: "Networking"
+          privileged: false
+          repository_description: "This is a test repository"
+          build_categories: "Standalone image"
+          os_content_type: "Red Hat Universal Base Image (UBI)"
+          release_category: "Generally Available"
+            
+      use_previous_topic: true
+      inputs:
+        kubeconfig: kubeconfig_path
+    ...
     ```
 
 - Run dci-openshift-app-agent:
 
+  a) Connected
     ```bash
-    dci-openshift-app-agent-ctl -s -- -v
+    KUBECONFIG=$KUBECONFIG dci-pipeline-schedule testpmd-operator-e2e
+    ```
+
+  b) Disconnected
+    ```bash
+    KUBECONFIG=$KUBECONFIG dci-pipeline-schedule testpmd-operator-e2e-disconnected
     ```
 
 ## Preflight CI
