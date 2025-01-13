@@ -215,7 +215,10 @@
   register: nfs_pod
   retries: 15
   delay: 10
-  until: nfs_pod.resources[0].status.phase == 'Running'
+  until:
+    - nfs_pod.resources is defined
+    - nfs_pod.resources | length > 0
+    - nfs_pod.resources[0].status.phase == 'Running'
 
 - name: "Create a test PVC"
   community.kubernetes.k8s:
@@ -244,6 +247,7 @@
   register: test_pvc
   until:
     - test_pvc.resources is defined
+    - test_pvc.resources | length > 0
     - test_pvc.resources[0].status.phase == "Bound"
   retries: 6
   delay: 10
