@@ -5,6 +5,9 @@
     kind: OAuth
     name: cluster
   register: _oau_oauth
+  retries: 3
+  delay: 15
+  until: _oau_oauth is succeeded
   no_log: "{{ oau_secure_log | bool }}"
 
 - name: Set Secret name
@@ -20,6 +23,9 @@
     name: "{{ _oau_oauth.resources[0].spec.identityProviders[0].htpasswd.fileData.name }}"
     namespace: openshift-config
   register: _oau_secret
+  retries: 3
+  delay: 15
+  until: _oau_secret is succeeded
   when:
     - _oau_oauth.resources | length
     - _oau_oauth.resources[0].spec.identityProviders | default([]) | json_query('[?type==`HTPasswd`]') | length
