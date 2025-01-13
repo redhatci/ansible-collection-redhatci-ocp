@@ -216,7 +216,6 @@
   retries: 15
   delay: 10
   until:
-    - nfs_pod is defined
     - nfs_pod.resources is defined
     - nfs_pod.resources | length > 0
     - nfs_pod.resources[0].status.phase == 'Running'
@@ -247,7 +246,6 @@
     name: test-nfs-claim
   register: test_pvc
   until:
-    - test_pvc is defined
     - test_pvc.resources is defined
     - test_pvc.resources | length > 0
     - test_pvc.resources[0].status.phase == "Bound"
