@@ -7,6 +7,6 @@
 # cc_compare_container_executable: "/usr/share/openshift/linux_amd64/kube-compare.rhel8"
 # cc_report_creator_version: "latest"
 cc_infra_type: core
-cc_ocp_supported: 4.14
+cc_ocp_supported: 4.16
 cc_logging: true
 ...

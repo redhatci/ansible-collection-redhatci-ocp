@@ -12,7 +12,7 @@ Features
 
 ## Requirements
 
-  - A reachable OCP cluster running ocp-4.14 or newer.
+  - A reachable OCP cluster running ocp-4.16 or newer.
   - A valid KUBECONFIG file is accessible. The KUBECONFIG file path must be provided as an environment variable.
 
 ## Variables
