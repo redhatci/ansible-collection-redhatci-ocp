@@ -50,4 +50,4 @@ Mirrors images from one repository to another.
     mi_options: "--preserve-digests"
     mi_dst_org: "some/path"
 ```
-NOTE: The use of `mi_dst_org: "some/path"` will copy the new images in a new repository organization, for example in the case of `quay.io/centos/centos:stream9` instead of `centos`, it will be for example: my.registry.local:4443/some/path/centos:stream9
+The use of `mi_dst_org`: "some/path" will copy the new images into a new repository organization. For instance if the source image is quay.io/centos/centos:stream9, the destination will be my.registry.local:4443/some/path/centos:stream9
