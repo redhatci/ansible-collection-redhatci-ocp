@@ -1,4 +1,11 @@
 ---
+- name: "Ensure tmp directory existes"
+  ansible.builtin.file:
+    state: directory
+    path: "{{ ansible_env.TMPDIR }}"
+    mode: "0755"
+  when: ansible_env.TMPDIR is defined
+
 - name: Check if multibench host has the crucible binaries
   ansible.builtin.shell: >
     crucible help
