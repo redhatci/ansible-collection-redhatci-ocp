@@ -1,5 +1,7 @@
 # Get image hash role
 
+⚠️ **This Ansible role is deprecated and will be removed in the future.**
+
 Uses `skopeo` to produce a dictionary of image digests for images defined in `images_to_get_hash_for`.
 
 ## Requirements
