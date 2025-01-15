@@ -1,5 +1,5 @@
 ---
-- name: "Ensure tmp directory existes"
+- name: "Ensure tmp directory exists"
   ansible.builtin.file:
     state: directory
     path: "{{ ansible_env.TMPDIR }}"
