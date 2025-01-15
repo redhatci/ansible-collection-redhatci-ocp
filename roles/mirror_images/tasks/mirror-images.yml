@@ -4,9 +4,9 @@
     _image_tag: "{{ image | regex_search('(?<=sha256)(.{12})') | default('', True) }}"
     _image_name: "{{ '/'.join(image.split('@')[0].split('/')[-1:]) }}"
     _image_org: "{{ '/'.join(image.split('@')[0].split('/')[1:-1]) }}"
-    _image_org_path: "{{ (mi_dst_org | default('') | length) | ternary(mi_dst_org, _image_org) }}"
-    _image_img_path: "{ _image_name }}{%- if _image_tag | length %}{{ _image_tag }}{% endif %}"
-    _tgt_image_location: "{{ mi_registry }}/{{  _image_org_path }}/{{ _image_img_path }}"
+    _image_org_path: "{{ (mi_dst_org | length) | ternary(mi_dst_org, _image_org) }}"
+    _image_img_path: "{{ _image_name }}{%- if _image_tag | length %}{{ _image_tag }}{% endif %}"
+    _tgt_image_location: "{{ mi_registry }}/{{ _image_org_path }}/{{ _image_img_path }}"
   block:
     - name: "Mirror image"
       ansible.builtin.command:
