@@ -55,86 +55,107 @@ privileged                 | false                                | false or tru
 repository_description     | "Add a description of project here"  | This will be displayed on the container catalog repository overview page.
 
 
-## Example of configuration file
+## Configuration Example of Operator and Container
+This is an example where pipeline configs are saved in `my-dci-pipeline-test/pipelines` folder.
 
 ```yaml
-$ cat /etc/dci-openshift-app-agent/settings.yml
+$ cat  my-dci-pipeline-test/pipelines/testpmd-operator-container-pipeline.yml
 ---
-# job name and tags to be displayed in DCI UI
-dci_name: "Testpmd-Operator-Preflight"
-dci_tags: ["debug", "testpmd-operator", "testpmd-container"]
-dci_topic: "OCP-4.7"
-# DCI component for every OCP version
-# could be checked here: https://www.distributed-ci.io/topics
-dci_component: ['8cef32d9-bb90-465f-9b42-8b058878780a']
+# Generic DCI Pipeline config
+- name: testpmd-operator-container
+  stage: workload
+  topic: OCP-4.14
+  ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
+  ansible_cfg: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/pipelines/ansible.cfg
+  ansible_inventory: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/inventories/@QUEUE/@RESOURCE-workload.yml
+  dci_credentials: /var/lib/dci-openshift-app-agent/.config/dci-pipeline/dci_credentials.yml
+  ansible_extravars:
+    dci_cache_dir: /var/lib/dci-openshift-app-agent/dci-cache-dir
+    dci_config_dir: /var/lib/dci-openshift-app-agent/my-dci-pipeline-test/ocp-workload
+    dci_gits_to_components:
+      - /var/lib/dci-openshift-app-agent/my-dci-pipeline-test
+    dci_local_log_dir: /var/lib/dci-openshift-app-agent/upload-errors
+    dci_tags: ["debug", "testpmd-operator", "testpmd-container"]
+    dci_workarounds: []
 
-# Optional, please provide these credentials
-# if your registry is private.
-partner_creds: "/opt/pull-secrets/partner_config.json"
+    # Required to create and update cert projects.
+    # Check the instructions below on where to retrieve it
+    organization_id: "12345678"
 
-# Optional; provide it when you need to submit test results.
-# This token is shared between all your projects.
-# To generate it: connect.redhat.com -> Product certification ->
-# Container API Keys -> Generate new key
-pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
+    # Reduce the job duration
+    do_must_gather: false
+    check_workload_api: false
+    preflight_run_health_check: false
 
-# Required to create and update cert projects.
-# Check the instructions below on where to retrieve it
-organization_id: "12345678"
+    # Optional, please provide these credentials
+    # if your registry is private.
+    partner_creds: "/opt/pull-secrets/partner_config.json"
 
-# Optional; provide this token when using create_pr option
-# while creating operator or helm-chart project
-# Check the instructions below on how to create it
-github_token_path: "/opt/cache/dcicertbot-token.txt"
+    # Optional; provide it when you need to submit test results.
+    # This token is shared between all your projects.
+    # To generate it: connect.redhat.com -> Product certification ->
+    # Container API Keys -> Generate new key
+    pyxis_apikey_path: "/opt/cache/pyxis-apikey.txt"
 
-# List of operators to certify,
-# you could provide many operators at once.
-preflight_operators_to_certify:
-  - bundle_image: "quay.io/rh-nfv-int/bla-bla-bundle:v0.2.1"
-    # Mandatory for the connected environments.
-    index_image: "quay.io/rh-nfv-int/bla-bla-catalog:v0.2.1"
-    # Optional; provide it when you need to create
-    # a new "Container Image project" and submit test results in it.
-    create_container_project: true
-    # Optional; provide it when you need to create
-    # a new "Operator Bundle Image" and submit test results in it.
-    create_operator_project: true
-    # Required when creating cert project
-    short_description: "Add 50+ characters image description here"
-    # Optional; use it to automatically open cert PR
-    # at the certified-operators repository
-    create_pr: true
-    # Product Listings to attach to the cert project (Optional)
-    pyxis_product_lists:
-      - "yyy"
-      - "xxx"
+    # Optional; provide this token when using create_pr option
+    # while creating operator or helm-chart project
+    # Check the instructions below on how to create it
+    github_token_path: "/opt/cache/dcicertbot-token.txt"
 
-# List of container images to certify,
-# you could provide multiple images to certify at once.
-preflight_containers_to_certify:
-  - container_image: "quay.io/my-container/bla-bla-image:v0.0.1"
-    create_container_project: true
-    # Required when creating cert project
-    short_description: "Add 50+ characters image description here"
-    # Product Listings to attach to the cert project (Optional)
-    pyxis_product_lists:
-      - "yyy"
-      - "xxx"
+    # List of operators to certify,
+    # you could provide many operators at once.
+    preflight_operators_to_certify:
+      - bundle_image: "quay.io/rh-nfv-int/bla-bla-bundle:v0.2.1"
+        # Mandatory for the connected environments.
+        index_image: "quay.io/rh-nfv-int/bla-bla-catalog:v0.2.1"
+        # Optional; provide it when you need to create
+        # a new "Container Image project" and submit test results in it.
+        create_container_project: true
+        # Optional; provide it when you need to create
+        # a new "Operator Bundle Image" and submit test results in it.
+        create_operator_project: true
+        # Required when creating cert project
+        short_description: "Add 50+ characters image description here"
+        # Optional; use it to automatically open cert PR
+        # at the certified-operators repository
+        create_pr: true
+        # Product Listings to attach to the cert project (Optional)
+        pyxis_product_lists:
+          - "yyy"
+          - "xxx"
 
-# Project certification setting (Optional)
-# This allows to fill the rest of the project settings after project creation
-# Any project for containers images certifications can use them
-# TODO: provide cert_settings example for every project type
-cert_settings:
-  auto_publish: false
-  build_categories: "Standalone image"
-  registry_override_instruct: "These are instructions of how to override settings"
-  email_address: "email@example.com"
-  application_categories: "Networking"
-  os_content_type: "Red Hat Universal Base Image (UBI)"
-  privileged: false
-  release_category: "Generally Available"
-  repository_description: "This is a test repository"
+    # List of container images to certify,
+    # you could provide multiple images to certify at once.
+    preflight_containers_to_certify:
+      - container_image: "quay.io/my-container/bla-bla-image:v0.0.1"
+        create_container_project: true
+        # Required when creating cert project
+        short_description: "Add 50+ characters image description here"
+        # Product Listings to attach to the cert project (Optional)
+        pyxis_product_lists:
+          - "yyy"
+          - "xxx"
+
+    # Project certification setting (Optional)
+    # This allows to fill the rest of the project settings after project creation
+    # Any project for containers images certifications can use them
+    # TODO: provide cert_settings example for every project type
+    cert_settings:
+      # Operator and Container
+      auto_publish: false
+      registry_override_instruct: "These are instructions of how to override settings"
+      email_address: "email@email.com"
+      application_categories: "Networking"
+      privileged: false
+      repository_description: "This is a test repository"
+      build_categories: "Standalone image"
+      os_content_type: "Red Hat Universal Base Image (UBI)"
+      release_category: "Generally Available"
+         
+  use_previous_topic: true
+  inputs:
+    kubeconfig: kubeconfig_path
+...
 ```
 
 ## GitHub token
