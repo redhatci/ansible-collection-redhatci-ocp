@@ -53,19 +53,18 @@ class TestOcpCompatibility(unittest.TestCase):
 
             expected_result = {
                 "4.11": "compatible",
-                "4.12": " ".join([
-                    "events.v1beta1.events.k8s.io (service accounts: system:serviceaccount:default:",
-                    "eventtest-operator-service-account), podsecuritypolicies.v1beta1.policy ",
-                    "(service accounts: system:kube-controller-manager)"
+                "4.12": ", ".join([
+                    "events.v1beta1.events.k8s.io (service accounts: system:serviceaccount:default:eventtest-operator-service-account)",
+                    "podsecuritypolicies.v1beta1.policy (service accounts: system:kube-controller-manager)"
                 ]),
-                "4.13": " ".join([
-                    "events.v1beta1.events.k8s.io (service accounts: system:serviceaccount:default:",
-                    "eventtest-operator-service-account), podsecuritypolicies.v1beta1.policy ",
-                    "(service accounts: system:kube-controller-manager), flowschemas.v1beta1.",
-                    "flowcontrol.apiserver.k8s.io (service accounts: system:serviceaccount:",
-                    "openshift-cluster-version:default), prioritylevelconfigurations.v1beta1.",
-                    "flowcontrol.apiserver.k8s.io (service accounts: system:serviceaccount:",
-                    "openshift-cluster-version:default)"
+                "4.13": ", ".join([
+                    "events.v1beta1.events.k8s.io (service accounts: system:serviceaccount:default:eventtest-operator-service-account)",
+                    "podsecuritypolicies.v1beta1.policy (service accounts: system:kube-controller-manager)",
+                    "flowschemas.v1beta1.flowcontrol.apiserver.k8s.io (service accounts: system:serviceaccount:openshift-cluster-version:default)",
+                    " ".join([
+                        "prioritylevelconfigurations.v1beta1.flowcontrol.apiserver.k8s.io",
+                        "(service accounts: system:serviceaccount:openshift-cluster-version:default)",
+                    ])
                 ])
             }
 
