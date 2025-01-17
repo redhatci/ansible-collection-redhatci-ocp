@@ -19,7 +19,7 @@
   loop: "{{ cc_bins }}"
   no_log: "{{ cc_logging }}"
 
-- name: Set core reference path for OCP-{{ cc_ocp_version }}
+- name: Set Core reference URL for OCP-{{ cc_ocp_version }}
   ansible.builtin.set_fact:
     cc_reference:
       "https://raw.githubusercontent.com/openshift-kni/telco-reference/refs/heads/release-{{ cc_ocp_version }}/\
@@ -27,7 +27,7 @@
   when:
     - cc_infra_type == "core"
 
-- name: Set ran reference path for OCP-{{ cc_ocp_version }}
+- name: Set RAN reference path URL OCP-{{ cc_ocp_version }}
   ansible.builtin.set_fact:
     cc_reference:
       "https://raw.githubusercontent.com/openshift-kni/cnf-features-deploy/refs/heads/release-{{ cc_ocp_version }}/\
@@ -44,9 +44,15 @@
         -o json > {{ cc_reports_dir }}/{{ cc_compare_output_file }}
       args:
         chdir: "{{ cc_work_dir }}"
+      register: _cc_cc_output
+      retries: 3
+      delay: 5
+      until: _cc_cc_output.rc == 0
       ignore_errors: true
-      register: _cc_cmd_output
-      changed_when: _cc_cmd_output.rc != 0
+
+    - name: Debug cluster-compare output
+      ansible.builtin.debug:
+        var: _cc_cc_output
 
     - name: Generate human-readable cluster-compare report
       ansible.builtin.shell: >
@@ -56,9 +62,11 @@
         2>/dev/null || true
       args:
         chdir: "{{ cc_work_dir }}"
-      register: _cc_cmd_output
-      changed_when: _cc_cmd_output.rc != 0
-      when: _cc_cmd_output.rc == 1
+      ignore_errors: true
+      register: _cc_human_output
+      retries: 3
+      delay: 5
+      until: _cc_human_output.rc == 0
 
     - name: Generate JUnit report
       ansible.builtin.shell: >
@@ -66,6 +74,9 @@
         -o {{ cc_reports_dir }}/{{ cc_report_name }}
       args:
         chdir: "{{ cc_work_dir }}"
-      register: _cc_cmd_output
-      changed_when: _cc_cmd_output.rc != 0
+      ignore_errors: true
+      register: _cc_junit_output
+      retries: 3
+      delay: 5
+      until: _cc_junit_output.rc == 0
 ...
