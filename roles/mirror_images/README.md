@@ -12,6 +12,7 @@ Mirrors images from one repository to another.
 | mi_dst_authfile  | undefined  | No       | An authfile with permissions to push the target images
 | mi_options       | undefined  | No       | skopeo options while copying the images
 | mi_src_authfile  | undefined  | No       | An authfile with permissions to pull the source images
+| mi_dst_org       | undefined  | No       | The organization target where to copy the images
 
 ## Requirements
 
@@ -47,4 +48,6 @@ Mirrors images from one repository to another.
     mi_dst_authfile: /path/to/pullsecret-to-push-to-my-registry-local
     mi_src_authfile: /path/to/pullsecret-to-pull-from-private-image
     mi_options: "--preserve-digests"
+    mi_dst_org: "some/path"
 ```
+The use of `mi_dst_org`: "some/path" will copy the new images into a new repository organization. For instance if the source image is quay.io/centos/centos:stream9, the destination will be my.registry.local:4443/some/path/centos:stream9
