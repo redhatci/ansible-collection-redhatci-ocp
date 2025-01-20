@@ -1,4 +1,5 @@
 *.tar.gz
 roles/**/.linted
+.docsible
 tests/output
 __pycache__
