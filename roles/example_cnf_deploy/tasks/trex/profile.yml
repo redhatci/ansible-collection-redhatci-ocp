@@ -43,7 +43,7 @@
         ecd_trex_profile_name: "{{ ecd_trex_profile_path | basename }}"
 
     - name: Create config map
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition:
           apiVersion: v1
           kind: ConfigMap
@@ -70,6 +70,6 @@
   when: "'name' not in ecd_trex_test_config_item"
 
 - name: Create cr for trex app
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'trex-app-cr.yaml.j2') }}"
   when: not ecd_enable_trex_profile_direct|default(false)|bool

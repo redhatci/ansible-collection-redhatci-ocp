@@ -40,7 +40,7 @@
     podman rmi {{ oo_index }}
 
 - name: Check if IDMS is supported
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: imagedigestmirrorsets.config.openshift.io
   register: idms_res
@@ -78,7 +78,7 @@
     msg: "{{ lookup('file', scorecard_is_file) }}"
 
 - name: Apply Image Source File
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('file', scorecard_is_file) }}"
 
 - name: Wait for MCP status

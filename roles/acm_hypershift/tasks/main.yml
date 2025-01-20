@@ -32,7 +32,7 @@
   ansible.builtin.include_tasks: restart-cpo.yml
 
 - name: Get Management ICSP
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: operator.openshift.io/v1alpha1
     kind: ImageContentSourcePolicy
   register: mc_icsp

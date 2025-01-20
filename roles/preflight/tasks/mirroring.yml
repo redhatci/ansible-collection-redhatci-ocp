@@ -45,7 +45,7 @@
     podman rmi {{ oo_index }}
 
 - name: Check if IDMS is supported
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: imagedigestmirrorsets.config.openshift.io
   register: idms_res
@@ -78,7 +78,7 @@
   loop: "{{ (preflight_images + old_images) | unique }}"
 
 - name: Apply Image Source file
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('file', preflight_is_file) }}"
 
 - name: Wait for MCP status
