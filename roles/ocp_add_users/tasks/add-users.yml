@@ -26,6 +26,10 @@
       type: Opaque
       data:
         htpasswd: "{{ _all_users_text | b64encode }}"
+  register: _oau_result
+  retries: 6
+  delay: 10
+  until: _oau_result is not failed
   no_log: "{{ oau_secure_log | bool }}"
 
 - name: Setup htpasswd auth IdP backend in OCP
@@ -45,3 +49,7 @@
             htpasswd:
               fileData:
                 name: "{{ oau_secret_name }}"
+  register: _oau_result
+  retries: 6
+  delay: 10
+  until: _oau_result is not failed
