@@ -1,8 +1,5 @@
-generated_dir: "{{ repo_root_path }}/generated"
-manifests_dir: "{{ generated_dir }}/{{ cluster_name }}"
-download_agent_dest_file: "{{ discovery_iso_name }}"
-download_dest_path: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
-arch: x86_64
-version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
-release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
-use_local_mirror_registry: false
+gai_path_var: "/sbin:/usr/sbin:/usr/local/bin/"
+gai_generated_dir: "{{ gai_repo_root_path }}/generated"
+gai_manifests_dir: "{{ gai_generated_dir }}/{{ gai_cluster_name }}"
+gai_iso_download_dest_path: "/opt/http_store/data"
+gai_arch: x86_64
