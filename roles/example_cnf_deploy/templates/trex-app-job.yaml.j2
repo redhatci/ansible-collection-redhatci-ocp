@@ -54,6 +54,8 @@ spec:
         - name: PACKET_RATE
           value: "{{ ecd_packet_rate }}"
 {% endif %}
+        - name: run_deployment
+          value: "{{ ecd_run_deployment }}"
         lifecycle:
           postStart:
             exec:

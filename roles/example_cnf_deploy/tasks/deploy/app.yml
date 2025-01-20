@@ -114,6 +114,14 @@
     - _ecd_first_cnfappmac.resources[0].spec.resources is defined
     - _ecd_first_cnfappmac.resources[0].spec.resources|length > 0
 
+# Do not launch any TRexApp resource if ecd_run_deployment is different than 1
+# In that case, we need to skip failures when checking TRex test result to make the automation work
+- name: Do not enable TRexApp if no automated deployment is launched
+  ansible.builtin.set_fact:
+    ecd_enable_trex_app: false
+    ecd_trex_tests_skip_failures: true
+  when: ecd_run_deployment != 1
+
 - name: "Trex cr block"
   ansible.builtin.include_tasks: trex/retry-trex.yml
   when: ecd_enable_trex|bool
