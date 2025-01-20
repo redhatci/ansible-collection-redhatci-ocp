@@ -36,6 +36,10 @@ ecd_testpmd_app_mac_list:
   - "80:04:0f:f1:89:01"
   - "80:04:0f:f1:89:02"
 
+# Run all testpmd and trex deployment automation. If different than 1, the automation will only create the pods and prepare the scripts
+# to launch testpmd and trex manually afterwards
+ecd_run_deployment: 1
+
 # Variables for gathering the network info from the scenario
 ## SRIOV networks used in the connection between TRex and CNF Application, together with the number of interfaces to be used per network
 ecd_sriov_networks: []

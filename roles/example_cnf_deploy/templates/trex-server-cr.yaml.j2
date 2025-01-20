@@ -16,6 +16,7 @@ spec:
   imagePullPolicy: {{ ecd_image_pull_policy }}
   networks: {{ ecd_networks_trex }}
   cpu: 6
+  runDeployment: {{ ecd_run_deployment }}
 {% if ecd_trex_config_skip|default(false)|bool %}
   trex_config_skip: true
 {% endif %}
