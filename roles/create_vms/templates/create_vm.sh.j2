@@ -32,6 +32,9 @@ virt-install \
     --features smm=on \
     {% endif %}
     {% endif %}
+    {% if additional_virt_install_options is defined %}
+    {{ additional_virt_install_options }}
+    {% endif %}
     --events on_reboot=restart \
     --autostart \
     --print-xml > /tmp/{{item.name}}.xml
