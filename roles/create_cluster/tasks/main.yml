@@ -76,7 +76,8 @@
     create_body_extras: "{{ create_body_extras | combine({'olm_operators': olm_operators}) }}"
   when: olm_operators is defined
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     msg: "{{ create_body | from_json | combine(create_body_extras) | to_nice_json }}"
     verbosity: 1
 
@@ -93,7 +94,8 @@
   when: create | bool == True
   register: http_reply
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: http_reply.json
     verbosity: 1
   when: create | bool == True

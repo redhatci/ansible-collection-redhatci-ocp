@@ -15,11 +15,13 @@
     return_content: true
   register: http_reply
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     msg: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
     verbosity: 1
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: http_reply
     verbosity: 1
 
@@ -43,23 +45,8 @@
   register: redfish_poweroff
   ignore_errors: yes
 
-- name: KVM Eject Virtual Media (if any) {{ target_host }}
-  uri:
-    url: "{{ system_manager_url }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
-    user: "{{ bmc_user }}"
-    password: "{{ bmc_password }}"
-    method: POST
-    body_format: json
-    body: {}
-    status_code: [200, 204]
-    validate_certs: false
-    return_content: true
-  register: redfish_reply
-  ignore_errors: yes
-
-- debug: # noqa unnamed-task
-    var: redfish_reply
-    verbosity: 1
+- name: Eject Virtual Media
+  ansible.builtin.include_tasks: eject.yml
 
 - name: KVM Insert Virtual Media {{ target_host }}
   uri:
@@ -79,7 +66,8 @@
   retries: 20
   delay: 30
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: redfish_reply
     verbosity: 1
 
@@ -95,7 +83,8 @@
   register: redfish_reply
   when: ansible_verbosity >= 1
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: redfish_reply
     verbosity: 1
 
@@ -121,7 +110,8 @@
     return_content: true
   register: redfish_reply
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: redfish_reply
     verbosity: 1
 
@@ -136,7 +126,8 @@
     return_content: true
   register: redfish_reply
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: redfish_reply
     verbosity: 1
 

@@ -37,7 +37,8 @@
           - "{{ http_port }}:8080"
       register: pod_info
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: pod_info
         verbosity: 1
 

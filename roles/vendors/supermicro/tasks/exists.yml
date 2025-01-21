@@ -1,3 +1,4 @@
-- ansible.builtin.debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     msg: "SuperMicro vendor role exists"
     verbosity: 1

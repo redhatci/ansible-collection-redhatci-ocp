@@ -105,7 +105,8 @@
       set_fact:
         worker_partition: "{{ lookup('template', 'patch-worker-partition.j2') }}"
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: worker_partition
         verbosity: 1
 
@@ -119,6 +120,7 @@
         body: { "config": "{{ worker_partition | to_json(ensure_ascii=False) | string }}" }
       register: http_reply
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: http_reply
         verbosity: 1

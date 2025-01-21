@@ -25,7 +25,8 @@
       }
   register: http_reply
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: http_reply.json.id
     verbosity: 1
 
@@ -42,7 +43,8 @@
   delegate_to: localhost
   become: no
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     msg: "{{ pull_secret | to_json }}"
     verbosity: 1
 

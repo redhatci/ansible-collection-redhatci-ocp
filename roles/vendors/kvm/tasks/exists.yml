@@ -1,3 +1,4 @@
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     msg: "KVM vendor role exists"
     verbosity: 1

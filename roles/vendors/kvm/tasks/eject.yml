@@ -1,0 +1,20 @@
+---
+- name: KVM Eject Virtual Media (if any) {{ target_host }}
+  ansible.builtin.uri:
+    url: "{{ system_manager_url }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: POST
+    body_format: json
+    body: {}
+    status_code: [200, 204]
+    validate_certs: false
+    return_content: true
+  register: redfish_reply
+  ignore_errors: true
+
+- name: Debug
+  ansible.builtin.debug:
+    var: redfish_reply
+    verbosity: 1
+...

@@ -9,7 +9,8 @@
     return_content: true
   register: host
 
-- debug:  # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: host
     verbosity: 1
 

@@ -1,0 +1,54 @@
+---
+- name: Eject
+  block:
+    - name: HPE Eject Virtual Media (if any)
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaEject
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        virtual_media:
+          image_url: "{{ boot_iso_url }}"
+        resource_id: 1
+  rescue:
+    - name: Get Virtual Media information
+      community.general.redfish_info:
+        category: Manager
+        command: GetVirtualMedia
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+      register: result
+
+    - name: Get blocking virtual_media
+      ansible.builtin.set_fact:
+        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
+            | flatten(levels=2)
+            | selectattr('ConnectedVia', 'defined') | list
+            | json_query('[?(
+                ConnectedVia == `URI`
+                && Image != null
+                && (
+                  contains(MediaTypes, `CD`)
+                  || contains(MediaTypes, `Floppy`)
+                  || contains(MediaTypes, `USBStick`)
+                  || contains(MediaTypes, `DVD`)
+                )
+              )]'
+            ) | from_yaml
+          }}"
+
+    - name: Attempting to eject blocking media
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaEject
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        virtual_media:
+          image_url: "{{ item.Image }}"
+        resource_id: 1
+      loop: "{{ blocking_virtual_media }}"
+      no_log: true
+...

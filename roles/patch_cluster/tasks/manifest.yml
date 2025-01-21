@@ -19,7 +19,8 @@
     manifest_name: "{{ item.file | basename }}"
   when: ("file" in item)
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: manifest
     verbosity: 1
 
@@ -38,6 +39,7 @@
       }
   register: http_reply
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: http_reply
     verbosity: 1
