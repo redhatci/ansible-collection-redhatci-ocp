@@ -1,14 +1,29 @@
+---
+- name: Assert the required variables are defined
+  ansible.builtin.assert:
+    that:
+      - gai_cluster_name is defined
+      - gai_cluster_name | length > 0
+      - gai_repo_root_path is defined
+      - gai_repo_root_path | length > 0
+      - gai_pull_secret is defined
+      - gai_pull_secret | length > 0
+      - gai_agent_based_installer_path is defined
+      - gai_agent_based_installer_path | length > 0
+      - gai_discovery_iso_name is defined
+      - gai_discovery_iso_name | length > 0
+
 - name: Create podman auth dir
   ansible.builtin.file:
-    path: "{{ generated_dir }}/containers/"
+    path: "{{ gai_generated_dir }}/containers/"
     state: directory
     mode: '0755'
     recurse: true
 
 - name: Copy pull_secrets file.
   ansible.builtin.copy:
-    content: "{{ pull_secret }}"
-    dest: "{{ generated_dir }}/containers/auth.json"
+    content: "{{ gai_pull_secret }}"
+    dest: "{{ gai_generated_dir }}/containers/auth.json"
     mode: "0644"
     remote_src: true
 
@@ -20,10 +35,11 @@
 
 - name: Generate agent ISO
   ansible.builtin.command:
-    cmd: "{{ agent_based_installer_path }} --log-level=debug agent create image"
-    chdir: "{{ manifests_dir }}"
+    cmd: "{{ gai_agent_based_installer_path }} --log-level=debug agent create image"
+    chdir: "{{ gai_manifests_dir }}"
   environment:
-    XDG_RUNTIME_DIR: "{{ generated_dir }}"
+    XDG_RUNTIME_DIR: "{{ gai_generated_dir }}"
+    PATH: "{{ ansible_env.PATH }}:{{ gai_path_var }}"
   changed_when: _gai_gen_iso.rc != 0
   register: _gai_gen_iso
   retries: 3
@@ -37,12 +53,12 @@
   block:
     - name: Create discovery directory
       ansible.builtin.file:
-        path: "{{ download_dest_path }}/{{ download_agent_dest_file | dirname }}"
+        path: "{{ gai_iso_download_dest_path }}/{{ gai_discovery_iso_name | dirname }}"
         recurse: true
         state: directory
 
     - name: Copy agent iso to discovery directory
       ansible.builtin.copy:
-        src: "{{ manifests_dir }}/agent.{{ arch }}.iso"
-        dest: "{{ download_dest_path }}/{{ download_agent_dest_file }}"
+        src: "{{ gai_manifests_dir }}/agent.{{ gai_arch }}.iso"
+        dest: "{{ gai_iso_download_dest_path }}/{{ gai_discovery_iso_name }}"
         mode: '0644'
