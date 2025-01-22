@@ -1,6 +1,6 @@
 ---
 - name: Check if there is a TRexServer already created
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: examplecnf.openshift.io/v1
     kind: TRexConfig
     namespace: "{{ ecd_cnf_namespace }}"
@@ -24,11 +24,11 @@
         index_var: idx
 
     - name: Create CR for trex server
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition: "{{ lookup('template', 'trex-server-cr.yaml.j2') }}"
 
     - name: Check TRex pod status to be running
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: Pod
         label_selectors:
@@ -75,7 +75,7 @@
         ecd_packet_size: "{{ ecd_trex_packet_size }}"
 
     - name: Create CR for TRex app
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         definition: "{{ lookup('template', 'trex-app-cr.yaml.j2') }}"
 
     - name: Wait for TRex app CR to be created
@@ -90,7 +90,7 @@
         - "'Successful' in _ecd_trex_app_cr_installation.stdout"
 
     - name: Wait for the TRex app TestStarted event
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:
@@ -103,7 +103,7 @@
 
     # Omit this check if we are running TRex job in continuous mode
     - name: Wait for the TRex app TestCompleted event
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:
@@ -117,7 +117,7 @@
 
     # Omit this check if we are running TRex job in continuous mode
     - name: Wait for the TRex app TestPassed or TestFailed event
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors: "involvedObject.name={{ ecd_trex_app_cr_name }}"
@@ -153,7 +153,7 @@
 
     # Omit this check if we are running TRex job in continuous mode
     - name: Wait for the TRex app PacketMatched event
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:

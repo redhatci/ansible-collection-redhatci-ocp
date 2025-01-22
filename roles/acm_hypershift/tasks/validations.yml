@@ -6,7 +6,7 @@
     - ah_cluster_type | lower not in ah_cluster_types
 
 - name: "Check for metallb instances"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: metallb.io/v1beta1
     kind: MetalLB
   register: mlb_instance
@@ -36,7 +36,7 @@
     - ah_ca_bundle_file | length
 
 - name: Check hypershift namespace is present
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Namespace
     name: hypershift
   register: ah_ns
@@ -45,7 +45,7 @@
   until: ah_ns.resources | length
 
 - name: Get hypershift supported versions
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: ConfigMap
     name: supported-versions
     namespace: hypershift
@@ -66,7 +66,7 @@
   vars:
     query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
     query_results: "{{ ah_sc | json_query(query_default_sc) }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: StorageClass
   register: ah_sc

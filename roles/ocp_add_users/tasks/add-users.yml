@@ -16,7 +16,7 @@
       {% for user, passwd in oau_all_users.items() %}
       {{ user + ":" + passwd }}
       {% endfor %}
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Secret
@@ -33,7 +33,7 @@
   no_log: "{{ oau_secure_log | bool }}"
 
 - name: Setup htpasswd auth IdP backend in OCP
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: config.openshift.io/v1
       kind: OAuth

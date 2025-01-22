@@ -36,7 +36,7 @@
     replace: '\1 type: LoadBalancer\n'
 
 - name: Create Guest Cluster
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     kubeconfig: "{{ hostedbm_kubeconfig_file }}"
     state: present
     src: "{{ hostedbm_working_dir }}/hosted_cluster_rendered.yaml"
@@ -46,7 +46,7 @@
     minutes: 3
 
 - name: Check if hosted cluster is Ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: hypershift.openshift.io/v1alpha1
     kind: HostedCluster
     kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
@@ -61,7 +61,7 @@
   delay: 60
 
 - name: Get Kubeconfig secret
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: Secret
     kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
@@ -76,7 +76,7 @@
   no_log: "{{ hostedbm_no_log | bool }}"
 
 - name: Get kubeadmin credentials
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: Secret
     kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"
@@ -111,7 +111,7 @@
   no_log: "{{ hostedbm_no_log | bool }}"
 
 - name: Check if Nodepool is Ready
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: hypershift.openshift.io/v1alpha1
     kind: NodePool
     kubeconfig: "{{ hostedbm_kubeconfig_file | default(omit) }}"

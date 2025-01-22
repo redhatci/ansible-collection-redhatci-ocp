@@ -24,7 +24,7 @@
         - not ecd_trex_continuous_mode|bool
   always:
     - name: "Retrieve TRex app logs"
-      community.kubernetes.k8s_log:
+      kubernetes.core.k8s_log:
         namespace: "{{ ecd_cnf_namespace }}"
         label_selectors:
           - example-cnf-type=pkt-gen-app

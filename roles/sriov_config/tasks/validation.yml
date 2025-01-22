@@ -36,7 +36,7 @@
         sriov_network_configs | json_query('[*].network') | select('undefined') | list | length > 0
 
 - name: Check SR-IOV Operator
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: operators.coreos.com/v1alpha1
     kind: ClusterServiceVersion
     namespace: openshift-sriov-network-operator

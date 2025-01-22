@@ -1,6 +1,6 @@
 ---
 - name: "Get current worker's MCP"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
     name: worker
@@ -11,14 +11,14 @@
     acm_mc: "{{ worker_mcp.resources[0].spec.configuration.name }}"
 
 - name: "Get current worker's Machine configs"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfig
     name: "{{ acm_mc }}"
   register: worker_mc
 
 - name: "Get cluster user-ca cert if exists"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: ConfigMap
     name: "user-ca-bundle"
@@ -33,7 +33,7 @@
       user_ca_bundle.resources | length == 1
 
 - name: "Get hub cluster pull_secret details"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: Secret
     name: "pull-secret"

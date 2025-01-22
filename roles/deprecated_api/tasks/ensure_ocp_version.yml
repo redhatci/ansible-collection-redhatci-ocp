@@ -5,7 +5,7 @@
   when: ocp_version is defined
 
 - name: "Get cluster version"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: config.openshift.io/v1
     kind: ClusterVersion
     name: version

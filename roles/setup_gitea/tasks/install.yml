@@ -1,18 +1,18 @@
 ---
 - name: Create namespace for Gitea
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'namespace.j2') | from_yaml}}"
 
 - name: Create Service Account
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'sa_anyuid.j2') | from_yaml}}"
 
 - name: Create Role
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'role_scc_anyuid.j2') | from_yaml}}"
 
 - name: Create RoleBinding
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'role_binding_sa_to_scc_anyuid.j2') | from_yaml}}"
 
 - name: Generate JWT secret
@@ -60,20 +60,20 @@
   no_log: true
 
 - name: Create Secret with the Gitea configuration
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'secret_gitea_app_ini.j2') | from_yaml}}"
   no_log: true
 
 - name: Create the Gitea deployment
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'deployment_gitea.j2') | from_yaml}}"
 
 - name: Create the gitea service
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'service_gitea.j2') | from_yaml}}"
 
 - name: Create the Gitea route
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'route_gitea.j2') | from_yaml}}"
   register: _sg_gitea_route
 
@@ -93,7 +93,7 @@
   when: sg_username | default("") != ""
   block:
     - name: Get Pod name
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         kind: Pod
         namespace: "{{ sg_namespace }}"
         label_selectors:
@@ -101,7 +101,7 @@
       register: _sg_gitea_pod
 
     - name: Create the Gitea initial user
-      community.kubernetes.k8s_exec:
+      kubernetes.core.k8s_exec:
         namespace: "{{ sg_namespace }}"
         pod: "{{ _sg_gitea_pod.resources[0].metadata.name }}"
         command: >

@@ -30,7 +30,7 @@
   when: vm_configs | selectattr('name', 'undefined') | list | length > 0
 
 - name: "Get Storage Classes"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: StorageClass
   register: sc
@@ -64,7 +64,7 @@
     - kvirt_cluster_storage_class is undefined
 
 - name: "Check if the CNV CRD is present"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
     name: kubevirts.kubevirt.io
   register: kvirt_crd

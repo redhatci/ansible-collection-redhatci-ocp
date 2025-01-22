@@ -1,6 +1,6 @@
 ---
 - name: Delete the Flow collector
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: flows.netobserv.io/v1beta1
     kind: FlowCollector
     name: "cluster"
@@ -8,7 +8,7 @@
     wait: true
 
 - name: Delete the namespace netobserv
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: "v1"
     kind: "Namespace"

@@ -24,7 +24,7 @@
   when: not dci_disconnected | default(false) | bool
 
 - name: Create preflight namespace
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       api_version: v1
@@ -37,7 +37,7 @@
           pod-security.kubernetes.io/warn: "baseline"
 
 - name: "Create namespace for {{ operator.name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: Namespace
@@ -123,14 +123,14 @@
 - name: Cleanup
   block:
     - name: Delete preflight namespace
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         name: "{{ preflight_namespace }}"
         api_version: v1
         kind: Namespace
         state: absent
 
     - name: Wait for namespace to be destroyed
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Namespace
         name: "{{ preflight_namespace }}"

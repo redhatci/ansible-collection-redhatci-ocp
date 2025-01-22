@@ -1,6 +1,6 @@
 ---
 - name: "Creating Namespace for {{ rhoai_op_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       kind: Namespace
@@ -9,7 +9,7 @@
         name: "{{ rhoai_op_namespace }}"
 
 - name: "Create OperatorGroup for {{ rhoai_op_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       kind: OperatorGroup
@@ -19,7 +19,7 @@
         namespace: "{{ rhoai_op_namespace }}"
 
 - name: "Create Subscription for {{ rhoai_op_name }}"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     wait: true
     definition:
@@ -37,7 +37,7 @@
         sourceNamespace: "{{ rhoai_source_namespace }}"
 
 - name: "Wait for Subscription to be installed for {{ rhoai_op_name }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     name: "{{ rhoai_op_package }}"
     kind: Subscription
     api_version: operators.coreos.com/v1alpha1
@@ -52,7 +52,7 @@
     - "'installedCSV' in _rhoai_sub.resources[0].status"
 
 - name: "Wait for ClusterServiceVersion to succeed for {{ rhoai_op_name }}"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     name: "{{ _rhoai_sub.resources[0].status.installedCSV }}"
     kind: ClusterServiceVersion
     api_version: operators.coreos.com/v1alpha1

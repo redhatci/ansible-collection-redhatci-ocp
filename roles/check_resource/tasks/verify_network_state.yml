@@ -1,6 +1,6 @@
 ---
 - name: "Wait until all pods in openshift-ovn-kubernetes namespace are running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Pod
     namespace: "openshift-ovn-kubernetes"
   register: ovn_pods

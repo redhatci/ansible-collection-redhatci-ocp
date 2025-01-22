@@ -2,7 +2,7 @@
 # NetworkAttachmentDefintions should be created on the namespace, it
 # will be created by sriov operator, when SriovNetwork resource is created
 - name: "Check for net-attach-def presence in the namespace"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: k8s.cni.cncf.io/v1
     kind: NetworkAttachmentDefinition
     namespace: "{{ ecd_cnf_namespace }}"
@@ -12,7 +12,7 @@
   delay: 10
 
 - name: "Get the clusterversion info"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: ClusterVersion
   register: _ecd_cluster_version
 
@@ -22,7 +22,7 @@
   when: _ecd_cluster_version.resources[0].spec.channel|length == 0
 
 - name: "Get all nodes"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Node
   register: _ecd_nodes
   no_log: true
@@ -47,11 +47,11 @@
     index_var: idx
 
 - name: "Create cr for cnf application"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition: "{{ lookup('template', 'testpmd-cr.yaml.j2') }}"
 
 - name: "Check testpmd pod count to be greater than 0"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
@@ -64,7 +64,7 @@
 
 # At least confirm that the first testpmd pod is up and running
 - name: "Check testpmd pod status to be running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
@@ -88,7 +88,7 @@
     - ecd_container_ready[0] | bool
 
 - name: "Check cnfappmac resource (created by testpmd app) count to be greater than 0"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: CNFAppMac
   register: _ecd_cnfappmac
@@ -101,7 +101,7 @@
 # CNFAppMac and testpmd pods share the same name, so we can use it for doing
 # some extra checks
 - name: "Check that at least the cnfappmac resource for the first testpmd pod has the required data"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: CNFAppMac
     name: "{{ _ecd_testpmd_pods.resources[0].metadata.name }}"

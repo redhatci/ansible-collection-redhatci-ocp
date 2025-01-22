@@ -1,5 +1,5 @@
 - name: "Delete PVC used for upgrade tests"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: PersistentVolumeClaim
     name: "{{ pvc_to_be_deleted }}"
@@ -14,7 +14,7 @@
     loop_var: pvc_to_be_deleted
 
 - name: "Delete storage-tester Namespace"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
     name: storage-tester

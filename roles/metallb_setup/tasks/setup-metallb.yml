@@ -11,12 +11,12 @@
       {% if mlb_workers_only | default(true) | bool %}
         nodeSelector:
           node-role.kubernetes.io/worker: ""{%- endif %}
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ instance }}"
 
 - name: "Confirm that MetalLB speaker pods are Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "{{ mlb_namespace }}"
@@ -29,7 +29,7 @@
   no_log: true
 
 - name: "Create MetalLB IP Address Pool"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: metallb.io/v1beta1
@@ -50,7 +50,7 @@
     - mlb_bgp_peers is defined
   block:
     - name: "Create MetalLB BFD Profile"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition:
           apiVersion: metallb.io/v1beta1
@@ -73,7 +73,7 @@
       no_log: true
 
     - name: "Create MetalLB BGP Peers"
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', 'bgppeers.yml.j2') }}"
       loop: "{{ mlb_bgp_peers }}"
@@ -102,7 +102,7 @@
               - "{{ peer.name }}"
           {% endfor %}
           {% endif %}
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ bgpadvert }}"
       register: bgpadver
@@ -112,7 +112,7 @@
       no_log: true
 
 - name: "Create MetalLB L2 Advertisements"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: metallb.io/v1beta1
@@ -132,7 +132,7 @@
     - mlb_bgp_peers is undefined
 
 - name: "Confirm that all MetalLB pods are Running"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "{{ mlb_namespace }}"

@@ -10,7 +10,7 @@
     - ecd_trex_tests_wait | bool
   block:
     - name: Get all trexapps
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: TRexApp
       register: _ecd_trex_apps
@@ -30,7 +30,7 @@
         var: ecd_trex_apps_count
 
     - name: Wait trex app run complete event
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         namespace: "{{ ecd_cnf_namespace }}"
         kind: Event
         field_selectors:

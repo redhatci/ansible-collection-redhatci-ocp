@@ -1,6 +1,6 @@
 ---
 - name: "Delete Logging resources"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: "{{ item.apiVer }}"
     kind: "{{ item.kind }}"
@@ -10,14 +10,14 @@
   loop: "{{ ol_resources }}"
 
 - name: "Get PVCs in the namespace"
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: PersistentVolumeClaim
     namespace: "{{ ol_namespace }}"
   register: pvc_info
 
 - name: "Delete PVCs"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     definition:
       apiVersion: v1
       kind: PersistentVolumeClaim
@@ -30,7 +30,7 @@
   when: pvc_info.resources | length > 0
 
 - name: "Delete Cluster Logging namespace"
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: absent
     api: "v1"
     kind: "Namespace"

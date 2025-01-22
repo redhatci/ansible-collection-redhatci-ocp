@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        0.27.EPOCH
+Version:        1.0.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -18,7 +18,6 @@ Requires: ansible-collection-ansible-posix
 Requires: ansible-collection-ansible-utils
 Requires: ansible-collection-community-crypto
 Requires: ansible-collection-community-general
-Requires: ansible-collection-community-kubernetes
 Requires: ansible-collection-community-libvirt
 Requires: ansible-collection-containers-podman
 Requires: ansible-collection-kubernetes-core
@@ -29,7 +28,7 @@ Requires: python3-jmespath
 Requires: python3-netaddr
 Requires: python3-pyyaml
 Requires: skopeo
-Conflicts: dci-openshift-agent < 0.23.0
+Conflicts: dci-openshift-agent < 1.1.0
 
 %description
 %{summary}.
@@ -53,6 +52,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Jan 21 2025 Tony Garcia <tonyg@redhat.com> - 1.0.EPOCH-VERS
+- Removes community.kubernetes collection as dependency
+
 * Fri Jan 17 2025 Ramon Perez <raperez@redhat.com> - 0.27.EPOCH-VERS
 - Version bump for updated generate_agent_iso role
 
