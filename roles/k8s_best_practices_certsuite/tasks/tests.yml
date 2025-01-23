@@ -11,6 +11,20 @@
     state: directory
     mode: '0755'
 
+- name: Tasks related to Certsuite submission through CWE Hydra API
+  when: kbpc_version is version('v5.4.2', '>=') or kbpc_version == 'HEAD'
+  block:
+    - name: Verify if the CWE Hydra API key file exists
+      ansible.builtin.stat:
+        path: "{{ kbpc_cwe_apikey_path }}"
+      register: _kbpc_cwe_apikey_file
+
+    - name: Set kbpc_cwe_apikey if the token file exists
+      ansible.builtin.set_fact:
+        kbpc_cwe_apikey: "{{ lookup('file', kbpc_cwe_apikey_path) }}"
+      when: _kbpc_cwe_apikey_file.stat.exists
+      no_log: true
+
 - name: Template config file
   ansible.builtin.template:
     src: "templates/certsuite_config.yml.j2"

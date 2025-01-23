@@ -50,6 +50,17 @@ servicesignorelist:
   - {{ item }}
 {% endfor %}
 
+{% if kbpc_version is version('v5.4.2', '>=') or kbpc_version == 'HEAD' %}
+{% if kbpc_cwe_apikey is defined and kbpc_cwe_project_id is defined %}
+connectAPIConfig:
+  baseURL: "https://access.redhat.com/hydra/cwe/rest/v1.0"
+  apiKey: {{ kbpc_cwe_apikey }}
+  projectID: {{ kbpc_cwe_project_id }}
+  proxyURL: ""
+  proxyPort: ""
+{% endif %}
+{% endif %}
+
 ## fields below are not currently used, leaving placeholder in case they were needed in the future
 #managedDeployments:
 

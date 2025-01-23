@@ -14,6 +14,10 @@ kbpc_test_config:
 kbpc_accepted_kernel_taints: []
 kbpc_services_ignore_list: []
 kbpc_allow_preflight_insecure: false
+# CWE Hydra apikey for automated results submission
+# It must be created manually in Connect UI
+# Do not forget to define kbpc_cwe_project_id as well
+kbpc_cwe_apikey_path: "/opt/cache/cwe-apikey.txt"
 # If this is not set to true, JUnit file will not be created
 kbpc_enable_xml_creation: true
 kbpc_non_intrusive_only: false
