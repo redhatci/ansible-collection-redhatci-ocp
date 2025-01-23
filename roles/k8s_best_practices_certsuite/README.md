@@ -4,6 +4,8 @@ This role encapsulates the logic for the [Red Hat Best Practices Test Suite for 
 
 Before executing the certsuite, it's important to label the pods to test using the auto-discovery feature. You can do it manually or programmatically. An example of this can be found in [this example from DCI](https://github.com/redhat-cip/dci-openshift-app-agent/blob/master/samples/tnf_test_example/README.md).
 
+> Disclaimer: From Certsuite [v5.4.2](https://github.com/redhat-best-practices-for-k8s/certsuite/releases/tag/v5.4.2), it is possible to automatically upload the tar.gz results files directly to the Red Hat Connect API if you have a valid API Key and Project ID. This feature is still NOT supported by this role and it is under evaluation.
+
 ## Variables
 
 Name                                    | Default                                                                                                                                                                                                                                 | Description
