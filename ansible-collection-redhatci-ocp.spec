@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        1.0.EPOCH
+Version:        1.1.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -52,6 +52,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Jan 27 2025 Ramon Perez <raperez@redhat.com> - 1.1.EPOCH-VERS
+- Version bump for updated monitor_agent_based_installer role
+
 * Tue Jan 21 2025 Tony Garcia <tonyg@redhat.com> - 1.0.EPOCH-VERS
 - Removes community.kubernetes collection as dependency
 
