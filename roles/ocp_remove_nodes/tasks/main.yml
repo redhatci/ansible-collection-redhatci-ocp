@@ -1,0 +1,104 @@
+---
+- name: Get cluster name
+  kubernetes.core.k8s_info:
+    kind: ConfigMap
+    namespace: kube-system
+    name: cluster-config-v1
+  register: _orn_cluster_config
+
+- name: Get the workers machines
+  kubernetes.core.k8s_info:
+    api_version: machine.openshift.io/v1beta1
+    kind: Machine
+    namespace: openshift-machine-api
+    label_selectors:
+      - machine.openshift.io/cluster-api-machine-role=worker
+  register: _orn_worker_machines
+
+- name: Annotate machines to remove
+  vars:
+    machine_name: "{{ machine.spec.providerID.split('/')[4].split('.')[0] }}"
+    definition:
+      apiVersion: "machine.openshift.io/v1beta1"
+      kind: "Machine"
+      metadata:
+        name: "{{ machine.metadata.name }}"
+        namespace: "{{ machine.metadata.namespace }}"
+        annotations:
+          machine.openshift.io/cluster-api-delete-machine: "yes"
+  kubernetes.core.k8s:
+    definition: "{{ definition }}"
+  register: _orn_annotated_machines
+  loop: "{{ _orn_worker_machines.resources }}"
+  loop_control:
+    loop_var: machine
+    label: "{{ machine_name }}"
+  when: machine_name in orn_nodes
+
+- name: Print annotated machines
+  ansible.builtin.debug:
+    msg: "{{ a_m.result.metadata.annotations }}"
+  loop: "{{ _orn_annotated_machines.results }}"
+  loop_control:
+    loop_var: a_m
+    label: "{{ a_m.machine.spec.providerID }}"
+  when: a_m.result is defined
+
+- name: Get Machine Set
+  kubernetes.core.k8s_info:
+    api_version: machine.openshift.io/v1beta1
+    namespace: openshift-machine-api
+    kind: MachineSet
+    label_selectors:
+      - machine.openshift.io/cluster-api-machine-role=worker
+  register: _orn_machine_set
+
+- name: Reduce Machine Set replicas to those that were not annotated
+  vars:
+    ms_def: |
+      apiVersion: machine.openshift.io/v1beta1
+      kind: MachineSet
+      metadata:
+        name: {{ _orn_machine_set.resources[0].metadata.name }}
+        namespace: openshift-machine-api
+      spec:
+        replicas: {{ _orn_annotated_machines | json_query('results[*].skipped') | length }}
+  kubernetes.core.k8s:
+    definition: "{{ ms_def }}"
+    wait: true
+
+- name: Wait for the machines to be decomissioned
+  vars:
+    replicas: "{{ _orn_annotated_machines | json_query('results[*].skipped') | length }}"
+  kubernetes.core.k8s_info:
+    api_version: machine.openshift.io/v1beta1
+    kind: Machine
+    namespace: openshift-machine-api
+    label_selectors:
+      - machine.openshift.io/cluster-api-machine-role=worker
+  register: _orn_scaled_down_machines
+  retries: 60
+  delay: 60
+  until: _orn_scaled_down_machines.resources | length == replicas | int
+
+- name: Delete BareMetalHosts
+  vars:
+    cluster_install_info: |-
+      {{ ( _orn_cluster_config.resources[0].data |
+      from_yaml )['install-config'] |
+      from_yaml }}
+    cluster_name: "{{ cluster_install_info.metadata.name }}"
+    cluster_domain: "{{ cluster_install_info.baseDomain }}"
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: BareMetalHost
+      metadata:
+        namespace: openshift-machine-api
+        name: "{{ node }}.{{ cluster_name }}.{{ cluster_domain }}"
+    wait: true
+    wait_timeout: 60
+  loop: "{{ orn_nodes }}"
+  loop_control:
+    loop_var: node

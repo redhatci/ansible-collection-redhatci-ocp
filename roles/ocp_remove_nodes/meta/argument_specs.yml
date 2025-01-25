@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Entrypoint for ocp_remove_nodes role
+    description:
+      - Remove worker nodes from an OpenShift cluster.
+      - /!\ IMPORTANT /!\ This role removes permanently the nodes from an OCP cluster, use it with care.
+    options:
+      orn_nodes:
+        type: "list"
+        required: true
+        description:
+          - A list of OCP node names to remove from the cluster.
+...
