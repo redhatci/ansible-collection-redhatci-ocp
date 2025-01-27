@@ -6,11 +6,21 @@
 
 - name: Check installation and gather jobs if it fails
   block:
-    - name: Wait for install complete
-      ansible.builtin.shell:
+    - name: Wait for install complete - without retries
+      ansible.builtin.command:
         cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
         chdir: "{{ manifests_dir }}"
+      when: not mabi_retry_install_complete_check|bool
 
+    - name: Wait for install complete - with retries
+      ansible.builtin.command:
+        cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
+        chdir: "{{ manifests_dir }}"
+      when: mabi_retry_install_complete_check|bool
+      register: _mabi_install_output
+      retries: 10
+      delay: 60
+      until: "'Attempted to gather ClusterOperator status after wait failure: Listing ClusterOperator objects' not in _mabi_install_output.stderr"
   rescue:
     # Using master-0 IP address to reach the bootstrap VM
     # Placing the logs in repo_root_path

@@ -3,3 +3,6 @@ manifests_dir: "{{ generated_dir}}/{{ cluster_name }}"
 
 agent_based_installer_bootstrap_node: "{{ groups['masters'][0] }}"
 host_ip_keyword: ansible_host
+
+# Retry install complete check in case of finding issues with API VIP reachability
+mabi_retry_install_complete_check: false
