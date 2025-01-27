@@ -100,6 +100,7 @@ Name | Description
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.ocp_add_users](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_add_users/README.md) | Add users to an OpenShift cluster through htpasswd Identity Provider.
+[redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster. 
 [redhatci.ocp.ocp_logging](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_logging/README.md) | Enables the OCP logging subsystem.
 [redhatci.ocp.ocp_on_libvirt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_on_libvirt/README.md) | Creation of a libvirt environment to install OCP
 [redhatci.ocp.odf_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/odf_setup/README.md) | Setup of [OpenShift Data Foundation (ODF)](https://www.redhat.com/en/technologies/cloud-computing/openshift-data-foundation)
