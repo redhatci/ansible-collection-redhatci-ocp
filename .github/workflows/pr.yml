@@ -131,12 +131,12 @@ jobs:
             sed -e 's/3.5 //g')
           for version in $PY_VERS; do
             ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
-            ansible-test units $EXCLUDE --verbose --docker --python $version --color --coverage || :
+            ansible-test units --verbose --docker --python $version --color --coverage || :
           done 2> >(tee -a branch.output >&2)
           git checkout main
           for version in $PY_VERS; do
             ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
-            ansible-test units $EXCLUDE --verbose --docker --python $version --color --coverage || :
+            ansible-test units --verbose --docker --python $version --color --coverage || :
           done 2> main.output 1>/dev/null
           for key in branch main; do
             grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |
