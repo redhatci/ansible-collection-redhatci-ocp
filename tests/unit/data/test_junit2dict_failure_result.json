@@ -1,0 +1,45 @@
+{
+    "time": 0.044028282165527344,
+    "tests": 2,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "test_suites": [
+        {
+            "name": "dci-openshift-app-agent",
+            "time": 0.044,
+            "timestamp": "1970-01-01T00:00:00",
+            "tests": 2,
+            "failures": 2,
+            "errors": 0,
+            "skipped": 0,
+            "properties": {},
+            "test_cases": [
+                {
+                    "name": "[jumphost] Check test results step: redhatci.ocp.verify_tests : Fail if not all test results are as expected for cu_op_deploy_cloudran_site_new_version.xml msg=The following expectations failed: {{ expectation_failed }}",
+                    "classname": "/usr/share/ansible/collections/ansible_collections/redhatci/ocp/roles/verify_tests/tasks/parse_junit_file.yml:19",
+                    "time": 0.026203,
+                    "result": [
+                        {
+                            "message": "The following expectations failed: [{'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_sites_deployment_time', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_managedcluster_ztp_done_label', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_policies_compliant', 'passed': False}}]",
+                            "text": "{\n\"changed\": false,\n\"msg\": \"The following expectations failed: [{'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_sites_deployment_time', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_managedcluster_ztp_done_label', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_policies_compliant', 'passed': False}}]\"\n}",
+                            "status": "failure"
+                        }
+                    ]
+                },
+                {
+                    "name": "[jumphost] Check test results step: Fail properly msg=Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/{{ job_info.job.id }}/jobStates",
+                    "classname": "/usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml:271",
+                    "time": 0.017825,
+                    "result": [
+                        {
+                            "message": "Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/8b7e1fd4-9804-4abc-98c2-a9ecc39ba72c/jobStates",
+                            "text": "{\n\"changed\": false,\n\"msg\": \"Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/8b7e1fd4-9804-4abc-98c2-a9ecc39ba72c/jobStates\"\n}",
+                            "status": "failure"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

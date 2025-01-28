@@ -1,2 +1,5 @@
 junit_xml
+junitparser
+jmespath
+python-dateutil
 semver
