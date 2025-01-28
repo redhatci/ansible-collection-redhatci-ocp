@@ -1,0 +1,74 @@
+{
+    "time": 0.000426228,
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "test_suites": [
+        {
+            "name": "Performance Addon Operator Reboot",
+            "time": 0.0,
+            "timestamp": "2024-12-12T20:12:23",
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 2,
+            "properties": {
+                "SuiteSucceeded": "true",
+                "SuiteHasProgrammaticFocus": "false",
+                "SpecialSuiteFailureReason": "",
+                "SuiteLabels": "[]",
+                "RandomSeed": "1734025939",
+                "RandomizeAllSpecs": "false",
+                "LabelFilter": "(!openshift && tier-0)",
+                "FocusStrings": "",
+                "SkipStrings": "",
+                "FocusFiles": "",
+                "SkipFiles": "",
+                "FailOnPending": "false",
+                "FailOnEmpty": "false",
+                "FailFast": "false",
+                "FlakeAttempts": "2",
+                "DryRun": "false",
+                "ParallelTotal": "1",
+                "OutputInterceptorMode": ""
+            },
+            "test_cases": [
+                {
+                    "name": "[It] [disruptive][node][kubelet][devicemanager]",
+                    "classname": "Performance Addon Operator Reboot",
+                    "time": 0.0,
+                    "result": [
+                        {
+                            "message": "skipped",
+                            "status": "skipped"
+                        }
+                    ]
+                },
+                {
+                    "name": "Device management tests Verify that pods requesting devices",
+                    "classname": "Performance Addon Operator Reboot",
+                    "time": 0.0,
+                    "result": [
+                        {
+                            "message": "skipped",
+                            "status": "skipped"
+                        }
+                    ]
+                },
+                {
+                    "name": "[ReportAfterSuite] e2e serial suite",
+                    "classname": "Performance Addon Operator Reboot",
+                    "time": 6.826e-05,
+                    "result": [
+                        {
+                            "message": "passed",
+                            "status": "passed"
+                        }
+                    ],
+                    "system_err": "> Enter [ReportAfterSuite] TOP-LEVEL - /home/jenkins/workspace/CNF/cnf-compute-4.18;"
+                }
+            ]
+        }
+    ]
+}
