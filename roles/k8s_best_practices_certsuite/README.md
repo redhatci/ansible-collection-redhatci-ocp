@@ -4,8 +4,6 @@ This role encapsulates the logic for the [Red Hat Best Practices Test Suite for 
 
 Before executing the certsuite, it's important to label the pods to test using the auto-discovery feature. You can do it manually or programmatically. An example of this can be found in [this example from DCI](https://github.com/redhat-cip/dci-openshift-app-agent/blob/master/samples/tnf_test_example/README.md).
 
-> Disclaimer: From Certsuite [v5.4.2](https://github.com/redhat-best-practices-for-k8s/certsuite/releases/tag/v5.4.2), it is possible to automatically upload the tar.gz results files directly to the Red Hat Connect API if you have a valid API Key and Project ID. This feature is still NOT supported by this role and it is under evaluation.
-
 ## Variables
 
 Name                                    | Default                                                                                                                                                                                                                                 | Description
@@ -34,6 +32,8 @@ kbpc_support_image_name                 | certsuite-probe                       
 kbpc_kubeconfig                         | undefined                                                                                                                                                                                                                               | Cluster kubeconfig. This variable is required to run the certification tests.
 kbpc_log_path                           | undefined                                                                                                                                                                                                                               | Path to a directory where logs are saved. This is mainly used for using this role with DCI to submit log results to the DCI job.
 kbpc_code_src_dir                       | undefined                                                                                                                                                                                                                               | If testing a certsuite PR, this variable will be injected from test-runner scripts (used in dci-pipeline and dci-openshift-agent projects) to refer to the file path where the code from the PR is placed in the jumphost, so that it can be used in this role to build a new certsuite container image based on that code.
+kbpc_cwe_apikey_path                    | /opt/cache/cwe-apikey.txt                                                                                                                                                                                                                                     | (Starting from Certsuite v5.4.2) Path to the file containing CWE Hydra API key. It must be generated in Connect UI and saved in this file beforehand.
+kbpc_cwe_project_id                     | undefined                                                                                                                                                                                                                               | (Starting from Certsuite v5.4.2) Best Practices CNF project ID in Connect UI. Must be retrieved from Connect UI or from the DCI job that created the CNF project.
 
 ## How to call the role
 
@@ -135,3 +135,26 @@ In any case, when you finish filling in the feedback in the report, you can gene
 You can also upload a `claim.json` file obtained from the execution (also available in the Files section of the DCI job) in the form you have at the top, if you want to load a different file. Anyway, the report already contains the `claim.json` file.
 
 This is a feature provided by certsuite, please check in their documentation for finding more information about this tool.
+
+## Upload Certsuite results to your CNF project
+
+From Certsuite [v5.4.2](https://github.com/redhat-best-practices-for-k8s/certsuite/releases/tag/v5.4.2), it is possible to automatically upload the tar.gz results files directly to the Red Hat Connect API if you have a valid API Key and Project ID. For this to work, you need to:
+
+- Launch a Certsuite release higher or equal than v5.4.2.
+- Configure these two variables with proper values: `kbpc_cwe_apikey_path` (with the path to CWE Hydra API key, generated beforehand on https://rhcert.connect.redhat.com/#/token by using your Red Hat account) and `kbpc_cwe_project_id` (with the project ID that is provided once you create it).
+
+You can check what is the related rhcert case to your project ID by sending this request:
+
+```
+$ curl --location 'https://access.redhat.com/hydra/cwe/rest/v1.0/projects/certifications' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: <your API key>' \
+--data '{    "projectId": "<your projectId>"}'
+
+# result: check rhcertUrl to access to the rhcert case assigned to your projectId
+```
+
+If these conditions are met, Certsuite will try to upload the results using the CWE Hydra API. If it works, you will be able to see the tar.gz file generated by Certsuite on the rhcert case. Else, the submission will not be made and the Ansible task that launches the Certsuite execution will report a failure.
+
+Note that the partner feedback is not included in this automatic submission. This must be generated and submitted afterwards to the rhcert case on a manual way.
