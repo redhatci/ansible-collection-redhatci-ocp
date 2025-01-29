@@ -1,0 +1,20 @@
+---
+- name: Lenovo Eject Virtual Media {{ target_host }}
+  ansible.builtin.uri:
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/EXT1"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: PATCH
+    body_format: json
+    body: {"Image": null, "Inserted": false}
+    status_code: [200, 204]
+    force_basic_auth: true
+    validate_certs: false
+    return_content: true
+  register: redfish_reply
+
+- name: Debug
+  ansible.builtin.debug:
+    var: redfish_reply
+    verbosity: 1
+...

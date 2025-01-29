@@ -3,7 +3,8 @@
     cluster_vm_names: "{{ (cluster_vm_names | default([])) + [item.name] }}"
   loop: "{{ kvm_nodes }}"
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: cluster_vm_names
     verbosity: 1
 

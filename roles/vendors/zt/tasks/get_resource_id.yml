@@ -7,7 +7,8 @@
     password: "{{ bmc_password }}"
   register: result
 
-- ansible.builtin.debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: result
     verbosity: 1
 
@@ -17,7 +18,8 @@
         | flatten(levels=2) | selectattr('resource_uri', 'defined') | list
       }}"
 
-- ansible.builtin.debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: resources
     verbosity: 1
 
@@ -31,6 +33,7 @@
   ansible.builtin.set_fact:
     resource_id: "{{ resources[0].resource_uri.split('/')[-1] }}"
 
-- ansible.builtin.debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: resource_id
     verbosity: 1

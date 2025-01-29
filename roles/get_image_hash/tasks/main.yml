@@ -20,7 +20,8 @@
         os_filter: "[?(openshift_version == '{{ openshift_version }}')]"
       when: (not get_all_release_versions) | bool
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: os_images
         verbosity: 1
 
@@ -31,7 +32,8 @@
         release_filter: "[?(version == '{{ openshift_full_version }}')]"
       when: (not get_all_release_versions) | bool
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: release_images
         verbosity: 1
 
@@ -96,11 +98,13 @@
       set_fact:
         release_images: "{{ updated_release_images | default([]) }}"
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: os_images
         verbosity: 1
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: release_images
         verbosity: 1
 

@@ -21,7 +21,8 @@
   retries: 4
   delay: 30
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     msg: "{{ cluster_output.json.hosts }}"
     verbosity: 1
 
@@ -33,7 +34,8 @@
   no_log: true
 
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     msg: "{{ monitor_host_current_host }}"
     verbosity: 1
 

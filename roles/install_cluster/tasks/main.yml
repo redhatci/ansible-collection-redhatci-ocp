@@ -58,7 +58,8 @@
       }
     when: not single_node_openshift_enabled
 
-  - debug: # noqa unnamed-task
+  - name: Debug
+    ansible.builtin.debug:
       var: cluster_config_patch_request_body
       verbosity: 1
 
@@ -145,12 +146,14 @@
     - extra_cluster_networks_with_cluster_id is defined
     - extra_service_networks_with_cluster_id is defined
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: cluster_config_patch_request_body
     verbosity: 1
   when: install | bool
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: patch_cluster_networking_body
     verbosity: 1
   when: install | bool
@@ -168,7 +171,8 @@
   register: http_reply
   when: install | bool == True
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: http_reply.json
     verbosity: 1
   when: install | bool == True

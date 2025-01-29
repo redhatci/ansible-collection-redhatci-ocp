@@ -1,0 +1,61 @@
+---
+- name: Check ISO endpoint
+  ansible.builtin.uri:
+    url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: GET
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+  register: cd1_contents
+  failed_when: false
+
+- name: Mount ISO using VirtualMedia.InsertMedia
+  when:
+    - cd1_contents.status == 200
+  block:
+    - name: Mount ISO via VirtualMedia.InsertMedia API
+      ansible.builtin.uri:
+        url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VirtualMedia/CD1/Actions/VirtualMedia.InsertMedia"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        method: POST
+        headers:
+          content-type: application/json
+          Accept: application/json
+        body: {"Image": "{{ boot_iso_url }}"}
+        body_format: json
+        validate_certs: false
+        force_basic_auth: true
+        return_content: true
+        status_code: 202
+
+    - name: Set BootSourceOverrideTarget to UsbCd
+      ansible.builtin.set_fact:
+        boot_source_override_target: UsbCd
+
+- name: Mount ISO using IsoConfig.Mount
+  when:
+    - cd1_contents.status != 200
+  block:
+    - name: Mount ISO via IsoConfig.Mount API
+      ansible.builtin.uri:
+        url: "https://{{ bmc_address }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.Mount"
+        user: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        method: POST
+        headers:
+          content-type: application/json
+          Accept: application/json
+        body: {"Image": "{{ boot_iso_url }}"}
+        body_format: json
+        validate_certs: false
+        force_basic_auth: true
+        return_content: true
+        status_code: 200
+
+    - name: Set BootSourceOverrideTarget to Cd
+      ansible.builtin.set_fact:
+        boot_source_override_target: Cd
+...

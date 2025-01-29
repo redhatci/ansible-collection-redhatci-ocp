@@ -13,20 +13,11 @@
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
 
-- block: # noqa unnamed-task
-    - ansible.builtin.import_tasks: ./virtual_media_mount_iso.yml # noqa unnamed-task
+- name: Virtual Media Mount ISO
+  ansible.builtin.import_tasks: eject.yml
 
-    - name: Set BootSourceOverrideTarget (UsbCd)
-      ansible.builtin.set_fact:
-        boot_source_override_target: UsbCd
-
-  rescue:
-    - ansible.builtin.import_tasks: ./iso_config_mount_iso.yml # noqa unnamed-task
-
-    - name: Set BootSourceOverrideTarget (Cd)
-      ansible.builtin.set_fact:
-        boot_source_override_target: Cd
-
+- name: ISO config mount
+  ansible.builtin.import_tasks: mount.yml
 
 - name: Set Boot for the SuperMicro # noqa var-spacing # linter wrongly detects a var
   ansible.builtin.uri:

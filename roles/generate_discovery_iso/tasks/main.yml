@@ -22,7 +22,8 @@
     search_registries: "{{ lookup('template', 'patch-search-registries.j2') }}"
   when: disconnected | bool == True
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: search_registries
     verbosity: 1
   when: disconnected | bool == True
@@ -37,7 +38,8 @@
     patch_discovery_ignition: "{{ (patch_discovery_ignition | default({})) | combine(lookup('template', 'patch-discovery-ignition.j2')) }}"
   when: disconnected | bool == True
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: patch_discovery_ignition
     verbosity: 1
   when: disconnected | bool == True
@@ -89,7 +91,8 @@
     body: "{{ infra_env_body }}"
   register: infra_env_reply
 
-- debug: # noqa unnamed-task
+- name: Debug
+  ansible.builtin.debug:
     var: infra_env_reply.json
     verbosity: 1
 
@@ -182,7 +185,8 @@
       register: http_reply
       become: true
 
-    - debug: # noqa unnamed-task
+    - name: Debug
+      ansible.builtin.debug:
         var: http_reply.status_code
         verbosity: 1
       when: download | bool == True
