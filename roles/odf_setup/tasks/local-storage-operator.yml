@@ -22,6 +22,7 @@
     definition: "{{ lookup('template', 'ocs-disk-gatherer.yml.j2') }}"
     state: present
     wait: true
+    wait_timeout: 300
 
 - name: Gathering result from DaemonSet
   ansible.builtin.shell:
