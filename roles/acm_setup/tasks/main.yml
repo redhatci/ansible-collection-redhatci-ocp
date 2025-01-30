@@ -105,7 +105,7 @@
     - mch.resources | length == 1
     - "'status' in mch.resources[0]"
     - "'phase' in mch.resources[0].status"
-    - mch.resources[0].status.phase == 'Running'
+    - mch.resources[0].status.phase == 'Running' or mch.resources[0].status.phase == 'Available'
 
 - name: "Disable ClusterImageSets and AppSubs when disconnected"
   when:
