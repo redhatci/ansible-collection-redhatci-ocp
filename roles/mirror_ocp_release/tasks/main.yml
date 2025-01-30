@@ -50,20 +50,16 @@
   ansible.builtin.debug:
     var: mor_version
 
-- name: "Create directory structure"
+- name: "Set list of OS images to mirror"
   ansible.builtin.include_tasks: image-list.yml
+  when:
+    - mor_mirror_disk_images | bool
 
 - name: "Create directory structure"
   ansible.builtin.include_tasks: dirs.yml
 
 - name: "Download release resources"
-  ansible.builtin.include_tasks: download.yml
-
-- name: "Unpack release artifacts"
-  ansible.builtin.include_tasks: unpack.yml
-
-- name: "Extract installer"
-  ansible.builtin.include_tasks: installer.yml
+  ansible.builtin.include_tasks: artifacts.yml
 
 - name: "Write webserver configuration files"
   ansible.builtin.include_tasks: files.yml
