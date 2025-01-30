@@ -1,22 +1,22 @@
 ---
 - name: "Check if target file exists"
   ansible.builtin.stat:
-    path: "{{ mor_dir }}/{{ uri | basename }}"
+    path: "{{ mor_dir }}/{{ mor_uri | basename }}"
     get_checksum: false
   register: target
   when:
-    - not mor_force  # we don't care to stat files if we're forcing
+    - not mor_force
 
 - name: "Fetch file from URL"
   ansible.builtin.get_url:
-    url: "{{ uri }}"
+    url: "{{ mor_uri }}"
     dest: "{{ mor_dir }}"
     owner: "{{ mor_owner }}"
     group: "{{ mor_group }}"
     mode: "0644"
     timeout: 1200
     setype: "{{ setype | default('httpd_sys_content_t') }}"
-    checksum: "{{ checksum | default(omit) }}"
+    checksum: "{{ mor_checksum | default(omit) }}"
   become: true
   retries: 3
   delay: 10
@@ -25,8 +25,14 @@
   when:
     - mor_force or not target.stat.exists
 
+- name: "Figure out status of SELinux"
+  ansible.builtin.command: /usr/sbin/selinuxenabled
+  ignore_errors: true
+  register: _mor_selinux
+  changed_when: false
+
 - name: "Apply new SELinux file context to file"
-  ansible.builtin.command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ uri | basename }}"
+  ansible.builtin.command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ mor_uri | basename }}"
   become: true
-  when: selinux_status.rc == 0
+  when: _mor_selinux.rc == 0
 ...

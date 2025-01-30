@@ -14,7 +14,7 @@
 
 - name: Mirror release images to local registry
   ansible.builtin.command: >-
-    {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
+    {{ mor_oc }} adm release mirror
     --registry-config={{ mor_auths_file }}
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
@@ -35,7 +35,7 @@
 
 - name: Generate Image Source manifest
   ansible.builtin.command: >-
-    {{ mor_cache_dir }}/{{ mor_version }}/oc adm release mirror
+    {{ mor_oc }} adm release mirror
     --registry-config={{ mor_auths_file }}
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
@@ -56,7 +56,8 @@
     echo -e "{{ _mor_result.stdout }}" |
     sed -n '/apiVersion/,$p' |
     sed -e 's/name:.*/name: release-{{ mor_version }}/'
-  register: is_release
+  register: _mor_is_release
+  changed_when: _mor_is_release.rc == 0
 
 - name: Write Image Source manifest
   ansible.builtin.copy:
@@ -65,6 +66,6 @@
     group: "{{ mor_group }}"
     mode: "0644"
     setype: httpd_sys_content_t
-    content: "{{ is_release.stdout }}"
+    content: "{{ _mor_is_release.stdout }}"
   become: true
 ...
