@@ -1,0 +1,42 @@
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+filterwarnings = [
+    'ignore:AnsibleCollectionFinder has already been configured',
+]
+
+pythonpath = [
+    "${ANSIBLE_COLLECTIONS_DIR}",
+    # Add the current directory to the path
+    ".",
+]
+
+[tool.black]
+max-line-length = 120
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # The following are specific to Black, you probably don't want those.
+  tests/data/
+  | profiling/
+  | scripts/generate_schema.py  # Uses match syntax
+)
+'''
+# We use the unstable style for formatting Black itself. If you
+# want bug-free formatting, you should keep this off. If you want
+# stable formatting across releases, you should also keep `preview = true`
+# (which is implied by this flag) off.
+
+unstable = true
+
+[tool.pycodestyle]
+count = False
+ignore = E226,E302,E71,E252
+max-line-length = 160
+statistics = True
+
+[tool.pylint]
+max-line-length = 120
+class-naming-style = any
