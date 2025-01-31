@@ -91,6 +91,34 @@
   delay: 15
   no_log: true
 
+- name: Get InstallPlans for MCE
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: InstallPlan
+    namespace: multicluster-engine
+  register: _as_mce_ips
+  no_log: true
+
+- name: Patch pending InstallPlans for MCE
+  kubernetes.core.k8s_json_patch:
+    api_version: operators.coreos.com/v1alpha1
+    kind: InstallPlan
+    name: "{{ ip.metadata.name }}"
+    namespace: "{{ ip.metadata.namespace }}"
+    patch:
+      - op: replace
+        path: /spec/approved
+        value: true
+  loop: "{{ _as_mce_ips.resources }}"
+  loop_control:
+    loop_var: ip
+    label: "{{ ip.metadata.name }}"
+  when:
+    - _as_mce_ips.resources | length
+    - ip.spec.approval == 'Manual'
+    - not ip.spec.approved | bool
+  no_log: true
+
 - name: "Wait up to 30 mins for MCH to be ready"
   kubernetes.core.k8s_info:
     api: operator.open-cluster-management.io/v1
