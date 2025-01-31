@@ -36,21 +36,6 @@
           pod-security.kubernetes.io/enforce: "baseline"
           pod-security.kubernetes.io/warn: "baseline"
 
-- name: "Create namespace for {{ operator.name }}"
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: "{{ operator.name }}"
-        labels:
-          security.openshift.io/scc.podSecurityLabelSync: "false"
-          pod-security.kubernetes.io/enforce: privileged
-          pod-security.kubernetes.io/enforce-version: latest
-    wait: true
-  when:
-    - '"github-867" in dci_workarounds|default([])'
-
 - name: "Run preflight check operator on {{ operator.name }}"
   environment:
     OPENSHIFT_AUTH: "{{ partner_creds }}"
