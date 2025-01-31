@@ -19,10 +19,11 @@
         --command={{ mor_installer }}
         --from {{ mor_pull_url }}
         --to "{{ mor_cache_dir }}/{{ mor_version }}";
-        {{ mor_oc }} adm release info
+        {{ mor_oc }} adm release extract
         --registry-config {{ mor_auths_file }}
-        {{ mor_pull_url }}
-        >> "{{ mor_cache_dir }}/{{ mor_version }}/release.txt";
+        --tools
+        --from {{ mor_pull_url }}
+        --to "{{ mor_cache_dir }}/{{ mor_version }}";
         {{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }} coreos print-stream-json >
         {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json'
       register: _mor_extract_res
