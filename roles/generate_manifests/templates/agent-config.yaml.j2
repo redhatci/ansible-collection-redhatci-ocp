@@ -5,16 +5,24 @@ rendezvousIP: {{ hostvars[agent_based_installer_bootstrap_node][host_ip_keyword]
 additionalNTPSources:
     - {{ hostvars[agent_based_installer_bootstrap_node]['ntp_server'] }}
 hosts:
-{% for hostname, network_config in static_network_config.items() %}
+{% for hostname in groups['masters'] + (groups['workers'] | default([])) | sort %}
   - role: {{ hostvars[hostname]['role'] }}
     hostname: {{ hostname }}
+  {% if hostname in static_network_config %}
     interfaces:
-      - name: {{ network_config.mac_interface_map[0].logical_nic_name }}
-        macAddress: {{ network_config.mac_interface_map[0].mac_address }}
+      - name: {{ static_network_config[hostname].mac_interface_map[0].logical_nic_name }}
+        macAddress: {{ static_network_config[hostname].mac_interface_map[0].mac_address }}
     networkConfig:
-      {{ network_config.network_yaml | indent(6) }}
-  {% if hostvars[hostname]['installation_disk_path'] is defined %}
+      {{ static_network_config[hostname].network_yaml | indent(6) }}
+  {% endif %}
+  {% if hostvars[hostname]['root_device_hints'] | default({}) | length > 0 or hostvars[hostname]['installation_disk_path'] is defined %}
     rootDeviceHints:
+    {% if hostvars[hostname]['installation_disk_path'] is defined %}
       deviceName: {{ hostvars[hostname]['installation_disk_path'] }}
+    {% else %}
+      {% for key, rdh in (hostvars[hostname]['root_device_hints'] | default({})).items() %}
+      {{ key }}: {{ rdh }}
+      {% endfor %}
+    {% endif %}
   {% endif %}
 {% endfor %}
