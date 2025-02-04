@@ -58,7 +58,7 @@
           --preflight-dockerconfig=/usr/certsuite/config/config.json \
           --allow-preflight-insecure={{ kbpc_allow_preflight_insecure }} \
           {% endif %}
-          {% if kbpc_version == 'HEAD' and kbpc_cwe_apikey is defined and kbpc_cwe_project_id is defined %}
+          {% if (kbpc_version is version('v5.4.3', '>=') or kbpc_version == 'HEAD') and kbpc_cwe_apikey is defined and kbpc_cwe_project_id is defined %}
           --connect-api-key={{ kbpc_cwe_apikey }} \
           --connect-project-id={{ kbpc_cwe_project_id }} \
           {% endif %}
