@@ -50,7 +50,7 @@ servicesignorelist:
   - {{ item }}
 {% endfor %}
 
-{% if kbpc_version is version('v5.4.2', '>=') or kbpc_version == 'HEAD' %}
+{% if kbpc_version is version('v5.4.2', '==') or kbpc_version == 'HEAD' %}
 connectAPIConfig:
   baseURL: "https://access.redhat.com/hydra/cwe/rest/v1.0"
 {% if kbpc_version is version('v5.4.2', '>=') and kbpc_cwe_apikey is defined and kbpc_cwe_project_id is defined %}
