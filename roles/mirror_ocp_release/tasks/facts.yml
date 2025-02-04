@@ -1,4 +1,14 @@
 ---
+- name: "Get content of release.txt"
+  ansible.builtin.slurp:
+    src: "{{ mor_cache_dir }}/{{ mor_version }}/release.txt"
+  register: _mor_release_content
+  no_log: true
+
+- name: "Read release_image from release content"
+  ansible.builtin.set_fact:
+    mor_release_image: "{{ _mor_release_content.content | b64decode | regex_search('(?<=^Pull From: )(.*)$', multiline=true) }}"
+
 - name: "Read the contents of rhcos.json"
   ansible.builtin.command: "cat {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json"
   register: rhcos
@@ -6,7 +16,7 @@
 - name: "Set image facts"
   ansible.builtin.set_fact:
     ocp_release_data:
-      container_image: "{{ mor_pull_url }}"
+      container_image: "{{ mor_release_image }}"
       rhcos_version: "{{ rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.metal.release') }}"
       rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.' + item.path))}) }}"
   with_items:
