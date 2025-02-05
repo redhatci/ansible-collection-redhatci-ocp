@@ -23,20 +23,14 @@
         --registry-config {{ mor_auths_file }}
         --tools
         --from {{ mor_pull_url }}
-        --to "{{ mor_cache_dir }}/{{ mor_version }}"'
+        --to "{{ mor_cache_dir }}/{{ mor_version }}";
+        {{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }} coreos print-stream-json >
+        {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json'
       register: _mor_extract_res
       retries: 9
       delay: 10
       until: _mor_extract_res is not failed
       changed_when: false
-
-    - name: "Extract rhcos.json if version >= 4.8"
-      when:
-        - mor_version is version("4.8", ">=")
-      ansible.builtin.shell: >
-        flock -x {{ mor_cache_dir }}/{{ mor_version }}/release_extract.lock -c '
-          {{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }} coreos print-stream-json >
-          {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json;'
 
     - name: "Download rhcos.json (< 4.8)"
       when:
