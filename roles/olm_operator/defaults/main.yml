@@ -1,7 +1,9 @@
 ---
 channel: ""
-source: redhat-operators
-source_ns: openshift-marketplace
-operator_group_name: "{{ operator }}"
+install_approval: "Manual"
 olm_operator_skippable: false
+operator_group_name: "{{ operator }}"
+source_ns: openshift-marketplace
+source: redhat-operators
+starting_csv: ""
 ...

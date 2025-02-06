@@ -91,7 +91,7 @@
         | map(attribute='currentCSV')
         | first
       }}
-    operator_csv: "{{ starting_csv | default(default_csv, true) }}"
+    operator_csv: "{{ starting_csv | length | ternary(starting_csv, default_csv) }}"
   when:
     - olm_operator_found | bool
   block:
@@ -121,6 +121,8 @@
           spec: "{{ operator_group_spec | default(group_spec, true) }}"
 
     - name: Create subscription for OLM operator
+      vars:
+        _oo_approval: "{{ (install_approval == 'Automatic' or (starting_csv | length == 0)) | ternary('Automatic', 'Manual') }}"
       kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
@@ -130,7 +132,7 @@
             namespace: "{{ namespace }}"
           spec:
             channel: "{{ desired_channel }}"
-            installPlanApproval: "{{ (starting_csv | default('') | length) | ternary('Manual', 'Automatic') }}"
+            installPlanApproval: "{{ _oo_approval }}"
             config:
               resources: {}
             name: "{{ operator }}"
@@ -167,7 +169,7 @@
       loop_control:
         loop_var: install_plan
       when:
-        - starting_csv | default('') | length > 0
+        - starting_csv | length
 
     - name: Wait for CSV to be ready
       kubernetes.core.k8s_info:
