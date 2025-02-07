@@ -1,10 +1,10 @@
 ---
 # defaults file for create_cluster
 
-secure: False
-create: True
-manifests: True
-schedulable_masters: True
+secure: false
+create: true
+manifests: true
+schedulable_masters: true
 
 fetched_dest: "{{ repo_root_path }}/fetched"
 

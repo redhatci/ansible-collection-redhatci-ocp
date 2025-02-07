@@ -8,7 +8,7 @@
     - lookup('ansible.builtin.config', 'DEPRECATION_WARNINGS')
 
 - name: Setup AI Host
-  become: True
+  become: true
   block:
     - name: Install podman
       package:
@@ -22,8 +22,8 @@
             content: "{{ mirror_certificate }}"
             dest: /etc/pki/ca-trust/source/anchors/ai_registry.crt
             mode: 0660
-            force: yes
-            backup: yes
+            force: true
+            backup: true
 
         - name: Update the CA trust files
           command:
@@ -41,7 +41,7 @@
             content: "{{ pull_secret }}"
             dest: "{{ config_file_path }}/containers/auth.json"
             mode: 0644
-            remote_src: yes
+            remote_src: true
   
       when: use_local_mirror_registry  | bool
 
@@ -103,7 +103,7 @@
           dest: "{{ assisted_installer_dir }}/pod.yml"
 
 - name: Setup AI pod
-  become: True
+  become: true
   environment:
     XDG_RUNTIME_DIR: "{{ config_file_path }}"
   block:
@@ -169,13 +169,13 @@
 
     - name: Reload systemd service
       systemd:
-        daemon_reexec: yes
+        daemon_reexec: true
         scope: system
 
     - name: Enable assisted_installer.service
       systemd:
         name: assisted_installer
-        enabled: yes
+        enabled: true
         scope: system
 
     - name: Start assisted_installer.service

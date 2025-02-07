@@ -8,9 +8,9 @@
   file:
     path: "{{ fetched_dest }}"
     state: directory
-    recurse: yes
+    recurse: true
   delegate_to: localhost
-  become: no
+  become: false
 
 - name: Make key dir
   file:
@@ -28,7 +28,7 @@
   fetch:
     src: "{{ item }}"
     dest: "{{ fetched_dest }}/ssh_keys/"
-    flat: yes
+    flat: true
   loop:
     - "{{ key_pair_dir }}/{{ private_key_name }}"
     - "{{ key_pair_dir }}/{{ public_key_name }}"

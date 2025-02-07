@@ -1,6 +1,6 @@
 - name: Remove network
   become: true
-  ignore_errors: yes
+  failed_when: false
   block:
     - name: destroy network
       community.libvirt.virt_net:
@@ -20,7 +20,7 @@
   loop:
     - "{{ vm_bridge_name }}"
     - "{{ vm_bridge_interface }}_{{ vm_bridge_name }}"
-  ignore_errors: yes
+  failed_when: false
   become: true
   when: (DELETE_VM_BRIDGE | default(SETUP_VM_BRIDGE | default(true))) | bool == true
 
@@ -29,6 +29,6 @@
     conn_name: "{{ vm_bridge_name }}.{{ vm_vlan_tag }}"
     type: vlan
     state: absent
-  ignore_errors: yes
+  failed_when: false
   become: true
   when: (DELETE_VM_BRIDGE | default(SETUP_VM_BRIDGE | default(true))) | bool == true and vm_vlan_tag is defined

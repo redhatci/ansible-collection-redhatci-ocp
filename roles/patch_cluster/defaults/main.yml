@@ -1,8 +1,8 @@
 patch_cluster_id: "{{ cluster_id }}"
 patch_set_prefix: ""
 
-secure: False
-manifests: True
+secure: false
+manifests: true
 fetched_dest: "{{ repo_root_path }}/fetched"
 
 disconnected: "{{ use_local_mirror_registry | default(setup_registry_service | default(true)) }}"

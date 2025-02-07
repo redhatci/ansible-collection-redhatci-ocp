@@ -1,8 +1,8 @@
 ---
 # defaults file for monitor_cluster
 
-monitor: True
-secure: False
+monitor: true
+secure: false
 
 monitor_host_cluster_id: "{{ cluster_id | default(hostvars['bastion']['cluster_id']) }}"
 ASSISTED_INSTALLER_HOST: "{{ hostvars['assisted_installer']['host'] | default(ansible_default_ipv4.address | default(ansible_all_ipv4_addresses[0])) }}"

@@ -12,7 +12,7 @@
       file:
         path: "{{ vm_create_scripts_dir }}"
         state: directory
-        recurse: yes
+        recurse: true
 
     - name: Create vm creation_scripts
       vars:
