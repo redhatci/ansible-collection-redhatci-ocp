@@ -36,6 +36,7 @@ All of the variables have sane defaults which you can override to force things, 
     installation_disk_path: /dev/sdb  # this maps to rootDeviceHints.deviceName
     root_device_hints:  # you can also use more specific device hints. This overrides installation_disk_path
       hctl: 0:0:0:1
+      wwn: '0x5000000000'  # remember to quote hex values
   ansible.builtin.include_role:
     name: redhatci.ocp.generate_manifests
 ```

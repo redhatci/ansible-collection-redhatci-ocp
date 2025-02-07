@@ -21,7 +21,7 @@ hosts:
       deviceName: {{ hostvars[hostname]['installation_disk_path'] }}
     {% else %}
       {% for key, rdh in (hostvars[hostname]['root_device_hints'] | default({})).items() %}
-      {{ key }}: {{ rdh }}
+      {{ key }}: {{ rdh | to_yaml }}
       {% endfor %}
     {% endif %}
   {% endif %}
