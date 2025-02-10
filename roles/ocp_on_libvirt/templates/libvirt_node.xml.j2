@@ -16,6 +16,9 @@
 {% if enable_conserver %}
     <bios useserial='yes' rebootTimeout='0'/>
 {% endif %}
+{% if disable_ipv6 %}
+    <cmdline>ipv6.disable=1</cmdline>
+{% endif %}
   </os>
   <features>
     <acpi/>
