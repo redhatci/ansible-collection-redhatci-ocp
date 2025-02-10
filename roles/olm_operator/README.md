@@ -35,6 +35,7 @@ Installing an operator:
     operator_group_spec:
       targetNamespaces:
         - openshift-storage
+    install_approval: Automatic
 ```
 
 Installing an operator's specific version:
