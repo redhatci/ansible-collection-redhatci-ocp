@@ -52,7 +52,7 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
-* Tue Feb 10 2025 Tony Garcia <tonyg@redhat.com> - 1.3.EPOCH-VERS
+* Mon Feb 10 2025 Tony Garcia <tonyg@redhat.com> - 1.3.EPOCH-VERS
 - Version bump for olm_operator role updates
 
 * Tue Jan 28 2025 Beto Rdz <josearod@redhat.com> - 1.2.EPOCH-VERS
