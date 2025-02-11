@@ -11,6 +11,13 @@
     state: directory
     mode: '0755'
 
+- name: Set KBPC CWE Project ID from CNF Certification Project
+  ansible.builtin.set_fact:
+    kbpc_cwe_project_id: "{{ cert_project_id }}"
+  when:
+    - cnf_to_certify is defined
+    - cert_project_id | length > 0
+
 - name: Tasks related to Certsuite submission through CWE Hydra API
   when: kbpc_version is version('v5.4.2', '>=') or kbpc_version == 'HEAD'
   block:
