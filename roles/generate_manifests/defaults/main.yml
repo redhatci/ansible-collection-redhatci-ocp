@@ -4,6 +4,7 @@ cluster_manifest_dir: "{{ manifests_dir }}/cluster-manifests"
 extra_manifest_dir: "{{ manifests_dir }}/openshift"
 mac_interface_default_mapping: "interfaces[?(name != null && mac != null)].{logical_nic_name: name, mac_address: mac}"
 static_network_config: {}
+root_device_hints: {}
 arch: x86_64
 version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
 release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
