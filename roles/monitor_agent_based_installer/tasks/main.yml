@@ -20,7 +20,10 @@
       register: _mabi_install_output
       retries: 10
       delay: 60
-      until: "'Attempted to gather ClusterOperator status after wait failure: Listing ClusterOperator objects' not in _mabi_install_output.stderr"
+      until:
+        "'Attempted to gather ClusterOperator status after wait failure: Listing ClusterOperator objects' not in _mabi_install_output.stderr
+        or
+        'No events logged from the Agent Rest API' in _mabi_install_output.stderr"
   rescue:
     # Using master-0 IP address to reach the bootstrap VM
     # Placing the logs in repo_root_path
