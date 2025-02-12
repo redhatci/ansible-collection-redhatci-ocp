@@ -48,7 +48,7 @@
     - _gai_gen_iso.rc == 0
 
 - name: Put discovery iso in http store
-  delegate_to: http_store
+  delegate_to: "{{ gai_http_delegate_host }}"
   become: true
   block:
     - name: Create discovery directory
@@ -62,3 +62,4 @@
         src: "{{ gai_manifests_dir }}/agent.{{ gai_arch }}.iso"
         dest: "{{ gai_iso_download_dest_path }}/{{ gai_discovery_iso_name }}"
         mode: '0644'
+        remote_src: "{{ gai_remote_http_src }}"
