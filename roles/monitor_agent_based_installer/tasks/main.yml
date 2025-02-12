@@ -1,3 +1,7 @@
+- name: "DNM troubleshooting ABI install failures"
+  ansible.builtin.fail:
+    msg: "Stop here to run the install manually and troubleshoot: {{ manifests_dir }} - {{ agent_based_installer_path }} --log-level=debug agent wait-for bootstrap-complete"
+
 - name: Wait for bootstrap complete
   ansible.builtin.shell:
     cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for bootstrap-complete"
