@@ -44,8 +44,8 @@
     locality_name: "{{ cert_locality }}"
     organization_name: "{{ cert_organization }}"
     organizational_unit_name: "{{ cert_organizational_unit }}"
-    basic_constraints_critical: yes
-    create_subject_key_identifier: yes
+    basic_constraints_critical: true
+    create_subject_key_identifier: true
     basic_constraints: ["CA:TRUE"]
 
 - name: Generate a selfsigned OpenSSL CA Certificate
@@ -61,7 +61,7 @@
     ownca_privatekey_path: "{{ privatekey_path }}"
     csr_path: "{{ csr_path }}"
     ownca_path: "{{ ownca_path }}"
-    ownca_create_authority_key_identifier: yes
+    ownca_create_authority_key_identifier: true
     provider: ownca
 
 - name: Set cert in CA trust

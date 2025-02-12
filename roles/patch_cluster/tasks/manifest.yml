@@ -29,7 +29,7 @@
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/manifests"
     method: POST
     status_code: [201]
-    return_content: True
+    return_content: true
     body_format: json
     body:
       {

@@ -17,7 +17,7 @@
     virtual_media:
       image_url: "{{ boot_iso_url }}"
     resource_id: iDRAC.Embedded.1
-  ignore_errors: yes
+  failed_when: false
 
 - name: Set Dell OneTimeBoot Hdd
   community.general.redfish_command:

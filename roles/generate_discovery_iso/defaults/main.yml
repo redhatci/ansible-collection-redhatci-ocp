@@ -1,10 +1,10 @@
 ---
 # defaults file for generate_discovery_iso
 
-secure: False
-generate: True
-download: True
-upload: False
+secure: false
+generate: true
+download: true
+upload: false
 
 disconnected: "{{ use_local_mirror_registry | default(setup_registry_service | default(true)) }}"
 

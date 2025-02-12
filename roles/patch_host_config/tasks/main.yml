@@ -16,7 +16,7 @@
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ patch_host_config_discovered_host.id }}"
         method: GET
         status_code: [200, 201]
-        return_content: True
+        return_content: true
       register: host
       until: host.json.inventory is defined
       retries: 10
@@ -40,7 +40,7 @@
     inv_hostname: "{{ item }}"
   when: hostvars[item]['mac'] is defined and (hostvars[item]['mac'] | upper) in host_mac_addresses
   loop: "{{ groups['nodes'] }}"
-  no_log: True
+  no_log: true
 
 - name: Fail if mac address match not found
   fail:
@@ -92,7 +92,7 @@
     url_password: "{{ HTTP_AUTH_PASSWORD }}"
     body_format: json
     status_code: [201]
-    return_content: True
+    return_content: true
     body: "{{ patch_host_body | to_json(ensure_ascii=False) | string }}"
   register: http_reply
 
@@ -115,7 +115,7 @@
         url: "{{ URL_ASSISTED_INSTALLER_INFRA_ENV }}/hosts/{{ host_id }}/ignition"
         method: PATCH
         status_code: [201]
-        return_content: True
+        return_content: true
         body_format: json
         body: { "config": "{{ worker_partition | to_json(ensure_ascii=False) | string }}" }
       register: http_reply

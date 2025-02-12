@@ -17,6 +17,6 @@
       ansible.posix.firewalld:
         zone: public
         service: tftp
-        permanent: yes
+        permanent: true
         state: enabled
-        immediate: yes
+        immediate: true

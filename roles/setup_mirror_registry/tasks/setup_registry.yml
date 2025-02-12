@@ -10,8 +10,8 @@
     - name: Open registry port, zone internal and public, for firewalld
       firewalld:
         port: "{{ registry_port }}/tcp"
-        permanent: yes
-        immediate: yes
+        permanent: true
+        immediate: true
         state: enabled
         zone: "{{ item }}"
       with_items:
@@ -25,7 +25,7 @@
         group:  "{{ file_group }}"
         mode: 0775
         state: directory
-        recurse: yes
+        recurse: true
       loop:
         - "{{ registry_dir_auth }}"
         - "{{ registry_dir_cert }}"
@@ -43,9 +43,9 @@
     owner:  "{{ file_owner }}"
     group:  "{{ file_group }}"
     mode: 0660
-    backup: yes
-    force: yes
-  become: True
+    backup: true
+    force: true
+  become: true
 
 - name: Set disconnected_auth
   set_fact:
@@ -72,7 +72,7 @@
   set_fact:
     pull_secret: "{{ pull_secret }}"
   delegate_to: bastion
-  delegate_facts: True
+  delegate_facts: true
 
 - name: Create container to serve the registry
   containers.podman.podman_container:
@@ -92,7 +92,7 @@
       REGISTRY_AUTH_HTPASSWD_PATH: auth/htpasswd
       REGISTRY_HTTP_TLS_CERTIFICATE: "certs/{{ cert_file_prefix }}.crt"
       REGISTRY_HTTP_TLS_KEY: "certs/{{ cert_file_prefix }}.key"
-  become: True
+  become: true
   register: registry_container_info
 
 
@@ -123,13 +123,13 @@
     - name: Reload demon to pick up changes in container-registry.service
       ansible.builtin.systemd:
         name: container-registry
-        daemon_reload: yes
+        daemon_reload: true
         scope: system
 
     - name: Start container-registry.service
       systemd:
         name: container-registry
-        enabled: yes
+        enabled: true
         scope: system
 
     - name: Start container-registry.service

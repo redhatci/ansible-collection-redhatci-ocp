@@ -43,7 +43,7 @@
     validate_certs: false
     return_content: true
   register: redfish_poweroff
-  ignore_errors: yes
+  failed_when: false
 
 - name: Eject Virtual Media
   ansible.builtin.include_tasks: eject.yml

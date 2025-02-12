@@ -15,7 +15,7 @@
     url: "{{ URL_ASSISTED_INSTALLER_CLUSTER }}"
     method: GET
     status_code: [200, 201]
-    return_content: True
+    return_content: true
   register: cluster_output
   until: cluster_output.json.status in ['installed', 'error', 'cancelled']
   retries: 90

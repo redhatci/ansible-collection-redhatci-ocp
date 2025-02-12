@@ -10,8 +10,8 @@
     - name: Open http port, zone internal and public, for firewalld
       firewalld:
         port: "{{ http_port }}/tcp"
-        permanent: yes
-        immediate: yes
+        permanent: true
+        immediate: true
         state: enabled
         zone: "{{ item }}"
       loop:
@@ -25,7 +25,7 @@
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
         mode: 0775
-        recurse: yes
+        recurse: true
       loop:
         - "{{ http_dir }}"
         - "{{ http_data_dir }}"
@@ -76,13 +76,13 @@
 
     - name: Reload systemd service
       systemd:
-        daemon_reexec: yes
+        daemon_reexec: true
         scope: system
 
     - name: Enable http_store.service
       systemd:
         name: http_store
-        enabled: yes
+        enabled: true
         scope: system
 
     - name: Start http_store.service

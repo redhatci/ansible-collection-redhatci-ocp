@@ -87,7 +87,7 @@
     url_password: "{{ HTTP_AUTH_PASSWORD }}"
     body_format: json
     status_code: [201]
-    return_content: True
+    return_content: true
     body: "{{ infra_env_body }}"
   register: infra_env_reply
 
@@ -116,7 +116,7 @@
     method: GET
     url_username: "{{ HTTP_AUTH_USERNAME }}"
     url_password: "{{ HTTP_AUTH_PASSWORD }}"
-    return_content: True
+    return_content: true
   register: discovery_ign_reply
 
 - name: "Save discovery.ign"
@@ -151,7 +151,7 @@
         url_password: "{{ HTTP_AUTH_PASSWORD }}"
         body_format: json
         status_code: [201]
-        return_content: True
+        return_content: true
         body:
           ignition_config_override: "{{ (previous_patches| combine(discovery_password_patch)) | to_json }}"
       register: infra_env_patch_reply
@@ -168,7 +168,7 @@
     - name: Create discovery directory
       file:
         path: "{{ DOWNLOAD_DEST_PATH + '/' + DOWNLOAD_DEST_FILE | dirname }}"
-        recurse: yes
+        recurse: true
         state: directory
         setype: httpd_sys_content_t
       become: true

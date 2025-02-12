@@ -3,7 +3,7 @@
   fetch:
     src: "{{ config_file_path }}/{{ pull_secret_file_name }}"
     dest: "{{ fetched_dest }}/"
-    flat: yes
+    flat: true
   tags:
     - copy_config
 

@@ -7,14 +7,14 @@
       file:
         path: "{{ images_dir }}"
         state: directory
-        recurse: yes
+        recurse: true
 
     - name: Create default storage pool
       community.libvirt.virt_pool:
         command: define
         name: default
         xml: '{{ lookup("template", "storage-pool.xml.j2") }}'
-        autostart: yes
+        autostart: true
 
     - name: Start default storage pool
       community.libvirt.virt_pool:

@@ -15,7 +15,7 @@
     url_password: "{{ HTTP_AUTH_PASSWORD }}"
     body_format: json
     status_code: [201]
-    return_content: True
+    return_content: true
     body: >-
       {
         "name": "{{ cluster_name + '-day2' }}",
@@ -41,7 +41,7 @@
     dest: "{{ fetched_dest }}/{{ day2_cluster_id_filename }}"
     mode: 0644
   delegate_to: localhost
-  become: no
+  become: false
 
 - name: Debug
   ansible.builtin.debug:
@@ -53,7 +53,7 @@
     url: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ add_host_cluster_id }}"
     method: PATCH
     status_code: [201]
-    return_content: True
+    return_content: true
     body_format: json
     body:
       {
@@ -68,5 +68,5 @@
   set_fact:
     add_host_cluster_id: "{{ add_host_cluster_id }}"
   delegate_to: "{{ item }}"
-  delegate_facts: yes
+  delegate_facts: true
   loop: "{{ groups['day2_workers'] }}"

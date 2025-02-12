@@ -89,7 +89,7 @@
     url_password: "{{ HTTP_AUTH_PASSWORD }}"
     body_format: json
     status_code: [201]
-    return_content: True
+    return_content: true
     body: "{{ create_body | from_json | combine(create_body_extras) | to_json }}"
   when: create | bool == True
   register: http_reply
@@ -104,9 +104,9 @@
   file:
     path: "{{ fetched_dest }}"
     state: directory
-    recurse: yes
+    recurse: true
   delegate_to: localhost
-  become: no
+  become: false
 
 - name: Set the cluster ID
   set_fact:
@@ -119,5 +119,5 @@
     dest: "{{ fetched_dest }}/{{ cluster_id_filename }}"
     mode: 0644
   delegate_to: localhost
-  become: no
+  become: false
   when: create | bool == True

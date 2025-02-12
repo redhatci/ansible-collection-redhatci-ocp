@@ -2,8 +2,8 @@
 # defaults file for create_day2_cluster
 
 secure: false
-disconnected: False
-manifests: True
+disconnected: false
+manifests: true
 
 mirror_registry_fqdn: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
 mirror_registry_port: "{{ hostvars['registry_host']['registry_port'] | default(5000) }}"

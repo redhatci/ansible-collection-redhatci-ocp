@@ -21,7 +21,7 @@
         src: "{{ config_file_path }}/{{ pull_secret_file_name }}"
         dest: "{{ config_file_path }}/containers/auth.json"
         mode: 0644
-        remote_src: yes
+        remote_src: true
 
     - name: Podman login to remote registry
       containers.podman.podman_login_info:

@@ -85,7 +85,7 @@
   file:
     path: "{{ TFTP_ROOT }}"
     state: directory
-    recurse: yes
+    recurse: true
   when: use_pxe | bool
 
 - name: Configure dnsmasq via NetworkManager
