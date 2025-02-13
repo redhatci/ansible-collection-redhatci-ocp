@@ -14,7 +14,7 @@ customize_extramanifests_path={{ customize_extramanifests_path }}
 {% if pullsecret_file | default("") | length > 0 %}
 pullsecret_file={{ pullsecret_file }}
 {% endif %}
-{% if enable_virtualmedia | bool -%}
+{% if enable_virtualmedia | default(false) | bool -%}
 enable_virtualmedia=true
 enable_redfish=true
 {%- endif %}
