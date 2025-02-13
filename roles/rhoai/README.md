@@ -28,7 +28,7 @@ The default operator map looks something like this:
 servicemesh:
   package: servicemeshoperator
   channel: stable
-namespace: openshift-servicemesh
+namespace: openshift-operators
 serverless:
   package: serverless-operator
   channel: stable-1.32
