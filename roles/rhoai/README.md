@@ -19,6 +19,20 @@ other extra requirements
 | rhoai_dsc_name            | default-dsc           | Name of the DataScienceCluster CRD object to create |
 | rhoai_wait_for_dsc        | true                  | Wait for the DSC deployment to finish |
 
+### DataScienceCluster defaults
+
+The DSC cluster default components state is as below.
+
+| Variable                  | Component                 | Status               |
+|---------------------------|---------------------------|----------------------|
+| rhoai_codeflare           | codeflare                 | Removed              |
+| rhoai_kserve              | kserve                    | Managed              |
+| rhoai_ray                 | ray                       | Removed              |
+| rhoai_kueue               | kueue                     | Removed              |
+| rhoai_workbenches         | workbenches               | Managed              |
+| rhoai_dashboard           | dashboard                 | Managed              |
+| rhoai_modelmeshserving    | modelmeshserving          | Managed              |
+| rhoai_datasciencepipeline | datasciencepipelines      | Managed              |
 
 ### rhoai_operator_map
 
@@ -28,7 +42,7 @@ The default operator map looks something like this:
 servicemesh:
   package: servicemeshoperator
   channel: stable
-namespace: openshift-servicemesh
+namespace: openshift-operators
 serverless:
   package: serverless-operator
   channel: stable-1.32
@@ -71,6 +85,9 @@ You can include the role like this:
        rhods:
          channel: stable-2.9  # we want a newer version
      rhoai_dsc_name: my-dsc
+     rhoai_kserve: Managed
+     rhoai_ray: Removed
+     rhoai_kueue: Removed
      # rhoai_source_catalog: offline-operators  # our own copy of the redhat catalogs
      # rhoai_source_namespace: redhat-offline  # previously mirrored to this location
 ```

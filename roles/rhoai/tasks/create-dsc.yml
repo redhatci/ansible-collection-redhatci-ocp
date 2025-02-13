@@ -1,0 +1,61 @@
+---
+- name: Create DataScienceCluster
+  when: rhoai_create_dsc | bool
+  kubernetes.core.k8s:
+    state: present
+    wait: "{{ rhoai_wait_for_dsc | bool }}"
+    definition:
+      apiVersion: datasciencecluster.opendatahub.io/v1
+      kind: DataScienceCluster
+      metadata:
+        name: "{{ rhoai_dsc_name }}"
+        labels:
+          app.kubernetes.io/name: datasciencecluster
+          app.kubernetes.io/instance: "{{ rhoai_dsc_name }}"
+          app.kubernetes.io/part-of: "{{ __rhoai_operator_map.rhods.package | default(rhoai_part_of) }}"
+          app.kubernetes.io/managed-by: kustomize
+          app.kubernetes.io/created-by: "{{ __rhoai_operator_map.rhods.package | default(rhoai_part_of) }}"
+      spec:
+        components:
+          codeflare:
+            managementState: "{{ rhoai_codeflare }}"
+          kserve: >-
+              {{ {'managementState': rhoai_kserve} |
+                  combine({'serving': {
+                    'ingressGateway': {
+                      'certificate': {
+                        'type': 'SelfSigned'
+                      }
+                    },
+                    'managementState': 'Managed',
+                    'name': 'knative-serving'
+                  }} if rhoai_kserve == 'Managed' else {})
+              }}
+          ray:
+            managementState: "{{ rhoai_ray }}"
+          kueue:
+            managementState: "{{ rhoai_kueue }}"
+          workbenches:
+            managementState: "{{ rhoai_workbenches }}"
+          dashboard:
+            managementState: "{{ rhoai_dashboard }}"
+          modelmeshserving:
+            managementState: "{{ rhoai_modelmeshserving }}"
+          datasciencepipelines:
+            managementState: "{{ rhoai_datasciencepipelines }}"
+
+- name: Wait up to 30 mins for DataScienceCluster
+  kubernetes.core.k8s_info:
+    api: datasciencecluster.opendatahub.io/v1
+    kind: DataScienceCluster
+    name: "{{ rhoai_dsc_name }}"
+  register: _rhoai_dsc
+  retries: 60
+  delay: 10
+  until:
+    - _rhoai_dsc.resources is defined
+    - _rhoai_dsc.resources | length == 1
+    - "'status' in _rhoai_dsc.resources[0]"
+    - "'phase' in _rhoai_dsc.resources[0].status"
+    - _rhoai_dsc.resources[0].status.phase == 'Ready'
+...
