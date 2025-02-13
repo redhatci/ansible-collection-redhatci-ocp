@@ -3,3 +3,5 @@ gai_generated_dir: "{{ gai_repo_root_path }}/generated"
 gai_manifests_dir: "{{ gai_generated_dir }}/{{ gai_cluster_name }}"
 gai_iso_download_dest_path: "/opt/http_store/data"
 gai_arch: x86_64
+gai_remote_http_src: false
+gai_http_delegate_host: http_store
