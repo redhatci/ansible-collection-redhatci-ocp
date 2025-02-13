@@ -185,9 +185,9 @@ platform:
 {% endfor %}
 {% endif %}
 pullSecret: '{{ pullsecret }}'
-sshKey: |-
+sshKey: |
   {{ key }}
-{% if ssh_extra_keys_paths is defined and ssh_extra_keys_paths|length %}
+{% if ssh_extra_keys_paths is defined and ssh_extra_keys_paths|length -%}
 {% for ssh_key_path in ssh_extra_keys_paths %}
   {{ lookup('file', ssh_key_path | regex_replace('~', lookup('env', 'HOME'))) }}
 {% endfor %}
