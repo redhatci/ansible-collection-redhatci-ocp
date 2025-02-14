@@ -140,6 +140,18 @@
       ignore_errors: true
       no_log: true
 
+    - name: Save results extracted from example-cnf logs in a separate file
+      environment:
+        OC_BINARY: "{{ ecd_oc_path }}"
+        APP_NAMESPACE: "{{ ecd_cnf_namespace }}"
+      ansible.builtin.script:
+        cmd: >
+          ../../scripts/get-example-cnf-results.sh > example-cnf-results.log
+      args:
+        chdir: "{{ ecd_job_logs_path }}"
+      ignore_errors: true
+      no_log: true
+
     # Omit this check if we are running TRex job in continuous mode
     - name: Fail if TestFailed event is present
       ansible.builtin.fail:
