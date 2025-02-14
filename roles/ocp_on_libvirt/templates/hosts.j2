@@ -14,6 +14,10 @@ customize_extramanifests_path={{ customize_extramanifests_path }}
 {% if pullsecret_file | default("") | length > 0 %}
 pullsecret_file={{ pullsecret_file }}
 {% endif %}
+{% if enable_virtualmedia | default(false) | bool -%}
+enable_virtualmedia=true
+enable_redfish=true
+{%- endif %}
 #local_registry_host={{ ansible_fqdn }}
 #local_registry_port=4443
 #provision_cache_store="/opt/cache"
