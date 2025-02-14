@@ -24,6 +24,10 @@ pullsecret_file={{ pullsecret_file }}
 externalMACAddress={{ externalMACAddress }}
 {% endif %}
 
+{% if ssh_extra_keys_paths is defined and ssh_extra_keys_paths %}
+ssh_extra_keys_paths={{ ssh_extra_keys_paths | to_json }}
+{% endif %}
+
 {% if enable_lso | default(false) | bool %}
 ocs_install_type=internal
 local_storage_devices=["scsi0-0-0-1"]
