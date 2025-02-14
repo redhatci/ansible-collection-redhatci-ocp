@@ -4,6 +4,9 @@
     src: "{{ mor_cache_dir }}/{{ mor_version }}/release.txt"
   register: _mor_release_content
   no_log: true
+  retries: 6
+  delay: 10
+  until: _mor_release_content is not failed
 
 - name: "Read release_image from release content"
   ansible.builtin.set_fact:
@@ -12,6 +15,9 @@
 - name: "Read the contents of rhcos.json"
   ansible.builtin.command: "cat {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json"
   register: rhcos
+  retries: 6
+  delay: 10
+  until: rhcos is not failed
 
 - name: "Set image facts"
   ansible.builtin.set_fact:
