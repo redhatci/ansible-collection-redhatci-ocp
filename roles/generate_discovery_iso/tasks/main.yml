@@ -107,7 +107,7 @@
   copy:
     content: "{{ infra_env_id }}"
     dest: "{{ fetched_dest }}/infra_env_id.txt"
-    mode: 0644
+    mode: "0644"
   delegate_to: localhost
 
 - name: Get discovery ignition file
@@ -123,7 +123,7 @@
   copy:
     content: "{{ discovery_ign_reply.content }}"
     dest: "{{ fetched_dest }}/discovery.ign"
-    mode: 0644
+    mode: "0644"
   delegate_to: localhost
 
 - name: Patch discovery user password
@@ -160,7 +160,7 @@
       copy:
         content: "{{ infra_env_patch_reply.content }}"
         dest: "{{ fetched_dest }}/patched_discovery.ign"
-        mode: 0644
+        mode: "0644"
       delegate_to: localhost
 
 - name: Put discovery iso in http store

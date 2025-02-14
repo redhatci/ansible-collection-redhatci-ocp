@@ -25,7 +25,7 @@
     path: "{{ cert_dir }}"
     owner: "{{ file_owner }}"
     group: "{{ file_group }}"
-    mode: 0770
+    mode: "0770"
     state: directory
     recurse: true
   become: true
@@ -74,7 +74,7 @@
         remote_src: true
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
-        mode: 0660
+        mode: "0660"
         force: true
         backup: true
 

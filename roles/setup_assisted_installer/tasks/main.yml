@@ -21,7 +21,7 @@
           copy:
             content: "{{ mirror_certificate }}"
             dest: /etc/pki/ca-trust/source/anchors/ai_registry.crt
-            mode: 0660
+            mode: "0660"
             force: true
             backup: true
 
@@ -34,13 +34,13 @@
             path: "{{ config_file_path }}/containers/"
             state: directory
             recurse: true
-            mode: 0755
+            mode: "0755"
 
         - name: Copy pull_secrets file.
           copy:
             content: "{{ pull_secret }}"
             dest: "{{ config_file_path }}/containers/auth.json"
-            mode: 0644
+            mode: "0644"
             remote_src: true
   
       when: use_local_mirror_registry  | bool
@@ -69,7 +69,7 @@
     - name: Create directories for assisted-installer
       ansible.builtin.file:
         path: "{{ item }}"
-        mode: 0775
+        mode: "0775"
         state: directory
       with_items:
         - "{{ assisted_installer_dir }}"
@@ -78,14 +78,14 @@
     - name: Create directory for assisted-installer database
       file:
         path: "{{ assisted_installer_data_dir }}/postgresql"
-        mode: 0775
+        mode: "0775"
         state: directory
         recurse: true
     
     - name: Create directory for assisted-installer images 
       file:
         path: "{{ assisted_installer_data_dir }}/image_service"
-        mode: 0775
+        mode: "0775"
         state: directory
         recurse: true
 
@@ -93,7 +93,7 @@
       template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
-        mode: 0644
+        mode: "0644"
         trim_blocks: true
         lstrip_blocks: true
       loop:
@@ -165,7 +165,7 @@
           [Install]
           WantedBy=default.target
         dest: "/etc/systemd/system/assisted_installer.service"
-        mode: 0644
+        mode: "0644"
 
     - name: Reload systemd service
       systemd:

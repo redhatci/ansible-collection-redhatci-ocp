@@ -13,7 +13,7 @@
       file:
         path: "{{ item }}"
         state: directory
-        mode: 0755
+        mode: "0755"
       loop:
         - "{{ sushy_dir }}"
         - "{{ sushy_auth_dir }}"
@@ -66,7 +66,7 @@
             dest: "{{ sushy_auth_file }}"
             owner: "{{ file_owner }}"
             group: "{{ file_group }}"
-            mode: 0660
+            mode: "0660"
             backup: true
             force: true
           become: true
@@ -86,13 +86,13 @@
       template:
         src: sushy-emulator.conf.j2
         dest: "{{ sushy_dir }}/sushy-emulator.conf"
-        mode: 0664
+        mode: "0664"
 
     - name: Create sushy-tools service
       template:
         src: sushy-tools.service.j2
         dest: /etc/systemd/system/sushy-tools.service
-        mode: 0664
+        mode: "0664"
 
     - name: Reload systemd service
       systemd:

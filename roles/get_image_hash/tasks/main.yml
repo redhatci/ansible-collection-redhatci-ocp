@@ -71,7 +71,7 @@
   copy:
     content: "{{ image_hashes | to_nice_yaml }}"
     dest: "{{ image_hashes_path }}"
-    mode: 0660
+    mode: "0660"
   delegate_to: localhost
 
 - name: Update release_images with hashes

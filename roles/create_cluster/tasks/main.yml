@@ -117,7 +117,7 @@
   copy:
     content: "{{ cluster_id }}"
     dest: "{{ fetched_dest }}/{{ cluster_id_filename }}"
-    mode: 0644
+    mode: "0644"
   delegate_to: localhost
   become: false
   when: create | bool == True

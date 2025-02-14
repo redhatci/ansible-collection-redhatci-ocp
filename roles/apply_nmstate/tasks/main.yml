@@ -11,7 +11,7 @@
       ansible.builtin.copy:
         content: "{{ rendered_nmstate_yml }}"
         dest: "{{ vm_nmstate_config_path }}"
-        mode: 0644
+        mode: "0644"
       # No commit is done to revert the changes if they cause the host to be come unreachable
 
     - name: Check if vm_host is bastion

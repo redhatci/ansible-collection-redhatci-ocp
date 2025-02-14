@@ -23,4 +23,4 @@
   ansible.builtin.copy:
     content: "{{ manifest_content }}"
     dest: "{{ extra_manifest_dir }}/{{ manifest_name }}"
-    mode: 0644
+    mode: "0644"
