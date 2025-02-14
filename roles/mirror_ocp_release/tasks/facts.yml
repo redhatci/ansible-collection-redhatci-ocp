@@ -15,6 +15,7 @@
 - name: "Read the contents of rhcos.json"
   ansible.builtin.command: "cat {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json"
   register: rhcos
+  no_log: true
   retries: 6
   delay: 10
   until: rhcos is not failed
