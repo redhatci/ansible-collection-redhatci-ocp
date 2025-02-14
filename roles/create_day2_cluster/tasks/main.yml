@@ -39,7 +39,7 @@
   copy:
     content: "{{ add_host_cluster_id }}"
     dest: "{{ fetched_dest }}/{{ day2_cluster_id_filename }}"
-    mode: 0644
+    mode: "0644"
   delegate_to: localhost
   become: false
 

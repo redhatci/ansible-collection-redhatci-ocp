@@ -7,7 +7,7 @@
   copy:
     src: ipv6-dual-stack-no-upgrade.yml
     dest: "{{ extramanifestsopenshift_path }}/"
-    mode: 0644
+    mode: "0644"
   when:
     - ipv6_enabled|bool
     - dualstack_baremetal

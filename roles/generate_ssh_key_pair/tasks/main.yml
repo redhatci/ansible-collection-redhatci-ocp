@@ -15,13 +15,13 @@
 - name: Make key dir
   file:
     path: "{{ key_pair_dir }}"
-    mode: 0775
+    mode: "0775"
     state: directory
 
 - name: Generate an OpenSSH rsa keypair
   community.crypto.openssh_keypair:
     path: "{{ key_pair_dir }}/{{ private_key_name }}"
-    mode: 0600
+    mode: "0600"
   args: "{{ openssh_keypair_args | default({}) }}"
 
 - name: Fetch SSH Key
@@ -38,7 +38,7 @@
     - name: Make SSH Key folder
       file:
         path: "{{ ssh_key_dest_dir }}"
-        mode: 0775
+        mode: "0775"
         state: directory
 
     - name: Copy SSH Key files to bastion

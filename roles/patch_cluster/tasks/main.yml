@@ -23,7 +23,7 @@
   copy:
     content: "{{ install_config.json }}"
     dest: "{{ fetched_dest }}/install-config.txt"
-    mode: 0644
+    mode: "0644"
   delegate_to: localhost
   become: false
 
@@ -77,7 +77,7 @@
   copy:
     content: "{{ install_config.json }}"
     dest: "{{ fetched_dest }}/{{ patch_set_prefix }}patched-config.txt"
-    mode: 0644
+    mode: "0644"
   delegate_to: localhost
   become: false
 

@@ -11,7 +11,7 @@
 - name: Make cluster-manifests dir
   ansible.builtin.file:
     name: "{{ cluster_manifest_dir }}"
-    mode: 0775
+    mode: "0775"
     recurse: true
     state: directory
 
@@ -31,7 +31,7 @@
   ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ manifests_dir }}/{{ item.rsplit('.', 1)[0] }}"
-    mode: 0644
+    mode: "0644"
     trim_blocks: true
     lstrip_blocks: true
   loop:
@@ -52,7 +52,7 @@
 - name: Create extra_manifest_dir dir
   ansible.builtin.file:
     name: "{{ extra_manifest_dir }}"
-    mode: 0775
+    mode: "0775"
     recurse: true
     state: directory
   when:

@@ -123,7 +123,7 @@
     dest: "{{ tempdir }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: 0755
+    mode: "0755"
   become: true
   when: registry_creation|bool
   tags:

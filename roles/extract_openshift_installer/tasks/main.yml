@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ extract_dest_path }}"
     state: directory
-    mode: 0755
+    mode: "0755"
     recurse: true
 
 - name: Create pull_secret_file

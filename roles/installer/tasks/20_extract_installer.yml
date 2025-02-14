@@ -42,7 +42,7 @@
     dest: "{{ dir }}/pull-secret.txt"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: 0755
+    mode: "0755"
   become: true
   when:
     - registry_creation|bool
@@ -144,7 +144,7 @@
     dest: "/usr/local/bin/{{ installer_cmd }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: 0755
+    mode: "0755"
   become: true
   when:
     - registry_creation|bool

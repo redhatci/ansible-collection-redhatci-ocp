@@ -30,7 +30,7 @@
   copy:
     src: "{{ local_pull_secret_path }}"
     dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
-    mode: 0644
+    mode: "0644"
   when:
     - not copied_pull_secret.stat.exists
 
@@ -39,7 +39,7 @@
     path: "{{ item }}"
     owner: "{{ file_owner }}"
     group: "{{ file_group }}"
-    mode: 0755
+    mode: "0755"
     state: directory
   loop:
     - "{{ downloads_path }}"
@@ -68,7 +68,7 @@
       unarchive:
         src: "{{ stable_release_url }}/{{ stable_oc_tar }}"
         dest: "{{ oc_tmp_dir.path }}"
-        mode: 0755
+        mode: "0755"
         remote_src: true
 
     - name: Extract artifacts from release image (x86_64)
@@ -133,7 +133,7 @@
         dest: "{{ binaries_tool_path }}/{{ item }}"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
-        mode: 0775
+        mode: "0775"
         remote_src: true
       become: true
       with_items:
@@ -154,7 +154,7 @@
         dest: "/usr/local/bin/{{ item }}"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
-        mode: 0775
+        mode: "0775"
         remote_src: true
       become: true
       with_items:
@@ -184,7 +184,7 @@
       get_url:
         url: "{{ stable_release_url }}/{{ stable_opm_tar }}"
         dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
-        mode: 0664
+        mode: "0664"
       when:
         - not downloaded_opm_tar.stat.exists
 
@@ -210,7 +210,7 @@
         dest: "{{ binaries_tool_path }}/opm"
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
-        mode: 0775
+        mode: "0775"
         remote_src: true
       become: true
 

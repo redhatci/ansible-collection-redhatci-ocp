@@ -6,7 +6,7 @@
       template:
         src: rng_device.xml.j2
         dest: "/tmp/{{ cluster_name }}_rng_device.xml"
-        mode: 0664
+        mode: "0664"
 
     - name: Create vm create scripts dir
       file:
@@ -23,7 +23,7 @@
         src: create_vm.sh.j2
         dest: "{{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
         lstrip_blocks: true
-        mode: 0774
+        mode: "0774"
       loop: "{{ kvm_nodes }}"
 
     - name: Run vm creation_scripts

@@ -23,7 +23,7 @@
         path: "{{ item }}"
         owner:  "{{ file_owner }}"
         group:  "{{ file_group }}"
-        mode: 0775
+        mode: "0775"
         state: directory
         recurse: true
       loop:
@@ -42,7 +42,7 @@
     dest: "{{ registry_dir_auth }}/htpasswd"
     owner:  "{{ file_owner }}"
     group:  "{{ file_group }}"
-    mode: 0660
+    mode: "0660"
     backup: true
     force: true
   become: true
@@ -66,7 +66,7 @@
   copy:
     content: "{{ pull_secret | to_json }}"
     dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
-    mode: 0644
+    mode: "0644"
 
 - name: Update bastion
   set_fact:
@@ -118,7 +118,7 @@
           [Install]
           WantedBy=default.target
         dest: "/etc/systemd/system/container-registry.service"
-        mode: 0644
+        mode: "0644"
 
     - name: Reload demon to pick up changes in container-registry.service
       ansible.builtin.systemd:

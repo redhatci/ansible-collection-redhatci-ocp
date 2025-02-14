@@ -11,7 +11,7 @@
   copy:
     content: "{{ contents }}"
     dest: "{{ http_store_dir }}/{{ vhs_test_file_name }}"
-    mode: 0644
+    mode: "0644"
     setype: httpd_sys_content_t
   become: true
   delegate_to: http_store

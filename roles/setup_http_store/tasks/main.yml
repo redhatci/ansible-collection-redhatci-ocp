@@ -24,7 +24,7 @@
         state: directory
         owner: "{{ file_owner }}"
         group: "{{ file_group }}"
-        mode: 0775
+        mode: "0775"
         recurse: true
       loop:
         - "{{ http_dir }}"
@@ -72,7 +72,7 @@
           [Install]
           WantedBy=default.target
         dest: "/etc/systemd/system/http_store.service"
-        mode: 0644
+        mode: "0644"
 
     - name: Reload systemd service
       systemd:
