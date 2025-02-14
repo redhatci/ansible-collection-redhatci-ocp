@@ -6,4 +6,13 @@ rhoai_source_namespace: openshift-marketplace
 rhoai_create_dsc: true
 rhoai_dsc_name: default-dsc
 rhoai_wait_for_dsc: true
+rhoai_part_of: rhoai
+rhoai_codeflare: Removed
+rhoai_kserve: Managed
+rhoai_ray: Removed
+rhoai_kueue: Removed
+rhoai_workbenches: Managed
+rhoai_dashboard: Managed
+rhoai_modelmeshserving: Managed
+rhoai_datasciencepipelines: Managed
 ...
