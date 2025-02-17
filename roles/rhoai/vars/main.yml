@@ -3,7 +3,7 @@ rhoai_default_operator_map:
   servicemesh:
     package: servicemeshoperator
     channel: stable
-    namespace: openshift-servicemesh
+    namespace: openshift-operators
   serverless:
     package: serverless-operator
     channel: stable
@@ -12,4 +12,14 @@ rhoai_default_operator_map:
     package: rhods-operator
     channel: fast
     namespace: redhat-ods-operator
+
+rhoai_default_dsc_spec_components:
+  codeflare: Removed
+  kserve: Managed
+  ray: Removed
+  kueue: Removed
+  workbenches: Managed
+  dashboard: Managed
+  modelmeshserving: Managed
+  datasciencepipelines: Managed
 ...

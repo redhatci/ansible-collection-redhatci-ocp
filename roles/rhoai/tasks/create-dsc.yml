@@ -1,4 +1,9 @@
 ---
+- name: Merge user-provided and default cluster configurations
+  set_fact:
+    rhoai_merged_dsc_spec_components: "{{ rhoai_default_dsc_spec_components |
+                                      combine(rhoai_dsc_spec_components | default({}), recursive=True) }}"
+
 - name: Create DataScienceCluster
   when: rhoai_create_dsc | bool
   kubernetes.core.k8s:
@@ -18,9 +23,9 @@
       spec:
         components:
           codeflare:
-            managementState: "{{ rhoai_codeflare }}"
+            managementState: "{{ rhoai_merged_dsc_spec_components['codeflare'] }}"
           kserve: >-
-              {{ {'managementState': rhoai_kserve} |
+              {{ {'managementState': rhoai_merged_dsc_spec_components.kserve} |
                   combine({'serving': {
                     'ingressGateway': {
                       'certificate': {
@@ -29,20 +34,20 @@
                     },
                     'managementState': 'Managed',
                     'name': 'knative-serving'
-                  }} if rhoai_kserve == 'Managed' else {})
+                  }} if rhoai_merged_dsc_spec_components['kserve'] == 'Managed' else {})
               }}
           ray:
-            managementState: "{{ rhoai_ray }}"
+            managementState: "{{ rhoai_merged_dsc_spec_components['ray'] }}"
           kueue:
-            managementState: "{{ rhoai_kueue }}"
+            managementState: "{{ rhoai_merged_dsc_spec_components['kueue'] }}"
           workbenches:
-            managementState: "{{ rhoai_workbenches }}"
+            managementState: "{{ rhoai_merged_dsc_spec_components['workbenches'] }}"
           dashboard:
-            managementState: "{{ rhoai_dashboard }}"
+            managementState: "{{ rhoai_merged_dsc_spec_components['dashboard'] }}"
           modelmeshserving:
-            managementState: "{{ rhoai_modelmeshserving }}"
+            managementState: "{{ rhoai_merged_dsc_spec_components['modelmeshserving'] }}"
           datasciencepipelines:
-            managementState: "{{ rhoai_datasciencepipelines }}"
+            managementState: "{{ rhoai_merged_dsc_spec_components['datasciencepipelines'] }}"
 
 - name: Wait up to 30 mins for DataScienceCluster
   kubernetes.core.k8s_info:
