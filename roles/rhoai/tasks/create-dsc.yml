@@ -1,6 +1,6 @@
 ---
 - name: Merge user-provided and default cluster configurations
-  set_fact:
+  ansible.builtin.set_fact:
     rhoai_merged_dsc_spec_components: "{{ rhoai_default_dsc_spec_components |
                                       combine(rhoai_dsc_spec_components | default({}), recursive=True) }}"
 
