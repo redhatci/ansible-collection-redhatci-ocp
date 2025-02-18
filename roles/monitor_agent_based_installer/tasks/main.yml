@@ -23,7 +23,10 @@
       until:
         "'Attempted to gather ClusterOperator status after wait failure: Listing ClusterOperator objects' not in _mabi_install_output.stderr
         or
-        'No events logged from the Agent Rest API' in _mabi_install_output.stderr"
+        'No events logged from the Agent Rest API' in _mabi_install_output.stderr
+        or
+        'x509: certificate has expired or is not yet valid' in _mabi_install_output.stderr"
+
   rescue:
     # Using master-0 IP address to reach the bootstrap VM
     # Placing the logs in repo_root_path
