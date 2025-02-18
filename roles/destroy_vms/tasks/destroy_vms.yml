@@ -9,7 +9,7 @@
     state: absent
   loop: "{{ creation_to_remove.files | map(attribute='path') | select('match', prefix_regex) | list }}"
   vars:
-    prefix_regex: "^{{ vm_create_scripts_dir }}/?({{ vms_to_remove | join('|') }})_setup_vm.sh$"
+    prefix_regex: "^{{ vm_create_scripts_dir }}/?({{ vms_to_remove | default([]) | join('|') }})_setup_vm.sh$"
 
 - name: Destroy VM
   community.libvirt.virt:
