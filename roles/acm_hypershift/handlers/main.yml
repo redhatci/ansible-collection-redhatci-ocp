@@ -1,6 +1,0 @@
----
-- name: Remove working directory
-  ansible.builtin.file:
-    path: "{{ hs_tmp_dir.path }}"
-    state: absent
-  when: hs_tmp_dir is defined

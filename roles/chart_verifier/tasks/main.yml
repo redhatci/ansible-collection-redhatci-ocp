@@ -40,4 +40,7 @@
   loop_control:
     loop_var: chart
     index_var: index
+
+- name: "Run the tests"
+  ansible.builtin.include_tasks: cleanup.yml
 ...
