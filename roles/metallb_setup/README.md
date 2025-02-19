@@ -118,7 +118,7 @@ To confirm that the BGP routing is working properly:
 
 ## Troubleshooting
 
-See [Troubleshooting MetalLB](https://docs.openshift.com/container-platform/4.13/networking/metallb/metallb-troubleshoot-support.html)
+See [Troubleshooting MetalLB](https://docs.redhat.com/documentation/openshift_container_platform/4.17/html/networking/load-balancing-with-metallb#nw-metallb-setting-metalb-logging-levels_metallb-troubleshoot-support)
 
 1. Confirm that all the pods in the `metallb-system` namespace are running.
     ```ShellSession
@@ -142,4 +142,4 @@ See [Troubleshooting MetalLB](https://docs.openshift.com/container-platform/4.13
 
 ## References
 
-* [MetalLB Operator documentation](https://docs.openshift.com/container-platform/4.13/networking/metallb/about-metallb.html)
+* [MetalLB Operator documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/networking/load-balancing-with-metallb)
