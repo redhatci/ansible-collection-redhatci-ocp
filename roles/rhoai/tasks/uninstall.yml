@@ -51,7 +51,7 @@
     - servicemesh
 
 # Have to clean up additional resources according to
-# https://docs.openshift.com/container-platform/4.14/service_mesh/v1x/removing-ossm.html
+# https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/service_mesh/service-mesh-2-x#ossm-control-plane-remove_removing-ossm
 - name: Remove istio DaemonSet
   kubernetes.core.k8s:
     state: absent

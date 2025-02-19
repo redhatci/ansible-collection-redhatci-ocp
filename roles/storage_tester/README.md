@@ -5,7 +5,7 @@
 * the provisioner associated with the storage class must implement the CSI `CLONE_VOLUME` [capability](https://kubernetes-csi.github.io/docs/developing.html).
 * A running OpenShift cluster with the proper credentials is required, credentials must be passed as by setting the KUBECONFIG environment.
 
-For more information on storage classes, see [the OCP documentation](https://docs.openshift.com/container-platform/4.11/post_installation_configuration/storage-configuration.html#defining-storage-classes_post-install-storage-configuration).
+For more information on storage classes, see [the OCP documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/storage/dynamic-provisioning#basic-storage-class-definition_dynamic-provisioning).
 
 ### Three scenarios of tests
 It can be enabled by setting the boolean `storage_upgrade_tester` to **true**, when the dci-openshift-agent is running an upgrade.

@@ -36,7 +36,7 @@ setup_netobserv_stack_access_key_secret            | minioadmin                 
 setup_netobserv_stack_bucket                       | network                         | No          | Bucket for the Network Observability
 setup_netobserv_stack_endpoint                     | http://minio-service.minio:9000 | No          | Object Storage Endpoint. It must exist and be reachable
 setup_netobserv_stack_region                       | us-east-1                       | No          | Object Storage region
-setup_netobserv_stack_loki_size                    | 1x.extra-small                  | No          | Loki Stack size See [Sizing](https://docs.openshift.com/container-platform/4.14/logging/log_storage/installing-log-storage.html)
+setup_netobserv_stack_loki_size                    | 1x.extra-small                  | No          | Loki Stack size See [Sizing](https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/logging/log-storage-3#loki-deployment-sizing_installing-log-storage)
 setup_netobserv_stack_storage_class                | managed-nfs-storage             | No          | Storage class for the Loki Stack
 
 ## Role requirements
@@ -118,7 +118,7 @@ The following are some recommended actions in case there are issues during the d
 
 # References
 
-* [Network Observability Operator documentation](https://docs.openshift.com/container-platform/4.14/network_observability/configuring-operator.html)
+* [Network Observability Operator documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/network_observability/configuring-network-observability-operators)
 * [olm_operator](../olm_operator/README.md): A role that installs OLM based operators.
 * [dci-openshfit-agent](https://github.com/redhat-cip/dci-openshift-agent/): An agent that allows the deployment of OCP clusters, it is integrated with DCI (Red Hat Distributed CI).
 * [dci-openshfit-app-agent](https://github.com/redhat-cip/dci-openshift-app-agent/): An agent that allows the deployment of workloads and certification testing on top OCP clusters, it is integrated with DCI (Red Hat Distributed CI).

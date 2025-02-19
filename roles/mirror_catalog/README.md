@@ -23,7 +23,7 @@ mc_max_components          | No       | int     | 3       | The maximum number o
 The following applications must be already present in the system.
 
 - [skopeo](https://github.com/containers/skopeo/blob/main/install.md)
-- [oc](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html)
+- [oc](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/cli_tools/openshift-cli-oc)
 
 ## Outputs
 

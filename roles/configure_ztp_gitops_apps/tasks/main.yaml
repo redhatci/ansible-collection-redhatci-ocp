@@ -52,7 +52,7 @@
         mode: "0644"
 
     # Please see:
-    # https://docs.openshift.com/container-platform/4.12/scalability_and_performance/ztp_far_edge/ztp-manual-install.html
+    # https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/edge_computing/ztp-manual-install#ztp-generating-install-and-config-crs-manually_ztp-manual-install
     - name: Download ZTP cluster and policies applications from ztp site generator
       ansible.builtin.shell: |
         set -o pipefail

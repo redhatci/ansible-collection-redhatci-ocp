@@ -26,7 +26,7 @@ This role only works on OCP 4.10 and newer and with a S3 compatible storage back
 | ol_bucket                              | undefined                     | Yes         | Object Storage bucket name                    |
 | ol_endpoint                            | undefined                     | Yes         | Object Storage endpoint                       |
 | ol_region                              | undefined                     | Yes         | Object Storage region                         |
-| ol_loki_size                           | undefined                     | Yes         | Loki Deployment Size. See [Sizing](https://docs.openshift.com/container-platform/4.13/logging/cluster-logging-loki.html#deployment-sizing_cluster-logging-loki) for more details |
+| ol_loki_size                           | undefined                     | Yes         | Loki Deployment Size. See [Sizing](https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/logging/log-storage-3#loki-deployment-sizing_installing-log-storage) for more details |
 | ol_storage_class                       | undefined                     | Yes         | Cluster Storage class for Loki components     |
 | ol_event_router_image                  | registry.redhat.io/openshift-logging/eventrouter-rhel8:v5.2.1-1 | No   | Event Router image |
 | ol_action                              | install                       | No          | Controls the action performed by the role: Install or cleanup|
@@ -103,7 +103,7 @@ The following are some recommended actions in case there are issues during the d
 
 # References
 
-* [Cluster Logging Loki documentation](https://docs.openshift.com/container-platform/4.13/logging/cluster-logging-loki.html)
+* [Cluster Logging Loki documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/logging/cluster-logging-deploying#logging-loki-cli-install_cluster-logging-deploying)
 * [olm_operator](../olm_operator/README.md): A role that installs OLM based operators.
 * [dci-openshfit-agent](https://github.com/redhat-cip/dci-openshift-agent/): An agent that allows the deployment of OCP clusters, it is integrated with DCI (Red Hat Distributed CI).
 * [dci-openshfit-app-agent](https://github.com/redhat-cip/dci-openshift-app-agent/): An agent that allows the deployment of workloads and certification testing on top OCP clusters, it is integrated with DCI (Red Hat Distributed CI).

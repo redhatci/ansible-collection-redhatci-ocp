@@ -21,7 +21,7 @@ The following application must be already present on the system.
 
 - [Podman](https://podman.io/docs/installation)
 - [skopeo](https://github.com/containers/skopeo/blob/main/install.md)
-- [jq](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html)
+- [jq](https://github.com/jqlang/jq)
 
 ## Example of usage
 
