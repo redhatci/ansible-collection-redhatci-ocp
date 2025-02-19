@@ -85,18 +85,16 @@ You can include the role like this:
     # apply:
     #   environment:
     #     KUBECONFIG: /path/to/kubeconfig
-    vars:
-     rhoai_operator_map:
-       rhods:
-         channel: stable-2.9  # we want a newer version
-     rhoai_dsc_name: my-dsc
-     rhoai_dsc_spec_components:
-       codeflare: Managed
-       kserve: Removed
-       ray: Managed
-       kueue: Managed
-      ansible.builtin.include_role:
-        name: redhatci.ocp.rhoai
+  vars:
+    rhoai_operator_map:
+      rhods:
+        channel: stable-2.9  # we want a newer version
+    rhoai_dsc_name: my-dsc
+    rhoai_dsc_spec_components:
+      codeflare: Managed
+      kserve: Removed
+      ray: Managed
+      kueue: Managed
      # rhoai_source_catalog: offline-operators  # our own copy of the redhat catalogs
      # rhoai_source_namespace: redhat-offline  # previously mirrored to this location
 ```
