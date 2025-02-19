@@ -6,4 +6,5 @@ rhoai_source_namespace: openshift-marketplace
 rhoai_create_dsc: true
 rhoai_dsc_name: default-dsc
 rhoai_wait_for_dsc: true
+rhoai_part_of: rhoai
 ...

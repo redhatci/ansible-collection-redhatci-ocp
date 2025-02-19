@@ -1,11 +1,11 @@
 # rhoai
 
-A role to install the Red Hat OpenShift AI operators
+A role to install the Red Hat OpenShift AI operators and create a DataScience Cluster (DSC)
 
 ## Requirements
 
-This role makes extensive use of the Kubernetes collection, but there are no
-other extra requirements
+- This role makes extensive use of the Kubernetes collection
+- The cluster must have a catalog source that includes the RHOAI operators (servicemeshoperator, serverless-operator, redhat-ods-operator)
 
 ## Role Variables
 
@@ -18,25 +18,44 @@ other extra requirements
 | rhoai_create_dsc          | true                  | Create a DataScienceCluster CRD on `install` action |
 | rhoai_dsc_name            | default-dsc           | Name of the DataScienceCluster CRD object to create |
 | rhoai_wait_for_dsc        | true                  | Wait for the DSC deployment to finish |
+| rhoai_part_of             | rhoai                 | Metadata labels for DCS metadata labels (part-of,created-by) |
+| rhoai_dsc_spec_components | <see defaults>        | DataScienceCluster components status, read more in-depth description below |
 
+### DataScienceCluster defaults map
+
+The DSC cluster's components status can be defined as below.
+
+```yaml
+rhoai_dsc_spec_components:
+  codeflare: Removed
+  kserve: Managed
+  ray: Removed
+  kueue: Removed
+  workbenches: Managed
+  dashboard: Managed
+  modelmeshserving: Managed
+  datasciencepipelines: Managed
+```
+ See role default for initial components status.
 
 ### rhoai_operator_map
 
 The default operator map looks something like this:
 
 ```yaml
-servicemesh:
-  package: servicemeshoperator
-  channel: stable
-namespace: openshift-servicemesh
-serverless:
-  package: serverless-operator
-  channel: stable-1.32
-  namespace: openshift-serverless
-rhods:
-  package: rhods-operator
-  channel: stable-2.8
-  namespace: redhat-ods-operator
+rhoai_operator_map:
+  servicemesh:
+    package: servicemeshoperator
+    channel: stable
+  namespace: openshift-operators
+  serverless:
+    package: serverless-operator
+    channel: stable-1.32
+    namespace: openshift-serverless
+  rhods:
+    package: rhods-operator
+    channel: stable-2.8
+    namespace: redhat-ods-operator
 ```
 
 Defined as follows:
@@ -66,11 +85,16 @@ You can include the role like this:
     # apply:
     #   environment:
     #     KUBECONFIG: /path/to/kubeconfig
-    vars:
-     rhoai_operator_map:
-       rhods:
-         channel: stable-2.9  # we want a newer version
-     rhoai_dsc_name: my-dsc
+  vars:
+    rhoai_operator_map:
+      rhods:
+        channel: stable-2.9  # we want a newer version
+    rhoai_dsc_name: my-dsc
+    rhoai_dsc_spec_components:
+      codeflare: Managed
+      kserve: Removed
+      ray: Managed
+      kueue: Managed
      # rhoai_source_catalog: offline-operators  # our own copy of the redhat catalogs
      # rhoai_source_namespace: redhat-offline  # previously mirrored to this location
 ```
