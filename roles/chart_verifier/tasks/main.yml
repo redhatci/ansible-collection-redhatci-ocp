@@ -7,6 +7,10 @@
     - kubeconfig_path
     - ocp_version_full
     - dci_charts
+    - organization_id
+
+- name: "Get partner name"
+  ansible.builtin.include_tasks: get-partner-name.yml
 
 # Get tools like yq and helm
 - name: "Get tools"

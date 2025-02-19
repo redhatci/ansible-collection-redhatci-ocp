@@ -12,9 +12,12 @@ chart_verifier_image               | quay.io/redhat-certification/chart-verifier
 dci_charts                         | undefined                                         | true        | A list of charts and its corresponding parameters to be used during testing. See [How to use with DCI](#how-to-use-with-dci) section for more details
 logs_dir                           | /tmp                                              | false       | Directory to store the tests results.
 github_token_path                  | undefined                                         | true        | GitHub token to be used to push the chart and the results to a repository. Defaults to [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/)
-partner_name                       | undefined                                         | true        | Partner name to be used in the pull request title
+organization_id                    | undefined                                         | true        | Get Partner name from Organization automatic and to be used in the pull request title
+project_url             | https://catalog.redhat.com/api/containers/v1/vendors/org-id  | true        | Use to get partner name from organization ID
 partner_email                      | undefined                                         | true        | Email address to be used in the pull request
 sandbox_repository                 | undefined                                         | false       | Target repository to submit the PRs instead of openshift-helm-charts/charts/
+
+Note: The partner_name used for merging the PR is now automatically retrieved from the organization, eliminating the need for users to manually define it with a variable. This change is essential to prevent PR merge failures during validation that could arise from user typos. The partner_name represents the Container Registry Namespace or vendor label, and it will be empty for new partners until at least one certification project has been created for their account.
 
 ## Helm charts Certification in a nut shell
 
@@ -120,7 +123,7 @@ where the config file looks like this:
 
 ```yaml
 ---
-partner_name: telcoci
+organization_id: 123456789
 partner_email: telcoci@redhat.com
 sandbox_repository: my-repo/charts
 dci_charts:
@@ -166,7 +169,7 @@ See below for an example of how to use the chart_verifier in a DCI pipeline.
     do_chart_verifier: true
     chart_verifier_image: quay.io/redhat-certification/chart-verifier:main
     github_token_path: "/opt/cache/token.txt"
-    partner_name: "telcoci at Red Hat"
+    organization_id: 123456789
     partner_email: "telcoci@redhat.com"
     sandbox_repository: betoredhat/charts
     dci_charts:

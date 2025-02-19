@@ -1,0 +1,20 @@
+---
+- name: Get Partner Name from Organization
+  ansible.builtin.uri:
+    url: "{{ project_url }}/{{ organization_id }}"
+    method: GET
+    return_content: true
+    status_code: 200
+    timeout: 60
+  register: _cv_vendor_partner_name
+  until: not _cv_vendor_partner_name.failed
+  retries: 3
+  delay: 7
+
+- name: Set partner name from the vendor label
+  ansible.builtin.set_fact:
+    partner_name: "{{ _cv_vendor_partner_name.json.label }}" # noqa: redhat-ci[no-role-prefix]
+  when:
+    - _cv_vendor_partner_name.json is defined
+    - _cv_vendor_partner_name.json | length > 0
+...
