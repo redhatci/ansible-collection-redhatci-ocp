@@ -147,7 +147,6 @@
         state: directory
         prefix: setup_gitea
       register: _sg_mirror_repo
-      notify: Clear mirror temp dir
 
     - name: Clone reference repository
       # Use sshkey file when provided, otherwise omit it in the module

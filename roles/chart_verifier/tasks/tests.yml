@@ -205,6 +205,4 @@
   when:
     - pr_details is defined
     - pr_details.rc == 0
-  notify:
-    - "helm-chart-verifier cleanup"
 ...

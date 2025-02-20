@@ -3,19 +3,23 @@
   ansible.builtin.file:
     state: absent
     path: "{{ cv_tool_dir.path }}"
+  when:
+    - cv_tool_dir is defined
+    - cv_tool_dir.path is defined
 
 - name: "Delete work_dir directory"
   ansible.builtin.file:
     state: absent
-    path: "{{ work_dir }}"
-  listen: "helm-chart-verifier cleanup"
+    path: "{{ tmp_dir.path }}"
+  when:
+    - tmp_dir
+    - tmp_dir.path is defined
 
 - name: "Delete the one time use key from Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X DELETE user/keys/{{ key_id }}"
   ignore_errors: true
-  listen: "helm-chart-verifier cleanup"
 
 - name: "GH logout"
   ansible.builtin.command: "{{ gh_tool_path }} auth logout --hostname github.com"
-  listen: "helm-chart-verifier cleanup"
+  failed_when: false
 ...

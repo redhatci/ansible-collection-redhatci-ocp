@@ -73,8 +73,11 @@
     -t {{ fbc_index_image }}
   args:
     chdir: "{{ fbc_tmp_dir }}"
-  notify:
-    - "Delete temp directory"
+
+- name: "Delete temp directory"
+  ansible.builtin.file:
+    state: absent
+    path: "{{ fbc_tmp_dir }}"
 
 - name: "Display fbc_index_image"
   ansible.builtin.debug:

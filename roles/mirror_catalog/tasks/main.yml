@@ -108,5 +108,10 @@
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_gid }}"
     mode: "0644"
-  notify:
-    - "Delete tmp directory"
+
+- name: Delete tmp directory
+  ansible.builtin.file:
+    path: "{{ mc_tmp.path }}"
+    state: absent
+  when: mc_tmp is defined
+...

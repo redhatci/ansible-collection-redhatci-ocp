@@ -1,6 +1,0 @@
----
-- name: "Delete temp directory"
-  ansible.builtin.file:
-    state: absent
-    path: "{{ fbc_tmp_dir }}"
-...

@@ -19,8 +19,13 @@
       {% if ah_control_plane_availability_policy is defined %}
       --control-plane-availability-policy="{{ ah_control_plane_availability_policy }}"
       {% endif %}
-  notify: Remove working directory
   changed_when: false
+
+- name: Remove working directory
+  ansible.builtin.file:
+    path: "{{ hs_tmp_dir.path }}"
+    state: absent
+  when: hs_tmp_dir is defined
 
 - name: Wait for Hosted Cluster initialization
   ansible.builtin.pause:
