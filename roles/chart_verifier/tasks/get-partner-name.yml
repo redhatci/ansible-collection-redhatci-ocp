@@ -4,17 +4,17 @@
     url: "{{ project_url }}/{{ organization_id }}"
     method: GET
     return_content: true
-    status_code: 200
+    status_code: [200, 404]  # Accept both 200 (success) and 404 (not found)
     timeout: 60
   register: _cv_vendor_partner_name
-  until: not _cv_vendor_partner_name.failed
+  until:
+    - _cv_vendor_partner_name.status == 200
+      or _cv_vendor_partner_name.status == 404
   retries: 3
   delay: 7
 
-- name: Set partner name from the vendor label
+- name: Set partner name with default if not found
   ansible.builtin.set_fact:
-    partner_name: "{{ _cv_vendor_partner_name.json.label }}" # noqa: redhat-ci[no-role-prefix]
-  when:
-    - _cv_vendor_partner_name.json is defined
-    - _cv_vendor_partner_name.json | length > 0
+    partner_name: "{{ _cv_vendor_partner_name.json.label if _cv_vendor_partner_name.status == 200
+                   else 'None' }}" # noqa: redhat-ci[no-role-prefix]
 ...
