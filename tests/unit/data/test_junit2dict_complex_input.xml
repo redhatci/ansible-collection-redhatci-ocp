@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites tests="3" failures="1" errors="1" skipped="1" time="373258.204">
+    <testsuite name="PAO Hypershift tests" package="/home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/12_hypershift" tests="1" disabled="0" skipped="1" errors="0" failures="0" time="0.0" timestamp="2024-12-11T19:58:52">
+        <properties>
+            <property name="SuiteSucceeded" value="true" />
+            <property name="SuiteHasProgrammaticFocus" value="false" />
+            <property name="SpecialSuiteFailureReason" value="" />
+            <property name="SuiteLabels" value="[]" />
+            <property name="RandomSeed" value="1733939893" />
+            <property name="RandomizeAllSpecs" value="false" />
+            <property name="LabelFilter" value="(!openshift &amp;&amp; tier-0)" />
+        </properties>
+        <testcase name="[It] Multiple performance profile in hypershift Multiple Nodepool [test_id:75077] should verify support for different performance profiles on hosted cluster via multiple node pools [Hypershift]" classname="PAO Hypershift tests" status="skipped" time="0">
+            <skipped message="skipped" />
+        </testcase>
+    </testsuite>
+    <testsuite name="PPC Suite" package="/home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc" tests="1" disabled="0" skipped="0" errors="1" failures="0" time="22.8" timestamp="2024-12-11T19:58:30">
+        <properties>
+            <property name="SuiteSucceeded" value="false" />
+            <property name="SuiteHasProgrammaticFocus" value="false" />
+            <property name="SpecialSuiteFailureReason" value="" />
+            <property name="SuiteLabels" value="[]" />
+            <property name="RandomSeed" value="1733939893" />
+            <property name="RandomizeAllSpecs" value="false" />
+            <property name="LabelFilter" value="(!openshift &amp;&amp; tier-0)" />
+        </properties>
+        <testcase name="[It] [rfe_id: 38968] PerformanceProfile setup helper and platform awareness PPC Sanity Tests [test_id:40940] Performance Profile regression tests [performance-profile-creator, tier-0]" classname="PPC Suite" status="panicked" time="18.544246352000002">
+            <error message="runtime error: invalid memory address or nil pointer dereference" type="panicked">[PANICKED] Test Panicked
+In [It] at: /usr/lib/golang/src/runtime/panic.go:261 @ 12/11/24 19:58:48.558
+
+runtime error: invalid memory address or nil pointer dereference
+
+Full Stack Trace
+  github.com/openshift/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc.init.func1.1.1()
+  	/home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc/ppc.go:96 +0x60c
+
+There were additional failures detected after the initial failure. These are visible in the timeline
+</error>
+            <system-err>&gt; Enter [It] [test_id:40940] Performance Profile regression tests - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc/ppc.go:69 @ 12/11/24 19:58:30.014
+Trying to pull quay.io/openshift/origin-cluster-node-tuning-operator:latest...
+Getting image source signatures
+Copying blob sha256:0e20fa233dde7061291aaf1a0930d6db144a6347b30ca30d78bbad6dddc71ccd
+Copying blob sha256:709b1b990394fe27604cb928d916cc53350ffb270922f4d155620cbd65754626
+Copying blob sha256:9530663780b1f345858f87937f797465f424dfb8c714837b1dfaedfd045d1705
+Copying blob sha256:3e9004538d305bc491dcb2da7111d4caa4ecc295110cf5667d9f9b482a9647fd
+Copying config sha256:5de7e560ae2a5d2690d9c9fa642953e369d1990f5a65418fd649554921bc18ef
+Writing manifest to image destination
+level=info msg="Nodes names targeted by worker pool are: "
+Error: targeted nodes differ: no suitable nodes to compare
+Usage:
+  performance-profile-creator [flags]
+  performance-profile-creator [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  info        requires --must-gather-dir-path, ignores other arguments. [Valid values: log,json]
+
+Flags:
+      --disable-ht                        Disable Hyperthreading
+      --enable-hardware-tuning            Enable setting maximum cpu frequencies
+  -h, --help                              help for performance-profile-creator
+      --mcp-name string                   MCP name corresponding to the target machines (required)
+      --must-gather-dir-path string       Must gather directory path (default "must-gather")
+      --node-pool-name string             Node pool name corresponding to the target machines (HyperShift only)
+      --offlined-cpu-count int            Number of offlined CPUs
+      --per-pod-power-management          Enable Per Pod Power Management
+      --power-consumption-mode string     The power consumption mode.  [Valid values: default, low-latency, ultra-low-latency] (default "default")
+      --profile-name string               Name of the performance profile to be created (default "performance")
+      --reserved-cpu-count int            Number of reserved CPUs (required)
+      --rt-kernel                         Enable Real Time Kernel (required)
+      --split-reserved-cpus-across-numa   Split the Reserved CPUs across NUMA nodes
+      --topology-manager-policy string    Kubelet Topology Manager Policy of the performance profile to be created. [Valid values: single-numa-node, best-effort, restricted] (default "restricted")
+      --user-level-networking             Run with User level Networking(DPDK) enabled
+
+Use "performance-profile-creator [command] --help" for more information about a command.
+
+[PANICKED] Failure recorded during attempt 1:
+Test Panicked
+In [It] at: /usr/lib/golang/src/runtime/panic.go:261 @ 12/11/24 19:58:46.745
+
+runtime error: invalid memory address or nil pointer dereference
+
+Full Stack Trace
+  github.com/openshift/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc.init.func1.1.1()
+  	/home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc/ppc.go:96 +0x60c
+&lt; Exit [It] [test_id:40940] Performance Profile regression tests - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc/ppc.go:69 @ 12/11/24 19:58:46.745 (16.731s)
+
+Attempt #1 Failed.  Retrying ↺ @ 12/11/24 19:58:46.745
+
+&gt; Enter [It] [test_id:40940] Performance Profile regression tests - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc/ppc.go:69 @ 12/11/24 19:58:46.745
+level=info msg="Nodes names targeted by worker pool are: "
+Error: targeted nodes differ: no suitable nodes to compare
+Usage:
+  performance-profile-creator [flags]
+  performance-profile-creator [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  info        requires --must-gather-dir-path, ignores other arguments. [Valid values: log,json]
+
+Flags:
+      --disable-ht                        Disable Hyperthreading
+      --enable-hardware-tuning            Enable setting maximum cpu frequencies
+  -h, --help                              help for performance-profile-creator
+      --mcp-name string                   MCP name corresponding to the target machines (required)
+      --must-gather-dir-path string       Must gather directory path (default "must-gather")
+      --node-pool-name string             Node pool name corresponding to the target machines (HyperShift only)
+      --offlined-cpu-count int            Number of offlined CPUs
+      --per-pod-power-management          Enable Per Pod Power Management
+      --power-consumption-mode string     The power consumption mode.  [Valid values: default, low-latency, ultra-low-latency] (default "default")
+      --profile-name string               Name of the performance profile to be created (default "performance")
+      --reserved-cpu-count int            Number of reserved CPUs (required)
+      --rt-kernel                         Enable Real Time Kernel (required)
+      --split-reserved-cpus-across-numa   Split the Reserved CPUs across NUMA nodes
+      --topology-manager-policy string    Kubelet Topology Manager Policy of the performance profile to be created. [Valid values: single-numa-node, best-effort, restricted] (default "restricted")
+      --user-level-networking             Run with User level Networking(DPDK) enabled
+
+Use "performance-profile-creator [command] --help" for more information about a command.
+
+[PANICKED] Test Panicked
+In [It] at: /usr/lib/golang/src/runtime/panic.go:261 @ 12/11/24 19:58:48.558
+
+runtime error: invalid memory address or nil pointer dereference
+
+Full Stack Trace
+  github.com/openshift/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc.init.func1.1.1()
+  	/home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc/ppc.go:96 +0x60c
+&lt; Exit [It] [test_id:40940] Performance Profile regression tests - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/10_performance_ppc/ppc.go:69 @ 12/11/24 19:58:48.558 (1.813s)
+</system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="Performance Test" package="/home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance" tests="1" disabled="0" skipped="0" errors="0" failures="1" time="1363.306" timestamp="2024-12-09T13:43:44">
+        <properties>
+            <property name="SuiteSucceeded" value="false" />
+            <property name="SuiteHasProgrammaticFocus" value="false" />
+            <property name="SpecialSuiteFailureReason" value="" />
+            <property name="SuiteLabels" value="[]" />
+            <property name="RandomSeed" value="1733769817" />
+            <property name="RandomizeAllSpecs" value="false" />
+            <property name="LabelFilter" value="" />
+        </properties>
+        <testcase name="[It] [ref_id: 40307][pao]Resizing Network Queues Updating performance profile for netqueues [test_id:72051] Verify reserved cpus count is applied to all but specific supported networking device using a negative match [tier-1]" classname="Performance Test" status="failed" time="11.996012308">
+            <failure message="Expected&#10;    &lt;int&gt;: 4&#10;not to equal&#10;    &lt;int&gt;: 4" type="failed">[FAILED] Expected
+    &lt;int&gt;: 4
+not to equal
+    &lt;int&gt;: 4
+In [It] at: /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:269 @ 12/09/24 13:47:56.989
+
+There were additional failures detected after the initial failure. These are visible in the timeline
+</failure>
+            <system-err>&gt; Enter [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/utils/utils.go:25 @ 12/09/24 13:47:45.016
+&lt; Exit [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/utils/utils.go:25 @ 12/09/24 13:47:45.016 (0s)
+&gt; Enter [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:73 @ 12/09/24 13:47:45.016
+&lt; Exit [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:73 @ 12/09/24 13:47:45.023 (7ms)
+&gt; Enter [It] [test_id:72051] Verify reserved cpus count is applied to all but specific supported networking device using a negative match - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:210 @ 12/09/24 13:47:45.023
+STEP: Enable UserLevelNetworking and add Devices in Profile - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:232 @ 12/09/24 13:47:45.438
+[FAILED] Failure recorded during attempt 1:
+Expected
+    &lt;int&gt;: 4
+not to equal
+    &lt;int&gt;: 4
+In [It] at: /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:269 @ 12/09/24 13:47:51.011
+&lt; Exit [It] [test_id:72051] Verify reserved cpus count is applied to all but specific supported networking device using a negative match - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:210 @ 12/09/24 13:47:51.012 (5.988s)
+&gt; Enter [AfterEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:89 @ 12/09/24 13:47:51.012
+STEP: Reverting the Profile - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:90 @ 12/09/24 13:47:51.012
+&lt; Exit [AfterEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:89 @ 12/09/24 13:47:51.041 (29ms)
+
+Attempt #1 Failed.  Retrying ↺ @ 12/09/24 13:47:51.041
+
+&gt; Enter [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/utils/utils.go:25 @ 12/09/24 13:47:51.041
+&lt; Exit [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/utils/utils.go:25 @ 12/09/24 13:47:51.041 (0s)
+&gt; Enter [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:73 @ 12/09/24 13:47:51.041
+&lt; Exit [BeforeEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:73 @ 12/09/24 13:47:51.047 (6ms)
+&gt; Enter [It] [test_id:72051] Verify reserved cpus count is applied to all but specific supported networking device using a negative match - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:210 @ 12/09/24 13:47:51.047
+STEP: Enable UserLevelNetworking and add Devices in Profile - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:232 @ 12/09/24 13:47:51.43
+[FAILED] Expected
+    &lt;int&gt;: 4
+not to equal
+    &lt;int&gt;: 4
+In [It] at: /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:269 @ 12/09/24 13:47:56.989
+&lt; Exit [It] [test_id:72051] Verify reserved cpus count is applied to all but specific supported networking device using a negative match - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:210 @ 12/09/24 13:47:56.989 (5.942s)
+&gt; Enter [AfterEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:89 @ 12/09/24 13:47:56.989
+STEP: Reverting the Profile - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:90 @ 12/09/24 13:47:56.989
+&lt; Exit [AfterEach] [ref_id: 40307][pao]Resizing Network Queues - /home/jenkins/workspace/CNF/cnf-compute-4.18/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/1_performance/netqueues.go:89 @ 12/09/24 13:47:57.012 (23ms)
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>
