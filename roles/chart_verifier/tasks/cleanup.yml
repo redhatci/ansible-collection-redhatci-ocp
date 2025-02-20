@@ -21,5 +21,5 @@
 
 - name: "GH logout"
   ansible.builtin.command: "{{ gh_tool_path }} auth logout --hostname github.com"
-  ignore_errors: true
+  failed_when: false
 ...
