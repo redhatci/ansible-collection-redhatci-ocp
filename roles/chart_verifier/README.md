@@ -12,12 +12,12 @@ chart_verifier_image               | quay.io/redhat-certification/chart-verifier
 dci_charts                         | undefined                                         | true        | A list of charts and its corresponding parameters to be used during testing. See [How to use with DCI](#how-to-use-with-dci) section for more details
 logs_dir                           | /tmp                                              | false       | Directory to store the tests results.
 github_token_path                  | undefined                                         | true        | GitHub token to be used to push the chart and the results to a repository. Defaults to [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/)
-organization_id                    | undefined                                         | true        | Red Hat PartnerID. Obtained it from https://connect.redhat.com/account/company-profile
+organization_id                    | unknown                                           | false       | Red Hat PartnerID, used to obtain the partner_name. Recommended for tests that will be submitted. Obtained it from https://connect.redhat.com/account/company-profile.
 project_url             | https://catalog.redhat.com/api/containers/v1/vendors/org-id  | true        | API endpoint to query for vendor details.
 partner_email                      | undefined                                         | true        | Email address to be used in the pull request
 sandbox_repository                 | undefined                                         | false       | Target repository to submit the PRs instead of openshift-helm-charts/charts/
 
-Note: The `partner_name` used for merging the chart pull request is retrieved from the organization. This prevents the pull request merge fails during validation. The partner_name represents the Container Registry Namespace or vendor label, and it will be empty for new partners until at least one certification project has been created for their account.
+Note: A valid `partner_name` is required for the chart pull request to be accepted. It is derived from the organization_id. If the `organization_id` is invalid/nonexistent, `partner_name` will be set to "None". The partner_name corresponds to the Container Registry Namespace or vendor label and will remain empty for new partners until they create at least one certification project.
 
 ## Helm charts Certification in a nut shell
 

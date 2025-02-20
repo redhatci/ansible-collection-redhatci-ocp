@@ -1,4 +1,5 @@
 ---
 chart_verifier_image: quay.io/redhat-certification/chart-verifier:main
 project_url: "https://catalog.redhat.com/api/containers/v1/vendors/org-id"
+organization_id: unknown
 ...
