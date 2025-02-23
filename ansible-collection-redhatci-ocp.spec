@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        1.3.EPOCH
+Version:        2.0.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -52,6 +52,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Feb 24 2025 Tony Garcia <tonyg@redhat.com> - 2.0.EPOCH-VERS
+- Removal of deprecated roles
+
 * Mon Feb 10 2025 Tony Garcia <tonyg@redhat.com> - 1.3.EPOCH-VERS
 - Version bump for olm_operator role updates
 
