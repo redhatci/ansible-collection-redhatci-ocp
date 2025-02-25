@@ -1,0 +1,73 @@
+---
+- name: Assert the required variables are defined
+  ansible.builtin.assert:
+    that:
+      - asm_source_repo is defined
+      - asm_source_repo | length > 0
+      - asm_target_revision is defined
+      - asm_target_revision | length > 0
+
+- name: Get all ArgoCD Applications
+  kubernetes.core.k8s_info:
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    namespace: openshift-gitops
+  register: _asm_all_apps
+  no_log: true
+
+- name: Delete ArgoCD Applications
+  vars:
+    app_sites: "{{ _asm_all_apps.resources | selectattr('spec.source.repoURL', 'equalto', asm_source_repo)
+                | selectattr('spec.source.path', 'equalto', 'sites')
+                | selectattr('spec.source.targetRevision', 'equalto', asm_target_revision)
+                | map(attribute='metadata.name') | list }}"
+    app_policies: "{{ _asm_all_apps.resources | selectattr('spec.source.repoURL', 'equalto', asm_source_repo)
+                | selectattr('spec.source.path', 'equalto', 'policies')
+                | selectattr('spec.source.targetRevision', 'equalto', asm_target_revision)
+                | map(attribute='metadata.name') | list }}"
+    apps_list: "{{ app_sites + app_policies | default([]) }}"
+    app_ns: openshift-gitops
+  when:
+    - apps_list | length > 0
+  block:
+    - name: Patch ArgoCD application finalizers
+      kubernetes.core.k8s:
+        api_version: argoproj.io/v1alpha1
+        kind: Application
+        name: "{{ app }}"
+        namespace: "{{ app_ns }}"
+        definition:
+          metadata:
+            finalizers:
+              - "resources-finalizer.argocd.argoproj.io"
+      loop: "{{ apps_list }}"
+      loop_control:
+        loop_var: app
+      when:
+        - asm_delete_ztp_resources | bool
+
+    - name: Delete Argo Applications
+      kubernetes.core.k8s:
+        state: absent
+        api_version: argoproj.io/v1alpha1
+        kind: Application
+        name: "{{ app }}"
+        namespace: "{{ app_ns }}"
+      loop: "{{ apps_list }}"
+      loop_control:
+        loop_var: app
+
+    - name: Wait for ArgoCD application deletion
+      kubernetes.core.k8s_info:
+        api_version: argoproj.io/v1alpha1
+        kind: Application
+        name: "{{ app }}"
+        namespace: "{{ app_ns }}"
+      register: _asm_app_status
+      until: _asm_app_status.resources | length == 0
+      retries: 120
+      delay: 10
+      loop: "{{ apps_list }}"
+      loop_control:
+        loop_var: app
+...
