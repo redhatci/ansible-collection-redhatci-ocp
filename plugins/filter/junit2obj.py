@@ -158,8 +158,7 @@ class FilterModule(object):
             "junit2obj": self.junit2obj,
         }
 
-    # pylint: disable=bad-whitespace
-    def junit2obj(self, xml_report_text: str, extra_metadata: dict = None) -> str:  # type: ignore
+    def junit2obj(self, xml_report_text: str, extra_metadata: dict = None) -> str:
         """
         Convert junit XML Report into JSON.
         """
@@ -167,37 +166,37 @@ class FilterModule(object):
         import time
         from junitparser import junitparser as jup
 
-        def _process_test_case(testcase: jup.TestCase) -> dict:  # type: ignore
+        def _process_test_case(testcase: jup.TestCase) -> dict:
             """
             processing test case into a dict
             """
-            curr_case: dict = {}  # type: ignore
+            curr_case: dict = {}
             curr_case.update({
-                "name": str(testcase.name),  # type: ignore
-                "classname": str(testcase.classname),  # type: ignore
+                "name": str(testcase.name),
+                "classname": str(testcase.classname),
             })
-            case_time = testcase.time  # type: ignore
+            case_time = testcase.time
             if case_time is None:
                 case_time = 0
-            curr_case.update({"time": float(case_time)})  # type: ignore
+            curr_case.update({"time": float(case_time)})
 
             # Handle potential None results:
             attr = "result"
             curr_case.update({attr: None})
 
-            if hasattr(testcase, attr):  # type: ignore
-                attr_values = []  # type: ignore
-                attr_dict = {}  # type: ignore
-                value = getattr(testcase, attr)  # type: ignore
-                for item in value:  # type: ignore
-                    attr_dict = {}  # type: ignore
+            if hasattr(testcase, attr):
+                attr_values = []
+                attr_dict = {}
+                value = getattr(testcase, attr)
+                for item in value:
+                    attr_dict = {}
                     if item.message:
-                        attr_dict["message"] = str(item.message)  # type: ignore
+                        attr_dict["message"] = str(item.message)
                     if item.text:
-                        attr_dict["text"] = str(item.text)  # type: ignore
+                        attr_dict["text"] = str(item.text)
                     attr_dict["status"] = str(item.type)
-                    if item.type is None:  # type: ignore
-                        attr_dict.update({"status": item.message.split(" ")[0]})  # type: ignore
+                    if item.type is None:
+                        attr_dict.update({"status": item.message.split(" ")[0]})
                     attr_values.append(attr_dict)
                 if len(value) == 0:
                     attr_dict.update({
@@ -208,10 +207,10 @@ class FilterModule(object):
                 curr_case.update({attr: attr_values})
 
             for attr in ["system_err", "system_out"]:
-                if not hasattr(testcase, attr):  # type: ignore
+                if not hasattr(testcase, attr):
                     continue
-                value = getattr(testcase, attr)  # type: ignore
-                if value is None:  # type: ignore
+                value = getattr(testcase, attr)
+                if value is None:
                     continue
                 curr_case[attr] = value
 
@@ -226,52 +225,52 @@ class FilterModule(object):
                 "name": str(testsuite.name),
                 "time": float(testsuite.time),
             })
-            if curr_suite.get("time") is None:      # type: ignore
+            if curr_suite.get("time") is None:
                 curr_suite.update({"time": float(0)})
 
-            curr_suite.update({"timestamp": str(testsuite.timestamp)})  # type: ignore
-            if curr_suite.get("timestamp") == "None":  # type: ignore
+            curr_suite.update({"timestamp": str(testsuite.timestamp)})
+            if curr_suite.get("timestamp") == "None":
                 curr_suite.update({"timestamp": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(0))})
 
             curr_suite.update({
-                "tests": int(testsuite.tests),         # type: ignore
-                "failures": int(testsuite.failures),   # type: ignore
-                "errors": int(testsuite.errors),       # type: ignore
-                "skipped": int(testsuite.skipped),     # type: ignore
+                "tests": int(testsuite.tests),
+                "failures": int(testsuite.failures),
+                "errors": int(testsuite.errors),
+                "skipped": int(testsuite.skipped),
             })
-            if testsuite.properties is not None:  # type: ignore
-                suite_properties = {}  # type: ignore
-                for prop in testsuite.properties():  # type: ignore
-                    suite_properties.update({  # type: ignore
-                        str(prop.name): prop.value,  # type: ignore
+            if testsuite.properties is not None:
+                suite_properties = {}
+                for prop in testsuite.properties():
+                    suite_properties.update({
+                        str(prop.name): prop.value,
                     })
                 curr_suite.update({"properties": suite_properties})
 
-            curr_suite.update({"test_cases": []})  # type: ignore
-            tstcase: jup.TestCase  # type: ignore
-            for tstcase in testsuite:  # type: ignore
-                curr_case = _process_test_case(tstcase)  # type: ignore
+            curr_suite.update({"test_cases": []})
+            tstcase: jup.TestCase
+            for tstcase in testsuite:
+                curr_case = _process_test_case(tstcase)
                 curr_suite["test_cases"].append(curr_case)
             return curr_suite
 
-        junit_xml: jup.JUnitXml = jup.JUnitXml.fromstring(xml_report_text)  # type: ignore
+        junit_xml: jup.JUnitXml = jup.JUnitXml.fromstring(xml_report_text)
         report = {}
         report.update({
-            "time": float(junit_xml.time),         # type: ignore
-            "tests": int(junit_xml.tests),         # type: ignore
-            "failures": int(junit_xml.failures),   # type: ignore
-            "errors": int(junit_xml.errors),       # type: ignore
-            "skipped": int(junit_xml.skipped),     # type: ignore
-            "test_suites": [],                     # type: ignore
+            "time": float(junit_xml.time),
+            "tests": int(junit_xml.tests),
+            "failures": int(junit_xml.failures),
+            "errors": int(junit_xml.errors),
+            "skipped": int(junit_xml.skipped),
+            "test_suites": [],
         })
 
         if extra_metadata is not None and len(extra_metadata.keys()) > 0:
             report.update({"metadata": extra_metadata})
             report["metadata"]["schema_version"] = __version__
 
-        tstsuite: jup.TestSuite  # type: ignore
-        for tstsuite in junit_xml:  # type: ignore
-            curr_suite = _process_test_suite(tstsuite)  # type: ignore
+        tstsuite: jup.TestSuite
+        for tstsuite in junit_xml:
+            curr_suite = _process_test_suite(tstsuite)
             report["test_suites"].append(curr_suite)
 
         result_text: str = json.dumps(dict(report), indent=4) + "\n"
