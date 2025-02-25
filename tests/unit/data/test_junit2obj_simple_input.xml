@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="3" disabled="2" errors="0" failures="0" time="0.000426228">
+    <testsuite name="Performance Addon Operator Reboot" package="/home/jenkins/workspace/CNF/cnf-compute-4.18" 
+        tests="3" disabled="0" skipped="2" errors="0" failures="0" time="0.000426228" timestamp="2024-12-12T20:12:23">
+        <properties>
+            <property name="SuiteSucceeded" value="true"></property>
+            <property name="SuiteHasProgrammaticFocus" value="false"></property>
+            <property name="SpecialSuiteFailureReason" value=""></property>
+            <property name="SuiteLabels" value="[]"></property>
+            <property name="RandomSeed" value="1734025939"></property>
+            <property name="RandomizeAllSpecs" value="false"></property>
+            <property name="LabelFilter" value="(!openshift &amp;&amp; tier-0)"></property>
+            <property name="FocusStrings" value=""></property>
+            <property name="SkipStrings" value=""></property>
+            <property name="FocusFiles" value=""></property>
+            <property name="SkipFiles" value=""></property>
+            <property name="FailOnPending" value="false"></property>
+            <property name="FailOnEmpty" value="false"></property>
+            <property name="FailFast" value="false"></property>
+            <property name="FlakeAttempts" value="2"></property>
+            <property name="DryRun" value="false"></property>
+            <property name="ParallelTotal" value="1"></property>
+            <property name="OutputInterceptorMode" value=""></property>
+        </properties>
+        <testcase name="[It] [disruptive][node][kubelet][devicemanager]" classname="Performance Addon Operator Reboot" status="skipped" time="0">
+            <skipped message="skipped"></skipped>
+        </testcase>
+        <testcase name="Device management tests Verify that pods requesting devices" classname="Performance Addon Operator Reboot" status="skipped" time="0">
+            <skipped message="skipped"></skipped>
+        </testcase>
+        <testcase name="[ReportAfterSuite] e2e serial suite" classname="Performance Addon Operator Reboot" status="passed" time="6.826e-05">
+            <system-err>&gt; Enter [ReportAfterSuite] TOP-LEVEL - /home/jenkins/workspace/CNF/cnf-compute-4.18;</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

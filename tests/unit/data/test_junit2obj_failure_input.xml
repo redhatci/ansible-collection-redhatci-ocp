@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<testsuites disabled="0" errors="0" failures="2" tests="2" time="0.044028282165527344">
+        <testsuite disabled="0" errors="0" failures="2" name="dci-openshift-app-agent" skipped="0" tests="2" time="0.044028282165527344">
+                <testcase classname="/usr/share/ansible/collections/ansible_collections/redhatci/ocp/roles/verify_tests/tasks/parse_junit_file.yml:19" name="[jumphost] Check test results step: redhatci.ocp.verify_tests : Fail if not all test results are as expected for cu_op_deploy_cloudran_site_new_version.xml msg=The following expectations failed: {{ expectation_failed }}" time="0.026203">
+                        <failure message="The following expectations failed: [{'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_sites_deployment_time', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_managedcluster_ztp_done_label', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_policies_compliant', 'passed': False}}]" type="failure">{
+&quot;changed&quot;: false,
+&quot;msg&quot;: &quot;The following expectations failed: [{'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_sites_deployment_time', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_managedcluster_ztp_done_label', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_policies_compliant', 'passed': False}}]&quot;
+}</failure>
+                </testcase>
+                <testcase classname="/usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml:271" name="[jumphost] Check test results step: Fail properly msg=Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/{{ job_info.job.id }}/jobStates" time="0.017825">
+                        <failure message="Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/8b7e1fd4-9804-4abc-98c2-a9ecc39ba72c/jobStates" type="failure">{
+&quot;changed&quot;: false,
+&quot;msg&quot;: &quot;Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/8b7e1fd4-9804-4abc-98c2-a9ecc39ba72c/jobStates&quot;
+}</failure>
+                </testcase>
+        </testsuite>
+</testsuites>
