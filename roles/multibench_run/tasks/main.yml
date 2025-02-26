@@ -69,16 +69,6 @@
       retries: 20
       delay: 5
 
-    - name: Delete results file from failed run
-      vars:
-        multibench_run_regex_file: >-
-          {{ _multibench_run_results.stdout | regex_search('iperf-and-uperf--(.+?)run/result-summary') }}
-        multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}.txt"
-      ansible.builtin.file:
-        path: "{{ multibench_run_filepath }}"
-      delegate_to: "{{ multibench_host }}"
-      become: true
-
     - name: "Retry launching the multibench workload"
       ansible.builtin.shell:
         cmd: >
@@ -89,15 +79,14 @@
       register: _multibench_run_results
       changed_when: _multibench_run_results.rc == 0
 
-- name: Retrieve summary results from Multibench VM
+- name: Retrieve summary results from latest run if available
   vars:
-    multibench_run_regex_file: >-
-      {{ _multibench_run_results.stdout | regex_search('iperf-and-uperf--(.+?)run/result-summary') }}
-    multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}.txt"
+    multibench_run_filepath: "/var/lib/crucible/run/latest/run/result-summary.txt"
   ansible.builtin.fetch:
     src: "{{ multibench_run_filepath }}"
     dest: "{{ multibench_run_output_dir.path }}/result-summary.txt"
     flat: true
+  faliled_when: false
   delegate_to: "{{ multibench_host }}"
   become: true
 ...
