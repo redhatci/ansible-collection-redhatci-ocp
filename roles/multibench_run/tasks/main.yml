@@ -79,9 +79,11 @@
       register: _multibench_run_results
       changed_when: _multibench_run_results.rc == 0
 
-- name: Retrieve summary results from latest run if available
+- name: Retrieve summary results from Multibench VM
   vars:
-    multibench_run_filepath: "/var/lib/crucible/run/latest/run/result-summary.txt"
+    multibench_run_regex_file: >-
+      {{ _multibench_run_results.stdout | regex_search('iperf-and-uperf--(.+?)run/result-summary') }}
+    multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}.txt"
   ansible.builtin.fetch:
     src: "{{ multibench_run_filepath }}"
     dest: "{{ multibench_run_output_dir.path }}/result-summary.txt"
