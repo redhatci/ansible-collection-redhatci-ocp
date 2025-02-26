@@ -1,0 +1,7 @@
+---
+- name: Pre run validations
+  ansible.builtin.include_tasks: validations.yml
+
+- name: Boot hosts with a discovery image, ready to be provisioned
+  ansible.builtin.include_tasks: create-agent.yml
+...
