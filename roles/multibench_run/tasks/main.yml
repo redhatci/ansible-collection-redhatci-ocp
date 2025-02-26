@@ -59,16 +59,6 @@
         kind: Namespace
         name: crucible-rickshaw
 
-    - name: Delete results file from failed run
-      vars:
-        multibench_run_regex_file: >-
-          {{ _multibench_run_results.stdout | regex_search('iperf-and-uperf--(.+?)run/result-summary') }}
-        multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}.txt"
-      ansible.builtin.file:
-        path: "{{ multibench_run_filepath }}"
-      delegate_to: "{{ multibench_host }}"
-      become: true
-
     - name: Wait for namespace to be deleted
       kubernetes.core.k8s_info:
         api: v1
@@ -78,6 +68,16 @@
       until: _multibench_run_namespace_info.resources | length == 0
       retries: 20
       delay: 5
+
+    - name: Delete results file from failed run
+      vars:
+        multibench_run_regex_file: >-
+          {{ _multibench_run_results.stdout | regex_search('iperf-and-uperf--(.+?)run/result-summary') }}
+        multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}.txt"
+      ansible.builtin.file:
+        path: "{{ multibench_run_filepath }}"
+      delegate_to: "{{ multibench_host }}"
+      become: true
 
     - name: "Retry launching the multibench workload"
       ansible.builtin.shell:
