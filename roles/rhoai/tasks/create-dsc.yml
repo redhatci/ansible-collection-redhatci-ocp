@@ -49,7 +49,7 @@
           datasciencepipelines:
             managementState: "{{ rhoai_merged_dsc_spec_components['datasciencepipelines'] }}"
 
-- name: Wait up to 30 mins for DataScienceCluster
+- name: Wait up to 10 mins for DataScienceCluster
   kubernetes.core.k8s_info:
     api: datasciencecluster.opendatahub.io/v1
     kind: DataScienceCluster
