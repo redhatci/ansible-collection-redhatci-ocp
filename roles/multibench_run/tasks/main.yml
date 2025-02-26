@@ -86,7 +86,7 @@
     src: "{{ multibench_run_filepath }}"
     dest: "{{ multibench_run_output_dir.path }}/result-summary.txt"
     flat: true
-  faliled_when: false
+  failed_when: false
   delegate_to: "{{ multibench_host }}"
   become: true
 ...
