@@ -41,6 +41,9 @@
     dest: "{{ opcap_output_dir }}/{{ opcap_target_catalog_source }}_install_report.json"
     mode: "0644"
   when: opcap_check.stdout != ""
-  notify:
-    - "Remove opcap dir"
+
+- name: "Remove opcap dir"
+  ansible.builtin.file:
+    path: "{{ opcap_dir.path }}"
+    state: absent
 ...

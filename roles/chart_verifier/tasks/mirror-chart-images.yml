@@ -10,8 +10,6 @@
     loop_var: chart
     label: "{{ chart.chart_file | basename }}"
   register: chart_images
-  notify:
-    - "Delete tmp tool directory"
 
 - name: "Get all images"
   ansible.builtin.set_fact:
