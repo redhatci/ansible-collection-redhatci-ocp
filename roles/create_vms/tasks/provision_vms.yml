@@ -27,7 +27,8 @@
       loop: "{{ kvm_nodes }}"
 
     - name: Run vm creation_scripts
-      shell: 
+      ansible.builtin.command:
         cmd: "/bin/bash {{ vm_create_scripts_dir }}/{{ item.name }}_setup_vm.sh"
+      changed_when: false
       
       loop: "{{ kvm_nodes }}"

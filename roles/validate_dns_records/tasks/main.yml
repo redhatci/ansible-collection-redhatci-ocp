@@ -1,5 +1,5 @@
 - name: Check if the required binary for testing exists
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "which {{ required_binary }}"
   register: required_binary_check
   failed_when: false

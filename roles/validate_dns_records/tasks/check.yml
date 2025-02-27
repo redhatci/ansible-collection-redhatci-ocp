@@ -1,5 +1,5 @@
 - name: Check required domain {item} exists
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "{{ required_binary }} {{ item.value }} A {{ item.value }} AAAA +short"
   register: res
   changed_when: false

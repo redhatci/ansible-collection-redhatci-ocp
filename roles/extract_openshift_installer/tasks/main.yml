@@ -23,10 +23,11 @@
       --to={{ extract_dest_path }}
 
 - name: Check extracted installer has agent subcommand
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: "{{ openshift_installer_path }} agent --help"
   register: res
   failed_when: false
+  changed_when: false
 
 - name: Check agent sub-commmand output
   ansible.builtin.fail:
