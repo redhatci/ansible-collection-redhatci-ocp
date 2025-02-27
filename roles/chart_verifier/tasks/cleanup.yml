@@ -14,12 +14,4 @@
   when:
     - tmp_dir
     - tmp_dir.path is defined
-
-- name: "Delete the one time use key from Github"
-  ansible.builtin.command: "{{ gh_tool_path }} api -X DELETE user/keys/{{ key_id }}"
-  ignore_errors: true
-
-- name: "GH logout"
-  ansible.builtin.command: "{{ gh_tool_path }} auth logout --hostname github.com"
-  failed_when: false
 ...
