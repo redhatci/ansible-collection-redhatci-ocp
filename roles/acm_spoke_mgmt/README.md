@@ -92,7 +92,7 @@ Two resources are deleted by this role.
 Name                         | Type   | Required | Default                                            | Description
 ---------------------------- | ------ | -------- | -------------------------------------------------- | ------------------------------------------------------------
 asm_source_repo              | string | yes      | -                                                  | GitOps repository that was used to deploy the ZTP cluster
-asm_target_revision          | string | yes      | -                                                  | Branch used to to deploy the ZTP cluster
+asm_target_revision          | string | yes      | -                                                  | Branch used to deploy the ZTP cluster
 asm_delete_ztp_resources     | boolean| yes      | true                                               | Deletes the ArgoCD applications and all the related cluster deployments resources
 
 ### Example
