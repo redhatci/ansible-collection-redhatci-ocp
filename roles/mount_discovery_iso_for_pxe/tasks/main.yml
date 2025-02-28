@@ -22,10 +22,11 @@
         state: directory
         mode: '0755'
 
-    - name: mount the efiboot image
-      shell: 
-        cmd: "mount -o loop,ro {{ mount_images_directory }}/efiboot.img {{ mount_efiboot_directory }}" # noqa command-instead-of-module
- 
+    - name: Mount the efiboot image
+      ansible.builtin.command:
+        cmd: "mount -o loop,ro {{ mount_images_directory }}/efiboot.img {{ mount_efiboot_directory }}"  # noqa command-instead-of-module
+      changed_when: false
+
     - name: Create grub Configuration File
       template:
         src: "./grub.cfg.j2"

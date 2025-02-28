@@ -19,10 +19,11 @@
         file: check_if_vm_host_is_bastion.yml
 
     - name: Apply nmstate
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "nmstatectl apply --no-commit --timeout 120 {{ vm_nmstate_config_path }}"
       async: 60
       poll: 5
+      changed_when: false
 
     - name: Check network connection when vm_host and bastion are the same
       when: vm_host_is_bastion | bool
@@ -36,14 +37,16 @@
               This should be and IP external to the bastion and vm_host.
 
         - name: "Check for connection wider network"
-          ansible.builtin.shell:
+          ansible.builtin.command:
             cmd: "ping -c 4 -W 1 {{ vm_network_test_ip }}"
           when: vm_host_is_bastion | bool
           register: connection_test_result
           until: connection_test_result is succeeded
           retries: 60
           delay: 5
+          changed_when: false
 
     - name: Commit changes
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "nmstatectl commit"
+      changed_when: false
