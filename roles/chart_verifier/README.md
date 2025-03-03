@@ -14,10 +14,11 @@ logs_dir                           | /tmp                                       
 github_token_path                  | undefined                                         | true        | GitHub token to be used to push the chart and the results to a repository. Defaults to [openshift-charts/charts](https://github.com/openshift-helm-charts/charts/)
 organization_id                    | unknown                                           | false       | Red Hat PartnerID, used to obtain the partner_name. Recommended for tests that will be submitted. Obtained it from https://connect.redhat.com/account/company-profile.
 project_url             | https://catalog.redhat.com/api/containers/v1/vendors/org-id  | true        | API endpoint to query for vendor details.
+partner_name                       | None                                              | false       | Name of the partner to be used in the pull request
 partner_email                      | undefined                                         | true        | Email address to be used in the pull request
 sandbox_repository                 | undefined                                         | false       | Target repository to submit the PRs instead of openshift-helm-charts/charts/
 
-Note: A valid `partner_name` is required for the chart pull request to be accepted. It is derived from the organization_id. If the `organization_id` is invalid/nonexistent, `partner_name` will be set to "None". The partner_name corresponds to the Container Registry Namespace or vendor label and will remain empty for new partners until they create at least one certification project.
+Note: A `partner_name` is required for the chart pull request to be accepted. This can be set explicitly or obtained from the RH catalog using the organization_id. If the `organization_id` is invalid/nonexistent, `partner_name` will be set to "None". The partner_name corresponds to the Container Registry Namespace or vendor label and will remain empty for new partners until they create at least one certification project.
 
 ## Helm charts Certification in a nut shell
 
