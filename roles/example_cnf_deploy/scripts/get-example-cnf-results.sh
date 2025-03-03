@@ -42,7 +42,7 @@ echo
 
 # Retrieve TRex results
 ## For these logs, we need some intermediate steps
-echo "--- Last statistics reported by TestPMD ---"
+echo "--- Last statistics reported by TrexConfig pod ---"
 echo
 
 echo "> Server"
