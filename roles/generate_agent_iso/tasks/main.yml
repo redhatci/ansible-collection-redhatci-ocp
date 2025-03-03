@@ -27,11 +27,11 @@
     mode: "0644"
     remote_src: true
 
-- name: Fail if required nmstatectl is not installed
-  ansible.builtin.command: type nmstatectl
-  register: _gai_nmstatectl_check
-  failed_when: _gai_nmstatectl_check.rc != 0
-  changed_when: _gai_nmstatectl_check.rc != 0
+- name: Making sure nmstate is installed
+  become: true
+  ansible.builtin.package:
+    name: nmstate
+    state: installed
 
 - name: Generate agent ISO
   ansible.builtin.command:

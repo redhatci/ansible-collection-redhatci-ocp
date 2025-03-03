@@ -32,3 +32,6 @@ You can call this role in the following way, as an example of usage:
   ansible.builtin.include_role:
     name: redhatci.ocp.generate_agent_iso
 ```
+
+> [!NOTE]
+> This role makes use of nmstatectl command provided by nmstate to render the network configuration.
