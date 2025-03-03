@@ -4,7 +4,7 @@
     url: "{{ project_url }}/{{ organization_id }}"
     method: GET
     return_content: true
-    status_code: [200, 404]  # Accept both 200 (success) and 404 (not found)
+    status_code: [200, 404]
     timeout: 60
   register: _cv_vendor_partner_name
   until:

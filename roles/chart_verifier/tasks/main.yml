@@ -10,6 +10,8 @@
 
 - name: "Get partner name"
   ansible.builtin.include_tasks: get-partner-name.yml
+  when:
+    - partner_name is undefined
 
 # Get tools like yq and helm
 - name: "Get tools"
