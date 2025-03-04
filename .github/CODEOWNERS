@@ -9,35 +9,23 @@
 /roles/installer                     @redhatci/baremetaldeploy
 
 # Legacy crucible roles
-/roles/add_day2_node                 @redhatci/crucible
 /roles/apply_nmstate                 @redhatci/crucible
 /roles/approve_csrs                  @redhatci/crucible
 /roles/boot_disk                     @redhatci/crucible
 /roles/boot_iso                      @redhatci/crucible
-/roles/create_cluster                @redhatci/crucible
-/roles/create_day2_cluster           @redhatci/crucible
 /roles/create_vms                    @redhatci/crucible
 /roles/destroy_vms                   @redhatci/crucible
 /roles/extract_openshift_installer   @redhatci/crucible
 /roles/generate_agent_iso            @redhatci/crucible
-/roles/generate_discovery_iso        @redhatci/crucible
 /roles/generate_manifests            @redhatci/crucible
 /roles/generate_ssh_key_pair         @redhatci/crucible
-/roles/get_image_hash                @redhatci/crucible
 /roles/insert_dns_records            @redhatci/crucible
-/roles/install_cluster               @redhatci/crucible
 /roles/monitor_agent_based_installer @redhatci/crucible
-/roles/monitor_cluster               @redhatci/crucible
-/roles/monitor_host                  @redhatci/crucible
 /roles/mount_discovery_iso_for_pxe   @redhatci/crucible
-/roles/patch_cluster                 @redhatci/crucible
-/roles/patch_host_config             @redhatci/crucible
 /roles/populate_mirror_registry      @redhatci/crucible
-/roles/post_install                  @redhatci/crucible
 /roles/prereq_facts_check            @redhatci/crucible
 /roles/process_kvm_nodes             @redhatci/crucible
 /roles/process_nmstate               @redhatci/crucible
-/roles/setup_assisted_installer      @redhatci/crucible
 /roles/setup_http_store              @redhatci/crucible
 /roles/setup_mirror_registry         @redhatci/crucible
 /roles/setup_ntp                     @redhatci/crucible
@@ -47,7 +35,6 @@
 /roles/setup_vm_host_network         @redhatci/crucible
 /roles/validate_dns_records          @redhatci/crucible
 /roles/validate_http_store           @redhatci/crucible
-/roles/validate_inventory            @redhatci/crucible
 /roles/vendors                       @redhatci/crucible
 
 # verification team
