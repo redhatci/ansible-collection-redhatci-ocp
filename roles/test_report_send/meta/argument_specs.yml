@@ -3,47 +3,40 @@
 argument_specs:
   main:
     short_description: Main entry point for the redhatci.ocp.test_report_send role
-    description: >
+    description: |
       This is the main entrypoint for the `redhatci.ocp.test_report_send` role.
+      The role sends a single event made of `trs_report_file_path` and ``
       It sends data to the collector, currently only splunk is supported.
     author:
       - Max Kovgan
     options:
+
+      trs_report_path:
+        type: str
+        required: true
+        description: |
+          Test report JSON file to send.
+          Merged into the event under 'test' attribute.
+          For full report syntax see (TBD).
+
+      trs_metadata_path:
+        type: str
+        required: false
+        default: ''
+        description: |
+          Event metadata JSON file to send.
+          Merged into the event 'metadata' attribute.
+          Useful to mark special datasets during development.
+          If set to be empty or the file is missing, it is ignored.
+
       trs_collector_url:
         type: str
         required: true
         description: >
-          The URL of collector server (Splunk)
+          The URL of collector server (Splunk).
 
-      trs_collector_auth_token:
-        type: str
+      trs_collector_auth_headers:
+        type: dict
         required: true
         description: >
-          This is the collector auth token string as for basic http auth
-
-      trs_collector_target:
-        type: str
-        required: true
-        description: >
-          Target/Channel/Topic/Id/ of the collector
-
-      trs_report_file_path:
-        type: str
-        required: true
-        description: |
-          File to send. it is assumed to have `metadata.json` nearby or up in the filesystem.
-
-      trs_reports_path_patterns:
-        type: list
-        elements: str
-        required: false
-        default: ["*.json"]
-        description: |
-          The list of name regex to match only relevant XML files for consolidation
-
-      global_partner:
-        type: str
-        required: false
-        default: ""
-        description: |
-          Whether this is a partner
+          Authentication headers against the collector server (Splunk).
