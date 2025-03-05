@@ -1,3 +1,4 @@
 ---
 hub_hypershift_supported: 4.13
+hub_siteconfig_supported: 2.12
 ...
