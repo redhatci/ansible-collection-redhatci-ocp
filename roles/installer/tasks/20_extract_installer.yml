@@ -92,6 +92,11 @@
   when: (disconnected_installer|length or the_url.status in [200,301])
   delegate_to: "{{ disconnected_installer | ternary(groups['registry_host'][0], groups['provisioner'][0]) }}"
   tags: extract
+  register: _installer_extract
+  retries: 9
+  delay: 10
+  until: _installer_extract is not failed
+  changed_when: false
 
 - name: Remove the temporary copy of the PullSecret on registry host
   file:
