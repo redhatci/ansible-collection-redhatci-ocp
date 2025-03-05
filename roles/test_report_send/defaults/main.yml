@@ -2,10 +2,4 @@
 ---
 # defaults file for redhatci.ocp.test_report_send
 
-# trs_collector_url:	str	splunk HEC URL	N/A
-# trs_collector_auth_token: str splunk HEC auth token	N/A
-# trs_collector_target: str splunk target index	N/A
-# trs_reports_path:	str	folder with .xml and/or .json files	N/A
-# trs_parse_config_path	str	config file path for ansible.netcommon.parse_xml filter	"{{ reports_path }}/parse_xml.yml"
-trs_reports_path_patterns:
-  - "*.json"
+trs_metadata_path: ""
