@@ -253,6 +253,7 @@
     kind: ClusterServiceVersion
     namespace: open-cluster-management
   register: _as_csvs
+  no_log: true
 
 - name: Enable SiteConfig Operator if supported
   vars:
