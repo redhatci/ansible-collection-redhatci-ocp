@@ -1,0 +1,23 @@
+---
+
+- name: "Test redhatci.ocp.junit2json role :: simple input"
+  hosts: localhost
+  tasks:
+    - name: Test role redhatci.ocp.junit2json
+      ansible.builtin.include_role:
+        name: redhatci.ocp.junit2json
+      vars:
+        junit2json_input_reports_list:
+          - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+        junit2json_output_dir: "{{ role_path }}/tests"
+        junit2json_do_merge: false
+    - name: Load actual result to variable actual
+      ansible.builtin.set_fact:
+        actual: "{{ lookup('file', playbook_dir + '/test_junit2obj_simple_input.json') | from_json }}"
+    - name: Load expected result to variable expected
+      ansible.builtin.set_fact:
+        expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/test_junit2obj_simple_result.json') }}"
+    - name: Ensure both are identical
+      ansible.builtin.assert:
+        that:
+          - actual == expected
