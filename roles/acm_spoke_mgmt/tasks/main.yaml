@@ -5,6 +5,7 @@
     asm_actions:
       - detach
       - attach
+      - delete-ztp-by-ref
   ansible.builtin.assert:
     that:
       - asm_action | lower in asm_actions
@@ -20,4 +21,8 @@
   when:
     - asm_action == 'attach'
 
+- name: Delete a ZTP deployment by references
+  ansible.builtin.include_tasks: delete-ztp-by-ref.yaml
+  when:
+    - asm_action == 'delete-ztp-by-ref'
 ...

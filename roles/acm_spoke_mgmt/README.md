@@ -10,7 +10,7 @@ The following variable controls the action that can be performed within this rol
 
 Name                         | Type   | Required | Default                                            | Description
 ---------------------------- | ------ | -------- | -------------------------------------------------- | ------------------------------------------------------------
-asm_action                   | string | yes      | -                                                  | Action to be performed. Accepted values are `detach` and `attach`.
+asm_action                   | string | yes      | -                                                  | Action to be performed. Accepted values are `detach`, `attach`, and `delete-ztp-by-ref`.
 
 ## Detach a spoke cluster
 
@@ -73,4 +73,37 @@ asm_cluster_name             | string | yes      | -                            
     asm_action: "attach"
     asm_cluster_kubeconfig_path: "/path/to/spoke/kubeconfig"
     asm_cluster_name: "mycluster"
+
+## Remove ZTP ArgoCD resources
+
+This action allows to remove the ArgoCD resources used to deploy a ZTP cluster. This could remove all the created resources in cascading. The role locates the ArgoCD applications used to create a cluster using the GitOps repository a source branch as references.
+
+Two resources are deleted by this role.
+
+- Application - Cluster
+- Application - Policies
+
+### Requirements
+
+* A `KUBECONFIG` environment variable pointing to the management cluster's kubeconfig file.
+
+### Role Variables
+
+Name                         | Type   | Required | Default                                            | Description
+---------------------------- | ------ | -------- | -------------------------------------------------- | ------------------------------------------------------------
+asm_source_repo              | string | yes      | -                                                  | GitOps repository that was used to deploy the ZTP cluster
+asm_target_revision          | string | yes      | -                                                  | Branch used to deploy the ZTP cluster
+asm_delete_ztp_resources     | boolean| yes      | true                                               | Deletes the ArgoCD applications and all the related cluster deployments resources
+
+### Example
+
+```yaml
+- name: Remove a ZTP managed cluster from ArgoCD
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_spoke_mgmt
+  vars:
+    asm_action: "delete-ztp-by-ref"
+    asm_cluster_kubeconfig_path: "/path/to/spoke/kubeconfig"
+    asm_source_repo: "http://<gitops-repository>/gituser/gitops"
+    asm_target_revision: main
 ```
