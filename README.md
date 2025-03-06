@@ -38,7 +38,6 @@ Name | Description
 [redhatci.ocp.acm_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_setup/README.md) | Performs the Advanced Cluster Management (ACM) post-installation tasks
 [redhatci.ocp.acm_sno](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_sno/README.md) | Deployment of SNO (Single Node OpenShift) instances using ACM (Advanced Cluster Management)
 [redhatci.ocp.acm_spoke_mgmt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_spoke_mgmt/README.md) | This role allows to perform multiple management operations related to a spoke cluster,e.g. attach a spoke cluster to a given hub cluster, or detach a spoke cluster from a given hub cluster.
-[redhatci.ocp.add_day2_node](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/add_day2_node/README.md) | Adds as nodes to a pre-existing cluster using a pre-existing on-prem assisted installer instance.
 [redhatci.ocp.apply_nmstate](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/apply_nmstate/README.md) | Applies nmstate network configuration to a host.
 [redhatci.ocp.approve_csrs](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/approve_csrs/README.md) |Checks for Cert Signing Requests in the pending state and approves them until nodes in the day2_workers group are present in the oc nodes output.
 [redhatci.ocp.boot_disk](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/boot_disk/README.md) | Reboots nodes to the disk based on its vendor.
@@ -51,8 +50,6 @@ Name | Description
 [redhatci.ocp.configure_ztp_gitops_repo](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/configure_ztp_gitops_repo/README.md) | Pushes the SiteConfig and PolicyGenTemplate manifests to the Git repository, thus triggering the Spoke Cluster deployment process.
 [redhatci.ocp.conserver](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/conserver/README.md) | Setup of [conserver](https://www.conserver.com/) to log serial console.
 [redhatci.ocp.create_certification_project](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_certification_project/README.md) | Creation of a container certification project
-[redhatci.ocp.create_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_cluster/README.md) | Creates a cluster definition in an on-prem assisted installer instance.
-[redhatci.ocp.create_day2_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_day2_cluster/README.md) | Creates an add-hosts cluster definition in an on-prem assisted installer instance which can be used to add day2 nodes to the cluster.
 [redhatci.ocp.create_rhde_builder](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_rhde_builder/README.md) | Create a VM ready for building RHDE images.
 [redhatci.ocp.create_vms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_vms/README.md) | Provisions libvirt network, storage pools and the KVM Nodes.
 [redhatci.ocp.create_helmchart](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_helmchart/README.md) | Creation of a Helm Chart certification project
@@ -60,16 +57,13 @@ Name | Description
 [redhatci.ocp.deploy_cr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/deploy_cr/README.md) | Deploys a custom resource
 [redhatci.ocp.deprecated_api](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/deprecated_api/README.md) | Extracts deprecated API calls in a cluster
 [redhatci.ocp.destroy_vms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/destroy_vms/README.md) | Destroys libvirt network, storage pools and the KVM Nodes and the network bridge connection.
-[redhatci.ocp.display_deployment_plan](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/display_deployment_plan/README.md) | Displays the crucible deployment plan and waits for user confirmation.
 [redhatci.ocp.efi_boot_mgr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/efi_boot_mgr/README.md) | Removes the non-active UEFI boot entries from OCP nodes.
 [redhatci.ocp.etcd_data](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/etcd_data/README.md) | Allows to query, encrypt or decrypt etcd data using the supported encryption types.
 [redhatci.ocp.example_cnf_deploy](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/example_cnf_deploy/README.md) | Deploys the example-cnf workload on top of an OpenShift cluster
 [redhatci.ocp.extract_openshift_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/extract_openshift_installer/README.md) | Extracts openshift_installer binary from the release image.
 [redhatci.ocp.generate_agent_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_agent_iso/README.md) | Creates the boot ISO using OpenShift_installer's agent sub-command
-[redhatci.ocp.generate_discovery_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_discovery_iso/README.md) | Creates the discovery ISO for a pre-existing cluster definition using a pre-existing on-prem assisted installer
 [redhatci.ocp.generate_manifests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_manifests/README.md) | Generates the manifests required for OpenShift_installer's agent sub-command
 [redhatci.ocp.generate_ssh_key_pair](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_ssh_key_pair/README.md) | Produces an ssh key pair
-[redhatci.ocp.get_image_hash](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/get_image_hash/README.md) | Uses `skopeo` to produce a dictionary of image digests for images used in various playbooks.
 [redhatci.ocp.gitops_configure_repo](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/gitops_configure_repo/README.md) | Configures the SSH Git repo credentials for the openshift-gitops-operator to be able to connect to the repositories.
 [redhatci.ocp.fbc_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/fbc_catalog/README.md) | Create File Base Catalogs (FBC) for Operator Lifecycle Manager (OLM).
 [redhatci.ocp.get_logs_from_namespace](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/get_logs_from_namespace/README.md) | Extracts multiple logs from pods and events in a Namespace.
@@ -77,7 +71,6 @@ Name | Description
 [redhatci.ocp.hostedbm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hostedbm/README.md) | This role allows to create hosted guest clusters with BM workers.
 [redhatci.ocp.include_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/include_components/README.md) | Create and attach DCI components to DCI jobs from git repositories, RPMs or commit URLs.
 [redhatci.ocp.insert_dns_records](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/insert_dns_records/README.md) | Setups `dnsmasq` (either directly or via `NetworkManager`) inserting the DNS A records required for OpenShift install.
-[redhatci.ocp.install_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/install_cluster/README.md) | Waits for nodes to be discovered by the on-prem assisted installer then then patches cluster networking and triggers the install process
 [redhatci.ocp.installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/installer/README.md) | [IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.install_operator_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/install_operator_gitops/README.md) | Installs and configures the openshift-gitops-operator so it can be used for ZTP deployments. Installation is optional and may be skipped by setting the variable ```ioc_configure_only: true``
 [redhatci.ocp.jenkins_job_launcher](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/jenkins_job_launcher/README.md) | Launch Jenkins jobs
@@ -93,8 +86,6 @@ Name | Description
 [redhatci.ocp.mirror_images](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_images/README.md) | Mirrors images from one repository to another.
 [redhatci.ocp.mirror_ocp_release](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mirror_ocp_release/README.md) | Mirrors a given OpenShift release version to a given cache directory.
 [redhatci.ocp.monitor_agent_based_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/monitor_agent_based_installer/README.md) | Tracks the progress of the agent based installation via openshift_installer
-[redhatci.ocp.monitor_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/monitor_cluster/README.md) | Tracks the progress of the cluster installation via an on-prem assisted installer
-[redhatci.ocp.monitor_host](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/monitor_host/README.md) | Tracks host status dusing the installation via an on-prem assisted installer and triggers a reboot to disk if needed
 [redhatci.ocp.mount_discovery_iso_for_pxe](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mount_discovery_iso_for_pxe/README.md) | Extracts the required artifacts for a pxe boot from a discovery iso
 [redhatci.ocp.multibench_run](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/multibench_run/README.md) | Launch a crucible scenario on OCP
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
@@ -108,10 +99,7 @@ Name | Description
 [redhatci.ocp.opcap_tool](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/opcap_tool/README.md) | Runs OPCAP tool to test the installation of the Openshift operators.
 [redhatci.ocp.openshift_cnf](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/openshift_cnf/README.md) | Generate an Openshift-cnf certification project.
 [redhatci.ocp.operator_sdk](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/operator_sdk/README.md) | Setup Operator-SDK Scorecard test suite
-[redhatci.ocp.patch_cluster](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/patch_cluster/README.md) | Patches definition of a cluster in an on-prem assisted installer.
-[redhatci.ocp.patch_host_config](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/patch_host_config/README.md) | Patches host configuration in an on-prem assisted installer.
 [redhatci.ocp.populate_mirror_registry](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/populate_mirror_registry/README.md) | Copies the images required for installation to a local registry
-[redhatci.ocp.post_install](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/post_install/README.md) | Waits for the cluster to become operational then copies the kubeconfig and kubeadmin
 [redhatci.ocp.preflight](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/preflight/README.md) | Container and Operator certification through Preflight
 [redhatci.ocp.prereq_facts_check](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/prereq_facts_check/README.md) | Patches host definition in pre-existing on-prem assisted installer
 [redhatci.ocp.process_kvm_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/process_kvm_nodes/README.md) | Creates and distributes kvm node specifications to vm hosts
@@ -122,7 +110,6 @@ Name | Description
 [redhatci.ocp.remove_ztp_gitops_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/remove_ztp_gitops_resources/README.md) | Remove all GitOps related resources for a given spoke cluster, excepting the cluster namespace, which is not deleted because this will imply the spoke cluster is detached from the hub cluster.
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
 [redhatci.ocp.rhoai](roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
-[redhatci.ocp.setup_assisted_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_assisted_installer/README.md) | Deploys an on-prem assisted installer
 [redhatci.ocp.setup_gitea](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitea/README.md) | Deployment of [Gitea](https://about.gitea.com)
 [redhatci.ocp.setup_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_http_store/README.md) | Sets up a web host which can be used to distribute iso's for `boot_iso` role
 [redhatci.ocp.setup_minio](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_minio/README.md) | Deployment of [Minio](https://min.io/).
@@ -144,7 +131,6 @@ Name | Description
 [redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Setup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)
 [redhatci.ocp.validate_dns_records](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_dns_records/README.md) | Checks for the required dns entries for ingress and api VIPs
 [redhatci.ocp.validate_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_http_store/README.md) | Checks via a round trip that http store is functional
-[redhatci.ocp.validate_inventory](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_inventory/README.md) | Validates a crucible inventory
 [redhatci.ocp.vendors.dell](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/dell/README.md) | Boots a dell iDRAC machine to iso or disk via redfish
 [redhatci.ocp.vendors.hpe](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/hpe/README.md) | Boots a hpe ilo machine to iso or disk via redfish
 [redhatci.ocp.vendors.kvm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/kvm/README.md) | Boots a vm to iso or disk via redfish (sushy tools)
