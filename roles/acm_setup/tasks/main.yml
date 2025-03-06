@@ -261,6 +261,7 @@
               map(attribute='spec.version') |
               list | first }}"
   when: acm_csv is version(hub_siteconfig_supported, '>=')
+  no_log: true
   block:
     - name: Enable component for SiteConfig Operator
       kubernetes.core.k8s:
