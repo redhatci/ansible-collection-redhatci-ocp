@@ -5,7 +5,7 @@ default {{ cluster }} {
 	master localhost;
 }
 
-{% for host in ipmi_sol_hosts %}
+{% for host in conserver_sol_hosts %}
 console {{ cluster }}-{{ hostvars[host].name }} {
   include {{ cluster }};
   type exec;
