@@ -15,27 +15,27 @@
                -p {{ hostvars[item].ipmi_port | default(623) }}
                -I lanplus
                sol info
-  register: ipmi_sol
+  register: _conserver_sol
   ignore_errors: true
+  changed_when: true
   loop: "{{ cluster_nodes }}"
 
 - name: Build list of Serial over IPMI hosts
   ansible.builtin.set_fact:
-    ipmi_sol_hosts: "{{ ipmi_sol_hosts + [item.item] }}"
+    conserver_sol_hosts: "{{ conserver_sol_hosts + [item.item] }}"
   when: item.rc == 0
-  loop: "{{ ipmi_sol.results }}"
+  loop: "{{ _conserver_sol.results | default({}) }}"
 
 - name: Include IPMI console config
   ansible.builtin.include_tasks: config-ipmi.yml
-  when: ipmi_sol_hosts| length>0
+  when: conserver_sol_hosts | length > 0
 
 - name: Build list of Serial over SOCKET hosts (libvirt)
   ansible.builtin.set_fact:
-    socket_hosts: "{{ socket_hosts + [item] }}"
-  when:
-    - hostvars[item].socket_console| default(false)
+    conserver_socket_hosts: "{{ conserver_socket_hosts + [item] }}"
+  when: hostvars[item].socket_console | default(false) | bool
   loop: "{{ cluster_nodes }}"
 
 - name: Include libvirt console config
   ansible.builtin.include_tasks: config-libvirt.yml
-  when: socket_hosts| length>0
+  when: conserver_socket_hosts | length > 0

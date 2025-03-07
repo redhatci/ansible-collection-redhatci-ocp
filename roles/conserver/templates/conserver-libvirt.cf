@@ -8,7 +8,7 @@ default libvirt {
     master localhost;
 }
 
-{% for host in socket_hosts %}
+{% for host in conserver_socket_hosts %}
 console {{ cluster }}-{{ host }} { include libvirt; host {{ host }}.console; }
 {% endfor %}
 
