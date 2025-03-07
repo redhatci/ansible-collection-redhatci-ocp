@@ -18,6 +18,7 @@ Role tasks:
 | --------              | -------                               | -------- | -----------
 | sg_action             | install                               | No       | Default role's action
 | sg_gitea_image        | docker.io/gitea/gitea:latest-rootless | No       | Default Gitea server image
+| sg_kubeconfig         | *undefined*                           | No       | Path to the OCP cluster's kubeconfig file
 | sg_namespace          | gitea                                 | No       | Deployment Namespace
 | sg_url                | http://localhost:3000                 | No       | Root URL to the Gitea service
 | sg_username           | *undefined*                           | No       | Gitea's initial username. Mandatory if the initial repository (sg_repository) is created.
