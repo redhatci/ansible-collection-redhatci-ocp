@@ -24,6 +24,9 @@
         image: "{{ cs_image }}"
         publisher: "{{ cs_publisher }}"
         sourceType: "{{ cs_type }}"
+      {% if cs_secrets is defined %}
+        secrets: {{ cs_secrets }}
+      {% endif %}
       {% if cs_update_strategy is defined %}
         updateStrategy:
           {{ cs_update_strategy }}
