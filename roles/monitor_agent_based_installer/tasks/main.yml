@@ -2,7 +2,6 @@
   ansible.builtin.command:
     cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for bootstrap-complete"
     chdir: "{{ manifests_dir }}"
-  failed_when: false
   changed_when: false
 
 - name: Check installation and gather jobs if it fails
