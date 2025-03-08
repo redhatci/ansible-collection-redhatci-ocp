@@ -11,6 +11,7 @@ cs_namespace       | No       | openshift-marketplace  | Namespace where the Cat
 cs_publisher       | No       | Third Party    | CatalogSource publisher
 cs_type            | No       | grpc           | CatalogSource type
 cs_update_strategy | No       | undefined      | CatalogSource update strategy
+cs_secrets         | No       | undefined      | CatalogSource pull secrets
 
 ## Example of usage
 
