@@ -1,0 +1,19 @@
+---
+
+- name: "Example playbook to use the role redhatci.ocp.junit2json role"
+  hosts: localhost
+  vars:
+    input_reports:
+      - "/path/to/input1-junit.xml"
+      - "/path2/to/input-2-junit.xml"
+  tasks:
+    - name: Run the role
+      ansible.builtin.include_role:
+        name: redhatci.ocp.junit2json
+      vars:
+        junit2json_input_reports_list: "{{ input_reports | list }}"
+        junit2json_output_dir: "{{ playbook_dir }}/json_reports"
+        junit2json_do_merge: false
+    - name: Print the resulting list of JSON files
+      ansible.builtin.debug:
+        var: global_json_reports_list
