@@ -191,7 +191,16 @@ jobs:
               echo "- Missing: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
             fi
           done
-          if grep -q Missing: ${GITHUB_STEP_SUMMARY}; then
+          echo "# Additional roles/plugins in README" > ${GITHUB_STEP_SUMMARY}
+          for role in $(grep '^\[' README.md | grep -Po 'redhatci\.ocp\.[^\]]+'); do
+            rp="${role/redhatci.ocp./}"
+            if [[ ! -d "roles/${rp/./\/}" ]] &&
+               [[ ! -r "plugins/filter/${rp}.py" ]] &&
+               [[ ! -r "plugins/modules/${rp}.py" ]]; then
+              echo "- Extra role/plugin found in README: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
+            fi
+          done
+          if grep -qP "^- (Missing:|Extra)" ${GITHUB_STEP_SUMMARY}; then
             exit 1
           fi
 
