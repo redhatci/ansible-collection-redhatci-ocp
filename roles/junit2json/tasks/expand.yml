@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for role `redhatci.ocp.junit2json`
+# collects possibly multiple XMLs from `item` (when it is a directory)
+
+- name: Print path_item value
+  ansible.builtin.debug:
+    msg: "path_item: {{ item }}"
+
+- name: Collect the item stat
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: _junit2json_path_item_stat
+
+- name: Update junit2json_reports_list with a JUnit XML report item
+  ansible.builtin.set_fact:
+    junit2json_reports_list: "{{ junit2json_reports_list + [item] }}"
+  when:
+    - _junit2json_path_item_stat.stat.exists | default(false)

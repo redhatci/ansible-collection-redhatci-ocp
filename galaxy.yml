@@ -54,6 +54,7 @@ authors:
   - "Keith Schincke <keith.schincke+github@gmail.com>"
   - "Manuel Rodriguez <manuel.rodriguez@redhat.com>"
   - "Marek Kochanowski <mkochanowski@redhat.com>"
+  - "Max Kovgan <makovgan@redhat.com>"
   - "mbpavan <pbheeman@redhat.com>"
   - "Michele Costa <micosta@redhat.com>"
   - "Murali Krishnasamy <70236227+mukrishn@users.noreply.gihub.com>"
@@ -135,6 +136,7 @@ build_ignore:
 # indexing/searching. KEEP IT AT THE END for the Github action to
 # append more publishing to galaxy.
 tags:
+  - infrastructure
   - openshift
   - qa
   - redhat

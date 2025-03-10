@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file main.yml for role redhatci.ocp.junit2json
+
+# NOTE: in case somebody did not install the collection properly, we test for filter's dependency
+
+- name: Check dependencies
+  ansible.builtin.include_tasks: validate.dependency.yml
+  loop:
+    - package: junitparser
+      exec: junitparser
+
+- name: Check whether role python dependency is installed
+  ansible.builtin.command:
+    cmd: |
+      command -v junitparser
+  register: _junit2json_junitparser_command
+  changed_when:
+    - true
+
+- name: Respond to the case if junitparser is not available
+  ansible.builtin.assert:
+    that:
+      - _junit2json_junitparser_command.rc == 0
+    fail_msg: |
+      The script 'junitparser' from Python package 'junitparser' script is not on PATH.
+      make sure to install the collection using ansible-galaxy, so it installs collection dependencies.
+
+- name: Validate role variables
+  ansible.builtin.assert:
+    that:
+      - junit2json_input_reports_list | length > 0
+      - junit2json_output_dir | length > 0
+    fail_msg: "One of the mandatory variables is missing or empty"
+
+- name: Initialize input reports variable
+  ansible.builtin.debug:
+    msg: "junit2json_input_reports_list: {{ junit2json_input_reports_list }}"
+
+- name: Initialize reports variable
+  ansible.builtin.set_fact:
+    junit2json_reports_list: []
+
+- name: Expand the input list to list of existing files
+  ansible.builtin.include_tasks:
+    file: expand.yml
+  loop: "{{ junit2json_input_reports_list }}"
+
+- name: Merge JUnit XML reports into single file junit2json_do_merge=true
+  ansible.builtin.include_tasks:
+    file: merge.yml
+  when:
+    - junit2json_do_merge
+    - _junit2json_found_xml_reports.matched > 0
+
+- name: Convert XML to JSON
+  ansible.builtin.include_tasks:
+    file: convert.yml
+  loop: "{{ junit2json_reports_list }}"
+  when:
+    - junit2json_reports_list | default([]) | length > 0
