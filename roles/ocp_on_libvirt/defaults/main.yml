@@ -18,5 +18,6 @@ ocp_on_libvirt_cert_state: MA
 ocp_on_libvirt_cert_locality: Westford
 ocp_on_libvirt_cert_organization: DCI
 ocp_on_libvirt_cert_organizational_unit: Lab
+ocp_on_libvirt_vbmc_ipmi_nodes: ipmi_nodes.json
 
 ...

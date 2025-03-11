@@ -1,7 +1,7 @@
 ---
 - name: Include IPMI nodes variables
   ansible.builtin.include_vars:
-    file: ipmi_nodes.json
+    file: "{{ ocp_on_libvirt_vbmc_ipmi_nodes }}"
     name: ironic_nodes
 
 - name: Generating hosts inventory file

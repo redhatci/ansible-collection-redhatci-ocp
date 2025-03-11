@@ -4,37 +4,61 @@
   block:
     - name: Setup
       ansible.builtin.include_tasks: setup.yml
+
     - name: Generate SSH keys
       ansible.builtin.include_tasks: ssh_keygen.yml
+
     - name: Create networks
       ansible.builtin.include_tasks: libvirt_network_up.yml
       loop: "{{ networks }}"
       loop_control:
         loop_var: network
+
     - name: Create hosts
       ansible.builtin.include_tasks: libvirt_host_up.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
+
     - name: Create hosts 2
       ansible.builtin.include_tasks: libvirt_host_up2.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
+
     - name: Setup DNS
       ansible.builtin.include_tasks: dns_setup.yml
       when: do_dns_config | bool
+
+    - name: Set ipmi_nodes file
+      ansible.builtin.tempfile:
+        state: file
+        suffix: .json
+      register: _ool_ipmi_nodes
+
     - name: Setup VBMC
       ansible.builtin.include_role:
         name: redhatci.ocp.vbmc
       vars:
         vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
+        vbmc_ipmi_nodes: "{{ _ool_ipmi_nodes.path }}"
+
     - name: Redfish Setup
       ansible.builtin.include_tasks: redfish_setup.yml
       when: enable_redfish | bool
+
     - name: DCI Setup
+      vars:
+        ocp_on_libvirt_vbmc_ipmi_nodes: "{{ _ool_ipmi_nodes.path }}"
       ansible.builtin.include_tasks: dci_setup.yml
+
+    - name: Remove IPMI nodes file
+      ansible.builtin.file:
+        path: "{{ _ool_ipmi_nodes.path }}"
+        state: absent
+      when: _ool_ipmi_nodes is defined
+
     - name: Setup conserver
       ansible.builtin.include_role:
         name: redhatci.ocp.conserver
@@ -45,22 +69,27 @@
 - name: Cleanup
   when: hook_action == 'cleanup'
   block:
+
     - name: Destroy hosts
       ansible.builtin.include_tasks: libvirt_host_destroy.yml
       loop: "{{ hosts }}"
       loop_control:
         loop_var: host
+
     - name: Destroy network
       ansible.builtin.include_tasks: libvirt_network_destroy.yml
       loop: "{{ networks }}"
       loop_control:
         loop_var: network
+
     - name: DNS cleanup
       ansible.builtin.include_tasks: dns_cleanup.yml
       when: do_dns_config|bool
+
     - name: Cleanup VBMC
       ansible.builtin.include_role:
         name: redhatci.ocp.vbmc
       vars:
         vbmc_host: "{{ vbmc_host_provided }}"
         vbmc_nodes: "{{ resources }}"
+...
