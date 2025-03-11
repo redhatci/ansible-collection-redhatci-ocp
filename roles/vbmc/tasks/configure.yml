@@ -123,7 +123,7 @@
 - name: Generate file containing install-scripts vbmc details
   ansible.builtin.template:
     src: nodes_dict.json.j2
-    dest: ipmi_nodes.json
+    dest: "{{ vbmc_ipmi_nodes }}"
     mode: "0644"
   delegate_to: localhost
   become: false

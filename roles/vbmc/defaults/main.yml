@@ -12,3 +12,4 @@ vbmc_version: '1.4.0'
 vbmc_bin: "{{ vbmc_virtualenv }}/bin/vbmc"
 vbmcd_bin: "{{ vbmc_virtualenv }}/bin/vbmcd"
 zone: "libvirt"
+vbmc_ipmi_nodes: ipmi_nodes.json
