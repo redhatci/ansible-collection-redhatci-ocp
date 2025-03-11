@@ -186,20 +186,23 @@ jobs:
       - name: Check roles are documented in main README
         run: |
           echo "# Missing roles in README" > ${GITHUB_STEP_SUMMARY}
-          for role in $(ls roles); do
-            if ! grep -q "^\[redhatci\.ocp\.${role}" README.md; then
+          while read -r role_readme; do
+            role="${role_readme%/*}"  # strip last file `/README.md``
+            role="${role#*/}"         # strip left `roles/`
+            role="${role/\//.}"       # replace `/` with `.`
+            if ! grep -q "^\[redhatci\.ocp\.${role}\]" README.md; then
               echo "- Missing: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
             fi
-          done
+          done < <(find roles -name README.md)
           echo "# Additional roles/plugins in README" > ${GITHUB_STEP_SUMMARY}
-          for role in $(grep '^\[' README.md | grep -Po 'redhatci\.ocp\.[^\]]+'); do
+          while read -r role; do
             rp="${role/redhatci.ocp./}"
             if [[ ! -d "roles/${rp/./\/}" ]] &&
                [[ ! -r "plugins/filter/${rp}.py" ]] &&
                [[ ! -r "plugins/modules/${rp}.py" ]]; then
               echo "- Extra role/plugin found in README: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
             fi
-          done
+          done < <(grep '^\[' README.md | grep -Po 'redhatci\.ocp\.[^\]a-z]+' )
           if grep -qP "^- (Missing:|Extra)" ${GITHUB_STEP_SUMMARY}; then
             exit 1
           fi
