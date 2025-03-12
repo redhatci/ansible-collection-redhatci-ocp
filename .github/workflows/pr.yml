@@ -30,7 +30,7 @@ jobs:
           git+https://github.com/ansible/ansible-lint@v6"
 
       - name: Install requirements for plugins
-        run: pip install junitparser junit_xml jmespath
+        run: pip install -r meta/requirements.txt
 
       - name: Compare current branch vs main branch
         # Run ansible-lint on this branch then compare vs main branch
