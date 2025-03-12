@@ -64,7 +64,7 @@
         name: redhatci.ocp.conserver
       vars:
         cluster_nodes: "{{ groups['masters'] + ('workers' in groups) | ternary(groups['workers'], []) }}"
-      when: enable_conserver
+      when: enable_conserver | bool
 
 - name: Cleanup
   when: hook_action == 'cleanup'
