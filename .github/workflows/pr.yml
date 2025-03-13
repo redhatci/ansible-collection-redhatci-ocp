@@ -202,7 +202,7 @@ jobs:
                [[ ! -r "plugins/modules/${rp}.py" ]]; then
               echo "- Extra role/plugin found in README: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
             fi
-          done < <(grep '^\[' README.md | grep -Po 'redhatci\.ocp\.[^\]a-z]+' )
+          done < <(grep -Po '^\[redhatci\.ocp\.[^\]]+' README.md | tr -d '[')
           if grep -qP "^- (Missing:|Extra)" ${GITHUB_STEP_SUMMARY}; then
             exit 1
           fi
