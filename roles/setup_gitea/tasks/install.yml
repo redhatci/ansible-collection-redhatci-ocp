@@ -171,8 +171,7 @@
     - name: Mirror the repository # noqa command-instead-of-module
       ansible.builtin.shell:
         cmd: |
-          /usr/bin/git remote add mirror http://{{ sg_username }}:{{ sg_password }}@{{ sg_gitea_domain }}/{{ sg_username }}/{{ sg_repository }}.git
-          /usr/bin/git push mirror {{ sg_repo_mirror_branch }}
+          /usr/bin/git push http://{{ sg_username }}:{{ sg_password }}@{{ sg_gitea_domain }}/{{ sg_username }}/{{ sg_repository }}.git {{ sg_repo_mirror_branch }}:{{ sg_repo_branch }}
         chdir: "{{ _sg_mirror_repo.path }}/mirror"
       changed_when: false
       #no_log: true
