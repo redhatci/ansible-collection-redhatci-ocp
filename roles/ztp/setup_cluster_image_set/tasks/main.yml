@@ -33,7 +33,7 @@
         responses:
           Username: "{{ scis_username }}"
           Password: "{{ scis_password }}"
-      no_log: true
+      #no_log: true
       when: scis_repo_protocol_http
 
     - name: Git checkout (SSH)

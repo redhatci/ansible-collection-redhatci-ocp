@@ -2,18 +2,22 @@
 - name: Create namespace for Gitea
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'namespace.j2') | from_yaml}}"
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
 
 - name: Create Service Account
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'sa_anyuid.j2') | from_yaml}}"
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
 
 - name: Create Role
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'role_scc_anyuid.j2') | from_yaml}}"
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
 
 - name: Create RoleBinding
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'role_binding_sa_to_scc_anyuid.j2') | from_yaml}}"
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
 
 - name: Generate JWT secret
   containers.podman.podman_container:
@@ -24,7 +28,7 @@
     detach: false
   changed_when: false
   register: _sg_jwt_secret
-  no_log: true
+  #no_log: true
 
 - name: Generate the LFS JWT secret
   containers.podman.podman_container:
@@ -35,7 +39,7 @@
     detach: false
   changed_when: false
   register: _sg_lfs_jwt_secret
-  no_log: true
+  #no_log: true
 
 - name: Generate the internal token
   containers.podman.podman_container:
@@ -46,7 +50,7 @@
     detach: true
   changed_when: false
   register: _sg_internal_token
-  no_log: true
+  #no_log: true
 
 - name: Generate the secret key
   containers.podman.podman_container:
@@ -57,24 +61,28 @@
     detach: true
   changed_when: false
   register: _sg_secret_key
-  no_log: true
+  #no_log: true
 
 - name: Create Secret with the Gitea configuration
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'secret_gitea_app_ini.j2') | from_yaml}}"
-  no_log: true
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
+  #no_log: true
 
 - name: Create the Gitea deployment
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'deployment_gitea.j2') | from_yaml}}"
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
 
 - name: Create the gitea service
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'service_gitea.j2') | from_yaml}}"
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
 
 - name: Create the Gitea route
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'route_gitea.j2') | from_yaml}}"
+    kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
   register: _sg_gitea_route
 
 - name: Export Gitea service domain
@@ -98,6 +106,7 @@
         namespace: "{{ sg_namespace }}"
         label_selectors:
           - "app = gitea"
+        kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
       register: _sg_gitea_pod
 
     - name: Create the Gitea initial user
@@ -111,7 +120,8 @@
           --username {{ sg_username }}
           --password {{ sg_password }}
           --email {{ sg_email }}
-      no_log: true
+        kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
+      #no_log: true
 
 - name: Create the initial repository
   when: sg_repository | default("") != ""
@@ -137,7 +147,7 @@
           readme: ""
           template: false
           trust_model: "default"
-      no_log: true
+      #no_log: true
 
 - name: Mirror the reference remote repository
   when: sg_repo_mirror_url | default("") != ""
@@ -161,9 +171,8 @@
     - name: Mirror the repository # noqa command-instead-of-module
       ansible.builtin.shell:
         cmd: |
-          /usr/bin/git remote add mirror http://{{ sg_username }}:{{ sg_password }}@{{ sg_gitea_domain }}/{{ sg_username }}/{{ sg_repository }}.git
-          /usr/bin/git push mirror {{ sg_repo_mirror_branch }}
+          /usr/bin/git push http://{{ sg_username }}:{{ sg_password }}@{{ sg_gitea_domain }}/{{ sg_username }}/{{ sg_repository }}.git {{ sg_repo_mirror_branch }}:{{ sg_repo_branch }}
         chdir: "{{ _sg_mirror_repo.path }}/mirror"
       changed_when: false
-      no_log: true
+      #no_log: true
 ...
