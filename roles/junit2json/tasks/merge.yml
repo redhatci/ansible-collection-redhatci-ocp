@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file merge.yml for role redhatci.ocp.junit2json
+# merges multiple XMLs into 1 and converts it into JSON
+
+- name: Generate XML files list
+  ansible.builtin.set_fact:
+    junit2json_reports_list: "{{ junit2json_reports_list | default([]) + [item] }}"
+  loop: "{{ _junit2json_found_reports.files | map(attribute='path') }}"
+
+# debug only:
+- name: Print list of XML reports file names
+  ansible.builtin.debug:
+    msg:
+      - "XML files names: {{ junit2json_reports_list }}"
+  when:
+    - junit2json_debug
+
+- name: Merge multiple JUnit XML files into single consolidated report
+  ansible.builtin.command:
+    cmd: |
+      junitparser merge "{{ junit2json_reports_list | join('" "') }}" -
+  register: _junit2json_merged_xml
+  changed_when:
+    - true
+  failed_when:
+    - _junit2json_merged_xml.rc != 0
+
+- name: Write merge resulting file
+  ansible.builtin.copy:
+    content: "{{ _junit2json_merged_xml.stdout }}"
+    dest: "{{ junit2json_input_merged_report }}" # so that our findings don't find it
+    mode: '0644'
+  when:
+    - _junit2json_merged_xml.stdout | length > 10
+
+- name: Override the xml files list for conversion
+  ansible.builtin.set_fact:
+    junit2json_reports_list: [junit2json_input_merged_report]
