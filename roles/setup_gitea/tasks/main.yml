@@ -15,6 +15,8 @@
         # if we're setting an initial user (sg_username) we must provide an
         # e-mail for it (sg_email).
       - sg_username is undefined or sg_email is defined
+        # if sg_kubeconfig is defined, it must have some actual content
+      - sg_kubeconfig is undefined or sg_kubeconfig | length > 0
 
 - name: Create the Gitea deployment
   ansible.builtin.include_tasks: install.yml
