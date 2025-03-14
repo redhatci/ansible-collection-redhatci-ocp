@@ -28,7 +28,7 @@
     detach: false
   changed_when: false
   register: _sg_jwt_secret
-  no_log: true
+  #no_log: true
 
 - name: Generate the LFS JWT secret
   containers.podman.podman_container:
@@ -39,7 +39,7 @@
     detach: false
   changed_when: false
   register: _sg_lfs_jwt_secret
-  no_log: true
+  #no_log: true
 
 - name: Generate the internal token
   containers.podman.podman_container:
@@ -50,7 +50,7 @@
     detach: true
   changed_when: false
   register: _sg_internal_token
-  no_log: true
+  #no_log: true
 
 - name: Generate the secret key
   containers.podman.podman_container:
@@ -61,13 +61,13 @@
     detach: true
   changed_when: false
   register: _sg_secret_key
-  no_log: true
+  #no_log: true
 
 - name: Create Secret with the Gitea configuration
   kubernetes.core.k8s:
     definition: "{{ lookup('template', 'secret_gitea_app_ini.j2') | from_yaml}}"
     kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
-  no_log: true
+  #no_log: true
 
 - name: Create the Gitea deployment
   kubernetes.core.k8s:
@@ -121,7 +121,7 @@
           --password {{ sg_password }}
           --email {{ sg_email }}
         kubeconfig: "{{ sg_kubeconfig is defined | ternary(sg_kubeconfig, omit) }}"
-      no_log: true
+      #no_log: true
 
 - name: Create the initial repository
   when: sg_repository | default("") != ""
@@ -147,7 +147,7 @@
           readme: ""
           template: false
           trust_model: "default"
-      no_log: true
+      #no_log: true
 
 - name: Mirror the reference remote repository
   when: sg_repo_mirror_url | default("") != ""
@@ -175,5 +175,5 @@
           /usr/bin/git push mirror {{ sg_repo_mirror_branch }}
         chdir: "{{ _sg_mirror_repo.path }}/mirror"
       changed_when: false
-      no_log: true
+      #no_log: true
 ...
