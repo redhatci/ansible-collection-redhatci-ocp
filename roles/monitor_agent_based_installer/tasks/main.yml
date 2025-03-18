@@ -4,10 +4,10 @@
     url: 'https://api.{{ cluster }}.{{ base_dns_domain }}:6443/readyz'
     validate_certs: false
     return_content: true
-  register: mabi_api_ready
+  register: _mabi_api_ready
   until:
-    - "'ok' in mabi_api_ready.content"
-    - mabi_api_ready.status == 200
+    - "'ok' in _mabi_api_ready.content"
+    - _mabi_api_ready.status == 200
   retries: 180
   delay: 10
 
