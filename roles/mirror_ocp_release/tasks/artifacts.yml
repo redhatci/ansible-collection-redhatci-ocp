@@ -65,12 +65,17 @@
       register: _mor_selinux_status
       changed_when: false
 
-    - name: "Apply SELinux container file context to extracted files"
+    - name: Apply SELinux container file context to extracted files
       ansible.builtin.sefcontext:
         target: "{{ mor_cache_dir }}/{{ mor_version }}"
         setype: container_file_t
       become: true
-      when: _mor_selinux_status.rc == 0
+      register: _mor_cache_secontext
+      retries: 3
+      delay: 5
+      until: _mor_cache_secontext is not failed
+      when:
+        - _mor_selinux_status.rc == 0
 
     - name: "Make installer command readable from HTTP"
       ansible.builtin.file:
@@ -80,6 +85,10 @@
         group: "{{ mor_group }}"
         mode: "0755"
         setype: "httpd_sys_content_t"
+      register: _mor_install_mode
+      retries: 3
+      delay: 5
+      until: _mor_install_mode is not failed
 
   always:
     - name: "Ensure lock file is removed"
