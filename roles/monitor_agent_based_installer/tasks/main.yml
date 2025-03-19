@@ -1,3 +1,16 @@
+---
+- name: Wait for API to be available
+  ansible.builtin.uri:
+    url: 'https://api.{{ cluster }}.{{ base_dns_domain }}:6443/readyz'
+    validate_certs: false
+    return_content: true
+  register: _mabi_api_ready
+  until:
+    - "'ok' in _mabi_api_ready.content"
+    - _mabi_api_ready.status == 200
+  retries: 180
+  delay: 10
+
 - name: Wait for bootstrap complete
   ansible.builtin.command:
     cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for bootstrap-complete"
