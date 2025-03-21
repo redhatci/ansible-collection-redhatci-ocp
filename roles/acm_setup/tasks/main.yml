@@ -255,41 +255,6 @@
   register: _as_csvs
   no_log: true
 
-- name: Enable SiteConfig Operator if supported
-  vars:
-    acm_csv: "{{ _as_csvs.resources | selectattr('metadata.name', 'search', '^advanced-cluster-management') |
-              map(attribute='spec.version') |
-              list | first }}"
-  when: acm_csv is version(hub_siteconfig_supported, '>=')
-  no_log: true
-  block:
-    - name: Enable component for SiteConfig Operator
-      kubernetes.core.k8s:
-        definition:
-          apiVersion: operator.open-cluster-management.io/v1
-          kind: MultiClusterHub
-          metadata:
-            name: multiclusterhub
-            namespace: open-cluster-management
-          spec:
-            overrides:
-              components:
-                - enabled: true
-                  name: siteconfig
-
-    - name: Wait for Siteconfig controller pod to be ready
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Pod
-        namespace: open-cluster-management
-        label_selectors:
-          - app.kubernetes.io/component=siteconfig
-        wait: true
-        wait_condition:
-          type: Ready
-          status: "True"
-        wait_timeout: 300
-
 - name: "Check the AgentServiceConfig instance"
   kubernetes.core.k8s_info:
     api: agent-install.openshift.io/v1beta1
