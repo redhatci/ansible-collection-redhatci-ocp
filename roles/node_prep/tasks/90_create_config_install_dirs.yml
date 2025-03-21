@@ -1,5 +1,6 @@
 ---
 - name: Setup clusterconfigs dir
+  tags: clusterconfigs
   block:
     - name: Clear config dir (if any, in case this is a re-run)
       file:
@@ -17,4 +18,3 @@
         mode: '0755'
       with_items:
         - "{{ dir }}"
-  tags: clusterconfigs

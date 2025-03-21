@@ -1,5 +1,7 @@
 ---
 - name: Define, Start, Autostart Storage Pool
+  become: true
+  tags: storagepool
   block:
     - name: Define Storage Pool for default
       virt_pool:
@@ -16,5 +18,3 @@
       virt_pool:
         autostart: true
         name: default
-  become: true
-  tags: storagepool

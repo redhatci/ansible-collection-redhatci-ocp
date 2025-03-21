@@ -1,5 +1,7 @@
 ---
 - name: Configure firewalld
+  when: firewall != "iptables"
+  tags: firewall
   block:
     - name: Enable HTTP for firewalld
       firewalld:
@@ -18,10 +20,10 @@
         immediate: true
       become: true
       when: cache_enabled|bool
-  when: firewall != "iptables"
-  tags: firewall
 
 - name: Configure iptables
+  when: firewall == "iptables"
+  tags: firewall
   block:
     - name: Enable HTTP for iptables
       iptables:
@@ -51,5 +53,3 @@
       shell: |
         /usr/sbin/iptables-save > /etc/sysconfig/iptables
       become: true
-  when: firewall == "iptables"
-  tags: firewall

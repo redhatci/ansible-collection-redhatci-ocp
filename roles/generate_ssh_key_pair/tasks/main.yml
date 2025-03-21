@@ -34,6 +34,7 @@
     - "{{ key_pair_dir }}/{{ public_key_name }}"
 
 - name: Copy SSH Key to bastion
+  delegate_to: bastion
   block:
     - name: Make SSH Key folder
       file:
@@ -49,8 +50,6 @@
       loop:
         - "{{ private_key_name }}"
         - "{{ public_key_name }}"
-
-  delegate_to: bastion
 
 - name: "Remove temporary ssh_keys folder {{ key_pair_dir }}"
   file:

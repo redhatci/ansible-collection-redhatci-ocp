@@ -191,6 +191,8 @@
   tags: cache
 
 - name: Ensuring container restarts upon reboot
+  tags: cache
+  delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   block:
     - name: Ensure user specific systemd instance are persistent
       command: |
@@ -243,5 +245,3 @@
         scope: user
       environment:
         DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
-  tags: cache
-  delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
