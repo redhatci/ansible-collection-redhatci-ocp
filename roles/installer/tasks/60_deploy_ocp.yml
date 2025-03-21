@@ -20,6 +20,8 @@
   tags: install
 
 - name: Deploy OpenShift Cluster with extended timeouts
+  when: increase_bootstrap_timeout is defined or increase_install_timeout is defined
+  tags: install
   block:
     - name: Run OpenShift Cluster install as async task
       shell: |
@@ -50,5 +52,3 @@
       until: wait_for_install_result is succeeded
       retries: "{{ increase_install_timeout|default(1)|int }}"
       delay: 1
-  when: increase_bootstrap_timeout is defined or increase_install_timeout is defined
-  tags: install

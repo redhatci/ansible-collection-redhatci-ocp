@@ -89,6 +89,10 @@
     - create_registry
 
 - name: Create disconnected registry
+  delegate_to: "{{ groups['registry_host'][0] }}"
+  tags:
+    - disconnected
+    - create_registry
   block:
     - name: set cert facts to be easier
       set_fact:
@@ -405,11 +409,6 @@
       file:
         path: "{{ ansible_env.HOME }}/pullsecret.txt"
         state: absent
-
-  delegate_to: "{{ groups['registry_host'][0] }}"
-  tags:
-    - disconnected
-    - create_registry
 
 - name: Set fact to pull oc installer from disconnected registry
   set_fact:

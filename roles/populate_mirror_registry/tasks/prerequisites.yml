@@ -56,6 +56,8 @@
 # release.txt, among others)
 - name: Extract artifacts from release image
   become: true
+  when:
+    - not downloaded_artifacts.stat.exists
   block:
     # we need to temporarily download ocp stable binary to extract the artifacts
     - name: Create tmp directory for oc stable client
@@ -84,8 +86,6 @@
       file:
         path: "{{ oc_tmp_dir.path }}"
         state: absent
-  when:
-    - not downloaded_artifacts.stat.exists
 
 - name: Setup Version/Image facts
   block:
@@ -110,6 +110,9 @@
     binaries_tool_path: "{{ binaries_tmp_dir.path }}"
 
 - name: Install oc
+  tags:
+    - create_registry
+    - fetch_oc
   block:
     - name: Check if oc binary has been extracted
       stat:
@@ -168,11 +171,10 @@
         - kubectl
         - oc
 
+- name: Install opm
   tags:
     - create_registry
-    - fetch_oc
-
-- name: Install opm
+    - fetch_opm
   block:
     - name: Check if opm tarball has been previously downloaded
       stat:
@@ -217,6 +219,3 @@
     - name: Check opm installed
       command:  
         cmd: "{{ binaries_tool_path }}/opm version"
-  tags:
-    - create_registry
-    - fetch_opm

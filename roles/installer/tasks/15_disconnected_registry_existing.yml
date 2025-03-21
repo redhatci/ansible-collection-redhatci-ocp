@@ -1,6 +1,7 @@
 ---
 
 - name: Configure to use existing disconnected registry
+  delegate_to: localhost
   block:
 
     - name: Get stats of {{ disconnected_registry_mirrors_file }}
@@ -53,4 +54,3 @@
       set_fact:
         pullsecret: "  {{ new_pullsecret.stdout }}"
       no_log: true
-  delegate_to: localhost

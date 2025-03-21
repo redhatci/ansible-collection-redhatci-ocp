@@ -1,5 +1,7 @@
 ---
 - name: Setup Bridge Creation
+  become: true
+  tags: network
   block:
     - name: Get the provision connection name
       shell: |
@@ -162,5 +164,3 @@
         - "{{ prov_nic }}"
       when:
         - not enable_virtualmedia|bool
-  become: true
-  tags: network
