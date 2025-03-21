@@ -76,8 +76,15 @@
     - name: "Copy execution artifacts"
       vars:
         image_name: "{{ item.0.container_image | regex_search('.*/([^@:]+).*$', '\\1') | join('') }}"
-        tmp_prefix: "/tmp/preflight_container_artifacts"
-        file_basename: "{{ item.1.path | regex_replace(tmp_prefix ~ '_[^/]+/(?:([^/]+)/)?([^/]+)$', '\\1_\\2') | replace('__', '') }}"
+        file_basename: >-
+          {{
+            item.1.path
+            | regex_replace(
+            '^(?:' ~ lookup("env", "HOME") ~ ')?/tmp/preflight_container_artifacts_[^/]+/(?:([^/]+)/)?([^/]+)$',
+            '\g<1>_\g<2>'
+            )
+            | regex_replace('^_', '')
+          }}
         preflight_prefix: "preflight_container_{{ image_name }}_{{ file_basename }}"
       ansible.builtin.copy:
         src: "{{ item.1.path }}"
@@ -86,18 +93,22 @@
       loop: "{{ preflight_files_context | subelements('files') }}"
       when: "item.1.path | regex_search('\\.(json|log|xml)$')"
 
-    - name: "Find all temporary directories preflight_container_ in /tmp/ to remove"
+    - name: "Find all temporary directories preflight_container_ in designated temp paths"
       ansible.builtin.find:
-        paths: "/tmp/"
+        paths: "{{ ansible_env.HOME }}/tmp"
         patterns: 'preflight_container_*'
         file_type: directory
-      register: _preflight_tmp_dirs_to_remove
+      register: _preflight_tmp_dirs
 
-    - name: Remove found temporary directories
+    - name: "Aggregate found temporary directories"
+      ansible.builtin.set_fact:
+        preflight_all_tmp_dirs: "{{ _preflight_tmp_dirs.files }}"
+
+    - name: "Remove found temporary directories"
       ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
-      loop: "{{ _preflight_tmp_dirs_to_remove.files }}"
+      loop: "{{ preflight_all_tmp_dirs }}"
 
     - name: Unset files context contents before starting the next batch of images
       ansible.builtin.set_fact:
