@@ -102,6 +102,7 @@
     container_registry_pidfile: "{{ registry_container_info.container.ConmonPidFile }}"
 
 - name: Setup registry service
+  become: true
   block:
     - name: Copy the systemd service file
       copy:
@@ -136,4 +137,3 @@
       systemd:
         name: container-registry
         state: started
-  become: true

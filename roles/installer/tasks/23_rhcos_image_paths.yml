@@ -1,5 +1,6 @@
 ---
 - name: RHCOS image path (pre 4.8)
+  when: release_version is ansible.builtin.version('4.7', '<=')
   block:
     - name: Get COMMIT_ID
       shell: |
@@ -34,9 +35,9 @@
         rhcos_uri: "{{ rhcos_json.json | json_query('images.openstack.path') }}"
         rhcos_path: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-{{ base_version }}/{{ build_id }}/x86_64/"
       tags: rhcospath
-  when: release_version is ansible.builtin.version('4.7', '<=')
 
 - name: RHCOS image path (4.8+)
+  when: release_version is ansible.builtin.version('4.8', '>=')
   block:
     - name: Extract rhcos.json
       shell: |
@@ -61,4 +62,3 @@
         rhcos_qemu_key: 'architectures.x86_64.artifacts.qemu.formats."qcow2.gz".disk.location'
         rhcos_openstack_key: 'architectures.x86_64.artifacts.openstack.formats."qcow2.gz".disk.location'
       tags: rhcospath
-  when: release_version is ansible.builtin.version('4.8', '>=')

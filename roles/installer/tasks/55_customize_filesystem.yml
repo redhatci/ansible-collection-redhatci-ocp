@@ -16,6 +16,8 @@
   tags: customfs
 
 - name: Modify Ignition Configs
+  when: (filesFound | json_query('results[*].matched') | sum) > 0
+  tags: customfs
   block:
 
     - name: Create OpenShift Ignition Configs
@@ -68,6 +70,3 @@
       with_items:
         - "master"
         - "worker"
-
-  when: (filesFound | json_query('results[*].matched') | sum) > 0
-  tags: customfs

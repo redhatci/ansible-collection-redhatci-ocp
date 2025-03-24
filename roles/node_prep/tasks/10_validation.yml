@@ -238,7 +238,15 @@
     - drm_set
     - webserver_url|length == 0
 
-- block:
+- name: Python crypto libraries
+  tags:
+    - create_registry
+    - validation
+  when:
+    - not dra_set
+    - not drm_set
+    - registry_host_exists
+  block:
     - name: Check if Python cryptography libraries are installed
       python_requirements_info:
         dependencies:
@@ -258,13 +266,6 @@
         msg: "Required cryptography libraries are missing cryptography OR PyOpenSSL"
       when: (_py_crypto.not_found != []) and
             (_py_pyopenssl.not_found != [] )
-  tags:
-    - create_registry
-    - validation
-  when:
-    - not dra_set
-    - not drm_set
-    - registry_host_exists
 
 - name: Get Release.txt File
   uri:
@@ -483,6 +484,7 @@
   tags: validation
 
 - name: Adding hosts to to their dynamic Dell inventory group
+  tags: validation
   block:
     - name: Add all the hosts that are Dell to a group with iDRAC firmware higher than 4.20.20.20
       add_host:
@@ -503,9 +505,9 @@
     - name: Attempt to add all hosts that are part of the Dell group failed
       debug:
         msg: 'Adding hosts to dynamic Dell group failed or redfish_inspection was set to false. All inventory systems will use IPMI.'
-  tags: validation
 
 - name: Adding hosts to to their dynamic HP inventory group
+  tags: validation
   block:
     - name: Add all the hosts that are HP to a group
       add_host:
@@ -523,7 +525,6 @@
     - name: Attempt to add all hosts that are part of the HP group failed
       debug:
         msg: 'Adding hosts to dynamic HP group failed or redfish_inspection was set to false. All inventory systems will use IPMI.'
-  tags: validation
 
 - name: Fail when provisioningHostIP and bootstrapProvisioningIP are not set when virtualmedia option is enabled
   fail:
