@@ -29,8 +29,8 @@
     state: directory
     mode: '0750'
 
-- name: Write files - data + hash file
+- name: Write the json data to file
   ansible.builtin.copy:
-    content: "{{ junit2json_result_data | redhatci.ocp.junit2obj | to_nice_json }}"
+    content: "{{ junit2json_result_data | redhatci.ocp.junit2obj(object=not(junit2json_out_str)) | to_nice_json }}"
     dest: "{{ junit2json_output_report_path }}"
     mode: '0644'

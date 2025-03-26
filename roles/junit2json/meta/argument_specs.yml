@@ -53,3 +53,9 @@ argument_specs:
         description: |
           This is the output variable updated by the role for the converted JSON reports file names.
           If it is defined outside of the role, the role updates it.
+      junit2json_out_str:
+        type: bool
+        required: false
+        default: true
+        description: |
+          If true, the call to filter should pass object=true, otherwise object=false is passed.

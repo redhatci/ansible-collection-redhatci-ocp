@@ -9,3 +9,4 @@ global_json_reports_list: []
 junit2json_input_merged_report: 'merged.junit.xml'
 junit2json_output_merged_report: 'merged.junit.json'
 junit2json_do_merge: true
+junit2json_out_str: true

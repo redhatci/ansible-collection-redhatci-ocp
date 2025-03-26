@@ -91,6 +91,16 @@ If it is defined outside of the role, the role updates it.
   
   
 
+  - **junit2json_out_str**
+    - **Required**: False
+    - **Type**: bool
+    - **Default**: True
+    - **Description**: If true, the call to filter should pass object=true, otherwise object=false is passed.
+
+  
+  
+  
+
 
 
 </details>
@@ -108,6 +118,7 @@ If it is defined outside of the role, the role updates it.
 | [junit2json_input_merged_report](defaults/main.yml#L9)   | str   | `merged.junit.xml` |    n/a  |  n/a |
 | [junit2json_output_merged_report](defaults/main.yml#L10)   | str   | `merged.junit.json` |    n/a  |  n/a |
 | [junit2json_do_merge](defaults/main.yml#L11)   | bool   | `True` |    n/a  |  n/a |
+| [junit2json_out_str](defaults/main.yml#L12)   | bool   | `True` |    n/a  |  n/a |
 
 
 
@@ -126,7 +137,7 @@ If it is defined outside of the role, the role updates it.
 | Set junit2json_output_report_path | ansible.builtin.set_fact | False |
 | Update output variable global_json_reports_list | ansible.builtin.set_fact | False |
 | Create folder junit2json_output_dir='{{ junit2json_output_dir }}' | ansible.builtin.file | False |
-| Write files - data + hash file | ansible.builtin.copy | False |
+| Write the json data to file | ansible.builtin.copy | False |
 
 #### File: tasks/validate-dependency.yml
 
@@ -189,8 +200,8 @@ classDef rescue stroke:#665352,stroke-width:2px;
   Setup_JSON_report_file_name2-->|Task| Set_junit2json_output_report_path3[set junit2json output report path]:::task
   Set_junit2json_output_report_path3-->|Task| Update_output_variable_global_json_reports_list4[update output variable global json reports list]:::task
   Update_output_variable_global_json_reports_list4-->|Task| Create_folder_junit2json_output_dir__junit2json_output_dir_5[create folder junit2json output dir  junit2json<br>output dir ]:::task
-  Create_folder_junit2json_output_dir__junit2json_output_dir_5-->|Task| Write_files___data___hash_file6[write files   data   hash file]:::task
-  Write_files___data___hash_file6-->End
+  Create_folder_junit2json_output_dir__junit2json_output_dir_5-->|Task| Write_the_json_data_to_file6[write the json data to file]:::task
+  Write_the_json_data_to_file6-->End
 ```
 
 
@@ -292,60 +303,134 @@ classDef rescue stroke:#665352,stroke-width:2px;
   vars:
     junit2json_output_merged_report: 'merged.junit.json'
   tasks:
-    - name: Test role redhatci.ocp.junit2json without merge
-      ansible.builtin.include_role:
-        name: redhatci.ocp.junit2json
-      vars:
-        junit2json_input_reports_list:
-          - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
-        junit2json_output_dir: "{{ role_path }}/tests"
-        junit2json_do_merge: false
-    - name: Load actual result to variable actual
-      ansible.builtin.set_fact:
-        actual: "{{ lookup('file', playbook_dir + '/test_junit2obj_simple_input.json') | from_json }}"
-    - name: Load expected result to variable expected
-      ansible.builtin.set_fact:
-        expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/test_junit2obj_simple_result.json') }}"
-    - name: Ensure both are identical
-      ansible.builtin.assert:
-        that:
-          - actual == expected
-    - name: Reset global variable
-      ansible.builtin.set_fact:
-        global_json_reports_list: []
-    - name: Test role redhatci.ocp.junit2json with merge
-      ansible.builtin.include_role:
-        name: redhatci.ocp.junit2json
-      vars:
-        junit2json_input_reports_list:
-          - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
-          - "{{ role_path }}/../../tests/unit/data/test_junit2obj_failure_input.xml"
-        junit2json_output_dir: "{{ role_path }}/tests"
-        junit2json_do_merge: true
-    - name: Load actual result to variable actual
-      ansible.builtin.set_fact:
-        actual: "{{ lookup('file', global_json_reports_list[0]) | from_json }}"
-    - name: Load expected result to variable expected
-      ansible.builtin.set_fact:
-        expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/' + junit2json_output_merged_report) }}"
-    - name: Ensure both are identical
-      ansible.builtin.assert:
-        that:
-          - actual == expected
+    - name: Run tests for both values of junit2json_out_str
+      block:
+        - name: Test role redhatci.ocp.junit2json without merge junit2json_out_str=true
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2json_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+            junit2json_output_dir: "{{ role_path }}/tests"
+            junit2json_do_merge: false
+            junit2json_out_str: true
+
+        - name: Load actual result into variable actual junit2json_out_str=true
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', playbook_dir + '/test_junit2obj_simple_input.json') | from_json }}"
+
+        - name: Load expected result into variable expected junit2json_out_str=true
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/test_junit2obj_simple_result.json') }}"
+
+        - name: Ensure test passes junit2json_out_str=true
+          ansible.builtin.assert:
+            that:
+              - actual == expected
+
+        - name: Reset global variable junit2json_out_str=true
+          ansible.builtin.set_fact:
+            global_json_reports_list: []
+
+        - name: Test role redhatci.ocp.junit2json with merge junit2json_out_str=true
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2json_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_failure_input.xml"
+            junit2json_output_dir: "{{ role_path }}/tests"
+            junit2json_do_merge: true
+            junit2json_out_str: true
+
+        - name: Load actual result into variable actual junit2json_out_str=true
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', global_json_reports_list[0]) | from_json }}"
+
+        - name: Load expected result into variable expected junit2json_out_str=true
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/' + junit2json_output_merged_report) }}"
+
+        - name: Ensure test passes junit2json_out_str=true
+          ansible.builtin.assert:
+            that:
+              - actual == expected
+
+        - name: Test role redhatci.ocp.junit2json without merge junit2json_out_str=false
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2json_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+            junit2json_output_dir: "{{ role_path }}/tests"
+            junit2json_do_merge: false
+            junit2json_out_str: false
+
+        - name: Load actual result into variable actual junit2json_out_str=false
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', playbook_dir + '/test_junit2obj_simple_input.json') | from_json }}"
+
+        - name: Load expected result into variable expected junit2json_out_str=false
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/test_junit2obj_simple_result.json') }}"
+
+        - name: Ensure test passes junit2json_out_str=false
+          ansible.builtin.assert:
+            that:
+              - actual == expected
+
+        - name: Reset global variable junit2json_out_str=false
+          ansible.builtin.set_fact:
+            global_json_reports_list: []
+
+        - name: Test role redhatci.ocp.junit2json with merge junit2json_out_str=false
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2json_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_failure_input.xml"
+            junit2json_output_dir: "{{ role_path }}/tests"
+            junit2json_do_merge: true
+            junit2json_out_str: false
+
+        - name: Load actual result into variable actual junit2json_out_str=false
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', global_json_reports_list[0]) | from_json }}"
+
+        - name: Load expected result into variable expected junit2json_out_str=false
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/' + junit2json_output_merged_report) }}"
+
+        - name: Ensure test passes junit2json_out_str=false
+          ansible.builtin.assert:
+            that:
+              - actual == expected
 
 ```
 ## Playbook graph
 ```mermaid
 flowchart TD
-  localhost-->|Include role| redhatci_ocp_junit2json0(test role redhatci ocp junit2json without merge<br>include_role: redhatci ocp junit2json):::includeRole
-  redhatci_ocp_junit2json0-->|Task| Load_actual_result_to_variable_actual1[load actual result to variable actual]:::task
-  Load_actual_result_to_variable_actual1-->|Task| Load_expected_result_to_variable_expected2[load expected result to variable expected]:::task
-  Load_expected_result_to_variable_expected2-->|Task| Ensure_both_are_identical3[ensure both are identical]:::task
-  Ensure_both_are_identical3-->|Task| Reset_global_variable4[reset global variable]:::task
-  Reset_global_variable4-->|Include role| redhatci_ocp_junit2json5(test role redhatci ocp junit2json with merge<br>include_role: redhatci ocp junit2json):::includeRole
-  redhatci_ocp_junit2json5-->|Task| Load_actual_result_to_variable_actual6[load actual result to variable actual]:::task
-  Load_actual_result_to_variable_actual6-->|Task| Load_expected_result_to_variable_expected7[load expected result to variable expected]:::task
-  Load_expected_result_to_variable_expected7-->|Task| Ensure_both_are_identical8[ensure both are identical]:::task
+  localhost-->|Block Start| Run_tests_for_both_values_of_junit2json_out_str0_block_start_0[[run tests for both values of junit2json out str]]:::block
+  Run_tests_for_both_values_of_junit2json_out_str0_block_start_0-->|Include role| redhatci_ocp_junit2json0(test role redhatci ocp junit2json without merge<br>junit2json out str true<br>include_role: redhatci ocp junit2json):::includeRole
+  redhatci_ocp_junit2json0-->|Task| Load_actual_result_into_variable_actual_junit2json_out_str_true1[load actual result into variable actual junit2json<br>out str true]:::task
+  Load_actual_result_into_variable_actual_junit2json_out_str_true1-->|Task| Load_expected_result_into_variable_expected_junit2json_out_str_true2[load expected result into variable expected<br>junit2json out str true]:::task
+  Load_expected_result_into_variable_expected_junit2json_out_str_true2-->|Task| Ensure_test_passes_junit2json_out_str_true3[ensure test passes junit2json out str true]:::task
+  Ensure_test_passes_junit2json_out_str_true3-->|Task| Reset_global_variable_junit2json_out_str_true4[reset global variable junit2json out str true]:::task
+  Reset_global_variable_junit2json_out_str_true4-->|Include role| redhatci_ocp_junit2json5(test role redhatci ocp junit2json with merge<br>junit2json out str true<br>include_role: redhatci ocp junit2json):::includeRole
+  redhatci_ocp_junit2json5-->|Task| Load_actual_result_into_variable_actual_junit2json_out_str_true6[load actual result into variable actual junit2json<br>out str true]:::task
+  Load_actual_result_into_variable_actual_junit2json_out_str_true6-->|Task| Load_expected_result_into_variable_expected_junit2json_out_str_true7[load expected result into variable expected<br>junit2json out str true]:::task
+  Load_expected_result_into_variable_expected_junit2json_out_str_true7-->|Task| Ensure_test_passes_junit2json_out_str_true8[ensure test passes junit2json out str true]:::task
+  Ensure_test_passes_junit2json_out_str_true8-->|Include role| redhatci_ocp_junit2json9(test role redhatci ocp junit2json without merge<br>junit2json out str false<br>include_role: redhatci ocp junit2json):::includeRole
+  redhatci_ocp_junit2json9-->|Task| Load_actual_result_into_variable_actual_junit2json_out_str_false10[load actual result into variable actual junit2json<br>out str false]:::task
+  Load_actual_result_into_variable_actual_junit2json_out_str_false10-->|Task| Load_expected_result_into_variable_expected_junit2json_out_str_false11[load expected result into variable expected<br>junit2json out str false]:::task
+  Load_expected_result_into_variable_expected_junit2json_out_str_false11-->|Task| Ensure_test_passes_junit2json_out_str_false12[ensure test passes junit2json out str false]:::task
+  Ensure_test_passes_junit2json_out_str_false12-->|Task| Reset_global_variable_junit2json_out_str_false13[reset global variable junit2json out str false]:::task
+  Reset_global_variable_junit2json_out_str_false13-->|Include role| redhatci_ocp_junit2json14(test role redhatci ocp junit2json with merge<br>junit2json out str false<br>include_role: redhatci ocp junit2json):::includeRole
+  redhatci_ocp_junit2json14-->|Task| Load_actual_result_into_variable_actual_junit2json_out_str_false15[load actual result into variable actual junit2json<br>out str false]:::task
+  Load_actual_result_into_variable_actual_junit2json_out_str_false15-->|Task| Load_expected_result_into_variable_expected_junit2json_out_str_false16[load expected result into variable expected<br>junit2json out str false]:::task
+  Load_expected_result_into_variable_expected_junit2json_out_str_false16-->|Task| Ensure_test_passes_junit2json_out_str_false17[ensure test passes junit2json out str false]:::task
+  Ensure_test_passes_junit2json_out_str_false17-.->|End of Block| Run_tests_for_both_values_of_junit2json_out_str0_block_start_0
 ```
 
 ## Author Information
