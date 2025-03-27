@@ -5,7 +5,7 @@
       set -e -o pipefail;
       {{ ecd_opm_path }} render
       {{ ecd_catalog_image }} |
-      jq -r '.relatedImages[].image'
+      jq -rn 'inputs | select(.schema == "olm.bundle").relatedImages[].image'
   args:
     executable: /bin/bash
   register: _ecd_catalog_data_cmd
