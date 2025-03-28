@@ -7,13 +7,16 @@
       - asm_target_revision is defined
       - asm_target_revision | length > 0
 
+- name: Debug
+  ansible.builtin.debug:
+    msg: "{{ asm_source_repo }} {{ asm_target_revision }} "
+
 - name: Get all ArgoCD Applications
   kubernetes.core.k8s_info:
     api_version: argoproj.io/v1alpha1
     kind: Application
     namespace: openshift-gitops
   register: _asm_all_apps
-  no_log: true
 
 - name: Delete ArgoCD Applications
   vars:
