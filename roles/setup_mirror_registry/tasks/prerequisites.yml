@@ -16,7 +16,7 @@
     - name: "Fail: Certificate not found"
       fail:
         msg: "Cert file {{ registry_dir_cert }}/{{ cert_file_prefix }}.crt missing"
-      when: cert_file.stat.exists | bool == False
+      when: not cert_file.stat.exists
 
 - name: Create config_file_path dir
   file:

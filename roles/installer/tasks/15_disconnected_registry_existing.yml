@@ -13,7 +13,7 @@
       fail:
         msg:
           - "The disconnected_registry_mirrors_file is defined, but does not exist"
-      when: drm_file.stat.exists != true
+      when: not drm_file.stat.exists
 
     - name: Read the contents of {{ disconnected_registry_mirrors_file }}
       slurp:
@@ -35,7 +35,7 @@
       fail:
         msg:
           - "The disconnected_registry_auths_file is defined, but does not exist"
-      when: dra_file.stat.exists != true
+      when: not dra_file.stat.exists
 
     - name: Read disconnected auths
       slurp:

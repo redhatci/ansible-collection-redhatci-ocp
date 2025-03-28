@@ -22,7 +22,7 @@
     - "{{ vm_bridge_interface }}_{{ vm_bridge_name }}"
   failed_when: false
   become: true
-  when: (DELETE_VM_BRIDGE | default(SETUP_VM_BRIDGE | default(true))) | bool == true
+  when: (DELETE_VM_BRIDGE | default(SETUP_VM_BRIDGE | default(true)))
 
 - name: Delete existing bridges (if any)
   community.general.nmcli:
@@ -31,4 +31,6 @@
     state: absent
   failed_when: false
   become: true
-  when: (DELETE_VM_BRIDGE | default(SETUP_VM_BRIDGE | default(true))) | bool == true and vm_vlan_tag is defined
+  when:
+    - (DELETE_VM_BRIDGE | default(SETUP_VM_BRIDGE | default(true)))
+    - vm_vlan_tag is defined
