@@ -19,7 +19,7 @@
   loop:
     - internal
     - public
-  when: use_dhcp == true
+  when: use_dhcp | bool
 
 - name: Open port in firewall for proxy DHCP
   ansible.posix.firewalld:
@@ -31,7 +31,7 @@
   loop:
     - internal
     - public
-  when: use_pxe == true
+  when: use_pxe | bool
 
 - name: Open port in firewall for PXE
   ansible.posix.firewalld:
@@ -43,4 +43,4 @@
   loop:
     - internal
     - public
-  when: use_pxe == true
+  when: use_pxe | bool

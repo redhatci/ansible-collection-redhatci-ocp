@@ -9,7 +9,7 @@
   slurp:
     src: "{{ ansible_user_dir }}/.ssh/id_rsa.pub"
   register: sshkey
-  when: sshkeypath.stat.exists == true
+  when: sshkeypath.stat.exists | bool
   tags: installconfig
 
 - name: Set Fact for the ssh key of {{ ansible_user }}
