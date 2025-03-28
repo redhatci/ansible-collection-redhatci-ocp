@@ -14,6 +14,8 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  ansible-packaging
 BuildArch:      noarch
 
+# TODO: reorganize `%requires` handling by combining hard-coded and dynamic rendering, should be fixed by #608
+
 Requires: ansible-collection-ansible-posix
 Requires: ansible-collection-ansible-utils
 Requires: ansible-collection-community-crypto
