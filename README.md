@@ -74,6 +74,7 @@ Name | Description
 [redhatci.ocp.installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/installer/README.md) | [IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.install_operator_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/install_operator_gitops/README.md) | Installs and configures the openshift-gitops-operator so it can be used for ZTP deployments. Installation is optional and may be skipped by setting the variable ```ioc_configure_only: true``
 [redhatci.ocp.jenkins_job_launcher](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/jenkins_job_launcher/README.md) | Launch Jenkins jobs
+[redhatci.ocp.junit2json](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/junit2json/README.md) | Convert JUnit XML files into JSON for reporting/observability role
 [redhatci.ocp.k8s_best_practices_certsuite](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/k8s_best_practices_certsuite/README.md) | Executes the [Red Hat Best Practices Test Suite for Kubernetes](https://github.com/redhat-best-practices-for-k8s/certsuite) tool.
 [redhatci.ocp.kvirt_vm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/kvirt_vm/README.md) | Deployment of Kubevirt virtual machines.
 [redhatci.ocp.label_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/label_nodes/README.md) | Applies labels defined at inventory level to the OCP cluster nodes.
@@ -147,6 +148,7 @@ Name | Description
 Name | Type | Description
 --- | --- | ---
 [redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
+[redhatci.ocp.junit2obj]() | Filter | Transforms a JUnit XML into a corresponding JSON text
 [redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
 [redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository

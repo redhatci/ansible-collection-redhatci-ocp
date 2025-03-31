@@ -19,20 +19,21 @@ __version__: str = "1.0.0"
 DOCUMENTATION = r"""
   name: junit2obj
   version_added: "1.0.0"
-  short_description: transform junit xml data as dictionary retaining suites and cases structure
+  short_description: transform JUnit XML text data as dictionary retaining suites and cases structure to JSON text
   description: >
-    This filter plugin transforms a junit xml data to a dictionary for future conversion as JSON report.
+    This filter plugin transforms a string JUnit XML data to JSON representation of it.
     It is being implemented because `junit2dict` filter does not retain suites information (timings),
     hence not allowing collecting of running times as metrics for future analysis.
   positional: xml_report_text
   options:
-    - xml_report_text:
+    xml_report_text:
       description: The junit report xml text data
       type: str
       required: true
-    - extra_metadata:
-      description: additional metadata dict added at the root of resulting JSON object
-      type: dict
+    object:
+      description: return JSON object (not the string)
+      type: bool
+      default: false
       required: false
 """
 
@@ -140,8 +141,8 @@ EXAMPLES = r"""
 RETURN = r"""
   _value:
     description:
-      - A list of dictionaries with testcase name and its status.
-    type: any
+      - JSON text representation (escaped string) of the report or JSON data if `object` is `True`
+    type: str or dict
 """
 
 
@@ -158,7 +159,7 @@ class FilterModule(object):
             "junit2obj": self.junit2obj,
         }
 
-    def junit2obj(self, xml_report_text: str, extra_metadata: dict = None) -> str:
+    def junit2obj(self, xml_report_text: str, object: bool = False) -> str | dict:
         """
         Convert junit XML Report into JSON.
         """
@@ -262,16 +263,15 @@ class FilterModule(object):
             "errors": int(junit_xml.errors),
             "skipped": int(junit_xml.skipped),
             "test_suites": [],
+            "schema_version": __version__,
         })
-
-        if extra_metadata is not None and len(extra_metadata.keys()) > 0:
-            report.update({"metadata": extra_metadata})
-            report["metadata"]["schema_version"] = __version__
 
         tstsuite: jup.TestSuite
         for tstsuite in junit_xml:
             curr_suite = _process_test_suite(tstsuite)
             report["test_suites"].append(curr_suite)
 
+        if object is True:
+            return report
         result_text: str = json.dumps(dict(report), indent=4) + "\n"
         return result_text

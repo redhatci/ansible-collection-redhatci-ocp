@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for redhatci.ocp.junit2json
+# task list: convert.yml converts xml into JSON
+
+- name: Read file content
+  ansible.builtin.set_fact:
+    junit2json_xml_report_content: "{{ lookup('ansible.builtin.file', item) }}"
+
+- name: Update junit2_result_data junit2_do_merge=true
+  ansible.builtin.set_fact:
+    junit2_result_data: "{{ junit2_do_merge | ansible.builtin.ternary(_junit2json_merged_xml.stdout, junit2json_xml_report_content) }}"
+
+- name: Setup JSON report file name
+  ansible.builtin.set_fact:
+    junit2_json_report_path: "{{ item | basename | regex_replace('\\.xml$', '.json') if item.endswith('.xml') else item | basename + '.json' }}"
+
+- name: Set junit2_output_report_path
+  ansible.builtin.set_fact:
+    junit2_output_report_path: "{{ junit2_output_dir }}/{{ junit2_do_merge | ansible.builtin.ternary(junit2_output_merged_report, junit2_json_report_path) }}"
+
+- name: Update output variable global_json_reports_list
+  ansible.builtin.set_fact:
+    global_json_reports_list: "{{ global_json_reports_list + [junit2_output_report_path] }}"
+
+- name: "Create folder junit2_output_dir='{{ junit2_output_dir }}'"
+  ansible.builtin.file:
+    path: "{{ junit2_output_dir }}"
+    state: directory
+    mode: '0750'
+
+- name: Write the json data to file
+  ansible.builtin.copy:
+    content: "{{ junit2_result_data | redhatci.ocp.junit2obj(object=not (junit2_out_str)) | to_nice_json }}"
+    dest: "{{ junit2_output_report_path }}"
+    mode: '0644'

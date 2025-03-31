@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file main.yml for role redhatci.ocp.junit2json
+
+# NOTE: in case somebody did not install the collection properly, we test for filter's dependency
+
+- name: Check dependencies
+  ansible.builtin.include_tasks: validate-dependency.yml
+  loop:
+    - package: junitparser
+      executable: junitparser
+
+- name: Validate role variables
+  ansible.builtin.assert:
+    that:
+      - junit2_input_reports_list | length > 0
+      - junit2_output_dir | length > 0
+    fail_msg: "One of the mandatory variables is missing or empty"
+
+- name: Print input reports variable
+  ansible.builtin.debug:
+    var: junit2_input_reports_list
+
+- name: Initialize reports variable
+  ansible.builtin.set_fact:
+    junit2_reports_list: []
+
+- name: Expand the input list to list of existing files
+  ansible.builtin.include_tasks:
+    file: expand.yml
+  loop: "{{ junit2_input_reports_list }}"
+  loop_control:
+    loop_var: file_name
+
+- name: Merge JUnit XML reports into one file junit2_do_merge=true
+  ansible.builtin.include_tasks:
+    file: merge.yml
+  when:
+    - junit2_do_merge
+    - junit2_reports_list | length > 0
+
+- name: Convert XML to JSON
+  ansible.builtin.include_tasks:
+    file: convert.yml
+  loop: "{{ junit2_reports_list }}"
+  when:
+    - junit2_reports_list | length > 0

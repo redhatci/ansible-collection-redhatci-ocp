@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+galaxy_info:
+  author: Max Kovgan
+  description: Converts XML junit reports passed or in passed directory into single or fragmented JSON report file(s)
+  company: Red Hat, Inc.
+  issue_tracker_url: https://github.com/redhatci/ansible-collection-redhatci-ocp/issues
+  license: Apache-2.0
+  min_ansible_version: "2.9"
+  galaxy_tags: []
+dependencies: []
