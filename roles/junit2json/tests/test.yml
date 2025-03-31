@@ -1,0 +1,110 @@
+---
+
+- name: "Test redhatci.ocp.junit2json role :: simple input"
+  hosts: localhost
+  vars:
+    junit2_output_merged_report: 'merged.junit.json'
+  tasks:
+    - name: Run tests for both values of junit2_out_str
+      block:
+        - name: Test role redhatci.ocp.junit2json without merge junit2_out_str=true
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+            junit2_output_dir: "{{ role_path }}/tests"
+            junit2_do_merge: false
+            junit2_out_str: true
+
+        - name: Load actual result into variable actual junit2_out_str=true
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', playbook_dir + '/test_junit2obj_simple_input.json') | from_json }}"
+
+        - name: Load expected result into variable expected junit2_out_str=true
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/test_junit2obj_simple_result.json') }}"
+
+        - name: Ensure test passes junit2_out_str=true
+          ansible.builtin.assert:
+            that:
+              - actual == expected
+
+        - name: Reset global variable junit2_out_str=true
+          ansible.builtin.set_fact:
+            global_json_reports_list: []
+
+        - name: Test role redhatci.ocp.junit2json with merge junit2_out_str=true
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_failure_input.xml"
+            junit2_output_dir: "{{ role_path }}/tests"
+            junit2_do_merge: true
+            junit2_out_str: true
+
+        - name: Load actual result into variable actual junit2_out_str=true
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', global_json_reports_list[0]) | from_json }}"
+
+        - name: Load expected result into variable expected junit2_out_str=true
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/' + junit2_output_merged_report) }}"
+
+        - name: Ensure test passes junit2_out_str=true
+          ansible.builtin.assert:
+            that:
+              - actual == expected
+
+        - name: Test role redhatci.ocp.junit2json without merge junit2_out_str=false
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+            junit2_output_dir: "{{ role_path }}/tests"
+            junit2_do_merge: false
+            junit2_out_str: false
+
+        - name: Load actual result into variable actual junit2_out_str=false
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', playbook_dir + '/test_junit2obj_simple_input.json') | from_json }}"
+
+        - name: Load expected result into variable expected junit2_out_str=false
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/test_junit2obj_simple_result.json') }}"
+
+        - name: Ensure test passes junit2_out_str=false
+          ansible.builtin.assert:
+            that:
+              - actual == expected
+
+        - name: Reset global variable junit2_out_str=false
+          ansible.builtin.set_fact:
+            global_json_reports_list: []
+
+        - name: Test role redhatci.ocp.junit2json with merge junit2_out_str=false
+          ansible.builtin.include_role:
+            name: redhatci.ocp.junit2json
+          vars:
+            junit2_input_reports_list:
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_simple_input.xml"
+              - "{{ role_path }}/../../tests/unit/data/test_junit2obj_failure_input.xml"
+            junit2_output_dir: "{{ role_path }}/tests"
+            junit2_do_merge: true
+            junit2_out_str: false
+
+        - name: Load actual result into variable actual junit2_out_str=false
+          ansible.builtin.set_fact:
+            actual: "{{ lookup('file', global_json_reports_list[0]) | from_json }}"
+
+        - name: Load expected result into variable expected junit2_out_str=false
+          ansible.builtin.set_fact:
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/' + junit2_output_merged_report) }}"
+
+        - name: Ensure test passes junit2_out_str=false
+          ansible.builtin.assert:
+            that:
+              - actual == expected

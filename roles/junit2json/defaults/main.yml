@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# defaults file for role redhatci.ocp.junit2json
+
+# safeguard global variable:
+global_json_reports_list: []
+
+# defaults:
+junit2_input_merged_report: 'merged.junit.xml'
+junit2_output_merged_report: 'merged.junit.json'
+junit2_do_merge: true
+junit2_out_str: true
