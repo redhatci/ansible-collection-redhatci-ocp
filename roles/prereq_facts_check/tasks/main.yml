@@ -7,7 +7,7 @@
       - pull_secret | trim != ''
     quiet: true
     msg: "The required 'pull_secret' is not defined or is not valid"
-  when: pull_secret_check | bool == True
+  when: pull_secret_check | bool
 
 - name: Check for ssh_public_key
   assert:
@@ -17,7 +17,7 @@
       - ssh_public_key | trim != ''
     quiet: true
     msg: "The required 'ssh_public_key' is not defined or is not valid"
-  when: ssh_public_check | bool == True
+  when: ssh_public_check | bool
 
 - name: Check for mirror_certificate
   assert:
@@ -27,4 +27,4 @@
       - mirror_certificate | trim != ''
     quiet: true
     msg: "The required 'mirror_certificate' is not defined or is not valid"
-  when: mirror_certificate_check | bool == True
+  when: mirror_certificate_check | bool

@@ -36,7 +36,7 @@
             validate_certs: false
             force_basic_auth: true
             return_content: true
-          when: cd1_contents.json.Inserted | bool == True
+          when: cd1_contents.json.Inserted | bool
       rescue:
         - name: Unmount SuperMicro ISO (ISO Config)
           ansible.builtin.uri:
