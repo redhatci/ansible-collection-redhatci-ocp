@@ -12,7 +12,7 @@
   ansible.builtin.stat:
     path: "{{ mor_auths_file }}"
     get_checksum: false
-  register: mor_auths_file_check
+  register: _mor_auths_file_check
   when:
     - mor_auths_file is defined
 
@@ -20,7 +20,7 @@
   ansible.builtin.assert:
     that:
       - mor_auths_file is defined
-      - mor_auths_file_check.stat.exists | bool
+      - _mor_auths_file_check.stat.exists | bool
   when:
     - mor_mirror_container_images | bool
 
