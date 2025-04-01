@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file validate.dependency.yml for role redhatci.ocp.junit2json
+
+- name: Check if python dependency is installed - {{ item.package }}
+  ansible.builtin.command:
+    cmd: |
+      command -v {{ item.executable }}
+  register: _junit2json_dep_check_command
+  changed_when:
+    - true
+
+- name: Respond to the case if the dependency is not installed
+  ansible.builtin.assert:
+    that:
+      - _junit2json_dep_check_command.rc == 0
+    fail_msg: |
+      The script '{{ item.executable }}' from Python package '{{ item.package }}' is not on PATH.
+      Install the collection's dependencies by using ansible-galaxy or install its dependencies manually by
+      using the file 'meta/requirements.txt'.

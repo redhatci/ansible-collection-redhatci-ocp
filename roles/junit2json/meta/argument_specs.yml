@@ -1,0 +1,61 @@
+---
+# arguments spec file for redhatci.ocp.junit2json role
+argument_specs:
+  main:
+    short_description: Main entry point for role redhatci.ocp.junit2json
+    description: |
+      The resulting JSON file(s) are of the same structure for all the teams' and CI systems and used later to be sent to the data collection system.
+      This is the main entrypoint for the role `redhatci.ocp.junit2json`.
+      Converts XMLs into JSON, if variable `junit2_do_merge` is `true`, multiple XMLs are merged into one XML file.
+      New filename(s) is(are) based on the old ones and stored in global variable `global_json_reports_list`.
+    author:
+      - Max Kovgan
+    options:
+      junit2_input_reports_list:
+        type: list
+        required: true
+        elements: str
+        description: |
+          List of JUnit XML report files to convert to JSON
+      junit2_do_merge:
+        type: bool
+        required: false
+        default: true
+        description: |
+          Should we merge data of converted reports into 1 file or not.
+          When `false`, each report `XML` file is converted to a corresponding json file appended `.json` extension
+          Otherwise, resulting merged report is named as the directory, with `.report.json` extension.
+          in both cases, the result is stored under `junit2_output_dir`.
+      junit2_output_dir:
+        type: str
+        required: true
+        description: |
+          Output directory for resulting report JSON file path(s)
+      junit2_input_merged_report:
+        type: str
+        required: false
+        default: 'merged.junit.xml'
+        description: |
+          Relative file name for the Merged XML report (relevant only when `junit2_do_merge` is `true`),
+          it is generated under `junit2_output_dir`
+      junit2_output_merged_report:
+        type: str
+        required: false
+        default: 'merged.junit.json'
+        description: |
+          Relative file name for the JSON report (relevant only when `junit2_do_merge` is `true`),
+          it is generated under `junit2_output_dir`
+      global_json_reports_list:
+        type: list
+        required: false
+        default: []
+        elements: str
+        description: |
+          This is the output variable updated by the role for the converted JSON reports file names.
+          If it is defined outside of the role, the role updates it.
+      junit2_out_str:
+        type: bool
+        required: false
+        default: true
+        description: |
+          If true, the call to filter should pass object=true, otherwise object=false is passed.

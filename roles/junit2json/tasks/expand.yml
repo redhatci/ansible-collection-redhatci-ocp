@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for role `redhatci.ocp.junit2json`
+# collects possibly multiple XMLs from `file_name` (when it is a directory)
+
+- name: Print file_name value
+  ansible.builtin.debug:
+    var: file_name
+
+- name: Collect file_name stat
+  ansible.builtin.stat:
+    path: "{{ file_name }}"
+  register: _junit2json_path_item_stat
+
+- name: Verify file_name exists and is a regular file
+  ansible.builtin.assert:
+    that:
+      - not(_junit2json_path_item_stat.stat.isdir | default(false))
+      - _junit2json_path_item_stat.stat.exists | default(false)
+    fail_msg: |
+      Verification failed. REASON: The file "{{ file_name }}" must be an existing regular file.
+
+- name: Update junit2_reports_list with a JUnit XML report item
+  ansible.builtin.set_fact:
+    junit2_reports_list: "{{ junit2_reports_list + [file_name] }}"
+  when:
+    - _junit2json_path_item_stat.stat.exists | default(false)

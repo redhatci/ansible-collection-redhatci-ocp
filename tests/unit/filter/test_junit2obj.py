@@ -14,7 +14,7 @@
 # under the License.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-# import json
+import json
 import pytest
 # TODO: reconcile current data conversion and pass it using the CI
 from ansible_collections.redhatci.ocp.plugins.filter import junit2obj
@@ -32,6 +32,13 @@ def expected_data(request):  # type: ignore
     file_path: str = str(request.param)  # type: ignore
     with open(file_path, "r") as fd:
         return fd.read()
+
+
+@pytest.fixture
+def expected_data_object(request):  # type: ignore
+    file_path: str = str(request.param)  # type: ignore
+    with open(file_path, "r") as fd:
+        return json.loads(fd.read())
 
 
 @pytest.mark.parametrize(
@@ -57,4 +64,26 @@ def test_simple_data(input_data, expected_data):  # type: ignore
     actual: str = filter.filters()["junit2obj"](input_data)  # type: ignore
     assert expected_data == actual
 
-# TODO: add metadata passing tests
+
+@pytest.mark.parametrize(
+    "input_data,expected_data_object",
+    [
+        (
+            "tests/unit/data/test_junit2obj_simple_input.xml",
+            "tests/unit/data/test_junit2obj_simple_result.json",
+        ),
+        (
+            "tests/unit/data/test_junit2obj_failure_input.xml",
+            "tests/unit/data/test_junit2obj_failure_result.json",
+        ),
+        (
+            "tests/unit/data/test_junit2obj_complex_input.xml",
+            "tests/unit/data/test_junit2obj_complex_result.json",
+        ),
+    ],
+    indirect=True,
+)
+def test_simple_data_object_true(input_data, expected_data_object):  # type: ignore
+    filter = junit2obj.FilterModule()
+    actual: str = filter.filters()["junit2obj"](input_data, object=True)  # type: ignore
+    assert expected_data_object == actual
