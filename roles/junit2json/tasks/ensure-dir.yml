@@ -1,0 +1,14 @@
+---
+
+- name: Collect folder_path stat
+  ansible.builtin.stat:
+    path: "{{ folder_path }}"
+  register: _junit2_folder_path_stat
+
+- name: Ensure missing folder_path is created
+  ansible.builtin.file:
+    path: "{{ folder_path }}"
+    state: directory
+    mode: '0750'
+  when:
+    - not(_junit2_folder_path_stat.stat.isdir | default(false))

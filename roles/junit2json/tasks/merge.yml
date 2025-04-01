@@ -17,6 +17,14 @@
   failed_when:
     - _junit2json_merged_xml.rc != 0
 
+- name: Ensure junit2_output_dir is created
+  ansible.builtin.include_tasks:
+    file: ensure-dir.yml
+  loop:
+  - "{{ junit2_output_dir }}"
+  loop_control:
+    loop_var: folder_path
+
 - name: Write merge resulting file
   ansible.builtin.copy:
     content: "{{ _junit2json_merged_xml.stdout }}"
