@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 {% if create_vms_disable_secure_boot %}
 # Copy VARS.fd file related to non secure boot mode if that's the case
 cp {{ create_vms_non_secure_ovmf_vars_path }} {{ create_vms_ovmf_vars_path }}
