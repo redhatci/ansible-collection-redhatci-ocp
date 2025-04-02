@@ -1,5 +1,5 @@
 ---
-- name: "Get cnf app pod"
+- name: "Get CNFApp pod"
   kubernetes.core.k8s_info:
     kind: Pod
     namespace: "{{ ecd_cnf_namespace }}"
@@ -15,18 +15,18 @@
 
 - name: "Set cnf app pod's node name"
   ansible.builtin.set_fact:
-    ecd_cnf_existing_node: "{{ _ecd_cnf_pod.resources[0].spec.nodeName }}"
+    ecd_cnfapp_existing_node: "{{ _ecd_cnf_pod.resources[0].spec.nodeName }}"
     ecd_cnf_existing_pod_name: "{{ _ecd_cnf_pod.resources[0].metadata.name }}"
     ecd_cnf_app_count: "{{ _ecd_cnf_pod.resources|length }}"
     ecd_cnf_app_list: "{{ _ecd_cnf_pod | json_query('resources[*].metadata.name') }}"
 
-- name: "Show current node of testpmd"
+- name: "Show current node of CNFApp"
   ansible.builtin.debug:
-    msg: "CNF App is running on node {{ ecd_cnf_existing_node }}"
+    msg: "CNF App is running on node {{ ecd_cnfapp_existing_node }}"
 
 - name: "Cordon the node"
   ansible.builtin.shell: |
-    {{ ecd_oc_path }} adm cordon {{ ecd_cnf_existing_node }}
+    {{ ecd_oc_path }} adm cordon {{ ecd_cnfapp_existing_node }}
 
 - name: Delete the cnf app pod
   kubernetes.core.k8s:
@@ -51,9 +51,9 @@
   until:
     - "_ecd_cnf_new_pods.resources|length == ecd_cnf_app_count|int"
 
-- name: "Set new testpmd node name"
+- name: "Set new CNFApp node name"
   ansible.builtin.set_fact:
-    ecd_testpmd_new_node: "{{ pod.spec.nodeName }}"
+    ecd_cnfapp_new_node: "{{ pod.spec.nodeName }}"
   loop: "{{ _ecd_cnf_new_pods.resources }}"
   loop_control:
     loop_var: pod
@@ -61,13 +61,13 @@
 
 - name: "Uncordon the node"
   ansible.builtin.shell: |
-    {{ ecd_oc_path }} adm uncordon {{ ecd_cnf_existing_node }}
+    {{ ecd_oc_path }} adm uncordon {{ ecd_cnfapp_existing_node }}
 
-- name: "Fail if TestPMD pod is not migrated"
+- name: "Fail if CNFApp pod is not migrated"
   ansible.builtin.fail:
-    msg: "TestPMD pod is not migrated"
-  when: ecd_testpmd_new_node == ecd_cnf_existing_node
+    msg: "CNFApp pod is not migrated"
+  when: ecd_cnfapp_new_node == ecd_cnfapp_existing_node
 
-- name: "Debug new TestPMD pod"
+- name: "Debug new CNFApp pod"
   ansible.builtin.debug:
-    msg: "TestPMD pod is migrated from {{ ecd_cnf_existing_node }} to {{ ecd_testpmd_new_node }}"
+    msg: "CNFApp pod is migrated from {{ ecd_cnfapp_existing_node }} to {{ ecd_cnfapp_new_node }}"

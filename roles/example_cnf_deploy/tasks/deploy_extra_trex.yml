@@ -1,4 +1,8 @@
 ---
+- name: "CNFApp must be TestPMD"
+  ansible.builtin.assert:
+    that: ecd_cnfapp_name == 'testpmd'
+
 # Directly call to retry-trex.yml playbook
 - name: "Deploy an extra TRex job"
   ansible.builtin.include_tasks: trex/retry-trex.yml

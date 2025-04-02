@@ -4,6 +4,14 @@
     that:
       - ecd_action is defined
       - ecd_action in ['catalog', 'deploy', 'validate', 'deploy_extra_trex', 'draining']
+      - ecd_cnfapp_name in ['grout', 'testpmd']
+
+- name: "Fail if no network configuration is provided when using Grout as CNFApp"
+  ansible.builtin.fail:
+    msg: "If using Grout as CNFApp, network configuration file must be provided"
+  when:
+    - ecd_cnfapp_name == "grout"
+    - ecd_network_config_file|length == 0
 
 - name: "Deploy Example CNF catalog"
   ansible.builtin.include_tasks: catalog.yml
