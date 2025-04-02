@@ -38,56 +38,59 @@
   when:
     - "ecd_sriov_networks|length == 0"
 
-# In this case, include hardcoded MAC addresses
-- name: "Create network list for cnfapp with hardcoded macs"
+- name: "Apply network configuration (if provided)"
+  ansible.builtin.include_tasks: deploy/net-config.yml
+  when: ecd_network_config_file|length > 0
+
+- name: "Create network list for CNFApp"
   ansible.builtin.set_fact:
-    ecd_networks_testpmd_app: "{{ ecd_networks_testpmd_app + [item | combine({'mac': ecd_testpmd_app_mac_list[idx:idx+item.count]})] }}"
+    ecd_networks_cnfapp: "{{ ecd_networks_cnfapp + [item | combine({'mac': ecd_cnfapp_mac_list[idx:idx+item.count], 'ip': ecd_cnfapp_ip_list[idx:idx+item.count]})] }}"
   loop: "{{ ecd_sriov_networks }}"
   loop_control:
     index_var: idx
 
-- name: "Create cr for cnf application"
+- name: "Create CR for CNF application"
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'testpmd-cr.yaml.j2') }}"
+    definition: "{{ lookup('template', ecd_cnfapp_name + '-cr.yaml.j2') }}"
 
-- name: "Check testpmd pod count to be greater than 0"
+- name: "Check CNFApp pod count to be greater than 0"
   kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
       - example-cnf-type=cnf-app
-  register: _ecd_testpmd_pods
+  register: _ecd_cnfapp_pods
   retries: 60
   delay: 5
   until:
-    - _ecd_testpmd_pods.resources|length > 0
+    - _ecd_cnfapp_pods.resources|length > 0
 
-# At least confirm that the first testpmd pod is up and running
-- name: "Check testpmd pod status to be running"
+# At least confirm that the first CNFApp pod is up and running, if using more than one
+- name: "Check CNFApp pod status to be running"
   kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
       - example-cnf-type=cnf-app
-  register: _ecd_testpmd_pods
+  register: _ecd_cnfapp_pods
   vars:
-    ecd_container_state_running_query: "resources[0].status.containerStatuses[?name=='testpmd'].state.running"
-    ecd_container_started_query: "resources[0].status.containerStatuses[?name=='testpmd'].started"
-    ecd_container_ready_query: "resources[0].status.containerStatuses[?name=='testpmd'].ready"
-    ecd_container_state_running: "{{ _ecd_testpmd_pods | json_query(ecd_container_state_running_query) }}"
-    ecd_container_started: "{{ _ecd_testpmd_pods | json_query(ecd_container_started_query) }}"
-    ecd_container_ready: "{{ _ecd_testpmd_pods | json_query(ecd_container_ready_query) }}"
+    ecd_container_state_running_query: "resources[0].status.containerStatuses[?name=='{{ ecd_cnfapp_name }}'].state.running"
+    ecd_container_started_query: "resources[0].status.containerStatuses[?name=='{{ ecd_cnfapp_name }}'].started"
+    ecd_container_ready_query: "resources[0].status.containerStatuses[?name=='{{ ecd_cnfapp_name }}'].ready"
+    ecd_container_state_running: "{{ _ecd_cnfapp_pods | json_query(ecd_container_state_running_query) }}"
+    ecd_container_started: "{{ _ecd_cnfapp_pods | json_query(ecd_container_started_query) }}"
+    ecd_container_ready: "{{ _ecd_cnfapp_pods | json_query(ecd_container_ready_query) }}"
   retries: 60
   delay: 5
   until:
-    - _ecd_testpmd_pods.resources[0].status.phase == 'Running'
+    - _ecd_cnfapp_pods.resources[0].status.phase == 'Running'
     - ecd_container_state_running | length > 0
     - ecd_container_started | length > 0
     - ecd_container_started[0] | bool
     - ecd_container_ready | length > 0
     - ecd_container_ready[0] | bool
 
-- name: "Check cnfappmac resource (created by testpmd app) count to be greater than 0"
+- name: "Check CNFAppMac resource count to be greater than 0"
   kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: CNFAppMac
@@ -98,13 +101,13 @@
     - _ecd_cnfappmac.resources is defined
     - _ecd_cnfappmac.resources|length > 0
 
-# CNFAppMac and testpmd pods share the same name, so we can use it for doing
+# CNFAppMac and CNFApp pods share the same name, so we can use it for doing
 # some extra checks
-- name: "Check that at least the cnfappmac resource for the first testpmd pod has the required data"
+- name: "Check that at least the cnfappmac resource for the first CNFApp pod has the required data"
   kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
     kind: CNFAppMac
-    name: "{{ _ecd_testpmd_pods.resources[0].metadata.name }}"
+    name: "{{ _ecd_cnfapp_pods.resources[0].metadata.name }}"
   register: _ecd_first_cnfappmac
   retries: 120
   delay: 5
@@ -122,13 +125,13 @@
     ecd_trex_tests_skip_failures: true
   when: ecd_run_deployment != 1
 
-- name: "Trex cr block"
+- name: "TRex CR block"
   ansible.builtin.include_tasks: trex/retry-trex.yml
   when: ecd_enable_trex|bool
 
 # We need to check ecd_trex_continuous_mode here to avoid running extra tests, where we would have two or
 # more possible TRex jobs that are running in continuous burst mode.
-- name: "Trex additional tests"
+- name: "TRex additional tests"
   ansible.builtin.include_tasks: trex/tests.yml
   when:
     - ecd_enable_trex_app|bool

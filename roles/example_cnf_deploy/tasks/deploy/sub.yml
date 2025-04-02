@@ -1,4 +1,9 @@
 ---
+- name: "Set CNFApp-related operator to be installed"
+  ansible.builtin.set_fact:
+    ecd_enable_testpmd: "{{ ecd_cnfapp_name == 'testpmd' }}"
+    ecd_enable_grout: "{{ ecd_cnfapp_name == 'grout' }}"
+
 - name: "Set list of example-cnf operators to be installed"
   ansible.builtin.set_fact:
     ecd_operators:
@@ -6,17 +11,22 @@
         namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ ecd_testpmd_channel }}"
         source: "{{ ecd_catalog_name }}"
-        enable: "{{ ecd_enable_mac_fetch | bool}}"
+        enable: "{{ ecd_enable_mac_fetch | bool }}"
       - name: testpmd-operator
         namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ ecd_testpmd_channel }}"
         source: "{{ ecd_catalog_name }}"
-        enable: "{{ ecd_enable_testpmd | bool}}"
+        enable: "{{ ecd_enable_testpmd | bool }}"
+      - name: grout-operator
+        namespace: "{{ ecd_cnf_namespace }}"
+        channel: "{{ ecd_grout_channel }}"
+        source: "{{ ecd_catalog_name }}"
+        enable: "{{ ecd_enable_grout | bool }}"
       - name: trex-operator
         namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ ecd_trex_channel }}"
         source: "{{ ecd_catalog_name }}"
-        enable: "{{ ecd_enable_trex | bool}}"
+        enable: "{{ ecd_enable_trex | bool }}"
 
 - name: "Install enabled operators"
   vars:

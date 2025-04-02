@@ -1,10 +1,12 @@
 # example_cnf_deploy
 
-This role allows the deployment of example-cnf on OCP, a DPDK based application. See the main project [here](https://github.com/openshift-kni/example-cnf)
+This role allows the deployment of example-cnf on OCP, a DPDK-based application. See the main project [here](https://github.com/openshift-kni/example-cnf).
+
+The DPDK workload to be launched could be either [TestPMD](https://doc.dpdk.org/guides/testpmd_app_ug/) or [Grout](https://github.com/DPDK/grout/) (default one). It can be switched with `ecd_cnfapp_name` variable.
 
 ## Prerequisites
 
-OpenShift 4 Cluster with at least 3 worker nodes should be deployed with additional operators:
+OpenShift >=4.14 Cluster with at least 3 worker nodes should be deployed with additional operators:
 
 - SR-IOV operator should be deployed and necessary resources for `SriovNetworkNodePolicy` and `SriovNetwork` should be created with target namespace (default namespace used to deploy example-cnf is `example-cnf`).
 - Node Tuning Operator should be deployed and a `PerformanceProfile` should be created.
@@ -26,19 +28,26 @@ Also, exported `kubeconfig` file is required to run the Ansible tasks on the tar
 | ecd_oc_path                           | /usr/local/bin/oc                                                                               | no       | File path to find the oc binary |
 | ecd_opm_path                          | /usr/local/bin/opm                                                                              | no       | File path to find the opm binary |
 | ecd_job_logs_path                     | /tmp                                                                                            | no       | File path to find the logs folder |
+| ecd_cnfapp_name                       | grout                                                                                           | no       | CNFApp to be used. Could be "grout" or "testpmd" |
 | ecd_enable_mac_fetch                  | true                                                                                            | no       | Enable MAC fetch, which implies the creation of the CNFAppMac CR |
-| ecd_enable_testpmd                    | true                                                                                            | no       | Enable TestPMD, also known as CNFApp |
+| ecd_enable_testpmd                    | false                                                                                           | no       | Enable TestPMD, one of the possible CNFApp you can launch with example-cnf. It is false by default because default CNFApp is grout |
+| ecd_enable_grout                      | true                                                                                            | no       | Enable Grout, one of the possible CNFApp you can launch with example-cnf. This is the default CNFApp |
 | ecd_enable_trex                       | true                                                                                            | no       | Enable TRex server, to send traffic to TestPMD |
 | ecd_enable_trex_app                   | true                                                                                            | no       | Enable TRex application, to manage the creation of TRex jobs and profiles |
 | ecd_testpmd_channel                   | alpha                                                                                           | no       | TestPMD operators channel |
+| ecd_grout_channel                     | alpha                                                                                           | no       | Grout operator channel |
 | ecd_trex_channel                      | alpha                                                                                           | no       | TRex operator channel |
-| ecd_trex_mac_list                     | ["20:04:0f:f1:89:01","20:04:0f:f1:89:02"]                                                       | no       | Static MAC addresses used by TRex |
-| ecd_testpmd_app_mac_list              | ["80:04:0f:f1:89:01","80:04:0f:f1:89:02"]                                                       | no       | Static MAC addresses used by CNFApp |
-| ecd_run_deployment                    | 1                                                                                               | no       | Run all testpmd and trex deployment automation. If different than 1, the automation will only create the pods and prepare the scripts to launch testpmd and trex manually afterwards |
+| ecd_network_config_file               | ""                                                                                              | no       | (Required for Grout deployment) Path to the network configuration file to be used to set the IP and MAC addresses for each interface of both CNFApp and TRex. You can check an example on [this section](#network-configuration). If not providing a file and using TestPMD as CNFApp, default IP-MAC addresses will be used: no IP addresses, and MAC addresses defined on `ecd_trex_mac_list` and `ecd_cnfapp_mac_list` default values
+| ecd_trex_mac_list                     | ["20:04:0f:f1:89:01","20:04:0f:f1:89:02"]                                                       | no       | Default static MAC addresses used by TRex (if providing `ecd_network_config_file`, they are updated) |
+| ecd_cnfapp_mac_list                   | ["80:04:0f:f1:89:01","80:04:0f:f1:89:02"]                                                       | no       | Default static MAC addresses used by CNFApp (if providing `ecd_network_config_file`, they are updated) |
+| ecd_trex_ip_list                      | ["",""]                                                                                         | no       | No default static IP addresses are provided for TRex by default. To update them, they must be provided on `ecd_network_config_file` (just required when using Grout, optional for TestPMD since it is launched on MAC forwarding mode) |
+| ecd_cnfapp_ip_list                    | ["",""]                                                                                         | no       | No default static IP addresses are provided for CNFApp by default. To update them, they must be provided on `ecd_network_config_file` (just required when using Grout, optional for TestPMD since it is launched on MAC forwarding mode) |
 | ecd_sriov_networks                    | []                                                                                              | yes      | SRIOV networks used in the connection between TRex and CNF Application, together with the number of interfaces to be used per network. See example above
-| ecd_networks_testpmd_app              | []                                                                                              | no       | Networks for the CNF, including the hardcoded MAC addresses |
+| ecd_networks_cnfapp                   | []                                                                                              | no       | Networks for CNFApp, including MAC addresses and (if provided) IP addresses |
+| ecd_networks_trex                     | []                                                                                              | no       | Networks for TRex, including MAC addresses and (if provided) IP addresses |
+| ecd_run_deployment                    | 1                                                                                               | no       | Run all deployment automation. If different than 1, the automation will only create the pods and prepare the scripts to launch testpmd/grout and trex manually afterwards |
 | ecd_termination_grace_period_seconds  | 30                                                                                              | no       | Termination grace period for TestPMD |
-| ecd_testpmd_reduced_mode              | 0                                                                                               | no       | Use reduced mode (if different than 0), where only three cores are used, and txd/rxd parameters are doubled |
+| ecd_testpmd_reduced_mode              | 0                                                                                               | no       | Use reduced mode for TestPMD (if different than 0), where only three cores are used, and txd/rxd parameters are doubled |
 | ecd_trex_test_config                  | []                                                                                              | no       | TRex test configuration. See an example below |
 | ecd_trex_cr_name                      | trexconfig                                                                                      | no       | Name of the TRex CR |
 | ecd_trex_app_cr_name                  | trex-app                                                                                        | no       | Name of the TRexApp CR |
@@ -54,20 +63,20 @@ Also, exported `kubeconfig` file is required to run the Ansible tasks on the tar
 | ecd_trex_job_failed                   | false                                                                                           | no       | Track if TRex job has failed or not |
 | ecd_trex_tests_skip_failures          | false                                                                                           | no       | If set to true, even if TRex job fails, the job will progress |
 | ecd_try_running_migration_tests       | true                                                                                            | no       | The idea is always to try to run the migration test, unless TRex job failed before |
-| ecd_numa_aware_topology               | None                                                                                            | no       | If defined, allows to provide the NUMA aware topology for TestPMD and TRexServer CRs |
-| ecd_high_perf_runtime                 | None                                                                                            | no       | If defined, allows to provide the RuntimeClass name for TestPMD, TRexApp and TRexServer CRs |
+| ecd_numa_aware_topology               | None                                                                                            | no       | If defined, allows to provide the NUMA aware topology for TestPMD/Grout and TRexServer CRs |
+| ecd_high_perf_runtime                 | None                                                                                            | no       | If defined, allows to provide the RuntimeClass name for TestPMD/Grout, TRexApp and TRexServer CRs |
 | ecd_trex_app_version                  | None                                                                                            | yes      | TRexApp version, required in deploy_extra_trex action |
 
 ## SR-IOV configuration
 
-Here is an example of the `SriovNetworkNodePolicy` and `SriovNetwork` configuration that can be passed to [redhatci.ocp.sriov_config](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sriov_config/README.md) role. Note the proper network configuration must be applied to your network devices to match with the SR-IOV configuration proposed:
+Here is an example of the `SriovNetworkNodePolicy` and `SriovNetwork` configuration that can be passed to [redhatci.ocp.sriov_config](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sriov_config/README.md) role, if using L3 network configuration. Note the proper network configuration must be applied to your network devices to match with the SR-IOV configuration proposed:
 
 ```yaml
 ---
 sriov_network_configs:
-  - resource: intel_numa0_res1
+  - resource: example_cnf_res1
     node_policy:
-      name: intel-numa0-policy1
+      name: example-cnf-policy1
       device_type: vfio-pci
       is_rdma: false
       mtu: 9000
@@ -80,15 +89,53 @@ sriov_network_configs:
         node-role.kubernetes.io/worker: ""
       num_vfs: 16
       priority: 99
-  - resource: intel_numa0_res1
+  - resource: example_cnf_res1
     network:
-      name: intel-numa0-net1
+      name: example-cnf-net1
       network_namespace: example-cnf
       spoof_chk: "off"
       trust: "on"
       vlan: 407
+      capabilities: '{"mac": true, "ips": true}'
+      ipam: '{"type": "static"}'
+```
+
+If using L2 network configuration (only allowed for TestPMD), you need to change the SriovNetwork resource description not to use IP configuration; so, moving from:
+
+```yaml
+      capabilities: '{"mac": true, "ips": true}'
+      ipam: '{"type": "static"}'
+```
+
+to:
+
+```yaml
       capabilities: '{"mac": true}'
 ```
+
+## Network configuration
+
+To apply a proper network configuration for both CNFApp and TRex, you need to follow a YAML structure like this, to be provided in a file pointed by `ecd_network_config_file` (e.g. `/path/to/net-config.yml`). This is just required when using Grout, since TestPMD acts in MAC forwarding mode, so no IP addresses are required for it (but you can define them anyway, only thing is that they're not going to be considered for traffic forwarding):
+
+```yaml
+ecd_network_config:
+  cnfapp:
+    net1:
+      mac: 80:04:0f:f1:89:01
+      ip: 172.16.16.60/24
+    net2:
+      mac: 80:04:0f:f1:89:02
+      ip: 172.16.21.60/24
+  trex:
+    net1:
+      mac: 20:04:0f:f1:89:01
+      ip: 172.16.16.61/24
+    net2:
+      mac: 20:04:0f:f1:89:02
+      ip: 172.16.21.61/24
+```
+
+Remember that each container is deployed with two network interfaces attached to VFs. For each of them, you can specify the IP and the MAC address.
 
 ## TRex extra profiles
 
@@ -115,6 +162,8 @@ Each action allows you to do different operations with the example-cnf workload:
 - validate: performs validations to the example-cnf workloads to address specific scenarios, e.g. validations after cluster upgrade.
 - deploy_extra_trex: gives you the chance to create a new TRex job, in an already deployed example-cnf instance.
 - draining: while a TRex job is running, runs a node cordoning-draining, selecting the node where TestPMD is running, then it measures the downtime in the TRex job and the packet loss.
+
+> deploy_extra_trex and draining actions require TestPMD to be the CNFApp that is deployed in the cluster.
 
 ### Examples
 
@@ -144,6 +193,8 @@ Each action allows you to do different operations with the example-cnf workload:
         count: 1
     ecd_operator_version: "latest"
     ecd_high_perf_runtime: "performance-blueprint"
+    ecd_cnfapp_name: "grout"
+    ecd_network_config_file: /path/to/net-config.yml
   include_role:
     name: redhatci.ocp.example_cnf_deploy
 ```
@@ -155,6 +206,7 @@ Each action allows you to do different operations with the example-cnf workload:
 - name: Run migration test
   vars:
     ecd_action: "validate"
+    ecd_cnfapp_name: "grout"
   include_role:
     name: redhatci.ocp.example_cnf_deploy
 ```
@@ -168,6 +220,7 @@ Each action allows you to do different operations with the example-cnf workload:
     ecd_action: "deploy_extra_trex"
     ecd_trex_app_cr_name: "trex-app-new"
     ecd_trex_app_version: "trex-app-version"
+    ecd_cnfapp_name: "testpmd"
   include_role:
     name: redhatci.ocp.example_cnf_deploy
 ```
@@ -180,6 +233,7 @@ Each action allows you to do different operations with the example-cnf workload:
   vars:
     ecd_action: "draining"
     ecd_trex_app_cr_name: "trex-app-new"
+    ecd_cnfapp_name: "testpmd"
   include_role:
     name: redhatci.ocp.example_cnf_deploy
 ```

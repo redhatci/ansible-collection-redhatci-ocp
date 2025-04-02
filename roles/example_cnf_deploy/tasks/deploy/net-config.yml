@@ -1,0 +1,54 @@
+---
+- name: Check network config file
+  ansible.builtin.stat:
+    path: "{{ ecd_network_config_file }}"
+  register: _ecd_network_config_file_stat
+
+- name: Fail if network config file is not found
+  ansible.builtin.fail:
+    msg: "Network config file {{ ecd_network_config_file }} not found"
+  when: not _ecd_network_config_file_stat.stat.exists
+
+- name: Fail if network config file is empty
+  ansible.builtin.fail:
+    msg: "Network config file {{ _ecd_network_config_file_stat }} is empty"
+  when: _ecd_network_config_file_stat.stat.size == 0
+
+- name: Load network config file
+  ansible.builtin.include_vars:
+    file: "{{ ecd_network_config_file }}"
+  when: _ecd_network_config_file_stat.stat.exists
+
+- name: Check structure of the network config file
+  ansible.builtin.assert:
+    that:
+      - ecd_network_config is defined
+      - ecd_network_config.cnfapp is defined
+      - ecd_network_config.cnfapp.net1 is defined
+      - ecd_network_config.cnfapp.net1.mac is defined
+      - ecd_network_config.cnfapp.net1.ip is defined
+      - ecd_network_config.cnfapp.net2 is defined
+      - ecd_network_config.cnfapp.net2.mac is defined
+      - ecd_network_config.cnfapp.net2.ip is defined
+      - ecd_network_config.trex is defined
+      - ecd_network_config.trex.net1 is defined
+      - ecd_network_config.trex.net1.mac is defined
+      - ecd_network_config.trex.net1.ip is defined
+      - ecd_network_config.trex.net2 is defined
+      - ecd_network_config.trex.net2.mac is defined
+      - ecd_network_config.trex.net2.ip is defined
+
+- name: Redefine network-related variables
+  ansible.builtin.set_fact:
+    ecd_cnfapp_mac_list:
+      - "{{ ecd_network_config.cnfapp.net1.mac }}"
+      - "{{ ecd_network_config.cnfapp.net2.mac }}"
+    ecd_cnfapp_ip_list:
+      - "{{ ecd_network_config.cnfapp.net1.ip }}"
+      - "{{ ecd_network_config.cnfapp.net2.ip }}"
+    ecd_trex_mac_list:
+      - "{{ ecd_network_config.trex.net1.mac }}"
+      - "{{ ecd_network_config.trex.net2.mac }}"
+    ecd_trex_ip_list:
+      - "{{ ecd_network_config.trex.net1.ip }}"
+      - "{{ ecd_network_config.trex.net2.ip }}"
