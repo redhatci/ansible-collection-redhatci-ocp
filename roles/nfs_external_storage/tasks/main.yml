@@ -213,7 +213,7 @@
     label_selectors:
       - app=nfs-client-provisioner
   register: nfs_pod
-  retries: 30
+  retries: 40
   delay: 10
   until:
     - nfs_pod.resources is defined
