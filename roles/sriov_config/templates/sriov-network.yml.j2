@@ -8,7 +8,7 @@ spec:
   capabilities: {{ sriov.network.capabilities | to_json }}
 {% endif %}
 {% if sriov.network.ipam is defined %}
-  ipam: "{{ sriov.network.ipam }}"
+  ipam: {{ sriov.network.ipam | to_json }}
 {% endif %}
 {% if sriov.network.link_state is defined %}
   linkState: "{{ sriov.network.link_state }}"

@@ -1,4 +1,11 @@
 ---
+- name: "Fail if no network configuration is provided when using Grout as CNFApp"
+  ansible.builtin.fail:
+    msg: "If using Grout as CNFApp, network configuration file must be provided"
+  when:
+    - ecd_cnfapp_name == "grout"
+    - ecd_network_config_file|length == 0
+
 - name: "Find versions from the catalog"
   ansible.builtin.shell:
     cmd: >

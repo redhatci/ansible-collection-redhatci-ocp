@@ -16,6 +16,9 @@ spec:
 {% if ecd_packet_size|default('') %}
   packetSize: {{ ecd_packet_size }}
 {% endif %}
+  trexIps: {{ ecd_trex_ip_list }}
+  cnfappIps: {{ ecd_cnfapp_ip_list }}
+  arpResolution: {{ (ecd_cnfapp_name == 'grout') | ternary('1','0') }}
   registry: {{ ecd_registry_url }}
   org: {{ ecd_repo_name }}
   version: {{ ecd_trex_app_version }}
