@@ -65,7 +65,7 @@
     > {{ glfn_dir }}/{{ glfn_ns }}_status.log ;
     [ -s {{ glfn_dir }}/{{ glfn_ns }}_status.log ] || rm -f {{ glfn_dir }}/{{ glfn_ns }}_status.log
 
-- name: "Get events from from namespace"
+- name: "Get events from namespace"
   ansible.builtin.shell: >
     {{ glfn_oc }} get events
     --namespace={{ glfn_ns }}
