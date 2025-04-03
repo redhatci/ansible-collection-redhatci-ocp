@@ -52,8 +52,8 @@
     name: redhatci.ocp.acm.utils
     tasks_from: get-credentials
   vars:
-    acm_utils_cluster_name: "{{ ah_cluster_generated_name }}"
-    acm_utils_cluster_namespace: "{{ ah_clusters_ns }}"
+    utils_cluster_name: "{{ ah_cluster_generated_name }}"
+    utils_cluster_namespace: "{{ ah_clusters_ns }}"
 
 - name: Monitor Hosted Cluster Nodes availability
   kubernetes.core.k8s_info:
