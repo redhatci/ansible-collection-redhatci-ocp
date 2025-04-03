@@ -39,6 +39,6 @@
     name: redhatci.ocp.acm.utils
     tasks_from: get-credentials
   vars:
-    acm_utils_cluster_name: "{{ acm_cluster_name }}"
-    acm_utils_cluster_namespace: "{{ acm_cluster_name }}"
+    utils_cluster_name: "{{ acm_cluster_name }}"
+    utils_cluster_namespace: "{{ acm_cluster_name }}"
 ...
