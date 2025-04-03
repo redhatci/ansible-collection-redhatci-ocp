@@ -35,5 +35,10 @@
   ansible.builtin.include_tasks: monitor-install.yml
 
 - name: "Get spoke cluster credentials"
-  ansible.builtin.include_tasks: get-credentials.yml
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: get-credentials
+  vars:
+    acm_utils_cluster_name: "{{ acm_cluster_name }}"
+    acm_utils_cluster_namespace: "{{ acm_cluster_name }}"
 ...

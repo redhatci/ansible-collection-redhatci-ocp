@@ -38,6 +38,7 @@ Name | Description
 [redhatci.ocp.acm_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_setup/README.md) | Performs the Advanced Cluster Management (ACM) post-installation tasks
 [redhatci.ocp.acm_sno](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_sno/README.md) | Deployment of SNO (Single Node OpenShift) instances using ACM (Advanced Cluster Management)
 [redhatci.ocp.acm_spoke_mgmt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm_spoke_mgmt/README.md) | This role allows to perform multiple management operations related to a spoke cluster,e.g. attach a spoke cluster to a given hub cluster, or detach a spoke cluster from a given hub cluster.
+[redhatci.ocp.acm.utils](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm/utils/README.md) | This is a helper role that is meant to be consumed by acm related roles.
 [redhatci.ocp.apply_nmstate](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/apply_nmstate/README.md) | Applies nmstate network configuration to a host.
 [redhatci.ocp.approve_csrs](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/approve_csrs/README.md) |Checks for Cert Signing Requests in the pending state and approves them until nodes in the day2_workers group are present in the oc nodes output.
 [redhatci.ocp.boot_disk](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/boot_disk/README.md) | Reboots nodes to the disk based on its vendor.
