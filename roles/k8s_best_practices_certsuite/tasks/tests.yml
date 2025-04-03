@@ -68,7 +68,7 @@
           --kubeconfig=/usr/certsuite/config/kubeconfig \
           --certsuite-probe-image={{ kbpc_partner_repo }}/{{ kbpc_support_image }} \
           --create-xml-junit-file={{ kbpc_enable_xml_creation }} \
-          {% if kbpc_version is version('v5.4.9', '>') or kbpc_version == 'HEAD' %}
+          {% if kbpc_version is version('v5.5.0', '>=') or kbpc_version == 'HEAD' %}
           --intrusive={{ kbpc_intrusive }} \
           {% else %}
           --non-intrusive={{ kbpc_non_intrusive_only }} \

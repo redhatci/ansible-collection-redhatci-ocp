@@ -1,6 +1,6 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_version: v5.4.9
+kbpc_version: v5.5.0
 kbpc_repo_org_name: redhat-best-practices-for-k8s
 kbpc_project_name: certsuite
 kbpc_repository: "https://github.com/{{ kbpc_repo_org_name }}/{{ kbpc_project_name }}"
@@ -22,7 +22,7 @@ kbpc_cwe_apikey_path: "/opt/cache/cwe-apikey.txt"
 kbpc_enable_xml_creation: true
 ## This variable is deprecated, to be deleted when updating backwards compatibility support
 kbpc_non_intrusive_only: false
-## This variable replaces kbpc_non_intrusive_only for versions higher than v5.4.9
+## This variable replaces kbpc_non_intrusive_only for versions >= v5.5.0
 kbpc_intrusive: true
 kbpc_log_level: info
 kbpc_postrun_delete_resources: true
