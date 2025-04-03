@@ -25,33 +25,13 @@
 - name: Clean certsuite resources
   when: kbpc_postrun_delete_resources|bool
   block:
-    - name: Define probe daemonset namespace
-      ansible.builtin.set_fact:
-        kbpc_probe_ds_ns: certsuite
-
-    - name: Ensure probe DaemonSet is absent
-      vars:
-        kbpc_probe_ds_name: certsuite-debug
-      kubernetes.core.k8s:
-        api_version: v1
-        kind: DaemonSet
-        name: "{{ kbpc_probe_ds_name }}"
-        namespace: "{{ kbpc_probe_ds_ns }}"
-        state: absent
-
-    - name: Ensure tnf namespace is absent
+    - name: Delete cnf-suite Namespace
       kubernetes.core.k8s:
         api_version: v1
         kind: Namespace
-        name: tnf
+        name: cnf-suite
         state: absent
-
-    - name: Ensure probe daemonset namespace is absent
-      kubernetes.core.k8s:
-        api_version: v1
-        kind: Namespace
-        name: "{{ kbpc_probe_ds_ns }}"
-        state: absent
+        wait: true
 
 # This is just done when testing a certsuite stable version
 - name: Delete temporary directory for git repos
