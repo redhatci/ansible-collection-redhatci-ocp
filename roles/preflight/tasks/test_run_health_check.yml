@@ -29,12 +29,17 @@
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true
 
+- name: Expanduser partner_creds
+  ansible.builtin.set_fact:
+    preflight_partner_creds: "{{ partner_creds | expanduser }}"
+  when: partner_creds is defined
+
 - name: Get the image available for the root user
   ansible.builtin.command:
     cmd: >
       podman pull
-      {% if partner_creds | length %}
-      --authfile {{ partner_creds }}
+      {% if preflight_partner_creds | length %}
+      --authfile {{ preflight_partner_creds }}
       {% endif %}
       {{ current_operator_image }}
   become: true
