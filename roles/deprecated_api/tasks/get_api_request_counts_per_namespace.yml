@@ -47,6 +47,10 @@
         selectattr('serviceAccounts', 'search', '^(?!.*(openshift|kube)).*') |
         list
       }}
+      
+- name: "Display2 filtered API data for {{ da_ns }}"
+  ansible.builtin.debug:
+    var: da_removed_api
 
 - name: "Compute OCP compatibility of the workload API for {{ da_ns }}"
   vars:
