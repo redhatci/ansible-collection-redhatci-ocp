@@ -1,4 +1,7 @@
 ---
+- name: "CNFApp must be TestPMD"
+  ansible.builtin.assert:
+    that: ecd_cnfapp_name == 'testpmd'
 
 - name: Gather facts
   ansible.builtin.include_tasks: draining/gather-facts.yml
