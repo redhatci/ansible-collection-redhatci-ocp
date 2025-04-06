@@ -158,7 +158,6 @@ class FilterModule(object):
         """
         Convert junit XML Report into JSON.
         """
-        import json
         import time
         from junitparser import junitparser as jup
 
