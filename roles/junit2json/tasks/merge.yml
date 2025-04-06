@@ -21,7 +21,7 @@
   ansible.builtin.include_tasks:
     file: ensure-dir.yml
   loop:
-  - "{{ junit2_output_dir }}"
+    - "{{ junit2_output_dir }}"
   loop_control:
     loop_var: folder_path
 
