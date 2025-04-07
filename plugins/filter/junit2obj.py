@@ -30,11 +30,6 @@ DOCUMENTATION = r"""
       description: The junit report xml text data
       type: str
       required: true
-    object:
-      description: return JSON object (not the string)
-      type: bool
-      default: false
-      required: false
 """
 
 
@@ -141,8 +136,8 @@ EXAMPLES = r"""
 RETURN = r"""
   _value:
     description:
-      - JSON text representation (escaped string) of the report or JSON data if `object` is `True`
-    type: str or dict
+      - JSON data
+    type: dict
 """
 
 
@@ -159,11 +154,10 @@ class FilterModule(object):
             "junit2obj": self.junit2obj,
         }
 
-    def junit2obj(self, xml_report_text: str, object: bool = False) -> str | dict:
+    def junit2obj(self, xml_report_text: str) -> dict:
         """
         Convert junit XML Report into JSON.
         """
-        import json
         import time
         from junitparser import junitparser as jup
 
@@ -271,7 +265,4 @@ class FilterModule(object):
             curr_suite = _process_test_suite(tstsuite)
             report["test_suites"].append(curr_suite)
 
-        if object is True:
-            return report
-        result_text: str = json.dumps(dict(report), indent=4) + "\n"
-        return result_text
+        return report
