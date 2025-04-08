@@ -1,0 +1,14 @@
+---
+argument_specs:
+  get-credentials:
+    short_description: Get credentials for the Spoke/Managed Cluster
+    description: Obtain the kubeconfig and kubeadmin credentials for the Spoke/Managed Cluster
+    options:
+      utils_cluster_name:
+        type: str
+        required: true
+        description: The name of the Spoke/Managed Cluster
+      utils_cluster_namespace:
+        type: str
+        required: true
+        description: The namespace of the Spoke/Managed Cluster
