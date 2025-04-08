@@ -1,6 +1,6 @@
 ---
 argument_specs:
-  get-crednetials:
+  get-credentials:
     short_description: Get credentials for the Spoke/Managed Cluster
     description: Obtain the kubeconfig and kubeadmin credentials for the Spoke/Managed Cluster
     options:
