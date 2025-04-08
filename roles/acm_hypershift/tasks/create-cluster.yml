@@ -47,14 +47,6 @@
   delay: 10
   no_log: true
 
-- name: Get hosted cluster credentials
-  ansible.builtin.include_role:
-    name: redhatci.ocp.acm.utils
-    tasks_from: get-credentials
-  vars:
-    utils_cluster_name: "{{ ah_cluster_generated_name }}"
-    utils_cluster_namespace: "{{ ah_clusters_ns }}"
-
 - name: Monitor Hosted Cluster Nodes availability
   kubernetes.core.k8s_info:
     api_version: hypershift.openshift.io/v1beta1
@@ -73,14 +65,12 @@
   delay: 60
   no_log: true
 
-#
-# TODOs:
-# For Baremetal:
-# - Create InfraEnv
-# - Create Agents
-# - Add NodePools
-# - Add nodes to the cluster
-# Add disconnected support
-# - "Get the user_ca_bundle content"
-# - Pullsecrets from within? or from the agent?
+- name: Get hosted cluster credentials
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: get-credentials
+  vars:
+    utils_cluster_name: "{{ ah_cluster_generated_name }}"
+    utils_cluster_namespace: "{{ ah_clusters_ns }}"
+
 ...
