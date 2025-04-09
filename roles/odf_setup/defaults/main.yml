@@ -17,7 +17,7 @@ local_volume_mode: block
 replica_size: 3
 
 ### OCS Storage Operator variables
-local_storage_devices=["scsi0-0-0-1", "scsi0-0-0-0"]
+local_storage_devices: ["scsi0-0-0-1", "scsi0-0-0-0"]
 
 # (Required) Channel versions to use, namespace and operators names
 ocs_storage_operator: ocs-operator
