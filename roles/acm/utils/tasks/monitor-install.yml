@@ -1,0 +1,49 @@
+---
+- name: Get cluster install status
+  kubernetes.core.k8s_info:
+    api: extensions.hive.openshift.io/v1beta1
+    kind: AgentClusterInstall
+    name: "{{ utils_cluster_name }}"
+    namespace: "{{ utils_cluster_namespace }}"
+  register: install_status
+  retries: 6
+  delay: 5
+  no_log: true
+
+- name: Get completion progress
+  ansible.builtin.set_fact:
+    completion_percentage: "{{ install_status.resources[0].status.progress.totalPercentage }}"
+    state_info: "{{ install_status.resources[0].status.debugInfo.state }}"
+
+- name: Print completion status
+  ansible.builtin.debug:
+    msg:
+      - "Cluster install completed at {{ completion_percentage }} %"
+      - "{{ state_info }}"
+      - "Approximated elapsed time: {{ elapsed_time | default(0) | int }}  mins"
+
+- name: Wait for install completion
+  when:
+    - completion_percentage | int != 100
+  block:
+    - name: Waiting for installation in min - {{ utils_monitor_wait_time }}
+      ansible.builtin.pause:
+        minutes: "{{ utils_monitor_wait_time }}"
+
+    - name: Update elapsed time
+      ansible.builtin.set_fact:
+        elapsed_time: "{{ elapsed_time | default(0) | int + utils_monitor_wait_time | int }}"
+
+    - name: Check if time is up
+      ansible.builtin.fail:
+        msg: "Failed due to timeout"
+      when:
+        - completion_percentage | int < 100
+        - elapsed_time | int >= ( utils_monitor_timeout | int )
+
+    - name: Monitor the installation
+      ansible.builtin.include_tasks: monitor-install.yml
+      when:
+        - completion_percentage | int != 100
+        - elapsed_time | int < ( utils_monitor_timeout | int )
+...
