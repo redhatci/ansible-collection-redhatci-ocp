@@ -1,14 +1,14 @@
 ---
 - name: Setup HTTP Store
-  become: true
   block:
     - name: Install podman
-      package:
+      ansible.builtin.package:
         name: podman
         state: present
+      become: true
 
     - name: Open http port, zone internal and public, for firewalld
-      firewalld:
+      ansible.builtin.firewalld:
         port: "{{ http_port }}/tcp"
         permanent: true
         immediate: true
@@ -17,9 +17,10 @@
       loop:
         - internal
         - public
+      become: true
 
     - name: Create directory to hold the registry files
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: directory
         owner: "{{ file_owner }}"
@@ -29,8 +30,9 @@
       loop:
         - "{{ http_dir }}"
         - "{{ http_data_dir }}"
+      become: true
 
-    - name: Create httpd container
+    - name: Create httpd pod
       containers.podman.podman_pod:
         name: "{{ http_store_pod_name }}"
         publish:
@@ -43,50 +45,54 @@
         verbosity: 1
 
     - name: Create httpd container
+      vars:
+        container_status: "{{ http_store_ephemeral | ternary('started', 'stopped') }}"
       containers.podman.podman_container:
         name: "{{ http_store_container_name }}"
         image: "{{ container_image }}"
         pod: "{{ http_store_pod_name }}"
-        state: stopped
+        state: "{{ container_status }}"
         volumes:
           - "{{ http_data_dir }}:/var/www/html:z"
       register: container_info
 
-    - name: Setting facts about container
-      set_fact:
-        http_store_name: "{{ container_info.container.Name }}"
-        http_store_pidfile: "{{ container_info.container.ConmonPidFile }}"
+    - name: Configure HTTP Store systemd service
+      when:
+        - not http_store_ephemeral | bool
+      become: true
+      block:
+        - name: Copy the systemd service file
+          vars:
+            http_store_pidfile: "{{ container_info.container.ConmonPidFile }}"
+          ansible.builtin.copy:
+            content: |
+              [Unit]
+              Description=Podman http_store.service
+              [Service]
+              Restart=on-failure
+              ExecStart=/usr/bin/podman pod start {{ http_store_pod_name }}
+              ExecStop=/usr/bin/podman pod stop -t 10 {{ http_store_pod_name }}
+              KillMode=none
+              Type=forking
+              PIDFile={{ http_store_pidfile }}
+              [Install]
+              WantedBy=default.target
+            dest: "/etc/systemd/system/http_store.service"
+            mode: "0644"
 
-    - name: Copy the systemd service file
-      copy:
-        content: |
-          [Unit]
-          Description=Podman http_store.service
-          [Service]
-          Restart=on-failure
-          ExecStart=/usr/bin/podman pod start {{ http_store_pod_name }}
-          ExecStop=/usr/bin/podman pod stop -t 10 {{ http_store_pod_name }}
-          KillMode=none
-          Type=forking
-          PIDFile={{ http_store_pidfile }}
-          [Install]
-          WantedBy=default.target
-        dest: "/etc/systemd/system/http_store.service"
-        mode: "0644"
+        - name: Reload systemd service
+          ansible.builtin.systemd:
+            daemon_reexec: true
+            scope: system
 
-    - name: Reload systemd service
-      systemd:
-        daemon_reexec: true
-        scope: system
+        - name: Enable http_store.service
+          ansible.builtin.systemd:
+            name: http_store
+            enabled: true
+            scope: system
 
-    - name: Enable http_store.service
-      systemd:
-        name: http_store
-        enabled: true
-        scope: system
-
-    - name: Start http_store.service
-      systemd:
-        name: http_store
-        state: started
-        scope: system
+        - name: Start http_store.service
+          ansible.builtin.systemd:
+            name: http_store
+            state: started
+            scope: system
