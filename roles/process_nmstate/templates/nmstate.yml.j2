@@ -46,6 +46,9 @@ interfaces:
         - {{ port }}
         {% endfor %}
     {% endif %}
+    {% if interface.mtu is defined %}
+    mtu: {{ interface.mtu }}
+    {% endif %}
     {% if (interface.type | default('ethernet')) == 'vlan' %}
     vlan:
       base-iface: {{ interface.vlan.interface }}
