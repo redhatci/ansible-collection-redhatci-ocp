@@ -1,12 +1,4 @@
 ---
-- name: "Check if target file exists"
-  ansible.builtin.stat:
-    path: "{{ mor_dir }}/{{ mor_uri | basename }}"
-    get_checksum: false
-  register: target
-  when:
-    - not mor_force
-
 - name: "Fetch file from URL"
   ansible.builtin.get_url:
     url: "{{ mor_uri }}"
@@ -20,8 +12,8 @@
   become: true
   retries: 3
   delay: 10
-  register: downloaded
-  until: downloaded is not failed
+  register: _mor_downloaded
+  until: _mor_downloaded is not failed
   when:
     - mor_force or not target.stat.exists
 
@@ -35,4 +27,6 @@
   ansible.builtin.command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ mor_uri | basename }}"
   become: true
   when: _mor_selinux.rc == 0
+  register: _mor_restorecon
+  changed_when: _mor_restorecon.rc == 0
 ...
