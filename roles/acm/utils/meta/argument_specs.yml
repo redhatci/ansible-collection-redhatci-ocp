@@ -2,7 +2,8 @@
 argument_specs:
   get-credentials:
     short_description: Get credentials for the Spoke/Managed Cluster
-    description: Obtain the kubeconfig and kubeadmin credentials for the Spoke/Managed Cluster
+    description: >
+      Obtain the kubeconfig and kubeadmin credentials for the Spoke/Managed Cluster
     options:
       utils_cluster_name:
         type: str
@@ -12,3 +13,28 @@ argument_specs:
         type: str
         required: true
         description: The namespace of the Spoke/Managed Cluster
+  monitor-install:
+    short_description: Monitor the installation of the Spoke Cluster
+    description: >
+      Monitor the installation of the Spoke Cluster tracking the progress in the AgentClusterInstall CR
+    options:
+      utils_cluster_name:
+        type: str
+        required: true
+        description: The name of the Spoke Cluster
+      utils_cluster_namespace:
+        type: str
+        required: true
+        description: The namespace of the Spoke Cluster
+      utils_monitor_timeout:
+        type: int
+        required: false
+        default: 90
+        description: >
+          Timeout in minutes for the installation process. Default is 90 minutes.
+      utils_monitor_wait_time:
+        type: int
+        required: false
+        default: 3
+        description: >
+          Wait time in minutes between each progress check. Default is 3 minutes.

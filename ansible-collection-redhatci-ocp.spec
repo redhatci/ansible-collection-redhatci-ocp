@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.1.EPOCH
+Version:        2.2.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Apr 10 2025 Tony Garcia <tonyg@redhat.com> - 2.2.EPOCH-VERS
+- Version bump for role updates - acm.utils
+
 * Thu Apr  3 2025 Tony Garcia <tonyg@redhat.com> - 2.1.EPOCH-VERS
 - Version bump for role updates - acm.utils
 
