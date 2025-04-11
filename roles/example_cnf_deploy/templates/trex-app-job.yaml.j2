@@ -14,7 +14,7 @@ spec:
       serviceAccountName: trex-app-account
       containers:
       - name: trex-app
-        image: "{{ ecd:image_app }}"
+        image: "{{ ecd_image_app }}"
         imagePullPolicy: "{{ ecd_image_pull_policy }}"
         volumeMounts:
         - name: varlog
@@ -54,8 +54,14 @@ spec:
         - name: PACKET_RATE
           value: "{{ ecd_packet_rate }}"
 {% endif %}
+        - name: trex_ip_list
+          value: "{{ ecd_trex_ip_list[0] }},{{ ecd_trex_ip_list[1] }},"
+        - name: cnfapp_ip_list
+          value: "{{ ecd_cnfapp_ip_list[0] }},{{ ecd_cnfapp_ip_list[1] }},"
         - name: run_deployment
           value: "{{ ecd_run_deployment }}"
+        - name: arp_resolution
+          value: "{{ (ecd_cnfapp_name == 'grout') | ternary('1','0') }}"
         lifecycle:
           postStart:
             exec:

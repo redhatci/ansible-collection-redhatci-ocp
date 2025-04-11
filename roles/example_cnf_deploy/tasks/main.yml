@@ -1,9 +1,29 @@
 ---
-- name: "Requirements validation for example-cnf actions"
+- name: "Requirements validation for example-cnf actions and CNFApp alternatives"
   ansible.builtin.assert:
     that:
       - ecd_action is defined
       - ecd_action in ['catalog', 'deploy', 'validate', 'deploy_extra_trex', 'draining']
+      - ecd_cnfapp_name in ['grout', 'testpmd']
+
+- name: "Get cluster version"
+  kubernetes.core.k8s_info:
+    api: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: _ecd_cluster_version
+
+- name: "Set OCP name and version facts"
+  vars:
+    ecd_current_ver_query: "history[?state=='Completed'] | [0].version"
+    ecd_full_ver: "{{ _ecd_cluster_version.resources[0].status | json_query(ecd_current_ver_query) }}"
+  ansible.builtin.set_fact:
+    ecd_ocp_version_full: "{{ ecd_full_ver }}"
+
+- name: "Fail if OCP version is lower than 4.14"
+  ansible.builtin.fail:
+    msg: OCP version is lower than 4.14. This is required to use and manipulate pod network annotations
+  when: ecd_ocp_version_full is ansible.builtin.version('4.14', '<')
 
 - name: "Deploy Example CNF catalog"
   ansible.builtin.include_tasks: catalog.yml

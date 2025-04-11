@@ -11,15 +11,10 @@
 - name: Create and check TRexServer CR
   when: _ecd_trexconfig_cr.resources|length == 0
   block:
-    - name: Set local fact for trex pod networks
-      ansible.builtin.set_fact:
-        ecd_networks_trex: []
-        ecd_packet_gen_net: "{{ ecd_sriov_networks }}"
-
     - name: Create network list for trex with hardcoded macs
       ansible.builtin.set_fact:
-        ecd_networks_trex: "{{ ecd_networks_trex + [ item | combine({'mac': ecd_trex_mac_list[idx:idx+item.count]})] }}"
-      loop: "{{ ecd_packet_gen_net }}"
+        ecd_networks_trex: "{{ ecd_networks_trex + [ item | combine({'mac': ecd_trex_mac_list[idx:idx+item.count], 'ip': ecd_trex_ip_list[idx:idx+item.count]})] }}"
+      loop: "{{ ecd_sriov_networks }}"
       loop_control:
         index_var: idx
 
@@ -132,6 +127,7 @@
         OC_BINARY: "{{ ecd_oc_path }}"
         APP_NAMESPACE: "{{ ecd_cnf_namespace }}"
         SRIOV_NAMESPACE: openshift-sriov-network-operator
+        CNFAPP_NAME: "{{ ecd_cnfapp_name }}"
       ansible.builtin.script:
         cmd: >
           ../../scripts/get-example-cnf-status.sh > example-cnf-post-job-status.log

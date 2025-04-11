@@ -26,17 +26,18 @@ echo
 echo
 
 # Retrieve pod names
-TESTPMD_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=cnf-app' -o custom-columns=POD:.metadata.name --no-headers)
+CNFAPP_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=cnf-app' -o custom-columns=POD:.metadata.name --no-headers)
 TREXCONFIG_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=pkt-gen' -o custom-columns=POD:.metadata.name --no-headers)
 TREXAPP_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=pkt-gen-app' -o custom-columns=POD:.metadata.name --no-headers)
 
 echo "*** EXAMPLE-CNF RESULTS ***"
 echo
 
-# Retrieve TestPMD results
-echo "--- Last statistics reported by TestPMD ---"
+# Retrieve CNFApp results
+echo "--- Last statistics reported by $CNFAPP_POD ---"
 echo
-$OC_BINARY logs -n "$APP_NAMESPACE" "$TESTPMD_POD" | tail -n22
+### TODO - update for grout
+$OC_BINARY logs -n "$APP_NAMESPACE" "$CNFAPP_POD" | tail -n22
 echo
 echo
 
