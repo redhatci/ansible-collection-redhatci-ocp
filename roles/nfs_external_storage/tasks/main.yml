@@ -205,7 +205,7 @@
                   server: "{{ nes_nfs_server }}"
                   path: "{{ nes_nfs_path }}"
 
-- name: "Wait for nfs-client-provisioner pod to be Running"
+- name: "Wait for 10 min for nfs-client-provisioner pod to be Running"
   kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
@@ -213,7 +213,7 @@
     label_selectors:
       - app=nfs-client-provisioner
   register: nfs_pod
-  retries: 40
+  retries: 60
   delay: 10
   until:
     - nfs_pod.resources is defined
