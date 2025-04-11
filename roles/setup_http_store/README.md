@@ -11,6 +11,7 @@ Sets up a web host which can be used to distribute ISO's for `boot_iso` role
 | http_dir                  | no       | /opt/http_store                                    |                                                                                                                                      |
 | http_data_dir             | no       | "{{ http_dir }}/data"                              |                                                                                                                                      |
 | container_image           | no       | registry.centos.org/centos/httpd-24-centos7:latest | If you change this to anything other than the same image on a different host you may need to change then environment vars in the task |
+| http_store_ephemeral      | no       | false                                              | If set to true, the HTTP pod will be managed as a systemd service. If false, the pod runs directly using Podman and requires manual management |
 
 ## Dependencies
 
