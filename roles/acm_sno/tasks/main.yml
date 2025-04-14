@@ -26,13 +26,15 @@
 - name: "Install a new cluster"
   ansible.builtin.include_tasks: create-cluster.yml
 
-- name: "Monitor: Set monitoring facts"
-  ansible.builtin.set_fact:
-    elapsed_time: 0
-    node_rebooted: false
-
-- name: "Monitor: Installation progress"
-  ansible.builtin.include_tasks: monitor-install.yml
+- name: "Monitor installation progress"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: monitor-install
+  vars:
+    utils_cluster_name: "{{ acm_cluster_name }}"
+    utils_cluster_namespace: "{{ acm_cluster_name }}"
+    utils_monitor_timeout: 90
+    utils_monitor_wait_time: 5
 
 - name: "Get spoke cluster credentials"
   ansible.builtin.include_role:

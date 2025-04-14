@@ -5,9 +5,7 @@ acm_cluster_location: unknown
 acm_ocp_version: 4.9.47
 acm_force_deploy: false
 acm_disconnected: false
-acm_creation_timeout: 90
 acm_cluster_network_cidr: 10.128.0.0/14
-acm_bmc_port: 623
 acm_cluster_network_host_prefix: 23
 acm_service_network_cidr: 172.30.0.0/16
 acm_release_image: quay.io/openshift-release-dev/ocp-release:4.9.47-x86_64
