@@ -88,17 +88,13 @@
             scope: system
 
         - name: Enable http_store.service
-          environment:
-            XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
           ansible.builtin.systemd:
             name: http_store
             enabled: true
-            scope: user
+            scope: system
 
         - name: Start http_store.service
-          environment:
-            XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
           ansible.builtin.systemd:
             name: http_store
             state: started
-            scope: user
+            scope: system
