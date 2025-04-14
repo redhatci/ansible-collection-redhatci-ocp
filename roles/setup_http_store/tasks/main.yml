@@ -38,6 +38,7 @@
         publish:
           - "{{ http_port }}:8080"
       register: pod_info
+      become: not http_store_ephemeral | bool
 
     - name: Debug
       ansible.builtin.debug:
@@ -55,6 +56,7 @@
         volumes:
           - "{{ http_data_dir }}:/var/www/html:z"
       register: container_info
+      become: not http_store_ephemeral | bool
 
     - name: Configure HTTP Store systemd service
       when:
@@ -86,13 +88,17 @@
             scope: system
 
         - name: Enable http_store.service
+          environment:
+            XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
           ansible.builtin.systemd:
             name: http_store
             enabled: true
-            scope: system
+            scope: user
 
         - name: Start http_store.service
+          environment:
+            XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
           ansible.builtin.systemd:
             name: http_store
             state: started
-            scope: system
+            scope: user
