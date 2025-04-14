@@ -10,7 +10,7 @@ Brings functionality that is commonly used among those roles.
 | utils_cluster_name      | None     | get-credentials, monitor-install | Name of the spoke cluster
 | utils_cluster_namespace | None     | get-credentials, monitor-install | Namespace for the spoke cluster
 | utils_monitor_timeout   | 90       | monitor-install                  | Timeout in minutes for the installation process.
-| utils_monitor_time_wait | 3        | monitor-install                  | Wait time in minutes between each progress check.
+| utils_monitor_wait_time | 3        | monitor-install                  | Wait time in minutes between each progress check.
 
 ## Utilities
 
@@ -54,7 +54,7 @@ Monitor installation of a cluster through ACM
     utils_cluster_name: spoke-cluster
     utils_cluster_namespace: my-ns
     utils_monitor_timeout: 60
-    utils_monitor_time_wait: 20
+    utils_monitor_wait_time: 20
   ansible.builtin.include_role:
     name: redhatci.ocp.acm.utils
     tasks_from: monitor-install
