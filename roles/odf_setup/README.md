@@ -31,6 +31,7 @@ Role Variables
 | ocs_default_storage_class        | storagecluster-cephfs         | String       | No          | Default storage class name                                               |
 | gatherer_image                   | registry.access.redhat.com/ubi8/ubi | String | No          | Image for disk-gatherer deployment                                       |
 | odf_setup_oc_tool_path                   | '/usr/local/bin/oc` | String | No          | Path to the OpenShift Command Line Interface binary.
+| ocs_total_deviceset              | length of local_storage_devices | Int | No          | (Optional) number of device sets for OCS |
 
 
 Inventory Groups and Variables
