@@ -1,5 +1,4 @@
 ---
-
 - name: Initialize operator found fact
   ansible.builtin.set_fact:
     olm_operator_found: true
@@ -128,7 +127,7 @@
           apiVersion: operators.coreos.com/v1alpha1
           kind: Subscription
           metadata:
-            name: "{{ operator }}"
+            name: "{{ subscription_name | default(operator) }}"
             namespace: "{{ namespace }}"
           spec:
             channel: "{{ desired_channel }}"
@@ -206,7 +205,7 @@
           apiVersion: operators.coreos.com/v1alpha1
           kind: Subscription
           metadata:
-            name: "{{ operator }}"
+            name: "{{ subscription_name | default(operator) }}"
             namespace: "{{ namespace }}"
           spec:
             installPlanApproval: "{{ install_approval | default('Manual') }}"
