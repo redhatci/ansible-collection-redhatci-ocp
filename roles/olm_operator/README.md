@@ -17,6 +17,7 @@ source                      | No        | redhat-operators       | CatalogSource
 source_ns                   | No        | openshift-marketplace  | Namespace where the CatalogSource is (default: )
 starting_csv                | No        | \<latest\>             | Operator version to install different than the latest published in the catalog.
 olm_operator_skippable      | No        | false                  | When set to `true`, avoids failing if the `operator` is not present in the `source`.
+subscription_name           | No        | {{ operator }}         | Name to be given to the Subscription. If none is defined, the operator name will be used.
 
 ## Examples of usage
 
