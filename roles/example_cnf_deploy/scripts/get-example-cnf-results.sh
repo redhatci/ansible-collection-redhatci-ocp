@@ -26,17 +26,29 @@ echo
 echo
 
 # Retrieve pod names
-TESTPMD_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=cnf-app' -o custom-columns=POD:.metadata.name --no-headers)
+CNFAPP_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=cnf-app' -o custom-columns=POD:.metadata.name --no-headers)
 TREXCONFIG_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=pkt-gen' -o custom-columns=POD:.metadata.name --no-headers)
 TREXAPP_POD=$($OC_BINARY get pods -n "$APP_NAMESPACE" --selector='example-cnf-type=pkt-gen-app' -o custom-columns=POD:.metadata.name --no-headers)
 
 echo "*** EXAMPLE-CNF RESULTS ***"
 echo
 
-# Retrieve TestPMD results
-echo "--- Last statistics reported by TestPMD ---"
+# Retrieve CNFApp results
+echo "--- Last statistics reported by $CNFAPP_POD ---"
 echo
-$OC_BINARY logs -n "$APP_NAMESPACE" "$TESTPMD_POD" | tail -n22
+# Command for grout
+if [[ "$CNFAPP_POD" =~ "grout" ]]; then
+    INTERMEDIATE_FILE_NAME=grout_logs.txt
+    $OC_BINARY logs -n "$APP_NAMESPACE" "$CNFAPP_POD" | tail -n40 > "$INTERMEDIATE_FILE_NAME"
+    mapfile -t GROUT_LOG_LINES < <(cat -n "$INTERMEDIATE_FILE_NAME" | grep -F "*" | awk '{print $1}')
+    START_LINE=${GROUT_LOG_LINES[0]}
+    ## This is the only command that prints something
+    tail -n+"$START_LINE" $INTERMEDIATE_FILE_NAME
+    rm $INTERMEDIATE_FILE_NAME
+# Command for testpmd
+else
+    $OC_BINARY logs -n "$APP_NAMESPACE" "$CNFAPP_POD" | tail -n22
+fi
 echo
 echo
 
@@ -49,7 +61,7 @@ echo "> Server"
 echo
 INTERMEDIATE_FILE_NAME=trexconfig_logs.txt
 $OC_BINARY logs -n "$APP_NAMESPACE" "$TREXCONFIG_POD" | tail -n60 > "$INTERMEDIATE_FILE_NAME"
-TREXCONFIG_LOG_LINES=($(cat -n "$INTERMEDIATE_FILE_NAME" | grep "Per port" | awk '{print $1}'))
+mapfile -t TREXCONFIG_LOG_LINES < <(cat -n "$INTERMEDIATE_FILE_NAME" | grep "Per port" | awk '{print $1}')
 START_LINE=${TREXCONFIG_LOG_LINES[0]}
 END_LINE=${TREXCONFIG_LOG_LINES[1]}
 ## This is the only command that prints something

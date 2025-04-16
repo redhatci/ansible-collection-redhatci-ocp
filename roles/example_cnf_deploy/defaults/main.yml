@@ -18,39 +18,61 @@ ecd_opm_path: /usr/local/bin/opm
 # Logs folder
 ecd_job_logs_path: /tmp
 
+# CNFApp to select
+ecd_cnfapp_name: grout
+
 # Operators/apps to enable
 ecd_enable_mac_fetch: true
-ecd_enable_testpmd: true
+ecd_enable_testpmd: false
+ecd_enable_grout: true
 ecd_enable_trex: true
 ecd_enable_trex_app: true
 
 # Operator installation
 ecd_testpmd_channel: alpha
+ecd_grout_channel: alpha
 ecd_trex_channel: alpha
 
-# Static MAC addresses used by the deployed workloads
+# Network configuration
+
+## (Required for Grout deployment) Path to the network configuration file to be used to set the IP and MAC addresses for
+## each interface of both CNFApp and TRex
+ecd_network_config_file: ""
+
+## Default static MAC addresses used by the deployed workloads (if providing `ecd_network_config_file`, they are updated)
 ecd_trex_mac_list:
   - "20:04:0f:f1:89:01"
   - "20:04:0f:f1:89:02"
-ecd_testpmd_app_mac_list:
+ecd_cnfapp_mac_list:
   - "80:04:0f:f1:89:01"
   - "80:04:0f:f1:89:02"
 
-# Run all testpmd and trex deployment automation. If different than 1, the automation will only create the pods and prepare the scripts
-# to launch testpmd and trex manually afterwards
-ecd_run_deployment: 1
+## No default static IP addresses are provided for the deployed workloads. To update them, they must be provided on
+## `ecd_network_config_file` (just required when using Grout, optional for TestPMD since it is launched on MAC forwarding mode)
+ecd_trex_ip_list:
+  - ""
+  - ""
+ecd_cnfapp_ip_list:
+  - ""
+  - ""
 
-# Variables for gathering the network info from the scenario
-## SRIOV networks used in the connection between TRex and CNF Application, together with the number of interfaces to be used per network
+## Variables for gathering the network info from the scenario
+### SRIOV networks used in the connection between TRex and CNF Application, together with the number of interfaces to be used per network
 ecd_sriov_networks: []
-## Networks for the CNF, including the hardcoded MAC addresses
-ecd_networks_testpmd_app: []
+### Networks for CNFApp, including MAC addresses and (if provided) IP addresses
+ecd_networks_cnfapp: []
+### Networks for TRex, including MAC addresses and (if provided) IP addresses
+ecd_networks_trex: []
+
+# Run all deployment automation. If different than 1, the automation will only create the pods and prepare the scripts
+# to launch testpmd/grout and trex manually afterwards
+ecd_run_deployment: 1
 
 # RuntimeClass that should be used for running DPDK application,
 # if the var is empty, the annotation irq-load-balancing.crio.io: "disable" is not applied
 # ecd_high_perf_runtime: "performance-blueprint-profile"
 
-# Testpmd related variables
+# TestPMD related variables
 
 ## Termination grace period for testpmd
 ecd_termination_grace_period_seconds: 30

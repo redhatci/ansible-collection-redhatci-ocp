@@ -1,15 +1,17 @@
 ---
 
-- name: "Get TestPMD CR info"
+- name: "Get CNFApp CR info"
+  vars:
+    ecd_cnfapp_cr_kind: "{{ (ecd_cnfapp_name == 'grout') | ternary('Grout', 'TestPMD') }}"
   kubernetes.core.k8s_info:
     namespace: "{{ ecd_cnf_namespace }}"
-    kind: TestPMD
-  register: _ecd_testpmd_list
+    kind: "{{ ecd_cnfapp_cr_kind }}"
+  register: _ecd_cnfapp_list
 
-- name: "Validate number of TestPMD CRs"
+- name: "Validate number of CNFApp CRs"
   ansible.builtin.fail:
-    msg: "TestPMD CRs count ({{ _ecd_testpmd_list.resources | length }}) is invalid"
-  when: "_ecd_testpmd_list.resources|length != 1"
+    msg: "CNFApp CR count ({{ _ecd_cnfapp_list.resources | length }}) is invalid"
+  when: "_ecd_cnfapp_list.resources|length != 1"
 
 # This means that the TRex job may have failed, so we don't want to run the migration
 # tests in that case
