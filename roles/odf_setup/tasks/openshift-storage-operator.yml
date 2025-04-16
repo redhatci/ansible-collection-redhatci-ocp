@@ -5,7 +5,7 @@
   register: intocsresult
   when:
     - ocs_install_type == 'internal'
-    
+
 - name: Patch Deployment to update Memory limits
   kubernetes.core.k8s:
     definition:
@@ -27,7 +27,7 @@
   when:
     - dci_workarounds is defined
     - '"DFBUGS-1932" in dci_workarounds'
-    
+
 - name: Tasks for External OCS/ODF Integration
   when:
     - ocs_install_type == 'external'
