@@ -26,8 +26,7 @@
                     memory: "400Mi"
   when:
     - dci_workarounds is defined
-    - '"DFBUGS-1932" in dci_workarounds'            
-    
+    - '"DFBUGS-1932" in dci_workarounds'
     
 - name: Tasks for External OCS/ODF Integration
   when:
