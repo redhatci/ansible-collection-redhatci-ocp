@@ -34,7 +34,7 @@ ssh_extra_keys_paths={{ ssh_extra_keys_paths | to_json }}
 
 {% if enable_lso | default(false) | bool %}
 ocs_install_type=internal
-local_storage_devices=["scsi0-0-0-1"]
+local_storage_devices=["scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1"]
 
 [ocs_nodes:children]
 workers
