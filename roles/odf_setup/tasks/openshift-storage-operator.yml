@@ -91,9 +91,9 @@
   retries: 40
   delay: 30
   until:
-    - _of_sc.resources is defined
-    - _of_sc.resources | length == 1
-    - _of_sc.resources[0].status is defined
-    - _of_sc.resources[0].status.phase is defined
-    - _of_sc.resources[0].status.phase == "Ready"
+    - _os_sc.resources is defined
+    - _os_sc.resources | length == 1
+    - _os_sc.resources[0].status is defined
+    - _os_sc.resources[0].status.phase is defined
+    - _os_sc.resources[0].status.phase == "Ready"
 ...
