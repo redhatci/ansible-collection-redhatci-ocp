@@ -13,19 +13,23 @@
     mor_release_image: "{{ _mor_release_content.content | b64decode | regex_search('(?<=^Pull From: )(.*)$', multiline=true) }}"
 
 - name: "Read the contents of rhcos.json"
-  ansible.builtin.command: "cat {{ mor_cache_dir }}/{{ mor_version }}/rhcos.json"
-  register: rhcos
+  ansible.builtin.slurp:
+    src: "{{ mor_cache_dir }}/{{ mor_version }}/rhcos.json"
+  register: _mor_rhcos
   no_log: true
   retries: 6
   delay: 10
-  until: rhcos is not failed
+  until: _mor_rhcos is not failed
 
 - name: "Set image facts"
   ansible.builtin.set_fact:
-    ocp_release_data:
+    mor_ocp_release_data:
       container_image: "{{ mor_release_image }}"
-      rhcos_version: "{{ rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.metal.release') }}"
-      rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.' + item.path))}) }}"
+      rhcos_version: "{{ rhcos_json | json_query('architectures.x86_64.artifacts.metal.release') }}"
+      rhcos_images: "{{ mor_ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (rhcos_json | json_query(arch_query))}) }}"
+  vars:
+    rhcos_json: "{{ _mor_rhcos.content | b64decode | from_json }}"
+    arch_query: "architectures.x86_64.artifacts.{{ item.path }}"
   with_items:
     - {'key': 'aws_location', 'path': 'aws.formats."vmdk.gz".disk.location'}
     - {'key': 'aws_sha256', 'path': 'aws.formats."vmdk.gz".disk.sha256'}
@@ -60,13 +64,15 @@
 # TODO: Remove this task when 4.7 is no longer supported
 - name: "Set image facts (< 4.8)"
   vars:
-    rhcos_ver: "{{ rhcos.stdout | from_json | json_query('buildid') }}"
+    rhcos_json: "{{ _mor_rhcos.content | b64decode | from_json }}"
+    rhcos_ver: "{{ rhcos_json | json_query('buildid') }}"
     base_uri: "https://rhcos.mirror.openshift.com/art/storage/releases/rhcos-{{ mor_base_version }}/{{ rhcos_ver }}/x86_64/"
+    add_item: "{{ {item.key: (item.baseURI | default('')) + (rhcos_json | json_query('images.' + item.path))} }}"
   ansible.builtin.set_fact:
-    ocp_release_data:
+    mor_ocp_release_data:
       container_image: "{{ mor_release_image }}"
       rhcos_version: "{{ rhcos_ver }}"
-      rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (item.baseURI | default('')) + (rhcos.stdout | from_json | json_query('images.' + item.path))}) }}"
+      rhcos_images: "{{ mor_ocp_release_data['rhcos_images'] | default({}) | combine(add_item) }}"
   with_items:
     - {'key': 'aws_location', 'baseURI': "{{ base_uri }}", 'path': 'aws.path'}
     - {'key': 'aws_sha256', 'path': 'aws.sha256'}
@@ -103,9 +109,11 @@
 # TODO: remove for releases >= 4.8
 - name: "Set facts for *osimage URL overrides"
   ansible.builtin.set_fact:
-    bootstraposimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['qemu_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['qemu_uncompressed_sha256'] }}"
-    clusterosimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['openstack_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['openstack_sha256'] }}"
-    metalosimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['metal_iso_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['metal_iso_sha256'] }}"
+    bootstraposimage: "{{ mor_webserver_url }}/{{ rhcos_images['qemu_location'] | basename }}?sha256={{ rhcos_images['qemu_uncompressed_sha256'] }}"
+    clusterosimage: "{{ mor_webserver_url }}/{{ rhcos_images['openstack_location'] | basename }}?sha256={{ rhcos_images['openstack_sha256'] }}"
+    metalosimage: "{{ mor_webserver_url }}/{{ rhcos_images['metal_iso_location'] | basename }}?sha256={{ rhcos_images['metal_iso_sha256'] }}"
+  vars:
+    rhcos_images: "{{ mor_ocp_release_data['rhcos_images'] }}"
   when:
     - mor_write_custom_config | bool
 ...
