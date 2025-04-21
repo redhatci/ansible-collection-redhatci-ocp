@@ -7,11 +7,6 @@
 - name: "Set list of example-cnf operators to be installed"
   ansible.builtin.set_fact:
     ecd_operators:
-      - name: cnf-app-mac-operator
-        namespace: "{{ ecd_cnf_namespace }}"
-        channel: "{{ ecd_testpmd_channel }}"
-        source: "{{ ecd_catalog_name }}"
-        enable: "{{ ecd_enable_mac_fetch | bool }}"
       - name: testpmd-operator
         namespace: "{{ ecd_cnf_namespace }}"
         channel: "{{ ecd_testpmd_channel }}"

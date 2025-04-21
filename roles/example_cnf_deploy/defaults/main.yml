@@ -22,7 +22,6 @@ ecd_job_logs_path: /tmp
 ecd_cnfapp_name: grout
 
 # Operators/apps to enable
-ecd_enable_mac_fetch: true
 ecd_enable_testpmd: false
 ecd_enable_grout: true
 ecd_enable_trex: true

@@ -90,33 +90,6 @@
     - ecd_container_ready | length > 0
     - ecd_container_ready[0] | bool
 
-- name: "Check CNFAppMac resource count to be greater than 0"
-  kubernetes.core.k8s_info:
-    namespace: "{{ ecd_cnf_namespace }}"
-    kind: CNFAppMac
-  register: _ecd_cnfappmac
-  retries: 120
-  delay: 5
-  until:
-    - _ecd_cnfappmac.resources is defined
-    - _ecd_cnfappmac.resources|length > 0
-
-# CNFAppMac and CNFApp pods share the same name, so we can use it for doing
-# some extra checks
-- name: "Check that at least the cnfappmac resource for the first CNFApp pod has the required data"
-  kubernetes.core.k8s_info:
-    namespace: "{{ ecd_cnf_namespace }}"
-    kind: CNFAppMac
-    name: "{{ _ecd_cnfapp_pods.resources[0].metadata.name }}"
-  register: _ecd_first_cnfappmac
-  retries: 120
-  delay: 5
-  until:
-    - _ecd_first_cnfappmac.resources is defined
-    - _ecd_first_cnfappmac.resources|length > 0
-    - _ecd_first_cnfappmac.resources[0].spec.resources is defined
-    - _ecd_first_cnfappmac.resources[0].spec.resources|length > 0
-
 # Do not launch any TRexApp resource if ecd_run_deployment is different than 1
 # In that case, we need to skip failures when checking TRex test result to make the automation work
 - name: Do not enable TRexApp if no automated deployment is launched
