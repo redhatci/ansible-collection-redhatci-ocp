@@ -50,7 +50,7 @@
         kbpc_partner_repo: "{{ (kbpc_registry | length) | ternary(kbpc_registry, 'quay.io') }}/{{ kbpc_repo_org_name }}"
         kbpc_support_image: "{{ kbpc_support_image_name }}:{{ kbpc_support_image_version }}"
         kbpc_container_command: |
-          ./certsuite run \
+          certsuite run \
           {% if kbpc_test_labels | length > 0 %}
           --label-filter='{{ kbpc_test_labels }}' \
           {% endif %}
