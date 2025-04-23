@@ -18,6 +18,9 @@ kbpc_allow_preflight_insecure: false
 # It must be created manually in Connect UI
 # Do not forget to define kbpc_cwe_project_id as well
 kbpc_cwe_apikey_path: "/opt/cache/cwe-apikey.txt"
+# Variables to feed the collector DB when submitting a result with a unique user and pass
+kbpc_partner_name: ""
+kbpc_collector_app_password: ""
 # If this is not set to true, JUnit file will not be created
 kbpc_enable_xml_creation: true
 ## This variable is deprecated, to be deleted when updating backwards compatibility support
