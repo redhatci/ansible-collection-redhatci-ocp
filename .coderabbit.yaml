@@ -1,0 +1,8 @@
+---
+tone_instructions: "amiable and concise"
+reviews:
+  high_level_summary: false
+  poem: false
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  suggested_labels: false

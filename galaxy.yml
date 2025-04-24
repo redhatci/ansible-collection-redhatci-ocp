@@ -131,6 +131,7 @@ build_ignore:
   - '.github'
   - 'rpm'
   - 'hack'
+  - '.coderabbit.yaml'
 
 # A list of tags you want to associate with the collection for
 # indexing/searching. KEEP IT AT THE END for the Github action to
