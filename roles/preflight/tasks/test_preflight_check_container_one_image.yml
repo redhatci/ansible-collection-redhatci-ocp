@@ -73,7 +73,9 @@
             --rm
             --privileged
             -e PFLT_JUNIT=true
+            {% if (cert_project_id | default('') | length) == 0 %}
             -e PFLT_LOGLEVEL=trace
+            {% endif %}
             -e PFLT_ARTIFACTS=/artifacts
             -e PFLT_LOGFILE=/artifacts/preflight.log
             {% if partner_creds | length %}

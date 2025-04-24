@@ -12,7 +12,9 @@
       ansible.builtin.command: >
         podman run --rm --privileged
         -e PFLT_JUNIT=true
+        {% if (item.0.pyxis_container_identifier | default('') | length) == 0 %}
         -e PFLT_LOGLEVEL=trace
+        {% endif %}
         -e PFLT_ARTIFACTS=/artifacts
         -e PFLT_LOGFILE=/artifacts/preflight.log
         {% if partner_creds | length %}
