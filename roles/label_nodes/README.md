@@ -17,12 +17,24 @@ This role applies labels defined at inventory level to the OCP cluster nodes.
   - Access to the kubeconfig file via the `KUBECONFIG` environment variable
   - The inventory host should have the labels needed in JSON format
 
-```toml
+```ini
 [workers:vars]
-labels={"Location": "Boston", "owner": "OCP operators", "cost_center", "IT"} 
+labels={"Location": "Boston", "owner": "OCP operators", "cost_center": "IT"} 
 
 [ocs_nodes:vars]
 labels={"cluster.ocs.openshift.io/openshift-storage": ""}    
+```
+
+Or
+
+```yaml
+all:
+  children:
+    workers:
+      vars:
+        labels:
+           my.label.to.add/to-worker-nodes: my-value
+```
 
 ## Usage example
 
@@ -30,12 +42,12 @@ Get all the inventory hosts and apply the defined labels
 
 ```yaml
 - name: "Merge all hosts"
-  set_fact:
+  ansible.builtin.set_fact:
     all_hosts: "{{ all_hosts | default([]) + groups[item] }}"
   loop: "{{ groups.keys() }}"
 
 - name: "Apply node labels"
-  include_role: 
+  ansible.builtin.include_role:
     name: redhatci.ocp.label_nodes
   vars:
     hosts_list: "{{ all_hosts | list | unique }}"
