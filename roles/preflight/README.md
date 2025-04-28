@@ -23,6 +23,7 @@ preflight_dci_all_components_are_ga | true                                      
 max_images_per_batch | 1                                             | Optional. This variable allows the user to adjust the number of images processed per batch for running preflight in parallel. By default, it is set to `1`.
 validate_annotations_yaml | true | Optional. Enable or disable validation of operators' annotations.yaml against deprecated API check limitations.
 
+**Note:** When using the preflight to test container images and submitting the results to the backend (for instance, when `cert_project_id` is defined, the `PFLT_LOGLEVEL` will be excluded from the arguments. This means the preflight will only collect logs at the `info` level. The reason for this limitation is that when the preflight tries to submit artifacts, such as the `preflight.log,` with file sizes exceeding 1MB, it will encounter the error `413 Request Entity Too Large` if `PFLT_LOGLEVEL` is set to `trace`. Therefore, the preflight only collects `trace` logs as a preliminary check for container images. Both use cases for sequential and parallel modes are handled automatically.
 
 ## Variables to define for each operator in preflight_operators_to_certify
 

@@ -175,15 +175,15 @@
     remote_src: true
   delegate_to: localhost
 
-- name: "Validate all tests have passed"
+- name: "Validate all mandatory tests have passed"
   ansible.builtin.shell:
     cmd: >
-      grep -c FAIL <( {{ yq_tool_path }} e "..|.outcome? | select(.)" report.yaml )
+      {{ yq_tool_path }} e '[.results[] | select(.outcome == "FAIL" and .type != "Optional")] | length' report.yaml
   register: cv_fail_count
   args:
     chdir: "{{ work_chart_dir }}"
     executable: /bin/bash
-  failed_when: "cv_fail_count.rc not in [ 0, 1 ]"
+  failed_when: cv_fail_count.stdout | int > 0
 
 - name: "Submit CV and create pull request"
   ansible.builtin.include_role:
