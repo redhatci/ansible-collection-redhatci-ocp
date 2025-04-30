@@ -64,6 +64,11 @@ connectAPIConfig:
   proxyPort: ""
 {% endif %}
 
+## collector DB
+{% if kbpc_partner_name|length == 0 %}#{% endif %}partnerName: {{ kbpc_partner_name }}
+
+{% if kbpc_collector_app_password|length == 0 %}#{% endif %}collectorAppPassword: {{ kbpc_collector_app_password }}
+
 ## fields below are not currently used, leaving placeholder in case they were needed in the future
 #managedDeployments:
 
@@ -81,7 +86,4 @@ connectAPIConfig:
 
 #executedBy: ""
 
-#partnerName: ""
-
-#collectorAppPassword: ""
 ...
