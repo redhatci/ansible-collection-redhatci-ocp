@@ -31,3 +31,13 @@
     - nodes_with_sriov | sort | unique | length == 1
     - nodes_with_sriov | sort | unique | first | int >= vfs | int
   no_log: true
+
+# Some configurations applied in the SriovNetworkNodePolicy resources may imply a node reboot,
+# handled by the SriovNetworkNodeState resources. Let's confirm that these resources are also ready.
+- name: Wait for SriovNetworkNodeState resources to be ready
+  ansible.builtin.include_role:
+    name: redhatci.ocp.check_resource
+  vars:
+    resource_to_check: "SriovNetworkNodeState"  # noqa: redhat-ci[no-role-prefix]
+    check_wait_retries: "{{ selected_nodes.resources | length * sriov_config_retries_per_node | int }}"  # noqa: redhat-ci[no-role-prefix]
+    check_wait_delay: "{{ sriov_config_delay_per_node | int }}"  # noqa: redhat-ci[no-role-prefix]
