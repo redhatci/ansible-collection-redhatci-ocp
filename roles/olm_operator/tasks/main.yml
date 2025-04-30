@@ -170,34 +170,38 @@
       when:
         - starting_csv | length
 
-    - name: Wait for CSV to be ready
-      kubernetes.core.k8s_info:
-        api: operators.coreos.com/v1alpha1
-        namespace: "{{ namespace }}"
-        kind: ClusterServiceVersion
-        name: "{{ operator_csv }}"
-      register: csv
-      retries: 20
-      delay: 30
-      until:
-        - csv.resources is defined
-        - csv.resources | length == 1
-        - "'status' in csv.resources[0]"
-        - "'phase' in csv.resources[0].status"
-        - csv.resources[0].status.phase == 'Succeeded' or
-          csv.resources[0].status.phase == 'Present'
-      no_log: true
+    - name: Validate operator installation
+      when:
+        - validate_installation | bool
+      block:
+        - name: Wait for CSV to be ready
+          kubernetes.core.k8s_info:
+            api: operators.coreos.com/v1alpha1
+            namespace: "{{ namespace }}"
+            kind: ClusterServiceVersion
+            name: "{{ operator_csv }}"
+          register: _oo_csv
+          retries: 20
+          delay: 30
+          until:
+            - _oo_csv.resources is defined
+            - _oo_csv.resources | length == 1
+            - "'status' in _oo_csv.resources[0]"
+            - "'phase' in _oo_csv.resources[0].status"
+            - _oo_csv.resources[0].status.phase == 'Succeeded' or
+              _oo_csv.resources[0].status.phase == 'Present'
+          no_log: true
 
-    - name: Fail if not all pods reach a successful state
-      kubernetes.core.k8s_info:
-        kind: Pod
-        namespace: "{{ namespace }}"
-      register: olm_pod
-      retries: 30
-      delay: 20
-      until:
-        olm_pod.resources | map(attribute='status.phase') | difference(['Succeeded', 'Running']) | length == 0
-      no_log: true
+        - name: Fail if not all pods reach a successful state
+          kubernetes.core.k8s_info:
+            kind: Pod
+            namespace: "{{ namespace }}"
+          register: _oo_olm_pod
+          retries: 30
+          delay: 20
+          until:
+            _oo_olm_pod.resources | map(attribute='status.phase') | difference(['Succeeded', 'Running']) | length == 0
+          no_log: true
 
     - name: Patch subscription according to install_approval
       kubernetes.core.k8s:
