@@ -18,7 +18,7 @@ source_ns                   | No        | openshift-marketplace  | Namespace whe
 starting_csv                | No        | \<latest\>             | Operator version to install different than the latest published in the catalog.
 olm_operator_skippable      | No        | false                  | When set to `true`, avoids failing if the `operator` is not present in the `source`
 subscription_name           | No        | {{ operator }}         | Name to be given to the Subscription. If none is defined, the operator name will be used
-validate_installation       | No        | true                   | Validates that the CSV an operator's pods are Ready
+olm_operator_validate_install | No      | true                   | Validates that the CSV an operator's pods are Ready
 
 ## Examples of usage
 

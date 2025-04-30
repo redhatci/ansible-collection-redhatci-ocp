@@ -6,5 +6,5 @@ operator_group_name: "{{ operator }}"
 source_ns: openshift-marketplace
 source: redhat-operators
 starting_csv: ""
-validate_installation: true
+olm_operator_validate_install: true
 ...

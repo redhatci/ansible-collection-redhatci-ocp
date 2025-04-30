@@ -172,7 +172,7 @@
 
     - name: Validate operator installation
       when:
-        - validate_installation | bool
+        - olm_operator_validate_install | bool
       block:
         - name: Wait for CSV to be ready
           kubernetes.core.k8s_info:
