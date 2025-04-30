@@ -67,6 +67,13 @@ ecd_networks_trex: []
 # to launch testpmd/grout and trex manually afterwards
 ecd_run_deployment: 1
 
+# Enable container privileged mode, instead of setting specific capabilities.
+# This is required when using Mellanox cards, because it requires access to /dev/vfio/vfio
+# from host since it uses netdevice instead of vfio-pci. To achieve that, using a volume
+# with hostPath is not enough, so that privileged mode is required
+# (see https://access.redhat.com/solutions/6560521 for an example).
+ecd_enable_privileged_mode: false
+
 # RuntimeClass that should be used for running DPDK application,
 # if the var is empty, the annotation irq-load-balancing.crio.io: "disable" is not applied
 # ecd_high_perf_runtime: "performance-blueprint-profile"
