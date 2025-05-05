@@ -4,6 +4,14 @@ metadata:
   namespace: {{ ocs_storage_namespace }}
   name: {{ ocs_storagecluster_name }}
 spec:
+{% if odf_setup_enable_encryption | default(false) | bool %}
+  encryption:
+    clusterWide: true
+    keyRotation:
+      enable: true
+      schedule: '@{{ odf_setup_key_rotation_period }}'
+    kms: {}
+{% endif %}
 {% if enable_object_gateway | default(false) | bool %}
   multiCloudGateway:
     reconcileStrategy: ignore
