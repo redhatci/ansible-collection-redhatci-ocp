@@ -19,6 +19,7 @@
 
 - name: Create cert project
   ansible.builtin.include_tasks: create_project.yml
+  when: cert_project_id is undefined
 
 - name: Update the project with company info when cert_settings is defined
   ansible.builtin.include_tasks: update_project.yml
