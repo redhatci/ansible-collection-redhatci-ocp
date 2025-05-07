@@ -6,7 +6,11 @@
         name: podman
         state: present
       become: true
-
+    
+    - name: Get all environment variables
+      ansible.builtin.shell: printenv
+      register: env_vars
+    
     - name: Open http port, zone internal and public, for firewalld
       ansible.builtin.firewalld:
         port: "{{ http_port }}/tcp"
