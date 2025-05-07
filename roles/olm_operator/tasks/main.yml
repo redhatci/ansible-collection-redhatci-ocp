@@ -146,7 +146,7 @@
         namespace: "{{ namespace }}"
       register: _oo_install_plans
       no_log: true
-      retries: 18
+      retries: 30
       delay: 10
       until:
         - _oo_install_plans.resources is defined
@@ -181,7 +181,7 @@
             kind: ClusterServiceVersion
             name: "{{ operator_csv }}"
           register: _oo_csv
-          retries: 20
+          retries: 30
           delay: 30
           until:
             - _oo_csv.resources is defined
