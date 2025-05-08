@@ -1,18 +1,20 @@
 ---
 - name: "Check if the OCS CRD is present"
-  kubernetes.core.k8s_info:
-    kind: CustomResourceDefinition
-    name: storageclusters.ocs.openshift.io
-  register: req_crd
-  no_log: true
-
-- name: "Fail if OCS CRD is not present"
-  ansible.builtin.fail:
-    msg: >
-      OCS CRDs are not present, please install the Openshift Cluster Storage
-      Operator
-  when: req_crd.resources | list | count == 0
-
+  block:
+    - kubernetes.core.k8s_info:
+        kind: CustomResourceDefinition
+        name: storageclusters.ocs.openshift.io
+      register: req_crd
+      retries: 12
+      delay: 10
+      until: req_crd.resources | length > 0
+      no_log: true
+  rescue:
+    - name: "Fail if OCS CRD is not present"
+      ansible.builtin.fail:
+        msg: "OCS CRDs are not present, please install the Openshift Cluster Storage Operator"
+      when: req_crd.resources | list | count == 0
+        
 - name: "Check if the main LSO CRD is present"
   kubernetes.core.k8s_info:
     kind: CustomResourceDefinition
