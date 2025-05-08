@@ -13,6 +13,6 @@
   become: true
   retries: 10
   delay: 20
-  register: downloaded
-  until: downloaded is not failed
+  register: _mor_downloaded
+  until: _mor_downloaded is not failed
 ...
