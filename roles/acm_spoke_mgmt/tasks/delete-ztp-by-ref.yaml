@@ -18,7 +18,7 @@
 - name: Delete ArgoCD Applications
   vars:
     app_sites: "{{ _asm_all_apps.resources | selectattr('spec.source.repoURL', 'equalto', asm_source_repo)
-                | selectattr('spec.source.path', 'search', '(^|/)sites($)')
+                | selectattr('spec.source.path', 'search', '(^|/)sites$')
                 | selectattr('spec.source.targetRevision', 'equalto', asm_target_revision)
                 | map(attribute='metadata.name') | list }}"
     app_policies: "{{ _asm_all_apps.resources | selectattr('spec.source.repoURL', 'equalto', asm_source_repo)
