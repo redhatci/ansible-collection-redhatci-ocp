@@ -12,7 +12,8 @@ Mirrors images from one repository to another.
 | mi_dst_authfile  | undefined  | No       | An authfile with permissions to push the target images
 | mi_options       | undefined  | No       | skopeo options while copying the images
 | mi_src_authfile  | undefined  | No       | An authfile with permissions to pull the source images
-| mi_dst_org       | undefined  | No       | The organization target where to copy the images
+| mi_dst_org       | ""         | No       | The organization target where to copy the images
+| mi_random_tag    | false      | No       | Set a random tag on the target registry
 
 ## Requirements
 

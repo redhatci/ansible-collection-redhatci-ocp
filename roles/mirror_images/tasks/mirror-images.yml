@@ -5,7 +5,13 @@
     _image_name: "{{ '/'.join(image.split('@')[0].split('/')[-1:]) }}"
     _image_org: "{{ '/'.join(image.split('@')[0].split('/')[1:-1]) }}"
     _image_org_path: "{{ (mi_dst_org | length) | ternary(mi_dst_org, _image_org) }}"
-    _image_img_path: "{{ _image_name }}{%- if _image_tag | length %}{{ _image_tag }}{% endif %}"
+    _image_rdn_tag: "{{ image.split('@')[0].split(':')[0].split('/')[-1] }}:{{ lookup('community.general.random_string', length=12, special=false) }}"
+    _image_img_path: >-
+      {%- if mi_random_tag -%}
+      {{ _image_rdn_tag }}
+      {%- else -%}
+      {{ _image_name }}{%- if _image_tag | length %}{{ _image_tag }}{%- endif -%}
+      {%- endif -%}
     _tgt_image_location: "{{ mi_registry }}/{{ _image_org_path }}/{{ _image_img_path }}"
   block:
     - name: "Mirror image"
