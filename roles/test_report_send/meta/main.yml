@@ -1,0 +1,8 @@
+galaxy_info:
+  author: Max Kovgan, Cesare Placanica
+  description: Push data file to collector
+  company: Red Hat, Inc.
+  # issue_tracker_url: http://example.com/issue/tracker
+  license: "Apache License, Version 2.0"
+  min_ansible_version: "2.9"
+  galaxy_tags: []
