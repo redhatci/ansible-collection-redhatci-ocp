@@ -32,6 +32,8 @@ Role Variables
 | gatherer_image                   | registry.access.redhat.com/ubi8/ubi | String | No          | Image for disk-gatherer deployment                                       |
 | odf_setup_oc_tool_path                   | '/usr/local/bin/oc` | String | No          | Path to the OpenShift Command Line Interface binary.
 | ocs_total_deviceset              | length of local_storage_devices | Int | No          | (Optional) number of device sets for OCS |
+| odf_setup_enable_encryption      | false | Boolean | No          | Whether enable disk cluster-wide encryption for ODF |
+| odf_setup_key_rotation_period    | weekly | String | No          | Period of key rotation: daily, weekly, monthly, etc. |
 
 
 Inventory Groups and Variables
