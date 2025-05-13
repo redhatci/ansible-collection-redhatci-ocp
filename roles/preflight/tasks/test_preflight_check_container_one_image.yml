@@ -101,6 +101,43 @@
           ansible.builtin.debug:
             msg: "Do not fail when preflight check container throws an error"
       always:
+        - name: Get image digest
+          ansible.builtin.shell: >
+            set -eo pipefail;
+            skopeo inspect
+            {% if partner_creds | length %}
+            --authfile {{ partner_creds }}
+            {% else %}
+            --no-creds
+            {% endif %}
+            docker://{{ current_operator_image }} | jq -r '.Digest'
+          register: sha
+          retries: 2
+          delay: 30
+          until: sha is succeeded
+    
+        - name: Debug image digest
+          ansible.builtin.debug:
+            msg: "{{ sha.stdout }}"
+    
+        - name: "Pull cert grade of {{ current_operator_image }}"
+          vars:
+            filter_params: "filter=docker_image_digest%3D%3D{{ sha.stdout }}"
+          ansible.builtin.uri:
+            url: >
+              {{ catalog_url }}/images?{{ filter_params }}&page_size=100&page=0
+            method: GET
+            headers:
+              X-API-KEY: "{{ lookup('file', pyxis_apikey_path) }}"
+            status_code: 200
+            timeout: 120
+          register: pyxis_grade_status
+    
+        - name: "Test_ Preflight: Get cert grade of {{ current_operator_image }}"
+          debug:
+            msg: "{{ pyxis_grade_status.json.data[0].freshness_grades[0].grade }}"
+          when: pyxis_grade_status is defined
+
         - name: Unset pyxis auth to not reuse by following containers
           ansible.builtin.set_fact:
             cert_project_id: ""
