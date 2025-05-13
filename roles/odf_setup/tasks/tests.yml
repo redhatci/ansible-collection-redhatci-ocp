@@ -1,5 +1,5 @@
 ---
-- name: Test CephRBD PVC
+- name: Test_ CephRBD PVC
   kubernetes.core.k8s:
     definition:
       apiVersion: v1
@@ -15,7 +15,7 @@
             storage: 1Gi
         storageClassName: "{{ ocs_sc_rbd_name }}"
 
-- name: Get CephRBD PVC status
+- name: Validate_ CephRBD PVC status
   kubernetes.core.k8s_info:
     kind: PersistentVolumeClaim
     namespace: default
@@ -28,7 +28,7 @@
     - cephrbd_pvc_status.resources != []
     - cephrbd_pvc_status.resources[0].status.phase == "Bound"
 
-- name: Test CephFS PVC
+- name: Test_ CephFS PVC
   kubernetes.core.k8s:
     definition:
       apiVersion: v1
@@ -44,7 +44,7 @@
             storage: 1Gi
         storageClassName: "{{ ocs_sc_cephfs_name }}"
 
-- name: Get CephFS PVC status
+- name: Validate_ CephFS PVC status
   kubernetes.core.k8s_info:
     kind: PersistentVolumeClaim
     namespace: default
