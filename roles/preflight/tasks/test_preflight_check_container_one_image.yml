@@ -110,7 +110,7 @@
             {% else %}
             --no-creds
             {% endif %}
-            docker://{{ current_operator_image }} | jq -r '.Digest'
+            docker://{{ operator.bundle_image }} | jq -r '.Digest'
           register: sha
           retries: 2
           delay: 30
