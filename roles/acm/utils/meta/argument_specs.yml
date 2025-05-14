@@ -38,3 +38,37 @@ argument_specs:
         default: 3
         description: >
           Wait time in minutes between each progress check. Default is 3 minutes.
+  image-sources:
+    short_description: Convert IDMS or ICSP to registries.conf format for ACM spokes
+    description: >
+      Convert the ImageDigestMirrorSet (IDMS) or ImageContentSourcePolicies (ICSP) to the registries.conf format.
+      Required by the spoke clusters in disconnected mode.
+    options:
+      utils_registry:
+        type: str
+        required: true
+        description: >
+          The custom/local registry to use for the spoke cluster. This is the registry where the images are stored.
+          For example: `registry.example.com:5000`
+      utils_hub_mirrors:
+        type: list
+        required: true
+        elements: dict
+        description: |
+          List of mirrors and sources in the hub cluster. The format is:
+          - mirrors:
+              - mirror1
+            source: source
+      utils_imagesource_file:
+        type: str
+        required: true
+        description: >
+          A file with either IDMS or ICSP to transform into the registries.conf format.
+          Additionally, it injects a mirror for the multicluster-engine image to the custom registry.
+      utils_unqualified_search_registries:
+        type: list
+        required: false
+        default: ['registry.redhat.io', 'docker.io']
+        elements: str
+        description: >
+          List of unqualified search registries. Default is ['registry.redhat.io', 'docker.io']

@@ -1,4 +1,7 @@
 ---
 utils_monitor_timeout: 90
 utils_monitor_wait_time: 3
+utils_unqualified_search_registries:
+  - registry.redhat.io
+  - docker.io
 ...
