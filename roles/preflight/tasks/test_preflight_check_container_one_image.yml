@@ -136,7 +136,9 @@
         - name: "Test_ Preflight: Get cert grade of {{ current_operator_image }}"
           debug:
             msg: "{{ pyxis_grade_status.json.data[0].freshness_grades[0].grade }}"
-          when: pyxis_grade_status is defined
+          when: 
+            - pyxis_grade_status is defined
+            - pyxis_grade_status.json.data[0].freshness_grades[0] is defined
 
         - name: Unset pyxis auth to not reuse by following containers
           ansible.builtin.set_fact:
