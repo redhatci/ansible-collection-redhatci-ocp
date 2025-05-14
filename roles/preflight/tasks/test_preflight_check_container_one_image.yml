@@ -115,11 +115,11 @@
           retries: 2
           delay: 30
           until: sha is succeeded
-    
+
         - name: Debug image digest
           ansible.builtin.debug:
             msg: "{{ sha.stdout }}"
-    
+
         - name: "Pull cert grade of {{ current_operator_image }}"
           vars:
             filter_params: "filter=docker_image_digest%3D%3D{{ sha.stdout }}"
@@ -132,13 +132,13 @@
             status_code: 200
             timeout: 120
           register: pyxis_grade_status
-          when: 
+          when:
             - cert_project_id | default('') | length
 
         - name: "Test_ Preflight: Get cert grade of {{ current_operator_image }}"
           debug:
             msg: "{{ pyxis_grade_status.json.data[0].freshness_grades[0].grade }}"
-          when: 
+          when:
             - cert_project_id | default('') | length
             - pyxis_grade_status.json.data[0] is defined
 
