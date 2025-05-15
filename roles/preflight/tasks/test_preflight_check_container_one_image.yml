@@ -111,18 +111,18 @@
             --no-creds
             {% endif %}
             docker://{{ operator.bundle_image }} | jq -r '.Digest'
-          register: sha
+          register: _preflight_container_sha
           retries: 2
           delay: 30
-          until: sha is succeeded
+          until: _preflight_container_sha is succeeded
 
         - name: Debug image digest
           ansible.builtin.debug:
-            msg: "{{ sha.stdout }}"
+            msg: "{{ _preflight_container_sha.stdout }}"
 
         - name: "Pull cert grade of {{ current_operator_image }}"
           vars:
-            filter_params: "filter=docker_image_digest%3D%3D{{ sha.stdout }}"
+            filter_params: "filter=docker_image_digest%3D%3D{{ _preflight_container_sha.stdout }}"
           ansible.builtin.uri:
             url: >
               {{ catalog_url }}/images?{{ filter_params }}&page_size=100&page=0
@@ -131,16 +131,16 @@
               X-API-KEY: "{{ lookup('file', pyxis_apikey_path) }}"
             status_code: 200
             timeout: 120
-          register: pyxis_grade_status
+          register: _preflight_pyxis_grade_status
           when:
             - cert_project_id | default('') | length
 
         - name: "Test_ Preflight: Get cert grade of {{ current_operator_image }}"
-          debug:
-            msg: "{{ pyxis_grade_status.json.data[0].freshness_grades[0].grade }}"
+          ansible.builtin.debug:
+            msg: "{{ _preflight_pyxis_grade_status.json.data[0].freshness_grades[0].grade }}"
           when:
             - cert_project_id | default('') | length
-            - pyxis_grade_status.json.data[0] is defined
+            - _preflight_pyxis_grade_status.json.data[0] is defined
 
         - name: Unset pyxis auth to not reuse by following containers
           ansible.builtin.set_fact:
