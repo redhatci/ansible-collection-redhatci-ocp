@@ -1,4 +1,5 @@
 *.tar.gz
 roles/**/.linted
+tests/integration/inventory
 tests/output
 __pycache__
