@@ -60,6 +60,20 @@
     - manifest_templates is defined
     - manifest_templates | length >= 0
 
+- name: Debug extra_manifests
+  ansible.builtin.debug:
+    var: manifest_templates
+  when: manifests_templates | length > 0
+
+- name: Debug loop
+  ansible.builtin.debug:
+    var: item
+  loop: "{{ manifest_templates }}"
+  when: manifests_templates | length > 0
+
+- name: Bye
+  ansible.builtin.meta: end_play
+
 - name: Render extra_manifests
   ansible.builtin.include_tasks: manifest.yml
   loop: "{{ manifest_templates }}"
