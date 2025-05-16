@@ -55,6 +55,7 @@ Name | Description
 [redhatci.ocp.create_vms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_vms/README.md) | Provisions libvirt network, storage pools and the KVM Nodes.
 [redhatci.ocp.create_helmchart](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_helmchart/README.md) | Creation of a Helm Chart certification project
 [redhatci.ocp.create_pr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/create_pr/README.md) | Pull-Request handling for helm chart certification and operator bundle certification.
+[redhatci.ocp.copy_and_render](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/copy_and_render/README.md) | Copies files and subdirectories from a source dir to a target dir, then renders and replaces all Jinja2 .j2 templates
 [redhatci.ocp.deploy_cr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/deploy_cr/README.md) | Deploys a custom resource
 [redhatci.ocp.deprecated_api](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/deprecated_api/README.md) | Extracts deprecated API calls in a cluster
 [redhatci.ocp.destroy_vms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/destroy_vms/README.md) | Destroys libvirt network, storage pools and the KVM Nodes and the network bridge connection.

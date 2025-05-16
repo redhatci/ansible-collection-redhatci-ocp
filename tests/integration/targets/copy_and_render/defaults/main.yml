@@ -1,0 +1,3 @@
+---
+car_source_dir: "{{ role_path }}/files"
+car_target_dir: "/tmp/car_test_ansible_test"
