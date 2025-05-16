@@ -1,0 +1,4 @@
+---
+# Integration-wide variables for integration tests
+car_source_dir: "{{ playbook_dir }}/targets/copy_and_render/files"
+car_target_dir: "/tmp/car_test_ansible_test"

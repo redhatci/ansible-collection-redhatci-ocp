@@ -1,0 +1,38 @@
+---
+
+- name: Validate that car_source_dir and car_target_dir are set
+  ansible.builtin.assert:
+    that:
+      - car_source_dir is defined
+      - car_source_dir | length > 0
+      - car_target_dir is defined
+      - car_target_dir | length > 0
+    fail_msg: "Both car_source_dir and car_target_dir must be defined and non-empty"
+
+- name: Copy files and subdirectories from source to target
+  ansible.builtin.copy:
+    src: "{{ car_source_dir | regex_replace('/$', '') }}/"
+    dest: "{{ car_target_dir }}"
+    mode: '0644'
+
+- name: Find Jinja2 template files
+  ansible.builtin.find:
+    paths: "{{ car_source_dir }}"
+    patterns: "*.j2"
+    file_type: file
+  register: _car_j2_templates
+
+- name: Render Jinja2 templates to target directory
+  ansible.builtin.template:
+    src: "{{ item.path }}"
+    dest: "{{ car_target_dir }}/{{ item.path | basename | regex_replace('\\.j2$', '') }}"
+    mode: '0644'
+  loop: "{{ _car_j2_templates.files }}"
+
+- name: Remove original .j2 template files from target directory
+  ansible.builtin.file:
+    path: "{{ car_target_dir }}/{{ item.path | basename }}"
+    state: absent
+  loop: "{{ _car_j2_templates.files }}"
+
+...
