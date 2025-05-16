@@ -1,0 +1,47 @@
+---
+- name: Combine and transform Image Source to registries.conf format
+  vars:
+    hub_query: "spec.*[*].{mirrors: mirrors, source: source}"
+    spoke_mirrors: >
+      {{ lookup('file', utils_imagesource_file) |
+         from_yaml |
+         json_query(hub_query) |
+         first
+      }}
+    combined_mirrors: |-
+      {%- set c = dict() %}
+      {%- for mirror in utils_hub_mirrors + spoke_mirrors %}
+      {%- set s = mirror.source %}
+      {%- set m = mirror.mirrors %}
+      {%- if c.get(s) %}
+      {{ c.update({s: c[s] + m}) }}
+      {%- else %}
+      {{ c.update({s: m}) }}
+      {%- endif %}
+      {%- endfor %}
+      {{ c }}
+  ansible.builtin.set_fact:
+    utils_acm_registries: |
+      unqualified-search-registries = {{ utils_unqualified_search_registries }}
+      short-name-mode = ""
+
+      {% for registry in combined_mirrors.keys() | list %}
+      [[registry]]
+        prefix = ""
+        location = "{{ registry }}"
+        mirror-by-digest-only = true
+
+      {% for mirror in combined_mirrors[registry] | unique | list %}
+        [[registry.mirror]]
+          location = "{{ mirror }}"
+
+      {% endfor %}
+      {% endfor %}
+
+      [[registry]]
+        prefix = ""
+        location = "registry.redhat.io/multicluster-engine"
+        mirror-by-digest-only = true
+
+        [[registry.mirror]]
+          location = "{{ utils_registry | urlsplit('netloc') }}/multicluster-engine"
