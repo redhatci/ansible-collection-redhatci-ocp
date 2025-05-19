@@ -60,7 +60,10 @@ Edit `MAJOR` when there are breaking changes in the collection. Edit `MINOR` whe
 
 The collection has multiple CI pipelines that run on every PR:
 
-- PR pipeline: [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) that runs the sanity tests and Ansible lint. It fails if there is any regression. It also runs a check on the PR Dependencies (`Depends-On:` lines in the commit message) to make sure that the dependencies are merged before the PR.
+- PR pipeline: [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) that runs the sanity tests and Ansible lint. It fails if there is any regression. It also runs a check on the PR Dependencies (`Depends-On:` lines in the commit message) to make sure that the dependencies are merged before the PR. Tests can be run locally:
+  - For Ansible lint tests, run [`./hack/ansible-lint.sh -d`](hack/ansible-lint.sh).
+  - For Sanity and Unit tests, run [`./hack/run_ansible_test.sh`](hack/run_ansible_test.sh).
+  - For Doc checks, run [`./hack/check_doc.sh`](hack/check_doc.sh).
 - DCI BOS2 pipeline: [`.github/workflows/dci.yml`](../.github/workflows/dci.yml) that runs a DCI job to test the collection in a virtual environment at the BOS2 Telco Partner CI lab. It is triggered only when a change is modifying files in the `/roles/` directory.
 - DCI Dallas pipeline: run DCI jobs on a baremetal cluster in the Telco Partner CI Dallas lab. It is triggered automatically only when changes are modifying files in the `role/cnf-cert` or `roles/preflight` directories.
 - RPM build pipeline (local/check). This is managed by the Zuul CI on https://softwarefactory-project.io/. It builds rpm for el8 and el9.

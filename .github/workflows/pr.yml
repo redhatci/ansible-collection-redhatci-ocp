@@ -121,43 +121,7 @@ jobs:
           sudo apt-get update
           apt-get download podman-docker
           sudo dpkg --force-all -i podman-docker*.deb 2>/dev/null
-          EXCLUDE="--exclude hack/ --exclude plugins/modules/nmcli.py"
-          git checkout -b branch
-          git fetch --unshallow origin main || :
-          # extract all the supported python versions from the error message, excluding 3.5
-          PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
-            grep -Po "invalid.*?\K'3.*\d'" |
-            tr -d ,\' |
-            sed -e 's/3.5 //g')
-          for version in $PY_VERS; do
-            ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
-            ansible-test units --verbose --docker --python $version --color --coverage || :
-          done 2> >(tee -a branch.output >&2)
-          git checkout main
-          for version in $PY_VERS; do
-            ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
-            ansible-test units --verbose --docker --python $version --color --coverage || :
-          done 2> main.output 1>/dev/null
-          for key in branch main; do
-            grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |
-            grep -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
-            sed -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "$key.errors"
-          done
-          # remove line numbers
-          sed -i -E -e 's/:[0-9]+:/:/' -e 's/:[0-9]+:/:/' branch.errors main.errors
-          set +ex
-          echo "## Improvements are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
-          echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
-          diff -u0 branch.errors main.errors | grep '^+[^+]' | sed -e 's/ERROR/FIXED/' | tee -a ${GITHUB_STEP_SUMMARY}
-          echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
-          echo "## Regressions are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
-          echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
-          diff -u0 branch.errors main.errors | grep '^-[^-]' | tee -a ${GITHUB_STEP_SUMMARY}
-          echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
-          if diff -u0 branch.errors main.errors | grep -q '^-[^-]'; then
-             echo "> Fix the regression errors listed above" | tee -a ${GITHUB_STEP_SUMMARY}
-             exit 1
-          fi
+          ./hack/run_ansible_test.sh
         working-directory: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
 
   check-all-dependencies-are-merged:
@@ -185,27 +149,7 @@ jobs:
 
       - name: Check roles are documented in main README
         run: |
-          echo "# Missing roles in README" > ${GITHUB_STEP_SUMMARY}
-          while read -r role_readme; do
-            role="${role_readme%/*}"  # strip last file `/README.md``
-            role="${role#*/}"         # strip left `roles/`
-            role="${role/\//.}"       # replace `/` with `.`
-            if ! grep -q "^\[redhatci\.ocp\.${role}\]" README.md; then
-              echo "- Missing: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
-            fi
-          done < <(find roles -name README.md)
-          echo "# Additional roles/plugins in README" > ${GITHUB_STEP_SUMMARY}
-          while read -r role; do
-            rp="${role/redhatci.ocp./}"
-            if [[ ! -d "roles/${rp/./\/}" ]] &&
-               [[ ! -r "plugins/filter/${rp}.py" ]] &&
-               [[ ! -r "plugins/modules/${rp}.py" ]]; then
-              echo "- Extra role/plugin found in README: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
-            fi
-          done < <(grep -Po '^\[redhatci\.ocp\.[^\]]+' README.md | tr -d '[')
-          if grep -qP "^- (Missing:|Extra)" ${GITHUB_STEP_SUMMARY}; then
-            exit 1
-          fi
+          ./hack/check_doc.sh
 
       - name: Check versions are consistent between rpm spec and galaxy.yml
         run: |
