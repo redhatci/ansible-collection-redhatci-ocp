@@ -151,14 +151,9 @@ jobs:
         run: |
           ./hack/check_doc.sh
 
-      - name: Check versions are consistent between rpm spec and galaxy.yml
+      - name: Check versions are consistent
         run: |
-          echo "# Inconsistent versions" > ${GITHUB_STEP_SUMMARY}
-          spec_version=$(grep Version: ansible-collection-redhatci-ocp.spec | awk '{print $2}' | cut -d. -f1,2)
-          galaxy_version=$(grep version: galaxy.yml | awk '{print $2}' | cut -d. -f1,2)
-          if [ "$spec_version" != "$galaxy_version" ]; then
-            echo "- Inconsistent: rpm spec: ${spec_version} galaxy: ${galaxy_version}" | tee -a ${GITHUB_STEP_SUMMARY}
-            exit 1
-          fi
+          echo "# Inconsistent versions" > "${GITHUB_STEP_SUMMARY}"
+          ./hack/check_version.sh
 
 ...
