@@ -24,109 +24,20 @@
 - name: "Pull data from Hub cluster"
   ansible.builtin.include_tasks: acm-pull-data.yml
 
-- name: "Inherit mirroring from hub"
-  ansible.builtin.set_fact:
-    inherit_mirroring: true
+- name: Configure Agent Service in disconnected mode
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: disconnect-agent
+  vars:
+    utils_registries: "{{ acm_user_registry }}"
+    utils_ca_bundle: "{{ acm_user_ca_bundle }}"
+    utils_cm_name: mirror-registry-sno
+    utils_ocp_version: "{{ acm_ocp_version }}"
+    utils_iso_url: "{{ acm_iso_url }}"
+    utils_root_fs_url: "{{ acm_root_fs_url }}"
   when:
     - acm_user_ca_bundle is defined
     - acm_disconnected | bool
-
-- name: "Create a Config map with registry entries and CA bundle"
-  vars:
-    cm_def: |
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: mirror-registry-config-map
-        namespace: "multicluster-engine"
-        labels:
-          app: assisted-service
-      data:
-        registries.conf: |
-          {{ acm_user_registry | indent(4) }}
-        ca-bundle.crt: |
-          {{ acm_user_ca_bundle | indent(4) }}
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ cm_def }}"
-    namespace: multicluster-engine
-  when:
-    - inherit_mirroring is defined
-    - inherit_mirroring | bool
-
-- name: "Check the AgentServiceConfig instance"
-  kubernetes.core.k8s_info:
-    api: agent-install.openshift.io/v1beta1
-    kind: AgentServiceConfig
-    name: agent
-    namespace: multicluster-engine
-  register: asg
-
-- name: "Patch the Agent Service Config"
-  vars:
-    rhcos_version: "{{ acm_ocp_version.split('.')[:2] | join('.') }}"
-    os_images:
-      openshiftVersion: "{{ acm_ocp_version }}"
-      version: "{{ rhcos_version }}"
-      url: "{{ acm_iso_url }}"
-      rootFSUrl: "{{ acm_root_fs_url }}"
-      cpuArchitecture: x86_64
-    as_def:
-      apiVersion: agent-install.openshift.io/v1beta1
-      kind: AgentServiceConfig
-      metadata:
-        name: agent
-        namespace: multicluster-engine
-      spec:
-        osImages: "{{ asg.resources[0].spec.osImages + [os_images] }}"
-        mirrorRegistryRef:
-            name: mirror-registry-config-map
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ as_def }}"
-  when: (asg.resources | length == 1)
-
-- name: "Wait for assisted-image-service pods to be Running"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Pod
-    label_selectors:
-      - "app=assisted-image-service"
-    field_selectors:
-      - status.phase=Running
-    namespace: multicluster-engine
-    wait: true
-  register: pod_list
-  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 20
-  delay: 15
-  no_log: true
-
-- name: "Wait for assisted-service to be Running"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Pod
-    label_selectors:
-      - "app=assisted-service"
-    field_selectors:
-      - status.phase=Running
-    namespace: multicluster-engine
-    wait: true
-  register: pod_list
-  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 20
-  delay: 15
-  no_log: true
-
-- name: "Validate the Service config volumes binding"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: PersistentVolumeClaim
-    namespace: "multicluster-engine"
-  register: volumes_list
-  until: volumes_list|json_query('resources[*].status.phase')|unique == ["Bound"]
-  retries: 20
-  delay: 15
 
 - name: "Set pull secret for Assisted installer and Cluster deployment"
   kubernetes.core.k8s:

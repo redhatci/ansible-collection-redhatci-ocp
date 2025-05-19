@@ -1,0 +1,94 @@
+---
+- name: Set config map with mirror registries, and CA bundle
+  vars:
+    cm_def: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ utils_cm_name }}"
+        namespace: multicluster-engine
+        labels:
+          app: assisted-service
+      data:
+        registries.conf: |
+          {{ utils_registries | indent(4) }}
+        ca-bundle.crt: |
+          {{ utils_ca_bundle | indent(4) }}
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ cm_def }}"
+    namespace: multicluster-engine
+
+- name: Check the AgentServiceConfig instance
+  kubernetes.core.k8s_info:
+    api: agent-install.openshift.io/v1beta1
+    kind: AgentServiceConfig
+    name: agent
+    namespace: multicluster-engine
+  register: asg
+
+- name: Patch the Agent Service Config
+  vars:
+    os_images:
+      openshiftVersion: "{{ utils_ocp_version }}"
+      version: "{{ utils_ocp_version.split('.')[:2] | join('.') }}"
+      url: "{{ utils_iso_url }}"
+      rootFSUrl: "{{ utils_root_fs_url }}"
+      cpuArchitecture: x86_64
+    as_def:
+      apiVersion: agent-install.openshift.io/v1beta1
+      kind: AgentServiceConfig
+      metadata:
+        name: agent
+        namespace: multicluster-engine
+      spec:
+        osImages: "{{ asg.resources[0].spec.osImages + [os_images] }}"
+        mirrorRegistryRef:
+          name: "{{ utils_cm_name }}"
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ as_def }}"
+  when:
+    - asg.resources | length == 1
+
+- name: Wait for assisted-image-service pods to be Running
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    label_selectors:
+      - "app=assisted-image-service"
+    field_selectors:
+      - status.phase=Running
+    namespace: multicluster-engine
+    wait: true
+  register: pod_list
+  until: pod_list | json_query('resources[*].status.phase') | unique == ["Running"]
+  retries: 20
+  delay: 15
+  no_log: true
+
+- name: Wait for assisted-service to be Running
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    label_selectors:
+      - "app=assisted-service"
+    field_selectors:
+      - status.phase=Running
+    namespace: multicluster-engine
+    wait: true
+  register: pod_list
+  until: pod_list | json_query('resources[*].status.phase') | unique == ["Running"]
+  retries: 20
+  delay: 15
+  no_log: true
+
+- name: Validate the Service config volumes binding
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: multicluster-engine
+  register: volumes_list
+  until: volumes_list | json_query('resources[*].status.phase') | unique == ["Bound"]
+  retries: 20
+  delay: 15

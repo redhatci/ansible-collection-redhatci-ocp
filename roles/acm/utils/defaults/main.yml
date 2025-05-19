@@ -1,4 +1,5 @@
 ---
+utils_cm_name: mirror-registry
 utils_monitor_timeout: 90
 utils_monitor_wait_time: 3
 utils_unqualified_search_registries:
