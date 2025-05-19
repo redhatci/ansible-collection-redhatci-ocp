@@ -1,5 +1,5 @@
 ---
-- name: Test CephRBD PVC
+- name: Test_ CephRBD PVC
   kubernetes.core.k8s:
     definition:
       apiVersion: v1
@@ -28,7 +28,7 @@
     - cephrbd_pvc_status.resources != []
     - cephrbd_pvc_status.resources[0].status.phase == "Bound"
 
-- name: Test CephFS PVC
+- name: Test_ CephFS PVC
   kubernetes.core.k8s:
     definition:
       apiVersion: v1
