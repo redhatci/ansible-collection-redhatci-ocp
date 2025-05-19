@@ -1,13 +1,13 @@
 ---
 # tasks file for jenkins-job-launcher
-- name: Validate required variables
+- name: Validate_ required variables
   ansible.builtin.assert:
     that:
       - jjl_username | string
       - jjl_token | string
       - jjl_job_params | string
       - jjl_job_url | string
-    
+
 - name: Trigger jenkins job
   ansible.builtin.uri:
     url: "{{ jjl_job_url }}/buildWithParameters/"
@@ -21,7 +21,7 @@
     body: "{{ jjl_job_params }}"
     headers:
       Content-Type: application/x-www-form-urlencoded
-  register: queue_build_number 
+  register: queue_build_number
 
 - name: Get jenkins build number
   ansible.builtin.uri:

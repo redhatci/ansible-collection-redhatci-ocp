@@ -4,7 +4,7 @@
     path: "{{ item }}"
   register: junit_file
 
-- name: "Fail if file is not present in the log folder"
+- name: "Test_ if the file is present in the log folder"
   ansible.builtin.fail:
     msg: "Could not verify test results: {{ item | basename }} is not present"
   failed_when:
@@ -16,7 +16,7 @@
   ansible.builtin.set_fact:
     actual_results: "{{ item | redhatci.ocp.junit2dict }}"
 
-- name: "Fail if not all test results are as expected for {{ item | basename }}"
+- name: "Validate_ all test results are as expected for {{ item | basename }}"
   vars:
     expectation_failed: "{{ t.expected_results | redhatci.ocp.regex_diff(actual_results) }}"
   ansible.builtin.fail:

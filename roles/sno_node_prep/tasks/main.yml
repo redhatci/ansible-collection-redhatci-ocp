@@ -5,7 +5,7 @@
     - validation
     - use_registry
 
-- name: Validate disconnected registry
+- name: Validate_ disconnected registry
   ansible.builtin.include_tasks: 15_validation_disconnected_registry.yml
   when:
     - "'registry_host' in groups"

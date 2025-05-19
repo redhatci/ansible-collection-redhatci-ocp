@@ -3,7 +3,7 @@
   ansible.builtin.set_fact:
     __rhoai_operator_map: "{{ rhoai_default_operator_map | combine(rhoai_operator_map, recursive=true) }}"
 
-- name: Validate operator map is complete
+- name: Validate_ operator map is complete
   ansible.builtin.assert:
     fail_msg: >
       Configuration for {{ item.key }} must contain package,

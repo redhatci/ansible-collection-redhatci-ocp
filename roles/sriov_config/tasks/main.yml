@@ -1,5 +1,5 @@
 ---
-- name: Validate SR-IOV requirements
+- name: Validate_ SR-IOV requirements
   ansible.builtin.include_tasks: validation.yml
 
 - name: Create SriovNetworkNodePolicies

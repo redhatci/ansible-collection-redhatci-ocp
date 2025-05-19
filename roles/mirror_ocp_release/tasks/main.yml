@@ -1,5 +1,5 @@
 ---
-- name: "Validate required variables"
+- name: "Validate_ required variables"
   ansible.builtin.assert:
     that:
       - mor_cache_dir | string
@@ -16,7 +16,7 @@
   when:
     - mor_auths_file is defined
 
-- name: "Validate optional authentication file"
+- name: "Validate_ optional authentication file"
   ansible.builtin.assert:
     that:
       - mor_auths_file is defined
@@ -24,7 +24,7 @@
   when:
     - mor_mirror_container_images | bool
 
-- name: "Validate optional mor_webserver_url variable"
+- name: "Validate_ optional mor_webserver_url variable"
   ansible.builtin.assert:
     that:
       - mor_webserver_url | string
@@ -32,7 +32,7 @@
   when:
     - mor_write_custom_config | bool
 
-- name: "Validate install type"
+- name: "Validate_ install type"
   ansible.builtin.assert:
     that:
       - mor_install_type is string or mor_install_type is sequence
@@ -40,7 +40,7 @@
         (mor_install_type is sequence and mor_install_type | difference(mor_list_install_type) | length == 0)
     fail_msg: "mor_install_type must be a string or list of valid install types: {{ mor_list_install_type }}"
 
-- name: "Validate conditional registry variables"
+- name: "Validate_ conditional registry variables"
   ansible.builtin.assert:
     that:
       - mor_registry_url is defined

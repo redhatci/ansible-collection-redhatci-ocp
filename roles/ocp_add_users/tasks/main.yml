@@ -1,5 +1,5 @@
 ---
-- name: Validate input variables
+- name: Validate_ input variables
   ansible.builtin.assert:
     that:
       - oau_dir is defined
@@ -15,7 +15,7 @@
     msg: Output directory does not exist
   when: not _oau_path_check.stat.exists
 
-- name: Validate users and their roles are valid
+- name: Validate_ users and their roles are valid
   vars:
     _oau_user: "{{ item.split(':')[0] }}"
     _oau_role: "{{ item.split(':')[1] }}"

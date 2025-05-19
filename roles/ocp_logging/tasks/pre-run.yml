@@ -17,7 +17,7 @@
     - file_stat is defined
     - file_stat.stat.exists
 
-- name: "Validate parameters"
+- name: "Validate_ parameters"
   ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"

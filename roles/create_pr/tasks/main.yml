@@ -1,5 +1,5 @@
 ---
-- name: Validate the presence of parameters
+- name: Validate_ the presence of parameters
   ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required"
@@ -12,7 +12,7 @@
     - target_repository
     - work_dir
 
-- name: Validate that cert_project_id is provided
+- name: Validate_ that cert_project_id is provided
   ansible.builtin.fail:
     msg: "Please define operator.pyxis_operator_identifier or use create_container_project / create_operator_project"
   when:

@@ -1,5 +1,5 @@
 ---
-- name: Validate cert_settings required to update the project
+- name: Validate_ cert_settings required to update the project
   ansible.builtin.include_tasks: validate_cert_settings.yml
 
 - name: Print JSON draft for the project to be updated

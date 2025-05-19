@@ -26,7 +26,7 @@
   kubernetes.core.k8s:
     definition: "{{ lookup('template', hs_vm_file) }}"
 
-- name: "test_ Create the test VirtualMachineInstance"  # noqa: name[casing]
+- name: "Create the test_ VirtualMachineInstance"  # noqa: name[casing]
   kubernetes.core.k8s:
     state: present
     definition:

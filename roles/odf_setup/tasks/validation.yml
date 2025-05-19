@@ -30,7 +30,7 @@
     - req_crd.resources | list | count == 0
     - ocs_install_type == 'internal'
 
-- name: "Validate OCS external variables"
+- name: "Validate_ OCS external variables"
   ansible.builtin.assert:
     that:
       - external_ceph_data is defined
