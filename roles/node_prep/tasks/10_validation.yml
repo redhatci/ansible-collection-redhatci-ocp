@@ -430,16 +430,6 @@
     - always
     - validation
 
-- name: Fail if DNSVIP not set (OCP 4.4 or lower)
-  fail:
-    msg: "dnsvip variable is undefined or empty."
-  when:
-    - release_version is ansible.builtin.version('4.5', '<')
-    - ((dnsvip is undefined) or (dnsvip|length == 0))
-  tags:
-    - always
-    - validation
-
 - name: Get all the chassis results from all the hosts
   redfish_info:
     category: Chassis
