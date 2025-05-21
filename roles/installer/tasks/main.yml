@@ -34,9 +34,6 @@
 
 - include_tasks: 25_create-install-config.yml
   tags: installconfig
-- include_tasks: 30_create_metal3.yml
-  when: release_version is ansible.builtin.version('4.3', '<=')
-  tags: metal3config
 - include_tasks: 40_create_manifest.yml
   tags: manifests
 - include_tasks: 50_extramanifests.yml
