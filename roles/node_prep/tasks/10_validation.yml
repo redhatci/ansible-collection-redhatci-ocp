@@ -346,16 +346,6 @@
         - always
         - validation
 
-- name: Fail if dual-stack is requested and build does not support it
-  fail:
-    msg: This release {{ release_version }} does not support dual-stack deployments
-  when:
-    - release_version is ansible.builtin.version('4.6', '<')
-    - dualstack_baremetal | bool
-  tags:
-    - always
-    - validation
-
 - name: Fail if dualstack_baremetal and ipv4_baremetal are both true
   fail:
     msg: Only one of ipv4_baremetal and dualstack_baremetal variables can be true
