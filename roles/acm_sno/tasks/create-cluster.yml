@@ -243,7 +243,7 @@
   retries: 15
   delay: 6
 
-- name: "BMC credentials"
+- name: "BMC credentials for BareMetalHost"
   kubernetes.core.k8s:
     definition:
       apiVersion: v1
@@ -252,7 +252,7 @@
         password: "{{ acm_bmc_pass | b64encode }}"
       kind: Secret
       metadata:
-        name: "bmc-{{ acm_cluster_name }}"
+        name: "bmh-{{ acm_cluster_name }}"
         namespace: "{{ acm_cluster_name }}"
       type: Opaque
 
@@ -274,7 +274,7 @@
         automatedCleaningMode: disabled
         bmc:
           address: "{{ acm_bmc_address }}"
-          credentialsName: "bmc-{{ acm_cluster_name }}"
+          credentialsName: "bmh-{{ acm_cluster_name }}"
           disableCertificateVerification: true
         bootMACAddress: "{{ acm_boot_mac_address }}"
         online: true
