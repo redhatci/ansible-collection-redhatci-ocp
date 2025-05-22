@@ -1,0 +1,4 @@
+---
+# Optional git author override settings
+commit_author_name: ""
+commit_author_email: ""

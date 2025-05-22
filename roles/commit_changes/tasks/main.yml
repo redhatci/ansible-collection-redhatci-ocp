@@ -1,0 +1,40 @@
+---
+
+- name: Assert required variables are defined
+  ansible.builtin.assert:
+    that:
+      - cc_directory is defined
+      - cc_directory | length > 0
+      - cc_message is defined
+      - cc_message | length > 0
+
+- name: Set git author name
+  ansible.builtin.command: git config user.name "{{ cc_author_name }}"
+  args:
+    chdir: "{{ cc_directory }}"
+  when:
+    - cc_author_name is defined
+    - cc_author_name | length > 0
+
+- name: Set git author email
+  ansible.builtin.command: git config user.email "{{ cc_author_email }}"
+  args:
+    chdir: "{{ cc_directory }}"
+  when:
+    - cc_author_email is defined
+    - cc_author_email | length > 0
+
+- name: Stage changes in directory
+  ansible.builtin.command: git add --all .
+  args:
+    chdir: "{{ cc_directory }}"
+
+- name: Commit changes
+  ansible.builtin.command: git commit -m "{{ cc_message }}"
+  args:
+    chdir: "{{ cc_directory }}"
+  register: _cc_result
+  failed_when: _cc_result.rc > 1
+  changed_when: _cc_result.rc == 0
+
+...
