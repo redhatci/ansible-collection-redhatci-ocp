@@ -3,7 +3,8 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.6.EPOCH
+# keep in sync with galaxy.yml
+Version:        2.7.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Jul  7 2025 Frederic Lepied <flepied@redhat.com> 2.7.EPOCH-VERS
+- New role commit_changes
+
 * Fri Jul 4 2025 Beto Rdz <josearod@redhat.com> - 2.6.EPOCH-VERS
 - New role setup_gitops
 
