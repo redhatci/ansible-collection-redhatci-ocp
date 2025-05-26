@@ -122,7 +122,7 @@
 
         - name: "Pull cert grade of {{ current_operator_image }}"
           vars:
-            filter_params: "filter=docker_image_digest%3D%3D{{ _preflight_container_sha.stdout }}"
+            filter_params: "filter=docker_image_digest=={{ _preflight_container_sha.stdout }}"
           ansible.builtin.uri:
             url: >
               {{ catalog_url }}/images?{{ filter_params }}&page_size=100&page=0
@@ -134,6 +134,13 @@
           register: _preflight_pyxis_grade_status
           when:
             - cert_project_id | default('') | length
+ 
+        - name: Debug grade result
+          ansible.builtin.debug:
+            msg: "{{ _preflight_pyxis_grade_status }}"
+          when:
+            - cert_project_id | default('') | length
+            - _preflight_pyxis_grade_status is defined
 
         - name: "Test_ Preflight: Get cert grade of {{ current_operator_image }}"
           ansible.builtin.debug:
