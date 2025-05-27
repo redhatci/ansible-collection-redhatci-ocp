@@ -26,7 +26,6 @@ Role tasks:
 | sg_repository         | *undefined*                           | No       | Initial repository name. Mandatory if an external repository to mirror (sg_repo_mirror_url) is set.
 | sg_repo_branch        | main                                  | No       | Main branch in the initial repository
 | sg_repo_mirror_url    | *undefined*                           | No       | Git URL to mirror into the initial repository
-| sg_repo_mirror_branch | main                                  | No       | Branch to mirror from the repository
 | sg_repo_sshkey        | *undefined*                           | No       | The sshkey to clone the initial repository when the repo requires ssh authentication.
 
 ## Role requirements

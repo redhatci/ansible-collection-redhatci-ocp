@@ -155,14 +155,23 @@
       ansible.builtin.git:
         dest: "{{ _sg_mirror_repo.path }}/mirror"
         repo: "{{ sg_repo_mirror_url }}"
-        version: "{{ sg_repo_mirror_branch }}"
+        version: "{{ sg_repo_branch }}"
         key_file: "{{ keyfile | length | ternary(keyfile, omit) }}"
 
-    - name: Mirror the repository # noqa command-instead-of-module
+    - name: Mirror all branches to the repository # noqa command-instead-of-module
       ansible.builtin.shell:
         cmd: |
-          /usr/bin/git push http://{{ sg_username }}:{{ sg_password }}@{{ sg_gitea_domain }}/{{ sg_username }}/{{ sg_repository }}.git {{ sg_repo_mirror_branch }}:{{ sg_repo_branch }}
+          /usr/bin/git remote add mirror http://{{ sg_username }}:{{ sg_password }}@{{ sg_gitea_domain }}/{{ sg_username }}/{{ sg_repository }}.git
+          /usr/bin/git push mirror 'refs/remotes/origin/*:refs/heads/*'
         chdir: "{{ _sg_mirror_repo.path }}/mirror"
-      changed_when: false
+      register: _sg_git_push_result
+      failed_when: _sg_git_push_result.rc != 0
+      changed_when: "'Everything up-to-date' not in _sg_git_push_result.stderr"
       no_log: true
+
+    - name: Clear mirror temp dir
+      ansible.builtin.file:
+        path: "{{ _sg_mirror_repo.path }}"
+        state: absent
+
 ...
