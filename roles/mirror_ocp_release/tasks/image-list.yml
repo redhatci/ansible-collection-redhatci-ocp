@@ -3,41 +3,13 @@
   ansible.builtin.set_fact:
     mor_images: "{{ mor_images | default([]) }}"
 
-- name: "Add images for IPI installer"
+- name: "Add images for selected install types"
   ansible.builtin.set_fact:
-    mor_images: "{{ mor_images + mor_ipi }}"
-  when:
-    - mor_install_type == 'ipi'
-
-- name: "Add images for vsphere installer"
-  ansible.builtin.set_fact:
-    mor_images: "{{ mor_images + mor_vsphere }}"
-  when:
-    - mor_install_type == 'vsphere'
-
-- name: "Add images for ACM installation"
-  ansible.builtin.set_fact:
-    mor_images: "{{ mor_images + mor_acm }}"
-  when:
-    - mor_install_type == 'acm'
-
-- name: "Add images for SNO installation"
-  ansible.builtin.set_fact:
-    mor_images: "{{ mor_images + mor_sno }}"
-  when:
-    - mor_install_type == 'sno'
-
-- name: "Add images for Assisted installer"
-  ansible.builtin.set_fact:
-    mor_images: "{{ mor_images + mor_assisted_installer }}"
-  when:
-    - mor_install_type == 'assisted'
-
-- name: "Add images for ABI"
-  ansible.builtin.set_fact:
-    mor_images: "{{ mor_images + mor_abi }}"
-  when:
-    - mor_install_type == 'abi'
+    mor_images: "{{ mor_images + lookup('vars', 'mor_' + item) }}"
+  loop: "{{ mor_list_install_type }}"
+  when: >
+    (mor_install_type is string and mor_install_type == item) or
+    (mor_install_type is sequence and item in mor_install_type)
 
 - name: "Cleanup images list"
   ansible.builtin.set_fact:
