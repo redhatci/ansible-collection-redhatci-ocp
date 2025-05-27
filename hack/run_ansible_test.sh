@@ -28,7 +28,7 @@ trap 'git checkout -- "$branch"' EXIT
 git fetch --unshallow origin main || :
 
 # extract all the supported python versions from the error message, excluding 3.5
-EXCLUDE="--exclude hack/ --exclude plugins/modules/nmcli.py"
+EXCLUDE="--exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py"
 PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
   grep -Po "invalid.*?\K'3.*\d'" |
   tr -d ,\' |
@@ -36,11 +36,13 @@ PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color -
 for version in $PY_VERS; do
   ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
   ansible-test units --verbose --docker --python $version --color --coverage || :
+  ansible-test integration --verbose --docker --python $version --color --coverage || :
 done 2> >(tee -a branch.output >&2)
 git checkout origin/main
 for version in $PY_VERS; do
   ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
   ansible-test units --verbose --docker --python $version --color --coverage || :
+  ansible-test integration --verbose --docker --python $version --color --coverage || :
 done 2> main.output 1>/dev/null
 for key in branch main; do
   grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |

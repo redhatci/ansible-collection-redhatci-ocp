@@ -62,7 +62,7 @@ The collection has multiple CI pipelines that run on every PR:
 
 - PR pipeline: [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) that runs the sanity tests and Ansible lint. It fails if there is any regression. It also runs a check on the PR Dependencies (`Depends-On:` lines in the commit message) to make sure that the dependencies are merged before the PR. Tests can be run locally:
   - For Ansible lint tests, run [`./hack/ansible-lint.sh -d`](hack/ansible-lint.sh).
-  - For Sanity and Unit tests, run [`./hack/run_ansible_test.sh`](hack/run_ansible_test.sh).
+  - For Sanity, Integration and Unit tests, run [`./hack/run_ansible_test.sh`](hack/run_ansible_test.sh).
   - For Doc checks, run [`./hack/check_doc.sh`](hack/check_doc.sh).
   - For version checks, run [`./hack/check_version.sh`](hack/check_version.sh).
 - DCI BOS2 pipeline: [`.github/workflows/dci.yml`](../.github/workflows/dci.yml) that runs a DCI job to test the collection in a virtual environment at the BOS2 Telco Partner CI lab. It is triggered only when a change is modifying files in the `/roles/` directory.

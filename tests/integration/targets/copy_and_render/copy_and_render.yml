@@ -1,0 +1,56 @@
+---
+
+- name: copy_and_render integration test
+  hosts: testhost
+  gather_facts: false
+  vars:
+    car_target_dir: "/tmp/car_test_ansible_test"
+  tasks:
+
+    - name: Cleanup target directory
+      ansible.builtin.file:
+        path: "{{ car_target_dir }}"
+        state: absent
+
+    - name: Run the role under test
+      import_role:
+        name: redhatci.ocp.copy_and_render
+
+    - name: Assert plain file copied
+      ansible.builtin.stat:
+        path: "{{ car_target_dir }}/file1.txt"
+      register: st_file1
+
+    - name: Assert plain file exists
+      ansible.builtin.assert:
+        that:
+          - st_file1.stat.exists
+
+    - name: Assert rendered template exists
+      ansible.builtin.stat:
+        path: "{{ car_target_dir }}/template"
+      register: st_tpl
+
+    - name: Assert template exists
+      ansible.builtin.assert:
+        that:
+          - st_tpl.stat.exists
+
+    - name: Assert template content
+      ansible.builtin.command: |
+        grep -q "HELLO: Hi" "{{ car_target_dir }}/template"
+      register: grep_res
+      changed_when: false
+      failed_when: grep_res.rc != 0
+
+    - name: Lookup .j2
+      ansible.builtin.stat:
+        path: "{{ car_target_dir }}/template.j2"
+      register: st_j2
+
+    - name: Assert .j2 not present
+      ansible.builtin.assert:
+        that:
+          - not st_j2.stat.exists
+
+...
