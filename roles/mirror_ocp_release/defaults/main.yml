@@ -41,5 +41,5 @@ mor_abi:
 mor_aws:
  - aws
 mor_azure:
-  - azurestack
+ - azurestack
 ...
