@@ -1,7 +1,7 @@
 ---
 # cert_item is a complex nested variable,
 # it could be container, operator, cnf, or helmchart
-- name: Validate cert_item to be defined
+- name: Validate_ cert_item to be defined
   ansible.builtin.assert:
     that: "{{ cert_item }} is defined"
     fail_msg: "The parameter cert_item is required to create cert project"

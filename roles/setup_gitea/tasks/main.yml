@@ -1,5 +1,5 @@
 ---
-- name: Validate the input variables
+- name: Validate_ the input variables
   ansible.builtin.assert:
     that:
         # if we're mirroring an external repository (sg_repo_mirror_url) we

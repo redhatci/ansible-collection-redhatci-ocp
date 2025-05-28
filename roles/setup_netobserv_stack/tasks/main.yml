@@ -9,7 +9,7 @@
     - name: Set up the NetObservability stack
       ansible.builtin.include_tasks: setup.yml
 
-    - name: Validate the NetObservability resources
+    - name: Validate_ the NetObservability resources
       ansible.builtin.include_tasks: verify.yml
 
 - name: Cleanup NetObservability stack resources
