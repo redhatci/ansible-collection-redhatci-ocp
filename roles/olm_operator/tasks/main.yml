@@ -121,7 +121,7 @@
 
     - name: Create subscription for OLM operator
       vars:
-        _oo_approval: "{{ (install_approval == 'Automatic' or (starting_csv | length == 0)) | ternary('Automatic', 'Manual') }}"
+        _oo_approval: "{{ (install_approval == 'Automatic' or (starting_csv | length > 0)) | ternary('Automatic', 'Manual') }}"
       kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
@@ -139,36 +139,39 @@
             sourceNamespace: "{{ source_ns }}"
             startingCSV: "{{ operator_csv }}"
 
-    - name: Check for install plans
+    - name: Wait for the InstallPlan with the target CSV to appear
       kubernetes.core.k8s_info:
-        api: operators.coreos.com/v1alpha1
+        api_version: operators.coreos.com/v1alpha1
         kind: InstallPlan
         namespace: "{{ namespace }}"
-      register: _oo_install_plans
-      no_log: true
+      register: _oo_install_plan
       retries: 30
       delay: 10
-      until:
-        - _oo_install_plans.resources is defined
-        - _oo_install_plans.resources | length
+      no_log: true
+      until: >
+        _oo_install_plan.resources
+        | selectattr('spec.clusterServiceVersionNames', 'defined')
+        | selectattr('spec.clusterServiceVersionNames', 'contains', operator_csv)
+        | list
+        | length > 0
 
-    - name: Approve only the install plan for the specific CSV
-      vars:
-        query: "resources[? spec.approved == `false` && contains(spec.clusterServiceVersionNames, '{{ starting_csv }}')]"
+    - name: Approve the InstallPlan that contains the operator CSV
       kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: InstallPlan
           metadata:
-            name: "{{ install_plan.metadata.name }}"
+            name: >-
+              {{
+                _oo_install_plan.resources
+                | selectattr('spec.clusterServiceVersionNames', 'contains', operator_csv)
+                | map(attribute='metadata.name')
+                | first
+              }}
             namespace: "{{ namespace }}"
           spec:
             approved: true
-      loop: "{{ _oo_install_plans | json_query(query) | default([]) }}"
-      loop_control:
-        loop_var: install_plan
-      when:
-        - starting_csv | length
+      no_log: true
 
     - name: Validate operator installation
       when:
