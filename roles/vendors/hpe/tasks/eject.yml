@@ -50,5 +50,5 @@
           image_url: "{{ item.Image }}"
         resource_id: 1
       loop: "{{ blocking_virtual_media }}"
-      no_log: true
+
 ...
