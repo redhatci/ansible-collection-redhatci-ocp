@@ -12,7 +12,6 @@
     mode: '0755'
 
 - name: Tasks related to Certsuite submission through CWE Hydra API
-  when: kbpc_version is version('v5.4.2', '>=') or kbpc_version == 'HEAD'
   block:
     - name: Verify if the CWE Hydra API key file exists
       ansible.builtin.stat:
@@ -58,7 +57,7 @@
           --preflight-dockerconfig=/usr/certsuite/config/config.json \
           --allow-preflight-insecure={{ kbpc_allow_preflight_insecure }} \
           {% endif %}
-          {% if (kbpc_version is version('v5.4.3', '>=') or kbpc_version == 'HEAD') and kbpc_cwe_apikey is defined and kbpc_cwe_project_id is defined %}
+          {% if kbpc_cwe_apikey is defined and kbpc_cwe_project_id is defined %}
           --connect-api-key={{ kbpc_cwe_apikey }} \
           --connect-project-id={{ kbpc_cwe_project_id }} \
           {% endif %}
@@ -68,11 +67,7 @@
           --kubeconfig=/usr/certsuite/config/kubeconfig \
           --certsuite-probe-image={{ kbpc_partner_repo }}/{{ kbpc_support_image }} \
           --create-xml-junit-file={{ kbpc_enable_xml_creation }} \
-          {% if kbpc_version is version('v5.5.0', '>=') or kbpc_version == 'HEAD' %}
           --intrusive={{ kbpc_intrusive }} \
-          {% else %}
-          --non-intrusive={{ kbpc_non_intrusive_only }} \
-          {% endif %}
           --log-level={{ kbpc_log_level }} \
           --include-web-files=true
       ansible.builtin.shell: |
