@@ -23,7 +23,7 @@
 
     - name: Get blocking virtual_media
       ansible.builtin.set_fact:
-        blocking_virtual_media: "{{ result.redfish_facts.VirtualMedia
+        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
             | flatten(levels=2)
             | selectattr('ConnectedVia', 'defined') | list
             | json_query('[?(
@@ -50,5 +50,5 @@
           image_url: "{{ item.Image }}"
         resource_id: 1
       loop: "{{ blocking_virtual_media }}"
-      no_log: true
+
 ...
