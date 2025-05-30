@@ -1,0 +1,35 @@
+---
+
+- name: Set is_ci attribute
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'is_ci': true}) }}"
+  when:
+    - lookup("env", "CI") | lower == "true"
+
+- name: Update trs_ci.type for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'type': trs_ci_system}) }}"
+
+- name: Update trs_ci.url for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'url': lookup('env', 'CI_SERVER_URL')}) }}"
+  when:
+    - lookup("env", "CI_SERVER_URL") | length > 0
+
+- name: Update trs_ci.pipeline for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'pipeline': lookup('env', 'CI_PIPELINE_NAME')}) }}"
+  when:
+    - lookup("env", "CI_PIPELINE_NAME") | length > 0
+
+- name: Update trs_ci.job for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'job': lookup('env', 'CI_JOB_NAME')}) }}"
+  when:
+    - lookup("env", "CI_JOB_NAME") | length > 0
+
+- name: Update trs_ci.commit for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci: "{{ trs_ci | combine({'commit': lookup('env', 'CI_COMMIT_SHA')}) }}"
+  when:
+    - lookup("env", "CI_COMMIT_SHA") | length > 0
