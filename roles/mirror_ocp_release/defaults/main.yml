@@ -2,6 +2,7 @@
 mor_base_version: "{{ mor_version.split('.')[:2] | join('.') }}"
 mor_cache_dir: "/var/lib/dci-openshift-agent/releases"
 mor_install_type: "ipi"
+mor_list_install_type: ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm', 'abi', 'aws', 'azure']
 mor_installer: >-
   {{ mor_version is version('4.16', '>=') |
   ternary('openshift-install', 'openshift-baremetal-install') }}
@@ -17,6 +18,7 @@ mor_write_custom_config: true
 mor_registry_path: "ocp-{{ mor_base_version }}/{{ mor_version }}"
 mor_allow_insecure_registry: true
 # Required images according install type
+mor_upi: []
 mor_ipi:
  - openstack
  - qemu
@@ -30,10 +32,14 @@ mor_sno:
 mor_acm:
  - metal_pxe_rootfs
  - metal_iso
-mor_assisted_installer:
+mor_assisted:
  - metal_pxe_rootfs
  - metal_iso
 mor_abi:
  - metal_pxe_rootfs
  - metal_iso
+mor_aws:
+ - aws
+mor_azure:
+ - azurestack
 ...
