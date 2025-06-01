@@ -36,27 +36,34 @@ argument_specs:
       trs_collector_url:
         type: str
         required: true
-        description: >
+        description: |
           The URL of collector server (Splunk).
 
       trs_collector_auth_token:
         type: str
         required: false
-        description: >
+        description: |
           Collector auth token string for Bearer Token HTTP Authentication.
 
       trs_collector_target:
         type: str
         required: true
-        description: >
+        description: |
           Collector Target/Channel/Topic/Id
 
       trs_collector_type:
         type: str
         required: false
         default: splunk
-        description: >
+        description: |
           Collector type (currently only `splunk` is supported).
+
+      trs_collector_source:
+        type: str
+        required: false
+        default: ""
+        description: |
+          Collector source should contain detected or passed hostname generating the event.
 
       trs_supported_collector_types:
         type: list

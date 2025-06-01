@@ -1,6 +1,7 @@
 ---
-- hosts: localhost
-  remote_user: root
+- name: Run test_report_send role
+  hosts: localhost
+  connection: local
+  gather_facts: false
   roles:
     - role: test_report_send
-      

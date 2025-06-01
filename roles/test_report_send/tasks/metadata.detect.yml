@@ -9,7 +9,7 @@
 
 - name: Initialize metadata if empty
   ansible.builtin.set_fact:
-    trs_metadata: "{{ trs_metadata | default({}) }}"
+    trs_meta_data: "{{ trs_meta_data | default({}) }}"
     trs_ci: {}
 
 - name: Detect dynamic metadata
@@ -17,10 +17,10 @@
 
 - name: Update metadata
   ansible.builtin.set_fact:
-    trs_metadata: "{{ trs_metadata | combine({'ci': trs_ci}) }}"
+    trs_meta_data: "{{ trs_meta_data | combine({'ci': trs_ci}) }}"
 
 - name: Update trs_collector_source for {{ trs_ci_system }}
   ansible.builtin.set_fact:
-    trs_collector_source: "{{ trs_metadata.ci.url }}"
+    trs_collector_source: "{{ trs_meta_data.ci.url }}"
   when:
-    - trs_metadata.ci.url | default("") | length > 0
+    - trs_meta_data.ci.url | default("") | length > 0
