@@ -4,6 +4,7 @@
 
 trs_report_path: ""
 trs_metadata_path: ""
+trs_collector_source: ""
 trs_collector_type: splunk
 trs_supported_ci_systems:
   - jenkins

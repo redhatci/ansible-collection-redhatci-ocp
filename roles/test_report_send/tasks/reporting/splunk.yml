@@ -18,11 +18,11 @@
 
 - name: Setup timestamps broken down to int/float parts for {{ trs_collector_type }}
   ansible.builtin.set_fact:
-    trs_job_time_int: "{{ (trs_meta_data.metadata.job.created_at | \
+    trs_job_time_int: "{{ (trs_meta_data.job.created_at | \
       default(trs_default_dt) | \
       regex_replace('\\..*$', '') | \
       to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
-    trs_job_time_fraction: "{{ trs_meta_data.metadata.job.created_at | default(trs_default_dt) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+    trs_job_time_fraction: "{{ trs_meta_data.job.created_at | default(trs_default_dt) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
 
 - name: Setup timestamps as floats for reporting
   ansible.builtin.set_fact:
@@ -49,8 +49,7 @@
 
 - name: Create event data attributes
   ansible.builtin.set_fact:
-    trs_data_event: '{{ {"test": trs_test_data} | combine(trs_meta_data) }}'
-    # trs_event_time: "{{ now(fmt='%s') }}"
+    trs_data_event: '{{ {"test": trs_test_data, "metadata": trs_meta_data} }}'
 
 - name: Print event data before timestamp corrections
   ansible.builtin.debug:

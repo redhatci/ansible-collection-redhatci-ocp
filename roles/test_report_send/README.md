@@ -4,140 +4,88 @@
 
 ## test_report_send
 
-
-
 Description: Push data file to collector
-
-
-
-
-
-
 
 <details>
 <summary><b>🧩 Argument Specifications in meta/argument_specs</b></summary>
 
-#### Key: main 
+#### Key: main
+
 **Description**: This is the main entrypoint for the role `redhatci.ocp.test_report_send`.
 The role constructs a single event made of:
 
 * tests report data: `trs_report_path`
 * runtime metadata, either:
-    * `trs_metadata_path`
-    * CI specific metadata collected from environment variables
+  * `trs_metadata_path`
+  * CI specific metadata collected from environment variables
 This event is sent to the collector (currently only splunk is supported).
 
-
-
-  - **trs_report_path**
-    - **Required**: False
-    - **Type**: str
-    - **Default**: none
-    - **Description**: Test report JSON file to send.
+  * **trs_report_path**
+    * **Required**: False
+    * **Type**: str
+    * **Default**: none
+    * **Description**: Test report JSON file to send.
 Merged into the event under 'test' attribute.
 For full report syntax see (TBD).
 
-  
-  
-  
-
-  - **trs_metadata_path**
-    - **Required**: False
-    - **Type**: str
-    - **Default**: 
-    - **Description**: Event metadata JSON file to send.
+  * **trs_metadata_path**
+    * **Required**: False
+    * **Type**: str
+    * **Default**:
+    * **Description**: Event metadata JSON file to send.
 Merged into the event 'metadata' attribute.
 Useful to mark special datasets during development.
 If set to be empty or the file is missing, it is ignored.
 
-  
-  
-  
+  * **trs_collector_url**
+    * **Required**: True
+    * **Type**: str
+    * **Default**: none
+    * **Description**: The URL of collector server (Splunk).
 
-  - **trs_collector_url**
-    - **Required**: True
-    - **Type**: str
-    - **Default**: none
-    - **Description**: The URL of collector server (Splunk).
+  * **trs_collector_auth_token**
+    * **Required**: False
+    * **Type**: str
+    * **Default**: none
+    * **Description**: Collector auth token string for Bearer Token HTTP Authentication.
 
-  
-  
-  
+  * **trs_collector_target**
+    * **Required**: True
+    * **Type**: str
+    * **Default**: none
+    * **Description**: Collector Target/Channel/Topic/Id
 
-  - **trs_collector_auth_token**
-    - **Required**: False
-    - **Type**: str
-    - **Default**: none
-    - **Description**: Collector auth token string for Bearer Token HTTP Authentication.
+  * **trs_collector_type**
+    * **Required**: False
+    * **Type**: str
+    * **Default**: splunk
+    * **Description**: Collector type (currently only `splunk` is supported).
 
-  
-  
-  
+  * **trs_supported_collector_types**
+    * **Required**: False
+    * **Type**: list
+    * **Default**: ['splunk']
+    * **Description**: Supported collectors types list.
 
-  - **trs_collector_target**
-    - **Required**: True
-    - **Type**: str
-    - **Default**: none
-    - **Description**: Collector Target/Channel/Topic/Id
+  * **trs_supported_ci_systems**
+    * **Required**: False
+    * **Type**: list
+    * **Default**: ['dci', 'jenkins', 'prow']
+    * **Description**: Supported CI systems list.
 
-  
-  
-  
+  * **trs_collector_auth_headers**
+    * **Required**: False
+    * **Type**: dict
+    * **Default**: {}
+    * **Description**: Collector request HTTP headers for HTTP Authentication.
 
-  - **trs_collector_type**
-    - **Required**: False
-    - **Type**: str
-    - **Default**: splunk
-    - **Description**: Collector type (currently only `splunk` is supported).
-
-  
-  
-  
-
-  - **trs_supported_collector_types**
-    - **Required**: False
-    - **Type**: list
-    - **Default**: ['splunk']
-    - **Description**: Supported collectors types list.
-
-  
-  
-  
-
-  - **trs_supported_ci_systems**
-    - **Required**: False
-    - **Type**: list
-    - **Default**: ['dci', 'jenkins', 'prow']
-    - **Description**: Supported CI systems list.
-
-  
-  
-  
-
-  - **trs_collector_auth_headers**
-    - **Required**: False
-    - **Type**: dict
-    - **Default**: {}
-    - **Description**: Collector request HTTP headers for HTTP Authentication.
-
-  
-  
-  
-
-  - **trs_ci_detect_skip**
-    - **Required**: False
-    - **Type**: bool
-    - **Default**: False
-    - **Description**: Skip auto-detection of CI system (mainly mor dev).
-
-  
-  
-  
-
-
+  * **trs_ci_detect_skip**
+    * **Required**: False
+    * **Type**: bool
+    * **Default**: False
+    * **Description**: Skip auto-detection of CI system (mainly mor dev).
 
 </details>
-
 
 ### Defaults
 
@@ -156,12 +104,7 @@ If set to be empty or the file is missing, it is ignored.
 | [trs_do_send](defaults/main.yml#L16)   | bool   | `True` |    n/a  |  n/a |
 | [trs_ci_detect_skip](defaults/main.yml#L17)   | bool   | `False` |    n/a  |  n/a |
 
-
-
-
-
 ### Tasks
-
 
 #### File: tasks/ci.detect.yml
 
@@ -271,9 +214,6 @@ If set to be empty or the file is missing, it is ignored.
 | Update trs_ci.job for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
 | Update trs_ci.commit for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
 
-
-
-
 ## Playbook
 
 ```yml
@@ -286,8 +226,8 @@ If set to be empty or the file is missing, it is ignored.
 
 ```
 
-
 ## Author Information
+
 Max Kovgan, Cesare Placanica
 
 #### License
