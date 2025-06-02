@@ -23,9 +23,6 @@ kbpc_partner_name: ""
 kbpc_collector_app_password: ""
 # If this is not set to true, JUnit file will not be created
 kbpc_enable_xml_creation: true
-## This variable is deprecated, to be deleted when updating backwards compatibility support
-kbpc_non_intrusive_only: false
-## This variable replaces kbpc_non_intrusive_only for versions >= v5.5.0
 kbpc_intrusive: true
 kbpc_log_level: info
 kbpc_postrun_delete_resources: true
