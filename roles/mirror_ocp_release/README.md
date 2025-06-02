@@ -11,9 +11,10 @@ If enabled, the role requires an container registry to mirror the OCP container 
 | mor_auths_file               | undefined                             | Yes      | Path to the authentication file used for container registries e.g. $HOME/.docker/config.json   |
 | mor_cache_dir                | /var/lib/dci-openshift-agent/releases | No       | Base directory that will hold the OCP version binaries and OS images                           |
 | mor_force                    | false                                 | No       | If passed as true, the role will re-download all the OCP release resources                     |
-| mor_install_type             | "ipi"                                 | No       | Mirrors image required for the install type (ipi, acm, assisted, sno, upi, vsphere)            |
+| mor_install_type             | "ipi"                                 | No       | Installation type(s) to include. Can be a **string** or a **list of strings**. Supported values: `ipi`, `sno`, `upi`, `assisted`, `vsphere`, `acm`, `abi`, `aws`, `azure`.            |
 | mor_installer                | \<See Description\>                   | No       | Depending on the OCP 4.16+:openshift-install, 4.16-:openshift-baremetal-install                |
 | mor_is_type                  | \<See Description\>                   | No       | Image Source file type. Default: `icsp` for 4.13 and below, `idms` for 4.14 and above          |
+| mor_list_install_type        | ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm', 'abi', 'aws', 'azure']      | No       | List of supported install types used internally by the role.          |
 | mor_mirror_container_images  | true                                  | No       | Mirror all container images from upstream container registries to the provided registry        |
 | mor_mirror_disk_images       | true                                  | No       | Download all disk images depending on which install type                                       |
 | mor_oc                       | undefined                             | Yes      | Path to the oc binary (stable is recommended).                                                 |

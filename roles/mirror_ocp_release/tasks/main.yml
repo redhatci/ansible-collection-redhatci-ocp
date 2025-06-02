@@ -35,8 +35,10 @@
 - name: "Validate install type"
   ansible.builtin.assert:
     that:
-      - mor_install_type | string
-      - mor_install_type in ['ipi', 'sno', 'upi', 'assisted', 'vsphere', 'acm', 'abi']
+      - mor_install_type is string or mor_install_type is sequence
+      - (mor_install_type in mor_list_install_type) or
+        (mor_install_type is sequence and mor_install_type | difference(mor_list_install_type) | length == 0)
+    fail_msg: "mor_install_type must be a string or list of valid install types: {{ mor_list_install_type }}"
 
 - name: "Validate conditional registry variables"
   ansible.builtin.assert:
