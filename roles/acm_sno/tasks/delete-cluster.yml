@@ -22,6 +22,18 @@
     name: "{{ acm_cluster_name }}"
     namespace: "{{ acm_cluster_name }}"
 
+- name: "Disable HardwareData finalizers"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: metal3.io/v1alpha1
+      kind: HardwareData
+      metadata:
+        name: "{{ acm_cluster_name }}"
+        namespace: "{{ acm_cluster_name }}"
+        finalizers: null
+        ownerReferences: null
+  ignore_errors: true
+
 - name: "Disable BMC credentials finalizers"
   kubernetes.core.k8s:
     definition:
@@ -116,6 +128,6 @@
   until:
     - cluster_ns.resources is defined
     - cluster_ns.resources | length == 0
-  retries: 6
+  retries: 12
   delay: 10
 ...
