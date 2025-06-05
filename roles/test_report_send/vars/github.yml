@@ -6,3 +6,4 @@ auth_headers:
   Authorization: "token {{ lookup('env', 'GITHUB_TOKEN') }}"
 
 per_page: 100 # Adjust per_page if you have >100 jobs
+req_timeout: 15
