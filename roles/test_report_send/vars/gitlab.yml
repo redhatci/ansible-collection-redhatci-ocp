@@ -5,3 +5,4 @@ auth_headers:
 # Or for a Private Access Token (less secure, use with caution):
 # auth_headers:
 #   PRIVATE-TOKEN: "your_gitlab_pat"
+req_timeout: 15
