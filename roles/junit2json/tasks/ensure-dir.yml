@@ -1,4 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
 ---
+# tasks file ensure-dir.yml for role redhatci.ocp.junit2json
+# Ensures folder_path exists
+
 
 - name: Collect folder_path stat
   ansible.builtin.stat:
