@@ -10,6 +10,12 @@
 - name: Detect dynamic metadata
   ansible.builtin.include_tasks: "metadata-detect/{{ trs_ci_system }}.yml"
 
+- name: Print generated dict trs_ci_runtime
+  ansible.builtin.debug:
+    var: trs_ci_runtime
+  when:
+    - trs_debug
+
 - name: Update metadata
   ansible.builtin.set_fact:
     trs_meta_data: "{{ trs_meta_data | combine({'ci': trs_ci_runtime}) }}"
