@@ -6,3 +6,4 @@ auth_headers:
 # auth_headers:
 #   PRIVATE-TOKEN: "your_gitlab_pat"
 req_timeout: 15
+default_iid: UnknownIID
