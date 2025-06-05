@@ -85,16 +85,20 @@
       - "{{ registry_dir_data }}:/var/lib/registry:z"
       - "{{ registry_dir_auth }}:/auth:z"
       - "{{ registry_dir_cert }}:/certs:z"
-    env:
-      REGISTRY_AUTH: htpasswd
-      REGISTRY_AUTH_HTPASSWD_REALM: Registry
-      REGISTRY_HTTP_SECRET: "{{ REGISTRY_HTTP_SECRET }} "
-      REGISTRY_AUTH_HTPASSWD_PATH: auth/htpasswd
-      REGISTRY_HTTP_TLS_CERTIFICATE: "certs/{{ cert_file_prefix }}.crt"
-      REGISTRY_HTTP_TLS_KEY: "certs/{{ cert_file_prefix }}.key"
+    env: >-
+      {{
+        dict(
+          REGISTRY_AUTH='htpasswd',
+          REGISTRY_AUTH_HTPASSWD_REALM='Registry',
+          REGISTRY_HTTP_SECRET=REGISTRY_HTTP_SECRET,
+          REGISTRY_AUTH_HTPASSWD_PATH='auth/htpasswd',
+          REGISTRY_HTTP_TLS_CERTIFICATE='certs/' + cert_file_prefix + '.crt',
+          REGISTRY_HTTP_TLS_KEY='certs/' + cert_file_prefix + '.key'
+        )
+        | combine(registry_optional_env_vars | default({}))
+      }}
   become: true
   register: registry_container_info
-
 
 - name: Setting facts about container
   set_fact:
