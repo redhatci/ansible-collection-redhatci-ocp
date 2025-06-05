@@ -2,7 +2,7 @@
   ansible.builtin.set_fact:
     scis_repo_protocol_http: "{{ scis_repo_url | regex_search('https?://') | type_debug == 'str' }}"
 
-- name: "Validate required variables"
+- name: "Validate_ required variables"
   ansible.builtin.assert:
     that:
       - scis_repo_url is defined

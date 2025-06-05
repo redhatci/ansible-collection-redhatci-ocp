@@ -3,7 +3,7 @@
   when:
     - mlb_action == 'install'
   block:
-    - name: "Validate required variables"
+    - name: "Validate_ required variables"
       ansible.builtin.include_tasks: pre-requisites.yml
 
     - name: "Set up MetalLB resources"
