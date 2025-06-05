@@ -138,9 +138,9 @@
   vars:
     processed_peer_jobs: |
       {% set jobs_list = [] %}
-      {% if ((github_workflow_jobs_response.status == 200) \
-        and (github_workflow_jobs_response.json is defined) \
-        and (github_workflow_jobs_response.json.jobs is defined)) %}
+      {% if ((github_workflow_jobs_response.status == 200) and
+            (github_workflow_jobs_response.json is defined) and
+            (github_workflow_jobs_response.json.jobs is defined)) %}
         {% for job_run in github_workflow_jobs_response.json.jobs %}
           {% if job_run.name != (lookup('env', 'GITHUB_JOB') | default('THIS_JOB_CANNOT_BE_NAMED_LIKE_THIS_HOPEFULLY')) %}
             {% set job_final_status = job_run.conclusion if job_run.status == 'completed' else job_run.status %}

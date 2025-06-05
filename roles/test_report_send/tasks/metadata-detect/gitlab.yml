@@ -14,12 +14,16 @@
 
 - name: Initialize CI/CD component data structures for {{ trs_ci_system }}
   ansible.builtin.set_fact:
-    _ci: {'type': "{{ trs_ci_system }}"} # Initialize with type
+    _ci: {}
     _pipeline: {}
     _job: {}
     _source: {}
     gitlab_event_payload_parsed: {} # For potential CI_PIPELINE_TRIGGER_PAYLOAD
     _runner_tags: "{{ lookup('env', 'CI_RUNNER_TAGS') | default('[]') | from_json }}"
+    _change_url: "" # "{{ lookup('env', 'CI_PIPELINE_URL') | default('N/A') }}" # Default change_url
+    _api_url: ""
+    _event_action: "N/A"
+    _pipeline_name: ""
 
 - name: Load and parse CI_PIPELINE_TRIGGER_PAYLOAD if available
   ansible.builtin.set_fact:
@@ -27,18 +31,28 @@
   when:
     - lookup('env', 'CI_PIPELINE_TRIGGER_PAYLOAD') | default('') | length > 0
 
-- name: Calculate change URL based on event type for {{ trs_ci_system }}
+
+- name: Calculate _change_url using CI_MERGE_REQUEST_IID for {{ trs_ci_system }}
   ansible.builtin.set_fact:
-    _change_url: >-
-      {%- if lookup('env', 'CI_MERGE_REQUEST_IID') | default('') | length > 0 -%}
-      {{ lookup('env', 'CI_MERGE_REQUEST_PROJECT_URL') }}/-/merge_requests/{{ lookup('env', 'CI_MERGE_REQUEST_IID') }}
-      {%- elif lookup('env', 'CI_COMMIT_SHA') | default('') | length > 0 -%}
-      {{ lookup('env', 'CI_PROJECT_URL') }}/-/commit/{{ lookup('env', 'CI_COMMIT_SHA') }}
-      {%- else -%}
-      {{ lookup('env', 'CI_PIPELINE_URL') | default('N/A') }}
-      {%- endif %}
+    _change_url: "{{ lookup('env', 'CI_MERGE_REQUEST_PROJECT_URL') }}/-/merge_requests/{{ lookup('env', 'CI_MERGE_REQUEST_IID') }}"
   when:
     - lookup('env', 'CI_PROJECT_URL') | default('') | length > 0
+    - lookup('env', 'CI_MERGE_REQUEST_IID') | default('') | length > 0
+
+- name: Calculate _change_url using CI_COMMIT_SHA for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _change_url: "{{ lookup('env', 'CI_PROJECT_URL') }}/-/commit/{{ lookup('env', 'CI_COMMIT_SHA') }}"
+  when:
+    - _change_url | length == 0
+    - lookup('env', 'CI_COMMIT_SHA') | default('') | length > 0
+    - lookup('env', 'CI_PROJECT_URL') | default('') | length > 0
+
+- name: Calculate _change_url using CI_PIPELINE_URL for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _change_url: "{{ lookup('env', 'CI_PIPELINE_URL') | default('N/A') }}"
+  when:
+    - _change_url | length == 0
+    - lookup('env', 'CI_PIPELINE_URL') | default('') | length > 0
 
 - name: Build current _ci for {{ trs_ci_system }}
   ansible.builtin.set_fact:
@@ -52,27 +66,48 @@
         executor: "{{ lookup('env', 'CI_RUNNER_EXECUTOR') | default('N/A') }}"
         # OS and Arch are not directly exposed as high-level CI variables in GitLab
         os: "{{ (_runner_tags | select('match', '^os:.*') | map('regex_replace', '^os:', '') | first) | default('N/A') }}"
-        arch: "{{ (_runner_tags | select('match', '^arch:.*') | map('regex_replace', '^arch:', '') | join(',')) | default('N/A') }}"
+        arch: "{{ (_runner_tags | select('match', '^arch:.*') | map('regex_replace', '^arch:', '') | join(',')) | default('') }}"
+
+- name: Calculate _event_action using CI_MERGE_REQUEST_EVENT_TYPE for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _event_action: "{{ lookup('env', 'CI_MERGE_REQUEST_EVENT_TYPE') | default('updated') }}"
+  when:
+    - _event_action == "N/A"
+    - lookup('env', 'CI_PIPELINE_SOURCE') | default('') == 'merge_request_event'
+
+- name: Calculate _event_action using gitlab_event_payload_parsed.action for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _event_action: "{{ gitlab_event_payload_parsed.action }}"
+  when:
+    - _event_action == "N/A"
+    - lookup('env', 'CI_PIPELINE_SOURCE') | default('') == 'trigger'
+    - gitlab_event_payload_parsed.action is defined
+
+- name: Calculate _pipeline_name using CI_PIPELINE_NAME for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _pipeline_name: "{{ gitlab_event_payload_parsed.action }}"
+  when:
+    - _pipeline_name | length == 0
+    - lookup('env', 'CI_PIPELINE_NAME') | default('') | length > 0
+
+- name: Calculate _pipeline_name using CI_PROJECT_NAME and (optionally using CI_PIPELINE_IID) for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _pipeline_name: "{{ lookup('env', 'CI_PROJECT_NAME') }} ~ ' Pipeline #' ~ (lookup('env', 'CI_PIPELINE_IID') | default(gitlab.default_iid)) }}"
+  when:
+    - _pipeline_name | length == 0
+    - lookup('env', 'CI_PROJECT_NAME') | default('') | length > 0
 
 - name: Build current _pipeline for {{ trs_ci_system }}
   ansible.builtin.set_fact:
     _pipeline:
-      name: "{{ lookup('env', 'CI_PIPELINE_NAME') | default(lookup('env', 'CI_PROJECT_NAME') ~ ' Pipeline #' ~ (lookup('env', 'CI_PIPELINE_IID') | default('UnknownIID'))) }}"
-      event_name: "{{ lookup('env', 'CI_PIPELINE_SOURCE') | default('N/A') }}" # e.g., push, merge_request_event, schedule
-      id: "{{ lookup('env', 'CI_PIPELINE_ID') | default('N/A') }}" # Globally unique
-      # GitLab CI doesn't have a direct RUN_ATTEMPT equivalent for pipelines
-      attempt: "N/A"
-      number: "{{ lookup('env', 'CI_PIPELINE_IID') | default('N/A') }}" # Project-unique
+      name: "{{ _pipeline_name }}"
+      event_name: "{{ lookup('env', 'CI_PIPELINE_SOURCE') | default('N/A') }}"
+      id: "{{ lookup('env', 'CI_PIPELINE_ID') | default('N/A') }}"
+      attempt: "N/A" # No direct GitLab equivalent for pipeline attempt number
+      number: "{{ lookup('env', 'CI_PIPELINE_IID') | default('N/A') }}"
       url: "{{ lookup('env', 'CI_PIPELINE_URL') | default('N/A') }}"
       status: "running (current pipeline assumed)"
-      event_action: >-
-        {%- if lookup('env', 'CI_PIPELINE_SOURCE') == 'merge_request_event' -%}
-        {{ lookup('env', 'CI_MERGE_REQUEST_EVENT_TYPE') | default('unknown') }} {# e.g. opened, updated, approved, merged #}
-        {%- elif lookup('env', 'CI_PIPELINE_SOURCE') == 'trigger' and gitlab_event_payload_parsed.action is defined -%}
-        {{ gitlab_event_payload_parsed.action }}
-        {%- else -%}
-        N/A
-        {%- endif -%}
+      event_action: "{{ _event_action }}"
 
 - name: Build current _job for {{ trs_ci_system }}
   ansible.builtin.set_fact:
@@ -83,40 +118,51 @@
       status_current: "running (assumed)"
       url: "{{ lookup('env', 'CI_JOB_URL') | default('N/A') }}"
 
-- name: Setup API helpers for GitLab
-  ansible.builtin.set_fact:
-    _api_url: "{{ lookup('env', 'CI_API_V4_URL') | default( (lookup('env', 'CI_SERVER_URL') | default('') ~ '/api/v4') if (lookup('env', 'CI_SERVER_URL') | default('') != '') else '' ) }}"
-    _project_id: "{{ lookup('env', 'CI_PROJECT_ID') | default('') }}"
-  when:
-    - lookup('env', 'CI_PROJECT_ID') | default('') | length > 0
-
-- name: Assert API helpers are valid for GitLab
+- name: Assert essential GitLab environment variables for API usage are set
   ansible.builtin.assert:
-    that:
-      - _api_url | length > 0
-      - _project_id | length > 0
-    fail_msg: "GitLab API URL or Project ID could not be determined. Check CI_API_V4_URL/CI_SERVER_URL and CI_PROJECT_ID."
+    that: "{{ condition }}"
+    fail_msg: "The condition {{ condition }} is not met"
+    quiet: true
+  loop:
+    - lookup('env', 'CI_PROJECT_ID') | default('') | length > 0
+    - (lookup('env', 'CI_API_V4_URL') | default('') | length > 0) or (lookup('env', 'CI_SERVER_URL') | default('') | length > 0)
+    - lookup('env', 'CI_JOB_TOKEN') | default('') | length > 0 # If using JOB-TOKEN for auth_headers
+  loop_control:
+    loop_var: condition
+
+- name: Setup API helper _project_id for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _project_id: "{{ lookup('env', 'CI_PROJECT_ID') }}"
+
+- name: Setup API helpers for GitLab (assuming previous assert passed)
+  ansible.builtin.set_fact:
+    _api_url: "{{ lookup('env', 'CI_API_V4_URL') }}"
   when:
-    - _api_url is defined
-    - _project_id is defined
+    - lookup('env', 'CI_API_V4_URL') | default('') | length > 0
+
+- name: Setup API helpers for GitLab (assuming previous assert passed)
+  ansible.builtin.set_fact:
+    _api_url: "{{ lookup('env', 'CI_SERVER_URL') }}/api/v4"
+  when:
+    - _api_url | length == 0
+    - lookup('env', 'CI_SERVER_URL') | default('') | length > 0
 
 - name: Setup current pipeline jobs API URL for GitLab
   ansible.builtin.set_fact:
     _pipeline_api_jobs_url: "{{ _api_url }}/projects/{{ _project_id }}/pipelines/{{ _pipeline.id }}/jobs"
   when:
-    - _api_url is defined
-    - _project_id is defined
-    - _pipeline.id is defined
+    - _api_url | default('') | length > 0
+    - _project_id | default('') | length > 0
     - _pipeline.id != 'N/A'
-    - _pipeline.id != ''
+    - _pipeline.id | default('') | length > 0
 
 - name: Fetch all job statuses for the current pipeline run from GitLab
   ansible.builtin.uri:
-    url: "{{ _pipeline_api_jobs_url }}?per_page={{ gitlab_config.gitlab.per_page | default(100) }}"
+    url: "{{ _pipeline_api_jobs_url }}?per_page={{ gitlab.per_page | default(100) }}"
     method: GET
-    headers: "{{ gitlab_config.gitlab.auth_headers | default({'JOB-TOKEN': (lookup('env', 'CI_JOB_TOKEN'))}) }}" # Default to using CI_JOB_TOKEN if not specified in vars
+    headers: "{{ gitlab.auth_headers | default(omit) }}"
     status_code: 200
-    timeout: "{{ gitlab.req_timeout | default(omit) }}"
+    timeout: "{{ gitlab.req_timeout }}"
   register: gitlab_pipeline_jobs_response
   ignore_errors: true
   when: _pipeline_api_jobs_url is defined and (_pipeline_api_jobs_url | length > 0)
@@ -146,27 +192,28 @@
         {% endfor %}
       {% endif %}
       {{ jobs_list }}
-  when: gitlab_pipeline_jobs_response.status is defined and gitlab_pipeline_jobs_response.status == 200
+  when:
+    - gitlab_pipeline_jobs_response.status is defined
+    - gitlab_pipeline_jobs_response.status == 200
 
 - name: Build current _source for {{ trs_ci_system }}
   ansible.builtin.set_fact:
     _source:
-      ref: "{{ lookup('env', 'CI_COMMIT_REF_NAME') | default('N/A') }}" # Branch or tag name
-      ref_name: "{{ lookup('env', 'CI_COMMIT_REF_NAME') | default('N/A') }}" # Same as ref for GitLab
+      ref: "{{ lookup('env', 'CI_COMMIT_REF_NAME') | default('N/A') }}"
+      ref_name: "{{ lookup('env', 'CI_COMMIT_REF_NAME') | default('N/A') }}"
       ref_type: "{{ 'tag' if (lookup('env', 'CI_COMMIT_TAG') | default('')) != '' else 'branch' }}"
       sha: "{{ lookup('env', 'CI_COMMIT_SHA') | default('N/A') }}"
-      change_url: "{{ _change_url | default('N/A') }}" # Calculated earlier
+      change_url: "{{ _change_url | default('N/A') }}"
       actor: "{{ lookup('env', 'GITLAB_USER_LOGIN') | default(lookup('env', 'GITLAB_USER_NAME') | default('N/A')) }}"
       server_url: "{{ lookup('env', 'CI_SERVER_URL') | default('N/A') }}"
-      owner: "{{ lookup('env', 'CI_PROJECT_NAMESPACE') | default('N/A') }}" # Group or user namespace
-      repo: "{{ lookup('env', 'CI_PROJECT_NAME') | default('N/A') }}"      # Just project name
-      repo_path: "{{ lookup('env', 'CI_PROJECT_PATH') | default('N/A') }}" # <namespace>/<project_name>
-      event_payload: "{{ gitlab_event_payload_parsed | default({}) }}" # From CI_PIPELINE_TRIGGER_PAYLOAD if any
+      owner: "{{ lookup('env', 'CI_PROJECT_NAMESPACE') | default('N/A') }}"
+      repo: "{{ lookup('env', 'CI_PROJECT_NAME') | default('N/A') }}"
+      repo_path: "{{ lookup('env', 'CI_PROJECT_PATH') | default('N/A') }}"
+      event_payload: "{{ gitlab_event_payload_parsed | default({}) }}"
       pr: # Mapping to Merge Request (MR)
         number: "{{ lookup('env', 'CI_MERGE_REQUEST_IID') | default('N/A') }}"
         base_ref: "{{ lookup('env', 'CI_MERGE_REQUEST_TARGET_BRANCH_NAME') | default('N/A') }}"
         head_ref: "{{ lookup('env', 'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME') | default('N/A') }}"
-        # Add more MR details if needed from CI_MERGE_REQUEST_* variables
 
 - name: Construct the final trs_ci_runtime dictionary for {{ trs_ci_system }}
   ansible.builtin.set_fact:

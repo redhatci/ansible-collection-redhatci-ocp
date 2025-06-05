@@ -22,3 +22,13 @@ trs_ci_runtime: {}
 trs_meta_data: {}
 
 trs_default_ts: "{{ now(fmt='%Y-%m-%dT%H:%M:%S') }}"
+
+trs_ci_systems_supported:
+  - dci
+  - github
+  - gitlab
+  - jenkins
+  - prow
+
+trs_collectors_supported:
+  - splunk
