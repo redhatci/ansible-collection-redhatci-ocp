@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Splunk validations tasks for redhatci.ocp.test_report_send
+
+- name: Validate trs_collector_auth_headers matches required conditions
+  ansible.builtin.assert:
+    that: "{{ condition }}"
+    fail_msg:
+      - "Variable trs_collector_auth_headers is failing on condition: {{ condition }}"
+  loop:
+    - "trs_collector_auth_headers is defined"
+    - "trs_collector_auth_headers is mapping"
+    - "trs_collector_auth_headers.keys() | length > 0"
+    - "'Authorization' in trs_collector_auth_headers"
+    - "'X-Splunk-Request-Channel' in trs_collector_auth_headers"
+    - "trs_collector_auth_headers['Authorization'] | regex_search('^Splunk ')"
+    - "trs_collector_auth_headers['Authorization'] | length > 10"
+    - "trs_collector_auth_headers['X-Splunk-Request-Channel'] | length > 5"
+  loop_control:
+    loop_var: condition
+
+- name: Check if the provided trs_collector_url is reachable (HEAD request)
+  ansible.builtin.uri:
+    url: "{{ trs_collector_url }}"
+    method: HEAD
+    timeout: 10 # Optional: set a timeout
+    headers: "{{ trs_collector_auth_headers | default(omit) }}"
+  register: url_check_result
+  ignore_errors: true
+
+- name: Validate URL reachability based on status code
+  ansible.builtin.assert:
+    that: "{{ condition }}"
+    fail_msg: "Validation condition {{ condition }} failed. result: {{ url_check_result }}"
+    success_msg: "The URL '{{ trs_collector_url }}' is reachable."
+  loop:
+    - "url_check_result is defined"
+    - "url_check_result.status is defined"
+    - "url_check_result.status == 403" # should be "forbidden" (403) for splunk HEC
+  loop_control:
+    loop_var: condition
