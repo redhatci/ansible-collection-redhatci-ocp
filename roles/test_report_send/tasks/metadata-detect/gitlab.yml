@@ -30,9 +30,9 @@
 - name: Calculate change URL based on event type for {{ trs_ci_system }}
   ansible.builtin.set_fact:
     _change_url: >-
-      {%- if lookup('env', 'CI_MERGE_REQUEST_IID') is defined and lookup('env', 'CI_MERGE_REQUEST_IID') != '' and lookup('env', 'CI_MERGE_REQUEST_IID') != 'N/A' -%}
+      {%- if lookup('env', 'CI_MERGE_REQUEST_IID') | default('') | length > 0 -%}
       {{ lookup('env', 'CI_MERGE_REQUEST_PROJECT_URL') }}/-/merge_requests/{{ lookup('env', 'CI_MERGE_REQUEST_IID') }}
-      {%- elif lookup('env', 'CI_COMMIT_SHA') is defined and lookup('env', 'CI_COMMIT_SHA') != 'N/A' -%}
+      {%- elif lookup('env', 'CI_COMMIT_SHA') | default('') | length > 0 -%}
       {{ lookup('env', 'CI_PROJECT_URL') }}/-/commit/{{ lookup('env', 'CI_COMMIT_SHA') }}
       {%- else -%}
       {{ lookup('env', 'CI_PIPELINE_URL') | default('N/A') }}
@@ -65,20 +65,19 @@
       number: "{{ lookup('env', 'CI_PIPELINE_IID') | default('N/A') }}" # Project-unique
       url: "{{ lookup('env', 'CI_PIPELINE_URL') | default('N/A') }}"
       status: "running (current pipeline assumed)"
-      # Try to get more specific event action if available
       event_action: >-
         {%- if lookup('env', 'CI_PIPELINE_SOURCE') == 'merge_request_event' -%}
         {{ lookup('env', 'CI_MERGE_REQUEST_EVENT_TYPE') | default('unknown') }} {# e.g. opened, updated, approved, merged #}
         {%- elif lookup('env', 'CI_PIPELINE_SOURCE') == 'trigger' and gitlab_event_payload_parsed.action is defined -%}
         {{ gitlab_event_payload_parsed.action }}
         {%- else -%}
-        unknown
+        N/A
         {%- endif -%}
 
 - name: Build current _job for {{ trs_ci_system }}
   ansible.builtin.set_fact:
     _job:
-      id: "{{ lookup('env', 'CI_JOB_NAME') | default('N/A') }}" # User-defined job name
+      id: "{{ lookup('env', 'CI_JOB_NAME') | default('N/A') }}"
       instance_id: "{{ lookup('env', 'CI_JOB_ID') | default('N/A') }}"
       stage: "{{ lookup('env', 'CI_JOB_STAGE') | default('N/A') }}"
       status_current: "running (assumed)"
@@ -109,17 +108,18 @@
     - _project_id is defined
     - _pipeline.id is defined
     - _pipeline.id != 'N/A'
+    - _pipeline.id != ''
 
 - name: Fetch all job statuses for the current pipeline run from GitLab
   ansible.builtin.uri:
-    url: "{{ _pipeline_api_jobs_url }}?per_page={{ gitlab.per_page | default(100) }}"
+    url: "{{ _pipeline_api_jobs_url }}?per_page={{ gitlab_config.gitlab.per_page | default(100) }}"
     method: GET
-    headers: "{{ gitlab.auth_headers | default(omit) }}" # From vars/gitlab.yml
+    headers: "{{ gitlab_config.gitlab.auth_headers | default({'JOB-TOKEN': (lookup('env', 'CI_JOB_TOKEN'))}) }}" # Default to using CI_JOB_TOKEN if not specified in vars
     status_code: 200
     timeout: "{{ gitlab.req_timeout | default(omit) }}"
   register: gitlab_pipeline_jobs_response
-  ignore_errors: true # Do not halt if the API call fails
-  when: _pipeline_api_jobs_url is defined
+  ignore_errors: true
+  when: _pipeline_api_jobs_url is defined and (_pipeline_api_jobs_url | length > 0)
 
 - name: Process and add peer job infos to _pipeline for {{ trs_ci_system }}
   ansible.builtin.set_fact:
@@ -128,13 +128,13 @@
     processed_peer_jobs_gitlab: |
       {% set jobs_list = [] %}
       {% if gitlab_pipeline_jobs_response.status == 200 and gitlab_pipeline_jobs_response.json is defined %}
-        {% for job_run in gitlab_pipeline_jobs_response.json %} {# GitLab API returns an array directly #}
-          {% if job_run.id != (lookup('env', 'CI_JOB_ID') | default(-1) | int) %} {# Filter out current job by its unique ID #}
+        {% for job_run in gitlab_pipeline_jobs_response.json %}
+          {% if job_run.id != (lookup('env', 'CI_JOB_ID') | default(-1) | int) %}
             {% set _ = jobs_list.append({
-              'name': job_run.name,                 {# Job name from .gitlab-ci.yml #}
-              'id_api': job_run.id,                 {# Unique job instance ID from API #}
+              'name': job_run.name,
+              'id_api': job_run.id,
               'stage': job_run.stage,
-              'status': job_run.status,             {# e.g., success, failed, running, pending, canceled, skipped #}
+              'status': job_run.status,
               'created_at': job_run.created_at,
               'started_at': job_run.started_at | default(None),
               'finished_at': job_run.finished_at | default(None),
@@ -146,7 +146,7 @@
         {% endfor %}
       {% endif %}
       {{ jobs_list }}
-  when: gitlab_pipeline_jobs_response is defined
+  when: gitlab_pipeline_jobs_response.status is defined and gitlab_pipeline_jobs_response.status == 200
 
 - name: Build current _source for {{ trs_ci_system }}
   ansible.builtin.set_fact:
