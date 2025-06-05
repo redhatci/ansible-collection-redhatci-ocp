@@ -4,4 +4,4 @@
   connection: local
   gather_facts: false
   roles:
-    - role: test_report_send
+    - role: redhatci.ocp.test_report_send
