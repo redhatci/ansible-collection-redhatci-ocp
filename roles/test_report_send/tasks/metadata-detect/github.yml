@@ -44,7 +44,9 @@
     that: "{{ condition }}"
     fail_msg: "Condition failed: {{ condition }}"
   loop:
-    _repo_url not in ["/", "{{ lookup('env', 'GITHUB_SERVER_URL') | default('/') }}/", "/{{ lookup('env', 'GITHUB_REPOSITORY') | default('') }}"]
+    - lookup('env', 'GITHUB_SERVER_URL') | default('') | length > 0
+    - lookup('env', 'GITHUB_REPOSITORY') | default('') | length > 0
+    - _repo_url is defined
   loop_control:
     loop_var: condition
 
@@ -126,6 +128,7 @@
     method: GET
     headers: "{{ github.auth_headers | default(omit) }}"
     status_code: 200
+    timeout: "{{ github.req_timeout | default(omit) }}"
   register: github_workflow_jobs_response
   ignore_errors: true # Do not halt if the API call fails for some reason
 
