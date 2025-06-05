@@ -46,6 +46,7 @@
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
+        timeout: 60
         virtual_media:
           image_url: "{{ item.Image }}"
         resource_id: 1
