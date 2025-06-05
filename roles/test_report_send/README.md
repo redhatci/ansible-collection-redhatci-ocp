@@ -55,19 +55,19 @@ If set to be empty or the file is missing, it is ignored.
     * **Default**: none
     * **Description**: Collector Target/Channel/Topic/Id
 
-  * **trs_collector_type**
+  * **trs_collector**
     * **Required**: False
     * **Type**: str
     * **Default**: splunk
     * **Description**: Collector type (currently only `splunk` is supported).
 
-  * **trs_supported_collector_types**
+  * **trs_collectors_supported**
     * **Required**: False
     * **Type**: list
     * **Default**: ['splunk']
     * **Description**: Supported collectors types list.
 
-  * **trs_supported_ci_systems**
+  * **trs_ci_systems_supported**
     * **Required**: False
     * **Type**: list
     * **Default**: ['dci', 'jenkins', 'prow']
@@ -79,7 +79,7 @@ If set to be empty or the file is missing, it is ignored.
     * **Default**: {}
     * **Description**: Collector request HTTP headers for HTTP Authentication.
 
-  * **trs_ci_detect_skip**
+  * **trs_ci_system_autodetect**
     * **Required**: False
     * **Type**: bool
     * **Default**: False
@@ -97,12 +97,12 @@ If set to be empty or the file is missing, it is ignored.
 |--------------|--------------|-------------|-------------|-------------|
 | [trs_report_path](defaults/main.yml#L5)   | str   | `` |    n/a  |  n/a |
 | [trs_metadata_path](defaults/main.yml#L6)   | str   | `` |    n/a  |  n/a |
-| [trs_collector_type](defaults/main.yml#L7)   | str   | `splunk` |    n/a  |  n/a |
-| [trs_supported_ci_systems](defaults/main.yml#L8)   | list   | `['jenkins', 'dci', 'prow']` |    n/a  |  n/a |
-| [trs_supported_collector_types](defaults/main.yml#L12)   | list   | `['splunk']` |    n/a  |  n/a |
+| [trs_collector](defaults/main.yml#L7)   | str   | `splunk` |    n/a  |  n/a |
+| [trs_ci_systems_supported](defaults/main.yml#L8)   | list   | `['jenkins', 'dci', 'prow']` |    n/a  |  n/a |
+| [trs_collectors_supported](defaults/main.yml#L12)   | list   | `['splunk']` |    n/a  |  n/a |
 | [trs_ci_system](defaults/main.yml#L15)   | str   | `unknown` |    n/a  |  n/a |
 | [trs_do_send](defaults/main.yml#L16)   | bool   | `True` |    n/a  |  n/a |
-| [trs_ci_detect_skip](defaults/main.yml#L17)   | bool   | `False` |    n/a  |  n/a |
+| [trs_ci_system_autodetect](defaults/main.yml#L17)   | bool   | `False` |    n/a  |  n/a |
 
 ### Tasks
 
@@ -140,7 +140,7 @@ If set to be empty or the file is missing, it is ignored.
 | Setup content for metadata file | ansible.builtin.set_fact | False |
 | Decode JSON content for metadata file | ansible.builtin.set_fact | True |
 | Detect Metadata from the env | ansible.builtin.include_tasks | False |
-| Send trs_data_event to collector {{ trs_collector_type }} | ansible.builtin.include_tasks | False |
+| Send trs_data_event to collector {{ trs_collector }} | ansible.builtin.include_tasks | False |
 
 #### File: tasks/reporting/splunk.yml
 
@@ -149,16 +149,16 @@ If set to be empty or the file is missing, it is ignored.
 | Read content from test report JSON file | ansible.builtin.slurp | False |
 | Decode JSON content of test report file | ansible.builtin.set_fact | False |
 | Print current datetime | ansible.builtin.debug | False |
-| Setup timestamps broken down to int/float parts for {{ trs_collector_type }} | ansible.builtin.set_fact | False |
+| Setup timestamps broken down to int/float parts for {{ trs_collector }} | ansible.builtin.set_fact | False |
 | Setup timestamps as floats for reporting | ansible.builtin.set_fact | False |
-| Update trs_collector_auth_headers with trs_collector_auth_token from the user for {{ trs_collector_type }} | ansible.builtin.set_fact | True |
-| Update trs_collector_auth_headers with trs_event_channel from the user for {{ trs_collector_type }} | ansible.builtin.set_fact | True |
+| Update trs_collector_auth_headers with trs_collector_auth_token from the user for {{ trs_collector }} | ansible.builtin.set_fact | True |
+| Update trs_collector_auth_headers with trs_event_channel from the user for {{ trs_collector }} | ansible.builtin.set_fact | True |
 | Dynamically detect metadata when it is missing | ansible.builtin.include_tasks | True |
 | Create event data attributes | ansible.builtin.set_fact | False |
 | Print event data before timestamp corrections | ansible.builtin.debug | False |
-| Combine additional attributes into the data at trs_collector_target for {{ trs_collector_type }} | ansible.builtin.set_fact | False |
+| Combine additional attributes into the data at trs_collector_target for {{ trs_collector }} | ansible.builtin.set_fact | False |
 | Print payload data | ansible.builtin.debug | False |
-| Send data to {{ trs_collector_type }} | ansible.builtin.uri | True |
+| Send data to {{ trs_collector }} | ansible.builtin.uri | True |
 
 #### File: tasks/reporting/validations.splunk.yml
 
@@ -173,28 +173,28 @@ If set to be empty or the file is missing, it is ignored.
 | Name | Module | Has Conditions |
 | ---- | ------ | --------- |
 | Set is_ci attribute | ansible.builtin.set_fact | True |
-| Update trs_ci.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
-| Update trs_ci.url for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
-| Update trs_ci.job for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
+| Update trs_ci_runtime.url for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
+| Update trs_ci_runtime.job for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
 
 #### File: tasks/metadata.detect/dci.yml
 
 | Name | Module | Has Conditions |
 | ---- | ------ | --------- |
 | Set is_ci attribute | ansible.builtin.set_fact | True |
-| Update trs_ci.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
-| Update trs_ci.url for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
+| Update trs_ci_runtime.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
+| Update trs_ci_runtime.url for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
 
 #### File: tasks/metadata.detect/github.yml
 
 | Name | Module | Has Conditions |
 | ---- | ------ | --------- |
 | Set is_ci attribute | ansible.builtin.set_fact | True |
-| Update trs_ci.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
-| Update trs_ci.url for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
-| Update trs_ci.pipeline for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
-| Update trs_ci.job for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
-| Update trs_ci.commit for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
+| Update trs_ci_runtime.url for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.pipeline for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.job for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.commit for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
 
 #### File: tasks/metadata.detect/unknown.yml
 
@@ -208,11 +208,11 @@ If set to be empty or the file is missing, it is ignored.
 | Name | Module | Has Conditions |
 | ---- | ------ | --------- |
 | Set is_ci attribute | ansible.builtin.set_fact | True |
-| Update trs_ci.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
-| Update trs_ci.url for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
-| Update trs_ci.pipeline for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
-| Update trs_ci.job for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
-| Update trs_ci.commit for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.type for {{ trs_ci_system }} | ansible.builtin.set_fact | False |
+| Update trs_ci_runtime.url for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.pipeline for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.job for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
+| Update trs_ci_runtime.commit for {{ trs_ci_system }} | ansible.builtin.set_fact | True |
 
 ## Playbook
 

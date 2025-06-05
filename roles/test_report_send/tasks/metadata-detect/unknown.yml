@@ -1,4 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
 ---
+# Unknown CI system stub tasks for redhatci.ocp.test_report_send
 
 - name: Unsupported CI system
   ansible.builtin.debug:

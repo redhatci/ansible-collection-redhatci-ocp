@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# GitLab metadata detection tasks for redhatci.ocp.test_report_send
+
+- name: Set is_ci attribute for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'is_ci': true}) }}"
+
+
+#######################################################################################################################
+# CI Information:
+#######################################################################################################################
+#   CI_SERVER_URL: GitLab Server URL
+#######################################################################################################################
+
+- name: Update _ci for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _ci:
+      type: "{{ trs_ci_system }}"
+      url: "{{ lookup('env', 'CI_SERVER_URL') | default('N/A') }}"
+
+
+#######################################################################################################################
+# Pipeline Information:
+#######################################################################################################################
+#   CI_PIPELINE_NAME:   Pipeline name
+#   CI_PIPELINE_ID:     The unique ID of the current pipeline (unique across the GitLab instance).
+#   CI_PIPELINE_IID:    The internal ID of the current pipeline (unique within the project).
+#   CI_PIPELINE_SOURCE: How the pipeline was triggered (e.g., `push`, `web`, `schedule`, `api`, `merge_request_event`).
+#######################################################################################################################
+- name: Setup _pipeline for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _pipeline:
+      name: "{{ lookup('env', 'CI_PIPELINE_NAME') | default('N/A') }}"
+      id: "{{ lookup('env', 'CI_PIPELINE_ID') | default('N/A') }}"
+      iid: "{{ lookup('env', 'CI_PIPELINE_IID') | default('N/A') }}"
+      source: "{{ lookup('env', 'CI_PIPELINE_SOURCE') | default('N/A') }}"
+
+
+#######################################################################################################################
+# Job Information:
+#######################################################################################################################
+#   CI_JOB_NAME:  The name of the current job as defined in the file `.gitlab-ci.yml`
+#   CI_JOB_ID:    The unique ID of the current job.
+#   CI_JOB_STAGE: The name of the stage the current job belongs to (e.g., `build`, `test`, `deploy`).
+#   CI_JOB_URL:   URL of the current job's page in GitLab
+#                 (e.g., `https://gitlab.example.com/<namespace>/<project>/-/jobs/<job_id>`).
+#######################################################################################################################
+- name: Setup _job for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _job:
+      name: "{{ lookup('env', 'CI_JOB_NAME') | default('N/A') }}"
+      id: "{{ lookup('env', 'CI_JOB_ID') | default('N/A') }}"
+      job_url: "{{ lookup('env', 'CI_JOB_URL') | default('N/A') }}"
+
+#######################################################################################################################
+# Commit Information (often relevant to pipeline/job context):
+#######################################################################################################################
+#   CI_COMMIT_REF_NAME: The branch or tag name for which the project is built. In a merge request pipeline, this is the source branch name.
+#   CI_COMMIT_SHA: The commit revision for which the project is built.
+#   CI_COMMIT_SHORT_SHA: The first 8 characters of CI_COMMIT_SHA.
+#   CI_COMMIT_BRANCH: The commit branch name. Available in branch pipelines. (Use CI_MERGE_REQUEST_SOURCE_BRANCH_NAME for MRs).
+#   CI_COMMIT_TAG: The commit tag name (only available when building tags).
+#######################################################################################################################
+- name: Setup _source for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    _source:
+      ref: "{{ lookup('env', 'CI_COMMIT_REF_NAME') | default('N/A') }}"
+      sha: "{{ lookup('env', 'CI_COMMIT_SHA') | default('N/A') }}"
+      branch: "{{ lookup('env', 'CI_COMMIT_BRANCH') | default('N/A') }}"
+      tag: "{{ lookup('env', 'CI_COMMIT_TAG') | default('N/A') }}"
+
+- name: Update trs_ci_runtime with collected data for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci_runtime:
+      ci: "{{ _ci }}"
+      pipeline: "{{ _pipeline }}"
+      job: "{{ _job }}"
+      source: "{{ _source }}"

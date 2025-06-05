@@ -17,7 +17,7 @@ argument_specs:
     options:
       trs_report_path:
         type: str
-        required: false
+        required: true
         description: |
           Test report JSON file to send.
           Merged into the event under 'test' attribute.
@@ -47,11 +47,11 @@ argument_specs:
 
       trs_collector_target:
         type: str
-        required: true
+        required: false
         description: |
           Collector Target/Channel/Topic/Id
 
-      trs_collector_type:
+      trs_collector:
         type: str
         required: false
         default: splunk
@@ -65,26 +65,6 @@ argument_specs:
         description: |
           Collector source should contain detected or passed hostname generating the event.
 
-      trs_supported_collector_types:
-        type: list
-        elements: str
-        required: false
-        default:
-          - splunk
-        description: |
-          Supported collectors types list.
-
-      trs_supported_ci_systems:
-        type: list
-        elements: str
-        required: false
-        default:
-          - dci
-          - jenkins
-          - prow
-        description: |
-          Supported CI systems list.
-
       trs_collector_auth_headers:
         type: dict
         required: false
@@ -92,9 +72,18 @@ argument_specs:
         description: |
           Collector request HTTP headers for HTTP Authentication.
 
-      trs_ci_detect_skip:
+      trs_ci_system_autodetect:
         type: bool
         required: false
-        default: false
+        default: true
         description: |
-          Skip auto-detection of CI system (mainly mor dev).
+          Perform auto-detection of CI system from environment.
+          Turning it Off is useful when debugging.
+
+      trs_workdir:
+        type: str
+        required: false
+        default: "{{ playbook_dir }}/workdir"
+        description: |
+          Directory for intermediate files (usable for troubleshooting, files deleted unless `trs_workdir_keep` is true.
+          It is automatically set to true if `trs_debug` is set to `true`.

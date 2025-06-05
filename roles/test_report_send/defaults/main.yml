@@ -5,14 +5,20 @@
 trs_report_path: ""
 trs_metadata_path: ""
 trs_collector_source: ""
-trs_collector_type: splunk
-trs_supported_ci_systems:
-  - jenkins
-  - dci
-  - prow
-trs_supported_collector_types:
-  - splunk
+trs_collector_target: ""
+trs_collector_auth_headers: {}
+trs_collector_auth_token: ""
+trs_workdir: "{{ playbook_dir }}/workdir"
 
 trs_ci_system: unknown
+trs_collector: splunk
+
+trs_debug: false
+trs_ci_system_autodetect: false
 trs_do_send: true
-trs_ci_detect_skip: false
+trs_workdir_keep: "{{ trs_debug | default(false) }}"
+
+trs_ci_runtime: {}
+trs_meta_data: {}
+
+trs_default_ts: "{{ now(fmt='%Y-%m-%dT%H:%M:%S') }}"
