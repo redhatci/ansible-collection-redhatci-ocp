@@ -2,18 +2,6 @@
 ---
 # tasks file main.yml for redhatci.ocp.test_report_send
 
-- name: DBG Print all required variables
-  ansible.builtin.debug:
-    msg:
-      - "trs_collector: '{{ trs_collector }}'"
-      - "trs_collector_auth_token: '{{ trs_collector_auth_token }}'"
-      - "trs_collector_auth_headers: '{{ trs_collector_auth_headers }}'"
-
-- name: DBG fail here
-  ansible.builtin.fail:
-    msg: "yay"
-
-
 - name: Validate all required variables are defined
   ansible.builtin.assert:
     that: "{{ condition }}"

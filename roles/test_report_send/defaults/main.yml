@@ -14,7 +14,7 @@ trs_ci_system: unknown
 trs_collector: splunk
 
 trs_debug: false
-trs_ci_system_autodetect: false
+trs_ci_system_autodetect: true
 trs_do_send: true
 trs_workdir_keep: "{{ trs_debug | default(false) }}"
 
