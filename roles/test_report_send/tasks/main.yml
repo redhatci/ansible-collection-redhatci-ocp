@@ -2,23 +2,10 @@
 ---
 # tasks file main.yml for redhatci.ocp.test_report_send
 
-- name: DBG Print all required variables
-  ansible.builtin.debug:
-    msg:
-      - "trs_collector: '{{ trs_collector }}'"
-      - "trs_collector_auth_token: '{{ trs_collector_auth_token }}'"
-      - "trs_collector_auth_headers: '{{ trs_collector_auth_headers }}'"
-
-- name: DBG fail here
-  ansible.builtin.fail:
-    msg: "yay"
-
-
 - name: Validate all required variables are defined
   ansible.builtin.assert:
     that: "{{ condition }}"
-    fail_msg:
-      - "The condition {{ condition }} does not happen"
+    fail_msg: "The condition {{ condition }} is not met"
   loop:
     - trs_collector in trs_collectors_supported
     - ((trs_collector_auth_token | length > 0) or (trs_collector_auth_headers | length > 0))
@@ -28,19 +15,20 @@
 - name: Ensure presence and readability for file {{ trs_report_path }}
   ansible.builtin.include_tasks:
     file: "ensure-file.yml"
-  loop:
-    - "{{ trs_report_path }}"
-  loop_control:
-    loop_var: file_path
+  vars:
+    file_path: "{{ trs_report_path }}"
+  when:
+    - trs_report_path | length > 0
 
-# CREDITS: lovingly copied from @cplacani PR: https://github.com/openshift-kni/eco-validation/pull/150/files
-
-- name: Collect trs_metadata_path file stat
-  ansible.builtin.stat:
-    path: "{{ trs_metadata_path }}"
-  register: _trs_metadata_path_stat
+- name: Ensure presence and readability for file {{ trs_metadata_path }}
+  ansible.builtin.include_tasks:
+    file: "ensure-file.yml"
+  vars:
+    file_path: "{{ trs_metadata_path }}"
   when:
     - trs_metadata_path | length > 0
+
+# CREDITS: lovingly copied from @cplacani PR: https://github.com/openshift-kni/eco-validation/pull/150/files
 
 - name: Read content of metadata JSON file
   ansible.builtin.slurp:
@@ -62,6 +50,6 @@
 - name: Send trs_data_event to collector {{ trs_collector }}
   ansible.builtin.include_tasks:
     file: "reporting/{{ trs_collector }}.yml"
-  tags:
-    - inproc
-    - validation
+  when:
+    - trs_report_path | length > 0
+

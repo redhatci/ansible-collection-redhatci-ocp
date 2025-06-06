@@ -17,7 +17,8 @@ argument_specs:
     options:
       trs_report_path:
         type: str
-        required: true
+        required: false
+        default: ""
         description: |
           Test report JSON file to send.
           Merged into the event under 'test' attribute.

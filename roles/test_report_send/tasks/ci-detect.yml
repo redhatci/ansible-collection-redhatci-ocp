@@ -37,12 +37,12 @@
     - trs_ci_system == "unknown"
     - lookup("env", "PROW_JOB_ID") | length > 0
 
-- name: Validating trs_ci_system detection success
+- name: Validating trs_ci_system is supported
   ansible.builtin.assert:
     that: "{{ condition }}"
     fail_msg: "Assertion failed: {{ condition }}"
   loop:
     - trs_ci_system != "unknown"
-    - trs_ci_system in trs_supported_ci_systems
+    - trs_ci_system in trs_ci_systems_supported
   loop_control:
     loop_var: condition
