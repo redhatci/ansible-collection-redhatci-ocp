@@ -45,6 +45,7 @@ Also, exported `kubeconfig` file is required to run the Ansible tasks on the tar
 | ecd_networks_cnfapp                   | []                                                                                              | no       | Networks for CNFApp, including MAC addresses and (if provided) IP addresses |
 | ecd_networks_trex                     | []                                                                                              | no       | Networks for TRex, including MAC addresses and (if provided) IP addresses |
 | ecd_run_deployment                    | 1                                                                                               | no       | Run all deployment automation. If different than 1, the automation will only create the pods and prepare the scripts to launch testpmd/grout and trex manually afterwards |
+| ecd_enable_privileged_mode            | false                                                                                           | no       | Enable container privileged mode, instead of setting specific capabilities. This is required when using Mellanox cards, because it requires access to /dev/vfio/vfio from host since it uses netdevice instead of vfio-pci. To achieve that, using a volume with hostPath is not enough, so that privileged mode is required (see [this](https://access.redhat.com/solutions/6560521) for an example of this). |
 | ecd_termination_grace_period_seconds  | 30                                                                                              | no       | Termination grace period for TestPMD |
 | ecd_testpmd_reduced_mode              | 0                                                                                               | no       | Use reduced mode for TestPMD (if different than 0), where only three cores are used, and txd/rxd parameters are doubled |
 | ecd_trex_test_config                  | []                                                                                              | no       | TRex test configuration. See an example below |
@@ -111,6 +112,18 @@ to:
 ```yaml
       capabilities: '{"mac": true}'
 ```
+
+This configuration is related to Intel cards. If you are using other type of cards, you need to apply the corresponding modifications (`device_id` and `vendor` will change, among others). For example, [for Mellanox cards](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/networking/hardware-networks#example-vf-use-in-dpdk-mode-mellanox_using-dpdk-and-rdma), you need to use `netdevice` instead of `vfio-pci`, and also enable RDMA (`is_rdma: true`). It's also recommended to use `need_vhost_net: true`, and in case you want to include RDMA subsystem, you can do it with `meta_plugins: '{"type": "rdma"}'`.
+
+> Remember that Mellanox requires containers to run in privileged mode. Enable it with `ecd_enable_privileged_mode: true`.
+
+### NIC support
+
+The deployment is fully compliant with Intel NICs.
+
+However, we found difficulties when trying to test Mellanox NICs with TRex pod. With the current setup, when launching TRex, it's not able to find the requested interfaces.
+
+According to TRex documentation, [OFED driver](https://trex-tgn.cisco.com/trex/doc/trex_appendix_mellanox.html) should be required. Its deployment in an OpenShift cluster is out of the scope of this project and has not been fully validated, so it's not guaranteed that Mellanox NICs can be used with the TRex pod. Only DPDK-related pods (Grout and TestPMD) can be deployed without any problem.
 
 ## Network configuration
 

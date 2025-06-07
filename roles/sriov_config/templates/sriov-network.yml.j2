@@ -17,7 +17,7 @@ spec:
   maxTxRate: {{ sriov.network.max_tx_rate | int }}
 {% endif %}
 {% if sriov.network.meta_plugins is defined %}
-  metaPlugins: "{{ sriov.network.meta_plugins }}"
+  metaPlugins: {{ sriov.network.meta_plugins | to_json }}
 {% endif %}
 {% if sriov.network.min_tx_rate is defined %}
   minTxRate: {{ sriov.network.min_tx_rate | int }}
