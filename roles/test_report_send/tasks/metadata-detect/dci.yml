@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# DCI metadata detection tasks for redhatci.ocp.test_report_send
+
+- name: Set is_ci attribute
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'is_ci': true}) }}"
+  when:
+    - lookup("env","CI") | lower == "true"
+    - lookup("env","DCI_CS_URL") is defined
+
+- name: Update trs_ci_runtime.type for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'type': trs_ci_system}) }}"
+
+- name: Update trs_ci_runtime.url for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'url': lookup('env', 'DCI_CS_URL')}) }}"
+
+- name: Ensure DCI metadata is an object with single root key 'metadata'
+  ansible.builtin.assert:
+    that: "{{ condition }}"
+    fail_msg: "Condition '{{ condition }}' is not met for trs_meta_data"
+  loop:
+    - 'trs_meta_data | length > 0'
+    - '"metadata" in trs_meta_data'
+    - 'trs_meta_data.keys() == ["metadata"]'
+    - 'trs_meta_data.metadata | length > 0'
+  loop_control:
+    loop_var: condition
+
+- name: Normalize trs_meta_data by pull-up "metadata" attribute values to the root of the trs_meta_data object
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ trs_meta_data.metadata }}"

@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# vars/main.yml file for redhatci.ocp.test_report_send
+
+trs_ci_systems_supported:
+  - dci
+  - github
+  - gitlab
+  - jenkins
+  - prow
+
+trs_collectors_supported:
+  - splunk
