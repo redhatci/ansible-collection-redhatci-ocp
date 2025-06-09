@@ -4,7 +4,7 @@ metadata:
   name: grout
   namespace: {{ ecd_cnf_namespace }}
 spec:
-  privileged: false
+  privileged: {{ ecd_enable_privileged_mode }}
   imagePullPolicy: {{ ecd_image_pull_policy }}
   size: 1  
   networks: {{ ecd_networks_cnfapp }}
