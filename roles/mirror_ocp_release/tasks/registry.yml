@@ -3,12 +3,11 @@
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
-    --authfile {{ mor_auths_file }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
+    --authfile {{ mor_auths_file }}{%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}
     docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
   register: _mor_release_image
+  changed_when: _mor_release_image.rc == 0
   failed_when: false
   when: not mor_force | bool
 
@@ -16,12 +15,10 @@
   ansible.builtin.command: >-
     {{ mor_oc }} adm release mirror
     --registry-config={{ mor_auths_file }}
-    --from={{ ocp_release_data['container_image'] | quote }}
+    --from={{ mor_ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
-    --to={{ mor_registry_url }}/{{ mor_registry_path }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --insecure
-    {%- endif %}
+    --to={{ mor_registry_url }}/{{ mor_registry_path }}{%- if mor_allow_insecure_registry | bool %}
+    --insecure{%- endif %}
   retries: 3
   delay: 10
   register: _mor_result
@@ -37,13 +34,13 @@
   ansible.builtin.command: >-
     {{ mor_oc }} adm release mirror
     --registry-config={{ mor_auths_file }}
-    --from={{ ocp_release_data['container_image'] | quote }}
+    --from={{ mor_ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
     --to={{ mor_registry_url }}/{{ mor_registry_path }}
-    {{ mor_version is version("4.14", "<") | ternary("--dry-run", "--print-mirror-instructions=" + mor_is_type | lower ) }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --insecure
-    {%- endif %}
+    {{ mor_version is version("4.14", "<") | ternary("--dry-run", mirror_instructions) }}{%- if mor_allow_insecure_registry | bool %}
+    --insecure{%- endif %}
+  vars:
+    mirror_instructions: "--print-mirror-instructions= {{ mor_is_type | lower }}"
   retries: 3
   delay: 10
   register: _mor_result
