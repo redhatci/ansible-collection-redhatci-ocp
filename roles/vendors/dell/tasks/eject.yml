@@ -1,58 +1,54 @@
 ---
-- name: Eject
-  block:
-    - name: DELL Eject Virtual Media (if any)
-      community.general.redfish_command:
-        category: Manager
-        command: VirtualMediaEject
-        baseuri: "{{ bmc_address }}"
-        username: "{{ bmc_user }}"
-        password: "{{ bmc_password }}"
-        virtual_media:
-          image_url: "{{ boot_iso_url }}"
-        resource_id: iDRAC.Embedded.1
-  rescue:
-    - name: Get Virtual Media information
-      community.general.redfish_info:
-        category: Manager
-        command: GetVirtualMedia
-        baseuri: "{{ bmc_address }}"
-        username: "{{ bmc_user }}"
-        password: "{{ bmc_password }}"
-      register: result
+- name: Get Virtual Media information
+  community.general.redfish_info:
+    category: Manager
+    command: GetVirtualMedia
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    timeout: 120
+  retries: 3
+  register: result
+  delay: 10
+  until: result is succeeded
 
-    - name: Get blocking virtual_media
-      ansible.builtin.set_fact:
-        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
-            | flatten(levels=2)
-            | selectattr('ConnectedVia', 'defined') | list
-            | json_query('[?(
-                ConnectedVia == `URI`
-                && Image != null
-                && (
-                  contains(MediaTypes, `CD`)
-                  || contains(MediaTypes, `DVD`)
-                  || contains(MediaTypes, `VCD-DVD`)
-                )
-              )]'
-            ) | from_yaml
-          }}"
+- name: Get blocking virtual_media
+  ansible.builtin.set_fact:
+    blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
+        | flatten(levels=2)
+        | selectattr('ConnectedVia', 'defined') | list
+        | json_query('[?(
+            ConnectedVia == `URI`
+            && Image != null
+            && (
+              contains(MediaTypes, `CD`)
+              || contains(MediaTypes, `DVD`)
+              || contains(MediaTypes, `VCD-DVD`)
+            )
+          )]'
+        ) | from_yaml
+      }}"
 
-    - name: Debug
-      ansible.builtin.debug:
-        var: blocking_virtual_media
-        verbosity: 1
+- name: Debug
+  ansible.builtin.debug:
+    var: blocking_virtual_media
+    verbosity: 1
 
-    - name: Attempting to eject blocking media
-      community.general.redfish_command:
-        category: Manager
-        command: VirtualMediaEject
-        baseuri: "{{ bmc_address }}"
-        username: "{{ bmc_user }}"
-        password: "{{ bmc_password }}"
-        virtual_media:
-          image_url: "{{ item.Image }}"
-        resource_id: iDRAC.Embedded.1
-      loop: "{{ blocking_virtual_media }}"
-      no_log: true
+- name: Attempting to eject blocking media (if any)
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaEject
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    timeout: 120
+    virtual_media:
+      image_url: "{{ item.Image }}"
+    resource_id: iDRAC.Embedded.1
+  loop: "{{ blocking_virtual_media }}"
+  retries: 3
+  delay: 10
+  until: result is succeeded
+  register: result
+  no_log: true
 ...
