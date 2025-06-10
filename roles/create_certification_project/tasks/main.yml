@@ -7,6 +7,10 @@
     fail_msg: "The parameter cert_item is required to create cert project"
     success_msg: "The parameter {{ cert_item }} is present"
 
+- name: Reset the project id to handle multiple CNF
+  ansible.builtin.set_fact:
+    cert_project_id: ""
+
 - name: Handle the situation when cert project already exists
   ansible.builtin.include_tasks: check_if_project_exists.yml
   when:
