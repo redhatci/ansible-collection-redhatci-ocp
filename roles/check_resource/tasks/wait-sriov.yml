@@ -7,10 +7,6 @@
   vars:
     query_sync_status: 'resources[*].status.syncStatus'
     query_sync_status_results: "{{ _cr_sriovnetnode | json_query(query_sync_status) }}"
-    query_current_state: 'resources[*].metadata.annotations."sriovnetwork.openshift.io/current-state"'
-    query_current_state_results: "{{ _cr_sriovnetnode | json_query(query_current_state) }}"
-    query_desired_state: 'resources[*].metadata.annotations."sriovnetwork.openshift.io/desired-state"'
-    query_desired_state_results: "{{ _cr_sriovnetnode | json_query(query_desired_state) }}"
   kubernetes.core.k8s_info:
     api_version: sriovnetwork.openshift.io/v1
     kind: SriovNetworkNodeState
@@ -18,8 +14,6 @@
   until:
     - _cr_sriovnetnode.resources is defined
     - query_sync_status_results | unique == ['Succeeded']
-    - query_current_state_results | unique == ['Idle']
-    - query_desired_state_results | unique == ['Idle']
   retries: "{{ check_wait_retries }}"
   delay: "{{ check_wait_delay }}"
 
