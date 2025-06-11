@@ -12,8 +12,8 @@
   delay: 10
   until: result is succeeded
 
-- name: Get blocking virtual_media
-  ansible.builtin.set_fact:
+- name: Attempting to eject blocking media (if any)
+  vars:
     blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
         | flatten(levels=2)
         | selectattr('ConnectedVia', 'defined') | list
@@ -29,8 +29,6 @@
           )]'
         ) | from_yaml
       }}"
-
-- name: Attempting to eject blocking media (if any)
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaEject
