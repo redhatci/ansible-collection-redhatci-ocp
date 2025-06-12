@@ -1,0 +1,134 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Splunk reporting tasks for redhatci.ocp.test_report_send
+
+- name: Read content from test report JSON file
+  ansible.builtin.slurp:
+    src: "{{ trs_report_path }}"
+  register: _trs_json_file_content
+
+- name: Decode JSON content of test report file
+  ansible.builtin.set_fact:
+    trs_test_data: "{{ _trs_json_file_content.content | b64decode | from_json | default({}) }}"
+  when:
+    _trs_json_file_content.content | length > 0
+
+
+- name: Print currently used timestamp trs_default_ts
+  ansible.builtin.debug:
+    var: trs_default_ts
+  when:
+    - ansible_verbosity | default(0) > 1
+
+- name: Setup timestamps broken down to int/float parts for {{ trs_collector }}
+  ansible.builtin.set_fact:
+    trs_job_time_int: "{{ (trs_meta_data.job.created_at | \
+      default(trs_default_ts) | \
+      regex_replace('\\..*$', '') | \
+      to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
+    trs_job_time_fraction: "{{ trs_meta_data.job.created_at | default(trs_default_ts) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+
+- name: Setup timestamps as floats for reporting
+  ansible.builtin.set_fact:
+    trs_job_time: "{{ (trs_job_time_int | int) + (trs_job_time_fraction | float) }}"
+
+- name: Update trs_collector_auth_headers with trs_collector_auth_token from the user for {{ trs_collector }}
+  ansible.builtin.set_fact:
+    trs_collector_auth_headers: "{{ trs_collector_auth_headers | default({}) | combine({'Authorization': 'Splunk ' + trs_collector_auth_token}) }}"
+  when:
+    - trs_collector_auth_token | length > 0
+    - trs_collector
+
+- name: Update trs_collector_auth_headers with trs_collector_target from the user for {{ trs_collector }}
+  ansible.builtin.set_fact:
+    trs_collector_auth_headers: "{{ trs_collector_auth_headers | combine({'X-Splunk-Request-Channel': trs_collector_target}) }}"
+  when:
+    - trs_collector_target | length > 0
+
+- name: Set default allowed status codes
+  ansible.builtin.set_fact:
+    trs_http_status_codes:
+      # can be "forbidden" (403) for mock collector
+      HEAD:
+        - 200
+        - 403
+      POST:
+        - 200
+
+- name: Set allowed status codes
+  ansible.builtin.set_fact:
+    trs_http_status_codes:
+      # can be "forbidden" (403) for mock collector
+      HEAD:
+        - 200
+      POST:
+        - 200
+  when:
+    - trs_do_send
+
+- name: Validate splunk related data
+  ansible.builtin.include_tasks:
+    file: "validations.yml"
+
+- name: Create event data attributes
+  ansible.builtin.set_fact:
+    trs_event:
+      test: "{{ trs_test_data }}"
+      metadata: "{{ trs_meta_data }}"
+
+- name: Print event data before timestamp corrections
+  ansible.builtin.debug:
+    var: trs_event
+  when:
+    - ansible_verbosity | default(0) > 1
+
+
+# data conversion copied from @cplacani PR: https://github.com/openshift-kni/eco-validation/pull/150/files
+
+- name: Combine additional attributes into the data at trs_collector_target for {{ trs_collector }}
+  ansible.builtin.set_fact:
+    trs_event_payload: >
+      {{
+      {
+        "source": trs_collector_source,
+        "event": trs_event,
+        "host": trs_collector_url,
+        "sourcetype": "_json"
+      }
+      }}
+
+- name: Print variable trs_event_dump_file
+  ansible.builtin.include_tasks:
+    file: "dump-file.yml"
+  vars:
+    trs_file_path: "{{ trs_event_dump_file }}"
+  when:
+    - trs_event_dump_file | length > 0
+    - trs_event_save
+
+- name: Send data to {{ trs_collector }}
+  ansible.builtin.uri:
+    url: "{{ trs_collector_url }}"
+    method: POST
+    headers: "{{ trs_collector_auth_headers | default(omit) }}"
+    body: "{{ trs_event_payload }}"
+    body_format: json
+    follow_redirects: all
+    validate_certs: "{{ not(trs_allow_self_signed_certs) | default(true) }}"
+    timeout: "{{ global_request_timeout | default(omit) }}"
+  register: _trs_splunk_response
+  ignore_errors: true
+  when:
+    - trs_do_send | default(false)
+
+- name: Verify status code is good
+  ansible.builtin.assert:
+    that:
+      _trs_splunk_response is defined
+      _trs_splunk_response.status in trs_http_status_codes.POST
+    fail_msg: >-
+      Variable splunk POST status {{ _trs_splunk_response.status }} and content {{ _trs_splunk_response.content }},
+      Fails validation (not in {{ trs_http_status_codes.POST }})
+    success_msg: "The status code is good"
+  when:
+    - trs_do_send | default(false)

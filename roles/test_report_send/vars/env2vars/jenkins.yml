@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# env2var list for redhatci.ocp.test_report_send for jenkins
+
+env2vars:
+  - key: ci_runner_labels
+    var: NODE_LABELS
+    var_type: dict
+    splitter:
+      - " "
+      - ":"
+  - key: ci_runner_id
+    var: EXECUTOR_NUMBER
+    var_type: int
+  - key: ci_runner_name
+    var: NODE_NAME
+  - key: ci_url
+    var: JENKINS_URL
+  - key: job_name
+    var: JOB_NAME
+  - key: job_url
+    var: JOB_URL
+  - key: job_build
+    var: BUILD_NUMBER
+    var_type: int
+  - key: job_build_url
+    var: BUILD_URL
+  - key: job_build_cause
+    var: BUILD_CAUSE
+    var_type: list
+    splitter:
+      - ','
+  - key: source_repo_url
+    var: GIT_URL
+  - key: source_ref
+    var: CHANGE_BRANCH
+  - key: source_ref_name
+    var: GIT_BRANCH
+  - key: source_sha
+    var: GIT_COMMIT
+  - key: source_ref_type
+    var: GIT_COMMIT_TAG
+  - key: source_change_url
+    var: CHANGE_URL
+  - key: source_change_author
+    var: CHANGE_AUTHOR
+  - key: source_change_author_name
+    var: CHANGE_AUTHOR_DISPLAY_NAME
+  - key: source_ci_server_url
+    var: CI_SERVER_URL
+  - key: source_owner
+    var: CI_PROJECT_NAMESPACE
+  - key: source_repo
+    var: CI_PROJECT_NAME
+  - key: source_repo_path
+    var: CI_PROJECT_PATH
+    # Mapping to Merge Request (MR)
+  - key: source_change_id
+    var: CHANGE_ID
+  - key: source_change_base_ref
+    var: CHANGE_TARGET
+  - key: source_change_head_ref
+    var: CHANGE_BRANCH

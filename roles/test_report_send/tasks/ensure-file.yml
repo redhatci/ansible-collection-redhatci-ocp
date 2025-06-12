@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file ensure-file.yml for redhatci.ocp.test_report_send
+
+- name: Print value of var trs_file_path
+  ansible.builtin.debug:
+    var: trs_file_path
+
+- name: Collect file stat for file {{ trs_file_path }}
+  ansible.builtin.stat:
+    path: "{{ trs_file_path }}"
+  register: _trs_file_path_stat
+  when:
+    - trs_file_path | length > 0
+
+- name: Ensure validation requirements are met for file {{ trs_file_path }}
+  ansible.builtin.assert:
+    that: "{{ condition }}"
+    fail_msg: "The file trs_file_path did not meet condition: {{ condition }}"
+  loop:
+    - _trs_file_path_stat.stat.isreg | default(false)
+    - _trs_file_path_stat.stat.readable | default(false)
+  loop_control:
+    loop_var: condition
+  when:
+    - trs_file_path | length > 0
