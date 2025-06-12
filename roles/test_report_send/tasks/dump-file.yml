@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# dump file  tasks for redhatci.ocp.test_report_send
+
+- name: Print variable trs_file_path
+  ansible.builtin.debug:
+    msg: "trs_file_path: {{ trs_file_path }}"
+
+- name: Dump the event data to file
+  ansible.builtin.copy:
+    content: "{{ trs_event_payload | ansible.builtin.to_nice_json(indent=4) }}"
+    dest: "{{ trs_file_path }}"
+    mode: "0644"
