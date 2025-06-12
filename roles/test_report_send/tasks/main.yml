@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file main.yml for redhatci.ocp.test_report_send
+
+- name: Validate all required variables are defined
+  ansible.builtin.assert:
+    that:
+      - trs_collector in trs_collectors_supported
+      - (trs_collector_auth_token | length > 0) or (trs_collector_auth_headers | length > 0)
+    fail_msg: "One or more authentication conditions are not met"
+
+- name: Ensure presence and readability of essential input files
+  ansible.builtin.include_tasks:
+    file: "ensure-file.yml"
+  loop:
+    - "{{ trs_report_path }}"
+    - "{{ trs_metadata_path }}"
+  loop_control:
+    loop_var: trs_file_path
+  when:
+    - trs_file_path | length > 0
+
+# CREDITS: lovingly copied from @cplacani PR: https://github.com/openshift-kni/eco-validation/pull/150/files
+
+- name: Initialize trs_meta_data
+  ansible.builtin.set_fact:
+    trs_meta_data: {}
+
+- name: Read content of JSON file {{ trs_file_path }}
+  ansible.builtin.slurp:
+    src: "{{ trs_metadata_path }}"
+  register: _trs_metadata_path
+  when:
+    - trs_metadata_path | length > 0
+
+- name: Assign JSON content into trs_meta_data
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ _trs_metadata_path.content | b64decode | from_json | default({}) }}"
+  when:
+    - trs_metadata_path | length > 0
+    - _trs_metadata_path is defined
+    - _trs_metadata_path.content | length > 0
+
+- name: Detect Runtime Metadata from our environment
+  ansible.builtin.include_tasks:
+    file: "metadata-detect.yml"
+
+- name: Send trs_data_event to collector {{ trs_collector }}
+  ansible.builtin.include_tasks:
+    file: "reporting/{{ trs_collector }}.yml"
+  when:
+    - trs_report_path | length > 0
