@@ -12,7 +12,7 @@
   vars:
     template_filename: "templates/update_project_{{ product_type }}.json.j2"
   ansible.builtin.uri:
-    url: "{{ catalog_url }}/projects/certification/id/{{ cert_project_id }}"
+    url: "{{ catalog_url }}/projects/certification/id/{{ ccp_cert_project_id }}"
     method: PATCH
     headers:
       X-API-KEY: "{{ lookup('file', pyxis_apikey_path) }}"
