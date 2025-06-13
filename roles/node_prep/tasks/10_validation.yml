@@ -125,7 +125,9 @@
 - name: Fail if incorrect API VIP
   fail:
     msg: "The API VIP IP seems to be incorrect. Value was NXDOMAIN or empty string."
-  when: (apivip == 'NXDOMAIN') or (apivip|length == 0)
+  when:
+    - dualstack_baremetal|bool or ipv4_baremetal|bool
+    - (apivip == 'NXDOMAIN') or (apivip|length == 0)
   tags:
     - always
     - validation
@@ -133,7 +135,9 @@
 - name: Fail if incorrect Ingress VIP
   fail:
     msg: "The Ingress VIP IP seems to be incorrect. Value was NXDOMAIN or empty string."
-  when: (ingressvip == 'NXDOMAIN') or (ingressvip|length == 0)
+  when:
+    - dualstack_baremetal|bool or ipv4_baremetal|bool
+    - (ingressvip == 'NXDOMAIN') or (ingressvip|length == 0)
   tags:
     - always
     - validation
@@ -299,8 +303,6 @@
   when:
     - release_version is ansible.builtin.version('4.12', '>=')
     - ipv6_enabled | bool
-    - dualstack_baremetal | bool
-    - dualstack_vips | bool
   block:
     - name: Verify DNS records for Wildcard (Ingress) IPv6 VIP
       ansible.builtin.set_fact:

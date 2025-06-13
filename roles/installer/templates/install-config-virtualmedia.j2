@@ -9,28 +9,32 @@ proxy:
 metadata:
   name: {{ cluster }}
 networking:
-{% if not dualstack_baremetal|bool %}
+  networkType: {{ network_type }}
+{% if ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int >= 12)) %}
+  machineNetwork:
+{% if dualstack_baremetal|bool or ipv4_baremetal|bool or not ipv6_enabled|bool %}
+  - cidr: {{ extcidrnet }}
+{% endif %}
+{% if dualstack_baremetal|bool or ipv6_enabled|bool %}
+  - cidr: {{ extcidrnet6 }}
+{% endif %}
+{% else %}
   machineCIDR: {{ extcidrnet }}
 {% endif %}
-  networkType: {{ network_type }}
-{% if ipv6_enabled|bool and not (ipv4_baremetal|bool or dualstack_baremetal|bool) %}
   clusterNetwork:
-  - cidr: fd01::/48
-    hostPrefix: 64
-  serviceNetwork:
-  - fd02::/112
-{% endif %}
-{% if ipv6_enabled|bool and dualstack_baremetal|bool %}
-  machineNetwork:
-  - cidr: {{ extcidrnet }}
-  - cidr: {{ extcidrnet6 }}
-  clusterNetwork:
+{% if dualstack_baremetal|bool or ipv4_baremetal|bool or not ipv6_enabled|bool %}
   - cidr: 10.128.0.0/14
     hostPrefix: 23
+{% endif %}
+{% if dualstack_baremetal|bool or ipv6_enabled|bool %}
   - cidr: fd02::/48
     hostPrefix: 64
+{% endif %}
   serviceNetwork:
+{% if dualstack_baremetal|bool or ipv4_baremetal|bool or not ipv6_enabled|bool %}
   - 172.30.0.0/16
+{% endif %}
+{% if dualstack_baremetal|bool or ipv6_enabled|bool %}
   - fd03::/112
 {% endif %}
 {% if fips_enabled is defined and fips_enabled|bool %}
@@ -46,24 +50,24 @@ controlPlane:
     baremetal: {}
 platform:
   baremetal:
-{% if ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int >= 12)) and dualstack_baremetal|bool and dualstack_vips|bool %}
+{% if ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int >= 12)) %}
     apiVIPs:
-{% if apivip is defined and apivip|ipv4 %}
+{% if (dualstack_baremetal|bool or ipv4_baremetal|bool or not ipv6_enabled|bool) and apivip is defined and apivip|ipv4 %}
       - {{ apivip }}
 {% endif %}
-{% if ipv6_enabled|bool and apivip6 is defined and apivip6|ipv6 %}
+{% if (dualstack_baremetal|bool or ipv6_enabled|bool) and apivip6 is defined and apivip6|ipv6 %}
       - {{ apivip6 }}
 {% endif %}
     ingressVIPs:
-{% if ingressvip is defined and ingressvip|ipv4 %}
+{% if (dualstack_baremetal|bool or ipv4_baremetal|bool or not ipv6_enabled|bool) and ingressvip is defined and ingressvip|ipv4 %}
       - {{ ingressvip }}
 {% endif %}
-{% if ipv6_enabled|bool and ingressvip6 is defined and ingressvip6|ipv6 %}
+{% if (dualstack_baremetal|bool or ipv6_enabled|bool) and ingressvip6 is defined and ingressvip6|ipv6 %}
       - {{ ingressvip6 }}
 {% endif %}
 {% else %}
-    apiVIP: {{ apivip }}
-    ingressVIP: {{ ingressvip }}
+    apiVIP: {{ (apivip is defined and apivip|ipv4) | ternary(apivip, apivip6) }}
+    ingressVIP: {{ (ingressvip is defined and ingressvip|ipv4) | ternary(ingressvip, ingressvip6) }}
 {% endif %}
 {% if ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int < 5)) %}
     dnsVIP: {{ dnsvip }}
