@@ -21,12 +21,12 @@
 
 - name: Set project ID to reuse it later
   ansible.builtin.set_fact:
-    cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"
+    ccp_cert_project_id: "{{ cert_project_output.json | json_query('_id') }}"
   when: not cert_project_output.failed
 
 - name: Set and Save New Project IDs for Preflight Parallel Tests
   ansible.builtin.set_fact:
-    ccp_new_cert_project_ids: "{{ ccp_new_cert_project_ids | default([]) + [{'pyxis_container_identifier': cert_project_id}] }}"
+    ccp_new_cert_project_ids: "{{ ccp_new_cert_project_ids | default([]) + [{'pyxis_container_identifier': ccp_cert_project_id}] }}"
   when:
     - not cert_project_output.failed
     - do_container_parallel_test
@@ -35,6 +35,6 @@
   ansible.builtin.debug:
     msg: |
       Certification project was created and could be checked here:
-      {{ connect_url }}/{{ cert_project_id }}/overview
+      {{ connect_url }}/{{ ccp_cert_project_id }}/overview
   when: not cert_project_output.failed
 ...
