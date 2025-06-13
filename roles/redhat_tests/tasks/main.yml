@@ -33,7 +33,7 @@
   when:
     - ts_do_cni_tests | default(false) | bool
 
-- name: Validate if the kubevirt CRD is present
+- name: Validate_ if the kubevirt CRD is present
   kubernetes.core.k8s_info:
     api_version: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition

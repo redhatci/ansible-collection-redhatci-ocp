@@ -1,5 +1,5 @@
 ---
-- name: "Validate that master cache directory exists"
+- name: "Validate_ that master cache directory exists"
   ansible.builtin.stat:
     path: "{{ si_cache_dir }}"
     get_checksum: false
@@ -24,7 +24,7 @@
     - getoc
     - cache
 
-- name: "Validate if cache dir for release exists"
+- name: "Validate_ if cache dir for release exists"
   ansible.builtin.stat:
     path: "{{ si_cache_dir }}/{{ version }}"
     get_checksum: false
