@@ -1,0 +1,9 @@
+---
+
+auth_headers:
+  Accept: "application/vnd.github.v3+json"
+  X-GitHub-Api-Version: "2022-11-28" # Recommended practice
+  Authorization: "token {{ lookup('env', 'GITHUB_TOKEN') }}"
+
+per_page: 100 # Adjust per_page if you have >100 jobs
+req_timeout: 15

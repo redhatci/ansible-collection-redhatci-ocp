@@ -1,0 +1,9 @@
+---
+per_page: 100
+auth_headers:
+  JOB-TOKEN: "{{ lookup('env', 'CI_JOB_TOKEN') }}"
+# Or for a Private Access Token (less secure, use with caution):
+# auth_headers:
+#   PRIVATE-TOKEN: "your_gitlab_pat"
+req_timeout: 15
+default_iid: UnknownIID

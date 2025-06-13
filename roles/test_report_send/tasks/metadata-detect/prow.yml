@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Prow metadata detection tasks for redhatci.ocp.test_report_send
+
+# TODO: rm this section after proper validation
+# The following env variables are expected to be found in a prow job:
+# ARTIFACTS:      The directory where job artifacts should be placed.
+# BUILD_ID:       (Often the same as PROW_JOB_ID in modern Prow) A unique ID for the build.
+# PROW_JOB_ID:    The unique ID for this Prow job instance.
+# JOB_NAME:       The name of the Prow job. (usable to construct current build url)
+# JOB_SPEC:       A JSON string containing the complete Prow Job specification.
+#                 This is a very important variable as it contains a wealth of information about the job,
+#                 including refs, repo details, etc. You might need to parse this for more complex scenarios.
+#                 Example of what you might find inside:
+#                   - `job_spec.type`
+#                   - `job_spec.repo`
+#                   - `job_spec.refs.org`
+#                   - `job_spec.refs.repo`
+#                   - `job_spec.refs.pulls[0].number`
+#                   - `job_spec.refs.pulls[0].sha`
+#                   - `job_spec.refs.base_ref`
+#                   - `job_spec.refs.base_sha`
+# JOB_TYPE:       Type of job (`presubmit`, `postsubmit`, `periodic`, `batch`).
+# PULL_BASE_REF:  The base branch of the pull request (e.g., `main`, `master`).
+# PULL_BASE_SHA:  The commit SHA of the base branch.
+# PULL_NUMBER:    The number of the pull request (for GitHub) or a similar identifier for other providers
+#                 like Gerrit (where it often corresponds to the change number).
+# PULL_PULL_SHA:  The commit SHA of the head of the pull request.
+# PULL_REFS:      A comma-separated string of references.
+#                 Format: `BASE_REF:BASE_SHA,PULL_SHA:PULL_NUMBER[,EXTRA_REF:EXTRA_SHA]*`.
+#                 This can be parsed to get the relevant SHAs and PR number.
+# PWD:            The working directory, typically `/workspace/src/<org>/<repo>` if code has been checked out by Prow.
+# REPO_NAME:      The name of the repository (e.g., `test-infra`). This is derived from the repo field in refs or `decoration_config`.
+# REPO_OWNER:     The owner/organization of the repository (e.g., `kubernetes`). This is derived from the org field in refs or `decoration_config`.
+
+- name: Set is_ci attribute
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'is_ci': true}) }}"
+  when:
+    - lookup("env","PROW_JOB_ID") | length > 0
+
+- name: Update trs_ci_runtime.type for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'type': trs_ci_system}) }}"
+
+- name: Obtain JOB_SPEC contents
+  ansible.builtin.set_fact:
+    _job_spec_raw: "{{ lookup('env', 'JOB_SPEC') | default('') }}"
+
+- name: Display a snippet of raw JOB_SPEC
+  ansible.builtin.debug:
+    msg: "Raw JOB_SPEC (first 100 chars): {{ _job_spec_raw[:100] }}..."
+  when:
+    - _job_spec_raw | length > 0
+
+- name: Parse JOB_SPEC contents as ansible object
+  ansible.builtin.set_fact:
+    _parsed_job_spec: "{{ _job_spec_raw | from_json if _job_spec_raw else {} }}"
+  when:
+    - _job_spec_raw | length > 0
+
+- name: Create _job_info from parsed JOB_SPEC
+  ansible.builtin.set_fact:
+    _job_info: "{{ _job_info | default({}) | combine({item.key: item.value}) }}"
+  loop:
+    - key: name
+      value: "{{ _parsed_job_spec.job }}"
+    - key: id
+      value: "{{ _parsed_job_spec.prow_job_id }}"
+    - key: type
+      value: "{{ _parsed_job_spec.type }}"
+  loop_control:
+    loop_var: item
+
+- name: Create _source_info from parsed JOB_SPEC
+  ansible.builtin.set_fact:
+    _source_info: "{{ _source_info | default({}) | combine({item.key: item.value}) }}"
+  loop:
+    - key: org
+      value: "{{ _parsed_job_spec.refs.org | default('N/A') }}"
+    - key: repo
+      value: "{{ _parsed_job_spec.refs.repo | default('N/A') }}"
+    - key: base_ref
+      value: "{{ _parsed_job_spec.refs.base_ref | default('N/A') }}"
+    - key: base_sha
+      value: "{{ _parsed_job_spec.refs.base_sha | default('N/A') }}"
+  loop_control:
+    loop_var: item
+
+- name: Add _job_info metadata to trs_ci_runtime
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'job': _job_info}) }}"
+
+- name: Add _source_info metadata to trs_ci_runtime
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'source': _source_info}) }}"
