@@ -28,7 +28,7 @@
 
 - name: "Append the current project into the list to link to PL"
   ansible.builtin.set_fact:
-    all_cert_projects: "{{ prev_projects | default([]) + [cert_project_id] }}"
+    all_cert_projects: "{{ prev_projects | default([]) + [ccp_cert_project_id] }}"
 
 - name: Ensure that all_cert_projects is not empty
   ansible.builtin.assert:
