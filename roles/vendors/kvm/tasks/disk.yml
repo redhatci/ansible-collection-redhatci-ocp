@@ -5,23 +5,10 @@
 #
 # Mount Live ISO, Boot into Live ISO (KVM only)
 - name: Identify System Manager
-  uri:
-    url: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
-    user: "{{ bmc_user }}"
-    password: "{{ bmc_password }}"
-    method: GET
-    status_code: [200, 201]
-    validate_certs: false
-    return_content: true
-  register: redfish_reply
-
-- name: KVM Set System UUID
-  set_fact:
-    system_uuid_url: "{{ base_bmc_address }}/{{ redfish_reply.json['@odata.id'] }}"
-    system_manager_url: "{{ base_bmc_address }}/{{ redfish_reply.json.Links.ManagedBy[0]['@odata.id'] }}"
+  ansible.builtin.include_tasks: get-sm.yml
 
 - name: KVM Force Power Off System {{ target_host }}
-  uri:
+  ansible.builtin.uri:
     url: "{{ system_uuid_url }}/Actions/ComputerSystem.Reset"
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -36,7 +23,7 @@
   failed_when: false
 
 - name: KVM Eject Virtual Media (if any) {{ target_host }}
-  uri:
+  ansible.builtin.uri:
     url: "{{ system_manager_url }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -50,7 +37,7 @@
   failed_when: false
 
 - name: KVM Set Next Boot from HDD {{ target_host }}
-  uri:
+  ansible.builtin.uri:
     url: "{{ system_uuid_url }}"
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -72,7 +59,7 @@
   register: redfish_reply
 
 - name: KVM Force Power On System {{ target_host }}
-  uri:
+  ansible.builtin.uri:
     url: "{{ system_uuid_url }}/Actions/ComputerSystem.Reset"
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
