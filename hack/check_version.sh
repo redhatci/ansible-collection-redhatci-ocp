@@ -46,15 +46,32 @@ if [ -z "$branch" ]; then
     error "Unable to determine the current branch."
 fi
 
-REMOVED=$(git diff --diff-filter=D --name-only origin/main...$branch | grep -Eo '^roles/.+/' |
-sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | tr / . | uniq)
+EXISTING=$(git ls-tree -r --name-only origin/main |
+  grep -E '^roles/.+/' |
+  sed -E -e 's@^roles/@@' -e 's@/(defaults|templates|vars|scripts|handlers|tests|meta|tasks|files).*@@' -e 's@/.*@@' |
+  uniq)
 
-ADDED=$(git diff --diff-filter=A --name-only origin/main...$branch | grep -Eo '^roles/.+/' |
-sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | tr / . | uniq)
+ADDED_FILES=$(git diff --diff-filter=A --name-only origin/main...$branch)
+
+REMOVED_FILES=$(git diff --diff-filter=D --name-only origin/main...$branch)
+
+ADDED=$(echo "$ADDED_FILES" |
+  grep -E '^roles/.+/' |
+  sed -E -e 's@^roles/@@' -e 's@/(defaults|templates|vars|scripts|handlers|tests|meta|tasks|files).*@@' -e 's@/.*@@' |
+  uniq)
+
+REMOVED=$(echo "$REMOVED_FILES" |
+  grep -E '^roles/.+/' |
+  sed -E -e 's@^roles/@@' -e 's@/(defaults|templates|vars|scripts|handlers|tests|meta|tasks|files).*@@' -e 's@/.*@@' |
+  uniq)
+
+NEW=$(comm -23 <(echo "$ADDED" | sort) <(echo "$EXISTING_ROLES" | sort))
+
+DELETED=$(comm -23 <(echo "$EXISTING" | sort) <(echo "$REMOVED" | sort))
 
 # check if the roles are fully removed
-if [ -n "$REMOVED" ]; then
-    for role in $REMOVED; do
+if [ -n "$DELETED" ]; then
+    for role in $DELETED; do
         if [ ! -d "roles/$role" ]; then
             # role is fully removed, so check if the major version is
             # incremented in galaxy.yml
@@ -70,8 +87,8 @@ if [ -n "$REMOVED" ]; then
 fi
 
 # check if the roles are fully added
-if [ -n "$ADDED" ]; then
-    for role in $ADDED; do
+if [ -n "$NEW" ]; then
+    for role in $NEW; do
         # check if $role doesn't exist in the main branch
         if ! git show origin/main:roles/$role > /dev/null 2>&1; then
             # role is fully added, so check if the minor version is
