@@ -140,7 +140,6 @@ Name | Description
 [redhatci.ocp.vendors.lenovo](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/lenovo/README.md) | Boots a lenovo machine to iso or disk via redfish
 [redhatci.ocp.vendors.pxe](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/pxe/README.md) | Boots a machine to pxe or disk via ipmi
 [redhatci.ocp.vendors.supermicro](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/supermicro/README.md) | Boots a supermicro machine to iso or disk via redfish
-[redhatci.ocp.vendors.zt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/zt/README.md) | Boots a zt machine to iso or disk via redfish
 [redhatci.ocp.verify_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/verify_tests/README.md) | Verification of tests based on rules
 [redhatci.ocp.ztp.setup_cluster_image_set](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ztp/setup_cluster_image_set/README.md) | Create a clusterImageSet object in the hub cluster aligned with the values in the site config manifest.
 

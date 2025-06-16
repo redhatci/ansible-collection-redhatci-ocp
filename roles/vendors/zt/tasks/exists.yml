@@ -1,4 +1,0 @@
-- name: Debug
-  ansible.builtin.debug:
-    msg: "ZT vendor role exists"
-    verbosity: 1

@@ -12,9 +12,4 @@
     return_content: true
   register: redfish_reply
   ignore_errors: true
-
-- name: Debug
-  ansible.builtin.debug:
-    var: redfish_reply
-    verbosity: 1
 ...
