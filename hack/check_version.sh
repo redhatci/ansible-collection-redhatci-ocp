@@ -47,10 +47,10 @@ if [ -z "$branch" ]; then
 fi
 
 REMOVED=$(git diff --diff-filter=D --name-only origin/main...$branch | grep -Eo '^roles/.+/' |
-sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | tr / . | uniq)
+sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | uniq)
 
 ADDED=$(git diff --diff-filter=A --name-only origin/main...$branch | grep -Eo '^roles/.+/' |
-sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | tr / . | uniq)
+sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | uniq)
 
 # check if the roles are fully removed
 if [ -n "$REMOVED" ]; then
@@ -63,7 +63,7 @@ if [ -n "$REMOVED" ]; then
             major_main=$(git show origin/main:galaxy.yml | grep -E '^version:' | awk '{print $2}' | cut -d'.' -f1)
             # check if the major version is incremented
             if [ "$major" -le "$major_main" ]; then
-                error "Major version must be incremented for removed role $role"
+                error "Major version must be incremented for removed role ${role//\//.}"
             fi
         fi
     done
@@ -84,10 +84,10 @@ if [ -n "$ADDED" ]; then
             minor_main=$(git show origin/main:galaxy.yml | grep -E '^version:' | awk '{print $2}' | cut -d'.' -f2)
             # check if major.minor is greater than the main branch
             if [ "$major" -lt "$major_main" ]; then
-                error "Minor version (${major}.${minor}) must be incremented for new role ${role}"
+                error "Major version (${major}.${minor}) must be incremented for new role ${role//\//.}"
             elif [ "$major" -eq "$major_main" ]; then
                 if [ "$minor" -le "$minor_main" ]; then
-                    error "Minor version ${minor} must be incremented for new role ${role}"
+                    error "Minor version ${minor} must be incremented for new role ${role//\//.}"
                 fi
             fi
         fi
