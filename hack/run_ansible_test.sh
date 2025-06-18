@@ -19,7 +19,13 @@ set -ex
 # when run outside of a GitHub action
 if [ -z "$GITHUB_STEP_SUMMARY" ]; then
     GITHUB_STEP_SUMMARY=/dev/null
+    > branch.output
+    > main.output
 fi
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+trap 'git checkout "$branch"' EXIT
 
 # Parse test types from arguments, default to all
 TEST_TYPES=()
@@ -44,18 +50,12 @@ else
   done
 fi
 
-branch=$(git rev-parse --abbrev-ref HEAD)
-
-trap 'git checkout -- "$branch"' EXIT
-
-git fetch --unshallow origin main || :
-
 run_tests() {
   local version=$1
   for test_type in "${TEST_TYPES[@]}"; do
     case "$test_type" in
       sanity)
-        ansible-test sanity $EXCLUDE --verbose --docker --python ${version} --color --coverage --failure-ok
+        ansible-test sanity $EXCLUDE --verbose --docker --python ${version} --color --coverage --failure-ok --lint
         ;;
       units)
         ansible-test units --verbose --docker --python ${version} --color --coverage || :
@@ -80,7 +80,9 @@ for version in $PY_VERS; do
 done 2> >(tee -a branch.output >&2)
 
 # Tests in main branch
-git checkout origin/main
+git fetch origin main
+git checkout main
+echo "Running tests in main branch, this may take a while as no output is displayed..."
 for version in $PY_VERS; do
   run_tests "${version}"
 done 2> main.output 1>/dev/null
