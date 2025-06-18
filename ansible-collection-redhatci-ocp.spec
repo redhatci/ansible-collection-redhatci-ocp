@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.6.EPOCH
+Version:        2.7.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Jul  8 2025 Tony Garcia <tonyg@redhat.com> - 2.7.EPOCH-VERS
+- Add new role argocd_config
+
 * Fri Jul 4 2025 Beto Rdz <josearod@redhat.com> - 2.6.EPOCH-VERS
 - New role setup_gitops
 

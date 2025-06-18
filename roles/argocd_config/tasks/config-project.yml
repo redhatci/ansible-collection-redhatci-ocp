@@ -1,0 +1,4 @@
+---
+- name: Create an ArgoCD Project
+  kubernetes.core.k8s:
+    definition: "{{ ac_project_def }}"
