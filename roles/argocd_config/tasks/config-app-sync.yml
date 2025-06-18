@@ -1,0 +1,34 @@
+---
+- name: Turn Sync On ArgoCD App
+  when:
+    - ac_action == "sync-on"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: "{{ ac_app_name }}"
+        namespace: "{{ ac_namespace }}"
+      spec:
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+          syncOptions:
+            - CreateNamespace=true
+
+- name: Turn Sync Off ArgoCD App
+  when:
+    - ac_action == "sync-off"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: "{{ ac_app_name }}"
+        namespace: "{{ ac_namespace }}"
+      spec:
+        syncPolicy:
+          automated: null
+        syncOptions:
+          - CreateNamespace=true

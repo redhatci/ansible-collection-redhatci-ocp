@@ -1,0 +1,15 @@
+---
+- name: Wait for ArgoCD Application to be healthy
+  kubernetes.core.k8s_info:
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    namespace: "{{ ac_namespace }}"
+    name: "{{ ac_app_name }}"
+  register: _ac_app_info
+  retries: "{{ ac_wait_retries }}"
+  delay: "{{ ac_wait_delay }}"
+  until:
+    - _ac_app_info.resources[0].status.health is defined
+    - _ac_app_info.resources[0].status.sync is defined
+    - _ac_app_info.resources[0].status.health.status == 'Healthy'
+    - _ac_app_info.resources[0].status.sync.status == 'Synced'

@@ -1,0 +1,4 @@
+---
+- name: Grant ArgoCD Default Permissions
+  kubernetes.core.k8s:
+    definition: "{{ ac_permissions_def }}"
