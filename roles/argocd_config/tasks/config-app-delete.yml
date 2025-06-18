@@ -1,0 +1,44 @@
+---
+- name: Patch ArgoCD without finalizers (non-cascade)
+  when:
+    - ac_action == 'delete'
+  kubernetes.core.k8s:
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    name: "{{ ac_app_name }}"
+    namespace: "{{ ac_namespace }}"
+    definition:
+      metadata:
+        finalizers: null
+
+- name: Patch ArgoCD with finalizers (cascade)
+  when:
+    - ac_action == 'delete_cascade'
+  kubernetes.core.k8s:
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    name: "{{ ac_app_name }}"
+    namespace: "{{ ac_namespace }}"
+    definition:
+      metadata:
+        finalizers:
+          - "resources-finalizer.argocd.argoproj.io"
+
+- name: Delete ArgoCD App
+  kubernetes.core.k8s:
+    state: absent
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    name: "{{ ac_app_name }}"
+    namespace: "{{ ac_namespace }}"
+
+- name: Wait for ArgoCD App deletion
+  kubernetes.core.k8s_info:
+    api_version: argoproj.io/v1alpha1
+    kind: Application
+    name: "{{ ac_app_name }}"
+    namespace: "{{ ac_namespace }}"
+  register: _ac_app_status
+  until: _ac_app_status.resources | length == 0
+  retries: 120
+  delay: 10
