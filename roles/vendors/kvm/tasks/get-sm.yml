@@ -1,0 +1,22 @@
+---
+- name: Identify System Manager
+  ansible.builtin.uri:
+    url: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
+    user: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+    method: GET
+    status_code: [200, 201]
+    validate_certs: false
+    return_content: true
+  register: redfish_reply
+
+- name: Debug target BMC
+  ansible.builtin.debug:
+    msg: "{{ base_bmc_address }}/redfish/v1/Systems/{{ vm_name }}"
+    verbosity: 1
+
+- name: KVM Set System UUID
+  ansible.builtin.set_fact:
+    system_uuid_url: "{{ base_bmc_address }}/{{ redfish_reply.json['@odata.id'] }}"
+    system_manager_url: "{{ base_bmc_address }}/{{ redfish_reply.json.Links.ManagedBy[0]['@odata.id'] }}"
+...
