@@ -28,6 +28,12 @@
   delegate_to: "{{ czga_podman_runner_host }}"
   block:
 
+    - name: Set a cluster name list if not defined
+      ansible.builtin.set_fact:
+        czga_clusters_list: ["{{ czga_clusters_namespace }}"]
+      when:
+        - czga_clusters_list is not defined
+
     - name: Create temporary directory for cloning the repo
       ansible.builtin.tempfile:
         state: directory
@@ -67,7 +73,8 @@
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/clusters-app.yaml"
         regexp: "clusters-sub"
-        replace: "{{ czga_clusters_namespace }}"
+        replace: "{{ (czga_clusters_list | length == 1) | ternary(czga_clusters_list[0], '') }}"
+        after: "kind: Application"
 
     - name: Replace path in clusters-app.yaml
       ansible.builtin.replace:
@@ -203,7 +210,8 @@
           apiVersion: v1
           kind: Namespace
           metadata:
-            name: "{{ czga_clusters_namespace }}"
+            name: "{{ item }}"
+      loop: "{{ czga_clusters_list }}"
 
     - name: Save pull-secret in a variable
       ansible.builtin.slurp:
@@ -218,11 +226,12 @@
           kind: Secret
           metadata:
             name: assisted-deployment-pull-secret
-            namespace: "{{ czga_clusters_namespace }}"
+            namespace: "{{ item }}"
           type: kubernetes.io/dockerconfigjson
           data:
             .dockerconfigjson: "{{ _czga_encoded_pull_secret['content'] }}"
       no_log: true
+      loop: "{{ czga_clusters_list }}"
 
     - name: Wait for the GitOps ZTP plugin activation
       kubernetes.core.k8s_info:
