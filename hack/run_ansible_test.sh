@@ -19,13 +19,53 @@ set -ex
 # when run outside of a GitHub action
 if [ -z "$GITHUB_STEP_SUMMARY" ]; then
     GITHUB_STEP_SUMMARY=/dev/null
+    > branch.output
+    > main.output
 fi
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-trap 'git checkout -- "$branch"' EXIT
+trap 'git checkout "$branch"' EXIT
 
-git fetch --unshallow origin main || :
+# Parse test types from arguments, default to all
+TEST_TYPES=()
+if [[ $# -eq 0 ]]; then
+  TEST_TYPES=(
+    sanity
+    units
+    integration
+  )
+else
+  for arg in "$@"; do
+    case "${arg}" in
+      sanity|units|integration)
+        TEST_TYPES+=("${arg}")
+        ;;
+      *)
+        echo "Unknown test type: ${arg}"
+        echo "Usage: $0 [sanity] [units] [integration]"
+        exit 2
+        ;;
+    esac
+  done
+fi
+
+run_tests() {
+  local version=$1
+  for test_type in "${TEST_TYPES[@]}"; do
+    case "$test_type" in
+      sanity)
+        ansible-test sanity $EXCLUDE --verbose --docker --python ${version} --color --coverage --failure-ok --lint
+        ;;
+      units)
+        ansible-test units --verbose --docker --python ${version} --color --coverage || :
+        ;;
+      integration)
+        ansible-test integration --verbose --docker --python ${version} --color --coverage || :
+        ;;
+    esac
+  done
+}
 
 # extract all the supported python versions from the error message, excluding 3.5
 EXCLUDE="--exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py"
@@ -33,22 +73,26 @@ PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color -
   grep -Po "invalid.*?\K'3.*\d'" |
   tr -d ,\' |
   sed -e 's/3.5 //g')
+
+# Tests in current branch
 for version in $PY_VERS; do
-  ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
-  ansible-test units --verbose --docker --python $version --color --coverage || :
-  ansible-test integration --verbose --docker --python $version --color --coverage || :
+  run_tests "${version}"
 done 2> >(tee -a branch.output >&2)
-git checkout origin/main
+
+# Tests in main branch
+git fetch origin main
+git checkout main
+echo "Running tests in main branch, this may take a while as no output is displayed..."
 for version in $PY_VERS; do
-  ansible-test sanity $EXCLUDE --verbose --docker --python $version --color --coverage --failure-ok
-  ansible-test units --verbose --docker --python $version --color --coverage || :
-  ansible-test integration --verbose --docker --python $version --color --coverage || :
+  run_tests "${version}"
 done 2> main.output 1>/dev/null
+
 for key in branch main; do
   grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |
   grep -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
   sed -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "$key.errors"
 done
+
 # remove line numbers
 sed -i -E -e 's/:[0-9]+:/:/' -e 's/:[0-9]+:/:/' branch.errors main.errors
 set +ex
