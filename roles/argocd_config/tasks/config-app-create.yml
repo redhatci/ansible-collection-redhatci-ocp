@@ -1,0 +1,22 @@
+---
+- name: Create ArgoCD App
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: "{{ ac_app_name }}"
+        namespace: "{{ ac_namespace }}"
+      spec:
+        destination:
+          namespace: "{{ ac_app_namespace }}"
+          server: https://kubernetes.default.svc
+        project: "{{ ac_project }}"
+        source:
+          path: "{{ ac_app_path }}"
+          repoURL: "{{ ac_repo }}"
+          targetRevision: "{{ ac_repo_branch }}"
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
