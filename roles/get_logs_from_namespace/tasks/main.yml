@@ -1,5 +1,5 @@
 ---
-- name: Validate required variables
+- name: Validate_ required variables
   ansible.builtin.assert:
     that:
       - glfn_ns | string

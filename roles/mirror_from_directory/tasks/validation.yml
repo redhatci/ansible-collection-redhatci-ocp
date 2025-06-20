@@ -1,5 +1,5 @@
 ---
-- name: "Validate requirements"
+- name: "Validate_ requirements"
   ansible.builtin.assert:
     that:
       - mfd_local_registry is defined

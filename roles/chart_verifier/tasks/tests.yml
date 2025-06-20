@@ -175,7 +175,7 @@
     remote_src: true
   delegate_to: localhost
 
-- name: "Validate all mandatory tests have passed"
+- name: "Validate_ all mandatory tests have passed"
   ansible.builtin.shell:
     cmd: >
       {{ yq_tool_path }} e '[.results[] | select(.outcome == "FAIL" and .type != "Optional")] | length' report.yaml
