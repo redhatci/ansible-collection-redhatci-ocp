@@ -6,6 +6,6 @@
   ansible.builtin.debug:
     msg: "unsupported CI system"
 
-- name: Fail the role
+- name: Fail for unsupported CI system
   ansible.builtin.fail:
-    msg: "Failing"
+    msg: "Unsupported CI system: {{ trs_ci_system }}"

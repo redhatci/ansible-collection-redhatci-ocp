@@ -28,7 +28,7 @@
     method: HEAD
     timeout: 10 # Optional: set a timeout
     headers: "{{ trs_collector_auth_headers | default(omit) }}"
-    validate_certs: "{{ not(trs_allow_self_signed_certs) | default(true) }}"
+    validate_certs: "{{ not (trs_allow_self_signed_certs) | default(true) }}"
   register: url_check_result
   ignore_errors: true
 

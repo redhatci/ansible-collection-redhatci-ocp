@@ -22,7 +22,7 @@ argument_specs:
         description: |
           Test report JSON file to send.
           Merged into the event under 'test' attribute.
-          For full report syntax see [doc/event.md](ocp/role/test_report_send/doc/event.md).
+          For full report syntax see [doc/event.md](roles/test_report_send/doc/event.md).
 
       trs_metadata_path:
         type: str
@@ -105,3 +105,27 @@ argument_specs:
         description: |
           Allow self-signed certificates for the collector.
           Useful for debugging.
+
+      trs_debug:
+        type: bool
+        required: false
+        default: false
+        description: |
+          Enable debug mode.
+          This will save the event to a file and not send it to the collector.
+
+      trs_workdir_keep:
+        type: bool
+        required: false
+        default: false
+        description: |
+          Keep the workdir after the role is finished.
+          It is automatically set to true if `trs_debug` is set to `true`.
+
+      trs_event_save:
+        type: bool
+        required: false
+        default: false
+        description: |
+          Save the event to a file.
+          It is automatically set to true if `trs_debug` is set to `true`.

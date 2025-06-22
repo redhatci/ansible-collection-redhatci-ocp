@@ -7,3 +7,5 @@ This in its turn enables:
 
 - Shared visual and data languages
 - Data-based decision-making process
+
+Currently supported reporting system: [splunk.md](splunk.md)

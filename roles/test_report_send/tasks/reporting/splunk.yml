@@ -114,7 +114,7 @@
     body: "{{ trs_event_payload }}"
     body_format: json
     follow_redirects: all
-    validate_certs: "{{ not(trs_allow_self_signed_certs) | default(true) }}"
+    validate_certs: "{{ not (trs_allow_self_signed_certs) | default(true) }}"
     timeout: "{{ global_request_timeout | default(omit) }}"
   register: _trs_splunk_response
   ignore_errors: true

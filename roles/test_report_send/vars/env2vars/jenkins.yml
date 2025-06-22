@@ -23,6 +23,10 @@ env2vars:
   - key: job_build
     var: BUILD_NUMBER
     var_type: int
+  - key: job_build_tag
+    var: BUILD_TAG
+  - key: job_build_id
+    var: BUILD_ID
   - key: job_build_url
     var: BUILD_URL
   - key: job_build_cause

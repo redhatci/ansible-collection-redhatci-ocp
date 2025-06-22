@@ -9,6 +9,6 @@ The role generates an event from CI metadata and test reports, and sends this ev
 1. [Event Structure](event.md)
     1. [metadata generation](metadata.md), per CI:
         1. [DCI](dci.md)
-        1. [Jenkins](jenkins.md)
-1. [Reporting](reporting.md), per reporting system:
-    1. [Splunk](splunk.md) 
+        2. [Jenkins](jenkins.md)
+2. [Reporting](reporting.md), per reporting system:
+    1. [Splunk](splunk.md)

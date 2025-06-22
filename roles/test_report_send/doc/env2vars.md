@@ -70,7 +70,7 @@ Event structure has
 For each CI system we 
 
 
-- `evn2vars` maps environment variables to event metadata through `trs_vars_dict`.
+- `env2vars` maps environment variables to event metadata through `trs_vars_dict`.
 - `trs_vars_dict` is the data used to directly populate `event.metadata`.
 
 The structure of the event is defined in [this file](event.md).
