@@ -45,26 +45,20 @@
   when:
     - trs_collector_target | length > 0
 
-- name: Set default allowed status codes
-  ansible.builtin.set_fact:
-    trs_http_status_codes:
-      # can be "forbidden" (403) for mock collector
-      HEAD:
-        - 200
-        - 403
-      POST:
-        - 200
-
 - name: Set allowed status codes
   ansible.builtin.set_fact:
     trs_http_status_codes:
-      # can be "forbidden" (403) for mock collector
       HEAD:
         - 200
       POST:
         - 200
+
+- name: Add 403 to HEAD status codes for mock collectors
+  ansible.builtin.set_fact:
+    trs_http_status_codes: "{{ trs_http_status_codes | combine({'HEAD': [200, 403]}) }}"
   when:
-    - trs_do_send
+    - not trs_do_send
+
 
 - name: Validate splunk related data
   ansible.builtin.include_tasks:
@@ -87,15 +81,11 @@
 
 - name: Combine additional attributes into the data at trs_collector_target for {{ trs_collector }}
   ansible.builtin.set_fact:
-    trs_event_payload: >
-      {{
-      {
-        "source": trs_collector_source,
-        "event": trs_event,
-        "host": trs_collector_url,
-        "sourcetype": "_json"
-      }
-      }}
+    trs_event_payload:
+      "source": "{{ trs_collector_source }}"
+      "event": "{{ trs_event }}"
+      "host": "{{ trs_collector_url }}"
+      "sourcetype": "_json"
 
 - name: Print variable trs_event_dump_file
   ansible.builtin.include_tasks:
@@ -114,7 +104,7 @@
     body: "{{ trs_event_payload }}"
     body_format: json
     follow_redirects: all
-    validate_certs: "{{ not (trs_allow_self_signed_certs) | default(true) }}"
+    validate_certs: "{{ not (trs_allow_self_signed_certs | default(false)) }}"
     timeout: "{{ global_request_timeout | default(omit) }}"
   register: _trs_splunk_response
   ignore_errors: true

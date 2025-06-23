@@ -10,9 +10,18 @@ DCI_API_SECRET="${DCI_API_SECRET:-""}"
 DCI_CLIENT_ID="${DCI_CLIENT_ID:-""}"
 DCI_CS_URL="${DCI_CS_URL:-""}"
 
-function die() { rc="${1?no rc passed}"; shift 1; echo "${*}"; exit "${rc}"; }
+function die() {
+  # die() prints the given message and exits the script with the specified return code.
+  local \
+    rc
+  rc="${1?no rc passed}";
+  shift 1;
+  echo "${*}";
+  exit "${rc}";
+}
 
 function ensure_apps() {
+  # ensure_apps() checks if the given apps are on the PATH and exits the script with an error if not.
   local -a \
     apps
   local \
@@ -27,7 +36,9 @@ function ensure_apps() {
   done
   return 0
 }
+
 function print_file() {
+  # print_file() prints the contents of the given file.
   local out
   out="${1:-"dcirc.sh"}"
   echo "file ${out} generated with the following contents:"
@@ -37,6 +48,8 @@ function print_file() {
 }
 
 function gen_dcirc_sh() {
+  # gen_dcirc_sh()
+  #  - safely generates a shell script file that sets and exports specified environment variables
   local \
     out \
     rc \
@@ -73,6 +86,10 @@ function gen_dcirc_sh() {
 }
 
 function main() {
+  # main generates a dcirc.sh file with required environment variables for dcictl
+  # it creates random values if corresponding variables are not set already
+  # and prints the file contents
+  # beware: the console output can be seen by anybody
   local \
     out
   local -a \
@@ -80,14 +97,15 @@ function main() {
   out="dcirc.sh"
   ensure_apps uuidgen
 
-  # Generate the random string in the right format:
+  # Generate the random string in the right format if DCI_API_SECRET is not set
   test -n "${DCI_API_SECRET}" || DCI_API_SECRET="$(tr -dc 'a-zA-Z0-9' </dev/urandom | head -c "${LEN}" || true)"
   vars+=(DCI_API_SECRET)
 
-  # Generate UUID
+  # Generate UUID if DCI_CLIENT_ID is not set
   test -n "${DCI_CLIENT_ID}" || DCI_CLIENT_ID="${PREFIX}/$(uuidgen | tr '[:upper:]' '[:lower:]' || true)"
   vars+=(DCI_CLIENT_ID)
 
+  # Use default DCI_CS_URL if it is not set
   test -n "${DCI_CS_URL}" || DCI_CS_URL="https://api.distributed-ci.io/"
   vars+=(DCI_CS_URL)
 

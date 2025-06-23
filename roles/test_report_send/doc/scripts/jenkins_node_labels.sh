@@ -5,6 +5,9 @@ set -o nounset
 set -o pipefail
 
 function gen_node_labels() {
+  # gen_node_labels()
+  #  - outputs node labels describing the host's operating system, CPU architecture,
+  #    and available container engines as a space-separated string.
   local \
     os \
     arch \

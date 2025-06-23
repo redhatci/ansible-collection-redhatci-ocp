@@ -19,6 +19,7 @@
 - name: Assert collector URL uses HTTPS
   ansible.builtin.assert:
     that:
+      - trs_collector_url is defined
       - trs_collector_url.startswith('https://')
     fail_msg: "Collector URL must use HTTPS"
 
@@ -28,7 +29,7 @@
     method: HEAD
     timeout: 10 # Optional: set a timeout
     headers: "{{ trs_collector_auth_headers | default(omit) }}"
-    validate_certs: "{{ not (trs_allow_self_signed_certs) | default(true) }}"
+    validate_certs: "{{ not (trs_allow_self_signed_certs | default(false)) }}"
   register: url_check_result
   ignore_errors: true
 

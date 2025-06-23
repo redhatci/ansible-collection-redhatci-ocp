@@ -52,23 +52,20 @@ Still, each CI system has its own considerations, terminology and this data is k
 
 ## Solution overview
 
-We not have full control of our reporting systems, since we are only users.
-So we cannot rely on our capability to post-ingest processing.
 In short, we 
-1. can't admin the reporting (regulation, policies)
-2. we do not want to maintain CI specific queries => we want to query events from any CI using the same query expressions, differing only in the specific variable values (team, release, product, project, etc.)
 
-This means we need to:
+1. can't administer the reporting (regulations, policies)
+2. do not want to maintain CI-specific queries
 
-1. Normalize/Unify the data structure
-2. Do normalization before the ingestion by the reporting system
+We do not have full control of our reporting systems, because we are only users.
+So we cannot rely on our capability to post-ingest processing which is too much overhead.
 
+This means we prefer to **Normalize** the data structure **pre-ingestion**.
 
 ### Implementation
 
 Event structure has 
 For each CI system we 
-
 
 - `env2vars` maps environment variables to event metadata through `trs_vars_dict`.
 - `trs_vars_dict` is the data used to directly populate `event.metadata`.
