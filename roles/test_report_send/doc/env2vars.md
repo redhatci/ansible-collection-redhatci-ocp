@@ -3,18 +3,20 @@
 ## Problem description
 
 We send data to reporting for visualization and analysis
+
 We send 2 main "chunks" of data in each event:
-1. **Tests** answers questions such as:
-   1. which test suite(s) ran, with which results, timings and errors, and for each suite
-      1. which test cases ran and with which results, timings and errors
+
+1. **Tests** answer questions such as the following:
+   1. which test suite(s) ran, with which results, timings and errors, and for each suite?
+      1. which test cases ran and with which results, timings and errors?
 2. **metadata** answers the questions like
-   1. what triggered the run
-   2. where did it run
-   3. what version(s) of which products were tested
-   4. what types of tests ran
-   5. who is the author of the changes
-   6. where is the code
-   7. which team supports issues for this code
+   1. what triggered the run?
+   2. where did it run?
+   3. what version(s) of which products were tested?
+   4. what types of tests ran?
+   5. who is the author of the changes?
+   6. where is the code?
+   7. which team supports issues for this code?
 
 ### Tests
 
@@ -22,17 +24,21 @@ The tests' reports are unified by JUnit format, so using various systems' output
 
 ### Metadata
 
-However, the Metadata comes from the CI system. And there are many of them
+However, the metadata comes from the CI system. And there are many of them
 
 #### Abundance
 
 Currently, only one group I am working at uses the following CI system types interchangeably:
 
-* [DCI](https://distributed-ci.io)
-* [gitlab](https://gitlab.com)
-* [github](https://github.com)
-* [jenkins](https://www.jenkins.io)
-* [prow](https://prow.ci.openshift.org)
+* [Distributed CI](https://distributed-ci.io) (a.k.a. DCI)
+
+* [GitLab](https://gitlab.com)
+
+* [GitHub](https://github.com)
+
+* [Jenkins](https://www.jenkins.io)
+
+* [Prow](https://prow.ci.openshift.org)
 
 Even though the intent is to reduce the number of CI system types, the tools tend to:
 * change over the time without backward compatibility
@@ -52,58 +58,57 @@ Still, each CI system has its own considerations, terminology and this data is k
 
 ## Solution overview
 
-In short, we 
+In short, we:
 
 1. can't administer the reporting (regulations, policies)
 2. do not want to maintain CI-specific queries
 
-We do not have full control of our reporting systems, because we are only users.
-So we cannot rely on our capability to post-ingest processing which is too much overhead.
+We do not have full control of our reporting systems because we are only users.
+So we cannot rely on our capability to post-ingest processing, which is too much overhead.
 
 This means we prefer to **Normalize** the data structure **pre-ingestion**.
 
 ### Implementation
 
-Event structure has 
-For each CI system we 
+For each CI system we create:
 
-- `env2vars` maps environment variables to event metadata through `trs_vars_dict`.
-- `trs_vars_dict` is the data used to directly populate `event.metadata`.
+* `env2vars` maps environment variables to event metadata through `trs_vars_dict`.
+* `trs_vars_dict` contains the data used to directly populate `event.metadata`.
 
 The structure of the event is defined in [this file](event.md).
 It usually has the following information under `event.metadata[]`:
 
-| coordinates(*)      |  `trs_vars_dict` keys | example key            | key coordinates         |
-| ------------------- | --------------------- | ---------------------- | ----------------------- |
-| `.ci[]`             | `ci_*`                | `ci_url`               | `.ci.url`               |
-| `.ci.runner[]`      | `ci_runner_*`         | `ci_runner_name`       | `.ci.runner.name`       |
-| `.pipeline[]`       | `pipeline_*`          | `pipeline_id`          | `.pipeline.id`          |
-| `.job[]`            | `job_*`               | `job_url`              | `.job.url`              |
-| `.source[]`         | `source_*`            | `source_sha`           | `.source.sha`           |
-| `.source.change[]`  | `source_change_*`     | `source_change_author` | `.source.change.author` |
-| `.product[]`        | `product_*`           | `product_name`         | `.product.name`         |
+| event coordinates(*) | `trs_vars_dict` keys  | example key            | key coordinates         |
+| -------------------- | --------------------- | ---------------------- | ----------------------- |
+| `.ci[]`              | `ci_*`                | `ci_url`               | `.ci.url`               |
+| `.ci.runner[]`       | `ci_runner_*`         | `ci_runner_name`       | `.ci.runner.name`       |
+| `.pipeline[]`        | `pipeline_*`          | `pipeline_id`          | `.pipeline.id`          |
+| `.job[]`             | `job_*`               | `job_url`              | `.job.url`              |
+| `.source[]`          | `source_*`            | `source_sha`           | `.source.sha`           |
+| `.source.change[]`   | `source_change_*`     | `source_change_author` | `.source.change.author` |
+| `.product[]`         | `product_*`           | `product_name`         | `.product.name`         |
 
 (*) - written using `jq` notation
 
 In `env2vars` we map this metadata into event's `metadata`.
 This is done in these stages:
 
-1. During the development, `env2vars` is populated by list of key -> var pairs to define keys from environment variables.
+1. During the development, `env2vars` is populated by a list of key->var dictionaries defining keys from environment variables.
 2. During runtime the role iterates over `env2vars` keys, and assigns them in the transition dictionary `trs_vars_dict`
 3. Next, it repeats over the populated `trs_vars_dict` properly assigning its keys under `metadata` of the event
 4. The translation of `trs_vars_dict` keys into actual event's `metadata` keys is relatively static
 
 This approach allows:
 
-- better readability because of less code duplications and significant similarity between CI systems
-- the only exception is `DCI`: because it is not actually running anything, just storing already passed process information
+* better readability because of less code duplications and significant similarity between CI systems
+* the only exception is `DCI`: because it is not actually running anything, just storing already passed process information
 
 So, `trs_vars_dict` is a transition variable to construct `metadata` part of the event being reported.
 
-1. For every supported CI type we should have proper `vars/env2vars/{{ trs_ci_type }}.yml` in the role.
-1. The list `env2vars` is used to update `trs_vars_dict` keys.
-1. `trs_vars_dict` keys are used to populate actual `.event.metadata[]` attributes
-1. Metadata maintenance is thus reduced to generating the list, and sometimes adjusting which `trs_vars_dict` keys
+1. For every supported CI type, we should have proper `vars/env2vars/{{ trs_ci_type }}.yml` in the role.
+2. The list `env2vars` is used to update `trs_vars_dict` keys.
+3. `trs_vars_dict` keys are used to populate actual `.event.metadata[]` attributes
+4. Metadata maintenance is thus reduced to generating the list, and sometimes adjusting which `trs_vars_dict` keys
    populate which `event.metadata[]` attributes.
 
 The following types are supported:
@@ -118,9 +123,9 @@ The following types are supported:
 
 ### (*)
 
-Assumes list of strings, given the data is formatted as follows:
+Assumes a list of strings, given the data is formatted as follows:
 
-```default
+```text
 '<elm><elmsep><elm><elmsep>....<elmsep><elm>'
 ```
 
@@ -129,7 +134,7 @@ Assumes list of strings, given the data is formatted as follows:
 | `<elm>`    | element           |
 | `<elmsep>` | element separator |
 
-Parsed as list of **strings**, into:
+Parsed as a list of **strings**, into:
 
 ```yaml
 ${key}: # actual value of `key` in `env2vars` is used
@@ -142,7 +147,7 @@ ${key}: # actual value of `key` in `env2vars` is used
 
 Assumes flat dicts, given the data is formatted as follows:
 
-```default
+```text
 '<k><kvsep><v><elmsep><k><kvsep><v>...<elmsep><k><kvsep><v>'
 ```
 
