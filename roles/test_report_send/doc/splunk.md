@@ -3,7 +3,7 @@
 ## Conventions
 
 - Example queries are presented in `jq` or `yq` -like manner.
-- variables are presented in monospace like `this_one`
+- The variables are presented in monospace like `this_one`
 
 ### Abbreviations
 

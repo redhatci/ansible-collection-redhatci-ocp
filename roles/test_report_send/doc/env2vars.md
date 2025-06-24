@@ -56,17 +56,14 @@ There are 2 most common methods to communicate current runtime dynamic metadata,
 
 Still, each CI system has its own considerations, terminology and this data is kept in different structures/environment variables.
 
-## Solution overview
+## Solution Overview
 
-In short, we:
+In short, the user may be limited by organizational constraints with <sup>[*](#our-group)</sup>:
 
-1. can't administer the reporting (regulations, policies)
-2. do not want to maintain CI-specific queries
+1. not enough permissions to allow quick reporting-side rollout cadence depending on organizational regulations/policies.
+2. a healthy desire to generate CI-invariant queries in the dashboards.
 
-We do not have full control of our reporting systems because we are only users.
-So we cannot rely on our capability to post-ingest processing, which is too much overhead.
-
-This means we prefer to **Normalize** the data structure **pre-ingestion**.
+Ergo, the minimal external dependency path is to normalize the data structure pre-ingestion.
 
 ### Implementation
 
@@ -293,3 +290,10 @@ env2vars:
 | `MY_BOOL_TRUTH="0"`      | `{"my_bool": false}` |
 | `MY_BOOL_TRUTH="false"`  | `{"my_bool": false}` |
 | `MY_BOOL_TRUTH="string"` | `{"my_bool": true}`  |
+
+
+## Constraints
+
+<sup>*</sup><a name="our-group"></a> Our group constraints:
+* We do not have full control of our reporting systems because we are only users.
+* So we cannot rely on our capability to post-ingest processing, which is too much overhead.

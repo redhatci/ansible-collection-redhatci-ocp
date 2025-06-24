@@ -18,9 +18,9 @@ Following the metadata schema explained in [metadata.md](metadata.md), and descr
 * `EXECUTOR_NUMBER`: The unique number that identifies the current executor (among executors of the same machine) performing this build
 * `BUILD_CAUSE`:  A comma-separated list of causes for the build (e.g., `SCMTRIGGER,MANUALTRIGGER,UPSTREAMTRIGGER`).
   Individual causes are also exposed as separate environment variables:
-    * `BUILD_CAUSE_SCMTRIGGER=true`
-    * `BUILD_CAUSE_USERIDCAUSE=true`
-    * etc.
+  * `BUILD_CAUSE_SCMTRIGGER=true`
+  * `BUILD_CAUSE_USERIDCAUSE=true`
+  * etc.
 * `JENKINS_URL`: The base URL of the Jenkins instance.
 
 ### Runner
@@ -86,7 +86,7 @@ However, similar functionality can refer to the parent (or caller) job that trig
 
 ### Product
 
-Jenkins by default does not have this construct, so in the metadata we can assign `product: {}`
+Jenkins by default does not have this construct, so in the metadata we can assign `product: {}`,
 However similar functionality can refer to a job that triggers other jobs.
 
 * **UPD**: We will probably add this information by analyzing files paths and job parameters

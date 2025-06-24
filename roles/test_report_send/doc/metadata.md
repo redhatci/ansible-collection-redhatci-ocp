@@ -1,4 +1,4 @@
-## Metadata structure
+# Metadata structure
 
 The metadata resides in the event object under `.metadata[]`
 When everything is properly done, it has the following sections
