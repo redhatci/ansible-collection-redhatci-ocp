@@ -1,0 +1,16 @@
+---
+argument_specs:
+  main:
+    short_description: Copy and render jinja2 templates
+    description: >
+      This role copies files and directories from a source directory to a target directory,
+      rendering Jinja2 templates in the process.
+    options:
+      car_source_dir:
+        type: str
+        required: true
+        description: The source directory containing files and Jinja2 templates.
+      car_target_dir:
+        type: str
+        required: true
+        description: The target directory where files and rendered templates will be copied.
