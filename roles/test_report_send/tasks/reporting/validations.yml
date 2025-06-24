@@ -16,12 +16,14 @@
     fail_msg: >-
       Variable trs_collector_auth_headers failed validation
 
+# Ensure the collector URL is HTTPS
 - name: Assert collector URL uses HTTPS
   ansible.builtin.assert:
     that:
-      - trs_collector_url is defined
-      - trs_collector_url.startswith('https://')
-    fail_msg: "Collector URL must use HTTPS"
+      - trs_collector_url is match('^https://')
+    fail_msg: "Insecure collector URL '{{ trs_collector_url }}' – HTTPS is required."
+  when:
+    - trs_collector_url is defined
 
 - name: Check if the provided trs_collector_url is reachable (HEAD request)
   ansible.builtin.uri:

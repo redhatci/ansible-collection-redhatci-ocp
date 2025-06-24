@@ -13,7 +13,6 @@
   when:
     _trs_json_file_content.content | length > 0
 
-
 - name: Print currently used timestamp trs_default_ts
   ansible.builtin.debug:
     var: trs_default_ts
@@ -35,15 +34,15 @@
   ansible.builtin.set_fact:
     trs_job_time: "{{ (trs_job_time_int | int) + (trs_job_time_fraction | float) }}"
   when:
-    - trs_job_time_int | length > 0
-    - trs_job_time_fraction | length > 0
+    - trs_job_time_int is defined
+    - trs_job_time_fraction is defined
 
 - name: Update job.created_at as float for reporting
   ansible.builtin.set_fact:
     trs_meta_data: "{{ trs_meta_data | combine({'job': trs_meta_data.job | combine({'created_at': trs_job_time})}) }}"
   when:
-    - trs_job_time_int | default(0) > 0
-    - trs_job_time_fraction | default(-1) > 0
+    - trs_job_time_int is defined
+    - trs_job_time_fraction is defined
 
 - name: Setup pipeline timestamps broken down to int/float parts for {{ trs_collector }}
   ansible.builtin.set_fact:
@@ -60,26 +59,26 @@
   ansible.builtin.set_fact:
     trs_pipeline_time: "{{ (trs_pipeline_time_int | int) + (trs_pipeline_time_fraction | float) }}"
   when:
-    - trs_pipeline_time_int | length > 0
-    - trs_pipeline_time_fraction | length > 0
+    - trs_pipeline_time_int is defined
+    - trs_pipeline_time_fraction is defined
 
 - name: Update pipeline.created_at as float for reporting
   ansible.builtin.set_fact:
     trs_meta_data: "{{ trs_meta_data | combine({'pipeline': trs_meta_data.pipeline | combine({'created_at': trs_pipeline_time})}) }}"
   when:
-    - trs_pipeline_time_int | default(0) > 0
-    - trs_pipeline_time_fraction | default(-1) > 0
+    - trs_pipeline_time_int is defined
+    - trs_pipeline_time_fraction is defined
 
 - name: Update trs_collector_auth_headers with trs_collector_auth_token from the user for {{ trs_collector }}
   ansible.builtin.set_fact:
-    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | combine({'Authorization': 'Splunk ' + trs_collector_auth_token}) }}"
+    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | combine({'Authorization': 'Splunk ' ~ trs_collector_auth_token}) }}"
   when:
-    - trs_collector_auth_token | length > 0
+    - trs_collector_auth_token | default('') | length > 0
     - trs_collector
 
 - name: Update trs_collector_auth_headers with trs_collector_target from the user for {{ trs_collector }}
   ansible.builtin.set_fact:
-    trs_collector_auth_headers: "{{ trs_collector_auth_headers | combine({'X-Splunk-Request-Channel': trs_collector_target}) }}"
+    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | combine({'X-Splunk-Request-Channel': trs_collector_target}) }}"
   when:
     - trs_collector_target | length > 0
 
@@ -122,7 +121,7 @@
 - name: Combine additional attributes into the data at trs_collector_target for {{ trs_collector }}
   ansible.builtin.set_fact:
     trs_event_payload:
-      "source": "{{ trs_collector_source }}"
+      "source": "{{ trs_collector_source | default(ansible_hostname) }}"
       "event": "{{ trs_event }}"
       "host": "{{ trs_collector_url }}"
       "sourcetype": "_json"
