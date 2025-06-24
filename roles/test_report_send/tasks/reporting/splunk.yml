@@ -20,21 +20,59 @@
   when:
     - ansible_verbosity | default(0) > 1
 
-- name: Setup timestamps broken down to int/float parts for {{ trs_collector }}
+- name: Setup job timestamps broken down to int/float parts for {{ trs_collector }}
   ansible.builtin.set_fact:
     trs_job_time_int: "{{ (trs_meta_data.job.created_at | \
       default(trs_default_ts) | \
       regex_replace('\\..*$', '') | \
       to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
     trs_job_time_fraction: "{{ trs_meta_data.job.created_at | default(trs_default_ts) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+  when:
+    - trs_meta_data.job | length > 0
+    - trs_meta_data.job.created_at | length > 0
 
-- name: Setup timestamps as floats for reporting
+- name: Setup job timestamps as floats for reporting
   ansible.builtin.set_fact:
     trs_job_time: "{{ (trs_job_time_int | int) + (trs_job_time_fraction | float) }}"
+  when:
+    - trs_job_time_int | length > 0
+    - trs_job_time_fraction | length > 0
+
+- name: Update job.created_at as float for reporting
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ trs_meta_data | combine({'job': trs_meta_data.job | combine({'created_at': trs_job_time})}) }}"
+  when:
+    - trs_job_time_int | default(0) > 0
+    - trs_job_time_fraction | default(-1) > 0
+
+- name: Setup pipeline timestamps broken down to int/float parts for {{ trs_collector }}
+  ansible.builtin.set_fact:
+    trs_pipeline_time_int: "{{ (trs_meta_data.pipeline.created_at | \
+      default(trs_default_ts) | \
+      regex_replace('\\..*$', '') | \
+      to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
+    trs_pipeline_time_fraction: "{{ trs_meta_data.pipeline.created_at | default(trs_default_ts) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+  when:
+    - trs_meta_data.pipeline | length > 0
+    - trs_meta_data.pipeline.created_at | length > 0
+
+- name: Setup pipeline timestamps as floats for reporting
+  ansible.builtin.set_fact:
+    trs_pipeline_time: "{{ (trs_pipeline_time_int | int) + (trs_pipeline_time_fraction | float) }}"
+  when:
+    - trs_pipeline_time_int | length > 0
+    - trs_pipeline_time_fraction | length > 0
+
+- name: Update pipeline.created_at as float for reporting
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ trs_meta_data | combine({'pipeline': trs_meta_data.pipeline | combine({'created_at': trs_pipeline_time})}) }}"
+  when:
+    - trs_pipeline_time_int | default(0) > 0
+    - trs_pipeline_time_fraction | default(-1) > 0
 
 - name: Update trs_collector_auth_headers with trs_collector_auth_token from the user for {{ trs_collector }}
   ansible.builtin.set_fact:
-    trs_collector_auth_headers: "{{ trs_collector_auth_headers | default({}) | combine({'Authorization': 'Splunk ' + trs_collector_auth_token}) }}"
+    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | combine({'Authorization': 'Splunk ' + trs_collector_auth_token}) }}"
   when:
     - trs_collector_auth_token | length > 0
     - trs_collector
@@ -52,6 +90,8 @@
         - 200
       POST:
         - 200
+        - 201
+        - 202
 
 - name: Add 403 to HEAD status codes for mock collectors
   ansible.builtin.set_fact:
