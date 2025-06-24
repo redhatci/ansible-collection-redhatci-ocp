@@ -68,6 +68,7 @@ Name | Description
 [redhatci.ocp.generate_ssh_key_pair](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_ssh_key_pair/README.md) | Produces an ssh key pair
 [redhatci.ocp.gitops_configure_repo](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/gitops_configure_repo/README.md) | Configures the SSH Git repo credentials for the openshift-gitops-operator to be able to connect to the repositories.
 [redhatci.ocp.fbc_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/fbc_catalog/README.md) | Create File Base Catalogs (FBC) for Operator Lifecycle Manager (OLM).
+[redhatci.ocp.get_hub_kubeconfig](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/get_hub_kubeconfig/README.md) | Retrieve ACM Hub kubeconfig.
 [redhatci.ocp.get_logs_from_namespace](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/get_logs_from_namespace/README.md) | Extracts multiple logs from pods and events in a Namespace.
 [redhatci.ocp.hco_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hco_setup/README.md) | Deploys and configures the `hco-operator` through the `kubevirt-hyperconverged` CRs.
 [redhatci.ocp.hostedbm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hostedbm/README.md) | This role allows to create hosted guest clusters with BM workers.

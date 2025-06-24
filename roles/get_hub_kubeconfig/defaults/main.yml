@@ -1,0 +1,6 @@
+---
+
+ghk_namespace: open-cluster-management-agent
+ghk_secret_name: hub-kubeconfig-secret
+
+...
