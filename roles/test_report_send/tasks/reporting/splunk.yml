@@ -22,10 +22,12 @@
 - name: Setup job timestamps broken down to int/float parts for {{ trs_collector }}
   ansible.builtin.set_fact:
     trs_job_time_int: "{{ (trs_meta_data.job.created_at | \
-      default(trs_default_ts) | \
+      default(trs_default_ts, true) | \
       regex_replace('\\..*$', '') | \
       to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
-    trs_job_time_fraction: "{{ trs_meta_data.job.created_at | default(trs_default_ts) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+    trs_job_time_fraction: "{{ trs_meta_data.job.created_at | \
+      default(trs_default_ts, true) | \
+      regex_replace('^.*\\.', '0.') | float | round(3) }}"
   when:
     - trs_meta_data.job | length > 0
     - trs_meta_data.job.created_at | length > 0
@@ -47,10 +49,12 @@
 - name: Setup pipeline timestamps broken down to int/float parts for {{ trs_collector }}
   ansible.builtin.set_fact:
     trs_pipeline_time_int: "{{ (trs_meta_data.pipeline.created_at | \
-      default(trs_default_ts) | \
+      default(trs_default_ts, true) | \
       regex_replace('\\..*$', '') | \
       to_datetime('%Y-%m-%dT%H:%M:%S')).strftime('%s') | int }}"
-    trs_pipeline_time_fraction: "{{ trs_meta_data.pipeline.created_at | default(trs_default_ts) | regex_replace('^.*\\.', '0.') | float | round(3) }}"
+    trs_pipeline_time_fraction: "{{ trs_meta_data.pipeline.created_at | \
+      default(trs_default_ts, true) | \
+      regex_replace('^.*\\.', '0.') | float | round(3) }}"
   when:
     - trs_meta_data.pipeline | length > 0
     - trs_meta_data.pipeline.created_at | length > 0
@@ -64,21 +68,24 @@
 
 - name: Update pipeline.created_at as float for reporting
   ansible.builtin.set_fact:
-    trs_meta_data: "{{ trs_meta_data | combine({'pipeline': trs_meta_data.pipeline | combine({'created_at': trs_pipeline_time})}) }}"
+    trs_meta_data: "{{ trs_meta_data | combine({'pipeline': trs_meta_data.pipeline | \
+      combine({'created_at': trs_pipeline_time})}) }}"
   when:
     - trs_pipeline_time_int is defined
     - trs_pipeline_time_fraction is defined
 
 - name: Update trs_collector_auth_headers with trs_collector_auth_token from the user for {{ trs_collector }}
   ansible.builtin.set_fact:
-    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | combine({'Authorization': 'Splunk ' ~ trs_collector_auth_token}) }}"
+    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | \
+      combine({'Authorization': 'Splunk ' ~ trs_collector_auth_token}) }}"
   when:
     - trs_collector_auth_token | default('') | length > 0
     - trs_collector
 
 - name: Update trs_collector_auth_headers with trs_collector_target from the user for {{ trs_collector }}
   ansible.builtin.set_fact:
-    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | combine({'X-Splunk-Request-Channel': trs_collector_target}) }}"
+    trs_collector_auth_headers: "{{ (trs_collector_auth_headers | default({})) | \
+      combine({'X-Splunk-Request-Channel': trs_collector_target}) }}"
   when:
     - trs_collector_target | length > 0
 
@@ -123,7 +130,7 @@
     trs_event_payload:
       "source": "{{ trs_collector_source | default(ansible_hostname) }}"
       "event": "{{ trs_event }}"
-      "host": "{{ trs_collector_url }}"
+      "host": "{{ trs_collector_url | default(ansible_hostname) }}"
       "sourcetype": "_json"
 
 - name: Print variable trs_event_dump_file
@@ -132,7 +139,7 @@
   vars:
     trs_file_path: "{{ trs_event_dump_file }}"
   when:
-    - trs_event_dump_file | length > 0
+    - trs_event_dump_file | default('') | length > 0
     - trs_event_save
 
 - name: Send data to {{ trs_collector }}
@@ -153,11 +160,10 @@
 - name: Verify status code is good
   ansible.builtin.assert:
     that:
-      _trs_splunk_response is defined
-      _trs_splunk_response.status in trs_http_status_codes.POST
+      - _trs_splunk_response.status | default(0) in trs_http_status_codes.POST
     fail_msg: >-
-      Variable splunk POST status {{ _trs_splunk_response.status }} and content {{ _trs_splunk_response.content }},
-      Fails validation (not in {{ trs_http_status_codes.POST }})
-    success_msg: "The status code is good"
+      The Splunk POST response status code is {{ _trs_splunk_response.status }}.
+      It did not match the expected codes: {{ trs_http_status_codes.POST }}
+    success_msg: "The Splunk response status code is good"
   when:
     - trs_do_send | default(false)

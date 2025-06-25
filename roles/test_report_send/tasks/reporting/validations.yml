@@ -38,9 +38,7 @@
 - name: Validate URL reachability based on status code
   ansible.builtin.assert:
     that:
-      - url_check_result is defined
-      - url_check_result.status is defined
-      - url_check_result.status in trs_http_status_codes.HEAD
+      - url_check_result.status | default(0) in trs_http_status_codes.HEAD
     fail_msg: >-
       Variable url_check_result failed validation
     success_msg: "The URL '{{ trs_collector_url }}' is reachable."
