@@ -1,6 +1,6 @@
 ---
 
-- name: copy_and_render integration test
+- name: Integration tests for copy_and_render
   hosts: testhost
   gather_facts: false
   vars:
@@ -13,44 +13,60 @@
         state: absent
 
     - name: Run the role under test
-      import_role:
+      ansible.builtin.import_role:
         name: redhatci.ocp.copy_and_render
 
-    - name: Assert plain file copied
+    - name: Assert target plain files exist
       ansible.builtin.stat:
-        path: "{{ car_target_dir }}/file1.txt"
-      register: st_file1
+        path: "{{ item }}"
+      register: plain_files
+      loop:
+        - "{{ car_target_dir }}/file1.txt"
+        - "{{ car_target_dir }}/sub/file2.txt"
 
-    - name: Assert plain file exists
+    - name: Assert plain files exist
       ansible.builtin.assert:
         that:
-          - st_file1.stat.exists
+          - item.stat.exists
+      loop: "{{ plain_files.results }}"
 
-    - name: Assert rendered template exists
+    - name: Assert rendered files exist
       ansible.builtin.stat:
-        path: "{{ car_target_dir }}/template"
-      register: st_tpl
+        path: "{{ item }}"
+      register: rendered_files
+      loop:
+        - "{{ car_target_dir }}/template"
+        - "{{ car_target_dir }}/sub/template2"
 
-    - name: Assert template exists
+    - name: Assert templates exist
       ansible.builtin.assert:
         that:
-          - st_tpl.stat.exists
+          - item.stat.exists
+      loop: "{{ rendered_files.results }}"
 
     - name: Assert template content
       ansible.builtin.command: |
-        grep -q "HELLO: Hi" "{{ car_target_dir }}/template"
+        grep -q "{{ item.content }}" "{{ item.file }}"
       register: grep_res
       changed_when: false
       failed_when: grep_res.rc != 0
+      loop:
+        - file: "{{ car_target_dir }}/template"
+          content: "HELLO: Hi"
+        - file: "{{ car_target_dir }}/sub/template2"
+          content: "BYE: Bye"
 
-    - name: Lookup .j2
-      ansible.builtin.stat:
-        path: "{{ car_target_dir }}/template.j2"
-      register: st_j2
+    - name: Search for .j2
+      ansible.builtin.find:
+        paths: "{{ car_target_dir }}"
+        patterns: "*.j2"
+        file_type: file
+        recurse: true
+      register: jinja2_files
 
-    - name: Assert .j2 not present
+    - name: Assert no .j2 templates remain
       ansible.builtin.assert:
         that:
-          - not st_j2.stat.exists
+          - jinja2_files.matched == 0
 
 ...

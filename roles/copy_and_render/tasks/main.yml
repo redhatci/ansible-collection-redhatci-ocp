@@ -1,14 +1,4 @@
 ---
-
-- name: Validate that car_source_dir and car_target_dir are set
-  ansible.builtin.assert:
-    that:
-      - car_source_dir is defined
-      - car_source_dir | length > 0
-      - car_target_dir is defined
-      - car_target_dir | length > 0
-    fail_msg: "Both car_source_dir and car_target_dir must be defined and non-empty"
-
 - name: Copy files and subdirectories from source to target
   ansible.builtin.copy:
     src: "{{ car_source_dir | regex_replace('/$', '') }}/"
@@ -20,19 +10,27 @@
     paths: "{{ car_source_dir }}"
     patterns: "*.j2"
     file_type: file
+    recurse: true
   register: _car_j2_templates
 
 - name: Render Jinja2 templates to target directory
+  vars:
+    # Relative paths starting with "./path/" are handled as "path/"
+    src_dir: "{{ car_source_dir | regex_replace('^./', '') }}"
+    target_path: "{{ item.path | replace(src_dir, car_target_dir) | regex_replace('\\.j2$', '') }}"
   ansible.builtin.template:
     src: "{{ item.path }}"
-    dest: "{{ car_target_dir }}/{{ item.path | basename | regex_replace('\\.j2$', '') }}"
+    dest: "{{ target_path }}"
     mode: '0644'
   loop: "{{ _car_j2_templates.files }}"
 
 - name: Remove original .j2 template files from target directory
+  vars:
+    # Relative paths starting with "./path/" are handled as "path/"
+    src_dir: "{{ car_source_dir | regex_replace('^./', '') }}"
+    target_template: "{{ item.path | replace(src_dir, car_target_dir) }}"
   ansible.builtin.file:
-    path: "{{ car_target_dir }}/{{ item.path | basename }}"
+    path: "{{ target_template }}"
     state: absent
   loop: "{{ _car_j2_templates.files }}"
-
 ...
