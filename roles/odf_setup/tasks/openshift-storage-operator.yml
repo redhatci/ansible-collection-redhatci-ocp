@@ -96,4 +96,18 @@
     - _os_sc.resources[0].status is defined
     - _os_sc.resources[0].status.phase is defined
     - _os_sc.resources[0].status.phase == "Ready"
+
+- name: Wait until all cephobjectstoreusers are ready
+  kubernetes.core.k8s_info:
+    api_version: ceph.rook.io/v1
+    kind: CephObjectStoreUser
+    namespace: "{{ ocs_storage_namespace }}"
+  register: _os_ceph_objectstore
+  retries: 1200
+  delay: 10
+  until:
+    - _os_ceph_objectstore.resources is defined
+    - _os_ceph_objectstore.resources | length > 0
+    - _os_ceph_objectstore.resources | map(attribute='status.phase') |
+      difference(['Ready']) | length == 0
 ...
