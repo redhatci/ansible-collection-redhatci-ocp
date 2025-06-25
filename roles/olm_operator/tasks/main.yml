@@ -139,6 +139,10 @@
             sourceNamespace: "{{ source_ns }}"
             startingCSV: "{{ operator_csv }}"
 
+    - name: Wait 10 seconds before checking InstallPlans
+      ansible.builtin.pause:
+        seconds: 10
+
     - name: Wait for the InstallPlan with the target CSV to appear
       kubernetes.core.k8s_info:
         api_version: operators.coreos.com/v1alpha1
@@ -155,23 +159,20 @@
         | list
         | length > 0
 
-    - name: Approve the InstallPlan that contains the operator CSV
+    - name: Approve all InstallPlans that contain the operator CSV
       kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: InstallPlan
           metadata:
-            name: >-
-              {{
-                _oo_install_plan.resources
-                | selectattr('spec.clusterServiceVersionNames', 'contains', operator_csv)
-                | map(attribute='metadata.name')
-                | first
-              }}
+            name: "{{ item.metadata.name }}"
             namespace: "{{ namespace }}"
           spec:
             approved: true
       no_log: true
+      loop: "{{ _oo_install_plan.resources |
+             selectattr('spec.clusterServiceVersionNames', 'contains', operator_csv) |
+             list }}"
 
     - name: Validate operator installation
       when:
