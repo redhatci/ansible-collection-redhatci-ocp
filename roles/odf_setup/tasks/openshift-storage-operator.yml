@@ -103,7 +103,7 @@
     kind: CephObjectStoreUser
     namespace: "{{ ocs_storage_namespace }}"
   register: _os_ceph_objectstore
-  retries: 1200
+  retries: 60
   delay: 10
   until:
     - _os_ceph_objectstore.resources is defined
