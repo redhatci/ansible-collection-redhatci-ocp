@@ -174,7 +174,7 @@
              selectattr('spec.clusterServiceVersionNames', 'contains', operator_csv) |
              list }}"
 
-    - name: Validate operator installation
+    - name: Validate_ operator installation
       when:
         - olm_operator_validate_install | bool
       block:

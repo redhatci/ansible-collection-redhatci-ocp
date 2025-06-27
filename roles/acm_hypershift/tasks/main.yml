@@ -62,7 +62,7 @@
 - name: Get management cluster facts
   ansible.builtin.include_tasks: get-mc-facts.yml
 
-- name: "Validate the target release image"
+- name: "Validate_ the target release image"
   ansible.builtin.assert:
     that:
       - ah_release_image is defined

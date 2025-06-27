@@ -1,5 +1,5 @@
 ---
-- name: Validate inputs
+- name: Validate_ inputs
   ansible.builtin.assert:
     that:
       - mi_registry is defined

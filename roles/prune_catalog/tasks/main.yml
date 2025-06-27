@@ -1,5 +1,5 @@
 ---
-- name: "Validate parameters"
+- name: "Validate_ parameters"
   ansible.builtin.assert:
     that:
       - pc_operators is defined
@@ -107,7 +107,7 @@
         dest: "{{ pc_tmp_dir }}/configs.Dockerfile"
         mode: "0644"
 
-    - name: "Validate the pruned index"
+    - name: "Validate_ the pruned index"
       ansible.builtin.shell: |
         {{ pc_opm_cmd }} validate configs/
       args:

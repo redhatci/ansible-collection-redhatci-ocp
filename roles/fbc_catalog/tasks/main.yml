@@ -1,5 +1,5 @@
 ---
-- name: "Validate parameters"
+- name: "Validate_ parameters"
   ansible.builtin.assert:
     that:
       - fbc_bundles is defined
@@ -49,7 +49,7 @@
     loop_var: bundle
     label: "{{ bundle }}"
 
-- name: "Validate catalog"
+- name: "Validate_ catalog"
   ansible.builtin.command: |
     {{ fbc_opm_cmd }} validate catalog
   args:

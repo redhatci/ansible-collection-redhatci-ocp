@@ -1,5 +1,5 @@
 ---
-- name: Validate cert_settings for container project
+- name: Validate_ cert_settings for container project
   ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required to update cert project"
@@ -17,7 +17,7 @@
     - cert_settings.repository_description
   when: product_type == 'container'
 
-- name: Validate cert_settings for operator project
+- name: Validate_ cert_settings for operator project
   ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required to update cert project"
@@ -32,7 +32,7 @@
     - cert_settings.repository_description
   when: product_type == 'operator'
 
-- name: Validate cert_settings for Helm Chart project
+- name: Validate_ cert_settings for Helm Chart project
   ansible.builtin.assert:
     that: "{{ item }} is defined"
     fail_msg: "The parameter {{ item }} is required to update cert project"
@@ -47,7 +47,7 @@
     - cert_settings.github_usernames
   when: product_type == 'helmchart'
 
-- name: Validate Short Description Length
+- name: Validate_ Short Description Length
   ansible.builtin.assert:
     fail_msg: "The parameter cert_item.short_description is task is less 50 characters"
     success_msg: "The parameter cert_item.short_description is more than 50 characters"

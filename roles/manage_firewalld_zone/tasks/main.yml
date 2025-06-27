@@ -1,5 +1,5 @@
 ---
-- name: Validate input
+- name: Validate_ input
   ansible.builtin.assert:
     that:
       - mfz_zone is defined

@@ -1,5 +1,5 @@
 ---
-- name: Validate that a storageclass is provided
+- name: Validate_ that a storageclass is provided
   ansible.builtin.assert:
     that:
       - sm_storage_class is defined

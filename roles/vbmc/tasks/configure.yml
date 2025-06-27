@@ -75,7 +75,7 @@
   retries: 5
   delay: 5
 
-- name: Validate that all VMs are powered on
+- name: Validate_ that all VMs are powered on
   ansible.builtin.fail:
     msg: "Node is not powered on! (ipmitool stdout: '{{ item.stdout }}')"
   when: "item.stdout != 'Chassis Power is on'"

@@ -15,7 +15,7 @@
   ansible.builtin.set_fact:
     cc_ocp_version: "{{ current_ver }}"
 
-- name: Validate if the Cluster Version is supported
+- name: Validate_ if the Cluster Version is supported
   ansible.builtin.fail:
     msg: "OCP version must be >= {{ cc_ocp_supported }} to run cluster compare"
   when: cc_ocp_version is version( cc_ocp_supported , "<")

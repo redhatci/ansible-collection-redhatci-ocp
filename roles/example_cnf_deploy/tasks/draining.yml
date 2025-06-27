@@ -9,8 +9,8 @@
 - name: Drain the worker node where testpmd is running
   ansible.builtin.include_tasks: draining/node-draining.yml
 
-- name: Validate allocation of new testpmd pod
+- name: Validate_ allocation of new testpmd pod
   ansible.builtin.include_tasks: draining/testpmd-validation.yml
 
-- name: Validate TRex job
+- name: Validate_ TRex job
   ansible.builtin.include_tasks: draining/trex-validation.yml

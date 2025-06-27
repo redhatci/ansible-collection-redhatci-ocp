@@ -33,7 +33,7 @@
   ansible.builtin.include_tasks: deploy.yml
   when: ecd_action == 'deploy'
 
-- name: "Validate Example CNF App"
+- name: "Validate_ Example CNF App"
   ansible.builtin.include_tasks: validate.yml
   when: ecd_action == 'validate'
 
