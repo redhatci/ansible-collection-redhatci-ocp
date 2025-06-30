@@ -1,0 +1,60 @@
+---
+
+- name: "Validate required variables"
+  ansible.builtin.assert:
+    that:
+      - ghk_hub_kubeconfig_path is defined
+      - ghk_hub_kubeconfig_path | length > 0
+
+- name: Get base64-encoded kubeconfig from secret
+  ansible.builtin.command: >
+    oc get secret {{ ghk_secret_name }} -n {{ ghk_namespace }} -o jsonpath="{.data.kubeconfig}"
+  register: _ghk_kubeconfig_b64
+
+- name: Decode kubeconfig to extract details
+  ansible.builtin.set_fact:
+    ghk_hub_raw_kubeconfig: "{{ _ghk_kubeconfig_b64.stdout | b64decode }}"
+
+- name: Extract API server URL
+  ansible.builtin.set_fact:
+    ghk_hub_api_server: "{{ ghk_hub_raw_kubeconfig | regex_search('server: (https://\\S+)', '\\1') }}"
+
+- name: Extract CA cert (base64)
+  ansible.builtin.set_fact:
+    ghk_ca_cert_b64: "{{ ghk_hub_raw_kubeconfig | regex_search('certificate-authority-data: (\\S+)', '\\1') }}"
+
+- name: Get base64-encoded client certificate
+  ansible.builtin.command: >
+    oc get secret {{ ghk_secret_name }} -n {{ ghk_namespace }} -o jsonpath="{.data.tls\.crt}"
+  register: _ghk_client_cert_b64
+
+- name: Get base64-encoded client key
+  ansible.builtin.command: >
+    oc get secret {{ ghk_secret_name }} -n {{ ghk_namespace }} -o jsonpath="{.data.tls\.key}"
+  register: _ghk_client_key_b64
+
+- name: Write self-contained kubeconfig with embedded certs
+  ansible.builtin.copy:
+    dest: "{{ ghk_hub_kubeconfig_path }}"
+    mode: "0644"
+    content: |
+      apiVersion: v1
+      kind: Config
+      clusters:
+      - name: hub
+        cluster:
+          server: {{ ghk_hub_api_server }}
+          certificate-authority-data: {{ ghk_ca_cert_b64 }}
+      users:
+      - name: agent
+        user:
+          client-certificate-data: {{ _ghk_client_cert_b64.stdout }}
+          client-key-data: {{ _ghk_client_key_b64.stdout }}
+      contexts:
+      - name: hub
+        context:
+          cluster: hub
+          user: agent
+      current-context: hub
+
+...
