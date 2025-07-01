@@ -1,0 +1,36 @@
+---
+- name: Fail if sg_local_registry is defined but sg_pullsecret_file is not
+  ansible.builtin.fail:
+    msg: "sg_pullsecret_file is required when sg_local_registry is defined."
+  when: sg_local_registry is defined and sg_pullsecret_file is not defined
+
+- name: Mirror ZTP/MCE images
+  vars:
+    mi_images: >-
+      {{
+        [
+          (sg_ztp_repo + ':' + sg_ztp_tag ),
+          (sg_mce_repo + ':' + sg_mce_tag )
+        ]
+      }}
+    mi_authfile: "{{ sg_pullsecret_file }}"
+    mi_registry: "{{ sg_local_registry }}"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
+
+- name: Apply ITMS for ZTP and MCE images
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: ImageTagMirrorSet
+      metadata:
+        name: gitops-images
+      spec:
+        imageTagMirrors:
+          - mirrors:
+              - "{{ sg_local_registry }}/openshift4/ztp-site-generate-rhel8"
+            source: "{{ sg_ztp_repo }}"
+          - mirrors:
+              - "{{ sg_local_registry }}/rhacm2/multicluster-operators-subscription-rhel9"
+            source: "{{ sg_mce_repo }}"
+...

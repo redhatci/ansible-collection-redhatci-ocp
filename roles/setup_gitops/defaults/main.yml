@@ -1,0 +1,6 @@
+---
+sg_ztp_tag: v4.19.0
+sg_mce_tag: v2.13
+sg_local_registry: ""
+sg_namespace: openshift-gitops
+...
