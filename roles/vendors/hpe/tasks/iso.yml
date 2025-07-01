@@ -6,6 +6,9 @@
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
+    timeout: 120
+  ignore_errors: true
+  changed_when: false
 
 - name: Eject Virtual Media
   ansible.builtin.include_tasks: eject.yml
