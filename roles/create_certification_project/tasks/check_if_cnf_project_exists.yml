@@ -53,7 +53,7 @@
 
 - name: Set project ID to reuse it later
   ansible.builtin.set_fact:
-    cert_project_id: "{{ cert_project_data | json_query(query_data) | flatten | last }}"  # noqa: jinja[invalid]
+    ccp_cert_project_id: "{{ cert_project_data | json_query(query_data) | flatten | last }}"  # noqa: jinja[invalid]
   vars:
     query_data: "[]._id"
   when:
