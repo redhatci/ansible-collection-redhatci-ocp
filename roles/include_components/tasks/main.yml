@@ -11,6 +11,18 @@
     ( ic_dev_gits |
     map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') | list)
 
+- name: Track src repos
+  block: 
+    - name: Get /usr/src directories
+      find:
+        paths: /usr/src
+        file_type: directory
+        register: output
+    - name: Track src git found
+      ansible.builtin.include_tasks: track_dev_git_repo.yml
+      loop: "{{ output.files }}"
+      when: output.files is defined
+
 - name: Gather the package facts
   ansible.builtin.package_facts:
     manager: auto
