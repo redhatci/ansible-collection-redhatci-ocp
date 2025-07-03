@@ -11,13 +11,14 @@
     ( ic_dev_gits |
     map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') | list)
 
-- name: Track src repos
-  block: 
+- name: Include source as components when using container
+  when: run_in_container | default(false) | bool
+  block:
     - name: Get /usr/src directories
-      find:
+      ansible.builtin.find:
         paths: /usr/src
         file_type: directory
-        register: output
+      register: output
     - name: Track src git found
       ansible.builtin.include_tasks: track_dev_git_repo.yml
       loop: "{{ output.files }}"
