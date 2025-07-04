@@ -1,0 +1,120 @@
+---
+- name: Get available CSVs
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: "{{ sg_namespace }}"
+  no_log: true
+  register: _sg_current_csvs
+
+- name: Fail if gitops CSV is not present
+  vars:
+    csv_details: "resources[*].metadata.name"
+    csvs: "{{ _sg_current_csvs | json_query(csv_details) }}"
+  ansible.builtin.fail:
+    msg: "No CSV for openshift-gitops-operator are present"
+  when:
+    - (csvs | select('match', 'openshift-gitops-operator') | list | length) == 0
+
+- name: Mirror required images to local registry
+  ansible.builtin.include_tasks: local-registry.yml
+  when:
+    - sg_local_registry | length > 0
+
+- name: Patch ArgoCD repo server for Kustomize and PolicyGenerator
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: argoproj.io/v1beta1
+      kind: ArgoCD
+      metadata:
+        name: openshift-gitops
+        namespace: "{{ sg_namespace }}"
+      spec:
+        kustomizeBuildOptions: "--enable-alpha-plugins"
+        repo:
+          volumes:
+            - name: kustomize
+              emptyDir: {}
+          initContainers:
+            - name: kustomize-plugin
+              image: "{{ sg_ztp_repo + ':' + sg_ztp_tag }}"
+              imagePullPolicy: Always
+              command:
+                - "/exportkustomize.sh"
+              args:
+                - "/.config"
+              volumeMounts:
+                - name: kustomize
+                  mountPath: "/.config"
+              resources: {}
+              terminationMessagePath: "/dev/termination-log"
+              terminationMessagePolicy: File
+            - name: policy-generator-install
+              image: "{{ sg_mce_repo + ':' + sg_mce_tag }}"
+              imagePullPolicy: Always
+              command:
+                - "/bin/bash"
+              args:
+                - "-c"
+                - >
+                  mkdir -p /.config/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator &&
+                  cp /policy-generator/PolicyGenerator-not-fips-compliant
+                  /.config/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator/PolicyGenerator
+              volumeMounts:
+                - name: kustomize
+                  mountPath: "/.config"
+          volumeMounts:
+            - name: kustomize
+              mountPath: "/.config"
+          env:
+            - name: ARGOCD_EXEC_TIMEOUT
+              value: "360s"
+            - name: KUSTOMIZE_PLUGIN_HOME
+              value: "/.config/kustomize/plugin"
+
+- name: Bind GitOps controller to cluster-admin role
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: gitops-cluster
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: ServiceAccount
+          name: openshift-gitops-argocd-application-controller
+          namespace: "{{ sg_namespace }}"
+
+- name: Bind GitOps controller to OCM policy role
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: gitops-policy
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: open-cluster-management:cluster-manager-admin
+      subjects:
+        - kind: ServiceAccount
+          name: openshift-gitops-argocd-application-controller
+          namespace: "{{ sg_namespace }}"
+
+- name: Wait for openshift-gitops pods rollout
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: "{{ sg_namespace }}"
+  register: _sg_pods
+  retries: 30
+  delay: 20
+  no_log: true
+  until:
+    - _sg_pods.resources is defined
+    - _sg_pods.resources | length > 0
+    - _sg_pods.resources | map(attribute='status.phase') |
+      difference(['Succeeded', 'Running']) | length == 0
+...
