@@ -1,0 +1,4 @@
+---
+sg_ztp_repo: "registry.redhat.io/openshift4/ztp-site-generate-rhel8"  # ZTP site-generator image
+sg_mce_repo: "registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel9"  # MCE subscription image
+...
