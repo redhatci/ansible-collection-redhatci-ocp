@@ -1,0 +1,131 @@
+---
+# arguments spec file for redhatci.ocp.test_report_send role
+argument_specs:
+  main:
+    short_description: Main entry point for the redhatci.ocp.test_report_send role
+    description: |
+      This is the main entrypoint for the role `redhatci.ocp.test_report_send`.
+      The role constructs a single event made of:
+
+      * tests report data: `trs_report_path`
+      * runtime metadata, either:
+          * `trs_metadata_path`
+          * CI-specific metadata collected from environment variables
+      This event is sent to the collector (currently only splunk is supported).
+    author:
+      - Max Kovgan
+    options:
+      trs_report_path:
+        type: str
+        required: false
+        default: ""
+        description: |
+          Test report JSON file to send.
+          Merged into the event under 'test' attribute.
+          For full report syntax see [doc/event.md](roles/test_report_send/doc/event.md).
+
+      trs_metadata_path:
+        type: str
+        required: false
+        default: ""
+        description: |
+          Event metadata JSON file to send.
+          Merged into the event 'metadata' attribute.
+          Useful to mark special datasets during development.
+          If set to be empty or the file is missing, it is ignored.
+
+      trs_collector_url:
+        type: str
+        required: true
+        description: |
+          The URL of collector server (Splunk).
+
+      trs_collector_auth_token:
+        type: str
+        required: false
+        description: |
+          Collector auth token string for Bearer Token HTTP Authentication.
+
+      trs_collector_target:
+        type: str
+        required: false
+        default: ""
+        description: |
+          Collector Target/Channel/Topic/Id
+
+      trs_collector:
+        type: str
+        required: false
+        default: splunk
+        description: |
+          Collector type (currently only `splunk` is supported).
+
+      trs_collector_source:
+        type: str
+        required: false
+        default: ""
+        description: |
+          Collector source should contain detected or passed hostname generating the event.
+
+      trs_collector_auth_headers:
+        type: dict
+        required: false
+        default: {}
+        description: |
+          Collector request HTTP headers for HTTP Authentication.
+
+      trs_ci_system_autodetect:
+        type: bool
+        required: false
+        default: true
+        description: |
+          Perform auto-detection of CI system from environment.
+          Turning it Off is useful when debugging.
+
+      trs_workdir:
+        type: str
+        required: false
+        default: "{{ playbook_dir }}/workdir"
+        description: |
+          Directory for intermediate files (usable for troubleshooting, files deleted unless `trs_workdir_keep` is true.
+          It is automatically set to true if `trs_debug` is set to `true`.
+
+      trs_event_dump_file:
+        type: str
+        required: false
+        default: "{{ playbook_dir }}/event.json"
+        description: |
+          (For tests only) file name to dump the event json.
+          Used only if `trs_event_save` is set to `true`
+
+      trs_allow_self_signed_certs:
+        type: bool
+        required: false
+        default: false
+        description: |
+          Allow self-signed certificates for the collector.
+          Useful for debugging.
+
+      trs_debug:
+        type: bool
+        required: false
+        default: false
+        description: |
+          Enable debug mode.
+          This will save the event to a file and not send it to the collector.
+
+      trs_workdir_keep:
+        type: bool
+        required: false
+        default: false
+        description: |
+          Keep the workdir after the role is finished.
+          It is automatically set to true if `trs_debug` is set to `true`.
+
+      trs_event_save:
+        type: bool
+        required: false
+        default: false
+        description: |
+          Save the event to a file.
+          It is automatically set to true if `trs_debug` is set to `true`.

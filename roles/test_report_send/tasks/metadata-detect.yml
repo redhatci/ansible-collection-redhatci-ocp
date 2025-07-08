@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# metadata.detect tasks file for redhatci.ocp.test_report_send
+
+- name: CI system auto-detection
+  ansible.builtin.include_tasks: "ci-detect.yml"
+  when:
+    - trs_ci_system_autodetect
+
+- name: Include variables for {{ trs_ci_system }}
+  ansible.builtin.include_vars:
+    dir: vars
+    files_matching: "{{ trs_ci_system }}.yml"
+    name: "{{ trs_ci_system }}"
+
+- name: Detect dynamic metadata
+  ansible.builtin.include_tasks: "env2vars-populate.yml"
+
+- name: Detect dynamic metadata
+  ansible.builtin.include_tasks: "metadata-detect/{{ trs_ci_system }}.yml"
+
+- name: Print generated dict trs_ci_runtime
+  ansible.builtin.debug:
+    var: trs_ci_runtime
+  when:
+    - trs_debug
+
+- name: Update metadata
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ trs_meta_data | combine(trs_ci_runtime) }}"
+
+- name: Update trs_collector_source for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    trs_collector_source: "{{ trs_meta_data.ci.url }}"
+  when:
+    - trs_meta_data.ci.url | default("") | length > 0

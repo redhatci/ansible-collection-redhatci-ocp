@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# defaults file for redhatci.ocp.test_report_send
+
+trs_report_path: ""
+trs_metadata_path: ""
+trs_collector_source: ""
+trs_collector_target: ""
+trs_collector_auth_headers: {}
+trs_collector_auth_token: ""
+trs_workdir: "{{ playbook_dir }}/workdir"
+trs_event_dump_file: "{{ playbook_dir }}/event.json"
+trs_ci_system: unknown
+trs_collector: splunk
+
+trs_debug: false
+# Beware this variable during debugging:
+trs_ci_system_autodetect: true
+trs_do_send: true
+trs_event_save: "{{ trs_debug | default(false) }}"
+trs_workdir_keep: "{{ trs_debug | default(false) }}"
+
+trs_ci_runtime: {}
+trs_meta_data: {}
+
+trs_default_ts: "{{ now(fmt='%Y-%m-%dT%H:%M:%S') }}"
+
+trs_ci_systems_supported:
+  - dci
+  - jenkins
+
+trs_collectors_supported:
+  - splunk
+
+trs_allow_self_signed_certs: false

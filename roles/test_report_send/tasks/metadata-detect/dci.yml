@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# DCI metadata detection tasks for redhatci.ocp.test_report_send
+
+- name: Set is_ci attribute
+  ansible.builtin.set_fact:
+    trs_ci_runtime: "{{ trs_ci_runtime | combine({'is_ci': true}) }}"
+  when:
+    - lookup("env","CI") | lower == "true"
+    - lookup("env","DCI_CS_URL") is defined
+
+- name: Update trs_ci_runtime.type for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    ci: "{{ ci | default({}) | combine({'type': trs_ci_system}) }}"
+
+- name: Update trs_ci_runtime.url for {{ trs_ci_system }}
+  ansible.builtin.set_fact:
+    ci: "{{ ci | combine({'url': lookup('env', 'DCI_CS_URL')}) }}"
+
+- name: Print trs_meta_data (Before squash of metadata key)
+  ansible.builtin.debug:
+    var: trs_meta_data
+
+- name: Update ci in metadata
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ trs_meta_data | combine({'metadata': trs_meta_data.metadata | combine({'ci': ci})}) }}"
+
+- name: Merge "metadata" into root trs_meta_data
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ trs_meta_data | combine(trs_meta_data.metadata) }}"
+  when:
+    - trs_metadata_path | length > 0
+    - trs_meta_data | length > 0
+    - ("metadata" in trs_meta_data.keys())
+    - trs_meta_data.metadata | length > 0
+
+- name: Print trs_meta_data (AFTER squash of metadata key)
+  ansible.builtin.debug:
+    var: trs_meta_data
+
+- name: Delete trs_meta_data key "metadata"
+  ansible.builtin.set_fact:
+    trs_meta_data: "{{ trs_meta_data | combine({'metadata': omit}) }}"
+  when:
+    - trs_metadata_path | length > 0
+    - trs_meta_data | length > 0
+    - ("metadata" in trs_meta_data.keys())
+    - trs_meta_data.metadata | length > 0
+
+- name: Print trs_meta_data (AFTER deleting of metadata key)
+  ansible.builtin.debug:
+    var: trs_meta_data

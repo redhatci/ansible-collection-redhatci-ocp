@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Unknown CI system stub tasks for redhatci.ocp.test_report_send
+
+- name: Unsupported CI system
+  ansible.builtin.debug:
+    msg: "unsupported CI system"
+
+- name: Fail for unsupported CI system
+  ansible.builtin.fail:
+    msg: "Unsupported CI system: {{ trs_ci_system }}"

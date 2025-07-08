@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Splunk validations tasks for redhatci.ocp.test_report_send
+
+- name: Validate trs_collector_auth_headers matches required conditions
+  ansible.builtin.assert:
+    that:
+      - trs_collector_auth_headers is defined
+      - trs_collector_auth_headers is mapping
+      - trs_collector_auth_headers.keys() | length > 0
+      - trs_collector_auth_headers['Authorization'] is defined
+      - trs_collector_auth_headers['X-Splunk-Request-Channel'] is defined
+      - trs_collector_auth_headers['Authorization'] | regex_search('^Splunk ')
+      - trs_collector_auth_headers['Authorization'] | length > 10
+      - trs_collector_auth_headers['X-Splunk-Request-Channel'] | length > 5
+    fail_msg: >-
+      Variable trs_collector_auth_headers failed validation
+
+# Ensure the collector URL is HTTPS
+- name: Assert collector URL uses HTTPS
+  ansible.builtin.assert:
+    that:
+      - trs_collector_url is match('^https://')
+    fail_msg: "Insecure collector URL '{{ trs_collector_url }}' – HTTPS is required."
+  when:
+    - trs_collector_url is defined
+
+- name: Check if the provided trs_collector_url is reachable (HEAD request)
+  ansible.builtin.uri:
+    url: "{{ trs_collector_url }}"
+    method: HEAD
+    timeout: 10 # Optional: set a timeout
+    headers: "{{ trs_collector_auth_headers | default(omit) }}"
+    validate_certs: "{{ not (trs_allow_self_signed_certs | default(false)) }}"
+  register: url_check_result
+  ignore_errors: true
+
+- name: Validate URL reachability based on status code
+  ansible.builtin.assert:
+    that:
+      - url_check_result.status | default(0) in trs_http_status_codes.HEAD
+    fail_msg: >-
+      Variable url_check_result failed validation
+    success_msg: "The URL '{{ trs_collector_url }}' is reachable."
