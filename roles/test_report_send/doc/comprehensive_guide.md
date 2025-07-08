@@ -663,7 +663,7 @@ The `test_report_send` role provides a comprehensive solution for normalizing CI
 
 ### Key Resources
 
-- **Protocol Buffer Schema**: See [`event.proto`](event.proto) for the complete, formal definition of the event structure
+- **Protocol Buffer Schema**: See [`event.proto`](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/test_report_send/protos/event.proto) for the complete, formal definition of the event structure
 - **Environment Variable Mappings**: Individual configuration files in the `vars/env2vars/` directory
 - **Implementation Examples**: Customize the mappings according to your CI environment and reporting requirements
 

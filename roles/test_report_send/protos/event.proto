@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package test_report;
+package roles.test_report_send.protos;
 
 message CIRunnerProperty {
     string name = 1;
@@ -37,6 +37,13 @@ message Job {
     repeated string cause = 7;  // build cause
 }
 
+message Pipeline {
+    string name = 1;
+    string url = 2;
+    string type = 3;
+    ExecStatus status = 4;
+}
+
 message Change {
     string base_ref = 1;
     string head_ref = 2;
@@ -59,14 +66,6 @@ message Source {
     string owner = 11;
     string event_payload = 12;
     Change change = 13;
-}
-
-
-message Pipeline {
-    string name = 1;
-    string url = 2;
-    string type = 3;
-    ExecStatus status = 4;
 }
 
 message SWComponent {
