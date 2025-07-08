@@ -7,6 +7,10 @@
     fail_msg: "The parameter cert_item is required to create cert project"
     success_msg: "The parameter {{ cert_item }} is present"
 
+- name: Reset the project id to handle multiple CNF
+  ansible.builtin.set_fact:
+    ccp_cert_project_id: ""
+
 - name: Handle the situation when cert project already exists
   ansible.builtin.include_tasks: check_if_project_exists.yml
   when:
@@ -19,7 +23,7 @@
 
 - name: Create cert project
   ansible.builtin.include_tasks: create_project.yml
-  when: cert_project_id | default('') | length == 0
+  when: ccp_cert_project_id | default('') | length == 0
 
 - name: Update the project with company info when cert_settings is defined
   ansible.builtin.include_tasks: update_project.yml
@@ -31,12 +35,16 @@
     # To avoid multiple PRs request to Charts repo,
     # no project update during helm chart project creation
     - product_type != 'helmchart'
-    - cert_project_id | default('') | length
+    - ccp_cert_project_id | default('') | length
 
 - name: Attach all product listings
   ansible.builtin.include_tasks: attach_product_listings.yml
   when:
     - cert_item.pyxis_product_lists is defined
     - cert_item.pyxis_product_lists | length > 0
-    - cert_project_id | default('') | length
+    - ccp_cert_project_id | default('') | length
+
+- name: Set and Save Project IDs for k8s tests
+  ansible.builtin.set_fact:
+    ccp_all_cert_project_ids: "{{ ccp_all_cert_project_ids | default([]) + [ccp_cert_project_id] }}"
 ...
