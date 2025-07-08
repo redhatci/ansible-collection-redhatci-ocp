@@ -1,0 +1,41 @@
+graph TD;
+    subgraph "CI Event Metadata"
+        A[`
+---
+ci:
+  type: gitlab
+  runner:
+    os: linux
+    arch:
+      - x86_64
+      - amd64
+pipeline:
+  name: bla
+  id: 12319023812
+  started_at: 123123872
+  duration: 123123
+  job:
+    name: kuku
+    id: 12
+    started_at: 123123123
+    duration: 1232
+  source:
+    repository: https://github.com/mvk/myrepo.git
+    sha1: alsdfkjasd
+    change:
+      url: https://github.com/mvk/myrepo/pulls/123
+      head_ref: bla
+      base_ref: main
+    author: makovgan@redhat.com
+    author_name: Max Kovgan
+  product:
+    name: OCP-12312
+    version: 4.17
+    components:
+      - name: bla
+        version: 123.123.1
+`];
+    end
+
+    %% --- Styling for the node ---
+    style A fill:#f5faff,stroke:#4a90e2,stroke-width:2px,stroke-dasharray: 5 5
