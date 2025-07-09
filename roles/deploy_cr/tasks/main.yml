@@ -1,53 +1,42 @@
-# Deploy a custom resource
-#
-# Required arguments:
-#   api_version: The api version, including the namespace of the CR
-#   (e.g hco.kubevirt.io/v1beta1)
-#
-#   namespace: The namespace in which the CR should be created
-#
-#   kind: The kind of the CR
-#
-#   name: The name that will be used to identify the CR
-#
-#   spec: The spec field of the CR.
 ---
-- name: test_ Check for mandatory input  # noqa: name[casing]
-  ansible.builtin.assert:
-    that:
-      - api_version | string
-      - kind | string
-      - namespace | string
-      - name | string
-      - spec is mapping
-
-- name: Deploy CR
+- name: Deploy CR {{ dc_kind }}
   kubernetes.core.k8s:
     definition:
-      apiVersion: "{{ api_version }}"
-      kind: "{{ kind }}"
+      apiVersion: "{{ dc_api_version }}"
+      kind: "{{ dc_kind }}"
       metadata:
-        name: "{{ name }}"
-        namespace: "{{ namespace }}"
-      spec: "{{ spec }}"
-  register: result
+        name: "{{ dc_name }}"
+        namespace: "{{ dc_namespace | default(omit) }}"
+      spec: "{{ dc_spec }}"
+  register: _deploy_cr_create_result
   retries: 5
   delay: 60
-  until: result is not failed
+  until: _deploy_cr_create_result is not failed
 
-- name: test_ Check that the CR is ready  # noqa: name[casing]
+- name: Validate_ that the CR is ready
   kubernetes.core.k8s_info:
-    api_version: "{{ api_version }}"
-    name: "{{ name }}"
-    namespace: "{{ namespace }}"
-    kind: "{{ kind }}"
+    api_version: "{{ dc_api_version }}"
+    name: "{{ dc_name }}"
+    namespace: "{{ dc_namespace | default(omit) }}"
+    kind: "{{ dc_kind }}"
     wait: true
-    wait_condition:
-      type: Available
-      status: "True"
-    wait_timeout: 10
-  register: result
-  retries: 180
-  delay: 10
-  until: result is not failed
+    wait_condition: "{{ dc_wait_condition }}"
+    wait_timeout: "{{ dc_wait_timeout }}"
+  register: _deploy_cr_result
+  retries: "{{ dc_wait_retries }}"
+  delay: "{{ dc_wait_delay }}"
+  until: _deploy_cr_result is not failed
+  when: dc_wait_for_cr | bool
+
+- name: Pause to wait for MCP to be updated if any
+  ansible.builtin.pause:
+    seconds: 60
+
+- name: Wait for MCPs changes applied if any
+  ansible.builtin.include_role:
+    name: redhatci.ocp.check_resource
+  vars:
+    resource_to_check: "MachineConfigPool"          # noqa: redhat-ci[no-role-prefix]
+    check_wait_retries: "{{ dc_wait_mc_retries }}"  # noqa: redhat-ci[no-role-prefix]
+    check_wait_delay: "{{ dc_wait_mc_delay }}"      # noqa: redhat-ci[no-role-prefix]
 ...
