@@ -12,15 +12,6 @@
 #
 #   spec: The spec field of the CR.
 ---
-- name: test_ Check for mandatory input  # noqa: name[casing]
-  ansible.builtin.assert:
-    that:
-      - dc_api_version | string
-      - dc_kind | string
-      - dc_namespace | string
-      - dc_name | string
-      - dc_spec is mapping
-
 - name: Deploy CR
   kubernetes.core.k8s:
     definition:
