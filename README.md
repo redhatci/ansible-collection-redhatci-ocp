@@ -80,7 +80,7 @@ Name | Description
 [redhatci.ocp.k8s_best_practices_certsuite](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/k8s_best_practices_certsuite/README.md) | Executes the [Red Hat Best Practices Test Suite for Kubernetes](https://github.com/redhat-best-practices-for-k8s/certsuite) tool.
 [redhatci.ocp.kvirt_vm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/kvirt_vm/README.md) | Deployment of Kubevirt virtual machines.
 [redhatci.ocp.label_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/label_nodes/README.md) | Applies labels defined at inventory level to the OCP cluster nodes.
-[redhatci.ocp.manage_firewalld_zone](roles/manage_firewalld_zone/README.md) | Manage a FirewallD zone.
+[redhatci.ocp.manage_firewalld_zone](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/manage_firewalld_zone/README.md) | Manage a FirewallD zone.
 [redhatci.ocp.merge_registry_creds](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/merge_registry_creds/README.md) | Combines multiple registry credentials in JSON format passed as dictionaries
 [redhatci.ocp.metallb_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/metallb_setup/README.md) | Setup of the MetalLB operator in BGP mode.
 [redhatci.ocp.microshift_generate_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/microshift_generate_iso/README.md) | Generate a MicroShift ISO image.
@@ -94,7 +94,7 @@ Name | Description
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.ocp_add_users](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_add_users/README.md) | Add users to an OpenShift cluster through htpasswd Identity Provider.
-[redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster. 
+[redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster.
 [redhatci.ocp.ocp_logging](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_logging/README.md) | Enables the OCP logging subsystem.
 [redhatci.ocp.ocp_on_libvirt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_on_libvirt/README.md) | Creation of a libvirt environment to install OCP
 [redhatci.ocp.odf_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/odf_setup/README.md) | Setup of [OpenShift Data Foundation (ODF)](https://www.redhat.com/en/technologies/cloud-computing/openshift-data-foundation)
@@ -112,7 +112,7 @@ Name | Description
 [redhatci.ocp.redhat_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/redhat_tests/README.md) | [Openshift End to End tests](https://github.com/openshift/openshift-tests)
 [redhatci.ocp.remove_ztp_gitops_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/remove_ztp_gitops_resources/README.md) | Remove all GitOps related resources for a given spoke cluster, excepting the cluster namespace, which is not deleted because this will imply the spoke cluster is detached from the hub cluster.
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
-[redhatci.ocp.rhoai](roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
+[redhatci.ocp.rhoai](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
 [redhatci.ocp.setup_gitea](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitea/README.md) | Deployment of [Gitea](https://about.gitea.com)
 [redhatci.ocp.setup_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitops/README.md) | Configures GitOps to support Kustomize and PolicyGenerator
 [redhatci.ocp.setup_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_http_store/README.md) | Sets up a web host which can be used to distribute iso's for `boot_iso` role
@@ -131,6 +131,7 @@ Name | Description
 [redhatci.ocp.sos_report](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sos_report/README.md) | Generate SOS report from a list of OCP nodes.
 [redhatci.ocp.sriov_config](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/sriov_config/README.md) | Configure SR-IOV node policies and/or networks.
 [redhatci.ocp.storage_tester](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/storage_tester/README.md) | Storage Service tests during cluster upgrade
+[redhatci.ocp.test_report_send](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/test_report_send/README.md) | Send Test Reports to a Collection Service
 [redhatci.ocp.upi_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/upi_installer/README.md) | UPI Installer
 [redhatci.ocp.vbmc](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vbmc/README.md) | Setup [Virtual BMC](https://docs.openstack.org/virtualbmc/latest/user/index.html)
 [redhatci.ocp.validate_dns_records](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/validate_dns_records/README.md) | Checks for the required dns entries for ingress and api VIPs
@@ -150,12 +151,13 @@ Name | Description
 
 Name | Type | Description
 --- | --- | ---
-[redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
-[redhatci.ocp.junit2obj]() | Filter | Transforms a JUnit XML into a corresponding JSON text
-[redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
-[redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
-[redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
-[redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
+[redhatci.ocp.junit2dict](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/filter/junit2dict.py) | Filter | Transforms a JUnit into a dictionary
+[redhatci.ocp.junit2obj](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/filter/junit2obj.py) | Filter | Transforms a JUnit XML into a corresponding JSON text
+[redhatci.ocp.ocp_compatibility](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/filter/ocp_compatibility.py) | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
+[redhatci.ocp.regex_diff](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/filter/regex_diff.py) | Filter | Obtain differences between two lists
+[redhatci.ocp.get_compatible_rhocp_repo](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/modules/get_compatible_rhocp_repo.py) | Module | A module to find the latest available version of the RHOCP repository
+[redhatci.ocp.nmcli](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/modules/nmcli.py) | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
+[redhatci.ocp.packet_missing](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/modules/packet_missing.py) | Module | Organizes packet missing events
 
 ## License
 

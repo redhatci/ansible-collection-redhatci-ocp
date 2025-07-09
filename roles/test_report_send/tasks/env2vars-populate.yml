@@ -1,0 +1,15 @@
+---
+
+- name: Include env2vars variable for {{ trs_ci_system }}
+  ansible.builtin.include_vars:
+    dir: "{{ role_path }}/vars/env2vars"
+    files_matching: "{{ trs_ci_system }}.yml"
+
+- name: Set facts from environment variables into trs_vars_dict
+  ansible.builtin.set_fact:
+    trs_vars_dict: "{{ trs_vars_dict | default({}) | combine({(item.key): processed_value}) }}"
+  vars:
+    processed_value: "{{ lookup('template', role_path ~ '/templates/env2vars.j2') }}"
+  loop: "{{ env2vars }}"
+  when:
+    - env2vars | default({}) | length > 0

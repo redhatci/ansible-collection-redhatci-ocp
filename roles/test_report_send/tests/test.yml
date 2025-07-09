@@ -1,0 +1,7 @@
+---
+- name: Run test_report_send role
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - role: redhatci.ocp.test_report_send

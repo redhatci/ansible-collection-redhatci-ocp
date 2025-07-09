@@ -1,0 +1,133 @@
+{
+  "event": {
+    "metadata": {
+      "ci": {
+        "runner": {
+          "arch": [
+            "amd64",
+            "x86_64"
+          ],
+          "containers": "podman",
+          "executor": "2",
+          "name": "build-agent-linux-05",
+          "os": "linux"
+        },
+        "type": "jenkins",
+        "url": "https://ci.telco-v10n.fake.redhat.com"
+      },
+      "is_ci": true,
+      "job": {
+        "build": "152",
+        "build_url": "https://ci.telco-v10n.fake.redhat.com/job/cnf-run-kuku-ruku_ocp-4.18/job/feature%2Fnew-ui-component/152/",
+        "cause": [
+          "USERIDCAUSE",
+          "SCMTRIGGER"
+        ],
+        "name": "cnf-run-kuku-ruku_ocp-4.18/feature%2Fnew-ui-component",
+        "url": "https://ci.telco-v10n.fake.redhat.com/job/cnf-run-kuku-ruku_ocp-4.18/job/feature%2Fnew-ui-component/"
+      },
+      "pipeline": {},
+      "source": {
+        "actor": "sergioc",
+        "actor_name": "Sergio Constanza",
+        "change": {
+          "base_ref": "main",
+          "head_ref": "feature/new-ui-component",
+          "number": "87"
+        },
+        "change_url": "https://github.com/acme-corp/cnf-testing/pull/87",
+        "event_payload": {},
+        "owner": "",
+        "ref": "feature/new-ui-component",
+        "ref_name": "feature/new-ui-component",
+        "ref_type": "branch",
+        "repo": "",
+        "repo_path": "",
+        "repo_url": "https://github.com/acme-corp/cnf-testing.git",
+        "server_url": "",
+        "sha": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+      }
+    },
+    "test": {
+      "errors": 0,
+      "failures": 0,
+      "schema_version": "1.0.0",
+      "skipped": 2,
+      "test_suites": [
+        {
+          "errors": 0,
+          "failures": 0,
+          "name": "Performance Addon Operator configuration",
+          "properties": {
+            "DryRun": "false",
+            "FailFast": "false",
+            "FailOnPending": "false",
+            "FlakeAttempts": "2",
+            "more_properties": "more_values"
+          },
+          "skipped": 0,
+          "test_cases": [
+            {
+              "classname": "Performance Addon Operator configuration",
+              "name": "[BeforeSuite]",
+              "result": [
+                {
+                  "message": "passed",
+                  "status": "passed"
+                }
+              ],
+              "system_err": "> Enter [BeforeSuite] TOP-LEVEL - <job_working_path>/<component_path>/test/<test_level>/<test_scenario_path>/<test_type>/<subscenario_name>/<suite_name>.go:30 @ 12/08/24 00:34:34.234\\n< Exit [BeforeSuite] TOP-LEVEL - /home/jenkins/workspace/CNF/cnf-compute-4.16/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/3_performance_status/test_suite_performance_status_test.go:30 @ 12/08/24 00:34:34.266 (32ms)\\n",
+              "time": 0.03215296
+            },
+            {
+              "more_test_cases": "more_test_cases"
+            }
+          ],
+          "tests": 7,
+          "time": 66.273,
+          "timestamp": "2024-12-08T00:34:34"
+        },
+        {
+          "errors": 0,
+          "failures": 0,
+          "name": "Performance Addon Operator Reboot",
+          "properties": {
+            "DryRun": "false",
+            "FailFast": "false",
+            "FailOnPending": "false",
+            "FlakeAttempts": "2"
+          },
+          "skipped": 2,
+          "test_cases": [
+            {
+              "classname": "Performance Addon Operator Reboot",
+              "name": "[It] [disruptive][node][kubelet][devicemanager] Device management tests Verify that pods requesting devices are correctly recovered on node restart",
+              "result": [
+                {
+                  "message": "skipped - Need an explicit target node name, got none (env var: \"DEVICE_RECOVERY_TARGET_NODE\")",
+                  "status": "skipped"
+                }
+              ],
+              "system_err": "> Enter [BeforeEach] [disruptive][node][kubelet][devicemanager] Device management tests - /home/jenkins/workspace/CNF/cnf-compute-4.16/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/9_reboot/devices.go:70 @ 12/08/24 01:51:52.834\\n[SKIPPED] Need an explicit target node name, got none (env var: \\\"DEVICE_RECOVERY_TARGET_NODE\\\")\\nIn [BeforeEach] at: /home/jenkins/workspace/CNF/cnf-compute-4.16/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/9_reboot/devices.go:73 @ 12/08/24 01:51:52.835\\n< Exit [BeforeEach] [disruptive][node][kubelet][devicemanager] Device management tests - /home/jenkins/workspace/CNF/cnf-compute-4.16/cluster-node-tuning-operator/test/e2e/performanceprofile/functests/9_reboot/devices.go:70 @ 12/08/24 01:51:52.835 (1ms)\\n",
+              "time": 0.000705274
+            },
+            {
+              "more_test_cases": "more_test_cases"
+            }
+          ],
+          "tests": 5,
+          "time": 6.061,
+          "timestamp": "2024-12-08T01:51:52"
+        },
+        {
+          "more_test_suites": "more_test_suites"
+        }
+      ],
+      "tests": 15,
+      "time": 72.437
+    }
+  },
+  "host": "https://httpbingo.org/status/403",
+  "source": "https://ci.telco-v10n.fake.redhat.com",
+  "sourcetype": "_json"
+}
