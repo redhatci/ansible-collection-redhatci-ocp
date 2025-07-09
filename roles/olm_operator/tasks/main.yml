@@ -149,7 +149,7 @@
         kind: InstallPlan
         namespace: "{{ namespace }}"
       register: _oo_install_plan
-      retries: 30
+      retries: 120
       delay: 10
       no_log: true
       until: >
