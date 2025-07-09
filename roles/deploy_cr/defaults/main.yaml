@@ -1,9 +1,9 @@
 ---
 dc_wait_condition:
-  dc_type: Available
-  dc_status: "True"
+  type: Available
+  status: "True"
 dc_wait_retries: 180
 dc_wait_delay: 10
-dc_wait_for_cr: true
+dc_wait_for_cr: false
 dc_wait_timeout: 10
 ...

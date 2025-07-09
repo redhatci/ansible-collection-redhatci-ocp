@@ -1,16 +1,3 @@
-# Deploy a custom resource
-#
-# Required arguments:
-#   api_version: The api version, including the namespace of the CR
-#   (e.g hco.kubevirt.io/v1beta1)
-#
-#   namespace: The namespace in which the CR should be created
-#
-#   kind: The kind of the CR
-#
-#   name: The name that will be used to identify the CR
-#
-#   spec: The spec field of the CR.
 ---
 - name: Deploy CR
   kubernetes.core.k8s:
@@ -26,7 +13,7 @@
   delay: 60
   until: _deploy_cr_create_result is not failed
 
-- name: test_ Check that the CR is ready  # noqa: name[casing]
+- name: Check that the CR is ready
   kubernetes.core.k8s_info:
     api_version: "{{ dc_api_version }}"
     name: "{{ dc_name }}"
