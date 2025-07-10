@@ -5,12 +5,14 @@
     api: "v1"
     kind: "Namespace"
     name: "{{ sg_namespace }}"
+    kubeconfig: "{{ sg_kubeconfig | default(omit) }}"
 
 - name: "Wait for the Gitea Namespace to be terminated"
   kubernetes.core.k8s_info:
     api: "v1"
     kind: "Namespace"
     name: "{{ sg_namespace }}"
+    kubeconfig: "{{ sg_kubeconfig | default(omit) }}"
   register: _sg_gitea_namespace
   retries: 10
   delay: 5
