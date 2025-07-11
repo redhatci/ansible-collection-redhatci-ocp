@@ -30,4 +30,9 @@
   loop: "{{ ic_commit_urls | default([]) }}"
   loop_control:
     loop_var: ic_commit_url
+
+- name: Track listed components
+  ansible.builtin.include_tasks: track_listed_component.yml
+  loop: "{{ ic_listed | default([]) }}"
+
 ...
