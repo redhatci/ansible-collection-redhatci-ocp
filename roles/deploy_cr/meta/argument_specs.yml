@@ -1,0 +1,19 @@
+---
+argument_specs:
+  main:
+    options:
+      dc_api_version:
+        type: str
+        required: true
+      dc_kind:
+        type: str
+        required: true
+      dc_namespace:
+        type: str
+        required: true
+      dc_name:
+        type: str
+        required: true
+      dc_spec:
+        type: dict
+        required: true
