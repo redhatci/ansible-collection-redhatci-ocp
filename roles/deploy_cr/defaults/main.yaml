@@ -8,4 +8,5 @@ dc_wait_for_cr: false
 dc_wait_timeout: 10
 dc_wait_mc_retries: 600
 dc_wait_mc_delay: 10
+dc_namespace: "omit"
 ...

@@ -8,7 +8,7 @@ This Ansible role is used to deploy a Kubernetes Custom Resource (CR) to a speci
 |--------------------|----------|--------|---------------------------------------------------------------------------------------------------------|                           
 | dc_api_version     | yes      | str    | The API version of the CR (e.g., `hco.kubevirt.io/v1beta1`).                                            |
 | dc_kind            | yes      | str    | The kind of the CR (e.g., `HyperConverged`).                                                            |
-| dc_namespace       | yes      | str    | The namespace in which the CR should be created.                                                        |
+| dc_namespace       | no       | str    | The namespace in which the CR should be created. Defaults to `omit`                                     |
 | dc_name            | yes      | str    | The name of the CR.                                                                                     |
 | dc_spec            | yes      | dict   | The `spec` field of the CR.                                                                             |
 | dc_wait_condition  | no       | dict   | Wait condition for the CR to be considered ready. Defaults to `{'type': 'Available', 'status': 'True'}` |
@@ -17,7 +17,7 @@ This Ansible role is used to deploy a Kubernetes Custom Resource (CR) to a speci
 | dc_wait_delay      | no       | int    | Delay in seconds between retries.                                                                       |
 | dc_wait_for_cr     | no       | bool   | Whether to wait for the CR to be ready. Defaults to `false`.                                            |
 | dc_wait_mc_retries | no       | int    | Retries for changes that may trigger MCP updates. Defaults to: 600                                      |
-| dc_wait_mc_delay   |no    | no       | int    | Retries for changes that may trigger MCP updates. Defaults to 10                             |                                                      
+| dc_wait_mc_delay   | no       | int    | Retries for changes that may trigger MCP updates. Defaults to 10                                        |
 
 
 ## Example Playbook
