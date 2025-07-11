@@ -73,10 +73,11 @@ asm_cluster_name             | string | yes      | -                            
     asm_action: "attach"
     asm_cluster_kubeconfig_path: "/path/to/spoke/kubeconfig"
     asm_cluster_name: "mycluster"
+```
 
 ## Remove ZTP ArgoCD resources
 
-This action allows to remove the ArgoCD resources used to deploy a ZTP cluster. This could remove all the created resources in cascading. The role locates the ArgoCD applications used to create a cluster using the GitOps repository a source branch as references.
+This action allows to remove the ArgoCD resources used to deploy a ZTP cluster. This could remove all the created resources in cascading. The role locates the ArgoCD applications used to create a cluster using the GitOps repository and source branch as references. It finally waits for the Managed Cluster to be destroyed, so a fresh deployment may be launched.
 
 Two resources are deleted by this role.
 
@@ -93,7 +94,8 @@ Name                         | Type   | Required | Default                      
 ---------------------------- | ------ | -------- | -------------------------------------------------- | ------------------------------------------------------------
 asm_source_repo              | string | yes      | -                                                  | GitOps repository that was used to deploy the ZTP cluster
 asm_target_revision          | string | yes      | -                                                  | Branch used to deploy the ZTP cluster
-asm_delete_ztp_resources     | boolean| yes      | true                                               | Deletes the ArgoCD applications and all the related cluster deployments resources
+asm_delete_ztp_resources     | boolean| no       | true                                               | Deletes the ArgoCD applications and all the related cluster deployments resources
+asm_cluster_name             | string | no       | If asm_delete_ztp_resources is set to true, name of the Managed Cluster the role must wait to be destroyed after removing the GitOps applications.
 
 ### Example
 
@@ -104,6 +106,7 @@ asm_delete_ztp_resources     | boolean| yes      | true                         
   vars:
     asm_action: "delete-ztp-by-ref"
     asm_cluster_kubeconfig_path: "/path/to/spoke/kubeconfig"
+    asm_cluster_name: clusterN
     asm_source_repo: "http://<gitops-repository>/gituser/gitops"
     asm_target_revision: main
 ```

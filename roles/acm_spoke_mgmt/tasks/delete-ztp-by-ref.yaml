@@ -6,6 +6,8 @@
       - asm_source_repo | length > 0
       - asm_target_revision is defined
       - asm_target_revision | length > 0
+      - not asm_delete_ztp_resources | bool or asm_cluster_name is defined
+      - not asm_delete_ztp_resources | bool or asm_cluster_name | length > 0
 
 - name: Get all ArgoCD Applications
   kubernetes.core.k8s_info:
@@ -70,4 +72,29 @@
       loop: "{{ apps_list }}"
       loop_control:
         loop_var: app
+
+- name: Waiting for ManagedCluster to be deleted
+  when: asm_delete_ztp_resources | bool
+  block:
+    - name: Wait for ManagedCluster to be deleted
+      kubernetes.core.k8s_info:
+        api_version: cluster.open-cluster-management.io/v1
+        kind: ManagedCluster
+        name: "{{ asm_cluster_name }}"
+      register: _asm_managed_cluster_status
+      until:
+        - _asm_managed_cluster_status.resources | length == 0
+      retries: 120
+      delay: 10
+
+    - name: Wait for cluster namespace to be deleted
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: "{{ asm_cluster_name }}"
+      register: _asm_namespace_status
+      until:
+        - _asm_namespace_status.resources | length == 0
+      retries: 120
+      delay: 10
 ...
