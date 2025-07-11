@@ -4,18 +4,21 @@ This Ansible role is used to deploy a Kubernetes Custom Resource (CR) to a speci
 
 ## Role Variables
 
-| Variable           | Required | Type   | Description                                                                 |
-|--------------------|----------|--------|-----------------------------------------------------------------------------|
-| dc_api_version     | yes      | str    | The API version of the CR (e.g., `hco.kubevirt.io/v1beta1`).                |
-| dc_kind            | yes      | str    | The kind of the CR (e.g., `HyperConverged`).                                |
-| dc_namespace       | yes      | str    | The namespace in which the CR should be created.                            |
-| dc_name            | yes      | str    | The name of the CR.                                                         |
-| dc_spec            | yes      | dict   | The `spec` field of the CR.                                                 |
-| dc_wait_condition  | no       | dict   | Wait condition for the CR to be considered ready.                           |
-| dc_wait_timeout    | no       | int    | Timeout in seconds to wait for the CR to be ready.                          |
-| dc_wait_retries    | no       | int    | Number of retries to check CR readiness.                                    |
-| dc_wait_delay      | no       | int    | Delay in seconds between retries.                                           |
-| dc_wait_for_cr     | no       | bool   | Whether to wait for the CR to be ready. Defaults to `false`.                |
+| Variable           | Required | Type   | Description                                                                                            
+|--------------------|----------|--------|---------------------------------------------------------------------------------------------------------|                           
+| dc_api_version     | yes      | str    | The API version of the CR (e.g., `hco.kubevirt.io/v1beta1`).                                            |
+| dc_kind            | yes      | str    | The kind of the CR (e.g., `HyperConverged`).                                                            |
+| dc_namespace       | yes      | str    | The namespace in which the CR should be created.                                                        |
+| dc_name            | yes      | str    | The name of the CR.                                                                                     |
+| dc_spec            | yes      | dict   | The `spec` field of the CR.                                                                             |
+| dc_wait_condition  | no       | dict   | Wait condition for the CR to be considered ready. Defaults to `{'type': 'Available', 'status': 'True'}` |
+| dc_wait_timeout    | no       | int    | Timeout in seconds to wait for the CR to be ready.                                                      |
+| dc_wait_retries    | no       | int    | Number of retries to check CR readiness.                                                                |
+| dc_wait_delay      | no       | int    | Delay in seconds between retries.                                                                       |
+| dc_wait_for_cr     | no       | bool   | Whether to wait for the CR to be ready. Defaults to `false`.                                            |
+| dc_wait_mc_retries | no       | int    | Retries for changes that may trigger MCP updates. Defaults to: 600                                      |
+| dc_wait_mc_delay   |no    | no       | int    | Retries for changes that may trigger MCP updates. Defaults to 10                             |                                                      
+
 
 ## Example Playbook
 
