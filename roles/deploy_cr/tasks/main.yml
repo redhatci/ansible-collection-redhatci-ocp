@@ -36,7 +36,7 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.check_resource
   vars:
-    resource_to_check: "MachineConfigPool"
-    check_wait_retries: "{{ dc_wait_mc_retries }}"
-    check_wait_delay: "{{ dc_wait_mc_delay }}"
+    resource_to_check: "MachineConfigPool"          # noqa: redhat-ci[no-role-prefix]
+    check_wait_retries: "{{ dc_wait_mc_retries }}"  # noqa: redhat-ci[no-role-prefix]
+    check_wait_delay: "{{ dc_wait_mc_delay }}"      # noqa: redhat-ci[no-role-prefix]
 ...
