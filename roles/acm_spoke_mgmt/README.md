@@ -89,11 +89,17 @@ Two resources are deleted by this role.
 
 ### Role Variables
 
-Name                         | Type   | Required | Default                                            | Description
----------------------------- | ------ | -------- | -------------------------------------------------- | ------------------------------------------------------------
-asm_source_repo              | string | yes      | -                                                  | GitOps repository that was used to deploy the ZTP cluster
-asm_target_revision          | string | yes      | -                                                  | Branch used to deploy the ZTP cluster
-asm_delete_ztp_resources     | boolean| yes      | true                                               | Deletes the ArgoCD applications and all the related cluster deployments resources
+* Only for environments where could be at least 2 applications in ArgoCD from the same source repository.
+
+Name                         | Type   | Required | Default                     | Description
+---------------------------- | ------ | -------- | --------------------------- | ------------------------------------------------------------
+asm_source_repo              | string | yes      | -                           | GitOps repository that was used to deploy the ZTP cluster
+asm_target_revision          | string | yes      | -                           | Branch used to deploy the ZTP cluster
+asm_delete_ztp_resources     | boolean| yes      | true                        | Deletes the ArgoCD applications and all the related cluster deployments resources
+asm_sites_path               | string | no       |                             | Path to the sites application. By default checks for a path ending with `sites`
+asm_policies_path            | string | no       |                             | Path to the policies application. By default checks for a path ending with `policies`
+
+The values for `asm_source_repo`, `asm_target_revision`, `asm_sites_path`, and `asm_policies_path` must match for the application to be deleted along all the resources it manages if `asm_delete_ztp_resources` is true.
 
 ### Example
 
@@ -106,4 +112,18 @@ asm_delete_ztp_resources     | boolean| yes      | true                         
     asm_cluster_kubeconfig_path: "/path/to/spoke/kubeconfig"
     asm_source_repo: "http://<gitops-repository>/gituser/gitops"
     asm_target_revision: main
+    asm_sites_path: sites
+    asm_policies_path: policies
+```
+
+```yaml
+- name: Remove a ZTP managed cluster from ArgoCD
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_spoke_mgmt
+  vars:
+    asm_action: "delete-ztp-by-ref"
+    asm_source_repo: "http://<gitops-repository>/gituser/gitops"
+    asm_target_revision: testing
+    asm_sites_path: ztp-spoke/gitops/sno1.my.lab
+    asm_policies_path: ztp-spoke/gitops/ztp-policies
 ```
