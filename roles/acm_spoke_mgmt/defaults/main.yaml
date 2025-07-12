@@ -1,3 +1,5 @@
 ---
 asm_delete_ztp_resources: true
+asm_sites_path: ""
+asm_policies_path: ""
 ...
