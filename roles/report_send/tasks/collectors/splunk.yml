@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Splunk collector tasks for redhatci.ocp.report_send
+
+- name: Read combined event JSON file
+  ansible.builtin.slurp:
+    src: "{{ rs_combined_event_path }}"
+  register: _rs_combined_event_content
+
+- name: Parse combined event JSON
+  ansible.builtin.set_fact:
+    rs_event_payload: "{{ _rs_combined_event_content.content | b64decode | from_json | default({}) }}"
+
+- name: Update rs_collector_auth_headers with rs_collector_auth_token for {{ rs_collector }}
+  ansible.builtin.set_fact:
+    rs_collector_auth_headers: "{{ (rs_collector_auth_headers | default({})) |
+      combine({'Authorization': 'Splunk ' ~ rs_collector_auth_token}) }}"
+  when:
+    - rs_collector_auth_token | default('') | length > 0
+
+- name: Update rs_collector_auth_headers with rs_collector_target for {{ rs_collector }}
+  ansible.builtin.set_fact:
+    rs_collector_auth_headers: "{{ (rs_collector_auth_headers | default({})) |
+      combine({'X-Splunk-Request-Channel': rs_collector_target}) }}"
+  when:
+    - rs_collector_target | length > 0
+
+- name: Override source in event payload if specified
+  ansible.builtin.set_fact:
+    rs_event_payload: "{{ rs_event_payload | combine({'source': rs_collector_source}) }}"
+  when:
+    - rs_collector_source | length > 0
+
+- name: Save event to file for debugging
+  ansible.builtin.copy:
+    content: "{{ rs_event_payload | to_nice_json }}"
+    dest: "{{ rs_event_dump_file }}"
+    mode: '0644'
+  when:
+    - rs_event_save | default(false)
+    - rs_event_dump_file | default('') | length > 0
+
+- name: Send data to {{ rs_collector }}
+  ansible.builtin.uri:
+    url: "{{ rs_collector_url }}"
+    method: POST
+    headers: "{{ rs_collector_auth_headers | default(omit) }}"
+    body: "{{ rs_event_payload }}"
+    body_format: json
+    follow_redirects: all
+    validate_certs: "{{ not (rs_allow_self_signed_certs | default(false)) }}"
+    timeout: "{{ global_request_timeout | default(omit) }}"
+  register: _rs_splunk_response
+  ignore_errors: true
+  when:
+    - rs_do_send | default(false)
+
+- name: Verify status code is good
+  ansible.builtin.assert:
+    that:
+      - _rs_splunk_response.status | default(0) in [200, 201, 202]
+    fail_msg: >-
+      The Splunk POST response status code is {{ _rs_splunk_response.status }}.
+      Expected one of: [200, 201, 202]
+    success_msg: "The Splunk response status code is good"
+  when:
+    - rs_do_send | default(false)
