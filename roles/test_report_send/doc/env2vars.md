@@ -31,16 +31,13 @@ However, the metadata comes from the CI system. And there are many of them
 Currently, only one group I am working at uses the following CI system types interchangeably:
 
 * [Distributed CI](https://distributed-ci.io) (a.k.a. DCI)
-
 * [GitLab](https://gitlab.com)
-
 * [GitHub](https://github.com)
-
 * [Jenkins](https://www.jenkins.io)
-
 * [Prow](https://prow.ci.openshift.org)
 
 Even though the intent is to reduce the number of CI system types, the tools tend to:
+
 * change over the time without backward compatibility
 * new tools come up
 * the migrations efforts are prioritized lower than other efforts
@@ -291,9 +288,9 @@ env2vars:
 | `MY_BOOL_TRUTH="false"`  | `{"my_bool": false}` |
 | `MY_BOOL_TRUTH="string"` | `{"my_bool": true}`  |
 
-
 ## Constraints
 
 <sup>*</sup><a name="our-group"></a> Our group constraints:
+
 * We do not have full control of our reporting systems because we are only users.
 * So we cannot rely on our capability to post-ingest processing, which is too much overhead.

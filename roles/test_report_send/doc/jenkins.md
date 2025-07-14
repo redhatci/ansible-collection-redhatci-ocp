@@ -8,14 +8,16 @@ Build's parameters are also seen by the processes as environment variables.
 
 ## Metadata Sections
 
-Following the metadata schema explained in [metadata.md](metadata.md), and described below are the metadata sections we're collecting when running in jenkins.
+Following the metadata schema explained in [metadata.md](metadata.md), and described below are the metadata sections
+we're collecting when running in jenkins.
 
 ### CI
 
 * `NODE_NAME`: The name of the agent (or controller) where the build is running.
 * `WORKSPACE`: The absolute path to the directory where the job's files and outputs are stored during the build process.
 * `JENKINS_HOME`: The directory where Jenkins stores its configuration, build history, and other data.
-* `EXECUTOR_NUMBER`: The unique number that identifies the current executor (among executors of the same machine) performing this build
+* `EXECUTOR_NUMBER`: The unique number that identifies the current executor (among executors of the same machine)
+  performing this build.
 * `BUILD_CAUSE`:  A comma-separated list of causes for the build (e.g., `SCMTRIGGER,MANUALTRIGGER,UPSTREAMTRIGGER`).
   Individual causes are also exposed as separate environment variables:
   * `BUILD_CAUSE_SCMTRIGGER=true`
@@ -33,7 +35,8 @@ The `NODE_LABELS` variable should be set on the Jenkins nodes via the [script](s
 ### Pipeline
 
 By default, Jenkins does not have an object of "pipeline", so in the metadata we will have `pipeline: {}`.
-However, similar functionality can refer to the parent (or caller) job that triggered this and/or other (sibling) jobs, so in future we may decide to populate `pipeline` with that parent/caller job's metadata.
+However, similar functionality can refer to the parent (or caller) job that triggered this and/or other (sibling) jobs,
+so in future we may decide to populate `pipeline` with that parent/caller job's metadata.
 
 ### Job
 

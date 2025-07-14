@@ -10,4 +10,4 @@ This in its turn enables:
 
 Supported reporting systems:
 
-* [splunk.md](splunk.md)
+- [splunk.md](splunk.md)

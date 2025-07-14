@@ -17,7 +17,8 @@
 
 ## Overview
 
-The `test_report_send` role generates events from CI metadata and test reports, then sends these events to reporting systems for observability and analytics. This enables:
+The `test_report_send` role generates events from CI metadata and test reports, then sends these events to reporting
+systems for observability and analytics. This enables:
 
 - **Shared visual and data languages** across teams and systems
 - **Data-based decision-making processes** with comprehensive test and CI insights
@@ -51,7 +52,7 @@ message TestReportPayload {
     string sourcetype = 2;              // Event format identifier  
     TestReportEvent event = 3;          // Event container
     optional string source = 4;         // Information source (team/channel)
-    optional string _time = 5;          // Event emission timestamp
+    optional string time = 5;          // Event emission timestamp
 }
 ```
 
@@ -62,7 +63,7 @@ message TestReportPayload {
     "source": "<str>",           // Information source (team/channel identifier)
     "host": "<hostname>",        // Host/container/service sending the data
     "sourcetype": "_json",       // Event format identifier
-    "_time": "<timestamp>",      // Event emission timestamp
+    "_time": "<timestamp>",      // Event emission timestamp, `time` needs to be converted to `_time`
     "event": {
         "metadata": "<metadata_object>",  // CI/CD and environment metadata
         "test": "<test_data_object>"      // Test execution data
@@ -96,7 +97,8 @@ The Protocol Buffer definition provides several advantages over JSON-only docume
     1. `TestStatistics` message is shared by `TestReport`, `TestCase` and `TestSuite`.
     2. `ExecStatus` message is shared by `Job` and `Pipeline`.
 
-> **Note**: The Protocol Buffer schema uses composition with `TestStatistics` to share common fields between test-related messages, following protobuf best practices for avoiding field duplication.
+> **Note**: The Protocol Buffer schema uses composition with `TestStatistics` to share common fields between
+            test-related messages, following protobuf best practices for avoiding field duplication.
 
 ### Detailed Schema Components
 
@@ -132,6 +134,7 @@ message CIRunner {
 ```
 
 **Test Statistics Composition:**
+
 ```protobuf
 message TestStatistics {
     int32 tests = 1;        // Total number of tests
@@ -143,18 +146,19 @@ message TestStatistics {
 ```
 
 **TestReport Structure:**
+
 ```protobuf
 message TestReport {
     TestStatistics stats = 1;           // Overall test run statistics
-    repeated TestSuite test_suites = 3;  // Individual test suites
+    repeated TestSuite test_suites = 2;  // Individual test suites
 }
 
 message TestSuite {
     string name = 1;                    // Suite name
     TestStatistics stats = 2;           // Suite-level statistics  
-    string timestamp = 8;               // Suite execution timestamp
-    repeated TestSuiteProperty properties = 9;  // Suite properties
-    repeated TestCase test_cases = 10;   // Individual test cases
+    string timestamp = 3;               // Suite execution timestamp
+    repeated TestSuiteProperty properties = 4;  // Suite properties
+    repeated TestCase test_cases = 5;   // Individual test cases
 }
 
 message TestCase {
@@ -287,7 +291,8 @@ Jenkins builds expose metadata through environment variables that are mapped to 
 - `NODE_NAME`: Runner name
 - `NODE_LABELS`: Space-separated list of node labels
 
-> **Note**: Set `NODE_LABELS` on Jenkins nodes using the provided script or equivalent for proper runner metadata collection.
+> **Note**: Set `NODE_LABELS` on Jenkins nodes using the provided script or equivalent for proper runner metadata
+            collection.
 
 #### Jenkins-Specific Considerations
 
@@ -297,7 +302,8 @@ Jenkins builds expose metadata through environment variables that are mapped to 
 
 ### DCI Integration
 
-Distributed CI (DCI) provides a different approach to CI metadata collection since it stores completed process information rather than running live processes.
+Distributed CI (DCI) provides a different approach to CI metadata collection since it stores completed process
+information rather than running live processes.
 
 #### DCI Terminology
 
@@ -363,15 +369,18 @@ dcictl job-list --query "and(eq(team_id,${my_team_id}),eq(topic_id,${my_topic_id
 
 #### DCI Metadata Collection
 
-Unlike other CI systems that use environment variables, DCI metadata is obtained through API calls and converted to the standard event format. The metadata is retrieved as JSON and doesn't require dynamic environment processing.
+Unlike other CI systems that use environment variables, DCI metadata is obtained through API calls and converted to the
+standard event format. The metadata is retrieved as JSON and doesn't require dynamic environment processing.
 
 ### Environment Variable Mapping
 
-The `env2vars` system provides a flexible framework for mapping CI system environment variables to standardized event metadata.
+The `env2vars` system provides a flexible framework for mapping CI system environment variables to standardized event
+metadata.
 
 #### Problem Statement
 
 Different CI systems expose metadata through various mechanisms:
+
 - **Environment variables** (most common)
 - **JSON files** referenced by environment variables
 - **API endpoints** (like DCI)
@@ -388,9 +397,7 @@ The role implements a three-stage normalization process:
 
 #### Implementation Stages
 
-```
-Environment Variables → env2vars → trs_vars_dict → event.metadata
-```
+Environment → `env2vars` → `trs_vars_dict` → `event.metadata`
 
 1. **Development Stage**: Define `env2vars` mappings for each CI system
 2. **Runtime Stage**: Populate `trs_vars_dict` from environment variables
@@ -487,7 +494,8 @@ Dictionaries support nested key-value pairs:
 
 ## Reporting Systems
 
-Reporting systems collect, search, and visualize CI and test data to enable observability and data-driven decision making.
+Reporting systems collect, search, and visualize CI and test data to enable observability and data-driven
+decision-making.
 
 ### Benefits
 
@@ -516,7 +524,8 @@ Splunk events follow the corrected structure with an event wrapper containing me
 }
 ```
 
-The structure uses an `event` wrapper to accommodate Splunk's event format requirements while maintaining compatibility with the Protocol Buffer schema definitions.
+The structure uses an `event` wrapper to accommodate Splunk's event format requirements while maintaining compatibility
+with the Protocol Buffer schema definitions.
 
 #### Query Capabilities
 
@@ -571,6 +580,7 @@ All timing data uses consistent time sources to ensure accurate correlation:
 ```
 
 **Test Suite Structure (per Protocol Buffer schema):**
+
 ```json
 {
     "name": "test_suite_name",
@@ -591,6 +601,7 @@ All timing data uses consistent time sources to ensure accurate correlation:
 ```
 
 **Test Case Structure (per Protocol Buffer schema):**
+
 ```json
 {
     "name": "test_method_name",
@@ -643,6 +654,7 @@ The new composition pattern provides several advantages:
 ### Troubleshooting
 
 **Common Issues:**
+
 - **Missing Environment Variables**: Check CI system configuration and permissions
 - **Incorrect Data Types**: Verify `env2vars` type specifications
 - **Timing Discrepancies**: Ensure NTP/PTP synchronization across systems
@@ -659,12 +671,18 @@ The new composition pattern provides several advantages:
 
 ## Conclusion
 
-The `test_report_send` role provides a comprehensive solution for normalizing CI metadata and test results across multiple CI systems. By implementing standardized event structures and flexible variable mapping, it enables powerful cross-system analytics and observability.
+The [`test_report_send`](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/test_report_send/README.md)
+role provides a comprehensive solution for normalizing CI metadata and test results across multiple CI systems.
+By implementing standardized event structures and flexible variable mapping, it enables powerful cross-system analytics
+and observability.
 
 ### Key Resources
 
-- **Protocol Buffer Schema**: See [`event.proto`](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/test_report_send/protos/event.proto) for the complete, formal definition of the event structure
-- **Environment Variable Mappings**: Individual configuration files in the `vars/env2vars/` directory
+- **Protocol Buffer Schema**:
+  See [`event.proto`](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/test_report_send/protos/event.proto)
+  for the complete, formal definition of the event structure
+- **Environment Variable Mappings**: Individual configuration files in the [`vars/env2vars/`](vars/env2vars) directory
 - **Implementation Examples**: Customize the mappings according to your CI environment and reporting requirements
 
-The Protocol Buffer schema serves as the single source of truth for event structure, ensuring type safety and consistency across all implementations. 
+The Protocol Buffer schema serves as the single source of truth for event structure, ensuring type safety and
+consistency across all implementations.
