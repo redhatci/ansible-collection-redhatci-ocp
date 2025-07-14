@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# CI detection tasks for redhatci.ocp.test_report_send
+
+- name: Recognize rmg_ci_system as DCI
+  ansible.builtin.set_fact:
+    rmg_ci_system: dci
+  when:
+    - rmg_ci_system == "unknown"
+    - lookup("env", "DCI_CS_URL") | length > 0
+
+- name: Recognize rmg_ci_system as Jenkins
+  ansible.builtin.set_fact:
+    rmg_ci_system: jenkins
+  when:
+    - rmg_ci_system == "unknown"
+    - lookup("env", "JENKINS_URL") | length > 0
+
+- name: Validating rmg_ci_system is supported
+  ansible.builtin.assert:
+    that: "{{ condition }}"
+    fail_msg: "Assertion failed: {{ condition }}"
+  loop:
+    - rmg_ci_system != "unknown"
+    - rmg_ci_system in rmg_ci_systems_supported
+  loop_control:
+    loop_var: condition
