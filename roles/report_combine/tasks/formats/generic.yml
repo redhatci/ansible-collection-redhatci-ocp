@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Generic format tasks for redhatci.ocp.report_combine
+
+- name: Create generic event structure
+  ansible.builtin.set_fact:
+    rc_combined_event:
+      test: "{{ rc_test_data }}"
+      metadata: "{{ rc_meta_data }}"
+      event_info:
+        source: "{{ rc_event_source }}"
+        host: "{{ rc_event_host }}"
+        sourcetype: "{{ rc_event_sourcetype }}"
+        generated_at: "{{ ansible_date_time.iso8601 }}"
+
+- name: Add optional timestamp if available in metadata
+  ansible.builtin.set_fact:
+    rc_combined_event: "{{ rc_combined_event | combine({'timestamp': rc_event_time}) }}"
+  vars:
+    rc_event_time: "{{ rc_meta_data.job.created_at | default(ansible_date_time.iso8601) }}"
+  when:
+    - rc_meta_data.job is defined
+    - rc_meta_data.job.created_at is defined
+    - rc_meta_data.job.created_at | length > 0
+
+- name: Print generic event structure
+  ansible.builtin.debug:
+    msg: |
+      Created generic event with {{ rc_combined_event.test.keys() | length }} test result keys
+      and {{ rc_combined_event.metadata.keys() | length }} metadata keys {{ rc_combined_event | to_nice_json }}
+  when:
+    - rc_debug
