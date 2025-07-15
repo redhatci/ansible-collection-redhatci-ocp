@@ -1,5 +1,5 @@
-junit_xml
-junitparser
 jmespath
+junit_xml
+lxml
 python-dateutil
 semver
