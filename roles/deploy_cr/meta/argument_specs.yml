@@ -16,7 +16,7 @@ argument_specs:
         type: str
         required: false
         description: >
-          The namespace in which the CR should be created. Default is "omit".
+          The namespace in which the CR should be created, if any.
       dc_name:
         type: str
         required: true
