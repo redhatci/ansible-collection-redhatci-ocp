@@ -67,8 +67,6 @@ This Ansible role is used to deploy a Kubernetes Custom Resource (CR) to a speci
       api_version: "machineconfiguration.openshift.io/v1"
       kind: "KubeletConfig"
       name: "custom-kubelet-config"
-      # For cluster-scoped resources, you can omit the namespace or set it to "omit"
-      namespace: "omit"
       wait_condition:
         type: Success
         status: "True"
