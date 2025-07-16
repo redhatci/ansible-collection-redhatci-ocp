@@ -1,0 +1,29 @@
+---
+argument_specs:
+  main:
+    options:
+      dc_api_version:
+        type: str
+        required: true
+        description: >
+          The API version of the CR.
+      dc_kind:
+        type: str
+        required: true
+        description: >
+          The kind of the CR.
+      dc_namespace:
+        type: str
+        required: false
+        description: >
+          The namespace in which the CR should be created, if any.
+      dc_name:
+        type: str
+        required: true
+        description: >
+          The name of the CR.
+      dc_spec:
+        type: dict
+        required: true
+        description: >
+          The spec of the CR.
