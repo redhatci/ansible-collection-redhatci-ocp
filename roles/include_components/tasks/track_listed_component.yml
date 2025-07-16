@@ -1,0 +1,24 @@
+---
+
+- name: Create listed component
+  ansible.legacy.dci_component:
+    display_name: "{{ item.name }} {{ item.version }}"
+    version: "{{ item.version }}"
+    team_id: "{{ job_info['job']['team_id'] }}"
+    topic_id: "{{ job_info['job']['topic_id'] }}"
+    type: "{{ item.type | default(item.name | lower) }}"
+    state: present
+  register: _ic_listed_component
+
+- name: Attach listed component to the job
+  ansible.legacy.dci_job_component:
+    component_id: "{{ _ic_listed_component.component.id }}"
+    job_id: "{{ job_id }}"
+  register: _ic_job_component_result
+  until: _ic_job_component_result is not failed
+  retries: 5
+  delay: 20
+  when:
+    - "'component' in _ic_listed_component"
+    - "'id' in _ic_listed_component.component"
+...
