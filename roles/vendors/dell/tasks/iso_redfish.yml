@@ -1,34 +1,27 @@
 ---
-- name: DELL Power Off
+- name: DELL Force Power Off
   community.general.redfish_command:
     category: Systems
-    command: PowerGracefulShutdown
+    command: PowerForceOff
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
+    timeout: 120
+  ignore_errors: true
+  changed_when: false
 
-- name: Shutdown
-  block:
-    - name: Wait for machine to DELL Shutdown
-      community.general.redfish_info:
-        category: Systems
-        baseuri: "{{ bmc_address }}"
-        username: "{{ bmc_user }}"
-        password: "{{ bmc_password }}"
-      register: system_inventory
-      until: (system_inventory |  json_query(filter_str) | length) == 0
-      retries: 10
-      delay: 30
-      vars:
-        filter_str: "redfish_facts.system.entries[] | [?PowerState == 'On']"
-  rescue:
-    - name: DELL Force Power Off
-      community.general.redfish_command:
-        category: Systems
-        command: PowerForceOff
-        baseuri: "{{ bmc_address }}"
-        username: "{{ bmc_user }}"
-        password: "{{ bmc_password }}"
+- name: Wait for machine to DELL Shutdown
+  community.general.redfish_info:
+    category: Systems
+    baseuri: "{{ bmc_address }}"
+    username: "{{ bmc_user }}"
+    password: "{{ bmc_password }}"
+  register: system_inventory
+  until: (system_inventory | json_query(filter_str) | length) == 0
+  retries: 15
+  delay: 30
+  vars:
+    filter_str: "redfish_facts.system.entries[?PowerState=='On']"
 
 - name: Set one time boot to Virtual Media
   block:
