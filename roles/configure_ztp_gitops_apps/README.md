@@ -3,6 +3,15 @@ Configure ZTP GitOps Apps
 
 This Role downloads the clusters and sites from a ZTP site generator image. It replaces several values to configure the tracking repositories.
 
+Multiple Spoke Clusters
+-----------------------
+
+In the case where multiple spoke clusters are deployed by the same ZTP GitOps repository, there are some behaviors to note:
+
+* `czga_clusters_list` should be populated with an array of cluster names. It should be left undefined in the single cluster default case.
+* `czga_clusters_namespace` need not be defined, the role will loop over the cluster names instead.
+* The same pull secret specified in `czga_ocp_pull_secret` will be used for all spoke clusters.
+
 Requirements
 ------------
 
@@ -25,6 +34,7 @@ czga_multicluster_version   | string | yes      | -                             
 czga_site_generator_image   | string | no       | `registry.redhat.io/openshif4/ztp-site-generate-rhel8` | ZTP site generator container image
 czga_multicluster_image     | string | no       | `registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel9` | Multicluster operators subscription container image
 czga_podman_runner_host     | string | no       | podman-runner                                      |  Identity of the inventory host pulling the sites template generator image.
+czga_clusters_list          | list of strings | no | undefined                                       | List of clusters to be deployed.
 czga_clusters_namespace     | string | no       | cluster-sub                                        | Namespace for the site config resources.
 czga_kubeconfig_path        | string | no       | `{{ omit }}`                                       | Path to the ACM hub kubeconfig file.
 czga_ocp_pull_secret        | string | yes      | -                                                  | Pull secret for the Spoke cluster.
