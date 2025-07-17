@@ -1,0 +1,14 @@
+[
+  {
+    "testcase": "[It] Multiple performance profile in hypershift Multiple Nodepool [test_id:75077] should verify support for different performance profiles on hosted cluster via multiple node pools [Hypershift]",
+    "passed": true
+  },
+  {
+    "testcase": "[It] [rfe_id: 38968] PerformanceProfile setup helper and platform awareness PPC Sanity Tests [test_id:40940] Performance Profile regression tests [performance-profile-creator, tier-0]",
+    "passed": false
+  },
+  {
+    "testcase": "[It] [ref_id: 40307][pao]Resizing Network Queues Updating performance profile for netqueues [test_id:72051] Verify reserved cpus count is applied to all but specific supported networking device using a negative match [tier-1]",
+    "passed": false
+  }
+]

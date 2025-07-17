@@ -16,18 +16,11 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 import json
 import pytest
+
 try:
-    from ansible_collections.redhatci.ocp.plugins.filter import junit2obj
+    from ansible_collections.redhatci.ocp.plugins.filter import junit2dict
 except ImportError:
-    from plugins.filter import junit2obj
-
-
-@pytest.fixture
-def input_data(request):  # type: ignore
-    file_path: str = str(request.param)  # type: ignore
-    with open(file_path, "r") as fd:
-        return fd.read()
-
+    from plugins.filter import junit2dict
 
 @pytest.fixture
 def expected_data_object(request):  # type: ignore
@@ -36,29 +29,33 @@ def expected_data_object(request):  # type: ignore
         return json.loads(fd.read())
 
 
+def dump_json_data_to_file(data, file_path):
+    with open(file_path, "w") as fd:
+        json.dump(data, fd, indent=2)
+
 @pytest.mark.parametrize(
-    "input_data,expected_data_object",
+    "input_data_file,expected_data_object",
     [
         (
             "tests/unit/data/test_junit2obj_simple_single_input.xml",
-            "tests/unit/data/test_junit2obj_simple_result.json",
+            "tests/unit/data/test_junit2dict_simple_result.json",
         ),
         (
             "tests/unit/data/test_junit2obj_simple_input.xml",
-            "tests/unit/data/test_junit2obj_simple_result.json",
+            "tests/unit/data/test_junit2dict_simple_result.json",
         ),
         (
             "tests/unit/data/test_junit2obj_failure_input.xml",
-            "tests/unit/data/test_junit2obj_failure_result.json",
+            "tests/unit/data/test_junit2dict_failure_result.json",
         ),
         (
             "tests/unit/data/test_junit2obj_complex_input.xml",
-            "tests/unit/data/test_junit2obj_complex_result.json",
+            "tests/unit/data/test_junit2dict_complex_result.json",
         ),
     ],
-    indirect=True,
+    indirect=['expected_data_object'],
 )
-def test_simple_data_object_true(input_data, expected_data_object):  # type: ignore
-    filter = junit2obj.FilterModule()
-    actual: str = filter.filters()["junit2obj"](input_data)  # type: ignore
+def test_simple_data_object_true(input_data_file, expected_data_object):  # type: ignore
+    filter = junit2dict.FilterModule()
+    actual: str = filter.filters()["junit2dict"](input_data_file)  # type: ignore
     assert expected_data_object == actual

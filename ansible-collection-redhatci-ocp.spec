@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Jul 17 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
+- update filter plugins for junit conversion
+
 * Wed Jul 16 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
 - impl filter plugin redhatci.ocp.reportsmerger
 
