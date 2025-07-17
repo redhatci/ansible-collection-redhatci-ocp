@@ -1,0 +1,48 @@
+{
+    "time": 1.5,
+    "tests": 5,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 2,
+    "test_suites": [
+        {
+            "name": "Test Suite 1",
+            "time": 1.5,
+            "timestamp": "2024-12-12T20:12:23",
+            "tests": 5,
+            "failures": 1,
+            "errors": 0,
+            "skipped": 2,
+            "properties": {
+                "SuiteSucceeded": "false",
+                "Environment": "test"
+            },
+            "test_cases": [
+                {
+                    "name": "Test Case 1",
+                    "classname": "TestClass1",
+                    "time": 0.5,
+                    "result": [
+                        {
+                            "message": "assertion failed",
+                            "status": "failure"
+                        }
+                    ]
+                },
+                {
+                    "name": "Test Case 2",
+                    "classname": "TestClass1",
+                    "time": 0.0,
+                    "result": [
+                        {
+                            "message": "skipped",
+                            "status": "skipped"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "schema_version": "1.0.0"
+}
+

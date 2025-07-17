@@ -1,4 +1,5 @@
 jmespath
 junit_xml
 junitparser
+lxml
 python-dateutil
