@@ -140,6 +140,14 @@ RETURN = r"""
     type: dict
 """
 
+def lxml_compat(xml_report_text: str) -> str|bytes:
+    """
+    Handle lxml 6.0.0+ compatibility: convert to bytes if XML has declaration
+    """
+    if xml_report_text.strip().startswith('<?xml'):
+        # lxml 6.0.0+ requires bytes for XML with declarations
+        return xml_report_text.encode('utf-8')
+    return xml_report_text
 
 class FilterModule(object):
     """
@@ -248,7 +256,7 @@ class FilterModule(object):
                 curr_suite["test_cases"].append(curr_case)
             return curr_suite
 
-        junit_xml: jup.JUnitXml = jup.JUnitXml.fromstring(xml_report_text)
+        junit_xml: jup.JUnitXml = jup.JUnitXml.fromstring(lxml_compat(xml_report_text))
         report = {}
         report.update({
             "time": float(junit_xml.time),
