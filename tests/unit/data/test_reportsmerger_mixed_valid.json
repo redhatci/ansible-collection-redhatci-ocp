@@ -1,0 +1,19 @@
+{
+    "time": 2.5,
+    "tests": 3,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 1,
+    "test_suites": [
+        {
+            "name": "Valid Suite",
+            "time": 2.5,
+            "tests": 3,
+            "failures": 1,
+            "errors": 0,
+            "skipped": 1,
+            "test_cases": []
+        }
+    ],
+    "schema_version": "1.0.0"
+} 

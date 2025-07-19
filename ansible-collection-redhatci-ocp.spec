@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.7.EPOCH
+Version:        2.12.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -29,6 +29,7 @@ Requires: podman
 Requires: python3-jmespath
 Requires: python3-netaddr
 Requires: python3-pyyaml
+Requires: python3-lxml
 Requires: skopeo
 Conflicts: dci-openshift-agent < 1.1.0
 
@@ -54,6 +55,25 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Wed Jul 16 2025 Max Kovgan <makovgan@redhat.com> - 2.12.EPOCH-VERS
+- add role redhatci.ocp.report_send
+
+* Wed Jul 16 2025 Max Kovgan <makovgan@redhat.com> - 2.11.EPOCH-VERS
+- add role redhatci.ocp.report_combine
+
+* Wed Jul 16 2025 Max Kovgan <makovgan@redhat.com> - 2.10.EPOCH-VERS
+- add role redhatci.ocp.report_metadata_gen
+
+* Thu Jul 17 2025 Max Kovgan <makogan@redhat.com> - 2.9.EPOCH-VERS
+- update role redhatci.ocp.junit2json to use new filters
+- obsolete dependency to junitparser
+
+* Thu Jul 17 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
+- update filter plugins for junit conversion
+
+* Wed Jul 16 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
+- impl filter plugin redhatci.ocp.reportsmerger
+
 * Fri Jul 11 2025 Beto Rdz <josearod@redhat.com> - 2.7.EPOCH-VERS
 - Changes in deploy_cr
 
