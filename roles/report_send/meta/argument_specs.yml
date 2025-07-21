@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# argument_specs file for redhatci.ocp.report_send
+
+argument_specs:
+  main:
+    short_description: Send pre-combined event data to collectors
+    description: |
+      This role sends event data file to supported collectors.
+      It handles authentication, data validation, and transmission.
+      Input should be a JSON file with the event already formatted for the target collector.
+      The data is usually prepared by 3 other roles in this collection:
+        1. `redhatci.ocp.junit2json` - converts JUnit XMLs to single test report JSON file
+        2. `redhatci.ocp.report_metadata_gen` - merges metadata from environment and a metadata file if available
+        3. `redhatci.ocp.report_combine` - combines 1 + 2 into a single JSON event file
+
+    options:
+      rs_combined_event_path:
+        description: Path to the pre-combined event JSON file
+        type: str
+        required: true
+      rs_collector_url:
+        description: URL of the collector server
+        type: str
+        required: true
+      rs_collector_auth_token:
+        description: Authentication token for the collector
+        type: str
+        required: false
+        default: ""
+      rs_collector_target:
+        description: Collector target/channel/topic identifier
+        type: str
+        required: false
+        default: ""
+      rs_collector_source:
+        description: Override source in event payload
+        type: str
+        required: false
+        default: ""
+      rs_collector:
+        description: Type of collector to use
+        type: str
+        required: false
+        default: "splunk"
+        choices: ["splunk"]
+      rs_do_send:
+        description: Whether to actually send the data
+        type: bool
+        required: false
+        default: true
