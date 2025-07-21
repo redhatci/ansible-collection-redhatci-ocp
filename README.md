@@ -154,6 +154,7 @@ Name | Type | Description
 [redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
 [redhatci.ocp.junit2obj]() | Filter | Transforms a JUnit XML into a corresponding JSON text
 [redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
+[redhatci.ocp.reportsmerger](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/filter/reportsmerger.py) | Filter | Merges multiple similarly formatted JSON test reports into a single JSON report
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
 [redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
 [redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)

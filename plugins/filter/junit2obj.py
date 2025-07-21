@@ -20,7 +20,7 @@ __version__: str = "1.0.0"
 DOCUMENTATION = r"""
 ---
 name: junit2obj
-version_added: "1.0.0"
+version_added: "2.0.0"
 short_description: transform JUnit XML text data as dictionary retaining suites and cases structure to JSON text.
 description: >
   This filter plugin transforms a string JUnit XML data to JSON
