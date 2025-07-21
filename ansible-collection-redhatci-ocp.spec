@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.8.EPOCH
+Version:        2.9.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,10 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Jul 17 2025 Max Kovgan <makogan@redhat.com> - 2.9.EPOCH-VERS
+- remove junit2parser dependency
+- update junit2json to work with lxml
+
 * Thu Jul 17 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
 - migrate filter junit2dict to lxml
 
