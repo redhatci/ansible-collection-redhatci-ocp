@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 ---
-# defaults file for role redhatci.ocp.junit2json
+# Default variables for junit2json role
 
-# safeguard global variable:
-global_json_reports_list: []
+# Custom dummy variables (will be merged with defaults from vars/dummy_variables.yml)
+# Use this to add project-specific template placeholders
+junit2_custom_dummy_variables: {}
 
-# defaults:
+# Enable verbose logging for dummy variable processing
+junit2_dummy_debug: false
+
+# Original role defaults (preserved for compatibility)
 junit2_input_merged_report: 'merged.junit.xml'
 junit2_output_merged_report: 'merged.junit.json'
 junit2_do_merge: true
