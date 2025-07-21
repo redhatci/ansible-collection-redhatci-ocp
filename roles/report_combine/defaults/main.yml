@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# defaults file for redhatci.ocp.report_combine
+
+# Input files
+rc_report_path: ""
+rc_metadata_path: ""
+
+# Output configuration
+rc_combined_event_path: "{{ playbook_dir }}/combined-event.json"
+
+# Event structure configuration
+rc_event_source: "{{ ansible_hostname }}"
+rc_event_host: "{{ ansible_hostname }}"
+rc_event_sourcetype: "_json"
+
+# Collector-specific formatting
+rc_collector_format: "splunk"
+rc_supported_formats:
+  - splunk
+  - generic
+
+# Debug
+rc_debug: false
+
+# Runtime variables (populated by the role)
+rc_test_data: {}
+rc_meta_data: {}
+rc_combined_event: {}

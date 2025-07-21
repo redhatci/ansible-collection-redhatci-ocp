@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# ensure-file tasks for redhatci.ocp.report_combine
+
+- name: Gathering file stats for {{ rc_file_path }}
+  ansible.builtin.stat:
+    path: "{{ rc_file_path }}"
+    get_attributes: yes
+  register: _rc_file_stat
+
+- name: Validating file requirements for {{ rc_file_path }}
+  ansible.builtin.assert:
+    that:
+      - _rc_file_stat.stat.exists
+      - _rc_file_stat.stat.isreg
+      - (_rc_file_stat.stat.mode | int(base=8) & 0o400) != 0
+      - _rc_file_stat.stat.size > 0
+    fail_msg: "File {{ rc_file_path }} failed validation checks"
+    success_msg: "File {{ rc_file_path }} passed all validation checks"
