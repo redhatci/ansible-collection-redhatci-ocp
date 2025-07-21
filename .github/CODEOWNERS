@@ -40,6 +40,7 @@
 # verification team
 /roles/jenkins_job_launcher          @redhatci/verification
 /roles/junit2json                    @redhatci/verification
+/roles/report_metadata_gen           @redhatci/verification
 
 # platform team
 /roles/sideload_kernel               @redhatci/platform
