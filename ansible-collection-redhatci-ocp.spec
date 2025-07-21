@@ -4,7 +4,7 @@
 
 Name:           %{repo}
 # keep in sync with galaxy.yml
-Version:        2.8.EPOCH
+Version:        2.9.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Aug  5 2025 Maxim Kovgan <makovgan@redhat.com> 2.9.EPOCH-VERS
+- add role redhatci.ocp.report_combine
+
 * Wed Jul 23 2025 Frederic Lepied <flepied@redhat.com> 2.8.EPOCH-VERS
 - New role commit_changes
 
