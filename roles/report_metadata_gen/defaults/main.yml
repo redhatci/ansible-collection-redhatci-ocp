@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# defaults file for redhatci.ocp.report_metadata_gen
+
+# CI system detection
+rmg_ci_system: unknown
+rmg_ci_system_autodetect: true
+
+# Supported CI systems
+rmg_ci_systems_supported:
+  - dci
+  - jenkins
+  - unknown
+
+# Output configuration
+rmg_metadata_output_path: "{{ playbook_dir }}/metadata.json"
+rmg_metadata_output_format: json
+
+# Default timestamp
+rmg_default_ts: "{{ now(fmt='%Y-%m-%dT%H:%M:%S') }}"
+
+# Debug
+rmg_debug: false
+
+# Runtime metadata (populated by the role)
+rmg_ci_runtime: {}
+rmg_meta_data: {}
+
+# Existing metadata to merge (optional)
+rmg_existing_metadata: {}
