@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Jul 17 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
+- migrate filter junit2dict to lxml
+
 * Wed Jul 17 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
 - migrate filter junit2obj to lxml
 
