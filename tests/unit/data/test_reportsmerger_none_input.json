@@ -1,0 +1,34 @@
+{
+    "time": null,
+    "tests": null,
+    "failures": 1,
+    "errors": null,
+    "skipped": 0,
+    "test_suites": [
+        {
+            "name": "Test Suite with None Values",
+            "time": 1.0,
+            "timestamp": "2024-12-12T20:20:00",
+            "tests": 1,
+            "failures": 1,
+            "errors": 0,
+            "skipped": 0,
+            "properties": {},
+            "test_cases": [
+                {
+                    "name": "Test Case with None parent",
+                    "classname": "TestClassNone",
+                    "time": 1.0,
+                    "result": [
+                        {
+                            "message": "test failed",
+                            "status": "failure"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "schema_version": "1.0.0"
+}
+
