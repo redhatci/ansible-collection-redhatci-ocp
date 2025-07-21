@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# meta file for redhatci.ocp.report_send
+
+galaxy_info:
+  author: Red Hat CI
+  description: Role to send pre-combined event data to collectors
+  company: Red Hat
+  license: Apache-2.0
+  min_ansible_version: "2.14"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+    - name: Fedora
+      versions:
+        - "37"
+        - "38"
+        - "39"
+  galaxy_tags:
+    - testing
+    - reporting
+    - splunk
+    - ci
+    - transmission
+
+dependencies: []

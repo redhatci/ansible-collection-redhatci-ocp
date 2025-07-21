@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for redhatci.ocp.report_send
+
+- name: Validate all required variables are defined
+  ansible.builtin.assert:
+    that:
+      - rs_collector in rs_collectors_supported
+      - (rs_collector_auth_token | length > 0) or (rs_collector_auth_headers | length > 0)
+      - rs_collector_url | length > 0
+      - rs_combined_event_path | length > 0
+    fail_msg: "One or more required conditions are not met"
+
+- name: Ensure presence and readability of combined event file
+  ansible.builtin.include_tasks:
+    file: "validate-file.yml"
+  vars:
+    rs_file_path: "{{ rs_combined_event_path }}"
+
+- name: Send data to collector {{ rs_collector }}
+  ansible.builtin.include_tasks:
+    file: "collectors/{{ rs_collector }}.yml"

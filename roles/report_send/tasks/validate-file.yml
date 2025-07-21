@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# validate-file tasks for redhatci.ocp.report_send
+
+- name: Gathering file stats for {{ rs_file_path }}
+  ansible.builtin.stat:
+    path: "{{ rs_file_path }}"
+  register: _rs_file_stat
+
+- name: Validating file requirements for {{ rs_file_path }}
+  ansible.builtin.assert:
+    that:
+      - _rs_file_stat.stat.exists
+      - _rs_file_stat.stat.isreg
+      - _rs_file_stat.stat.readable
+      - _rs_file_stat.stat.size > 0
+    fail_msg: "File {{ rs_file_path }} failed validation checks"
+    success_msg: "File {{ rs_file_path }} passed all validation checks"
