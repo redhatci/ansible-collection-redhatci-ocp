@@ -1,7 +1,8 @@
 ---
 
-- name: "Test redhatci.ocp.junit2json role :: simple input"
+- name: Test redhatci.ocp.junit2json role - simple input
   hosts: localhost
+  connection: local
   vars:
     junit2_output_merged_report: 'merged.junit.json'
   tasks:
@@ -32,7 +33,7 @@
 
         - name: Reset global variable junit2_out_str=true
           ansible.builtin.set_fact:
-            global_json_reports_list: []
+            junit2_json_reports_list: []
 
         - name: Test role redhatci.ocp.junit2json with merge junit2_out_str=true
           ansible.builtin.include_role:
@@ -47,7 +48,7 @@
 
         - name: Load actual result into variable actual junit2_out_str=true
           ansible.builtin.set_fact:
-            actual: "{{ lookup('file', global_json_reports_list[0]) | from_json }}"
+            actual: "{{ lookup('file', junit2_result_merged_file) | from_json }}"
 
         - name: Load expected result into variable expected junit2_out_str=true
           ansible.builtin.set_fact:
@@ -83,7 +84,7 @@
 
         - name: Reset global variable junit2_out_str=false
           ansible.builtin.set_fact:
-            global_json_reports_list: []
+            junit2_json_reports_list: []
 
         - name: Test role redhatci.ocp.junit2json with merge junit2_out_str=false
           ansible.builtin.include_role:
@@ -98,11 +99,11 @@
 
         - name: Load actual result into variable actual junit2_out_str=false
           ansible.builtin.set_fact:
-            actual: "{{ lookup('file', global_json_reports_list[0]) | from_json }}"
+            actual: "{{ lookup('file', junit2_result_merged_file) | from_json }}"
 
         - name: Load expected result into variable expected junit2_out_str=false
           ansible.builtin.set_fact:
-            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/' + junit2_output_merged_report) }}"
+            expected: "{{ lookup('file', playbook_dir + '/../../../tests/unit/data/' + (junit2_result_merged_file | basename)) }}"
 
         - name: Ensure test passes junit2_out_str=false
           ansible.builtin.assert:

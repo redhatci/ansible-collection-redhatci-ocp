@@ -3,29 +3,46 @@
 # tasks file merge.yml for role redhatci.ocp.junit2json
 # merges multiple XMLs into 1 and converts it into JSON
 
-- name: Set minimal length of empty correct xml report
+# Refer to this role [doc/dummy_variables.md](doc/dummy_variables.md) for more details
+# Load and set dummy variables to prevent template evaluation errors in test data
+- name: Load dummy variables configuration
+  ansible.builtin.include_vars:
+    file: dummy_variables.yml
+
+- name: Merge custom dummy variables with defaults
   ansible.builtin.set_fact:
-    junit2_xml_min_length: "{{ '<testsuite></testsuite>' | length }}"
-
-- name: Merge multiple JUnit XML files into single consolidated report
-  ansible.builtin.command:
-    cmd: |
-      junitparser merge "{{ junit2_reports_list | join('" "') }}" -
-  register: _junit2json_merged_xml
-  changed_when:
-    - true
-  failed_when:
-    - _junit2json_merged_xml.rc != 0
-
-- name: Write merge resulting file
-  ansible.builtin.copy:
-    content: "{{ _junit2json_merged_xml.stdout }}"
-    dest: "{{ junit2_output_dir }}/{{ junit2_input_merged_report }}" # so that our findings don't find it
-    mode: '0644'
+    junit2_dummy_variables: "{{ junit2_dummy_variables | combine(junit2_custom_dummy_variables, recursive=True) }}"
   when:
-    - _junit2json_merged_xml.stdout | length > (junit2_xml_min_length | int)
+    - junit2_custom_dummy_variables | length > 0
+    - junit2_dummy_variables | default({}) | length > 0
 
-- name: Override the list of JUnit XML files with merged JUnit XML file path
+- name: Debug dummy variables being set
+  ansible.builtin.debug:
+    var: junit2_dummy_variables
+  when:
+    - junit2_dummy_debug | bool
+    - junit2_dummy_variables | default({}) | length > 0
+
+- name: Set dummy variables for template strings in test data
   ansible.builtin.set_fact:
-    junit2_reports_list:
-      - "{{ junit2_output_dir }}/{{ junit2_input_merged_report }}"
+    "{{ item.key }}": "{{ item.value }}" # noqa redhat-ci[no-role-prefix]
+  loop: "{{ junit2_dummy_variables | default({}) | dict2items }}"
+  when:
+    - vars[item.key] is not defined
+    - junit2_dummy_variables | default({}) | length > 0
+
+- name: Ensure junit2_output_dir is created
+  ansible.builtin.include_tasks:
+    file: ensure-dir.yml
+  loop:
+    - "{{ junit2_output_dir }}"
+  loop_control:
+    loop_var: folder_path
+
+- name: Merge multiple JSON report files into single consolidated report
+  ansible.builtin.set_fact:
+    junit2_result_merged_file: "{{ junit2_json_reports_list | redhatci.ocp.reportsmerger('/'.join([junit2_output_dir, junit2_output_merged_report])) }}"
+
+- name: Debug merged file path
+  ansible.builtin.debug:
+    var: junit2_result_merged_file
