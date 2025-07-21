@@ -7,7 +7,7 @@
     "test_suites": [
         {
             "name": "dci-openshift-app-agent",
-            "time": 0.044,
+            "time": 0.044028282165527344,
             "timestamp": "1970-01-01T00:00:00",
             "tests": 2,
             "failures": 2,
@@ -21,6 +21,7 @@
                     "time": 0.026203,
                     "result": [
                         {
+                            "failure_type": "failure",
                             "message": "The following expectations failed: [{'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_sites_deployment_time', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_managedcluster_ztp_done_label', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_policies_compliant', 'passed': False}}]",
                             "text": "{\n\"changed\": false,\n\"msg\": \"The following expectations failed: [{'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_sites_deployment_time', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_managedcluster_ztp_done_label', 'passed': False}}, {'failed_expectation': {'testcase': '[a-zA-Z_]+', 'passed': True}, 'actual_result': {'testcase': 'test_policies_compliant', 'passed': False}}]\"\n}",
                             "status": "failure"
@@ -33,6 +34,7 @@
                     "time": 0.017825,
                     "result": [
                         {
+                            "failure_type": "failure",
                             "message": "Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/8b7e1fd4-9804-4abc-98c2-a9ecc39ba72c/jobStates",
                             "text": "{\n\"changed\": false,\n\"msg\": \"Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/8b7e1fd4-9804-4abc-98c2-a9ecc39ba72c/jobStates\"\n}",
                             "status": "failure"
