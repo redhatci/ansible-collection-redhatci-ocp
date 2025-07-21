@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# defaults file for redhatci.ocp.report_send
+
+# Required input file (pre-combined event)
+rs_combined_event_path: ""
+
+# Collector configuration
+rs_collector: splunk
+rs_collector_url: ""
+rs_collector_target: ""
+rs_collector_source: ""
+
+# Authentication
+rs_collector_auth_headers: {}
+rs_collector_auth_token: ""
+
+# Control flags
+rs_do_send: true
+rs_allow_self_signed_certs: false
+
+# Debug and output
+rs_debug: false
+rs_event_save: "{{ rs_debug | default(false) }}"
+rs_event_dump_file: "{{ playbook_dir }}/event.json"
+
+# Supported collectors
+rs_collectors_supported:
+  - splunk
