@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# DCI environment variable mappings for metadata generation
+
+env2vars:
+  - key: ci_url
+    var: DCI_CS_URL
+    var_type: string
+  - key: ci_type
+    var: DCI_TYPE
+    var_type: string
+  - key: job_id
+    var: DCI_JOB_ID
+    var_type: string
+  - key: job_name
+    var: DCI_JOB_NAME
+    var_type: string
+  - key: job_url
+    var: DCI_JOB_URL
+    var_type: string
+  - key: team_id
+    var: DCI_TEAM_ID
+    var_type: string
+  - key: team_name
+    var: DCI_TEAM_NAME
+    var_type: string
+  - key: topic_id
+    var: DCI_TOPIC_ID
+    var_type: string
+  - key: topic_name
+    var: DCI_TOPIC_NAME
+    var_type: string

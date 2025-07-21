@@ -1,0 +1,115 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Jenkins metadata detection tasks for redhatci.ocp.test_report_send
+
+- name: Update is_ci in rmg_ci_runtime attribute for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    rmg_ci_runtime: "{{ rmg_ci_runtime | combine({'is_ci': true}) }}"
+
+- name: Update helper variables for ci attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    ci:
+      runner: "{{ rmg_vars_dict.ci_runner_labels | default({}) }}"
+
+- name: Update helper variables for ci attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    ci: "{{ ci | combine({item.key: item.value}) }}"
+  loop:
+    - key: type
+      value: "{{ rmg_ci_system }}"
+    - key: url
+      value: "{{ rmg_vars_dict.ci_url | default('') }}"
+
+- name: Update helper variables for ci_runner attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    ci_runner: "{{ ci_runner | default({}) | combine({item.key: item.value}) }}"
+  loop:
+    - key: name
+      value: "{{ rmg_vars_dict.ci_runner_name | default('') }}"
+    - key: executor
+      value: "{{ rmg_vars_dict.ci_runner_id | default('') }}"
+
+- name: Update helper variables for rmg_ci_runtime attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    ci: "{{ ci | combine({'runner': ci.runner | combine(ci_runner | default({}), recursive=True)}, recursive=True) }}"
+    pipeline: {} # TODO: support populating `pipeline` by parent jobs that triggered this job
+
+## job
+- name: Update helper variables for job attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    job: "{{ job | default({}) | combine({item.key: item.value}) }}"
+  loop:
+    - key: name
+      value: "{{ rmg_vars_dict.job_name | default('') }}"
+    - key: url
+      value: "{{ rmg_vars_dict.job_url | default('') }}"
+    - key: build
+      value: "{{ rmg_vars_dict.job_build | default(rmg_vars_dict.job_build_id | default('')) }}"
+    - key: build_url
+      value: "{{ rmg_vars_dict.job_build_url | default('') }}"
+      # value The cause of the build.
+    - key: cause
+      value: "{{ rmg_vars_dict.job_build_cause | default([]) | list }}"
+
+## source info
+- name: Update helper variables for source attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    source: "{{ source | default({}) | combine({item.key: item.value}) }}"
+  loop:
+    - key: repo_url
+      value: "{{ rmg_vars_dict.source_repo_url | default('') }}"
+    - key: ref
+      value: "{{ rmg_vars_dict.source_ref | default('') }}"
+    - key: ref_type
+      value: "{{ 'tag' if (rmg_vars_dict.source_ref_type | default('')) != '' else 'branch' }}"
+    - key: ref_name
+      value: "{{ rmg_vars_dict.source_ref_name | default('') }}"
+    - key: sha
+      value: "{{ rmg_vars_dict.source_sha | default('') }}"
+    - key: change_url
+      value: "{{ rmg_vars_dict.source_change_url | default('') }}"
+    - key: actor
+      value: "{{ rmg_vars_dict.source_change_author | default('') }}"
+    - key: actor_name
+      value: "{{ rmg_vars_dict.source_change_author_name | default('') }}"
+    - key: server_url
+      value: "{{ rmg_vars_dict.source_ci_server_url | default('') }}"
+    - key: owner
+      value: "{{ rmg_vars_dict.source_owner | default('') }}"
+    - key: repo
+      value: "{{ rmg_vars_dict.source_repo | default('') }}"
+    - key: repo_path
+      value: "{{ rmg_vars_dict.source_repo_path | default('') }}"
+    - key: event_payload
+      value: "{{ {} }}"
+
+
+## source change info: Merge Request (MR) or Pull Request (PR) or ChangeId (cId))
+- name: Update helper variables for source_change attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    source_change: "{{ source_change | default({}) | combine({item.key: item.value}) }}"
+  loop:
+    - key: number
+      value: "{{ rmg_vars_dict.source_change_id | default('') }}"
+    - key: base_ref
+      value: "{{ rmg_vars_dict.source_change_base_ref | default('') }}"
+    - key: head_ref
+      value: "{{ rmg_vars_dict.source_change_head_ref | default('') }}"
+
+## stage 2 merges
+- name: Update helper variables for source attributes for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    source: "{{ source | default({}) | combine({'change': source_change}) }}"
+
+- name: Construct the final rmg_ci_runtime metadata dictionary for {{ rmg_ci_system }}
+  ansible.builtin.set_fact:
+    rmg_ci_runtime: "{{ rmg_ci_runtime | combine({item.key: item.value}) }}"
+  loop:
+    - key: ci
+      value: "{{ ci }}"
+    - key: pipeline
+      value: "{{ pipeline }}"
+    - key: job
+      value: "{{ job }}" # Now _job_info contains current job details and peer_jobs array
+    - key: source
+      value: "{{ source }}"

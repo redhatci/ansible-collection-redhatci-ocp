@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# meta file for redhatci.ocp.report_metadata_gen
+
+galaxy_info:
+  author: Red Hat CI
+  description: Role to generate CI metadata for test reporting
+  company: Red Hat
+  license: Apache-2.0
+  min_ansible_version: "2.14"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+    - name: Fedora
+      versions:
+        - "37"
+        - "38"
+        - "39"
+  galaxy_tags:
+    - testing
+    - reporting
+    - metadata
+    - ci
+    - dci
+    - jenkins
+
+dependencies: []
