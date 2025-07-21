@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Splunk format tasks for redhatci.ocp.report_combine
+
+- name: Create basic event structure
+  ansible.builtin.set_fact:
+    rc_event:
+      test: "{{ rc_test_data }}"
+      metadata: "{{ rc_meta_data }}"
+
+- name: Create Splunk-specific event payload
+  ansible.builtin.set_fact:
+    rc_combined_event:
+      "source": "{{ rc_event_source }}"
+      "event": "{{ rc_event }}"
+      "host": "{{ rc_event_host }}"
+      "sourcetype": "{{ rc_event_sourcetype }}"
+
+- name: Add optional timestamp if available in metadata
+  ansible.builtin.set_fact:
+    rc_combined_event: "{{ rc_combined_event | combine({'time': rc_event_time}) }}"
+  vars:
+    rc_event_time: "{{ rc_meta_data.job.created_at | default(omit) }}"
+  when:
+    - rc_meta_data.job is defined
+    - rc_meta_data.job.created_at is defined
+    - rc_meta_data.job.created_at | length > 0
+
+- name: Print Splunk event structure
+  ansible.builtin.debug:
+    msg: "Created Splunk event with {{ rc_event.test.keys() | length }} test result keys and {{ rc_event.metadata.keys() | length }} metadata keys"
+  when:
+    - rc_debug
