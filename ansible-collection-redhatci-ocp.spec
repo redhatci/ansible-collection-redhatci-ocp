@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.7.EPOCH
+Version:        2.8.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -29,6 +29,7 @@ Requires: podman
 Requires: python3-jmespath
 Requires: python3-netaddr
 Requires: python3-pyyaml
+Requires: python3-lxml
 Requires: skopeo
 Conflicts: dci-openshift-agent < 1.1.0
 
@@ -54,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Wed Jul 16 2025 Max Kovgan <makovgan@redhat.com> - 2.8.EPOCH-VERS
+- impl filter plugin redhatci.ocp.reportsmerger
+
 * Fri Jul 11 2025 Beto Rdz <josearod@redhat.com> - 2.7.EPOCH-VERS
 - Changes in deploy_cr
 
