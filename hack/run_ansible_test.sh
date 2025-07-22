@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Copyright (C) 2025 Red Hat, Inc.
 #
@@ -15,6 +15,20 @@
 # under the License.
 
 set -ex
+
+RUN_IN_PARALLEL="${RUN_IN_PARALLEL:-0}"
+
+# Mac compatibility: use gnu utils if available
+GREP="grep"
+SED="sed"
+if [[ "$(uname -s || true)" == "Darwin" ]]; then
+  if command -v ggrep >/dev/null 2>&1; then
+    GREP="ggrep"
+  fi
+  if command -v gsed >/dev/null 2>&1; then
+    SED="gsed"
+  fi
+fi
 
 # when run outside of a GitHub action
 if [ -z "$GITHUB_STEP_SUMMARY" ]; then
@@ -49,21 +63,37 @@ else
     esac
   done
 fi
-
+declare -a TEST_PIDS
 run_tests() {
-  local version=$1
+  local \
+    version \
+    prefix
+  local -a \
+    cmd
+  version="${1?cannot have version empty}"
+  prefix="${2?cannot have prefix empty}"
   for test_type in "${TEST_TYPES[@]}"; do
     case "$test_type" in
       sanity)
-        ansible-test sanity $EXCLUDE --verbose --docker --python ${version} --color --coverage --failure-ok --lint
+        cmd=(ansible-test "${test_type}" $EXCLUDE --verbose --docker --python ${version} --color \
+        --coverage --failure-ok --lint)
         ;;
       units)
-        ansible-test units --verbose --docker --python ${version} --color --coverage || :
+        cmd=(ansible-test units --verbose --docker --python ${version} --color --coverage)
         ;;
       integration)
-        ansible-test integration --verbose --docker --python ${version} --color --coverage || :
+        cmd=(ansible-test integration --verbose --docker --python ${version} --color --coverage)
         ;;
     esac
+    if [[ "${RUN_IN_PARALLEL}" -gt 0 ]]; then
+      ("${cmd[@]}" \
+        2>&1 > "${prefix}.${test_type}.${version}.output" || true) &
+      TEST_PIDS+=($!)
+      echo "Running ${test_type} tests for ${version} in parallel"
+    else
+      "${cmd[@]}" \
+        2>&1  || true
+    fi
   done
 }
 
@@ -76,7 +106,7 @@ PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color -
 
 # Tests in current branch
 for version in $PY_VERS; do
-  run_tests "${version}"
+  run_tests "${version}" "branch"
 done 2> >(tee -a branch.output >&2)
 
 # Tests in main branch
@@ -84,28 +114,33 @@ git fetch origin main
 git checkout main
 echo "Running tests in main branch, this may take a while as no output is displayed..."
 for version in $PY_VERS; do
-  run_tests "${version}"
+  run_tests "${version}" "main"
 done 2> main.output 1>/dev/null
 
+if [[ "${RUN_IN_PARALLEL}" -gt 0 ]]; then
+  echo "Waiting for tests to complete..."
+  wait "${TEST_PIDS[@]}"
+fi
+
 for key in branch main; do
-  grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |
-  grep -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
-  sed -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "$key.errors"
+  "${GREP}" -E "((ERROR|FATAL):|FAILED )" "${key}.*.output" |
+  "${GREP}" -v "issue(s) which need to be resolved\|See error output above for details.\|Command \"ansible-doc -t module .*\" returned exit status .*\." |
+  "${SED}" -r 's/\x1B\[[0-9]{1,2}[mGK]//g' > "${key}.errors"
 done
 
 # remove line numbers
-sed -i -E -e 's/:[0-9]+:/:/' -e 's/:[0-9]+:/:/' branch.errors main.errors
+"${SED}" -i -E -e 's/:[0-9]+:/:/' -e 's/:[0-9]+:/:/' branch.errors main.errors
 set +ex
 echo "## Improvements are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
 echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
-diff -u0 branch.errors main.errors | grep '^+[^+]' | sed -e 's/ERROR/FIXED/' | tee -a ${GITHUB_STEP_SUMMARY}
+diff -u0 branch.errors main.errors | "${GREP}" '^+[^+]' | "${SED}" -e 's/ERROR/FIXED/' | tee -a ${GITHUB_STEP_SUMMARY}
 echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
 echo "## Regressions are listed below" | tee -a ${GITHUB_STEP_SUMMARY}
 echo "\`\`\`diff" >> ${GITHUB_STEP_SUMMARY}
-diff -u0 branch.errors main.errors | grep '^-[^-]' | tee -a ${GITHUB_STEP_SUMMARY}
+diff -u0 branch.errors main.errors | "${GREP}" '^-[^-]' | tee -a ${GITHUB_STEP_SUMMARY}
 echo "\`\`\`" >> ${GITHUB_STEP_SUMMARY}
 
-if diff -u0 branch.errors main.errors | grep -q '^-[^-]'; then
+if diff -u0 branch.errors main.errors | "${GREP}" -q '^-[^-]'; then
    echo "> Fix the regression errors listed above" | tee -a ${GITHUB_STEP_SUMMARY}
    exit 1
 fi
