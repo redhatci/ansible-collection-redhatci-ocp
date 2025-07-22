@@ -38,8 +38,12 @@
 /roles/vendors                       @redhatci/crucible
 
 # verification team
+/plugins/filter                      @redhatci/verification @redhatci/dci
 /roles/jenkins_job_launcher          @redhatci/verification
 /roles/junit2json                    @redhatci/verification
+/roles/report_send                   @redhatci/verification
+/tests/unit/data                     @redhatci/verification @redhatci/dci
+/tests/unit/filter                   @redhatci/verification @redhatci/dci
 
 # platform team
 /roles/sideload_kernel               @redhatci/platform
