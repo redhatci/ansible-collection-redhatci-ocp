@@ -38,11 +38,12 @@
 /roles/vendors                       @redhatci/crucible
 
 # verification team
+/plugins/filter                      @redhatci/verification @redhatci/dci
 /roles/jenkins_job_launcher          @redhatci/verification
 /roles/junit2json                    @redhatci/verification
-/roles/report_combine                @redhatci/verification
+/roles/report_combine
 /roles/report_metadata_gen           @redhatci/verification
-/plugins/filter                      @redhatci/verification @redhatci/dci
+/roles/report_send                   @redhatci/verification
 /tests/unit/filter                   @redhatci/verification @redhatci/dci
 /tests/unit/data                     @redhatci/verification @redhatci/dci
 
