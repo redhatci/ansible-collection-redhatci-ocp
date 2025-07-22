@@ -1,0 +1,6 @@
+---
+hps_namespace: openshift-hostpath-storage
+hps_node_selector: {}
+hps_path: "/var/hostpath-provisioner"
+hps_storage_class_name: managed-hostpath-storage
+hps_storage_pool: hostpath-pool 

@@ -1,0 +1,180 @@
+---
+- name: "Creating namespace"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ hps_namespace }}"
+        labels:
+          openshift.io/cluster-monitoring: "true"
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+
+- name: "Delete the {{ hps_storage_class_name }} StorageClass if it exists"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: "{{ hps_storage_class_name }}"
+    state: absent
+
+- name: "Check if a default storageclass exists"
+  kubernetes.core.k8s_info:
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+  register: storage_class
+
+- name: "Check if there is a default Storage Class"
+  vars:
+    query_default_sc: 'resources[*].metadata.annotations."storageclass.kubernetes.io/is-default-class"'
+    query_results: "{{ storage_class | json_query(query_default_sc) }}"  # noqa: jinja[invalid]
+  ansible.builtin.set_fact:
+    hps_default_sc: true
+  when:
+    - "not('true' in query_results)"
+    - storage_class is defined
+    - storage_class.resources | length == 0
+
+- name: "Create HostPathProvisioner"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: hostpathprovisioner.kubevirt.io/v1beta1
+      kind: HostPathProvisioner
+      metadata:
+        name: hostpath-provisioner
+        namespace: "{{ hps_namespace }}"
+      spec:
+        imagePullPolicy: IfNotPresent
+        pathConfig:
+          path: "{{ hps_path }}"
+          useNamingPrefix: false
+        storagePool: "{{ hps_storage_pool }}"
+        workload:
+          nodeSelector: "{{ hps_node_selector }}"
+
+- name: "Wait for HostPathProvisioner to be available"
+  kubernetes.core.k8s_info:
+    api_version: hostpathprovisioner.kubevirt.io/v1beta1
+    kind: HostPathProvisioner
+    name: hostpath-provisioner
+    namespace: "{{ hps_namespace }}"
+  register: hpp_status
+  retries: 60
+  delay: 10
+  until:
+    - hpp_status.resources is defined
+    - hpp_status.resources | length > 0
+    - hpp_status.resources[0].status is defined
+    - hpp_status.resources[0].status.conditions is defined
+    - hpp_status.resources[0].status.conditions | selectattr('type', 'equalto', 'Available') | selectattr('status', 'equalto', 'True') | list | length > 0
+
+- name: "Creating storage class: {{ hps_storage_class_name }}"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "{{ hps_default_sc | default('false') | string | lower }}"
+        name: "{{ hps_storage_class_name }}"
+      provisioner: kubevirt.io.hostpath-provisioner
+      parameters:
+        storagePool: "{{ hps_storage_pool }}"
+      volumeBindingMode: WaitForFirstConsumer
+
+- name: "Create a test PVC"
+  kubernetes.core.k8s:
+    definition:
+      kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: test-hostpath-claim
+        namespace: "{{ hps_namespace }}"
+        annotations:
+          volume.beta.kubernetes.io/storage-class: "{{ hps_storage_class_name }}"
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: "{{ hps_storage_class_name }}"
+
+- name: "Create a test pod to trigger PVC binding"
+  kubernetes.core.k8s:
+    definition:
+      kind: Pod
+      apiVersion: v1
+      metadata:
+        name: test-hostpath-pod
+        namespace: "{{ hps_namespace }}"
+      spec:
+        containers:
+        - name: test-pod
+          image: registry.access.redhat.com/ubi8/ubi:latest
+          command:
+            - "/bin/sh"
+          args:
+            - "-c"
+            - "touch /mnt/SUCCESS && exit 0 || exit 1"
+          volumeMounts:
+            - name: hostpath-pvc
+              mountPath: "/mnt"
+        restartPolicy: "Never"
+        volumes:
+          - name: hostpath-pvc
+            persistentVolumeClaim:
+              claimName: test-hostpath-claim
+
+- name: "Wait for the test pod to complete successfully"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ hps_namespace }}"
+    name: test-hostpath-pod
+  register: test_pod
+  until:
+    - test_pod.resources is defined
+    - test_pod.resources | length > 0
+    - test_pod.resources[0].status.phase in ["Succeeded", "Failed"]
+  retries: 30
+  delay: 10
+
+- name: "Verify test pod succeeded"
+  ansible.builtin.assert:
+    that:
+      - test_pod.resources[0].status.phase == "Succeeded"
+    fail_msg: "Test pod failed to create and write to hostpath volume"
+
+- name: "Wait for the test PVC to be Bound"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "{{ hps_namespace }}"
+    name: test-hostpath-claim
+  register: test_pvc
+  until:
+    - test_pvc.resources is defined
+    - test_pvc.resources | length > 0
+    - test_pvc.resources[0].status.phase == "Bound"
+  retries: 6
+  delay: 10
+
+- name: "Delete the test pod"
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Pod
+    name: test-hostpath-pod
+    namespace: "{{ hps_namespace }}"
+
+- name: "Delete the test PVC"
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: test-hostpath-claim
+    namespace: "{{ hps_namespace }}" 
