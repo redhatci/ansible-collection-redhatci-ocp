@@ -12,132 +12,138 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 __version__: str = "1.0.0"
 
 DOCUMENTATION = r"""
-  name: junit2obj
-  version_added: "1.0.0"
-  short_description: transform JUnit XML text data as dictionary retaining suites and cases structure to JSON text
-  description: >
-    This filter plugin transforms a string JUnit XML data to JSON representation of it.
-    It is being implemented because `junit2dict` filter does not retain suites information (timings),
-    hence not allowing collecting of running times as metrics for future analysis.
-  positional: xml_report_text
-  options:
-    xml_report_text:
-      description: The junit report xml text data
-      type: str
-      required: true
+---
+name: junit2obj
+version_added: "1.0.0"
+short_description: transform JUnit XML text data as dictionary retaining suites and cases structure to JSON text.
+description: >
+  This filter plugin transforms a string JUnit XML data to JSON
+  representation of it.
+  It is being implemented because 'redhatci.ocp.junit2dict' filter does not
+  retain suites information (timings), hence not allowing collection of
+  running times as metrics for future analysis.
+positional: xml_report_text
+options:
+  xml_report_text:
+    description: The junit report xml text data
+    type: str
+    required: true
 """
 
 
 EXAMPLES = r"""
-
+---
+- name: Convert JUnit report to a structured object
+  vars:
     xml_report_text: |
-        <?xml version="1.0" encoding="UTF-8"?>
-        <testsuites tests="3" disabled="2" errors="0" failures="0" time="0.000426228">
-            <testsuite name="Performance Addon Operator Reboot" package="/home/jenkins/workspace/CNF/cnf-compute-4.18"
-                tests="3" disabled="0" skipped="2" errors="0" failures="0" time="0.000426228" timestamp="2024-12-12T20:12:23">
-                <properties>
-                    <property name="SuiteSucceeded" value="true"></property>
-                    <property name="SuiteHasProgrammaticFocus" value="false"></property>
-                    <property name="SpecialSuiteFailureReason" value=""></property>
-                    <property name="SuiteLabels" value="[]"></property>
-                    <property name="RandomSeed" value="1734025939"></property>
-                    <property name="RandomizeAllSpecs" value="false"></property>
-                    <property name="LabelFilter" value="(!openshift &amp;&amp; tier-0)"></property>
-                </properties>
-                <testcase name="[It] [disruptive][node][kubelet][devicemanager] Device management tests"
-                    classname="Performance Addon Operator Reboot" status="skipped" time="0">
-                    <skipped message="skipped"></skipped>
-                </testcase>
-                <testcase name="[It] [disruptive][node][kubelet][devicemanager] Device management tests [tier-3]"
-                    classname="Performance Addon Operator Reboot" status="skipped" time="0">
-                    <skipped message="skipped"></skipped>
-                </testcase>
-                <testcase name="[ReportAfterSuite] e2e serial suite"
-                    classname="Performance Addon Operator Reboot" status="passed" time="6.826e-05">
-                    <system-err>&gt; Enter [ReportAfterSuite] TOP-LEVEL - /home/jenkins/workspace/CNF/cnf-compute-4.18;</system-err>
-                </testcase>
-            </testsuite>
-        </testsuites>
-
-
-    test_result: '{{ "path/to/junit.xml" | redhat.ocp.junit2obj }}'
-    # =>
-    # {
-    #     "time": 0.000426228,
-    #     "tests": 3,
-    #     "failures": 0,
-    #     "errors": 0,
-    #     "skipped": 2,
-    #     "test_suites": [
-    #         {
-    #             "name": "Performance Addon Operator Reboot",
-    #             "time": 0.0,
-    #             "timestamp": "2024-12-12T20:12:23",
-    #             "tests": 3,
-    #             "failures": 0,
-    #             "errors": 0,
-    #             "skipped": 2,
-    #             "properties": {
-    #                 "SuiteSucceeded": "true",
-    #                 "SuiteHasProgrammaticFocus": "false",
-    #                 "SpecialSuiteFailureReason": "",
-    #                 "SuiteLabels": "[]",
-    #                 "RandomSeed": "1734025939",
-    #                 "RandomizeAllSpecs": "false",
-    #                 "LabelFilter": "(!openshift && tier-0)"
-    #             },
-    #             "test_cases": [
-    #                 {
-    #                     "name": "[It] [disruptive][node][kubelet][devicemanager] Device management tests",
-    #                     "classname": "Performance Addon Operator Reboot",
-    #                     "time": 0.0,
-    #                     "result": [
-    #                         {
-    #                             "message": "skipped",
-    #                             "status": "skipped"
-    #                         }
-    #                     ]
-    #                 },
-    #                 {
-    #                     "name": "[It] [disruptive][node][kubelet][devicemanager] Device management tests [tier-3]",
-    #                     "classname": "Performance Addon Operator Reboot",
-    #                     "time": 0.0,
-    #                     "result": [
-    #                         {
-    #                             "message": "skipped",
-    #                             "status": "skipped"
-    #                         }
-    #                     ]
-    #                 },
-    #                 {
-    #                     "name": "[ReportAfterSuite] e2e serial suite",
-    #                     "classname": "Performance Addon Operator Reboot",
-    #                     "time": 6.826e-05,
-    #                     "result": [
-    #                         {
-    #                             "message": "passed",
-    #                             "status": "passed"
-    #                         }
-    #                     ],
-    #                     "system_err": "> &gt; Enter [ReportAfterSuite] TOP-LEVEL - /home/jenkins/workspace/CNF/cnf-compute-4.18;"
-    #                 }
-    #             ]
-    #         }
-    #     ]
-    # }
+      <?xml version="1.0" encoding="UTF-8"?>
+      <testsuites tests="3" disabled="2" errors="0" failures="0" time="0.000426228">
+          <testsuite name="Performance Addon Operator Reboot" package="/home/jenkins/workspace/CNF/cnf-compute-4.18"
+              tests="3" disabled="0" skipped="2" errors="0" failures="0" time="0.000426228" timestamp="2024-12-12T20:12:23">
+              <properties>
+                  <property name="SuiteSucceeded" value="true"></property>
+                  <property name="SuiteHasProgrammaticFocus" value="false"></property>
+                  <property name="SpecialSuiteFailureReason" value=""></property>
+                  <property name="SuiteLabels" value="[]"></property>
+                  <property name="RandomSeed" value="1734025939"></property>
+                  <property name="RandomizeAllSpecs" value="false"></property>
+                  <property name="LabelFilter" value="(!openshift &amp;&amp; tier-0)"></property>
+              </properties>
+              <testcase name="[It] [disruptive][node][kubelet][devicemanager] Device management tests"
+                  classname="Performance Addon Operator Reboot" status="skipped" time="0">
+                  <skipped message="skipped"></skipped>
+              </testcase>
+              <testcase name="[It] [disruptive][node][kubelet][devicemanager] Device management tests [tier-3]"
+                  classname="Performance Addon Operator Reboot" status="skipped" time="0">
+                  <skipped message="skipped"></skipped>
+              </testcase>
+              <testcase name="[ReportAfterSuite] e2e serial suite"
+                  classname="Performance Addon Operator Reboot" status="passed" time="6.826e-05">
+                  <system-err>&gt; Enter [ReportAfterSuite] TOP-LEVEL - /home/jenkins/workspace/CNF/cnf-compute-4.18;</system-err>
+              </testcase>
+          </testsuite>
+      </testsuites>
+  ansible.builtin.debug:
+    msg: "{{ xml_report_text | redhatci.ocp.junit2obj }}"
+# =>
+# {
+#     "time": 0.000426228,
+#     "tests": 3,
+#     "failures": 0,
+#     "errors": 0,
+#     "skipped": 2,
+#     "test_suites": [
+#         {
+#             "name": "Performance Addon Operator Reboot",
+#             "time": 0.0,
+#             "timestamp": "2024-12-12T20:12:23",
+#             "tests": 3,
+#             "failures": 0,
+#             "errors": 0,
+#             "skipped": 2,
+#             "properties": {
+#                 "SuiteSucceeded": "true",
+#                 "SuiteHasProgrammaticFocus": "false",
+#                 "SpecialSuiteFailureReason": "",
+#                 "SuiteLabels": "[]",
+#                 "RandomSeed": "1734025939",
+#                 "RandomizeAllSpecs": "false",
+#                 "LabelFilter": "(!openshift && tier-0)"
+#             },
+#             "test_cases": [
+#                 {
+#                     "name": "[It] [disruptive][node][kubelet][devicemanager] Device management tests",
+#                     "classname": "Performance Addon Operator Reboot",
+#                     "time": 0.0,
+#                     "result": [
+#                         {
+#                             "message": "skipped",
+#                             "status": "skipped"
+#                         }
+#                     ]
+#                 },
+#                 {
+#                     "name": "[It] [disruptive][node][kubelet][devicemanager] Device management tests [tier-3]",
+#                     "classname": "Performance Addon Operator Reboot",
+#                     "time": 0.0,
+#                     "result": [
+#                         {
+#                             "message": "skipped",
+#                             "status": "skipped"
+#                         }
+#                     ]
+#                 },
+#                 {
+#                     "name": "[ReportAfterSuite] e2e serial suite",
+#                     "classname": "Performance Addon Operator Reboot",
+#                     "time": 6.826e-05,
+#                     "result": [
+#                         {
+#                             "message": "passed",
+#                             "status": "passed"
+#                         }
+#                     ],
+#                     "system_err": "> &gt; Enter [ReportAfterSuite] TOP-LEVEL - /home/jenkins/workspace/CNF/cnf-compute-4.18;"
+#                 }
+#             ]
+#         }
+#     ]
+# }
 """
 
 
 RETURN = r"""
-  _value:
-    description:
-      - JSON data
-    type: dict
+---
+_value:
+  description:
+    - JSON data
+  type: dict
 """
 
 
@@ -248,7 +254,11 @@ class FilterModule(object):
                 curr_suite["test_cases"].append(curr_case)
             return curr_suite
 
-        junit_xml: jup.JUnitXml = jup.JUnitXml.fromstring(xml_report_text)
+        if isinstance(xml_report_text, str):
+            xml_bytes = xml_report_text.encode("utf-8")
+        else:
+            xml_bytes = xml_report_text
+        junit_xml: jup.JUnitXml = jup.JUnitXml.fromstring(xml_bytes)
         report = {}
         report.update({
             "time": float(junit_xml.time),
