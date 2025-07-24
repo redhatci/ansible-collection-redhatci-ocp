@@ -1,0 +1,69 @@
+---
+
+- name: commit_changes integration test
+  hosts: testhost
+  gather_facts: false
+  vars:
+    cc_directory: "{{ playbook_dir }}/git_test"
+    cc_message: "Test commit message"
+    cc_author_name: "Test User"
+    cc_author_email: "test@example.com"
+  tasks:
+    - name: Cleanup target directory
+      ansible.builtin.file:
+        path: "{{ cc_directory }}"
+        state: absent
+
+    - name: Prepare git repository for testing
+      ansible.builtin.file:
+        path: "{{ cc_directory }}"
+        state: directory
+
+    - name: Initialize git repository
+      ansible.builtin.shell: |
+        git init .
+        git config user.name "First User"
+        git config user.email "test@nowhere.com"
+      args:
+        chdir: "{{ cc_directory }}"
+
+    - name: Create initial file
+      ansible.builtin.copy:
+        dest: "{{ cc_directory }}/file1.txt"
+        content: "initial content"
+
+    - name: Commit initial file
+      ansible.builtin.command: git add file1.txt
+      args:
+        chdir: "{{ cc_directory }}"
+
+    - name: Initial commit
+      ansible.builtin.command: git commit -m "initial commit"
+      args:
+        chdir: "{{ cc_directory }}"
+
+    - name: "Make changes: add and remove files"
+      block:
+        - ansible.builtin.copy:
+            dest: "{{ cc_directory }}/file2.txt"
+            content: "new file"
+        - ansible.builtin.file:
+            path: "{{ cc_directory }}/file1.txt"
+            state: absent
+
+    - name: Run the role under test
+      import_role:
+        name: redhatci.ocp.commit_changes
+
+    - name: Verify commit message is correct
+      ansible.builtin.command: git log -1 --pretty=%B
+      args:
+        chdir: "{{ cc_directory }}"
+      register: git_log
+
+    - name: Assert git log message matches cc_message
+      ansible.builtin.assert:
+        that:
+          - git_log.stdout.strip() == cc_message
+
+...
