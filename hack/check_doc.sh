@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Copyright (C) 2025 Red Hat, Inc.
 #
@@ -14,6 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+SCRIPT_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
+# Source the library file using the absolute path
+source "${SCRIPT_DIR}/base.bash"
+
 # when run outside of a GitHub action
 if [ -z "$GITHUB_STEP_SUMMARY" ]; then
     GITHUB_STEP_SUMMARY=/dev/null
@@ -23,10 +27,10 @@ rc=0
 
 echo "# Missing roles in README" >> ${GITHUB_STEP_SUMMARY}
 while read -r role_readme; do
-  role="${role_readme%/*}"  # strip last file `/README.md``
+  role="${role_readme%/*}"  # strip last file `/README.md`
   role="${role#*/}"         # strip left `roles/`
   role="${role/\//.}"       # replace `/` with `.`
-  if ! grep -q "^\[redhatci\.ocp\.${role}\]" README.md; then
+  if ! "${GREP}" -q "^\[redhatci\.ocp\.${role}\]" README.md; then
     echo "- Missing: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
     rc=1
   fi
@@ -41,7 +45,7 @@ while read -r role; do
     echo "- Extra role/plugin found in README: ${role}" | tee -a ${GITHUB_STEP_SUMMARY}
     rc=1
   fi
-done < <(grep -Po '^\[redhatci\.ocp\.[^\]]+' README.md | tr -d '[')
+done < <("${GREP}" -Po '^\[redhatci\.ocp\.[^\]]+' README.md | tr -d '[')
 
 exit $rc
 
