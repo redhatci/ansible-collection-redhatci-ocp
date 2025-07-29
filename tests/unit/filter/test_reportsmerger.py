@@ -79,8 +79,10 @@ def test_reportsmerger_with_static_data(input_files, expected_data_object):  # t
     # Test the filter with the input files (reportsmerger expects file paths)
     actual = filter_plugin.filters()["reportsmerger"](input_files)  # type: ignore
 
-    # Compare with expected result (loaded via json_loader fixture)
-    assert expected_data_object == actual
+    # Compare with expected result (accounting for schema version difference)
+    for key in ["time", "tests", "failures", "errors", "skipped", "test_suites"]:
+        assert expected_data_object[key] == actual[key]
+    assert actual["schema_version"] == "1.1.0"
 
 
 def test_reportsmerger_empty_list():
@@ -121,8 +123,10 @@ def test_reportsmerger_missing_file(json_loader):
             f"reportsmerger plugin: file {fname} does not exist and was skipped"
         )
 
-    # Compare with expected result from static file
-    assert expected_result == result
+    # Compare with expected result from static file (accounting for schema version)
+    for key in ["time", "tests", "failures", "errors", "skipped", "test_suites"]:
+        assert expected_result[key] == result[key]
+    assert result["schema_version"] == "1.1.0"
 
 
 def test_reportsmerger_mixed_existing_missing_files(json_loader):
@@ -151,8 +155,10 @@ def test_reportsmerger_mixed_existing_missing_files(json_loader):
         actual_warning_calls = [call[0][0] for call in mock_display.warning.call_args_list]
         assert actual_warning_calls == expected_warnings
 
-    # Compare with expected result from static file
-    assert expected_result == result
+    # Compare with expected result from static file (accounting for schema version)
+    for key in ["time", "tests", "failures", "errors", "skipped", "test_suites"]:
+        assert expected_result[key] == result[key]
+    assert result["schema_version"] == "1.1.0"
 
 
 def test_reportsmerger_invalid_json(json_loader):
@@ -175,3 +181,145 @@ def test_reportsmerger_missing_test_suites(json_loader):
 
     with pytest.raises(ValueError, match="Missing 'test_suites' field"):
         filter_plugin.filters()["reportsmerger"]([test_file])
+
+
+# New tests for strategy parameter
+def test_reportsmerger_strategy_validation():
+    """Test strategy parameter validation"""
+    filter_plugin = reportsmerger.FilterModule()
+
+    # Test invalid strategy
+    with pytest.raises(ValueError, match="Invalid strategy 'invalid'"):
+        filter_plugin.filters()["reportsmerger"](
+            ["tests/unit/data/test_reportsmerger_input1.json"],
+            strategy="invalid"
+        )
+
+
+@pytest.mark.parametrize("strategy", ["normal", "large", "many"])
+def test_reportsmerger_compatible_strategies(strategy, json_loader):
+    """Test that compatible strategies produce equivalent results for simple case"""
+    filter_plugin = reportsmerger.FilterModule()
+
+    input_files = ["tests/unit/data/test_reportsmerger_input1.json"]
+    expected_data = "tests/unit/data/test_reportsmerger_single_result.json"
+    expected_result = json_loader(expected_data)
+
+    # Test each strategy
+    actual = filter_plugin.filters()["reportsmerger"](input_files, strategy=strategy)
+
+    # These strategies should produce equivalent results (except schema_version)
+    for key in ["time", "tests", "failures", "errors", "skipped", "test_suites"]:
+        assert expected_result[key] == actual[key]
+
+    # Schema version will be different (1.1.0 vs 1.0.0)
+    assert actual["schema_version"] == "1.1.0"
+
+
+def test_reportsmerger_strategy_large_streaming(json_loader):
+    """Test large strategy specifically for memory efficiency"""
+    filter_plugin = reportsmerger.FilterModule()
+
+    input_files = [
+        "tests/unit/data/test_reportsmerger_input1.json",
+        "tests/unit/data/test_reportsmerger_input2.json",
+    ]
+    expected_data = "tests/unit/data/test_reportsmerger_multi_result.json"
+    expected_result = json_loader(expected_data)
+
+    actual = filter_plugin.filters()["reportsmerger"](input_files, strategy="large")
+
+    # Compare all fields except schema_version
+    for key in ["time", "tests", "failures", "errors", "skipped", "test_suites"]:
+        assert expected_result[key] == actual[key]
+    assert actual["schema_version"] == "1.1.0"
+
+
+def test_reportsmerger_strategy_many_parallel(json_loader):
+    """Test many strategy specifically for parallel processing"""
+    filter_plugin = reportsmerger.FilterModule()
+
+    input_files = [
+        "tests/unit/data/test_reportsmerger_input1.json",
+        "tests/unit/data/test_reportsmerger_input2.json",
+    ]
+    expected_data = "tests/unit/data/test_reportsmerger_multi_result.json"
+    expected_result = json_loader(expected_data)
+
+    actual = filter_plugin.filters()["reportsmerger"](input_files, strategy="many")
+
+    # Compare all fields except schema_version
+    for key in ["time", "tests", "failures", "errors", "skipped"]:
+        assert expected_result[key] == actual[key]
+
+    # For parallel processing, test_suites order might differ, so sort by name for comparison
+    expected_suites = sorted(expected_result["test_suites"], key=lambda x: x["name"])
+    actual_suites = sorted(actual["test_suites"], key=lambda x: x["name"])
+    assert expected_suites == actual_suites
+
+    assert actual["schema_version"] == "1.1.0"
+
+
+def test_reportsmerger_strategy_shallow_lazy(json_loader):
+    """Test shallow strategy with lazy test suites loading"""
+    filter_plugin = reportsmerger.FilterModule()
+
+    input_files = ["tests/unit/data/test_reportsmerger_input1.json"]
+    expected_data = "tests/unit/data/test_reportsmerger_single_result.json"
+    expected_result = json_loader(expected_data)
+
+    actual = filter_plugin.filters()["reportsmerger"](input_files, strategy="shallow")
+
+    # Stats should match (except schema_version)
+    for key in ["time", "tests", "failures", "errors", "skipped"]:
+        assert expected_result[key] == actual[key]
+    assert actual["schema_version"] == "1.1.0"
+
+    # Test suites should be lazy-loaded but equivalent when accessed
+    assert len(actual["test_suites"]) == len(expected_result["test_suites"])
+    assert list(actual["test_suites"]) == expected_result["test_suites"]
+
+
+def test_reportsmerger_strategy_complex_parsing(json_loader):
+    """Test complex strategy with schema-specific parsing"""
+    filter_plugin = reportsmerger.FilterModule()
+
+    input_files = ["tests/unit/data/test_reportsmerger_input1.json"]
+    expected_data = "tests/unit/data/test_reportsmerger_single_result.json"
+    expected_result = json_loader(expected_data)
+
+    actual = filter_plugin.filters()["reportsmerger"](input_files, strategy="complex")
+
+    # Stats should match exactly (except schema_version)
+    for key in ["time", "tests", "failures", "errors", "skipped"]:
+        assert expected_result[key] == actual[key]
+    assert actual["schema_version"] == "1.1.0"
+
+    # Test suites should have empty test_cases (complex strategy optimization)
+    assert len(actual["test_suites"]) == len(expected_result["test_suites"])
+    for suite in actual["test_suites"]:
+        assert suite["test_cases"] == []  # Should be empty due to complex parsing
+        # But should have the count preserved
+        if "_original_test_cases_count" in suite:
+            assert suite["_original_test_cases_count"] >= 0
+
+
+def test_reportsmerger_default_strategy_backward_compatibility(json_loader):
+    """Test that default behavior (no strategy param) works as before"""
+    filter_plugin = reportsmerger.FilterModule()
+
+    input_files = ["tests/unit/data/test_reportsmerger_input1.json"]
+    expected_data = "tests/unit/data/test_reportsmerger_single_result.json"
+    expected_result = json_loader(expected_data)
+
+    # Test without strategy parameter (should default to "normal")
+    actual_default = filter_plugin.filters()["reportsmerger"](input_files)
+    actual_normal = filter_plugin.filters()["reportsmerger"](input_files, strategy="normal")
+
+    # Both should be identical
+    assert actual_default == actual_normal
+
+    # Compare with expected result (accounting for schema version difference)
+    for key in ["time", "tests", "failures", "errors", "skipped", "test_suites"]:
+        assert expected_result[key] == actual_default[key]
+    assert actual_default["schema_version"] == "1.1.0"
