@@ -44,6 +44,35 @@ When updating a PR follow these approaches:
 
 PRs can be created as a [Draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests), use this when the change is not yet ready for review or set a PR to Draft if it needs more time before continuing with the review process.
 
+### AI-Assisted Development Guidelines
+
+When using AI tools for contributions, prioritize human oversight, code quality, and security compliance.
+
+#### Human Validation Required
+
+* **Treat AI output as suggestions, not final code** - you must verify and validate all generated content
+* **Never blindly trust AI agents** - apply your judgment and expertise to all suggestions
+* **Understand all code before submitting** - consult experts if AI generates code outside your expertise
+* **Thoroughly review and test** - AI can introduce vulnerabilities or generate incorrect code
+
+#### Review Considerations
+
+* **Keep changes small and focused** - large AI-generated changes are harder and riskier to review
+* **Mark substantial AI-assisted content** for transparency and focused review
+
+#### Documentation
+
+* **Identify AI usage** in commit messages or PR descriptions using trailers:
+  ```
+  Assisted-by: [AI agent name]
+  ```
+
+#### Security and Compliance
+
+* **Use only approved AI assistants** validated through proper AI assessments
+* **Never input sensitive data** - API keys, passwords, credentials, or proprietary code
+* **Sanitize code snippets** and use synthetic data during development
+
 ### Ready for review
 
 Your PR is considered ready for review if all the CI checks are green. If you don't want a review yet, convert your PR to a Draft.
