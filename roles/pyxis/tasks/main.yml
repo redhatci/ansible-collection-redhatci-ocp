@@ -4,13 +4,13 @@
     preflight_prefix: "preflight_operator_{{ operator.name }}"
     preflight_results_file: "{{ job_logs.path }}/{{ preflight_prefix }}_results.json"
     preflight_log_file: "{{ job_logs.path }}/{{ preflight_prefix }}_preflight.log"
-  set_fact:
+  ansible.builtin.set_fact:
     preflight_output: "{{ lookup('file', preflight_results_file) | from_json }}"
     preflight_artifact: "{{ lookup('file', preflight_log_file) | to_json }}"
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
 
 - name: Set preflight release
-  set_fact: 
+  ansible.builtin.set_fact:
     preflight_release: "{{ preflight_output.test_library.version.split('+')[0] }}"
 
 - name: Get latest commit hash for the Preflight release
@@ -21,20 +21,20 @@
   register: preflight_latest
 
 - name: Get info of artifact file
-  stat:
+  ansible.builtin.stat:
     path: "{{ job_logs.path }}/preflight_operator_{{ operator.name }}_preflight.log"
   register: artifact_info
 
 - name: Print Test JSON to be submitted
-  debug:
+  ansible.builtin.debug:
     msg: "{{ lookup('template', 'templates/test_results.json.j2') }}"
 
 - name: Print Artifact Info to be submitted
-  debug:
+  ansible.builtin.debug:
     msg: "{{ lookup('template', 'templates/artifact_info.json.j2') }}"
 
 - name: Publishing artifact to Pyxis
-  uri:
+  ansible.builtin.uri:
     url: "{{ catalog_url }}/projects/certification/id/{{ cert_project_id }}/artifacts"
     method: POST
     headers:
@@ -45,7 +45,7 @@
     timeout: 120
 
 - name: Submit Test result to Pyxis
-  uri:
+  ansible.builtin.uri:
     url: "{{ catalog_url }}/projects/certification/id/{{ cert_project_id }}/test-results"
     method: POST
     headers:
