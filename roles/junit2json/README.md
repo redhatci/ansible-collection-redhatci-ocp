@@ -4,113 +4,74 @@
 
 ## junit2json
 
-
-
 Description: Converts XML junit reports passed or in passed directory into single or fragmented JSON report file(s)
-
-
-
-
-
-
 
 <details>
 <summary><b>🧩 Argument Specifications in meta/argument_specs</b></summary>
 
-#### Key: main 
-**Description**: The resulting JSON file(s) are of the same structure for all the teams' and CI systems and used later to be sent to the data collection system.
+### Key: main
+
+**Description**: The resulting JSON file(s) are of the same structure for all the teams' and CI systems and used later
+                 to be sent to the data collection system.
 This is the main entrypoint for the role `redhatci.ocp.junit2json`.
 Converts XMLs into JSON, if variable `junit2_do_merge` is `true`, multiple XMLs are merged into one XML file.
 New filename(s) is(are) based on the old ones and stored in global variable `global_json_reports_list`.
 
+- **junit2_input_reports_list**
+  - **Required**: True
+  - **Type**: list
+  - **Default**: none
+  - **Description**: List of JUnit XML report files to convert to JSON
 
-
-  - **junit2_input_reports_list**
-    - **Required**: True
-    - **Type**: list
-    - **Default**: none
-    - **Description**: List of JUnit XML report files to convert to JSON
-
-  
-  
-  
-
-  - **junit2_do_merge**
-    - **Required**: False
-    - **Type**: bool
-    - **Default**: True
-    - **Description**: Should we merge data of converted reports into 1 file or not.
+- **junit2_do_merge**
+  - **Required**: False
+  - **Type**: bool
+  - **Default**: True
+  - **Description**: Should we merge data of converted reports into 1 file or not.
 When `false`, each report `XML` file is converted to a corresponding json file appended `.json` extension
 Otherwise, resulting merged report is named as the directory, with `.report.json` extension.
 in both cases, the result is stored under `junit2_output_dir`.
 
-  
-  
-  
+- **junit2_output_dir**
+  - **Required**: True
+  - **Type**: str
+  - **Default**: none
+  - **Description**: Output directory for resulting report JSON file path(s)
 
-  - **junit2_output_dir**
-    - **Required**: True
-    - **Type**: str
-    - **Default**: none
-    - **Description**: Output directory for resulting report JSON file path(s)
-
-  
-  
-  
-
-  - **junit2_input_merged_report**
-    - **Required**: False
-    - **Type**: str
-    - **Default**: merged.junit.xml
-    - **Description**: Relative file name for the Merged XML report (relevant only when `junit2_do_merge` is `true`),
+- **junit2_input_merged_report**
+  - **Required**: False
+  - **Type**: str
+  - **Default**: merged.junit.xml
+  - **Description**: Relative file name for the Merged XML report (relevant only when `junit2_do_merge` is `true`),
 it is generated under `junit2_output_dir`
 
-  
-  
-  
-
-  - **junit2_output_merged_report**
-    - **Required**: False
-    - **Type**: str
-    - **Default**: merged.junit.json
-    - **Description**: Relative file name for the JSON report (relevant only when `junit2_do_merge` is `true`),
+- **junit2_output_merged_report**
+  - **Required**: False
+  - **Type**: str
+  - **Default**: merged.junit.json
+  - **Description**: Relative file name for the JSON report (relevant only when `junit2_do_merge` is `true`),
 it is generated under `junit2_output_dir`
 
-  
-  
-  
-
-  - **global_json_reports_list**
-    - **Required**: False
-    - **Type**: list
-    - **Default**: []
-    - **Description**: This is the output variable updated by the role for the converted JSON reports file names.
+- **global_json_reports_list**
+  - **Required**: False
+  - **Type**: list
+  - **Default**: []
+  - **Description**: This is the output variable updated by the role for the converted JSON reports file names.
 If it is defined outside of the role, the role updates it.
 
-  
-  
-  
-
-  - **junit2_out_str**
-    - **Required**: False
-    - **Type**: bool
-    - **Default**: True
-    - **Description**: If true, the call to filter should pass object=true, otherwise object=false is passed.
-
-  
-  
-  
-
-
+- **junit2_out_str**
+  - **Required**: False
+  - **Type**: bool
+  - **Default**: True
+  - **Description**: If true, the call to filter should pass object=true, otherwise object=false is passed.
 
 </details>
 
-
 ### Defaults
 
-**These are static variables with lower priority**
+#### These are static variables with lower priority
 
-#### File: defaults/main.yml
+##### File: `defaults/main.yml`
 
 | Var          | Type         | Value       |Required    | Title       |
 |--------------|--------------|-------------|-------------|-------------|
@@ -120,14 +81,9 @@ If it is defined outside of the role, the role updates it.
 | [junit2_do_merge](defaults/main.yml#L11)   | bool   | `True` |    n/a  |  n/a |
 | [junit2_out_str](defaults/main.yml#L12)   | bool   | `True` |    n/a  |  n/a |
 
-
-
-
-
 ### Tasks
 
-
-#### File: tasks/convert.yml
+#### File: `tasks/convert.yml`
 
 | Name | Module | Has Conditions |
 | ---- | ------ | --------- |
@@ -136,8 +92,9 @@ If it is defined outside of the role, the role updates it.
 | Setup JSON report file name | ansible.builtin.set_fact | False |
 | Set junit2_output_report_path | ansible.builtin.set_fact | False |
 | Update output variable global_json_reports_list | ansible.builtin.set_fact | False |
-| Create folder junit2_output_dir='{{ junit2_output_dir }}' | ansible.builtin.file | False |
-| Write the json data to file | ansible.builtin.copy | False |
+| Ensure junit2_output_dir is created | ansible.builtin.include_tasks | False |
+| Write the json data to file | ansible.builtin.copy | True |
+| Write the json string to file | ansible.builtin.copy | True |
 
 #### File: tasks/validate-dependency.yml
 
@@ -152,8 +109,16 @@ If it is defined outside of the role, the role updates it.
 | ---- | ------ | --------- |
 | Set minimal length of empty correct xml report | ansible.builtin.set_fact | False |
 | Merge multiple JUnit XML files into single consolidated report | ansible.builtin.command | False |
+| Ensure junit2_output_dir is created | ansible.builtin.include_tasks | False |
 | Write merge resulting file | ansible.builtin.copy | True |
 | Override the list of JUnit XML files with merged JUnit XML file path | ansible.builtin.set_fact | False |
+
+#### File: tasks/ensure-dir.yml
+
+| Name | Module | Has Conditions |
+| ---- | ------ | --------- |
+| Collect folder_path stat | ansible.builtin.stat | False |
+| Ensure missing folder_path is created | ansible.builtin.file | True |
 
 #### File: tasks/expand.yml
 
@@ -176,10 +141,7 @@ If it is defined outside of the role, the role updates it.
 | Merge JUnit XML reports into one file junit2_do_merge=true | ansible.builtin.include_tasks | True |
 | Convert XML to JSON | ansible.builtin.include_tasks | True |
 
-
 ## Task Flow Graphs
-
-
 
 ### Graph for convert.yml
 
@@ -200,11 +162,11 @@ classDef rescue stroke:#665352,stroke-width:2px;
   Update_junit2_result_data_junit2_do_merge_true1-->|Task| Setup_JSON_report_file_name2[setup json report file name]:::task
   Setup_JSON_report_file_name2-->|Task| Set_junit2_output_report_path3[set junit2 output report path]:::task
   Set_junit2_output_report_path3-->|Task| Update_output_variable_global_json_reports_list4[update output variable global json reports list]:::task
-  Update_output_variable_global_json_reports_list4-->|Task| Create_folder_junit2_output_dir__junit2_output_dir_5[create folder junit2 output dir  junit2 output dir<br>]:::task
-  Create_folder_junit2_output_dir__junit2_output_dir_5-->|Task| Write_the_json_data_to_file6[write the json data to file]:::task
-  Write_the_json_data_to_file6-->End
+  Update_output_variable_global_json_reports_list4-->|Include task| ensure_dir_yml5[ensure junit2 output dir is created<br>include_task: ensure dir yml]:::includeTasks
+  ensure_dir_yml5-->|Task| Write_the_json_data_to_file6[write the json data to file<br>When: **not junit2 out str   bool**]:::task
+  Write_the_json_data_to_file6-->|Task| Write_the_json_string_to_file7[write the json string to file<br>When: **junit2 out str   bool**]:::task
+  Write_the_json_string_to_file7-->End
 ```
-
 
 ### Graph for validate-dependency.yml
 
@@ -225,7 +187,6 @@ classDef rescue stroke:#665352,stroke-width:2px;
   Respond_to_the_case_if_the_dependency_is_not_installed1-->End
 ```
 
-
 ### Graph for merge.yml
 
 ```mermaid
@@ -242,11 +203,30 @@ classDef rescue stroke:#665352,stroke-width:2px;
 
   Start-->|Task| Set_minimal_length_of_empty_correct_xml_report0[set minimal length of empty correct xml report]:::task
   Set_minimal_length_of_empty_correct_xml_report0-->|Task| Merge_multiple_JUnit_XML_files_into_single_consolidated_report1[merge multiple junit xml files into single<br>consolidated report]:::task
-  Merge_multiple_JUnit_XML_files_into_single_consolidated_report1-->|Task| Write_merge_resulting_file2[write merge resulting file<br>When: **junit2json merged xml stdout   length    junit2<br>xml min length   int**]:::task
-  Write_merge_resulting_file2-->|Task| Override_the_list_of_JUnit_XML_files_with_merged_JUnit_XML_file_path3[override the list of junit xml files with merged<br>junit xml file path]:::task
-  Override_the_list_of_JUnit_XML_files_with_merged_JUnit_XML_file_path3-->End
+  Merge_multiple_JUnit_XML_files_into_single_consolidated_report1-->|Include task| ensure_dir_yml2[ensure junit2 output dir is created<br>include_task: ensure dir yml]:::includeTasks
+  ensure_dir_yml2-->|Task| Write_merge_resulting_file3[write merge resulting file<br>When: **junit2json merged xml stdout   length    junit2<br>xml min length   int**]:::task
+  Write_merge_resulting_file3-->|Task| Override_the_list_of_JUnit_XML_files_with_merged_JUnit_XML_file_path4[override the list of junit xml files with merged<br>junit xml file path]:::task
+  Override_the_list_of_JUnit_XML_files_with_merged_JUnit_XML_file_path4-->End
 ```
 
+### Graph for ensure-dir.yml
+
+```mermaid
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+
+  Start-->|Task| Collect_folder_path_stat0[collect folder path stat]:::task
+  Collect_folder_path_stat0-->|Task| Ensure_missing_folder_path_is_created1[ensure missing folder path is created<br>When: **not  junit2 folder path stat stat isdir   default<br>false**]:::task
+  Ensure_missing_folder_path_is_created1-->End
+```
 
 ### Graph for expand.yml
 
@@ -268,7 +248,6 @@ classDef rescue stroke:#665352,stroke-width:2px;
   Verify_file_name_exists_and_is_a_regular_file2-->|Task| Update_junit2_reports_list_with_a_JUnit_XML_report_item3[update junit2 reports list with a junit xml report<br>item<br>When: **junit2json path item stat stat exists   default<br>false**]:::task
   Update_junit2_reports_list_with_a_JUnit_XML_report_item3-->End
 ```
-
 
 ### Graph for main.yml
 
@@ -293,7 +272,6 @@ classDef rescue stroke:#665352,stroke-width:2px;
   merge_yml5-->|Include task| convert_yml6[convert xml to json<br>When: **junit2 reports list   length   0**<br>include_task: convert yml]:::includeTasks
   convert_yml6-->End
 ```
-
 
 ## Playbook
 
@@ -410,7 +388,9 @@ classDef rescue stroke:#665352,stroke-width:2px;
               - actual == expected
 
 ```
+
 ## Playbook graph
+
 ```mermaid
 flowchart TD
   localhost-->|Block Start| Run_tests_for_both_values_of_junit2_out_str0_block_start_0[[run tests for both values of junit2 out str]]:::block
@@ -436,17 +416,18 @@ flowchart TD
 ```
 
 ## Author Information
+
 Max Kovgan
 
-#### License
+### License
 
 Apache-2.0
 
-#### Minimum Ansible Version
+### Minimum Ansible Version
 
 2.9
 
-#### Platforms
+### Platforms
 
 No platforms specified.
 <!-- DOCSIBLE END -->

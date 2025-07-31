@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# Dummy variables to prevent Jinja2 template evaluation errors
+# when processing test data that contains literal {{ }} strings
+
+# This file defines placeholder values for any template-like strings
+# that appear in test data but are not meant to be evaluated as templates
+
+junit2_dummy_variables:
+  # Common test failure message placeholders
+  expectation_failed: "PLACEHOLDER_EXPECTATION_FAILED"
+
+  # Job and CI system placeholders
+  job_info:
+    job:
+      id: "PLACEHOLDER_JOB_ID"
+      name: "PLACEHOLDER_JOB_NAME"
+      url: "PLACEHOLDER_JOB_URL"
+    build:
+      number: "PLACEHOLDER_BUILD_NUMBER"
+      url: "PLACEHOLDER_BUILD_URL"
+
+  # CI/CD system placeholders
+  ci_job_id: "PLACEHOLDER_CI_JOB_ID"
+  ci_build_id: "PLACEHOLDER_CI_BUILD_ID"
+  ci_pipeline_id: "PLACEHOLDER_CI_PIPELINE_ID"
+
+  # Test environment placeholders
+  test_environment: "PLACEHOLDER_TEST_ENV"
+  cluster_name: "PLACEHOLDER_CLUSTER_NAME"
+  namespace: "PLACEHOLDER_NAMESPACE"
+
+  # Common error message placeholders
+  error_message: "PLACEHOLDER_ERROR_MESSAGE"
+  failure_reason: "PLACEHOLDER_FAILURE_REASON"
+  exception_details: "PLACEHOLDER_EXCEPTION_DETAILS"
+
+  # Timestamp placeholders
+  timestamp: "PLACEHOLDER_TIMESTAMP"
+  test_start_time: "PLACEHOLDER_TEST_START_TIME"
+  test_end_time: "PLACEHOLDER_TEST_END_TIME"
+# You can extend this list by adding any new template-like strings
+# that appear in your test data files

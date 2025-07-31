@@ -1,0 +1,53 @@
+---
+# example variable types initiated from env variable
+
+env2vars:
+  ########################################## INPUT: ############################################
+  # Given an env variable was defined:
+  # export NODE_LABELS="bla:asd boo:ba bee:bea"
+  - key: ci_runner_labels
+    var: NODE_LABELS
+    var_type: dict
+    # the below are optional for 'dict', if this is the case, don't override
+    # splitter:
+    #   - " "
+    #   - ":"
+  ########################################## RESULT: ############################################
+  # inside `vars_dict` new key `ci_runner_labels` will appear with this dict:
+  # {'bla': 'asd', 'boo': 'ba', 'bee': 'bea'}
+  ###############################################################################################
+  ########################################## INPUT: ############################################
+  # Given an env variable was defined:
+  # export SOME_LIST="bla:asd, boo:ba ,bee:bea"
+  - key: example_list_key
+    var: SOME_LIST
+    var_type: list
+    splitter: ','
+  ########################################## RESULT: ############################################
+  # inside `vars_dict` new key `example_list_key` will appear with the following list value:
+  # ['bla:asd', ' boo:ba ', 'bee:bea'] # note the spaces
+  ###############################################################################################
+  ########################################## INPUT: ############################################
+  # Given an env variable was defined:
+  # export SOME_INT="123"
+  - key: example_int
+    var: SOME_INT
+    var_type: int
+  ########################################## RESULT: ############################################
+  # inside `vars_dict` new key `example_int` will appear with the following int value:
+  # 123
+  ###############################################################################################
+  ########################################## INPUT: ############################################
+  # Given an env variable was defined in either way:
+  # export SOME_BOOLEAN=1
+  # export SOME_BOOLEAN=TRUE
+  # export SOME_BOOLEAN=falSE
+  # export SOME_BOOLEAN=0
+  - key: example_bool
+    var: SOME_BOOLEAN
+    var_type: bool
+  ########################################## RESULT: ############################################
+  # inside `vars_dict` new key `example_bool` will appear with the following value:
+  # True # for truthy value
+  # False # for falsy value
+  ###############################################################################################
