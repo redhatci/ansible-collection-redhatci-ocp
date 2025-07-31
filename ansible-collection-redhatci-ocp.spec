@@ -30,6 +30,7 @@ Requires: podman
 Requires: python3-jmespath
 Requires: python3-netaddr
 Requires: python3-pyyaml
+Requires: (python3-libxml2 or python3-lxml)
 Requires: skopeo
 Conflicts: dci-openshift-agent < 1.1.0
 
