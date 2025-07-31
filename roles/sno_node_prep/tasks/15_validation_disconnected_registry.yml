@@ -7,14 +7,6 @@
   tags:
     - use_registry
 
-- name: Set fact disconnected_registry_mirrors_file
-  ansible.builtin.set_fact:
-    disconnected_registry_mirrors_file: "{{ hostvars[groups['registry_host'][0]]['disconnected_registry_mirrors_file'] }}"
-  when:
-    - hostvars[groups['registry_host'][0]]['disconnected_registry_mirrors_file'] is defined
-  tags:
-    - use_registry
-
 - name: Check if disconnected_registry_auths_file is set
   ansible.builtin.set_fact:
     dra_set: true
