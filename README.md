@@ -95,7 +95,7 @@ Name | Description
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.ocp_add_users](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_add_users/README.md) | Add users to an OpenShift cluster through htpasswd Identity Provider.
-[redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster. 
+[redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster.
 [redhatci.ocp.ocp_logging](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_logging/README.md) | Enables the OCP logging subsystem.
 [redhatci.ocp.ocp_on_libvirt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_on_libvirt/README.md) | Creation of a libvirt environment to install OCP
 [redhatci.ocp.odf_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/odf_setup/README.md) | Setup of [OpenShift Data Foundation (ODF)](https://www.redhat.com/en/technologies/cloud-computing/openshift-data-foundation)
@@ -112,6 +112,8 @@ Name | Description
 [redhatci.ocp.pyxis](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/pyxis/README.md) | Interacts with Pyxis API to submit Preflight certification results
 [redhatci.ocp.redhat_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/redhat_tests/README.md) | [Openshift End to End tests](https://github.com/openshift/openshift-tests)
 [redhatci.ocp.remove_ztp_gitops_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/remove_ztp_gitops_resources/README.md) | Remove all GitOps related resources for a given spoke cluster, excepting the cluster namespace, which is not deleted because this will imply the spoke cluster is detached from the hub cluster.
+[redhatci.ocp.report_combine](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/report_combine/README.md) | Combines metadata and test report into reporting event. consumed by [redhatci.ocp.report_send](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/report_send/README.md)
+[redhatci.ocp.report_send](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/report_send/README.md) | Sends reporting event json file to reporting system (splunk), its input is the product of [redhatci.ocp.report_combine](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/report_combine/README.md)
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
 [redhatci.ocp.rhoai](roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
 [redhatci.ocp.setup_gitea](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitea/README.md) | Deployment of [Gitea](https://about.gitea.com)
@@ -149,11 +151,14 @@ Name | Description
 
 ## Plugins
 
+📖 **[Filter Plugins Documentation](docs/filters/README.md)** - Detailed guides for filter usage and optimization
+
 Name | Type | Description
 --- | --- | ---
 [redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
 [redhatci.ocp.junit2obj]() | Filter | Transforms a JUnit XML into a corresponding JSON text
 [redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
+[redhatci.ocp.reportsmerger](docs/filters/reportsmerger.md) | Filter | Merges multiple JSON test reports with optimization strategies (normal, large, many, shallow, complex)
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
 [redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
 [redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)

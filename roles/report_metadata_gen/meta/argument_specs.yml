@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# argument_specs file for redhatci.ocp.report_metadata_gen
+argument_specs:
+  main:
+    short_description: Generate CI metadata for test reporting
+    description: |
+      This role detects the CI system from environment variables and generates
+      structured metadata for test reporting. It supports DCI, Jenkins, and other
+      CI systems.
+    options:
+      rmg_ci_system:
+        description: CI system type (auto-detected if not specified)
+        type: str
+        required: false
+        default: "unknown"
+        choices: ["dci", "jenkins", "unknown"]
+      rmg_ci_system_autodetect:
+        description: Enable automatic CI system detection
+        type: bool
+        required: false
+        default: true
+      rmg_metadata_output_path:
+        description: Path where to save the generated metadata JSON file
+        type: str
+        required: false
+        default: "{{ playbook_dir }}/metadata.json"
+      rmg_existing_metadata:
+        description: Existing metadata to merge with generated data
+        type: dict
+        required: false
+        default: {}
+      rmg_debug:
+        description: Enable debug output
+        type: bool
+        required: false
+        default: false
