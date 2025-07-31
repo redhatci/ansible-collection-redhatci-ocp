@@ -1,0 +1,34 @@
+{%- set env_value = lookup('env', item.var, default='') -%}
+{%- if 'var_type' in item and item.var_type == 'list' -%}
+  {%- set splitter = (item.splitter | default([' ']) | first) -%}
+  {{ env_value.split(splitter) if env_value != '' else [] }}
+{%- elif 'var_type' in item and item.var_type == 'dict' -%}
+  {%- set outer = (item.splitter | default([' ', ':']) | first) -%}
+  {%- set inner = (item.splitter | default([' ', ':']) | last) -%}
+  {%- set temp_dict = {} -%}
+  {%- if env_value is defined and env_value != '' -%}
+    {%- for pair in env_value.split(outer) -%}
+      {%- set parts = pair.split(inner) -%}
+      {%- if parts | length == 2 -%}
+        {%- set d_key = parts[0] | trim(chars='\n') -%}
+        {%- set d_val = parts[1] | trim(chars='\n') -%}
+        {%- if d_key in temp_dict -%}
+          {%- if temp_dict[d_key] is string -%}
+            {%- set _ = temp_dict.update({d_key: [temp_dict[d_key], d_val]}) -%}
+          {%- elif temp_dict[d_key] is iterable -%}
+            {%- set _ = temp_dict.update({d_key: temp_dict[d_key] + [d_val]}) -%}
+          {%- endif -%}
+        {%- else -%}
+          {%- set _ = temp_dict.update({d_key: d_val}) -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+  {{ temp_dict }}
+{%- elif 'var_type' in item and item.var_type == 'int' -%}
+  {{ env_value | trim(chars='\n') | int if env_value is defined and env_value != '' else 0 }}
+{%- elif 'var_type' in item and item.var_type == 'bool' -%}
+  {{ env_value | trim(chars='\n') | bool if env_value is defined and env_value != '' else false }}
+{%- else -%}
+  {{ env_value | trim(chars='\n') }}
+{%- endif -%}

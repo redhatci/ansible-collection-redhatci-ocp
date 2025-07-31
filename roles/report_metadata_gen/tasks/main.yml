@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# tasks file for redhatci.ocp.report_metadata_gen
+
+- name: Initialize metadata with existing data
+  ansible.builtin.set_fact:
+    rmg_meta_data: "{{ rmg_existing_metadata | default({}) }}"
+
+- name: Initialize rmg_ci_runtime
+  ansible.builtin.set_fact:
+    rmg_ci_runtime: {}
+
+- name: CI system auto-detection
+  ansible.builtin.include_tasks: "ci-detect.yml"
+  when:
+    - rmg_ci_system_autodetect
+
+- name: Validate CI system is supported
+  ansible.builtin.assert:
+    that:
+      - rmg_ci_system in rmg_ci_systems_supported
+    fail_msg: "Unsupported CI system: {{ rmg_ci_system }}"
+
+- name: Include variables for {{ rmg_ci_system }}
+  ansible.builtin.include_vars:
+    dir: vars
+    files_matching: "{{ rmg_ci_system }}.yml"
+    name: "{{ rmg_ci_system }}"
+  when:
+    - rmg_ci_system != "unknown"
+
+- name: Detect dynamic metadata from environment
+  ansible.builtin.include_tasks: "env2vars-populate.yml"
+  when:
+    - rmg_ci_system != "unknown"
+
+- name: Generate CI-specific metadata
+  ansible.builtin.include_tasks: "ci-metadata/{{ rmg_ci_system }}.yml"
+
+- name: Print generated metadata
+  ansible.builtin.debug:
+    var: rmg_ci_runtime
+  when:
+    - rmg_debug
+
+- name: Update metadata with runtime data
+  ansible.builtin.set_fact:
+    rmg_meta_data: "{{ rmg_meta_data | combine(rmg_ci_runtime) }}"
+
+- name: Write metadata to output file
+  ansible.builtin.copy:
+    content: "{{ rmg_meta_data | to_nice_json }}"
+    dest: "{{ rmg_metadata_output_path }}"
+    mode: '0644'
+  when:
+    - rmg_metadata_output_path | length > 0
