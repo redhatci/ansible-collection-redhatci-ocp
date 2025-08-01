@@ -18,35 +18,8 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
 
-- name: Apply ITMS for ZTP and MCE images
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: config.openshift.io/v1
-      kind: ImageTagMirrorSet
-      metadata:
-        name: gitops-images
-      spec:
-        imageTagMirrors:
-          - mirrors:
-              - "{{ sg_local_registry }}/openshift4/ztp-site-generate-rhel8"
-            source: "{{ sg_ztp_repo }}"
-          - mirrors:
-              - "{{ sg_local_registry }}/rhacm2/multicluster-operators-subscription-rhel9"
-            source: "{{ sg_mce_repo }}"
-
-- name: Apply IDMS for ZTP and MCE images
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: config.openshift.io/v1
-      kind: ImageDigestMirrorSet
-      metadata:
-        name: gitops-images
-      spec:
-        imageDigestMirrors:
-          - mirrors:
-              - "{{ sg_local_registry }}/openshift4/ztp-site-generate-rhel8"
-            source: "{{ sg_ztp_repo }}"
-          - mirrors:
-              - "{{ sg_local_registry }}/rhacm2/multicluster-operators-subscription-rhel9"
-            source: "{{ sg_mce_repo }}"
+- name: Set image fact for repo server in local registry
+  ansible.builtin.set_fact:
+    sg_ztp_image: "{{ sg_local_registry }}/openshift4/ztp-site-generate-rhel8"
+    sg_mce_image: "{{ sg_local_registry }}/rhacm2/multicluster-operators-subscription-rhel9"
 ...
