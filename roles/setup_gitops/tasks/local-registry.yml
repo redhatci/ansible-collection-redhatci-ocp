@@ -20,6 +20,6 @@
 
 - name: Set image fact for repo server in local registry
   ansible.builtin.set_fact:
-    sg_ztp_image: "{{ sg_local_registry }}/openshift4/ztp-site-generate-rhel8"
-    sg_mce_image: "{{ sg_local_registry }}/rhacm2/multicluster-operators-subscription-rhel9"
+    sg_ztp_repo: "{{ sg_local_registry }}/openshift4/ztp-site-generate-rhel8"
+    sg_mce_repo: "{{ sg_local_registry }}/rhacm2/multicluster-operators-subscription-rhel9"
 ...
