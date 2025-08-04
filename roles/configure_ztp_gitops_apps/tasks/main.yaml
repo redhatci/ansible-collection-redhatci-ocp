@@ -179,7 +179,7 @@
     - name: Replace ztp-site-generate image container URL in argocd-openshift-gitops-patch.json
       ansible.builtin.replace:
         path: "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json"
-        regexp: '[^"]*ztp-site-generate[^"]*'
+        regexp: '[^"]*ztp-site-generat[^"]*'
         replace: "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}"
 
     - name: Replace multicluster-operators-subscription image container URL in argocd-openshift-gitops-patch.json
