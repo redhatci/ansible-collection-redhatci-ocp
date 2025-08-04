@@ -1,5 +1,5 @@
 ---
-ac_cluster_api: https://kubernetes.default.svc
+ac_server_api: https://kubernetes.default.svc
 ac_namespace: openshift-gitops
 ac_app_dir_recurse: false
 ac_hide_secrets: true
@@ -35,6 +35,6 @@ ac_project_def:
         server: '*'
     sourceRepos:
       - '*'
-ac_repo_branch: main
+ac_repo_revision: main
 ac_wait_retries: 30
 ac_wait_delay: 10

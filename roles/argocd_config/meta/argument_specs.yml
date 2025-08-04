@@ -74,7 +74,7 @@ argument_specs:
     description: >
       Create an application in ArgoCD with the specified parameters.
     options:
-      ac_cluster_api:
+      ac_server_api:
         type: str
         required: false
         default: https://kubernetes.default.svc
@@ -110,11 +110,11 @@ argument_specs:
         type: str
         required: true
         description: The URL of the repository to use for the ArgoCD application.
-      ac_repo_branch:
+      ac_repo_revision:
         type: str
         required: false
         default: main
-        description: The branch of the repository to use for the ArgoCD application.
+        description: The branch or commit hash of the repository to use for the ArgoCD application.
   config-app-delete:
     short_description: Delete ArgoCD application
     description: >

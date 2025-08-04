@@ -1,6 +1,6 @@
 # argocd_config
 
-A role to configure ArgoCD applications.
+A role to manage ArgoCD projects, repositories and applications.
 
 ## Variables
 
@@ -11,7 +11,7 @@ A role to configure ArgoCD applications.
 | ac_app_name        | None                            | config-app-create, config-app-delete, config-app-sync, wait-for-healthy                               | The name of the ArgoCD application to create.
 | ac_app_namespace   | None                            | config-app-create, config-repo                                                                        | The namespace where the ArgoCD application will be created.
 | ac_app_path        | None                            | config-app-create                                                                                     | The path in the Git repository where application is located.
-| ac_cluster_api     | https://kubernetes.default.svc  | config-project                                                                                        | The OpenShift cluster API URL.
+| ac_server_api      | https://kubernetes.default.svc  | config-project                                                                                        | The OpenShift server API URL, where ArgoCD will interact with.
 | ac_gh_token        | None                            | config-repo                                                                                           | The GitHub token to use for accessing the Git repository.
 | ac_gh_username     | None                            | config-repo                                                                                           | The GitHub username to use for accessing the Git repository.
 | ac_hide_secrets    | True                            | config-repo                                                                                           | Whether to hide sensitive information in logs.
@@ -19,7 +19,7 @@ A role to configure ArgoCD applications.
 | ac_permissions_def | <sup>2</sup>                    | config-permissions                                                                                    | The ArgoCD permissions definition.
 | ac_project_def     | <sup>1</sup>                    | config-project                                                                                        | The ArgoCD project definition.
 | ac_project         | project                         | config-app-create                                                                                     | The ArgoCD project to use. 
-| ac_repo_branch     | main                            | config-app-create                                                                                     | The branch of the Git repository to use.
+| ac_repo_revision   | main                            | config-app-create                                                                                     | The branch or commit hash of the Git repository to use.
 | ac_repo            | None                            | config-app-create, config-repo                                                                        | The Git repository URL for the application.
 | ac_ssh_key         | None                            | config-app-create, config-repo                                                                        | The SSH key to use for accessing the Git repository.
 | ac_wait_retries    | 30                              | wait-for-healthy                                                                                      | The number of retries to wait for the application to become healthy.
@@ -57,7 +57,7 @@ A role to configure ArgoCD applications.
     tasks_from: config-repo
   vars:
     ac_repo: my-repo-url
-    ac_repo_branch: main
+    ac_repo_revision: main
     ac_ssh_key: /path/to/ssh/key
 ```
 
@@ -74,7 +74,7 @@ A role to configure ArgoCD applications.
     ac_app_namespace: my-namespace
     ac_app_path: path/to/app
     ac_repo: my-repo-url
-    ac_repo_branch: main
+    ac_repo_revision: main
 ```
 
 ### Delete Application

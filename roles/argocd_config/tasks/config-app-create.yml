@@ -10,12 +10,12 @@
       spec:
         destination:
           namespace: "{{ ac_app_namespace }}"
-          server: "{{ ac_cluster_api }}"
+          server: "{{ ac_server_api }}"
         project: "{{ ac_project }}"
         source:
           path: "{{ ac_app_path }}"
           repoURL: "{{ ac_repo }}"
-          targetRevision: "{{ ac_repo_branch }}"
+          targetRevision: "{{ ac_repo_revision }}"
           directory:
             recurse: "{{ ac_app_dir_recurse }}"
         syncPolicy:
