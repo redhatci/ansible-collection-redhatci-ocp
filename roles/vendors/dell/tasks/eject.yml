@@ -12,7 +12,7 @@
   delay: 10
   until: result is succeeded
 
-- name: Attempting to eject blocking media (if any)
+- name: Eject Virtual Media and Verify
   vars:
     blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
         | flatten(levels=2)
@@ -28,20 +28,52 @@
           )]'
         ) | from_yaml
       }}"
-  community.general.redfish_command:
-    category: Manager
-    command: VirtualMediaEject
-    baseuri: "{{ bmc_address }}"
-    username: "{{ bmc_user }}"
-    password: "{{ bmc_password }}"
-    timeout: 120
-    virtual_media:
-      image_url: "{{ item.Image }}"
-    resource_id: iDRAC.Embedded.1
-  loop: "{{ blocking_virtual_media }}"
-  retries: 3
-  delay: 10
-  until: result is succeeded
-  register: result
-  no_log: true
+  block:
+    - name: Display blocking virtual media
+      debug:
+        var: blocking_virtual_media
+
+    - name: Eject Virtual Media
+      community.general.redfish_command:
+        category: Manager
+        command: VirtualMediaEject
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        timeout: 120
+        virtual_media:
+          image_url: "{{ item.Image }}"
+        resource_id: iDRAC.Embedded.1
+      loop: "{{ blocking_virtual_media }}"
+      no_log: true
+      when: blocking_virtual_media | length > 0
+
+    - name: Wait for eject to complete
+      pause:
+        seconds: 10
+      when: blocking_virtual_media | length > 0
+
+    - name: Verify Virtual Media are Ejected
+      community.general.redfish_info:
+        category: Manager
+        command: GetVirtualMedia
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+        timeout: 120
+      register: verify_result
+      no_log: true
+      when: blocking_virtual_media | length > 0
+
+    - name: Test Eject Success Flag
+      ansible.builtin.assert:
+        that: >
+          (verify_result.redfish_facts.virtual_media.entries |
+          flatten(levels=2) |
+          selectattr('ConnectedVia', 'defined') |
+          list |
+          json_query('[?ConnectedVia == `URI` && Image != null]') |
+          length) == 0
+      when: blocking_virtual_media | length > 0
+
 ...
