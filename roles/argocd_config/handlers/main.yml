@@ -1,6 +1,0 @@
----
-- name: Delete temporary directory
-  ansible.builtin.file:
-    path: "{{ _ac_tmp_dir.path }}"
-    state: absent
-  when: _ac_tmp_dir is defined

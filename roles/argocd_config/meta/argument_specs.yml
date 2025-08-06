@@ -41,14 +41,14 @@ argument_specs:
         type: str
         required: false
         description: The path to the SSH private key for the repository, if needed.
-      ac_gh_token:
+      ac_scm_token:
         type: str
         required: false
-        description: The GitHub token for accessing the repository, if needed.
-      ac_gh_username:
+        description: The token for accessing the repository, if needed.
+      ac_scm_username:
         type: str
         required: false
-        description: The GitHub username for accessing the repository, if needed.
+        description: The username for accessing the repository, if needed.
       ac_hide_secrets:
         type: bool
         required: false
