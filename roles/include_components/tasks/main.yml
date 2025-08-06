@@ -34,5 +34,10 @@
 - name: Track listed components
   ansible.builtin.include_tasks: track_listed_component.yml
   loop: "{{ ic_listed | default([]) }}"
+  when:
+    - item.name is not in
+      ( (ic_gits + ic_dev_gits) |
+        map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') |
+        map('regex_replace', 'python', 'python3') | list)
 
 ...
