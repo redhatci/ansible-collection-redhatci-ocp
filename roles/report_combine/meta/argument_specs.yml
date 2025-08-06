@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: Apache-2.0
+---
+# argument_specs file for redhatci.ocp.report_combine
+
+argument_specs:
+  main:
+    short_description: Combine test reports and metadata into event structures
+    description: |
+      This role combines test report JSON and metadata JSON files into
+      collector-specific event structures. It supports multiple output formats
+      including Splunk HEC format and generic formats.
+    options:
+      rc_report_path:
+        description: Path to the test report JSON file
+        type: str
+        required: true
+      rc_metadata_path:
+        description: Path to the metadata JSON file
+        type: str
+        required: true
+      rc_combined_event_path:
+        description: Path where to save the combined event JSON file
+        type: str
+        required: false
+        default: "{{ playbook_dir }}/combined-event.json"
+      rc_collector_format:
+        description: Format for the combined event structure
+        type: str
+        required: false
+        default: "splunk"
+        choices: ["splunk", "generic"]
+      rc_event_source:
+        description: Event source identifier
+        type: str
+        required: false
+        default: "{{ ansible_hostname }}"
+      rc_event_host:
+        description: Event host identifier
+        type: str
+        required: false
+        default: "{{ ansible_hostname }}"
+      rc_debug:
+        description: Enable debug output
+        type: bool
+        required: false
+        default: false
