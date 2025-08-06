@@ -1,4 +1,5 @@
 ---
+
 - name: Run k8s_best_practices_certsuite stages
   block:
     - name: Execute k8s_best_practices_certsuite pre-run stage

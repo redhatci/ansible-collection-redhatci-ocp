@@ -1,4 +1,5 @@
 ---
+
 - name: Run preflight certification suite
   block:
     - name: Create tmp directory for custom configurations and preflight binary
