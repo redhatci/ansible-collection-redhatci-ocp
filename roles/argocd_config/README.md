@@ -4,26 +4,26 @@ A role to manage ArgoCD projects, repositories and applications.
 
 ## Variables
 
-| Variable           | Default                         | Required by                                                                                           | Description
-| ------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------- | -----------
-| ac_action          | None                            | config-app, config-app-create, config-app-delete, config-app-sync                                     | The action to perform on the ArgoCD application (create, delete, delete-cascade, sync-on, sync-off).
-| ac_app_dir_recurse | false                           | config-app-create                                                                                     | Whether to scan a directory recursively for manifests.
-| ac_app_name        | None                            | config-app-create, config-app-delete, config-app-sync, wait-for-healthy                               | The name of the ArgoCD application to create.
-| ac_app_namespace   | None                            | config-app-create, config-repo                                                                        | The namespace where the ArgoCD application will be created.
-| ac_app_path        | None                            | config-app-create                                                                                     | The path in the Git repository where application is located.
-| ac_server_api      | https://kubernetes.default.svc  | config-project                                                                                        | The OpenShift server API URL, where ArgoCD will interact with.
-| ac_scm_token       | None                            | config-repo                                                                                           | The token to use for accessing the Git repository.
-| ac_scm_username    | None                            | config-repo                                                                                           | The username to use for accessing the Git repository.
-| ac_hide_secrets    | True                            | config-repo                                                                                           | Whether to hide sensitive information in logs.
-| ac_namespace       | openshift-gitops                | config-namespace, config-app-create, config-app-delete, config-app-sync, config-repo, wait-for-healty | The namespace where ArgoCD is installed.
-| ac_permissions_def | <sup>2</sup>                    | config-permissions                                                                                    | The ArgoCD permissions definition.
-| ac_project_def     | <sup>1</sup>                    | config-project                                                                                        | The ArgoCD project definition.
-| ac_project         | project                         | config-app-create                                                                                     | The ArgoCD project to use. 
-| ac_repo_revision   | main                            | config-app-create                                                                                     | The branch or commit hash of the Git repository to use.
-| ac_repo            | None                            | config-app-create, config-repo                                                                        | The Git repository URL for the application.
-| ac_ssh_key         | None                            | config-app-create, config-repo                                                                        | The SSH key to use for accessing the Git repository.
-| ac_wait_retries    | 30                              | wait-for-healthy                                                                                      | The number of retries to wait for the application to become healthy.
-| ac_wait_delay      | 10                              | wait-for-healthy                                                                                      | The time to wait between retries for the application to become healthy.
+| Variable           | Default                         | Required by                                     | Description
+| ------------------ | ------------------------------- | ----------------------------------------------- | -----------
+| ac_action          | None                            | config-app                                      | The action to perform on the ArgoCD application (create, delete, delete-cascade, sync-on, sync-off).
+| ac_app_dir_recurse | false                           | config-app-create                               | Whether to scan a directory recursively for manifests.
+| ac_app_name        | None                            | config-app-create, wait-for-healthy             | The name of the ArgoCD application to create.
+| ac_app_namespace   | None                            | config-app-create, config-repo                  | The namespace where the ArgoCD application will be created.
+| ac_app_path        | None                            | config-app-create                               | The path in the Git repository where application is located.
+| ac_server_api      | https://kubernetes.default.svc  | config-project                                  | The OpenShift server API URL, where ArgoCD will interact with.
+| ac_scm_token       | None                            | config-repo                                     | The token to use for accessing the Git repository.
+| ac_scm_username    | None                            | config-repo                                     | The username to use for accessing the Git repository.
+| ac_hide_secrets    | True                            | config-repo                                     | Whether to hide sensitive information in logs.
+| ac_namespace       | openshift-gitops                | config-app-create, config-repo, wait-for-healty | The namespace where ArgoCD is installed.
+| ac_permissions_def | <sup>2</sup>                    | config-permissions                              | The ArgoCD permissions definition.
+| ac_project_def     | <sup>1</sup>                    | config-project                                  | The ArgoCD project definition.
+| ac_project         | project                         | config-app-create                               | The ArgoCD project to use. 
+| ac_repo_revision   | main                            | config-app-create                               | The branch or commit hash of the Git repository to use.
+| ac_repo            | None                            | config-app-create, config-repo                  | The Git repository URL for the application.
+| ac_ssh_key         | None                            | config-app-create, config-repo                  | The SSH key to use for accessing the Git repository.
+| ac_wait_retries    | 30                              | wait-for-healthy                                | The number of retries to wait for the application to become healthy.
+| ac_wait_delay      | 10                              | wait-for-healthy                                | The time to wait between retries for the application to become healthy.
 
 <sup>1</sup> See [defaults](defaults/main.yml) for the default project definition.
 <sup>2</sup> See [defaults](defaults/main.yml) for the default permissions definition.
