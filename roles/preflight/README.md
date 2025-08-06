@@ -476,3 +476,4 @@ Note: The DCI Pipeline configurations throughout the sections are just examples,
 If the variable `preflight_source_dir` is defined, the Preflight role would use this folder to generate preflight image and binary and then use them during Preflight tests execution. That would overwrite predefined preflight_image and if any.
 
 Currently, Preflight CI stores the generated preflight image into a `dci_local_registry` and hence would only work in disconnected environments with a registry attached. The plan is to remove this limitation in the next releases.
+
