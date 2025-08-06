@@ -37,6 +37,7 @@
       vcpu: "{{ kvm_node_spec['cpu_cores'] | default(kvm_node_defaults['vcpu']) }}"
       disks: "{{ kvm_node_disks }}"
       network_interfaces: "{{ kvm_network_interfaces }}"
+      additional_virt_install_options: "{{ kvm_node_spec['additional_virt_install_options'] | default(omit) }}"
 
 - name: Update processed_kvm_nodes
   set_fact:
