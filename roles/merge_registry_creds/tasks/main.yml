@@ -26,7 +26,6 @@
     content: "{{ mrc_auth_data | to_json }}"
     dest: "{{ mrc_auth_file.path }}"
     owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
     mode: "0400"
 
 - name: "Set path for combined auths file"
