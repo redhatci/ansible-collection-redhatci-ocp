@@ -82,7 +82,6 @@
         path: "{{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }}"
         state: file
         owner: "{{ mor_owner }}"
-        group: "{{ mor_group }}"
         mode: "0755"
         setype: "httpd_sys_content_t"
       register: _mor_install_mode
