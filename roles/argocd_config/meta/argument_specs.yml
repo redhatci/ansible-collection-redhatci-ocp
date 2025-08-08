@@ -1,0 +1,183 @@
+---
+argument_specs:
+  config-project:
+    short_description: Configure ArgoCD project
+    description: >
+      Configure a project in ArgoCD using a specific definition.
+    options:
+      ac_project:
+        type: str
+        required: false
+        default: project
+        description: The name of the ArgoCD project to create or configure.
+      ac_project_def:
+        type: dict
+        required: false
+        description: The definition of an ArgoCD project to create.
+  config-permissions:
+    short_description: Configure ArgoCD permissions
+    description: >
+      Configure permissions for ArgoCD applications and projects.
+    options:
+      ac_permissions_def:
+        type: dict
+        required: false
+        description: The definition of permissions to apply in ArgoCD.
+  config-repo:
+    short_description: Configure ArgoCD repository
+    description: >
+      Configure a repository in ArgoCD.
+    options:
+      ac_namespace:
+        type: str
+        required: false
+        default: openshift-gitops
+        description: The namespace where ArgoCD is installed.
+      ac_repo:
+        type: str
+        required: true
+        description: The repository to add to ArgoCD.
+      ac_ssh_key:
+        type: str
+        required: false
+        description: The path to the SSH private key for the repository, if needed.
+      ac_scm_token:
+        type: str
+        required: false
+        description: The token for accessing the repository, if needed.
+      ac_scm_username:
+        type: str
+        required: false
+        description: The username for accessing the repository, if needed.
+      ac_hide_secrets:
+        type: bool
+        required: false
+        default: true
+        description: Whether to hide sensitive information in logs.
+  config-app:
+    short_description: Configure (create, delete, sync) ArgoCD application
+    description: >
+      Create, delete, or sync an application in ArgoCD.
+    options:
+      ac_action:
+        type: str
+        required: true
+        choices:
+          - "create"
+          - "delete"
+          - "delete-cascade"
+          - "sync-off"
+          - "sync-on"
+        description: The action to perform on the ArgoCD application.
+  config-app-create:
+    short_description: Create ArgoCD application
+    description: >
+      Create an application in ArgoCD with the specified parameters.
+    options:
+      ac_server_api:
+        type: str
+        required: false
+        default: https://kubernetes.default.svc
+        description: The API URL of the Kubernetes cluster where the application will be deployed.
+      ac_namespace:
+        type: str
+        required: false
+        default: openshift-gitops
+        description: The ArgoCD namespace where the application is created.
+      ac_project:
+        type: str
+        required: false
+        default: project
+        description: The project name where the application will belong.
+      ac_app_name:
+        type: str
+        required: true
+        description: The name of the application to create in the project.
+      ac_app_namespace:
+        type: str
+        required: true
+        description: The namespace where the application will be deployed.
+      ac_app_dir_recurse:
+        type: bool
+        required: false
+        default: false
+        description: Whether to scan a directory recursively for manifests.
+      ac_app_path:
+        type: str
+        required: true
+        description: The path of the application in the repository.
+      ac_repo:
+        type: str
+        required: true
+        description: The URL of the repository to use for the ArgoCD application.
+      ac_repo_revision:
+        type: str
+        required: false
+        default: main
+        description: The branch or commit hash of the repository to use for the ArgoCD application.
+  config-app-delete:
+    short_description: Delete ArgoCD application
+    description: >
+      Delete an application in ArgoCD.
+    options:
+      ac_namespace:
+        type: str
+        required: false
+        default: openshift-gitops
+        description: The namespace where the ArgoCD application is located.
+      ac_app_name:
+        type: str
+        required: true
+        description: The name of the application to delete.
+      ac_action:
+        type: str
+        required: true
+        choices:
+          - "delete"
+          - "delete-cascade"
+        description: The deletion action to perform on the ArgoCD application.
+  config-app-sync:
+    short_description: Set the Sync Policy of an ArgoCD application
+    description: >
+      Enable or disable the sync of an ArgoCD application.
+    options:
+      ac_namespace:
+        type: str
+        required: false
+        default: openshift-gitops
+        description: The namespace where the ArgoCD application is located.
+      ac_app_name:
+        type: str
+        required: true
+        description: The name of the application to sync.
+      ac_action:
+        type: str
+        required: true
+        choices:
+          - "sync-on"
+          - "sync-off"
+        description: The sync action to perform on the ArgoCD application.
+  wait-for-healthy:
+    short_description: Wait for ArgoCD Application to be healthy
+    description: >
+      Wait until the specified ArgoCD application is synced and healthy.
+    options:
+      ac_namespace:
+        type: str
+        required: false
+        default: openshift-gitops
+        description: The namespace where the ArgoCD application is located.
+      ac_app_name:
+        type: str
+        required: true
+        description: The name of the application to wait for.
+      ac_wait_retries:
+        type: int
+        required: false
+        default: 30
+        description: The number of retries to check the application's health.
+      ac_wait_delay:
+        type: int
+        required: false
+        default: 10
+        description: The delay in seconds between retries.

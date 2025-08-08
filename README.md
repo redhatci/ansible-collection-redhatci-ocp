@@ -41,6 +41,7 @@ Name | Description
 [redhatci.ocp.acm.utils](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/acm/utils/README.md) | This is a helper role that is meant to be consumed by acm related roles.
 [redhatci.ocp.apply_nmstate](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/apply_nmstate/README.md) | Applies nmstate network configuration to a host.
 [redhatci.ocp.approve_csrs](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/approve_csrs/README.md) |Checks for Cert Signing Requests in the pending state and approves them until nodes in the day2_workers group are present in the oc nodes output.
+[redhatci.ocp.argocd_config](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/argocd_config/README.md) | A role to manage ArgoCD projects, repositories and applications.
 [redhatci.ocp.boot_disk](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/boot_disk/README.md) | Reboots nodes to the disk based on its vendor.
 [redhatci.ocp.boot_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/boot_iso/README.md) | Boots nodes to the provided ISO on its vendor.
 [redhatci.ocp.catalog_source](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/catalog_source/README.md) | A Role to deploy an OLM-based CatalogSource

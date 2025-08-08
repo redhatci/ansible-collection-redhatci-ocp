@@ -1,0 +1,28 @@
+---
+- name: Create ArgoCD App
+  vars:
+    app_def:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: "{{ ac_app_name }}"
+        namespace: "{{ ac_namespace }}"
+      spec:
+        destination:
+          namespace: "{{ ac_app_namespace }}"
+          server: "{{ ac_server_api }}"
+        project: "{{ ac_project }}"
+        source:
+          path: "{{ ac_app_path }}"
+          repoURL: "{{ ac_repo }}"
+          targetRevision: "{{ ac_repo_revision }}"
+          directory:
+            recurse: "{{ ac_app_dir_recurse }}"
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+          syncOptions:
+            - CreateNamespace=true
+  kubernetes.core.k8s:
+    definition: "{{ app_def }}"

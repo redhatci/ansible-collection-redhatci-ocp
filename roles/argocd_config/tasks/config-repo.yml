@@ -1,0 +1,85 @@
+---
+- name: Validate Repo without SSH key
+  ansible.builtin.assert:
+    that:
+      - ac_repo | regex_search('^http[s]?://')
+    fail_msg:
+      - "Repository URL must start with 'http://' or 'https://'."
+  when:
+    - ac_ssh_key is not defined
+
+- name: Validate Repo with SSH key
+  ansible.builtin.assert:
+    that:
+      - ac_repo | regex_search('^\w+@')
+      - ac_scm_token is undefined
+      - ac_scm_username is undefined
+    fail_msg:
+      - "Repository URL must start with '<user>@' for SSH access, e.g., git@repo..."
+      - "Token and username must not be defined when SSH key is provided."
+  when:
+    - ac_ssh_key is defined
+
+- name: Download and configure ArgoCD CLI
+  block:
+    - name: Create temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: argocd_config_dir.
+      register: _ac_tmp_dir
+
+    - name: Download ArgoCD CLI
+      ansible.builtin.get_url:
+        url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64"
+        dest: "{{ _ac_tmp_dir.path }}/argocd"
+        mode: "0750"
+
+    - name: Get ArgoCD password
+      kubernetes.core.k8s_info:
+        kind: Secret
+        namespace: "{{ ac_namespace }}"
+        name: openshift-gitops-cluster
+      register: _ac_sec
+      no_log: "{{ ac_hide_secrets | bool }}"
+
+    - name: Get ArgoCD url
+      kubernetes.core.k8s_info:
+        kind: Route
+        namespace: "{{ ac_namespace }}"
+        name: openshift-gitops-server
+      register: _ac_route
+
+    - name: Add repo to ArgoCD
+      vars:
+        argocd_url: "{{ _ac_route.resources[0].spec.host }}"
+        argocd_password: "{{ _ac_sec.resources[0].data['admin.password'] | b64decode }}"
+      ansible.builtin.shell:
+        cmd: >
+          {{ _ac_tmp_dir.path }}/argocd
+          login
+          --insecure
+          --skip-test-tls
+          --grpc-web {{ argocd_url }}
+          --username admin
+          --password {{ argocd_password }}
+          &&
+          {{ _ac_tmp_dir.path }}/argocd
+          repo
+          add {{ ac_repo }}
+          --insecure-skip-server-verification
+          {% if ac_ssh_key is defined %}
+          --ssh-private-key-path {{ ac_ssh_key }}
+          {% elif ac_scm_token is defined and ac_scm_username is defined %}
+          --username {{ ac_scm_username }}
+          --password {{ ac_scm_token }}
+          {% endif %}
+      register: _ac_repo_add
+      changed_when: _ac_repo_add.rc == 0
+      no_log: "{{ ac_hide_secrets | bool }}"
+
+  always:
+    - name: Delete temporary directory
+      ansible.builtin.file:
+        path: "{{ _ac_tmp_dir.path }}"
+        state: absent
+      when: _ac_tmp_dir is defined
