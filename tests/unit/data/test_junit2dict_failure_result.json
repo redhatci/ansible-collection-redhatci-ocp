@@ -1,0 +1,10 @@
+[
+  {
+    "testcase": "[jumphost] Check test results step: redhatci.ocp.verify_tests : Fail if not all test results are as expected for cu_op_deploy_cloudran_site_new_version.xml msg=The following expectations failed: {{ expectation_failed }}",
+    "passed": false
+  },
+  {
+    "testcase": "[jumphost] Check test results step: Fail properly msg=Failure: Something went wrong, review the log at: https://www.distributed-ci.io/jobs/{{ job_info.job.id }}/jobStates",
+    "passed": false
+  }
+]
