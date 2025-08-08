@@ -88,7 +88,7 @@
     name: "{{ ocs_storagecluster_name }}"
     namespace: "{{ ocs_storage_namespace }}"
   register: _os_sc
-  retries: 40
+  retries: 50
   delay: 30
   until:
     - _os_sc.resources is defined
