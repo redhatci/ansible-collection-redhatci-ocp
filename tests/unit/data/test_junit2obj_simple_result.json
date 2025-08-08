@@ -7,7 +7,7 @@
     "test_suites": [
         {
             "name": "Performance Addon Operator Reboot",
-            "time": 0.0,
+            "time": 0.000426228,
             "timestamp": "2024-12-12T20:12:23",
             "tests": 3,
             "failures": 0,
