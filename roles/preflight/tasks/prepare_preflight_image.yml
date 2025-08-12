@@ -41,17 +41,18 @@
 # We have to tag using the last stable version
 # to make Pyxis submission work
 - name: Build Preflight image
+  vars:
+    push_image: >-
+      && podman push
+      --authfile {{ partner_creds }}
+      {{ preflight_image }}
   ansible.builtin.shell:
-    cmd: >
+    cmd: >-
       podman build .
       --no-cache
       -t {{ preflight_image }}
       --build-arg=release_tag={{ preflight_github_tags.json[0].name }}
-      {% if dci_local_registry | length > 0 %}
-        && podman push
-        --authfile {{ partner_creds }}
-        {{ preflight_image }}
-      {% endif %}
+      {{ (dci_local_registry | length > 0) | ternary(push_image, "") }}
     chdir: "{{ preflight_tmp_dir.path }}/preflight-source"
   notify:
     - "Remove the local preflight image"
