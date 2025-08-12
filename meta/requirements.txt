@@ -2,3 +2,4 @@ jmespath
 junit_xml
 junitparser
 python-dateutil
+semver
