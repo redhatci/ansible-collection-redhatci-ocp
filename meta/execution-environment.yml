@@ -1,4 +1,4 @@
 ---
 version: 3
 dependencies:
-  python: requirements.txt  # List Python package requirements in the file
+  python: meta/requirements.txt   # List Python package requirements in the file
