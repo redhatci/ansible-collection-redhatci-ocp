@@ -16,7 +16,7 @@
     dest: "{{ preflight_tmp_dir.path }}/preflight-source/"
     mode: "0755"
 
-- name: Set preflight_image name
+- name: Set preflight_image name # noqa: jinja[spacing]
   vars:
     preflight_fqar: >-
       {%- if dci_local_registry | length > 0 -%}
@@ -40,7 +40,7 @@
 
 # We have to tag using the last stable version
 # to make Pyxis submission work
-- name: Build Preflight image
+- name: Build Preflight image  # noqa: command-instead-of-shell
   vars:
     push_image: >-
       && podman push
@@ -50,6 +50,7 @@
     cmd: >-
       podman build .
       --no-cache
+      --pull=always
       -t {{ preflight_image }}
       --build-arg=release_tag={{ preflight_github_tags.json[0].name }}
       {{ (dci_local_registry | length > 0) | ternary(push_image, "") }}
