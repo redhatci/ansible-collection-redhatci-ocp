@@ -1,0 +1,14 @@
+[
+  {
+    "testcase": "[It] [disruptive][node][kubelet][devicemanager]",
+    "passed": true
+  },
+  {
+    "testcase": "Device management tests Verify that pods requesting devices",
+    "passed": true
+  },
+  {
+    "testcase": "[ReportAfterSuite] e2e serial suite",
+    "passed": true
+  }
+]
