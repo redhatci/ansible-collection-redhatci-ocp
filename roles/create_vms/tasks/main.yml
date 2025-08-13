@@ -3,12 +3,12 @@
   become: true
   block:
     - name: "Install virt-manager"
-      package:
+      ansible.builtin.package:
         name: "{{ virt_packages }}"
         state: present
 
     - name: Insert lines for non-root user
-      blockinfile:
+      ansible.builtin.blockinfile:
         state: present
         dest: /etc/libvirt/qemu.conf
         block: |
@@ -17,15 +17,15 @@
       when: qemu_user != "root"
 
     - name: Start libvirtd
-      service:
+      ansible.builtin.service:
         name: libvirtd
         state: started
 
 - name: Prepare Network
-  import_tasks: prepare_network.yml
+  ansible.builtin.import_tasks: prepare_network.yml
 
 - name: Prepare Storage Pool
-  import_tasks: prepare_storage_pool.yml
+  ansible.builtin.import_tasks: prepare_storage_pool.yml
 
 - name: Prepare VMS
-  import_tasks: provision_vms.yml
+  ansible.builtin.import_tasks: provision_vms.yml

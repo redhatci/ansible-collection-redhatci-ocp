@@ -3,3 +3,4 @@ roles/**/.linted
 tests/integration/inventory
 tests/output
 __pycache__
+.ansible/
