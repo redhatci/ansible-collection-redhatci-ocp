@@ -7,26 +7,22 @@ metadata:
     "ansible.sdk.operatorframework.io/verbosity": "4"
     "ansible.sdk.operatorframework.io/reconcile-period": "1m"
 spec:
-{% if ecd_packet_rate|default('') %}
-  packetRate: {{ ecd_packet_rate }}
+  imagePullPolicy: {{ ecd_image_pull_policy }}
+  runDeployment: {{ ecd_run_deployment }}
+{% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
+  runtime_class_name: "{{ ecd_high_perf_runtime }}"
 {% endif %}
+  trexProfileConfigMap: {{ ecd_trex_profile_cm_name|default('') }}
+  trexProfileName: {{ ecd_trex_profile_name|default('') }}
 {% if ecd_duration|default(None) %}
   duration: {{ ecd_duration }}
 {% endif %}
 {% if ecd_packet_size|default('') %}
   packetSize: {{ ecd_packet_size }}
 {% endif %}
+{% if ecd_packet_rate|default('') %}
+  packetRate: {{ ecd_packet_rate }}
+{% endif %}
   trexIps: {{ ecd_trex_ip_list }}
   cnfappIps: {{ ecd_cnfapp_ip_list }}
   arpResolution: {{ (ecd_cnfapp_name == 'grout') | ternary('1','0') }}
-  registry: {{ ecd_registry_url }}
-  org: {{ ecd_repo_name }}
-  version: {{ ecd_trex_app_version }}
-  imagePullPolicy: {{ ecd_image_pull_policy }}
-{% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
-  runtime_class_name: "{{ ecd_high_perf_runtime }}"
-{% endif %}
-  trexProfileConfigMap: {{ ecd_trex_profile_cm_name|default('') }}
-  trexProfileName: {{ ecd_trex_profile_name|default('') }}
-  trexApp: false
-  runDeployment: {{ ecd_run_deployment }}

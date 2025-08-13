@@ -6,12 +6,9 @@ metadata:
 spec:
   privileged: {{ ecd_enable_privileged_mode }}
   imagePullPolicy: {{ ecd_image_pull_policy }}
-  size: 1  
+  size: {{ ecd_grout_deployment_size }}
   networks: {{ ecd_networks_cnfapp }}
   runDeployment: {{ ecd_run_deployment }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
   runtime_class_name: "{{ ecd_high_perf_runtime }}"
-{% endif %}
-{% if ecd_numa_aware_topology is defined and ecd_numa_aware_topology | length %}
-  numa_aware_topology: "{{ ecd_numa_aware_topology }}"
 {% endif %}

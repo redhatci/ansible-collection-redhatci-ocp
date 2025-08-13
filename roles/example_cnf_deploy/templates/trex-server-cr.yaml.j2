@@ -6,24 +6,18 @@ metadata:
   annotations:
     "ansible.sdk.operatorframework.io/verbosity": "4"
 spec:
-{% if ecd_trex_core_count|int > 0 %}
-  environments:
-    trexCoreCount: {{ ecd_trex_core_count }}
-{% endif %}
-  registry: {{ ecd_registry_url }}
-  org: {{ ecd_repo_name }}
-  version: {{ ecd_trex_server_version }}
-  imagePullPolicy: {{ ecd_image_pull_policy }}
-  networks: {{ ecd_networks_trex }}
-  cpu: 6
   privileged: {{ ecd_enable_privileged_mode }}
+  imagePullPolicy: {{ ecd_image_pull_policy }}
+  size: {{ ecd_trex_server_deployment_size }}
+  networks: {{ ecd_networks_trex }}
   runDeployment: {{ ecd_run_deployment }}
-{% if ecd_trex_config_skip|default(false)|bool %}
-  trex_config_skip: true
-{% endif %}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
   runtime_class_name: "{{ ecd_high_perf_runtime }}"
 {% endif %}
 {% if ecd_numa_aware_topology is defined and ecd_numa_aware_topology | length %}
   numa_aware_topology: "{{ ecd_numa_aware_topology }}"
+{% endif %}
+{% if ecd_trex_core_count|int > 0 %}
+  environments:
+    trexCoreCount: {{ ecd_trex_core_count }}
 {% endif %}

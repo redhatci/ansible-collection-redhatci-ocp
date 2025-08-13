@@ -63,6 +63,14 @@ ecd_networks_cnfapp: []
 ### Networks for TRex, including MAC addresses and (if provided) IP addresses
 ecd_networks_trex: []
 
+# Deployment size
+## Number of replicas for the Grout deployment
+ecd_grout_deployment_size: 1
+## Number of replicas for the TestPMD deployment
+ecd_testpmd_deployment_size: 1
+## Number of replicas for the TRexServer deployment
+ecd_trex_server_deployment_size: 1
+
 # Run all deployment automation. If different than 1, the automation will only create the pods and prepare the scripts
 # to launch testpmd/grout and trex manually afterwards
 ecd_run_deployment: 1
@@ -74,29 +82,14 @@ ecd_run_deployment: 1
 # (see https://access.redhat.com/solutions/6560521 for an example).
 ecd_enable_privileged_mode: false
 
-# RuntimeClass that should be used for running DPDK application,
-# if the var is empty, the annotation irq-load-balancing.crio.io: "disable" is not applied
-# ecd_high_perf_runtime: "performance-blueprint-profile"
-
 # TestPMD related variables
-
-## Termination grace period for testpmd
-ecd_termination_grace_period_seconds: 30
 
 ## Use reduced mode (if different than 0), where only three cores are used, and txd/rxd parameters are doubled
 ecd_testpmd_reduced_mode: 0
 
 # TRex related variables
 
-## Test configuration
-## When duration is '-1', the trex will run in continous burst mode
-##  - name: pkt-64-10kpps
-##    packet_size: 64
-##    packet_rate: 10kpps
-##    duration: 120
-##    trex_profile_name: ''
-##    trex_profile_path: ''
-##    trex_profile_cm_name: ''
+## TRex test configuration
 ecd_trex_test_config: []
 
 ## Name of the TRex CR
@@ -113,12 +106,6 @@ ecd_trex_duration: 120
 ecd_trex_packet_rate: 10kpps
 ### - Packet size, in bytes
 ecd_trex_packet_size: 64
-
-## Default duration of TRex execution during draining validation
-ecd_default_trex_duration: 1800
-
-## Default packet rate from TRex
-ecd_packet_rate: 10kpps
 
 ## Some nics like x540 supports only 2 queues, as number of cores will be
 ## used to create tx queues, restrict the cores to the trex parameter as per need
