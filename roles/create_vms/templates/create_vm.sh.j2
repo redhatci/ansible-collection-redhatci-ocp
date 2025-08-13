@@ -34,8 +34,11 @@ virt-install \
     --features smm=on \
     {% endif %}
     {% endif %}
-    {% if additional_virt_install_options is defined %}
-    {{ additional_virt_install_options }}
+    {% if additional_virt_install_options  | default('') | trim) | length > 0 %}
+    {{ additional_virt_install_options }} \
+    {% endif %}
+    {% if item.additional_vm_install_options  | default('') | trim) | length > 0 %}
+    {{ item.additional_vm_install_options }} \
     {% endif %}
     --events on_reboot=restart \
     --autostart \

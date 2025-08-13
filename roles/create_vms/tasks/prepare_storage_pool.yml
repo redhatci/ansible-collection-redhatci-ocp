@@ -3,8 +3,8 @@
 - name: Handle default storage pool
   become: true
   block:
-    - name: make images dir
-      file:
+    - name: Make images dir
+      ansible.builtin.file:
         path: "{{ images_dir }}"
         state: directory
         recurse: true

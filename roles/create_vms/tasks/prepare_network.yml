@@ -6,18 +6,18 @@
         allowed_vm_network_modes:
           - bridge
           - nat
-      assert:
+      ansible.builtin.assert:
         that:
           - create_vms_network_mode in allowed_vm_network_modes
         fail_msg: "{{ create_vms_network_mode }} is not a supported network mode"
 
-    - name: define network
+    - name: Define network
       community.libvirt.virt_net:
         name: "{{ network_name }}"
         command: define
         xml: "{{ lookup('template', 'network.xml.j2') }}"
 
-    - name: start network
+    - name: Start network
       community.libvirt.virt_net:
         name: "{{ network_name }}"
         command: start

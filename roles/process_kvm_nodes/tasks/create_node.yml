@@ -1,25 +1,40 @@
+- name: Validate 'role' exists before deriving defaults
+  ansible.builtin.assert:
+    that:
+      - "'role' in hostvars[kvm_node_hostname]"
+      - "hostvars[kvm_node_hostname]['role'] in vm_group_params"
+    fail_msg: "Missing or unknown role for host {{ kvm_node_hostname }}; cannot set vm_group_params defaults."
+
 - name: Set spec and role
-  set_fact:
+  ansible.builtin.set_fact:
     kvm_node_spec: "{{ hostvars[kvm_node_hostname]['vm_spec'] | default({}) }}"
     kvm_node_defaults: "{{ vm_group_params[hostvars[kvm_node_hostname]['role']] }}"
 
 - name: Set default main disk
-  set_fact:
+  ansible.builtin.set_fact:
     kvm_node_disks:
       main: "{{ kvm_node_spec['disk_size_gb'] | default(kvm_node_defaults['disk_size']) }}"
 
 - name: Add extra disks
-  set_fact:
+  ansible.builtin.set_fact:
     kvm_node_disks: "{{ kvm_node_disks | combine(kvm_node_spec['extra_disks']) }}"
   when: "'extra_disks' in kvm_node_spec"
 
+- name: Validate required inventory fields
+  ansible.builtin.assert:
+    that:
+      - "'role' in hostvars[kvm_node_hostname]"
+      - "'vm_host' in hostvars[kvm_node_hostname]"
+      - "'mac' in hostvars[kvm_node_hostname]"
+    fail_msg: "Missing one of required fields: role, vm_host, mac for host {{ kvm_node_hostname }}"
+
 - name: Get vm_host's name and vm mac
-  set_fact:
+  ansible.builtin.set_fact:
     vm_hostname: "{{ hostvars[kvm_node_hostname]['vm_host'] }}"
     vm_mac: "{{ hostvars[kvm_node_hostname]['mac'] }}"
 
 - name: Set kvm_network_interfaces
-  set_fact:
+  ansible.builtin.set_fact:
     kvm_network_interfaces: "{{
         hostvars[kvm_node_hostname]['network_interfaces'] | default(
           {(hostvars[vm_hostname]['vm_bridge_name'] | default(cluster_name + '-br')): vm_mac}
@@ -27,8 +42,8 @@
       }}"
 
 - name: Build node
-  set_fact:
-    kvm_node:
+  ansible.builtin.set_fact:
+    kvm_node: # noqa: redhat-ci[no-role-prefix]
       name: "{{ kvm_node_hostname.startswith(vm_node_prefix) | ternary(kvm_node_hostname, (vm_node_prefix + kvm_node_hostname)) }}"
       uuid: "{{ hostvars[kvm_node_hostname]['uuid'] | default('') }}"
       mac: "{{ vm_mac }}"
@@ -38,6 +53,14 @@
       disks: "{{ kvm_node_disks }}"
       network_interfaces: "{{ kvm_network_interfaces }}"
 
+- name: Add per-VM additional virt-install options when provided
+  ansible.builtin.set_fact:
+    kvm_node: "{{ kvm_node | combine({'additional_vm_install_options': kvm_node_spec['additional_vm_install_options']}) }}"  # noqa: redhat-ci[no-role-prefix]
+  when:
+    - "'additional_vm_install_options' in kvm_node_spec"
+    - "(kvm_node_spec['additional_vm_install_options'] | string | trim) | length > 0"
+    - "(kvm_node_spec['additional_vm_install_options'] | string | trim | lower) != 'omit'"
+
 - name: Update processed_kvm_nodes
-  set_fact:
+  ansible.builtin.set_fact:
     processed_kvm_nodes: "{{ processed_kvm_nodes | combine({kvm_node.vm_host: ((processed_kvm_nodes[kvm_node.vm_host] | default([])) +  [kvm_node])}) }}"
