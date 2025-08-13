@@ -16,9 +16,16 @@
     dest: "{{ preflight_tmp_dir.path }}/preflight-source/"
     mode: "0755"
 
-- name: Set preflight_image name
+- name: Set preflight_image name # noqa: jinja[spacing]
+  vars:
+    preflight_fqar: >-
+      {%- if dci_local_registry | length > 0 -%}
+      {{ dci_local_registry }}/preflight/preflight:{{ preflight_branch }}
+      {%- else -%}
+      localhost/preflight/preflight:{{ preflight_branch }}
+      {%- endif -%}
   ansible.builtin.set_fact:
-    preflight_image: "{{ dci_local_registry }}/preflight/preflight:{{ preflight_branch }}"
+    preflight_image: "{{ preflight_fqar }}"
 
 - name: "Append to image name the job id"
   ansible.builtin.set_fact:
@@ -33,16 +40,20 @@
 
 # We have to tag using the last stable version
 # to make Pyxis submission work
-- name: Build Preflight image
-  ansible.builtin.shell:
-    cmd: >
-      podman build .
-      --no-cache
-      -t {{ preflight_image }}
-      --build-arg=release_tag={{ preflight_github_tags.json[0].name }} &&
-      podman push
+- name: Build Preflight image  # noqa: command-instead-of-shell
+  vars:
+    push_image: >-
+      && podman push
       --authfile {{ partner_creds }}
       {{ preflight_image }}
+  ansible.builtin.shell:
+    cmd: >-
+      podman build .
+      --no-cache
+      --pull=always
+      -t {{ preflight_image }}
+      --build-arg=release_tag={{ preflight_github_tags.json[0].name }}
+      {{ (dci_local_registry | length > 0) | ternary(push_image, "") }}
     chdir: "{{ preflight_tmp_dir.path }}/preflight-source"
   notify:
     - "Remove the local preflight image"
