@@ -3,6 +3,11 @@
   ansible.builtin.assert:
     that: ecd_cnfapp_name == 'testpmd'
 
+- name: "Fail if ecd_trex_app_version is not defined"
+  ansible.builtin.fail:
+    msg: "ecd_trex_app_version must be defined to deploy an extra TRex job."
+  when: ecd_trex_app_version is not defined
+
 # Directly call to retry-trex.yml playbook
 - name: "Deploy an extra TRex job"
   ansible.builtin.include_tasks: trex/retry-trex.yml

@@ -1,9 +1,4 @@
 ---
-- name: "Set retry variables"
-  ansible.builtin.set_fact:
-    ecd_trex_app_cr_name: trex-app
-  when: ecd_trex_app_cr_name is not defined
-
 - name: "Update ecd_trex_continuous_mode if ecd_trex_duration is set to -1"
   ansible.builtin.set_fact:
     ecd_trex_continuous_mode: true

@@ -7,9 +7,8 @@ spec:
   privileged: {{ ecd_enable_privileged_mode }}
   imagePullPolicy: {{ ecd_image_pull_policy }}
   ethpeerMaclist: {{ ecd_trex_mac_list }}
-  size: 1  
+  size: {{ ecd_testpmd_deployment_size }}
   networks: {{ ecd_networks_cnfapp }}
-  terminationGracePeriodSeconds: {{ ecd_termination_grace_period_seconds }}
   reducedMode: {{ ecd_testpmd_reduced_mode }}
   runDeployment: {{ ecd_run_deployment }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
