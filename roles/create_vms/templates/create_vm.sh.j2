@@ -35,7 +35,10 @@ virt-install \
     {% endif %}
     {% endif %}
     {% if additional_virt_install_options is defined %}
-    {{ additional_virt_install_options }}
+    {{ additional_virt_install_options }} \
+    {% endif %}
+    {% if item.additional_vm_install_options is defined %}
+    {{ item.additional_vm_install_options }} \
     {% endif %}
     --events on_reboot=restart \
     --autostart \
