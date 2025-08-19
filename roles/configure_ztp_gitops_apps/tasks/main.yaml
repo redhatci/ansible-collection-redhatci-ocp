@@ -220,18 +220,38 @@
       no_log: true
 
     - name: Create the Spoke cluster pull-secret
-      kubernetes.core.k8s:
-        definition:
-          apiVersion: v1
-          kind: Secret
-          metadata:
+      block:
+        - name: Create the Spoke cluster pull-secret
+          kubernetes.core.k8s:
+            definition:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: assisted-deployment-pull-secret
+                namespace: "{{ item }}"
+              type: kubernetes.io/dockerconfigjson
+              data:
+                .dockerconfigjson: "{{ _czga_encoded_pull_secret['content'] }}"
+          no_log: true
+          loop: "{{ czga_clusters_list }}"
+      rescue:
+        - name: Check the Spoke cluster pull-secret exists
+          kubernetes.core.k8s_info:
+            api_version: v1
+            kind: Secret
             name: assisted-deployment-pull-secret
             namespace: "{{ item }}"
-          type: kubernetes.io/dockerconfigjson
-          data:
-            .dockerconfigjson: "{{ _czga_encoded_pull_secret['content'] }}"
-      no_log: true
-      loop: "{{ czga_clusters_list }}"
+          no_log: true
+          loop: "{{ czga_clusters_list }}"
+          register: _czga_pull_secret_info
+
+        - name: Assert the Spoke cluster pull-secret exists
+          ansible.builtin.assert:
+            that:
+              - item.resources is defined
+              - item.resources | length > 0
+            fail_msg: "Spoke cluster pull-secret is missing"
+          loop: "{{ _czga_pull_secret_info.results }}"
 
     - name: Wait for the GitOps ZTP plugin activation
       kubernetes.core.k8s_info:
