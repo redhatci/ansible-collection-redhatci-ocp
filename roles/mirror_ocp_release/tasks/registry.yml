@@ -19,6 +19,7 @@
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
     --to={{ mor_registry_url }}/{{ mor_registry_path }}
+    --keep-manifest-list=true
     {%- if mor_allow_insecure_registry | bool %}
     --insecure
     {%- endif %}
