@@ -1,6 +1,6 @@
 ---
 - name: "Install required packages"
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: "{{ default_pkg_list }}"
     state: present
     update_cache: true
@@ -9,7 +9,7 @@
   tags: packages
 
 - name: "Install specific packages for SNO virtual"
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: "{{ snovm_pkg_list }}"
     state: present
     disable_gpg_check: true
