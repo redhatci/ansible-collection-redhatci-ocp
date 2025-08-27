@@ -15,3 +15,5 @@ tftp_dir: "/var/lib/tftpboot"
 dnsmasq_enabled: true
 webserver_url: ""
 registry_host_exists: false
+
+snp_cache_server: "{{ inventory_hostname }}"

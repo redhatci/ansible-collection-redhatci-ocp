@@ -5,9 +5,10 @@ The deployment consists on  a Single Cluster Node playing the Master and Worker 
 
 ## Variables
 
-| Variable | Choices/Defaults | Comments |
-|----------|------------------|----------|
-| sno_pullsecret_file |       | Path in the Ansible Controller host to the pull-secret.txt file to be copied in the path the SNO-install role expected it to be. |
+| Variable            | Choices/Defaults | Comments |
+|---------------------|------------------|----------|
+| sno_pullsecret_file |                  | Path on the Ansible Controller to the pull-secret.txt file to be copied to the location the SNO installer role expects. |
+| snp_cache_server    | "{{ inventory_hostname }}" | The cache server to use for storing and serving installation artifacts. Defaults to the current inventory host but can be overridden in the inventory to point to a different SSH-accessible host containing the cache directory and serving the installation artifacts. |
 
 ## Pre-requisites
 
