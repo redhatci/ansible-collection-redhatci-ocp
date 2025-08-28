@@ -22,6 +22,6 @@
   ansible.builtin.include_tasks: ./iso_idrac.yml
   when: drac_version.stdout | int <= 13
 
-- name: Using iDRAC ISO method for 14G and above
+- name: Using Redfish ISO method for 14G and above
   ansible.builtin.include_tasks: ./iso_redfish.yml
   when: drac_version.stdout | int > 13
