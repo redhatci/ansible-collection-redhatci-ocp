@@ -21,7 +21,11 @@ virt-install \
     --network=bridge:{{ bridge }},mac="{{ mac }}" \
     {% endfor %}
     {% for disk_name, disk_size in item.disks.items() %}
+    {% if vm_pool_name == "default" %}
     --disk path={{ images_dir }}/{{ item.name }}_{{ disk_name }}.qcow2,size={{ disk_size }},format=qcow2,serial=disk-{{ disk_name }} \
+    {% else %}
+    --disk pool={{ vm_pool_name }},size={{ disk_size }},format=qcow2,serial=disk-{{ disk_name }} \
+    {% endif %}
     {% endfor %}
     --graphics vnc \
     --noautoconsole \

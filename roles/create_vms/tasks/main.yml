@@ -24,8 +24,11 @@
 - name: Prepare Network
   ansible.builtin.import_tasks: prepare_network.yml
 
-- name: Prepare Storage Pool
+- name: Prepare default Storage Pool
   ansible.builtin.import_tasks: prepare_storage_pool.yml
+
+- name: Validate custom VM Storage Pool
+  ansible.builtin.import_tasks: validate_vm_pool.yml
 
 - name: Prepare VMS
   ansible.builtin.import_tasks: provision_vms.yml
