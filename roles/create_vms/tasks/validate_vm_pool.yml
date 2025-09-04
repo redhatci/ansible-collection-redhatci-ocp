@@ -1,0 +1,25 @@
+---
+- name: Validate VM storage pool configuration
+  block:
+    - name: Check if VM pool exists
+      community.libvirt.virt_pool:
+        command: info
+        name: "{{ vm_pool_name }}"
+      register: _cv_vm_pool_info
+      failed_when: false
+
+    - name: Fail if VM pool does not exist
+      ansible.builtin.fail:
+        msg: |
+          VM storage pool '{{ vm_pool_name }}' does not exist.
+      when: _cv_vm_pool_info.failed
+
+    - name: Ensure VM pool is active
+      community.libvirt.virt_pool:
+        name: "{{ vm_pool_name }}"
+        state: active
+      when: not _cv_vm_pool_info.failed
+
+    - name: Display VM pool information
+      ansible.builtin.debug:
+        msg: "Using storage pool '{{ vm_pool_name }}' for VM disk creation"

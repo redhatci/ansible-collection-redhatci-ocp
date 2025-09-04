@@ -15,6 +15,9 @@ virt_packages:
 
 images_dir: /var/lib/libvirt/images/
 
+# vm_pool_name: Pool to use for VM disk creation (can be overriden)
+vm_pool_name: "default"
+
 is_on_rhel9: "{{ (ansible_distribution_major_version == '9' and ansible_distribution == 'RedHat') | bool }}"
 
 # allowed modes: 'bridge', 'nat', using 'bridge' as default
