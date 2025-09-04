@@ -15,3 +15,10 @@ tftp_dir: "/var/lib/tftpboot"
 dnsmasq_enabled: true
 webserver_url: ""
 registry_host_exists: false
+
+snp_cache_server: >-
+  {{ cache_provisioner | default(false)
+    | ternary(
+      groups.get('provisioner', [inventory_hostname]) | first,
+      groups.get('registry_host', [inventory_hostname]) | first
+    ) }}

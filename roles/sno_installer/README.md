@@ -26,6 +26,7 @@ si_cache_server_major_version | no       | {{ ansible_distribution_major_version
 si_cache_server_user_id       | no       | {{ ansible_user_id }} | User ID in the cache server if the value is different than for the provision host.
 si_cache_server_user_gid      | no       | {{ ansible_user_gid }} | User GID in the cache server if the value is different than for the provision host.
 si_cache_server_user_dir      | no       | {{ ansible_user_dir }} | Home directory for the cache server user if the value is different than the provision host.
+cache_provisioner             | no       | false      | If the si_cache_server variable is not set, indicates if the role target host has Internet access. If it doesn't, a DMZ host must exist in the "registry_host" inventory group so the artifact mirroring tasks may be delegated to that host.
 
 ## SNO Virtual
 

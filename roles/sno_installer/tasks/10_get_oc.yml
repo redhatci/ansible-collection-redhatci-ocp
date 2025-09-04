@@ -13,8 +13,8 @@
   ansible.builtin.file:
     path: "{{ si_cache_dir }}"
     state: directory
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ si_cache_server_user_id }}"
+    group: "{{ si_cache_server_user_gid }}"
     mode: "0755"
   become: true
   delegate_to: "{{ si_cache_server }}"
@@ -37,8 +37,8 @@
 - name: "Create cache directory for release"
   ansible.builtin.file:
     path: "{{ si_cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ si_cache_server_user_id }}"
+    group: "{{ si_cache_server_user_gid }}"
     mode: "0755"
     state: directory
   become: true

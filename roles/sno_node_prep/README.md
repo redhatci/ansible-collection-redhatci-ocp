@@ -5,9 +5,10 @@ The deployment consists on  a Single Cluster Node playing the Master and Worker 
 
 ## Variables
 
-| Variable | Choices/Defaults | Comments |
-|----------|------------------|----------|
-| sno_pullsecret_file |       | Path in the Ansible Controller host to the pull-secret.txt file to be copied in the path the SNO-install role expected it to be. |
+| Variable            | Choices/Defaults | Comments |
+|---------------------|------------------|----------|
+| sno_pullsecret_file |                  | Path on the Ansible Controller to the pull-secret.txt file to be copied to the location the SNO installer role expects. |
+| snp_cache_server    | *computed*       | In disconnected environments, resolves to the first member of the registry_host group; otherwise resolves to the provisioner host. If provided, use an FQDN for an SSH-accessible host containing the cache directory and serving the installation artifacts. |
 
 ## Pre-requisites
 
