@@ -1,0 +1,59 @@
+{
+    "time": 2.0,
+    "tests": 3,
+    "failures": 0,
+    "errors": 1,
+    "skipped": 1,
+    "test_suites": [
+        {
+            "name": "Test Suite 2",
+            "time": 2.0,
+            "timestamp": "2024-12-12T20:15:30",
+            "tests": 3,
+            "failures": 0,
+            "errors": 1,
+            "skipped": 1,
+            "properties": {
+                "SuiteSucceeded": "false",
+                "Environment": "production"
+            },
+            "test_cases": [
+                {
+                    "name": "Test Case 3",
+                    "classname": "TestClass2",
+                    "time": 1.0,
+                    "result": [
+                        {
+                            "message": "connection timeout",
+                            "status": "error"
+                        }
+                    ]
+                },
+                {
+                    "name": "Test Case 4",
+                    "classname": "TestClass2",
+                    "time": 0.0,
+                    "result": [
+                        {
+                            "message": "skipped due to environment",
+                            "status": "skipped"
+                        }
+                    ]
+                },
+                {
+                    "name": "Test Case 5",
+                    "classname": "TestClass2",
+                    "time": 1.0,
+                    "result": [
+                        {
+                            "message": "passed",
+                            "status": "passed"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "schema_version": "1.0.0"
+}
+
