@@ -5,29 +5,31 @@
 
 - name: Read file content
   ansible.builtin.set_fact:
-    junit2json_xml_report_content: "{{ lookup('ansible.builtin.file', item) }}"
+    junit2json_xml_report_content: "{{ lookup('ansible.builtin.file', file_name) }}"
 
 - name: Update junit2_result_data junit2_do_merge=true
   ansible.builtin.set_fact:
-    junit2_result_data: "{{ junit2_do_merge | ansible.builtin.ternary(_junit2json_merged_xml.stdout, junit2json_xml_report_content) }}"
+    junit2_result_data: "{{ junit2json_xml_report_content }}"
 
 - name: Setup JSON report file name
   ansible.builtin.set_fact:
-    junit2_json_report_path: "{{ item | basename | regex_replace('\\.xml$', '.json') if item.endswith('.xml') else item | basename + '.json' }}"
+    junit2_json_report_path: "{{ file_name | basename | regex_replace('\\.xml$', '.json') if file_name.endswith('.xml') else file_name | basename + '.json' }}"
 
 - name: Set junit2_output_report_path
   ansible.builtin.set_fact:
-    junit2_output_report_path: "{{ junit2_output_dir }}/{{ junit2_do_merge | ansible.builtin.ternary(junit2_output_merged_report, junit2_json_report_path) }}"
+    junit2_output_report_path: "{{ junit2_output_dir }}/{{ junit2_json_report_path }}"
 
 - name: Update output variable global_json_reports_list
   ansible.builtin.set_fact:
-    global_json_reports_list: "{{ global_json_reports_list + [junit2_output_report_path] }}"
+    junit2_json_reports_list: "{{ junit2_json_reports_list + [junit2_output_report_path] }}"
 
-- name: "Create folder junit2_output_dir='{{ junit2_output_dir }}'"
-  ansible.builtin.file:
-    path: "{{ junit2_output_dir }}"
-    state: directory
-    mode: '0750'
+- name: Ensure junit2_output_dir is created
+  ansible.builtin.include_tasks:
+    file: ensure-dir.yml
+  loop:
+    - "{{ junit2_output_dir }}"
+  loop_control:
+    loop_var: folder_path
 
 - name: Write the json data to file
   ansible.builtin.copy:
