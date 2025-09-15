@@ -40,7 +40,7 @@
     namespace: "{{ ocs_storage_namespace }}"
     name: "{{ ocs_storagecluster_name }}-cephcluster"
   register: ocs_health_status
-  retries: 60
+  retries: 90
   delay: 20
   until:
     - ocs_health_status.resources is defined
