@@ -1,4 +1,4 @@
-class FilterModule(object):
+class FilterModule:
     def filters(self):
         return {
             'ocp_compatibility': self.ocp_compatibility,
@@ -8,7 +8,7 @@ class FilterModule(object):
         '''
         Parse the deprecated and to-be-deprecated API after the workload installation.
         '''
-        from junit_xml import TestCase, TestSuite
+        from junit_xml import TestCase, TestSuite, to_xml_report_file
         from collections import defaultdict
 
         def k8s2ocp(k8s_version):
@@ -80,7 +80,7 @@ class FilterModule(object):
             test_cases.append(test_case)
         test_suite = TestSuite('Workload Compatibility with OCP Versions', test_cases)
 
-        with open(junit_ocp_file, 'w') as f:
-            TestSuite.to_file(f, [test_suite])
+        with open(junit_ocp_file, "w", encoding="utf-8") as f:
+            to_xml_report_file(f, [test_suite])
 
         return compatibility
