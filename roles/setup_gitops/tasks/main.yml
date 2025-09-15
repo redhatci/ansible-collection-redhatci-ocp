@@ -21,23 +21,10 @@
   when:
     - sg_local_registry | length > 0
 
-
-- name: Get ArgoCD CRD definition
-  kubernetes.core.k8s_info:
-    api_version: apiextensions.k8s.io/v1
-    kind: CustomResourceDefinition
-    name: argocds.argoproj.io
-  register: _sg_argocd_crd
-
 - name: Patch ArgoCD repo server for Kustomize and PolicyGenerator
-  vars:
-    argocd_version: >-
-      {{ (_sg_argocd_crd.resources[0].spec.versions
-          | selectattr('storage', 'equalto', true)
-          | map(attribute='name'))[0] }}
   kubernetes.core.k8s:
     definition:
-      apiVersion: "argoproj.io/{{ argocd_version }}"
+      apiVersion: argoproj.io/v1beta1
       kind: ArgoCD
       metadata:
         name: openshift-gitops

@@ -9,7 +9,7 @@
 
 - name: Get all ArgoCD Applications
   kubernetes.core.k8s_info:
-    api_version: argoproj.io/v1alpha1
+    api_version: argoproj.io/v1beta1
     kind: Application
     namespace: openshift-gitops
   register: _asm_all_apps
@@ -46,7 +46,7 @@
   block:
     - name: Patch ArgoCD application finalizers
       kubernetes.core.k8s:
-        api_version: argoproj.io/v1alpha1
+        api_version: argoproj.io/v1beta1
         kind: Application
         name: "{{ app }}"
         namespace: "{{ app_ns }}"
@@ -63,7 +63,7 @@
     - name: Delete Argo Applications
       kubernetes.core.k8s:
         state: absent
-        api_version: argoproj.io/v1alpha1
+        api_version: argoproj.io/v1beta1
         kind: Application
         name: "{{ app }}"
         namespace: "{{ app_ns }}"
@@ -73,7 +73,7 @@
 
     - name: Wait for ArgoCD application deletion
       kubernetes.core.k8s_info:
-        api_version: argoproj.io/v1alpha1
+        api_version: argoproj.io/v1beta1
         kind: Application
         name: "{{ app }}"
         namespace: "{{ app_ns }}"

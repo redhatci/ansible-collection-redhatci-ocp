@@ -4,7 +4,7 @@
     - ac_action == "sync-on"
   kubernetes.core.k8s:
     definition:
-      apiVersion: argoproj.io/v1alpha1
+      apiVersion: argoproj.io/v1beta1
       kind: Application
       metadata:
         name: "{{ ac_app_name }}"
@@ -22,7 +22,7 @@
     - ac_action == "sync-off"
   kubernetes.core.k8s:
     definition:
-      apiVersion: argoproj.io/v1alpha1
+      apiVersion: argoproj.io/v1beta1
       kind: Application
       metadata:
         name: "{{ ac_app_name }}"

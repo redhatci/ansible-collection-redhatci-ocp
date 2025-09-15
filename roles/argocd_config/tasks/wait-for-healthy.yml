@@ -1,7 +1,7 @@
 ---
 - name: Wait for ArgoCD Application to be healthy
   kubernetes.core.k8s_info:
-    api_version: argoproj.io/v1alpha1
+    api_version: argoproj.io/v1beta1
     kind: Application
     namespace: "{{ ac_namespace }}"
     name: "{{ ac_app_name }}"

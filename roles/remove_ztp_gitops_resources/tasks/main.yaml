@@ -5,7 +5,7 @@
 # given hub.
 - name: Delete SiteConfig and Policy Applications
   kubernetes.core.k8s:
-    api_version: argoproj.io/v1alpha1
+    api_version: argoproj.io/v1beta1
     kind: Application
     name: "{{ _rzgr_gitops_application }}"
     namespace: openshift-gitops
@@ -19,7 +19,7 @@
 
 - name: Delete SiteConfig and Policy AppProjects
   kubernetes.core.k8s:
-    api_version: argoproj.io/v1alpha1
+    api_version: argoproj.io/v1beta1
     kind: AppProject
     name: "{{ _rzgr_gitops_appproject }}"
     namespace: openshift-gitops

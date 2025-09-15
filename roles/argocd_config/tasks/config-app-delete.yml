@@ -1,7 +1,7 @@
 ---
 - name: Check if ArgoCD App exists
   kubernetes.core.k8s_info:
-    api_version: argoproj.io/v1alpha1
+    api_version: argoproj.io/v1beta1
     kind: Application
     name: "{{ ac_app_name }}"
     namespace: "{{ ac_namespace }}"
@@ -19,7 +19,7 @@
       when:
         - ac_action == 'delete'
       kubernetes.core.k8s:
-        api_version: argoproj.io/v1alpha1
+        api_version: argoproj.io/v1beta1
         kind: Application
         name: "{{ ac_app_name }}"
         namespace: "{{ ac_namespace }}"
@@ -31,7 +31,7 @@
       when:
         - ac_action == 'delete-cascade'
       kubernetes.core.k8s:
-        api_version: argoproj.io/v1alpha1
+        api_version: argoproj.io/v1beta1
         kind: Application
         name: "{{ ac_app_name }}"
         namespace: "{{ ac_namespace }}"
@@ -43,14 +43,14 @@
     - name: Delete ArgoCD App
       kubernetes.core.k8s:
         state: absent
-        api_version: argoproj.io/v1alpha1
+        api_version: argoproj.io/v1beta1
         kind: Application
         name: "{{ ac_app_name }}"
         namespace: "{{ ac_namespace }}"
 
     - name: Wait for ArgoCD App deletion
       kubernetes.core.k8s_info:
-        api_version: argoproj.io/v1alpha1
+        api_version: argoproj.io/v1beta1
         kind: Application
         name: "{{ ac_app_name }}"
         namespace: "{{ ac_namespace }}"
