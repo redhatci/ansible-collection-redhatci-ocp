@@ -87,7 +87,7 @@
     namespace: "{{ hub_namespace }}"
   register: pod_list
   until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 20
+  retries: 30
   delay: 15
   no_log: true
 
