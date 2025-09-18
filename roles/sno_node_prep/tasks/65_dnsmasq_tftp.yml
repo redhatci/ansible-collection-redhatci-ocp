@@ -11,7 +11,7 @@
     - tftp
   block:
     - name: "Install packages to boostrap SNO baremetal"
-      ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: "{{ snobm_pkg_list }}"
         state: present
         update_cache: true

@@ -20,8 +20,8 @@
   ansible.builtin.unarchive:
     src: "{{ si_cache_dir }}/{{ version }}/openshift-install-linux-{{ version }}.tar.gz"
     dest: "{{ si_cache_dir }}/{{ version }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: "{{ si_cache_server_user_id }}"
+    group: "{{ si_cache_server_user_gid }}"
     mode: "0755"
     remote_src: true
     exclude:
