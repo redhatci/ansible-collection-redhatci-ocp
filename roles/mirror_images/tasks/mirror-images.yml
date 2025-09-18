@@ -12,7 +12,7 @@
       {%- else -%}
       {{ _image_name }}{%- if _image_tag | length %}{{ _image_tag }}{%- endif -%}
       {%- endif -%}
-    _tgt_image_location: "{{ mi_registry }}/{{ _image_org_path }}/{{ _image_img_path }}"
+    _tgt_image_location: "{{ mi_registry }}{% if _image_org_path | length %}/{{ _image_org_path }}{% endif %}/{{ _image_img_path }}"
   block:
     - name: "Mirror image"
       ansible.builtin.command:
