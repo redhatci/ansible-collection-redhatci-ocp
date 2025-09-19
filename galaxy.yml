@@ -10,7 +10,7 @@ name: ocp
 # Patch version is replaced from commit date in UNIX epoch format
 # Example: 1.3.0 -> 1.3.2147483647
 # Keep in sync with ansible-collection-redhatci-ocp.spec
-version: 2.9.0
+version: 2.10.0
 
 # The path to the Markdown (.md) readme file.
 readme: README.md
