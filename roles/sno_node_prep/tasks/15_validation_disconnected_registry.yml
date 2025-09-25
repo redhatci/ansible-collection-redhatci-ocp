@@ -11,6 +11,7 @@
   ansible.builtin.set_fact:
     disconnected_registry_mirrors_file: "{{ hostvars[groups['registry_host'][0]]['disconnected_registry_mirrors_file'] }}"
   when:
+    - disconnected_registry_mirrors_file is undefined
     - hostvars[groups['registry_host'][0]]['disconnected_registry_mirrors_file'] is defined
   tags:
     - use_registry
