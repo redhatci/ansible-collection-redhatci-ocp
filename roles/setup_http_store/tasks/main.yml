@@ -32,11 +32,16 @@
         - "{{ http_data_dir }}"
       become: true
 
+    - name: Set IP version to publish in pod with respective http_store port
+      ansible.builtin.set_fact:
+        http_ip_port: "{{ http_store_ip is ansible.utils.ipv6 |
+                    ternary('['+ http_store_ip +']:'+ http_port, http_store_ip +':'+ http_port) }}"
+
     - name: Create httpd pod
       containers.podman.podman_pod:
         name: "{{ http_store_pod_name }}"
         publish:
-          - "{{ http_port }}:8080"
+          - "{{ http_ip_port }}:8080"
       register: pod_info
       become: "{{ not (http_store_ephemeral | bool) }}"
 
