@@ -16,7 +16,10 @@ Sets up a web host which can be used to distribute ISO's for `boot_iso` role
 
 ## Dependencies
 
+ansible collections:
+
 - containers.podman
+- ansible.utils
 
 ## Example Playbook
 
