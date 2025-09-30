@@ -1,6 +1,6 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_version: v5.5.9
+kbpc_version: v5.5.10
 kbpc_repo_org_name: redhat-best-practices-for-k8s
 kbpc_project_name: certsuite
 kbpc_repository: "https://github.com/{{ kbpc_repo_org_name }}/{{ kbpc_project_name }}"
@@ -55,7 +55,7 @@ kbpc_feedback:
   access-control-pod-host-pid: ""
   access-control-pod-role-bindings: ""
   access-control-pod-service-account: ""
-  access-control-requests-and-limits: ""
+  access-control-requests: ""
   access-control-security-context: ""
   access-control-security-context-non-root-user-check: ""
   access-control-security-context-privilege-escalation: ""
