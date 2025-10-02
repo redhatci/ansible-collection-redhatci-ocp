@@ -312,6 +312,10 @@
       metadata:
         name: agent
         namespace: multicluster-engine
+      {% if hub_img_svc_skip_tls_verify | bool %}
+        annotations:
+          unsupported.agent-install.openshift.io/assisted-image-service-skip-verify-tls: "true"
+      {% endif %}
       spec:
         databaseStorage:
       {% if hub_sc is defined %}

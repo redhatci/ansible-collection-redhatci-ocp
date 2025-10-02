@@ -24,6 +24,7 @@ The configuration of the ACM hub can be customized by using the following variab
 |hub_db_volume_size                  |40Gi                           |No           | This value specifies how much storage it is allocated for storing files like database tables and database views for the clusters. You might need to use a higher value if there are many clusters
 |hub_fs_volume_size                  |50Gi                           |No           | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters
 |hub_img_volume_size                 |40Gi                           |No           | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS
+|hub_img_svc_skip_tls_verify     |false                          |No           | Skip TLS verification in the AgentServiceConfig for image service operations. Useful in environments with self-signed certificates or certificate issues.
 |hub_os_images                       |<Undefined>                    |No           | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images). It is mandatory for disconnected environments.
 
 ## Requirements
@@ -46,6 +47,20 @@ See below an example of how to use the acm_setup role to configure ACM.
       hub_disable_selfmanagement: true
       hub_availabilityConfig: High
       hub_disconnected: true
+      hub_os_images:
+        - openshiftVersion: "4.15.0-0.nightly-2024-04-21-051624"
+          version: "4.15"
+          url: "http://example.com/rhcos-415.92.202402201450-0-live.x86_64.iso"
+          cpuArchitecture: x86_64
+
+- name: "Setup Advanced Cluster Management with TLS verification disabled"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm_setup
+  vars:
+      hub_disable_selfmanagement: true
+      hub_availabilityConfig: High
+      hub_disconnected: true
+      hub_img_svc_skip_tls_verify: true
       hub_os_images:
         - openshiftVersion: "4.15.0-0.nightly-2024-04-21-051624"
           version: "4.15"
