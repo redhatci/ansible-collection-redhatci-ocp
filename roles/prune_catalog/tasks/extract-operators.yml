@@ -1,15 +1,14 @@
 ---
 - name: "Extract the listed operators"
-  ansible.builtin.shell:
-    chdir: "{{ pc_tmp_dir }}"
-    cmd: >
-      set -x;
-      jq 'select( .package == "{{ operator_name }}" or .name == "{{ operator_name }}")'
-      {{ pc_tmp_dir }}/index-packages
-      >> {{ pc_tmp_dir }}/configs/index.json
-  with_items: "{{ pc_operators }}"
+  ansible.builtin.shell: |
+    set -o pipefail
+
+    # Create operators array for single JQ call
+    operators_json='[{% for op in pc_operators %}"{{ op }}"{% if not loop.last %},{% endif %}{% endfor %}]'
+
+    # Single-pass extraction for all operators
+    jq --argjson operators "$operators_json" '
+      select(.package | IN($operators[]) or .name | IN($operators[]))
+    ' {{ pc_tmp_dir }}/index-packages >> {{ pc_tmp_dir }}/configs/index.json
   register: extract_result
-  changed_when: extract_result.rc != 0
-  loop_control:
-    loop_var: operator_name
-...
+  changed_when: extract_result.rc == 0

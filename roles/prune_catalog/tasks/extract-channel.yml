@@ -1,36 +1,32 @@
 ---
-- name: "Extract the listed channels for each operator"
+- name: "Create optimized index for fast lookups"
   ansible.builtin.shell: |
     set -o pipefail
 
-    {% if operator.value.channel is defined and operator.value.channel | length %}
+    # Create separate indexes by schema type for faster lookups
+    jq 'select(.schema == "olm.package")' {{ pc_tmp_dir }}/index-packages > {{ pc_tmp_dir }}/packages.json
+    jq 'select(.schema == "olm.channel")' {{ pc_tmp_dir }}/index-packages > {{ pc_tmp_dir }}/channels.json
+    jq 'select(.schema == "olm.bundle")' {{ pc_tmp_dir }}/index-packages > {{ pc_tmp_dir }}/bundles.json
 
-    jq 'select(.schema == "olm.package" and .name == "{{ operator.key }}")' {{ pc_tmp_dir }}/index-packages \
-    > {{ pc_tmp_dir }}/tmp_index.json
+    # Create lookup tables for faster access
+    jq -r '.name' {{ pc_tmp_dir }}/packages.json | sort > {{ pc_tmp_dir }}/package_names.txt
+    jq -r '.package + ":" + .name' {{ pc_tmp_dir }}/channels.json | sort > {{ pc_tmp_dir }}/channel_lookup.txt
+    jq -r '.package + ":" + .name' {{ pc_tmp_dir }}/bundles.json | sort > {{ pc_tmp_dir }}/bundle_lookup.txt
+  register: _pc_index_result
+  changed_when: _pc_index_result.rc == 0
 
-    jq 'select(.package == "{{ operator.key }}" and .schema == "olm.channel" and .name == "{{ operator.value.channel }}")' \
-    {{ pc_tmp_dir }}/index-packages >> {{ pc_tmp_dir }}/tmp_index.json
+- name: "Extract operators using pre-built indexes"
+  ansible.builtin.shell: |
+    set -o pipefail
 
-    channel_bundles=$(jq 'select(.package == "{{ operator.key }}" and .schema == "olm.channel" and .name == "{{ operator.value.channel }}")' \
-    {{ pc_tmp_dir }}/index-packages | jq -r '.entries[].name')
-
-    for BUNDLE in ${channel_bundles}; do
-      jq "select(.package == \"{{ operator.key }}\" and .schema == \"olm.bundle\" and .name == \"${BUNDLE}\")" \
-      {{ pc_tmp_dir }}/index-packages >> {{ pc_tmp_dir }}/tmp_index.json
-    done
-
-    jq '.defaultChannel = "{{ operator.value.channel }}"' {{ pc_tmp_dir }}/tmp_index.json \
-    >> {{ pc_tmp_dir }}/configs/index.json
-
-    {% else %}
-
-    jq 'select( .package == "{{ operator.key }}" or .name == "{{ operator.key }}")' \
-    {{ pc_tmp_dir }}/index-packages >> {{ pc_tmp_dir }}/configs/index.json
-
-    {% endif %}
-  loop: "{{ pc_operators | dict2items }}"
-  loop_control:
-    loop_var: operator
-  register: extract_result
-  changed_when: extract_result.rc != 0
+    {% for operator in pc_operators %}
+    # Fast lookup using grep on sorted index
+    if grep -q "^{{ operator }}$" {{ pc_tmp_dir }}/package_names.txt; then
+      jq --arg op "{{ operator }}" 'select(.name == $op)' {{ pc_tmp_dir }}/packages.json >> {{ pc_tmp_dir }}/configs/index.json
+      jq --arg op "{{ operator }}" 'select(.package == $op)' {{ pc_tmp_dir }}/channels.json >> {{ pc_tmp_dir }}/configs/index.json
+      jq --arg op "{{ operator }}" 'select(.package == $op)' {{ pc_tmp_dir }}/bundles.json >> {{ pc_tmp_dir }}/configs/index.json
+    fi
+    {% endfor %}
+  register: _pc_extract_result
+  changed_when: _pc_extract_result.rc == 0
 ...
