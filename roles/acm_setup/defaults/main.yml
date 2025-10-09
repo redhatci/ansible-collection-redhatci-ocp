@@ -10,4 +10,5 @@ hub_db_volume_size: 40Gi
 hub_fs_volume_size: 50Gi
 hub_img_volume_size: 80Gi
 hub_vm_external_network: true
+hub_img_svc_skip_tls_verify: false
 ...
