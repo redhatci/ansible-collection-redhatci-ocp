@@ -36,7 +36,7 @@
       containers.podman.podman_pod:
         name: "{{ http_store_pod_name }}"
         publish:
-          - "{{ http_port }}:8080"
+          - "[::]:{{ http_port }}:8080"
       register: pod_info
       become: "{{ not (http_store_ephemeral | bool) }}"
 
