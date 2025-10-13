@@ -23,10 +23,10 @@
 
 - name: Retrieve file from http_store
   vars:
-    http_host_ip: "{{ http_store_ip_version == 'ipv4' |
-                    ternary(http_host, '['+ http_host +']') }}"
+    vhs_http_host_ip: "{{ (http_store_ip_version == 'ipv4') |
+                    ternary(http_host, '[' + http_host + ']') }}"
   ansible.builtin.uri:
-    url: "{{ http_host_ip }}:{{ http_port }}/{{ vhs_test_file_name }}"
+    url: "{{ vhs_http_host_ip }}:{{ http_port }}/{{ vhs_test_file_name }}"
     return_content: true
   register: response
   delegate_to: bastion
