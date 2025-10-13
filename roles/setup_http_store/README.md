@@ -12,14 +12,13 @@ Sets up a web host which can be used to distribute ISO's for `boot_iso` role
 | http_data_dir             | no       | "{{ http_dir }}/data"                              |                                                                                                                                      |
 | container_image           | no       | registry.centos.org/centos/httpd-24-centos7:latest | If you change this to anything other than the same image on a different host you may need to change then environment vars in the task |
 | http_store_ephemeral      | no       | false                                              | By default (false), the pod is managed as a systemd service. If set to true, the pod runs directly using Podman and requires manual management |
-| http_store_ip             | no       | 0.0.0.0                                            | Defaults to IPv4 wildcard. The IP address (IPv4 or IPv6) that the httpd pod will publish when container is created                   |
+| http_store_ip_version     | no       | ipv4                                               | Defaults to ipv4. Only ipv4 and ipv6 values are accepted, and represents the IP version that will be published when container is created |
 
 ## Dependencies
 
 ansible collections:
 
 - containers.podman
-- ansible.utils
 
 ## Example Playbook
 
