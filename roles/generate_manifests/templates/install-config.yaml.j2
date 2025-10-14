@@ -4,8 +4,6 @@ baseDomain: {{ base_dns_domain}}
 {% if workload_partitioning is defined %}
 cpuPartitioningMode: {{ workload_partitioning }}
 {% endif %}
-cpuPartitioningMode: AllNodes
-{% endif %}
 controlPlane:
   name: master
   replicas: {{ groups['masters'] | length }}
