@@ -16,11 +16,6 @@
   become: true
   delegate_to: http_store
 
-- name: Debug http_store_ip_version
-  ansible.builtin.debug:
-    var: http_store_ip_version
-    verbosity: 1
-
 - name: Ensure variable http_store_ip_version has a valid value
   ansible.builtin.assert:
     that: "http_store_ip_version == 'ipv4' or http_store_ip_version == 'ipv6'"
@@ -31,7 +26,7 @@
     vhs_http_host_ip: "{{ (http_store_ip_version == 'ipv4') |
                     ternary(http_host, '[' + http_host + ']') }}"
   ansible.builtin.uri:
-    url: "{{ vhs_http_host_ip }}:{{ http_port }}/{{ vhs_test_file_name }}"
+    url: "http://{{ vhs_http_host_ip }}:{{ http_port }}/{{ vhs_test_file_name }}"
     return_content: true
   register: response
   delegate_to: bastion
