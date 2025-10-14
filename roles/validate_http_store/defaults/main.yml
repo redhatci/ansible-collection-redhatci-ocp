@@ -1,6 +1,5 @@
 ---
 http_store_dir : "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
 http_port: 80
-http_host: "{{ discovery_iso_server | default(hostvars['http_store']['ansible_host']) }}"
-http_store_ip_version: ipv4
+http_host: "{{ discovery_iso_server | default('http://' + hostvars['http_store']['ansible_host']) }}:{{ http_port }}"
 ...
