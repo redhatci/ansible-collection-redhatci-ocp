@@ -7,7 +7,9 @@
   failed_when: false
 
 - name: "Wait for MCP updates"
-  when: _cr_mcp_check.resources | length > 0
+  when:
+    - _cr_mcp_check.resources is defined
+    - _cr_mcp_check.resources | length > 0
   block:
     - name: "Pause 60 seconds to wait for MC to be triggered by a resource change"
       ansible.builtin.pause:
