@@ -1,7 +1,9 @@
 #jinja2:trim_blocks: True, lstrip_blocks: True
 apiVersion: v1
 baseDomain: {{ base_dns_domain}}
-{% if (workload_partitioning is defined and (workload_partitioning | bool)) %}
+{% if workload_partitioning is defined %}
+cpuPartitioningMode: {{ workload_partitioning }}
+{% endif %}
 cpuPartitioningMode: AllNodes
 {% endif %}
 controlPlane:
