@@ -1,20 +1,30 @@
 ---
-- name: "Pause 60 seconds to wait for MC to be triggered by a resource change"
-  ansible.builtin.pause:
-    seconds: 60
-
-- name: Wait for MCP to be updated
+- name: "Check if MachineConfigPools exist in the cluster"
   kubernetes.core.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
-  register: _cr_mcp_status
-  vars:
-    _cr_status_query: "resources[*].status.conditions[?type=='Updated'].status"
-    _cr_update_status: "{{ _cr_mcp_status | json_query(_cr_status_query) | flatten | unique }}"
-  until:
-    - _cr_mcp_status.resources is defined
-    - _cr_update_status == ['True']
-  retries: "{{ check_wait_retries }}"
-  delay: "{{ check_wait_delay }}"
+  register: _cr_mcp_check
+  failed_when: false
+
+- name: "Wait for MCP updates"
+  when: _cr_mcp_check.resources | length > 0
+  block:
+    - name: "Pause 60 seconds to wait for MC to be triggered by a resource change"
+      ansible.builtin.pause:
+        seconds: 60
+
+    - name: Wait for MCP to be updated
+      kubernetes.core.k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+      register: _cr_mcp_status
+      vars:
+        _cr_status_query: "resources[*].status.conditions[?type=='Updated'].status"
+        _cr_update_status: "{{ _cr_mcp_status | json_query(_cr_status_query) | flatten | unique }}"
+      until:
+        - _cr_mcp_status.resources is defined
+        - _cr_update_status == ['True']
+      retries: "{{ check_wait_retries }}"
+      delay: "{{ check_wait_delay }}"
 
 ...
