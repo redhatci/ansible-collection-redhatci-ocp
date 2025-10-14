@@ -32,6 +32,11 @@
         - "{{ http_data_dir }}"
       become: true
 
+    - name: Debug http_store_ip_version
+      ansible.builtin.debug:
+        var: http_store_ip_version
+        verbosity: 1
+
     - name: Ensure variable http_store_ip_version has a valid value
       ansible.builtin.assert:
         that: "http_store_ip_version == 'ipv4' or http_store_ip_version == 'ipv6'"
