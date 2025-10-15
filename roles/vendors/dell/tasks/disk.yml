@@ -1,7 +1,7 @@
 ---
 - name: Discovery iDRAC versions for Dell hardware
   containers.podman.podman_container:
-    name: "{{ bmc_address }}-rac-version"
+    name: "{{ bmc_name }}-rac-version"
     network: host
     image: quay.io/dphillip/racadm-image
     state: started

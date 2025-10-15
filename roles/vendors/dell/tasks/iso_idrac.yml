@@ -3,7 +3,7 @@
   block:
     - name: Racadm container to mount and boot to discovery ISO
       containers.podman.podman_container:
-        name: "{{ bmc_address }}-rac-image"
+        name: "{{ bmc_name }}-rac-image"
         network: host
         image: quay.io/dphillip/racadm-image
         state: started

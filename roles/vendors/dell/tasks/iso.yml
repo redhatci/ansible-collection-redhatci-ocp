@@ -1,7 +1,7 @@
 ---
 - name: Discovery iDRAC versions for Dell hardware
   containers.podman.podman_container:
-    name: "{{ bmc_address }}-rac-version"
+    name: "{{ bmc_name }}-rac-version"
     network: host
     image: quay.io/dphillip/racadm-image
     state: started
@@ -17,6 +17,7 @@
         "{{ boot_iso_url }}",
       ]
   register: drac_version
+  no_log: true
 
 - name: Using iDRAC ISO method for 13G and below
   ansible.builtin.include_tasks: ./iso_idrac.yml
