@@ -169,6 +169,7 @@
         repo: "{{ sg_repo_mirror_url }}"
         version: "{{ sg_repo_branch }}"
         key_file: "{{ keyfile | length | ternary(keyfile, omit) }}"
+      no_log: true
 
     - name: Mirror all branches to the repository # noqa command-instead-of-module
       ansible.builtin.shell:
