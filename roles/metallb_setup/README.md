@@ -142,4 +142,4 @@ See [Troubleshooting MetalLB](https://docs.redhat.com/documentation/openshift_co
 
 ## References
 
-* [MetalLB Operator documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/networking/load-balancing-with-metallb)
+* [MetalLB Operator documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/networking/load-balancing-with-metallb)

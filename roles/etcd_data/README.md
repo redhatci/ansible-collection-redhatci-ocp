@@ -4,7 +4,7 @@ The `etcd data` role allows to query, encrypt or decrypt etcd data using the sup
 
 By default etcd data is not encrypted in OpenShift Container Platform. This role takes care of encrypting/decrypting etcd data.
 
-More info is available at [Encrypting etcd data OpenShift Documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/security_and_compliance/encrypting-etcd#about-etcd_encrypting-etcd)
+More info is available at [Encrypting etcd data OpenShift Documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/security_and_compliance/encrypting-etcd#about-etcd_encrypting-etcd)
 
 > [!WARNING]:
 > - The etcd encryption might affect the memory consumption of a few resources.
