@@ -8,4 +8,5 @@ container_image: quay.io/fedora/httpd-24:latest
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
 http_store_ephemeral: false
+http_store_ip_version: ipv4
 ...
