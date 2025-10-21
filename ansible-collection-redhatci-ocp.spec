@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.10.EPOCH
+Version:        2.11.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Oct 21 2025 Pierre Blanc <pierre@redhat.com> - 2.11.EPOCH-VERS
+- Add eco-gotest role
+
 * Fri Sep 19 2025 Tony Garcia <tonyg@redhat.com> - 2.10.EPOCH-VERS
 - Add redact filter plugin
 

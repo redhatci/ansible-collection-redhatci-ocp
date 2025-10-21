@@ -1,0 +1,19 @@
+---
+
+# Eco-gotests configuration
+eco_gotests_image: "quay.io/ocp-edge-qe/eco-gotests:latest"
+eco_gotests_test_suites: []  # ['ptp', 'sriov']
+eco_gotests_log_dir: "/tmp/gotests_log"
+eco_gotests_registry_auth_file: ""
+
+# SRIOV test configuration
+eco_gotests_sriov_labels: "sriov-hw-enabled"
+eco_gotests_worker_label: "worker"
+eco_gotests_sriov_interface_list: "ens3f0np0,ens3f1np1"
+eco_gotests_network_test_container: "quay.io/ocp-edge-qe/eco-gotests-network-client:v4.19"
+eco_gotests_dpdk_test_container: "quay.io/ocp-edge-qe/eco-gotests-rootless-dpdk:v4.16.0"
+eco_gotests_frr_image: "quay.io/ocp-edge-qe/frr:stable_7.5"
+eco_gotests_sriov_timeout: "12h"
+eco_gotests_verbose_level: 100
+eco_gotests_test_verbose: true
+eco_gotests_dump_failed_tests: true
