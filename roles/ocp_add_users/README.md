@@ -2,7 +2,7 @@
 
 This role adds users to an OpenShift cluster through htpasswd Identity Provider.
 
-It configures the [htpasswd identity provider](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html-single/authentication_and_authorization/index#configuring-htpasswd-identity-provider) to allow new users to login into OpenShift Container Platform with credentials from an htpasswd file.
+It configures the [htpasswd identity provider](https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html-single/authentication_and_authorization/index#configuring-htpasswd-identity-provider) to allow new users to login into OpenShift Container Platform with credentials from an htpasswd file.
 
 When users already exist through htpasswd IdP, it will append the new users or replace old users with new password and new role.
 
@@ -43,7 +43,7 @@ oau_users:
 
 ## Roles
 
-These are the roles assigned to the users on creation. See [official documentation about the default roles](https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/postinstallation_configuration/post-install-preparing-for-users#default-roles_post-install-preparing-for-users)
+These are the roles assigned to the users on creation. See [official documentation about the default roles](https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/postinstallation_configuration/post-install-preparing-for-users#default-roles_post-install-preparing-for-users)
 
 | Role             | Description
 | ---------------- | -----------
