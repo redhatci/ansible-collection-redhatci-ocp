@@ -121,6 +121,8 @@
         name: "{{ mlb_setup_name | default('metallb') }}"
         namespace: "{{ mlb_namespace }}"
       spec:
+        interfaces:
+          - br-ex
         ipAddressPools:
           - "{{ mlb_setup_name | default('metallb') }}"
   register: l2adver
