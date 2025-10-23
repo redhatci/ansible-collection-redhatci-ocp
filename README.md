@@ -66,6 +66,7 @@ Name | Description
 [redhatci.ocp.etcd_data](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/etcd_data/README.md) | Allows to query, encrypt or decrypt etcd data using the supported encryption types.
 [redhatci.ocp.example_cnf_deploy](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/example_cnf_deploy/README.md) | Deploys the example-cnf workload on top of an OpenShift cluster
 [redhatci.ocp.extract_openshift_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/extract_openshift_installer/README.md) | Extracts openshift_installer binary from the release image.
+[redhatci.ocp.forgejo_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/forgejo_setup/README.md) | A role to deploy and configure Forgejo Git service.
 [redhatci.ocp.generate_agent_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_agent_iso/README.md) | Creates the boot ISO using OpenShift_installer's agent sub-command
 [redhatci.ocp.generate_manifests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_manifests/README.md) | Generates the manifests required for OpenShift_installer's agent sub-command
 [redhatci.ocp.generate_ssh_key_pair](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_ssh_key_pair/README.md) | Produces an ssh key pair
