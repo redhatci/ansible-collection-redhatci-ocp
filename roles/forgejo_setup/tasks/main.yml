@@ -1,0 +1,8 @@
+---
+- name: Include tasks for present state
+  ansible.builtin.include_tasks: present.yml
+  when: fs_state == 'present'
+
+- name: Include tasks for absent state
+  ansible.builtin.include_tasks: absent.yml
+  when: fs_state == 'absent'
