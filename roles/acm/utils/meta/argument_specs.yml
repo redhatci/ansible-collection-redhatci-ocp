@@ -110,3 +110,30 @@ argument_specs:
         required: true
         description: >
           The URL of the root filesystem image to use for the spoke cluster. This is used to determine the image versions.
+  validate-policies:
+    short_description: Validate ACM policies compliance
+    description: >
+      Validate that all ACM policies are compliant on the managed clusters. Fail if any enforced policy is non-compliant.
+    options:
+      utils_policy_retries:
+        type: int
+        required: false
+        default: 30
+        description: Number of retries to check for policy compliance. Default is 30.
+      utils_policy_delay:
+        type: int
+        required: false
+        default: 10
+        description: Delay in seconds between each retry to check for policy compliance. Default is 10 seconds.
+      utils_policy_namespace:
+        type: str
+        required: false
+        description: The namespace where the ACM policies are deployed.
+        default: default
+      utils_policy_strict:
+        type: bool
+        required: false
+        default: true
+        description: >
+          Whether to enforce strict compliance checking. If true, the module will fail if any policy is non-compliant.
+          Default is true.
