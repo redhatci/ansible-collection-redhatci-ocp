@@ -1,0 +1,22 @@
+---
+- name: Remove application container
+  containers.podman.podman_container:
+    name: "{{ fs_app_container_name }}"
+    state: absent
+
+- name: Remove database container
+  containers.podman.podman_container:
+    name: "{{ fs_db_container_name }}"
+    state: absent
+
+- name: Remove Podman pod
+  containers.podman.podman_pod:
+    name: "{{ fs_pod_name }}"
+    state: absent
+
+- name: Display removal information
+  ansible.builtin.debug:
+    msg:
+      - "Forgejo pod and containers have been removed"
+      - "Data directories remain at {{ fs_base_dir }}"
+      - "To completely remove all data, manually delete: {{ fs_base_dir }}"
