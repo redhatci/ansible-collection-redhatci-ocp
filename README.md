@@ -1,7 +1,7 @@
 [![Ansible Collection](https://img.shields.io/badge/dynamic/json?color=orange&style=flat&label=collection&prefix=v&url=https://galaxy.ansible.com/api/v3/collections/redhatci/ocp/&query=highest_version.version)](https://galaxy.ansible.com/ui/repo/published/redhatci/ocp/)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/redhatci/ansible-collection-redhatci-ocp)](https://github.com/redhatci/ansible-collection-redhatci-ocp/commits/main)
 [![GitHub Contributors](https://img.shields.io/github/contributors/redhatci/ansible-collection-redhatci-ocp)](https://github.com/redhatci/ansible-collection-redhatci-ocp/graphs/contributors)
-[![Zuul RPM build](https://softwarefactory-project.io/zuul/api/tenant/local/badge?pipeline=dci-post&project=redhatci/ansible-collection-redhatci-ocp)](https://softwarefactory-project.io/zuul/t/local/builds?project=redhatci%252Fansible-collection-redhatci-ocp&pipeline=dci-post)
+[![Zuul RPM build](https://gateway-cloud-softwarefactory.apps.ocp.cloud.ci.centos.org/zuul/api/tenant/dci/badge?pipeline=check&project=redhatci/ansible-collection-redhatci-ocp)](https://gateway-cloud-softwarefactory.apps.ocp.cloud.ci.centos.org/zuul/t/dci/builds?project=redhatci%252Fansible-collection-redhatci-ocp&pipeline=check)
 [![Ansible Galaxy Publish](https://github.com/redhatci/ansible-collection-redhatci-ocp/actions/workflows/publish.yml/badge.svg)](https://github.com/redhatci/ansible-collection-redhatci-ocp/actions/workflows/publish.yml)
 [![DCI Merge Queue](https://github.com/redhatci/ansible-collection-redhatci-ocp/actions/workflows/dci-merge.yml/badge.svg)](https://github.com/redhatci/ansible-collection-redhatci-ocp/actions/workflows/dci-merge.yml)
 
