@@ -1,0 +1,17 @@
+- name: Get all worker nodes
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+    label_selectors:
+      - "node-role.kubernetes.io/worker"
+  register: _ecd_worker_nodes_info
+
+- name: Fail if no worker nodes are found
+  ansible.builtin.fail:
+    msg: "No worker nodes found in the cluster."
+  when: _ecd_worker_nodes_info.resources | length == 0
+
+
+- name: Set deployment type variable based on worker node count
+  ansible.builtin.set_fact:
+    ecd_deployment_type: "{{ (_ecd_worker_nodes_info.resources | length == 1) | ternary('single-node', 'multi-node') }}"

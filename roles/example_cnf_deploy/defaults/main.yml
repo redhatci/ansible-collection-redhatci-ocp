@@ -82,6 +82,10 @@ ecd_run_deployment: 1
 # (see https://access.redhat.com/solutions/6560521 for an example).
 ecd_enable_privileged_mode: false
 
+# Deployment type. If set to "single-node", the automation will deploy the workloads on the single node.
+# If set to "multi-node", the automation will deploy each workload on a different node.
+ecd_deployment_type: "multi-node"
+
 # TestPMD related variables
 
 ## Use reduced mode (if different than 0), where only three cores are used, and txd/rxd parameters are doubled

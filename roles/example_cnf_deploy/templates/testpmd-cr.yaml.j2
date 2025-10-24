@@ -11,6 +11,7 @@ spec:
   networks: {{ ecd_networks_cnfapp }}
   reducedMode: {{ ecd_testpmd_reduced_mode }}
   runDeployment: {{ ecd_run_deployment }}
+  deploymentType: {{ ecd_deployment_type }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
   runtime_class_name: "{{ ecd_high_perf_runtime }}"
 {% endif %}

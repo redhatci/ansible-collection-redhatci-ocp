@@ -6,10 +6,12 @@ The DPDK workload to be launched could be either [TestPMD](https://doc.dpdk.org/
 
 ## Prerequisites
 
-OpenShift >=4.14 Cluster with at least 3 worker nodes should be deployed with additional operators:
+OpenShift >=4.14 Cluster should be deployed with additional operators:
 
 - SR-IOV operator should be deployed and necessary resources for `SriovNetworkNodePolicy` and `SriovNetwork` should be created with target namespace (default namespace used to deploy example-cnf is `example-cnf`).
 - Node Tuning Operator should be deployed and a `PerformanceProfile` should be created.
+
+This deployment has usually been validated in a multi-node cluster, with at least 3 worker nodes. But it is suitable for SNO deployments too if just testing the workload deployment (but not valid for upgrade or draining scenarios, where at least two worker nodes are needed to move workloads between nodes). Anyway, note that the documentation will always refer to the multi-node case.
 
 Also, exported `kubeconfig` file is required to run the Ansible tasks on the target cluster.
 
@@ -49,6 +51,7 @@ Also, exported `kubeconfig` file is required to run the Ansible tasks on the tar
 | ecd_trex_server_deployment_size       | 1                                                                                               | no       | Number of replicas for the TRexServer deployment |
 | ecd_run_deployment                    | 1                                                                                               | no       | Run all deployment automation. If different than 1, the automation will only create the pods and prepare the scripts to launch testpmd/grout and trex manually afterwards |
 | ecd_enable_privileged_mode            | false                                                                                           | no       | Enable container privileged mode, instead of setting specific capabilities. This is required when using Mellanox cards, because it requires access to /dev/vfio/vfio from host since it uses netdevice instead of vfio-pci. To achieve that, using a volume with hostPath is not enough, so that privileged mode is required (see [this](https://access.redhat.com/solutions/6560521) for an example of this). |
+| ecd_deployment_type                   | multi-node                                                                                      | no       | Deployment type. If set to "single-node", the automation will deploy the workloads on the single node. If set to "multi-node", the automation will deploy each workload on a different node. |
 | ecd_testpmd_reduced_mode              | 0                                                                                               | no       | Use reduced mode for TestPMD (if different than 0), where only three cores are used, and txd/rxd parameters are doubled |
 | ecd_trex_test_config                  | []                                                                                              | no       | TRex test configuration. See an example below |
 | ecd_trex_cr_name                      | trexconfig                                                                                      | no       | Name of the TRex CR |

@@ -6,6 +6,9 @@
     - ecd_cnfapp_name == "grout"
     - ecd_network_config_file|length == 0
 
+- name: "Check nodes and set deployment type"
+  ansible.builtin.include_tasks: check_nodes.yml
+
 - name: "Find versions from the catalog"
   ansible.builtin.shell:
     cmd: >
