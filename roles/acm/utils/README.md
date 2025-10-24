@@ -21,6 +21,10 @@ Brings functionality that is commonly used among those roles.
 | utils_ocp_version                   | None                                | disconnect-agent                 | OpenShift version to use by the Assisted Images service.
 | utils_iso_url                       | None                                | disconnect-agent                 | The URL to the ISO image to use in the Assisted Images service.
 | utils_root_fs_url                   | None                                | disconnect-agent                 | The URL to the rootfs image to use in the Assisted Images service.
+| utils_policy_retries                | 30                                  | validate-policies                | Number of retries for policy validation.
+| utils_policy_delay                  | 10                                  | validate-policies                | Delay in seconds between retries for policy validation.
+| utils_policy_namespace              | default                             | validate-policies                | The namespace where the ACM policies are deployed.
+| utils_policy_strict                 | true                                | validate-policies                | Policy compliance level. If true, the check fails if any policy is non-compliant.
 
 ## Utilities
 
@@ -121,4 +125,18 @@ This task generates the `utils_acm_registries` variable containing the transform
   ansible.builtin.include_role:
     name: redhatci.ocp.acm.utils
     tasks_from: disconnect-agent
+```
+
+### Example: Validate Policies
+
+```yaml
+- name: Validate all policies are compliant
+  vars:
+    utils_policy_retries: 20
+    utils_policy_delay: 15
+    utils_policy_namespace: "policy-namespace"
+    utils_policy_strict: true
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: validate-policies
 ```

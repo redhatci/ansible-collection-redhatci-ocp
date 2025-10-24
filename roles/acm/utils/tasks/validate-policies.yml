@@ -1,0 +1,61 @@
+---
+- name: Get policies for the namespace
+  kubernetes.core.k8s_info:
+    api_version: policy.open-cluster-management.io/v1
+    kind: Policy
+    namespace: "{{ utils_policy_namespace }}"
+  register: all_policies
+  no_log: true
+  until:
+    - all_policies.resources is defined
+    - all_policies.resources | length > 0
+    - >-
+      all_policies.resources
+      | json_query("[?status.compliant && status.compliant != 'Compliant' && spec.remediationAction == 'enforce'].metadata.name")
+      | length == 0
+    - >-
+      all_policies.resources
+      | json_query("[?status.compliant && status.compliant != 'Compliant'].metadata.name")
+      | length == 0
+  retries: "{{ utils_policy_retries }}"
+  delay: "{{ utils_policy_delay }}"
+  failed_when: all_policies is undefined
+
+- name: Validate ACM policies
+  vars:
+    non_compliant_policies: >-
+      {{ all_policies.resources
+      | json_query("[?status.compliant && status.compliant != 'Compliant'].metadata.name") }}
+    non_compliant_enforced_policies: >-
+      {{ all_policies.resources
+      | json_query("[?status.compliant && status.compliant != 'Compliant' && spec.remediationAction == 'enforce'].metadata.name") }}
+  when:
+    - all_policies.resources is defined
+    - all_policies.resources | length > 0
+  block:
+    - name: List all policies
+      ansible.builtin.debug:
+        msg: "Policies: {{ all_policies.resources | json_query('[].metadata.name') }}"
+
+    - name: List non-compliant enforced policies
+      ansible.builtin.debug:
+        msg: "Non-compliant enforced: {{ non_compliant_enforced_policies }}"
+
+    - name: List non-compliant policies
+      ansible.builtin.debug:
+        msg: "Non-compliant: {{ non_compliant_policies }}"
+
+    - name: Fail if enforced policies are non-compliant
+      ansible.builtin.fail:
+        msg: >-
+          Non-compliant Enforced policies: {{ non_compliant_enforced_policies }}
+      when:
+        - non_compliant_enforced_policies | length > 0
+
+    - name: Fail if any policy is non-compliant
+      ansible.builtin.fail:
+        msg: >-
+          Policies not compliant: {{ non_compliant_policies }}
+      when:
+        - utils_policy_strict
+        - non_compliant_policies | length > 0
