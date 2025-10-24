@@ -3,6 +3,14 @@
   ansible.builtin.assert:
     that: ecd_cnfapp_name == 'testpmd'
 
+- name: "Check nodes and set deployment type"
+  ansible.builtin.include_tasks: check_nodes.yml
+
+- name: "Fail if running on single-node type"
+  ansible.builtin.fail:
+    msg: "Validation cannot be run on single-node type clusters."
+  when: ecd_deployment_type == "single-node"
+
 - name: Gather facts
   ansible.builtin.include_tasks: draining/gather-facts.yml
 

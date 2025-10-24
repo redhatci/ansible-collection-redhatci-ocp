@@ -21,17 +21,6 @@
     msg: "ClusterVersion object version is not available"
   when: _ecd_cluster_version.resources[0].spec.channel|length == 0
 
-- name: "Get all nodes"
-  kubernetes.core.k8s_info:
-    kind: Node
-  register: _ecd_nodes
-  no_log: true
-
-- name: "Fail when the minimum workers are not met"
-  ansible.builtin.fail:
-    msg: "Minimum 2 worker nodes are required to run example-cnf applications"
-  when: "_ecd_nodes.resources|length < 2"
-
 - name: "Fail when SRIOV networks info is not available"
   ansible.builtin.fail:
     msg: "'ecd_sriov_networks' is required"

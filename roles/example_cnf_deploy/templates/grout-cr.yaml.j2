@@ -9,6 +9,7 @@ spec:
   size: {{ ecd_grout_deployment_size }}
   networks: {{ ecd_networks_cnfapp }}
   runDeployment: {{ ecd_run_deployment }}
+  deploymentType: {{ ecd_deployment_type }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
   runtime_class_name: "{{ ecd_high_perf_runtime }}"
 {% endif %}

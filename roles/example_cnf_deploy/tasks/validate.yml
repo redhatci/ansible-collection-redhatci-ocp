@@ -3,6 +3,14 @@
 - name: Run validation tasks if the automation deployment was previously launched
   when: ecd_run_deployment == 1
   block:
+    - name: "Check nodes and set deployment type"
+      ansible.builtin.include_tasks: check_nodes.yml
+
+    - name: "Fail if running on single-node type"
+      ansible.builtin.fail:
+        msg: "Validation cannot be run on single-node type clusters."
+      when: ecd_deployment_type == "single-node"
+
     - name: "Migrate tasks"
       ansible.builtin.include_tasks: validate/migrate.yml
 
