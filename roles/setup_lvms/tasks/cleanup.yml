@@ -1,0 +1,17 @@
+---
+- name: Erase volume group to prevent failures if already exists
+  delegate_to: "{{ item }}"
+  become: true
+  ansible.builtin.shell: |
+     set -eo pipefail
+     if vgs --noheadings -o vg_name | grep -qw "{{ sl_dev_class_name }}" 2>/dev/null; then
+       vgremove -y "{{ sl_dev_class_name }}"
+       echo "VG_REMOVED"
+     else
+       echo "VG_NOT_FOUND"
+     fi
+  with_items: "{{ groups['masters'] | default([]) + groups['workers'] | default([]) }}"
+  register: _sl_erase_volume_group_output
+  changed_when: "'VG_REMOVED' in _sl_erase_volume_group_output.stdout"
+  failed_when: _sl_erase_volume_group_output.rc != 0
+...
