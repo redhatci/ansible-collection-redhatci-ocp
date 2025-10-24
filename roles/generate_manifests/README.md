@@ -41,4 +41,4 @@ All of the variables have sane defaults which you can override to force things, 
     name: redhatci.ocp.generate_manifests
 ```
 
-[^1]: As per the [OCP 4.17 docs](https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html-single/installing_an_on-premise_cluster_with_the_agent-based_installer/index#root-device-hints_preparing-to-install-with-agent-based-installer)
+[^1]: As per the [OCP 4.17 docs](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html-single/installing_an_on-premise_cluster_with_the_agent-based_installer/index#root-device-hints_preparing-to-install-with-agent-based-installer)

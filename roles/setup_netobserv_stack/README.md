@@ -118,7 +118,7 @@ The following are some recommended actions in case there are issues during the d
 
 # References
 
-* [Network Observability Operator documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/network_observability/configuring-network-observability-operators)
+* [Network Observability Operator documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/network_observability/configuring-network-observability-operators)
 * [olm_operator](../olm_operator/README.md): A role that installs OLM based operators.
 * [dci-openshfit-agent](https://github.com/redhat-cip/dci-openshift-agent/): An agent that allows the deployment of OCP clusters, it is integrated with DCI (Red Hat Distributed CI).
 * [dci-openshfit-app-agent](https://github.com/redhat-cip/dci-openshift-app-agent/): An agent that allows the deployment of workloads and certification testing on top OCP clusters, it is integrated with DCI (Red Hat Distributed CI).
