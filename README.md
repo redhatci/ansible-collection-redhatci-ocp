@@ -61,6 +61,7 @@ Name | Description
 [redhatci.ocp.deploy_cr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/deploy_cr/README.md) | Deploys a custom resource
 [redhatci.ocp.deprecated_api](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/deprecated_api/README.md) | Extracts deprecated API calls in a cluster
 [redhatci.ocp.destroy_vms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/destroy_vms/README.md) | Destroys libvirt network, storage pools and the KVM Nodes and the network bridge connection.
+[redhatci.ocp.eco_gotests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/eco_gotests/README.md) | Execute the eco_gotests tests suites in an OCP deployment.
 [redhatci.ocp.efi_boot_mgr](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/efi_boot_mgr/README.md) | Removes the non-active UEFI boot entries from OCP nodes.
 [redhatci.ocp.etcd_data](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/etcd_data/README.md) | Allows to query, encrypt or decrypt etcd data using the supported encryption types.
 [redhatci.ocp.example_cnf_deploy](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/example_cnf_deploy/README.md) | Deploys the example-cnf workload on top of an OpenShift cluster

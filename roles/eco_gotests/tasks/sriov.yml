@@ -1,0 +1,33 @@
+---
+- name: "Run SRIOV tests with eco-gotests"
+  containers.podman.podman_container:
+    name: "eco-gotests-sriov-{{ eco_gotests_date }}"
+    image: "{{ eco_gotests_image }}"
+    state: started
+    interactive: true
+    network_mode: host
+    uidmap:
+      - "0:1:1000"
+      - "1000:0:1"
+    env:
+      KUBECONFIG: "/kubeconfig/kubeconfig"
+      ECO_REPORTS_DUMP_DIR: "/tmp/reports"
+      ECO_VERBOSE_LEVEL: "{{ eco_gotests_verbose_level }}"
+      ECO_TEST_VERBOSE: "{{ eco_gotests_test_verbose | lower }}"
+      ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | lower }}"
+      ECO_TEST_FEATURES: "sriov"
+      ECO_TEST_LABELS: "{{ eco_gotests_sriov_labels }}"
+      ECO_WORKER_LABEL: "{{ eco_gotests_worker_label }}"
+      ECO_CNF_CORE_NET_CNF_MCP_LABEL: "{{ eco_gotests_worker_label }}"
+      ECO_CNF_CORE_NET_SRIOV_INTERFACE_LIST: "{{ eco_gotests_sriov_interface_list }}"
+      ECO_CNF_CORE_NET_TEST_CONTAINER: "{{ eco_gotests_network_test_container }}"
+      ECO_CNF_CORE_NET_DPDK_TEST_CONTAINER: "{{ eco_gotests_dpdk_test_container }}"
+      ECO_CNF_CORE_NET_FRR_IMAGE: "{{ eco_gotests_frr_image }}"
+      REGISTRY_AUTH_FILE: "{{ eco_gotests_registry_auth_file }}"
+    volumes:
+      - "{{ eco_gotests_kubconfig_dir }}/:/kubeconfig:Z"
+      - "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/sriov:/tmp/reports:Z"
+    detach: false
+    remove: true
+    command: ["--timeout={{ eco_gotests_sriov_timeout }}", "--keep-going"]
+  failed_when: false

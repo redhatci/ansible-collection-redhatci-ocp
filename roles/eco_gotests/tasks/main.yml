@@ -1,0 +1,31 @@
+---
+- name: "Get current date"
+  ansible.builtin.set_fact:
+    eco_gotests_date: "{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: "Create reports directory"
+  ansible.builtin.file:
+    path: "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/{{ item | lower }}"
+    state: directory
+    mode: '0755'
+  loop: "{{ eco_gotests_test_suites | list }}"
+
+- name: "Eco_gotests : Run PTP tests"
+  ansible.builtin.include_tasks: ptp.yml
+  when:
+    - '"ptp" in ( eco_gotests_test_suites | lower )'
+
+- name: "Eco_gotests : Run SRIOV tests"
+  ansible.builtin.include_tasks: sriov.yml
+  when:
+    - '"sriov" in ( eco_gotests_test_suites | lower )'
+
+- name: "Rename junit XML files with the feature name"
+  ansible.builtin.shell: |
+    for d in ptp sriov; do
+      if [ -d "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/${d}" ]; then
+        cd "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/${d}"
+        for i in *; do mv "${i}" "${d}_${i}"; done
+      fi
+    done
+  changed_when: false
