@@ -83,7 +83,7 @@
             {% endif %}
             {% if cert_project_id | default('') | length %}
             -e PFLT_PYXIS_API_TOKEN={{ lookup('file', pyxis_apikey_path) }}
-            -e PFLT_CERTIFICATION_PROJECT_ID={{ cert_project_id }}
+            -e PFLT_CERTIFICATION_COMPONENT_ID={{ cert_project_id }}
             {% endif %}
             -v {{ preflight_container_artifacts.path }}:/artifacts
             {% if partner_creds | length %}
