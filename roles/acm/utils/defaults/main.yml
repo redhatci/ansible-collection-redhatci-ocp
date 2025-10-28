@@ -5,4 +5,10 @@ utils_monitor_wait_time: 3
 utils_unqualified_search_registries:
   - registry.redhat.io
   - docker.io
+
+# Policy validation defaults
+utils_policy_retries: 30
+utils_policy_delay: 10
+utils_policy_namespace: default
+utils_policy_strict: true
 ...
