@@ -23,10 +23,10 @@
         {% endif %}
         {% if item.0.pyxis_container_identifier | default('') | length %}
         -e PFLT_PYXIS_API_TOKEN={{ lookup('file', pyxis_apikey_path) }}
-        -e PFLT_CERTIFICATION_PROJECT_ID={{ item.0.pyxis_container_identifier }}
+        -e PFLT_CERTIFICATION_COMPONENT_ID={{ item.0.pyxis_container_identifier }}
         {% elif item.2.pyxis_container_identifier | default('') | length %}
         -e PFLT_PYXIS_API_TOKEN={{ lookup('file', pyxis_apikey_path) }}
-        -e PFLT_CERTIFICATION_PROJECT_ID={{ item.2.pyxis_container_identifier }}
+        -e PFLT_CERTIFICATION_COMPONENT_ID={{ item.2.pyxis_container_identifier }}
         {% endif %}
         -v {{ item.1.path }}:/artifacts
         {% if partner_creds | length %}
