@@ -6,7 +6,7 @@
   ansible.builtin.file:
     name: "{{ manifests_dir }}"
     state: absent
-  ignore_errors: true
+  failed_when: false
 
 - name: Make cluster-manifests dir
   ansible.builtin.file:
@@ -26,6 +26,7 @@
         })
       }}"
   when: use_local_mirror_registry  | bool
+  no_log: true
 
 - name: Render agent-config templates
   ansible.builtin.template:
@@ -41,7 +42,7 @@
 # The agent-config files are eventually deleted after its usage, just
 # save them in a safe place in case of needing to check them
 - name: Save a backup of agent-config files
-  fetch:
+  ansible.builtin.fetch:
     src: "{{ manifests_dir }}/{{ item }}"
     dest: "{{ fetched_dest }}/{{ item }}"
     flat: true
