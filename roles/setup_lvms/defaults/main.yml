@@ -1,0 +1,16 @@
+---
+# Required variables - must be provided by user
+sl_dev_class_name: ""
+sl_dev_selector_paths: []
+
+# Optional variables with defaults
+sl_lvm_cluster_name: "lvmcluster"
+sl_lvm_namespace: "openshift-storage"
+sl_fstype: "xfs"
+sl_node_selector: "worker"
+sl_storage_class: ""
+sl_force_wipe_devices: false
+
+# Wait configuration
+sl_wait_retries: 60
+sl_wait_delay: 5
