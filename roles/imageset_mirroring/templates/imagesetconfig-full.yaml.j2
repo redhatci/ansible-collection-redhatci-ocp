@@ -1,0 +1,10 @@
+apiVersion: mirror.openshift.io/v2alpha1
+kind: ImageSetConfiguration
+mirror:
+  operators:
+    - catalog: {{ im_source_index }}
+      full: true
+      packages:
+{% for package in im_operators.keys() %}
+        - name: {{ package }}
+{% endfor %}

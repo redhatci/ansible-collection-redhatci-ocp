@@ -1,0 +1,101 @@
+---
+argument_specs:
+  main:
+    short_description: Mirror operators using oc-mirror with specified action
+    description: >
+      Main entry point for the imageset_mirroring role.
+    options:
+      im_task:
+        type: str
+        required: true
+        choices:
+          - latest
+          - all
+          - custom
+        description: The mirroring action to perform. Valid values are 'latest', 'all', or 'custom'.
+      im_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      im_keep_working_dir:
+        type: bool
+        required: false
+        default: false
+        description: Keep the temporary working directory after mirroring completes.
+
+  mirror-latest:
+    short_description: Mirror latest version of listed operators from a catalog
+    description: >
+      Mirror only the latest version of specified operators from a source catalog index.
+    options:
+      im_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      im_source_index:
+        type: str
+        required: true
+        description: Source catalog index (e.g., registry.redhat.io/redhat/redhat-operator-index:v4.20).
+      im_operators:
+        type: dict
+        required: true
+        description: Dictionary of operators to mirror (keys are operator names).
+      im_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      im_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).
+
+  mirror-all:
+    short_description: Mirror all channels and versions of listed operators
+    description: >
+      Mirror all channels and versions of specified operators from a source catalog index.
+    options:
+      im_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      im_source_index:
+        type: str
+        required: true
+        description: Source catalog index (e.g., registry.redhat.io/redhat/redhat-operator-index:v4.20).
+      im_operators:
+        type: dict
+        required: true
+        description: Dictionary of operators to mirror (keys are operator names).
+      im_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      im_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).
+
+  mirror-custom:
+    short_description: Mirror operators using a custom ImageSetConfiguration file
+    description: >
+      Mirror operators using a pre-defined custom ImageSetConfiguration YAML file.
+    options:
+      im_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      im_custom_config:
+        type: str
+        required: true
+        description: Path to custom ImageSetConfiguration YAML file.
+      im_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      im_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).

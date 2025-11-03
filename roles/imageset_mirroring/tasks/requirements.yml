@@ -1,0 +1,17 @@
+---
+- name: Create temporary directory for tooling
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: im_tmp.
+  register: _im_tmp_dir
+
+- name: Extract latest oc-mirror
+  ansible.builtin.unarchive:
+    src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/oc-mirror.tar.gz"
+    dest: "{{ _im_tmp_dir.path }}"
+    remote_src: true
+    mode: "0755"
+  register: _im_get_oc_mirror
+  retries: 3
+  delay: 60
+  until: _im_get_oc_mirror is success

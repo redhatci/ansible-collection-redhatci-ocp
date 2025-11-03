@@ -1,0 +1,5 @@
+---
+- name: Mirror the operators
+  vars:
+    im_imageset_config_path: "{{ im_custom_config }}"
+  ansible.builtin.include_tasks: mirroring.yml

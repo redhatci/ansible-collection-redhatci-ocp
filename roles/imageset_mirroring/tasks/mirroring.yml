@@ -1,0 +1,72 @@
+---
+- name: Mirror the operators
+  ansible.builtin.shell:
+    cmd: >
+      {{ _im_tmp_dir.path }}/oc-mirror --v2 --config={{ im_imageset_config_path }}
+      --workspace file://{{ _im_tmp_dir.path }}
+      docker://{{ im_target }}
+      {% if im_allow_insecure_registries | bool %}
+      --dest-tls-verify=false
+      --src-tls-verify=false
+      {% endif %}
+      {% if im_auths_file is defined %}
+      --authfile {{ im_auths_file }}
+      {% endif %}
+  register: _im_cmd_output
+  retries: 3
+  delay: 10
+  until: _im_cmd_output.rc == 0
+  changed_when: _im_cmd_output.rc == 0
+
+- name: "Find generated CatalogSource manifests"
+  ansible.builtin.find:
+    paths: "{{ _im_tmp_dir.path }}"
+    recurse: true
+    patterns:
+      - "cs-redhat-operator-index*.yaml"
+  register: _im_catalog_manifest
+
+- name: "Find generated IDMS manifests"
+  ansible.builtin.find:
+    paths: "{{ _im_tmp_dir.path }}"
+    recurse: true
+    patterns:
+      - "idms-oc-mirror.yaml"
+  register: _im_image_source_manifest
+
+- name: "Create output directory for manifests"
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: im_output.
+  register: _im_output_dir
+  when:
+    - _im_image_source_manifest.matched > 0
+      or _im_catalog_manifest.matched > 0
+
+- name: "Copy IDMS to output directory"
+  ansible.builtin.copy:
+    src: "{{ _im_image_source_manifest.files[0].path }}"
+    dest: "{{ _im_output_dir.path }}/{{ _im_image_source_manifest.files[0].path | basename }}"
+    mode: "0644"
+    remote_src: true
+  when:
+    - _im_image_source_manifest.matched > 0
+
+- name: "Copy CatalogSource to output directory"
+  ansible.builtin.copy:
+    src: "{{ _im_catalog_manifest.files[0].path }}"
+    dest: "{{ _im_output_dir.path }}/catalogSource.yaml"
+    mode: "0644"
+    remote_src: true
+  when:
+    - _im_catalog_manifest.matched > 0
+
+- name: "Set IDMS fact"
+  ansible.builtin.set_fact:
+    im_image_source_file: "{{ _im_output_dir.path }}/{{ _im_image_source_manifest.files[0].path | basename }}"
+  when: _im_image_source_manifest.matched > 0
+
+- name: "Set CatalogSource fact"
+  ansible.builtin.set_fact:
+    im_catalog_source_file: "{{ _im_output_dir.path }}/catalogSource.yaml"
+  when: _im_catalog_manifest.matched > 0
