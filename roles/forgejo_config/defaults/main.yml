@@ -1,0 +1,58 @@
+---
+# Forgejo instance connection details
+fc_url: "http://localhost:3000"
+fc_admin_user: forgejo
+fc_admin_password: ""
+
+# Users to create
+# Example:
+# fc_users:
+#   - username: developer1
+#     email: developer1@example.com
+#     password: SecurePass123
+#     full_name: "Developer One"
+#     must_change_password: false
+#   - username: developer2
+#     email: developer2@example.com
+#     password: SecurePass456
+fc_users: []
+
+# Organizations to create
+# Example:
+# fc_orgs:
+#   - name: myorg
+#     full_name: "My Organization"
+#     description: "Organization for my projects"
+#     visibility: public                      # public or private
+#     members:
+#       - username: developer1
+#         role: owner                         # owner or member
+#       - username: developer2
+#         role: member
+fc_orgs: []
+
+# Repositories to create
+# Example:
+# fc_repositories:
+#   - name: myrepo
+#     owner: developer1                       # username or organization name
+#     description: "My repository"
+#     private: true
+#     auto_init: false
+#     default_branch: main
+fc_repositories: []
+
+# SSH keys management
+# Example:
+# fc_ssh_keys:
+#   - username: developer1
+#     title: "My SSH Key"
+#     pub_key: "/path/to/pub/key"            # If provided, use this key
+#     generate: false                        # If true and key is not provided, generate a new key pair
+#     priv_key: "/path/to/save/private/key"  # Where to save generated private key
+fc_ssh_keys: []
+
+# Wait/retry settings for API calls
+fc_api_retries: 3
+fc_api_delay: 2
+...

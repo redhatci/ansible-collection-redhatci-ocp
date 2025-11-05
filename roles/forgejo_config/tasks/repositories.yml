@@ -1,0 +1,57 @@
+---
+- name: Check repository {{ repo.owner ~ '/' ~ repo.name }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/repos/{{ repo.owner }}/{{ repo.name }}"
+    method: GET
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [200, 404]
+  register: _fc_repo_check
+  no_log: true
+
+- name: Create repository {{ repo.owner ~ '/' ~ repo.name }}
+  vars:
+    _fc_repo_endpoint: >-
+      {% if repo.owner in fc_orgs | map(attribute='name') | list %}
+      {{ fc_url }}/api/v1/orgs/{{ repo.owner }}/repos
+      {% else %}
+      {{ fc_url }}/api/v1/admin/users/{{ repo.owner }}/repos
+      {% endif %}
+  ansible.builtin.uri:
+    url: "{{ _fc_repo_endpoint }}"
+    method: POST
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [201, 409, 422]
+    body_format: json
+    body:
+      name: "{{ repo.name }}"
+      description: "{{ repo.description | default('') }}"
+      private: "{{ repo.private | default(true) }}"
+      auto_init: "{{ repo.auto_init | default(false) }}"
+      default_branch: "{{ repo.default_branch | default('main') }}"
+      gitignores: "{{ repo.gitignores | default('') }}"
+      license: "{{ repo.license | default('') }}"
+      readme: "{{ repo.readme | default('') }}"
+      template: "{{ repo.template | default(false) }}"
+      trust_model: "{{ repo.trust_model | default('default') }}"
+  register: _fc_repo_create
+  when: _fc_repo_check.status == 404
+  no_log: true
+  retries: "{{ fc_api_retries }}"
+  delay: "{{ fc_api_delay }}"
+  until: _fc_repo_create.status in [201, 409, 422]
+
+- name: Display repository creation result for {{ repo.owner ~ '/' ~ repo.name }}
+  ansible.builtin.debug:
+    msg: >-
+      {% if _fc_repo_check.status == 200 %}
+      Repository {{ repo.owner }}/{{ repo.name }} already exists, skipped
+      {% elif _fc_repo_create is defined and _fc_repo_create.status == 201 %}
+      Repository {{ repo.owner }}/{{ repo.name }} created successfully
+      {% else %}
+      Repository {{ repo.owner }}/{{ repo.name }} status unknown
+      {% endif %}
+...
