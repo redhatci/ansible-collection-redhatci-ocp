@@ -1,0 +1,232 @@
+---
+argument_specs:
+  main:
+    short_description: Configure a Forgejo Git service instance
+    description:
+      - This role configures an already deployed Forgejo instance
+      - Manages users, organizations, repositories, and SSH keys via the Forgejo API
+    author:
+      - Red Hat CI Team
+    options:
+      fc_url:
+        description:
+          - URL to the Forgejo instance
+          - Must be accessible from the Ansible control node
+        type: str
+        default: "http://localhost:3000"
+        required: false
+
+      fc_admin_user:
+        description:
+          - Admin username for API authentication
+          - This user must have admin privileges in Forgejo
+        type: str
+        default: forgejo
+        required: false
+
+      fc_admin_password:
+        description:
+          - Admin password for API authentication
+          - Should be stored securely (e.g., Ansible Vault)
+        type: str
+        required: true
+
+      fc_users:
+        description:
+          - List of users to create in Forgejo
+          - Each user requires username, email, and password
+          - Existing users are skipped automatically
+        type: list
+        elements: dict
+        required: false
+        default: []
+        options:
+          username:
+            description: Username for the new user
+            type: str
+            required: true
+          email:
+            description: Email address for the user
+            type: str
+            required: true
+          password:
+            description: Password for the user account
+            type: str
+            required: true
+          full_name:
+            description: Full display name for the user
+            type: str
+            required: false
+          must_change_password:
+            description: Force user to change password on first login
+            type: bool
+            required: false
+            default: false
+          send_notify:
+            description: Send notification email to user
+            type: bool
+            required: false
+            default: false
+
+      fc_orgs:
+        description:
+          - List of organizations to create in Forgejo
+          - Can include members with specific roles
+          - Existing organizations are skipped automatically
+        type: list
+        elements: dict
+        required: false
+        default: []
+        options:
+          name:
+            description: Organization name (username)
+            type: str
+            required: true
+          full_name:
+            description: Full organization name
+            type: str
+            required: false
+          description:
+            description: Organization description
+            type: str
+            required: false
+          visibility:
+            description: Organization visibility
+            type: str
+            required: false
+            default: public
+            choices:
+              - public
+              - private
+          members:
+            description: List of members to add to the organization
+            type: list
+            elements: dict
+            required: false
+            options:
+              username:
+                description: Username of member to add
+                type: str
+                required: true
+              role:
+                description: Role of the member in the organization
+                type: str
+                required: false
+                default: member
+                choices:
+                  - owner
+                  - member
+
+      fc_repositories:
+        description:
+          - List of repositories to create
+          - Can be owned by users or organizations
+          - Existing repositories are skipped automatically
+        type: list
+        elements: dict
+        required: false
+        default: []
+        options:
+          name:
+            description: Repository name
+            type: str
+            required: true
+          owner:
+            description: Repository owner (username or organization name)
+            type: str
+            required: true
+          description:
+            description: Repository description
+            type: str
+            required: false
+          private:
+            description: Create as private repository
+            type: bool
+            required: false
+            default: true
+          auto_init:
+            description: Initialize repository with README
+            type: bool
+            required: false
+            default: false
+          default_branch:
+            description: Default branch name
+            type: str
+            required: false
+            default: main
+          gitignores:
+            description: Gitignore template to use
+            type: str
+            required: false
+          license:
+            description: License template to use
+            type: str
+            required: false
+          readme:
+            description: README template to use
+            type: str
+            required: false
+          template:
+            description: Create as template repository
+            type: bool
+            required: false
+            default: false
+          trust_model:
+            description: Repository trust model
+            type: str
+            required: false
+            default: default
+
+      fc_ssh_keys:
+        description:
+          - List of SSH keys to manage for users
+          - Can provide existing keys or generate new ones
+          - Existing keys are skipped automatically
+        type: list
+        elements: dict
+        required: false
+        default: []
+        options:
+          username:
+            description: Username to add SSH key for
+            type: str
+            required: true
+          title:
+            description: Title/label for the SSH key
+            type: str
+            required: false
+            default: "SSH Key"
+          pub_key:
+            description: Public SSH key file path (if not generating)
+            type: str
+            required: false
+          generate:
+            description: Generate new SSH key pair
+            type: bool
+            required: false
+            default: false
+          priv_key:
+            description: Path to save generated private key
+            type: path
+            required: false
+          read_only:
+            description: Create as read-only key
+            type: bool
+            required: false
+            default: false
+
+      fc_api_retries:
+        description:
+          - Number of retries for API calls
+          - Used when API calls fail transiently
+        type: int
+        required: false
+        default: 3
+
+      fc_api_delay:
+        description:
+          - Delay in seconds between API retry attempts
+        type: int
+        required: false
+        default: 2
+...

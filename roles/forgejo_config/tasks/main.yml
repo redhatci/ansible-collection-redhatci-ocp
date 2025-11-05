@@ -1,0 +1,47 @@
+---
+- name: Check Forgejo instance is accessible
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/version"
+    method: GET
+    status_code: 200
+  register: _fc_version
+  retries: "{{ fc_api_retries }}"
+  delay: "{{ fc_api_delay }}"
+  until: not _fc_version.failed
+
+- name: Display Forgejo version
+  ansible.builtin.debug:
+    msg: "Connected to Forgejo version {{ _fc_version.json.version }}"
+
+- name: Create users
+  ansible.builtin.include_tasks: users.yml
+  loop: "{{ fc_users }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user.username }}"
+  when: fc_users | length > 0
+
+- name: Create organizations
+  ansible.builtin.include_tasks: orgs.yml
+  loop: "{{ fc_orgs }}"
+  loop_control:
+    loop_var: org
+    label: "{{ org.name }}"
+  when: fc_orgs | length > 0
+
+- name: Create repositories
+  ansible.builtin.include_tasks: repositories.yml
+  loop: "{{ fc_repositories }}"
+  loop_control:
+    loop_var: repo
+    label: "{{ repo.owner }}/{{ repo.name }}"
+  when: fc_repositories | length > 0
+
+- name: Manage SSH keys
+  ansible.builtin.include_tasks: ssh_keys.yml
+  loop: "{{ fc_ssh_keys }}"
+  loop_control:
+    loop_var: ssh_key
+    label: "{{ ssh_key.username }}"
+  when: fc_ssh_keys | length > 0
+...
