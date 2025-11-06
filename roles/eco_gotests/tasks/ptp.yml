@@ -1,0 +1,21 @@
+---
+- name: "Run PTP tests with eco-gotests"
+  containers.podman.podman_container:
+    name: "eco-gotests-ptp-{{ eco_gotests_date }}"
+    image: "{{ eco_gotests_image }}"
+    state: started
+    interactive: true
+    network_mode: host
+    uidmap:
+      - "0:1:1000"
+      - "1000:0:1"
+    env:
+      KUBECONFIG: "/kubeconfig/kubeconfig"
+      ECO_TEST_FEATURES: "ptp"
+      REGISTRY_AUTH_FILE: "{{ eco_gotests_registry_auth_file }}"
+    volumes:
+      - "{{ eco_gotests_kubconfig_dir }}/:/kubeconfig:Z"
+      - "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/ptp:/tmp/reports:Z"
+    detach: false
+    remove: true
+  failed_when: false
