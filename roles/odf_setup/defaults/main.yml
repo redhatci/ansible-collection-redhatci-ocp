@@ -37,3 +37,6 @@ odf_setup_oc_tool_path: /usr/local/bin/oc
 # ODF encryption support
 odf_setup_enable_encryption: false
 odf_setup_key_rotation_period: weekly
+
+# ODF enable Ceph Tools
+odf_setup_enable_ceph_tools: true
