@@ -4,9 +4,7 @@ metadata:
   namespace: {{ ocs_storage_namespace }}
   name: {{ ocs_storagecluster_name }}
 spec:
-{% if odf_setup_enable_ceph_tools | bool %}
-  enableCephTools: true
-{% endif %}
+  enableCephTools: {{ odf_setup_enable_ceph_tools | bool }}
 {% if odf_setup_enable_encryption | bool %}
   encryption:
     clusterWide: true
