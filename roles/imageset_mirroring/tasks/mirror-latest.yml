@@ -1,0 +1,46 @@
+---
+- name: Get operator default channel and CSV
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      {{ _im_tmp_dir.path }}/oc-mirror list operators \
+        --catalog {{ im_source_index }} \
+        --package {{ item.key }} \
+        2>/dev/null | \
+      awk 'NR==2 {operator=$1; def_channel=$NF}
+            /^PACKAGE/ {in_csv_section=1; next}
+            in_csv_section && $2==def_channel {csv=$3}
+            END {print operator, def_channel, csv}'
+    executable: /bin/bash
+  register: _im_operator_info
+  until: _im_operator_info.rc == 0
+  retries: 3
+  delay: 10
+  loop: "{{ im_operators | dict2items }}"
+  changed_when: false
+
+- name: Render ImageSetConfiguration for latest version of listed operators
+  vars:
+    im_packages_var: |
+      {% for result in _im_operator_info.results %}
+      {%- set parts = result.stdout.split() %}
+      {%- set version = parts[2].split('.v')[-1] if '.v' in parts[2] else parts[2].split('-')[-1] %}
+      - name: '{{ parts[0] }}'
+        channels:
+          - name: '{{ parts[1] }}'
+            minVersion: '{{ version }}'
+            maxVersion: '{{ version }}'
+      {% endfor %}
+  ansible.builtin.template:
+    src: imagesetconfig-latest.yaml.j2
+    dest: "{{ _im_tmp_dir.path }}/imagesetconfig.yaml"
+    mode: "0644"
+
+- name: "Print ImageSetConfiguration content"
+  ansible.builtin.debug:
+    msg: "{{ lookup('file', _im_tmp_dir.path + '/imagesetconfig.yaml') }}"
+
+- name: Mirror the operators
+  vars:
+    im_imageset_config_path: "{{ _im_tmp_dir.path }}/imagesetconfig.yaml"
+  ansible.builtin.include_tasks: mirroring.yml

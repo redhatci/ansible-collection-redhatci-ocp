@@ -1,0 +1,15 @@
+---
+- name: Render ImageSetConfiguration for all versions of listed operators
+  ansible.builtin.template:
+    src: imagesetconfig-full.yaml.j2
+    dest: "{{ _im_tmp_dir.path }}/imagesetconfig.yaml"
+    mode: "0644"
+
+- name: "Print ImageSetConfiguration content"
+  ansible.builtin.debug:
+    msg: "{{ lookup('file', _im_tmp_dir.path + '/imagesetconfig.yaml') }}"
+
+- name: Mirror the operators
+  vars:
+    im_imageset_config_path: "{{ _im_tmp_dir.path }}/imagesetconfig.yaml"
+  ansible.builtin.include_tasks: mirroring.yml

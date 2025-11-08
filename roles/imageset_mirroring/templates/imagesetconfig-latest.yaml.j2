@@ -1,0 +1,8 @@
+apiVersion: mirror.openshift.io/v2alpha1
+kind: ImageSetConfiguration
+mirror:
+  operators:
+    - catalog: {{ im_source_index }}
+      full: false
+      packages:
+        {{ im_packages_var | indent( width=8, first=false)}}

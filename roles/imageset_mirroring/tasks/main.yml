@@ -1,0 +1,18 @@
+---
+- name: Mirror operators using oc-mirror
+  block:
+
+    - name: Include requirements
+      ansible.builtin.include_tasks: requirements.yml
+
+    - name: "Execute mirror-{{ im_task }}"
+      ansible.builtin.include_role:
+        name: redhatci.ocp.imageset_mirroring
+        tasks_from: "mirror-{{ im_task }}"
+
+  always:
+    - name: Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _im_tmp_dir.path }}"
+        state: absent
+      when: not im_keep_working_dir | bool
