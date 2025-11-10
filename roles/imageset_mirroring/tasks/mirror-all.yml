@@ -1,4 +1,11 @@
 ---
+- name: Validate im_operators is not empty
+  ansible.builtin.assert:
+    that:
+      - im_operators is defined
+      - im_operators | dict2items | length > 0
+    fail_msg: "im_operators must contain at least one operator"
+
 - name: Render ImageSetConfiguration for all versions of listed operators
   ansible.builtin.template:
     src: imagesetconfig-full.yaml.j2
