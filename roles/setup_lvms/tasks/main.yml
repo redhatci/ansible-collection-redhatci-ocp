@@ -1,0 +1,12 @@
+---
+- name: Validate optional variables
+  ansible.builtin.assert:
+    that:
+      - sl_storage_class | regex_search('^[a-z0-9.-]+$')
+    fail_msg: "Optional variable sl_storage_class must contain any of the following characters a-z0-9.-"
+  when: sl_storage_class | length > 0
+
+- name: "Include tasks for {{ sl_action }}"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.setup_lvms
+    tasks_from: "{{ sl_action }}"

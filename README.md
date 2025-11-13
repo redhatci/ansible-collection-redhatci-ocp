@@ -119,6 +119,7 @@ Name | Description
 [redhatci.ocp.setup_gitea](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitea/README.md) | Deployment of [Gitea](https://about.gitea.com)
 [redhatci.ocp.setup_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitops/README.md) | Configures GitOps to support Kustomize and PolicyGenerator
 [redhatci.ocp.setup_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_http_store/README.md) | Sets up a web host which can be used to distribute iso's for `boot_iso` role
+[redhatci.ocp.setup_lvms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_lvms/README.md) | Configures and cleans LVM Storage Operator
 [redhatci.ocp.setup_minio](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_minio/README.md) | Deployment of [Minio](https://min.io/).
 [redhatci.ocp.setup_mirror_registry](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_mirror_registry/README.md) | Deploys a local container registry
 [redhatci.ocp.setup_netobserv_stack](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_netobserv_stack/README.md) | Set up the OCP Network Observability subsystem

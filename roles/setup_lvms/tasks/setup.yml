@@ -1,0 +1,49 @@
+---
+- name: Create LVMCluster for specified device
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'lvmcluster.yml.j2') | from_yaml }}"
+  register: _sl_lvmcluster_create_result
+
+- name: Wait for LVM Cluster to be in ready state
+  kubernetes.core.k8s_info:
+    api_version: lvm.topolvm.io/v1alpha1
+    kind: LVMCluster
+    namespace: "{{ sl_lvm_namespace }}"
+    name: "{{ sl_lvm_cluster_name }}"
+  register: _sl_lvm_cluster_check
+  retries: "{{ sl_wait_retries }}"
+  delay: "{{ sl_wait_delay }}"
+  until:
+    - _sl_lvm_cluster_check.resources | length > 0
+    - _sl_lvm_cluster_check.resources[0].status.state is defined
+    - _sl_lvm_cluster_check.resources[0].status.state == "Ready"
+
+- name: Wait for LVM group creation
+  kubernetes.core.k8s_info:
+    api_version: lvm.topolvm.io/v1alpha1
+    kind: LVMVolumeGroup
+    namespace: "{{ sl_lvm_namespace }}"
+    name: "{{ sl_dev_class_name }}"
+  register: _sl_vg_check
+  retries: "{{ sl_wait_retries }}"
+  delay: "{{ sl_wait_delay }}"
+  until: _sl_vg_check.resources | length > 0
+
+- name: Create StorageClass
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: "{{ sl_storage_class }}"
+      provisioner: topolvm.io
+      reclaimPolicy: Delete
+      volumeBindingMode: WaitForFirstConsumer
+      parameters:
+        deviceClass: "{{ sl_dev_class_name }}"
+  when:
+    - sl_storage_class is defined
+    - sl_storage_class | length > 0
+    - sl_storage_class | regex_search('^[a-z0-9.-]+$')

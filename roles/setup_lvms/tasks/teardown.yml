@@ -1,0 +1,32 @@
+---
+- name: Delete StorageClass by name
+  kubernetes.core.k8s:
+    state: absent
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+    name: "{{ sl_storage_class }}"
+  when:
+    - sl_storage_class | length > 0
+
+- name: Delete default StorageClass based on device class
+  kubernetes.core.k8s:
+    state: absent
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+    name: "lvms-{{ sl_dev_class_name }}"
+
+- name: Delete LVMCluster CR by name
+  kubernetes.core.k8s:
+    state: absent
+    api_version: lvm.topolvm.io/v1alpha1
+    kind: LVMCluster
+    name: "{{ sl_lvm_cluster_name }}"
+    namespace: "{{ sl_lvm_namespace }}"
+
+- name: Delete logical volume group by device class
+  kubernetes.core.k8s:
+    state: absent
+    api_version: lvm.topolvm.io/v1alpha1
+    kind: LVMVolumeGroup
+    name: "{{ sl_dev_class_name }}"
+    namespace: "{{ sl_lvm_namespace }}"

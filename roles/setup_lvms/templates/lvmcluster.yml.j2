@@ -1,0 +1,22 @@
+apiVersion: lvm.topolvm.io/v1alpha1
+kind: LVMCluster
+metadata:
+  name: "{{ sl_lvm_cluster_name }}"
+  namespace: "{{ sl_lvm_namespace }}"
+spec:
+  storage:
+    deviceClasses:
+      - name: "{{ sl_dev_class_name }}"
+        default: true
+        fstype: "{{ sl_fstype }}"
+        deviceSelector:
+          paths: {{ sl_dev_selector_paths | to_json }}
+          forceWipeDevicesAndDestroyAllData: {{ sl_force_wipe_devices }}
+        thinPoolConfig:
+          name: thin-pool-1
+          overprovisionRatio: 10
+          sizePercent: 90
+  tolerations:
+    - key: "node-role.kubernetes.io/{{ sl_node_selector }}"
+      operator: "Exists"
+      effect: "NoSchedule"

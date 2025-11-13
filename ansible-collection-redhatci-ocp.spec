@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.13.EPOCH
+Version:        2.14.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+
+* Wed Nov 12 2025 Manuel Rodriguez <manrodri@redhat.com> - 2.14.EPOCH-VERS
+- Add new role setup_lvms
 
 * Thu Nov  6 2025 Beto Rdz  <josearod@redhat.com> - 2.13.EPOCH-VERS
 - Version bump for new role - imageset_mirroring

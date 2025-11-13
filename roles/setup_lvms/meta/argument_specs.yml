@@ -1,0 +1,154 @@
+---
+argument_specs:
+  main:
+    short_description: Run LVMS role entrypoint
+    description: >
+      Validate inputs and run setup or teardown tasks depending on
+      the selected action. This role requires defining the device class name
+      and device selector paths regardless of the action.
+    options:
+      sl_action:
+        type: str
+        required: false
+        default: setup
+        choices:
+          - setup
+          - teardown
+        description: Select which action to perform.
+      sl_dev_class_name:
+        type: str
+        required: true
+        description: Name of the LVMS device class (also used for default StorageClass name). Must be non-empty.
+      sl_lvm_cluster_name:
+        type: str
+        required: false
+        default: lvmcluster
+        description: Name of the LVMCluster resource.
+      sl_lvm_namespace:
+        type: str
+        required: false
+        default: openshift-storage
+        description: Namespace where LVMS resources are created.
+      sl_fstype:
+        type: str
+        required: false
+        default: xfs
+        choices:
+          - xfs
+          - ext4
+        description: >
+          Filesystem type configured for LVMS device class. Allowed values: xfs, ext4.
+      sl_force_wipe_devices:
+        type: bool
+        required: false
+        default: false
+        description: Whether to force wipe devices and destroy all data when creating LVMCluster.
+      sl_node_selector:
+        type: str
+        required: false
+        default: worker
+        description: Node role label key suffix for toleration (node-role.kubernetes.io/<value>).
+      sl_storage_class:
+        type: str
+        required: false
+        default: ""
+        description: Optional StorageClass name to create/delete. When empty, no custom StorageClass is managed.
+      sl_wait_retries:
+        type: int
+        required: false
+        default: 60
+        description: Number of retries while waiting for resources to become ready.
+      sl_wait_delay:
+        type: int
+        required: false
+        default: 5
+        description: Delay in seconds between retries when waiting for resources.
+
+  setup:
+    short_description: Create LVMCluster and optional StorageClass
+    description: >
+      Create the LVMCluster and wait until it is Ready, then wait for the
+      LVMVolumeGroup corresponding to the device class to exist. Optionally
+      create a StorageClass backed by the LVMS provisioner.
+    options:
+      sl_dev_class_name:
+        type: str
+        required: true
+        description: Name of the LVMS device class to create and wait for. Must be non-empty.
+      sl_dev_selector_paths:
+        type: list
+        required: true
+        elements: str
+        description: List of disk path patterns used by LVMS device selector (e.g. ["/dev/nvme0n1"]). Must be non-empty.
+      sl_lvm_cluster_name:
+        type: str
+        required: false
+        default: lvmcluster
+        description: Name of the LVMCluster resource.
+      sl_lvm_namespace:
+        type: str
+        required: false
+        default: openshift-storage
+        description: Namespace where LVMS resources are created.
+      sl_fstype:
+        type: str
+        required: false
+        default: xfs
+        choices:
+          - xfs
+          - ext4
+        description: >
+          Filesystem type configured for LVMS device class. Allowed values: xfs, ext4.
+      sl_force_wipe_devices:
+        type: bool
+        required: false
+        default: false
+        description: Whether to force wipe devices and destroy all data when creating LVMCluster.
+      sl_node_selector:
+        type: str
+        required: false
+        default: worker
+        description: Node role label key suffix for toleration (node-role.kubernetes.io/<value>).
+      sl_storage_class:
+        type: str
+        required: false
+        default: ""
+        description: >
+          Optional StorageClass name to create. When empty, no StorageClass is created.
+      sl_wait_retries:
+        type: int
+        required: false
+        default: 60
+        description: Number of retries while waiting for LVM resources to be ready.
+      sl_wait_delay:
+        type: int
+        required: false
+        default: 5
+        description: Delay in seconds between retries when waiting for LVM resources.
+
+  teardown:
+    short_description: Delete StorageClasses and LVM resources
+    description: >
+      Remove the custom StorageClass (if defined), the default LVMS StorageClass
+      derived from the device class, the LVMCluster, and the corresponding
+      LVMVolumeGroup.
+    options:
+      sl_dev_class_name:
+        type: str
+        required: true
+        description: Device class name used to derive default StorageClass and LVMVolumeGroup names.
+      sl_lvm_cluster_name:
+        type: str
+        required: false
+        default: lvmcluster
+        description: Name of the LVMCluster to delete.
+      sl_lvm_namespace:
+        type: str
+        required: false
+        default: openshift-storage
+        description: Namespace of LVMS resources to delete.
+      sl_storage_class:
+        type: str
+        required: false
+        default: ""
+        description: Optional custom StorageClass name to delete when provided.
