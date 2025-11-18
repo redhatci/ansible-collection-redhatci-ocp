@@ -6,6 +6,25 @@
       - im_operators | dict2items | length > 0
     fail_msg: "im_operators must contain at least one operator"
 
+- name: Build operators with catalog mapping
+  ansible.builtin.set_fact:
+    _im_operators_with_catalog: >-
+      {{
+        _im_operators_with_catalog | default([]) +
+        [{
+          'catalog': item.value.catalog | default(im_source_index),
+          'operator': item.key
+        }]
+      }}
+  loop: "{{ im_operators | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Group operators by catalog for template
+  ansible.builtin.set_fact:
+    _im_catalogs_with_operators: >-
+      {{ _im_operators_with_catalog | groupby('catalog') }}
+
 - name: Render ImageSetConfiguration for all versions of listed operators
   ansible.builtin.template:
     src: imagesetconfig-full.yaml.j2

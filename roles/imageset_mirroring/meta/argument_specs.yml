@@ -35,11 +35,16 @@ argument_specs:
       im_source_index:
         type: str
         required: true
-        description: Source catalog index (e.g., registry.redhat.io/redhat/redhat-operator-index:v4.20).
+        description: |
+          Default source catalog index (e.g., registry.redhat.io/redhat/redhat-operator-index:v4.20).
+          Can be overridden per-operator in im_operators dictionary.
       im_operators:
         type: dict
         required: true
-        description: Dictionary of operators to mirror (keys are operator names).
+        description: |
+          Dictionary of operators to mirror (keys are operator names).
+          Each operator can optionally specify a 'catalog' key to override im_source_index.
+          Example: {'operator1': {}, 'operator2': {'catalog': 'custom.io/index:v1.0'}}
       im_allow_insecure_registries:
         type: bool
         required: false
@@ -62,11 +67,16 @@ argument_specs:
       im_source_index:
         type: str
         required: true
-        description: Source catalog index (e.g., registry.redhat.io/redhat/redhat-operator-index:v4.20).
+        description: |
+          Default source catalog index (e.g., registry.redhat.io/redhat/redhat-operator-index:v4.20).
+          Can be overridden per-operator in im_operators dictionary.
       im_operators:
         type: dict
         required: true
-        description: Dictionary of operators to mirror (keys are operator names).
+        description: |
+          Dictionary of operators to mirror (keys are operator names).
+          Each operator can optionally specify a 'catalog' key to override im_source_index.
+          Example: {'operator1': {}, 'operator2': {'catalog': 'custom.io/index:v1.0'}}
       im_allow_insecure_registries:
         type: bool
         required: false

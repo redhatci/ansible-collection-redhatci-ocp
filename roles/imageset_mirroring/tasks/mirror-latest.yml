@@ -11,7 +11,7 @@
     cmd: |
       set -o pipefail
       {{ _im_tmp_dir.path }}/oc-mirror list operators \
-        --catalog {{ im_source_index }} \
+        --catalog {{ item.value.catalog | default(im_source_index) }} \
         --package {{ item.key }} \
         2>/dev/null | \
       awk 'NR==2 {operator=$1; def_channel=$NF}
@@ -24,20 +24,31 @@
   retries: 3
   delay: 10
   loop: "{{ im_operators | dict2items }}"
+  loop_control:
+    label: "{{ item.key }} from {{ item.value.catalog | default(im_source_index) }}"
   changed_when: false
 
+- name: Build operators with catalog mapping
+  ansible.builtin.set_fact:
+    _im_operators_with_catalog: >-
+      {{
+        _im_operators_with_catalog | default([]) +
+        [{
+          'catalog': item.item.value.catalog | default(im_source_index),
+          'stdout': item.stdout,
+          'operator': item.item.key
+        }]
+      }}
+  loop: "{{ _im_operator_info.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+
+- name: Group operators by catalog for template
+  ansible.builtin.set_fact:
+    _im_catalogs_with_operators: >-
+      {{ _im_operators_with_catalog | groupby('catalog') }}
+
 - name: Render ImageSetConfiguration for latest version of listed operators
-  vars:
-    im_packages_var: |
-      {% for result in _im_operator_info.results %}
-      {%- set parts = result.stdout.split() %}
-      {%- set version = parts[2].split('.v')[-1] if '.v' in parts[2] else parts[2].split('-')[-1] %}
-      - name: '{{ parts[0] }}'
-        channels:
-          - name: '{{ parts[1] }}'
-            minVersion: '{{ version }}'
-            maxVersion: '{{ version }}'
-      {% endfor %}
   ansible.builtin.template:
     src: imagesetconfig-latest.yaml.j2
     dest: "{{ _im_tmp_dir.path }}/imagesetconfig.yaml"
