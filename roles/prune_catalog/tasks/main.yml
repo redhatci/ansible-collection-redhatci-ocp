@@ -81,6 +81,37 @@
       retries: 3
       delay: 10
 
+    - name: "Render additional catalogs"
+      vars:
+        extra_catalogs: >-
+          {{
+            (pc_operators | type_debug == "dict") |
+            ternary(
+              pc_operators | dict2items |
+              selectattr('value.catalog', 'defined') |
+              map(attribute='value.catalog') |
+              list | unique |
+              difference([pc_source_catalog]),
+              []
+            )
+          }}
+      ansible.builtin.shell:
+        chdir: "{{ pc_tmp_dir }}"
+        cmd: >
+          set -x;
+          {{ pc_opm_cmd }} render {{ catalog }} >>
+          index-packages
+      loop: "{{ extra_catalogs }}"
+      loop_control:
+        loop_var: catalog
+      register: _pc_render_additional
+      changed_when: _pc_render_additional.rc == 0
+      until: _pc_render_additional.rc == 0
+      retries: 3
+      delay: 10
+      when:
+        - extra_catalogs | length > 0
+
     - name: "Extract the listed channels for each operator"
       when: pc_operators | type_debug == "dict"
       block:
