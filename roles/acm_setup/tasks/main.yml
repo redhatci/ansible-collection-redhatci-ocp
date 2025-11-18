@@ -306,15 +306,30 @@
 - name: "Create the Agent Service config"
   when: _asg.resources | length == 0
   vars:
+    agent_svc_annotations: >-
+      {{
+        (hub_img_svc_skip_tls_verify | bool) |
+        ternary(
+          {'unsupported.agent-install.openshift.io/assisted-image-service-skip-verify-tls': 'true'},
+          {}
+        ) |
+        combine(
+          (hub_disconnected | bool) |
+          ternary(
+            {'unsupported.agent-install.openshift.io/assisted-service-allow-unrestricted-image-pulls': 'true'},
+            {}
+          )
+        )
+      }}
     agent_def: |
       apiVersion: agent-install.openshift.io/v1beta1
       kind: AgentServiceConfig
       metadata:
         name: agent
         namespace: multicluster-engine
-      {% if hub_img_svc_skip_tls_verify | bool %}
+      {% if agent_svc_annotations | length > 0 %}
         annotations:
-          unsupported.agent-install.openshift.io/assisted-image-service-skip-verify-tls: "true"
+      {{ agent_svc_annotations | to_nice_yaml(indent=2) | indent(10, first=True) }}
       {% endif %}
       spec:
         databaseStorage:
