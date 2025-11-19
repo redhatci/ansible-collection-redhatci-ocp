@@ -65,7 +65,11 @@
           &&
           {{ _ac_tmp_dir.path }}/argocd
           repo
+          {% if ac_ssh_port != 22 %}
+          add ssh://{{ ac_repo.split(':')[0] }}:{{ ac_ssh_port }}/{{ ac_repo.split(':')[1] }}
+          {% else %}
           add {{ ac_repo }}
+          {% endif %}
           --insecure-skip-server-verification
           {% if ac_ssh_key is defined %}
           --ssh-private-key-path {{ ac_ssh_key }}
