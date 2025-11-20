@@ -54,6 +54,11 @@ argument_specs:
         required: false
         default: true
         description: Whether to hide sensitive information in logs.
+      ac_ssh_port:
+        type: int
+        required: false
+        default: 22
+        description: The SSH port to use for the repository connection (default is 22).
   config-app:
     short_description: Configure (create, delete, sync) ArgoCD application
     description: >
