@@ -1,0 +1,95 @@
+---
+- name: Check organization {{ org.name }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/orgs/{{ org.name }}"
+    method: GET
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [200, 404]
+  register: _fc_org_check
+  no_log: true
+
+- name: Create organization {{ org.name }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/admin/users/{{ fc_admin_user }}/orgs"
+    method: POST
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [201, 422]
+    body_format: json
+    body:
+      username: "{{ org.name }}"
+      full_name: "{{ org.full_name | default(org.name) }}"
+      description: "{{ org.description | default('') }}"
+      visibility: "{{ org.visibility | default('public') }}"
+  register: _fc_org_create
+  when: _fc_org_check.status == 404
+  no_log: true
+  retries: "{{ fc_api_retries }}"
+  delay: "{{ fc_api_delay }}"
+  until: _fc_org_create.status in [201, 422]
+  failed_when:
+    - _fc_org_create.status == 422
+    - "'organization already exists' not in (_fc_org_create.json.message | default(''))"
+
+- name: Display organization creation result for {{ org.name }}
+  ansible.builtin.debug:
+    msg: >-
+      {% if _fc_org_check.status == 200 %}
+      Organization {{ org.name }} already exists, skipped
+      {% elif _fc_org_create is defined and _fc_org_create.status == 201 %}
+      Organization {{ org.name }} created successfully
+      {% else %}
+      Organization {{ org.name }} status unknown
+      {% endif %}
+
+- name: Add members to organization {{ org.name }}
+  when:
+    - org.members is defined
+    - org.members | length > 0
+  block:
+    - name: Add member to organization {{ org.name }}
+      ansible.builtin.uri:
+        url: "{{ fc_url }}/api/v1/orgs/{{ org.name }}/members/{{ member.username }}"
+        method: PUT
+        user: "{{ fc_admin_user }}"
+        password: "{{ fc_admin_password }}"
+        force_basic_auth: true
+        status_code: [204]
+      loop: "{{ org.members }}"
+      loop_control:
+        loop_var: member
+        label: "{{ member.username }}"
+      register: _fc_org_member_add
+      no_log: true
+      retries: "{{ fc_api_retries }}"
+      delay: "{{ fc_api_delay }}"
+      until: _fc_org_member_add.status == 204
+      failed_when: false
+
+    - name: Set member role in organization {{ org.name }}
+      ansible.builtin.uri:
+        url: "{{ fc_url }}/api/v1/teams/{{ _fc_team_id }}/members/{{ member.username }}"
+        method: PUT
+        user: "{{ fc_admin_user }}"
+        password: "{{ fc_admin_password }}"
+        force_basic_auth: true
+        status_code: [204]
+      loop: "{{ org.members | selectattr('role', 'defined') | list }}"
+      loop_control:
+        loop_var: member
+        label: "{{ member.username }}"
+      vars:
+        _fc_team_id: "{{ (_fc_org_check.json.id if _fc_org_check.status == 200 else _fc_org_create.json.id) | default('') }}"
+      when:
+        - member.role is defined
+        - member.role == 'owner'
+      register: _fc_org_member_role
+      no_log: true
+      retries: "{{ fc_api_retries }}"
+      delay: "{{ fc_api_delay }}"
+      until: _fc_org_member_role.status == 204
+      failed_when: false
+...
