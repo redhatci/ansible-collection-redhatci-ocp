@@ -106,6 +106,35 @@ Another example of a pruned catalog with specific channels
 ```
 
 In this example, the resulting catalog contains all the channels of the `compliance-operator`, channel `stable-5.8` for cluster-logging and only the `stable` channel for `file-integrity-operator`.
+
+### Prune operators from multiple source catalogs
+
+The role supports pruning operators from multiple source catalogs into a single destination catalog. This is useful when you need operators from different catalog sources (e.g., Red Hat operators, certified operators, community operators).
+
+```yaml
+- name: "Create a pruned catalog with operators from multiple catalogs"
+  include_role:
+    name: redhatci.ocp.prune_catalog
+  vars:
+    pc_source_catalog: "registry.redhat.io/redhat/redhat-operator-index:v4.19"
+    pc_destination_catalog: "<my-local-registry>:4443/pruned-catalog:latest"
+    pc_operators:
+      compliance-operator:
+        channel: stable
+      file-integrity-operator:
+        channel: stable
+        catalog: "registry.redhat.io/redhat/certified-operator-index:v4.19"
+      ocs-operator:
+        channel: stable-4.13
+        catalog: "registry.redhat.io/redhat/redhat-operator-index:v4.19"
+      prometheus:
+        channel: beta
+        catalog: "registry.redhat.io/redhat/community-operator-index:v4.19"
+    pc_opm_args: "--skip-tls-verify=true"
+```
+
+- Operators without a `catalog` field use the `pc_source_catalog`
+
 ```ShellSession
 $ DOCKER_CONFIG=/home/<user>/.docker oc-mirror list operators --catalog <my-local-registry>:4443/pruned-catalog:latest
 NAME                     DISPLAY NAME               DEFAULT CHANNEL
