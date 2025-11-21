@@ -1,6 +1,6 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_version: v5.5.12
+kbpc_version: v5.5.13
 kbpc_repo_org_name: redhat-best-practices-for-k8s
 kbpc_project_name: certsuite
 kbpc_repository: "https://github.com/{{ kbpc_repo_org_name }}/{{ kbpc_project_name }}"
