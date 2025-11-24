@@ -1,6 +1,6 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_version: v5.5.12
+kbpc_version: v5.5.13
 kbpc_repo_org_name: redhat-best-practices-for-k8s
 kbpc_project_name: certsuite
 kbpc_repository: "https://github.com/{{ kbpc_repo_org_name }}/{{ kbpc_project_name }}"
@@ -89,7 +89,6 @@ kbpc_feedback:
   lifecycle-storage-provisioner: ""
   manageability-container-port-name-format: ""
   manageability-containers-image-tag: ""
-  networking-dpdk-cpu-pinning-exec-probe: ""
   networking-dual-stack-service: ""
   networking-icmpv4-connectivity: ""
   networking-icmpv4-connectivity-multus: ""
@@ -118,6 +117,7 @@ kbpc_feedback:
   operator-semantic-versioning: ""
   operator-single-crd-owner: ""
   operator-single-or-multi-namespaced-allowed-in-tenant-namespaces: ""
+  performance-cpu-pinning-no-exec-probes: ""
   performance-exclusive-cpu-pool: ""
   performance-exclusive-cpu-pool-rt-scheduling-policy: ""
   performance-isolated-cpu-pool-rt-scheduling-policy: ""
