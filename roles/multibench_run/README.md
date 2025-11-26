@@ -20,9 +20,17 @@ It uses a pre-existing VM/host where all the crucible binaries are ready.
 By default, the workload launched by default is the example-A of Multi-bench, composed of 2 uperf scenarios and 1 iperf.
 ![Multi-bench_example-A](images/example-A.png)
 
+ 
 If you want to customize the scenarios, you can edit the `run.sh` file which defines the previous layout of test.
 You can edit the resources requested by the pods (clients or servers), in order to have a Guaranteed QoS.
 You can change the variable `multibench_script` to keep several scenarios ready and easily switch from one to another.
+
+Note: For multibench daily jobs, workload launched is from directory "/root/crucible-examples/multibench/openshift/example-A/daily" on multibench-vm using the script "run-daily.sh" which inturn uses input json file "all-in-one.json".
+For any customizations to launch multibench daily jobs, it is required to generate input json file using regulus script from [repo](https://github.com/redhat-performance/regulus/blob/main/bin/reg-c2j-config.py).
+
+```yaml
+/root/regulus/bin/reg-c2j-config.py --name iperf,uperf --mv-params iperf-mv-params.json,uperf-mv-params.json --bench-ids iperf:21-26,uperf:1-20,uperf:27-32 --max-sample-failures=2 --endpoint k8s,user:kni,host:provisioner.cluster4.dfwt5g.lab,nodeSelector:client-1-7+21-22+27:nodeSelector-worker0.json,nodeSelector:client-8-14+30:nodeSelector-worker1.json,nodeSelector:client-15-20+23-26+28-29+31-32:nodeSelector-worker2.json,nodeSelector:server-1-22+25-27+31-32:nodeSelector:nodeSelector-worker2.json,nodeSelector:server-28:nodeSelector-worker0.json,nodeSelector:server-23-24+29:nodeSelector-worker1.json,userenv:stream9,resources:default:resource-2req-daily.json,resources:client-1-20:resource-1req-daily.json,controller-ip:192.168.5.30,client:1-32,server:1-32
+```
 
 ## Example - how to use the role
 In this example, the two mandatory variables for the role are defined in the Ansible inventory:
