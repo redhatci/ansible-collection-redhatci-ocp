@@ -1,6 +1,6 @@
 # eco_gotests
 
-This role runs eco-gotests for OpenShift CNF (Cloud Native Functions) testing, specifically for PTP (Precision Time Protocol) and SRIOV (Single Root I/O Virtualization) test suites.
+This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) for OpenShift CNF (Cloud Native Functions) testing, specifically for PTP (Precision Time Protocol) and SRIOV (Single Root I/O Virtualization) test suites.
 
 ## Requirements
 
@@ -9,7 +9,8 @@ This role runs eco-gotests for OpenShift CNF (Cloud Native Functions) testing, s
 - Valid kubeconfig for the OpenShift cluster
 
 ### PTP requirements
-- ptp-operator have to be installed
+
+- The ptp-operator has to be installed
 - Need apiVersion set to 2 on PtpOperatorConfig
 
 ## Role Variables
@@ -25,6 +26,7 @@ This role runs eco-gotests for OpenShift CNF (Cloud Native Functions) testing, s
 
 #### General Configuration
 - `eco_gotests_image` (default: `"quay.io/ocp-edge-qe/eco-gotests:latest"`): Container image for eco-gotests
+- `eco_gotests_path` (default: undefined): path where to find the source code to build the container. If this is specified, the `eco_gotests_image` is ignored.
 
 #### SRIOV Test Configuration
 - `eco_gotests_sriov_labels` (default: `"sriov-hw-enabled"`): Test labels for SRIOV tests
@@ -38,7 +40,6 @@ This role runs eco-gotests for OpenShift CNF (Cloud Native Functions) testing, s
 - `eco_gotests_verbose_level` (default: `100`): Verbosity level
 - `eco_gotests_test_verbose` (default: `true`): Enable verbose test output
 - `eco_gotests_dump_failed_tests` (default: `true`): Dump failed test information
-
 
 ## Example Playbook
 
