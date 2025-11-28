@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Install dependent PRs if needed
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@da29c2b7fed526d6adecb7b452fb1f7d76bf998b # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -100,7 +100,7 @@ jobs:
           path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
 
       - name: Install dependent PRs if needed
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@da29c2b7fed526d6adecb7b452fb1f7d76bf998b # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
@@ -130,7 +130,7 @@ jobs:
     steps:
 
       - name: Check all dependent Pull Requests are merged
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@da29c2b7fed526d6adecb7b452fb1f7d76bf998b # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           check-unmerged-pr: true
@@ -143,7 +143,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Install dependent PRs if needed
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@da29c2b7fed526d6adecb7b452fb1f7d76bf998b # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
