@@ -1,0 +1,784 @@
+{
+    "benchmarks": [
+        {
+            "name": "iperf",
+            "ids": "21-26",
+            "mv-params": {
+                "global-options": [
+                    {
+                        "name": "common-params",
+                        "params": [
+                            {
+                                "arg": "time",
+                                "vals": [
+                                    "60"
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "sets": [
+                    {
+                        "include": "common-params",
+                        "enabled": "yes",
+                        "params": [
+                            {
+                                "arg": "ifname",
+                                "vals": [
+                                    "eth0"
+                                ],
+                                "role": "server"
+                            },
+                            {
+                                "arg": "ipv",
+                                "vals": [
+                                    "4"
+                                ],
+                                "role": "all"
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "udp"
+                                ],
+                                "id": "21"
+                            },
+                            {
+                                "arg": "bitrate",
+                                "vals": [
+                                    "200M"
+                                ],
+                                "id": "21"
+                            },
+                            {
+                                "arg": "length",
+                                "vals": [
+                                    "256"
+                                ],
+                                "id": "21"
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "udp"
+                                ],
+                                "id": "22"
+                            },
+                            {
+                                "arg": "bitrate",
+                                "vals": [
+                                    "400M"
+                                ],
+                                "id": "22"
+                            },
+                            {
+                                "arg": "length",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "22"
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "udp"
+                                ],
+                                "id": "23"
+                            },
+                            {
+                                "arg": "bitrate",
+                                "vals": [
+                                    "200M"
+                                ],
+                                "id": "23"
+                            },
+                            {
+                                "arg": "length",
+                                "vals": [
+                                    "256"
+                                ],
+                                "id": "23"
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "udp"
+                                ],
+                                "id": "24"
+                            },
+                            {
+                                "arg": "bitrate",
+                                "vals": [
+                                    "400M"
+                                ],
+                                "id": "24"
+                            },
+                            {
+                                "arg": "length",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "24"
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "udp"
+                                ],
+                                "id": "25"
+                            },
+                            {
+                                "arg": "bitrate",
+                                "vals": [
+                                    "200M"
+                                ],
+                                "id": "25"
+                            },
+                            {
+                                "arg": "length",
+                                "vals": [
+                                    "256"
+                                ],
+                                "id": "25"
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "udp"
+                                ],
+                                "id": "26"
+                            },
+                            {
+                                "arg": "bitrate",
+                                "vals": [
+                                    "400M"
+                                ],
+                                "id": "26"
+                            },
+                            {
+                                "arg": "length",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "26"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "name": "uperf",
+            "ids": "1-20+27-32",
+            "mv-params": {
+                "global-options": [
+                    {
+                        "name": "common-params",
+                        "params": [
+                            {
+                                "arg": "duration",
+                                "vals": [
+                                    "60"
+                                ]
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "tcp"
+                                ]
+                            },
+                            {
+                                "arg": "nthreads",
+                                "vals": [
+                                    "1"
+                                ]
+                            },
+                            {
+                                "arg": "ifname",
+                                "vals": [
+                                    "eth0"
+                                ],
+                                "role": "server"
+                            }
+                        ]
+                    }
+                ],
+                "sets": [
+                    {
+                        "include": "common-params",
+                        "params": [
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "1"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "1"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "1"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "2"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "2"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "2"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "3"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "3"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "3"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "4"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "4"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "4"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "5"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "5"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "5"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "6"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "6"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "6"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "7"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "7"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "7"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "8"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "8"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "8"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "9"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "9"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "9"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "10"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "10"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "10"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "11"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "11"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "11"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "12"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "12"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "12"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "13"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "13"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "13"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "14"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "14"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "14"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "15"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "15"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "15"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "16"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "16"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "16"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "17"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "17"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "17"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "18"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "18"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "18"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "19"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "19"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "19"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "20"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "20"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "20"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "stream"
+                                ],
+                                "id": "27"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "32768"
+                                ],
+                                "id": "27"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "stream"
+                                ],
+                                "id": "28"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "28"
+                            },
+                            {
+                                "arg": "nthreads",
+                                "vals": [
+                                    "16"
+                                ],
+                                "id": "28"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "stream"
+                                ],
+                                "id": "29"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "32768"
+                                ],
+                                "id": "29"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "stream"
+                                ],
+                                "id": "30"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "30"
+                            },
+                            {
+                                "arg": "nthreads",
+                                "vals": [
+                                    "16"
+                                ],
+                                "id": "30"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "stream"
+                                ],
+                                "id": "31"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "32768"
+                                ],
+                                "id": "31"
+                            },
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "stream"
+                                ],
+                                "id": "32"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "32"
+                            },
+                            {
+                                "arg": "nthreads",
+                                "vals": [
+                                    "16"
+                                ],
+                                "id": "32"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "endpoints": [
+        {
+            "type": "k8s",
+            "user": "kni",
+            "host": "{{ ocp_host }}",
+            "nodeSelector": [
+                "client-1-7+21-22+27:{{ multibench_script_dir }}/nodeSelector-worker0.json",
+                "server-28:{{ multibench_script_dir }}/nodeSelector-worker0.json",
+                "client-8-14+30:{{ multibench_script_dir }}/nodeSelector-worker1.json",
+                "server-23-24+29:{{ multibench_script_dir }}/nodeSelector-worker1.json",
+                "client-15-20+23-26+28-29+31-32:{{ multibench_script_dir }}/nodeSelector-worker2.json",
+                "server-1-22+25-27+31-32:{{ multibench_script_dir }}/nodeSelector-worker2.json"
+            ],
+            "userenv": "stream9",
+            "masters-tool-collect": 0,
+            "client": "1-32",
+            "server": "1-32"
+        }
+    ],
+    "run-params": {
+        "num-samples": {{ multibench_sample | default(3) }},
+        "max-sample-failures": 1
+    },
+    "tags": {
+        "automation": "ansible"
+    },
+    "tool-params": [
+            { "tool": "ovs" },
+            { "tool": "kernel",
+              "params": [ {"arg":"subtools","val":"perf"}, { "arg": "record-opts", "val": "--freq=100 --namespaces --all-cgroups" } ]
+            },
+            { "tool": "sysstat",
+              "params": [
+                  { "arg": "subtools", "val": "mpstat", "enabled": "yes" },
+                  { "arg": "subtools", "val": "sar-net", "enabled": "yes" },
+                  { "arg": "subtools", "val": "iostat", "enabled": "yes" },
+                  { "arg": "subtools", "val": "sar-mem", "enabled": "yes" },
+                  { "arg": "subtools", "val": "sar-scheduler", "enabled": "yes" },
+                  { "arg": "subtools", "val": "sar-tasks", "enabled": "yes" }
+            ]
+            },
+            { "tool": "procstat" }
+    ]
+}

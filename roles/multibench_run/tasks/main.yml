@@ -20,6 +20,14 @@
   delegate_to: "{{ multibench_host }}"
   become: true
 
+- name: Generate input json file for multibench run
+  ansible.builtin.template:
+    src: templates/all-in-one.json.j2
+    dest: "{{ multibench_script_dir }}/all-in-one.json"
+    mode: '0644'
+  delegate_to: "{{ multibench_host }}"
+  become: true
+
 - name: Creating an output directory if needed
   when:
     - multibench_run_output_dir is undefined
