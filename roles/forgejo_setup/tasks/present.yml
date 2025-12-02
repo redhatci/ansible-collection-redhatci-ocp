@@ -1,0 +1,150 @@
+---
+- name: Generate random application password if not provided
+  ansible.builtin.set_fact:
+    fs_app_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+    fs_passwords_generated: true
+  when: fs_app_password is undefined or fs_app_password == ''
+  no_log: true
+
+- name: Generate random database password if not provided
+  ansible.builtin.set_fact:
+    fs_db_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+    fs_passwords_generated: true
+  when: fs_db_password is undefined or fs_db_password == ''
+  no_log: true
+
+- name: Ensure base directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default(omit) }}"
+  loop:
+    - { path: "{{ fs_base_dir }}", owner: "{{ fs_user }}" }
+    - { path: "{{ fs_data_dir }}", owner: "{{ fs_user }}" }
+    - { path: "{{ fs_db_dir }}", mode: '0700' }
+
+- name: Create Podman pod for Forgejo
+  containers.podman.podman_pod:
+    name: "{{ fs_pod_name }}"
+    state: created
+    infra_name: "{{ fs_pod_name }}-infra"
+    ports:
+      - "{{ fs_pod_http_port }}:3000"
+      - "{{ fs_pod_ssh_port }}:22"
+
+- name: Deploy database container in pod
+  containers.podman.podman_container:
+    name: "{{ fs_db_container_name }}"
+    image: "{{ fs_postgres_image }}"
+    state: started
+    recreate: false
+    pod: "{{ fs_pod_name }}"
+    env:
+      POSTGRES_USER: "{{ fs_db_user }}"
+      POSTGRES_PASSWORD: "{{ fs_db_password }}"
+      POSTGRES_DB: "{{ fs_db_name }}"
+    volume:
+      - "{{ fs_db_dir }}:{{ fs_db_container_dir }}:U,Z"
+    healthcheck: "pg_isready -U {{ fs_db_user }} -d {{ fs_db_name }}"
+    healthcheck_interval: 10s
+    healthcheck_timeout: 5s
+    healthcheck_retries: 5
+
+- name: Wait for database to be ready
+  containers.podman.podman_container_exec:
+    name: "{{ fs_db_container_name }}"
+    command: pg_isready -U {{ fs_db_user }} -d {{ fs_db_name }}
+  register: _fs_pg_ready
+  until: _fs_pg_ready.rc == 0
+  retries: "{{ fs_wait_retries }}"
+  delay: "{{ fs_wait_delay }}"
+  changed_when: false
+
+- name: Deploy application container in pod
+  containers.podman.podman_container:
+    name: "{{ fs_app_container_name }}"
+    image: "{{ fs_app_image }}"
+    state: started
+    recreate: false
+    pod: "{{ fs_pod_name }}"
+    env:
+      USER_UID: "{{ fs_user_uid }}"
+      USER_GID: "{{ fs_user_gid }}"
+      FORGEJO__database__DB_TYPE: postgres
+      FORGEJO__database__HOST: "127.0.0.1:{{ fs_db_port }}"
+      FORGEJO__database__NAME: "{{ fs_db_name }}"
+      FORGEJO__database__USER: "{{ fs_db_user }}"
+      FORGEJO__database__PASSWD: "{{ fs_db_password }}"
+    env_merge: "{{ fs_app_env_vars | default({}) }}"
+    volume:
+      - "{{ fs_data_dir }}:/data:Z"
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck: "curl -f http://localhost:3000 || exit 1"
+    healthcheck_interval: 30s
+    healthcheck_timeout: 10s
+    healthcheck_retries: 3
+
+- name: Wait for Forgejo to be ready
+  ansible.builtin.uri:
+    url: "http://{{ fs_server_domain }}:{{ fs_pod_http_port }}"
+    status_code: 200
+    return_content: true
+  register: _fs_app_ready
+  until: _fs_app_ready.status == 200
+  retries: "{{ fs_wait_retries }}"
+  delay: "{{ fs_wait_delay }}"
+
+- name: Auto Install
+  when:
+    - "'Install Forgejo' in _fs_app_ready.content"
+  ansible.builtin.uri:
+    url: "http://{{ fs_server_domain }}:{{ fs_pod_http_port }}/"
+    method: POST
+    body_format: form-urlencoded
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    body:
+      db_type: "postgres"
+      db_host: "127.0.0.1:{{ fs_db_port }}"
+      db_user: "{{ fs_db_user }}"
+      db_passwd: "{{ fs_db_password }}"
+      db_name: "{{ fs_db_name }}"
+      ssl_mode: "disable"
+      db_schema: ""
+      db_path: "/data/gitea/gitea.db"
+      app_name: "{{ fs_app_name.split(':')[0] }}"
+      app_slogan: "{{ fs_app_name.split(':')[1] | default('Beyond coding. We Forge.') | trim() }}"
+      repo_root_path: "/data/git/repositories"
+      lfs_root_path: "/data/git/lfs"
+      run_user: "git"
+      domain: "{{ fs_server_domain }}"
+      ssh_port: "22"
+      http_port: "3000"
+      app_url: "http://{{ fs_server_domain }}:{{ fs_pod_http_port }}/"
+      log_root_path: "/data/gitea/log"
+      disable_registration: "on"
+      offline_mode: "on"
+      disable_gravatar: "on"
+      default_allow_create_organization: "on"
+      no_reply_address: "noreply.{{ fs_server_domain }}"
+      password_algorithm: "pbkdf2_hi"
+      admin_name: "{{ fs_app_user }}"
+      admin_email: "{{ fs_app_email }}"
+      admin_passwd: "{{ fs_app_password }}"
+      admin_confirm_passwd: "{{ fs_app_password }}"
+    status_code: [200, 302]
+  register: _fs_auto_install_result
+  until: _fs_auto_install_result.status in [200, 302]
+  retries: "{{ fs_wait_retries }}"
+  delay: "{{ fs_wait_delay }}"
+  no_log: true
+
+- name: Display Forgejo access information
+  when: fs_passwords_generated | default(false)
+  ansible.builtin.debug:
+    msg:
+      - "Forgejo is now at http://{{ fs_server_domain }}:{{ fs_pod_http_port }}"
+      - "SSH is available on port {{ fs_pod_ssh_port }}"
+      - "db: {{ fs_db_user }} / {{ fs_db_password }}"
+      - "app: {{ fs_app_user }} / {{ fs_app_password }}"

@@ -1,0 +1,177 @@
+---
+argument_specs:
+  main:
+    short_description: Main entry point for Forgejo deployment
+    description: >
+      Main entry point that dispatches to present or absent tasks based on fs_state.
+    options:
+      fs_state:
+        type: str
+        required: false
+        default: present
+        choices:
+          - present
+          - absent
+        description: State of the Forgejo deployment (present to deploy, absent to remove).
+
+  present:
+    short_description: Deploy Forgejo with PostgreSQL in a Podman pod
+    description: >
+      Deploy Forgejo Git service with PostgreSQL database using rootless Podman containers in a pod.
+      This creates the necessary directories, sets up a Podman pod,
+      and deploys both PostgreSQL and Forgejo containers within the pod for simplified networking.
+    options:
+      fs_user:
+        type: str
+        required: false
+        default: "{{ ansible_user_id }}"
+        description: User to run containers as (rootless mode).
+      fs_user_uid:
+        type: str
+        required: false
+        default: "{{ ansible_user_uid }}"
+        description: UID of the user running containers.
+      fs_user_gid:
+        type: str
+        required: false
+        default: "{{ ansible_user_gid }}"
+        description: GID of the user running containers.
+      fs_base_dir:
+        type: str
+        required: false
+        default: "{{ ansible_env.HOME }}/forgejo"
+        description: Base directory for Forgejo data and configuration.
+      fs_data_dir:
+        type: str
+        required: false
+        default: "{{ fs_base_dir }}/data"
+        description: Directory for Forgejo application data.
+      fs_db_dir:
+        type: str
+        required: false
+        default: "{{ fs_base_dir }}/db"
+        description: Directory for database data.
+      fs_db_container_dir:
+        type: str
+        required: false
+        default: "/var/lib/postgresql/18/docker"
+        description: Database data directory inside the container.
+      fs_app_image:
+        type: str
+        required: false
+        default: codeberg.org/forgejo/forgejo:13
+        description: Forgejo container image to use.
+      fs_postgres_image:
+        type: str
+        required: false
+        default: mirror.gcr.io/library/postgres:18
+        description: PostgreSQL container image to use.
+      fs_pod_name:
+        type: str
+        required: false
+        default: forgejo
+        description: Name of the Podman pod.
+      fs_pod_http_port:
+        type: int
+        required: false
+        default: 3000
+        description: Host port to expose Forgejo HTTP interface.
+      fs_pod_ssh_port:
+        type: int
+        required: false
+        default: 2222
+        description: Host port to expose Forgejo SSH interface.
+      fs_server_domain:
+        type: str
+        required: false
+        default: localhost
+        description: Domain name for the Forgejo server.
+      fs_db_user:
+        type: str
+        required: false
+        default: forgejo
+        description: Database user.
+      fs_db_password:
+        type: str
+        required: false
+        description: Database password. If not provided, a random 32-character password will be auto-generated.
+      fs_db_name:
+        type: str
+        required: false
+        default: forgejo
+        description: Database name.
+      fs_db_port:
+        type: int
+        required: false
+        default: 5432
+        description: Database port.
+      fs_db_container_name:
+        type: str
+        required: false
+        default: db
+        description: Name of the database container.
+      fs_app_container_name:
+        type: str
+        required: false
+        default: forgejo
+        description: Name of the application container.
+      fs_app_name:
+        type: str
+        required: false
+        default: "Forgejo: Beyond coding. We forge."
+        description: Application name.
+      fs_app_email:
+        type: str
+        required: false
+        default: "{{ fs_app_user }}@{{ fs_server_domain }}"
+        description: Application admin email.
+      fs_app_user:
+        type: str
+        required: false
+        default: forgejo
+        description: Application admin user.
+      fs_app_env_vars:
+        type: dict
+        required: false
+        default: {}
+        description: Additional environment variables for application container.
+      fs_app_password:
+        type: str
+        required: false
+        description: Application password. If not provided, a random 32-character password will be auto-generated.
+      fs_wait_retries:
+        type: int
+        required: false
+        default: 30
+        description: Number of retries when waiting for services to be ready.
+      fs_wait_delay:
+        type: int
+        required: false
+        default: 10
+        description: Delay in seconds between retries.
+
+  absent:
+    short_description: Remove Forgejo deployment
+    description: >
+      Remove Forgejo pod and containers. Data directories are preserved and must be manually deleted if needed.
+    options:
+      fs_pod_name:
+        type: str
+        required: false
+        default: forgejo
+        description: Name of the Podman pod to remove.
+      fs_app_container_name:
+        type: str
+        required: false
+        default: forgejo
+        description: Name of the application container to remove.
+      fs_db_container_name:
+        type: str
+        required: false
+        default: db
+        description: Name of the database container to remove.
+      fs_base_dir:
+        type: str
+        required: false
+        default: "{{ ansible_env.HOME }}/forgejo"
+        description: Base directory path (displayed in removal information).
