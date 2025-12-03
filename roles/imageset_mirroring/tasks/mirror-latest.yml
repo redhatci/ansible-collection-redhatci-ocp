@@ -10,6 +10,7 @@
   ansible.builtin.shell:
     cmd: |
       set -o pipefail
+      umask 0022
       {{ _im_tmp_dir.path }}/oc-mirror list operators \
         --catalog {{ im_source_index }} \
         --package {{ item.key }} \

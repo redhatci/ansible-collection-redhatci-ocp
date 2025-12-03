@@ -1,16 +1,28 @@
 ---
+- name: Find an available ephemeral port for oc-mirror
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      sleep 0.$(shuf -i 0-999 -n 1)
+      while :; do
+        port=$(shuf -i 32768-60999 -n 1)
+        ss -lnt | awk '{print $4}' | grep -q ":${port}$" || { echo $port; break; }
+      done
+    executable: /bin/bash
+  register: _im_ephemeral_port
+  changed_when: false
+
 - name: Mirror the operators
   ansible.builtin.shell:
     cmd: >
+      umask 0022 &&
       {{ _im_tmp_dir.path }}/oc-mirror --v2 --config={{ im_imageset_config_path }}
       --workspace file://{{ _im_tmp_dir.path }}
       docker://{{ im_target }}
+      --port {{ _im_ephemeral_port.stdout }}
       {% if im_allow_insecure_registries | bool %}
       --dest-tls-verify=false
       --src-tls-verify=false
-      {% endif %}
-      {% if im_auths_file is defined %}
-      --authfile {{ im_auths_file }}
       {% endif %}
   register: _im_cmd_output
   retries: 3
