@@ -2,7 +2,26 @@ apiVersion: mirror.openshift.io/v2alpha1
 kind: ImageSetConfiguration
 mirror:
   operators:
-    - catalog: {{ im_source_index }}
+{% for catalog, results in _im_catalogs_with_operators %}
+    - catalog: {{ catalog }}
       full: false
       packages:
-        {{ im_packages_var | indent( width=8, first=false)}}
+{% for result in results %}
+{%- set parts = result.stdout.split() %}
+{%- set csv_full = parts[2] %}
+{%- if '.v' in csv_full %}
+{%-   set version = csv_full.split('.v')[-1] %}
+{%- elif csv_full.startswith(parts[0] + '.') %}
+{%-   set version = csv_full[parts[0]|length + 1:] %}
+{%- elif csv_full.startswith(parts[0] + '-') %}
+{%-   set version = csv_full[parts[0]|length + 1:] %}
+{%- else %}
+{%-   set version = csv_full.split('-')[-1] %}
+{%- endif %}
+        - name: '{{ parts[0] }}'
+          channels:
+            - name: '{{ parts[1] }}'
+              minVersion: '{{ version }}'
+              maxVersion: '{{ version }}'
+{% endfor %}
+{% endfor %}

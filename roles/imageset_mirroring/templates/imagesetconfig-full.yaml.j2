@@ -2,9 +2,11 @@ apiVersion: mirror.openshift.io/v2alpha1
 kind: ImageSetConfiguration
 mirror:
   operators:
-    - catalog: {{ im_source_index }}
+{% for catalog, operators in _im_catalogs_with_operators %}
+    - catalog: {{ catalog }}
       full: true
       packages:
-{% for package in im_operators.keys() %}
-        - name: {{ package }}
+{% for op in operators %}
+        - name: {{ op.operator }}
+{% endfor %}
 {% endfor %}
