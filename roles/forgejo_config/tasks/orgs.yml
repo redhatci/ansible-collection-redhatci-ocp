@@ -1,0 +1,141 @@
+---
+- name: Check organization {{ org.name }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/orgs/{{ org.name }}"
+    method: GET
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [200, 404]
+  register: _fc_org_check
+  no_log: true
+
+- name: Create organization {{ org.name }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/admin/users/{{ fc_admin_user }}/orgs"
+    method: POST
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [201, 422]
+    body_format: json
+    body:
+      username: "{{ org.name }}"
+      full_name: "{{ org.full_name | default(org.name) }}"
+      description: "{{ org.description | default('') }}"
+      visibility: "{{ org.visibility | default('public') }}"
+  register: _fc_org_create
+  when: _fc_org_check.status == 404
+  no_log: true
+  retries: "{{ fc_api_retries }}"
+  delay: "{{ fc_api_delay }}"
+  until: _fc_org_create.status in [201, 422]
+
+- name: Display organization creation result for {{ org.name }}
+  ansible.builtin.debug:
+    msg: >-
+      {% if _fc_org_check.status == 200 %}
+      Organization {{ org.name }} already exists, skipped
+      {% elif _fc_org_create is defined and _fc_org_create.status == 201 %}
+      Organization {{ org.name }} created successfully
+      {% else %}
+      Organization {{ org.name }} status unknown
+      {% endif %}
+
+- name: Add members to organization {{ org.name }}
+  when:
+    - org.members is defined
+    - org.members | length > 0
+  block:
+    - name: Get teams for organization {{ org.name }}
+      ansible.builtin.uri:
+        url: "{{ fc_url }}/api/v1/orgs/{{ org.name }}/teams"
+        method: GET
+        user: "{{ fc_admin_user }}"
+        password: "{{ fc_admin_password }}"
+        force_basic_auth: true
+        status_code: [200]
+      register: _fc_org_teams
+      no_log: true
+      retries: "{{ fc_api_retries }}"
+      delay: "{{ fc_api_delay }}"
+      until: _fc_org_teams.status == 200
+
+    - name: Create Members team for organization {{ org.name }}
+      ansible.builtin.uri:
+        url: "{{ fc_url }}/api/v1/orgs/{{ org.name }}/teams"
+        method: POST
+        user: "{{ fc_admin_user }}"
+        password: "{{ fc_admin_password }}"
+        force_basic_auth: true
+        status_code: [201, 422]
+        body_format: json
+        body:
+          name: "Members"
+          description: "Default members team"
+          permission: "read"
+          can_create_org_repo: false
+          units:
+            - "repo.code"
+            - "repo.issues"
+            - "repo.pulls"
+            - "repo.releases"
+            - "repo.wiki"
+      register: _fc_members_team_create
+      no_log: true
+      retries: "{{ fc_api_retries }}"
+      delay: "{{ fc_api_delay }}"
+      until: _fc_members_team_create.status in [201, 422]
+      failed_when: false
+
+    - name: Add owners to Owners team in organization {{ org.name }}
+      vars:
+        _fc_owners_team_id: "{{ (_fc_org_teams.json | selectattr('name', 'equalto', 'Owners') | first).get('id', '') }}"
+      ansible.builtin.uri:
+        url: "{{ fc_url }}/api/v1/teams/{{ _fc_owners_team_id }}/members/{{ member.username }}"
+        method: PUT
+        user: "{{ fc_admin_user }}"
+        password: "{{ fc_admin_password }}"
+        force_basic_auth: true
+        status_code: [204]
+      loop: "{{ org.members | selectattr('role', 'defined') | selectattr('role', 'equalto', 'owner') | list }}"
+      loop_control:
+        loop_var: member
+        label: "{{ member.username }}"
+      when: _fc_org_teams.json | selectattr('name', 'equalto', 'Owners') | list | length > 0
+      register: _fc_org_owner_add
+      no_log: true
+      retries: "{{ fc_api_retries }}"
+      delay: "{{ fc_api_delay }}"
+      until: _fc_org_owner_add.status == 204
+      failed_when: false
+
+    - name: Add members to Members team in organization {{ org.name }}
+      vars:
+        _fc_members_team_id: >-
+          {{
+            (_fc_members_team_create.status == 201) |
+            ternary(
+              _fc_members_team_create.json.id,
+              (_fc_org_teams.json | selectattr('name', 'equalto', 'Members') | default([{}]) | first).get('id', '')
+            )
+          }}
+      ansible.builtin.uri:
+        url: "{{ fc_url }}/api/v1/teams/{{ _fc_members_team_id }}/members/{{ member.username }}"
+        method: PUT
+        user: "{{ fc_admin_user }}"
+        password: "{{ fc_admin_password }}"
+        force_basic_auth: true
+        status_code: [204]
+      loop: "{{ org.members | rejectattr('role', 'defined') | list + org.members | selectattr('role', 'defined') | selectattr('role', 'equalto', 'member') | list }}"
+      loop_control:
+        loop_var: member
+        label: "{{ member.username }}"
+      when: _fc_members_team_id > 0
+      register: _fc_org_member_add
+      no_log: true
+      retries: "{{ fc_api_retries }}"
+      delay: "{{ fc_api_delay }}"
+      until: _fc_org_member_add.status == 204
+      failed_when: false
+...

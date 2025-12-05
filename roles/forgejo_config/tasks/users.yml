@@ -1,0 +1,46 @@
+---
+- name: Check user {{ user.username }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/users/{{ user.username }}"
+    method: GET
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [200, 404]
+  register: _fc_user_check
+  no_log: true
+
+- name: Create user {{ user.username }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/admin/users"
+    method: POST
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [201, 422]
+    body_format: json
+    body:
+      username: "{{ user.username }}"
+      email: "{{ user.email }}"
+      password: "{{ user.password }}"
+      full_name: "{{ user.full_name | default(user.username) }}"
+      must_change_password: "{{ user.must_change_password | default(false) }}"
+      send_notify: "{{ user.send_notify | default(false) }}"
+  register: _fc_user_create
+  when: _fc_user_check.status == 404
+  no_log: true
+  retries: "{{ fc_api_retries }}"
+  delay: "{{ fc_api_delay }}"
+  until: _fc_user_create.status in [201, 422]
+
+- name: Display user creation result for {{ user.username }}
+  ansible.builtin.debug:
+    msg: >-
+      {% if _fc_user_check.status == 200 %}
+      User {{ user.username }} already exists, skipped
+      {% elif _fc_user_create is defined and _fc_user_create.status == 201 %}
+      User {{ user.username }} created successfully
+      {% else %}
+      User {{ user.username }} status unknown
+      {% endif %}
+...

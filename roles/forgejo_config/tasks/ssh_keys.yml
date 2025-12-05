@@ -1,0 +1,91 @@
+---
+- name: Validate ssh key generation or use provided key
+  ansible.builtin.assert:
+    that:
+      - not ((ssh_key.pub_key | default("") | length > 0) and (ssh_key.generate | default(false)))
+      - not ((ssh_key.generate | default(false)) and (ssh_key.priv_key | default("") | length == 0))
+    fail_msg:
+      - When providing 'pub_key', 'generate' must not be true.
+      - When 'generate' is true, 'priv_key' must be provided.
+
+- name: Generate SSH key pair for {{ ssh_key.username }}
+  when:
+    - ssh_key.generate | default(false)
+    - ssh_key.priv_key is defined
+    - ssh_key.priv_key | length > 0
+  community.crypto.openssh_keypair:
+    path: "{{ ssh_key.priv_key }}"
+    type: ed25519
+    comment: "{{ ssh_key.username }}@forgejo"
+    mode: '0600'
+  register: _fc_ssh_generated
+  no_log: true
+
+- name: Read the provided public key for {{ ssh_key.username }}
+  when:
+    - not (ssh_key.generate | default(false))
+    - ssh_key.pub_key is defined
+    - ssh_key.pub_key | length > 0
+  ansible.builtin.slurp:
+    src: "{{ ssh_key.pub_key }}"
+  register: _fc_ssh_pubkey
+
+- name: Get existing SSH keys for user {{ ssh_key.username }}
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/users/{{ ssh_key.username }}/keys"
+    method: GET
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [200]
+  register: _fc_existing_keys
+  no_log: true
+
+- name: Add SSH key for user {{ ssh_key.username }}
+  vars:
+    _fc_ssh_key_gen: "{{ _fc_ssh_generated.public_key | default('') }}"
+    _fc_ssh_key_read: "{{ _fc_ssh_pubkey.content | default('') | b64decode }}"
+    _fc_ssh_public_key: >-
+      {{ (ssh_key.generate | default(false)) |
+         ternary(_fc_ssh_key_gen, _fc_ssh_key_read)
+      }}
+    _fc_key_exists: >-
+      {{ _fc_existing_keys.json |
+         selectattr('key', 'search', _fc_ssh_public_key.split()[1]) |
+         list |
+         length > 0
+      }}
+  when:
+    - ssh_key.pub_key is defined or ssh_key.generate | default(false)
+    - not (_fc_key_exists | bool)
+  ansible.builtin.uri:
+    url: "{{ fc_url }}/api/v1/admin/users/{{ ssh_key.username }}/keys"
+    method: POST
+    user: "{{ fc_admin_user }}"
+    password: "{{ fc_admin_password }}"
+    force_basic_auth: true
+    status_code: [201, 422]
+    body_format: json
+    body:
+      title: "{{ ssh_key.title | default('SSH Key') }}"
+      key: "{{ _fc_ssh_public_key }}"
+      read_only: "{{ ssh_key.read_only | default(false) }}"
+  register: _fc_key_add
+  no_log: true
+  retries: "{{ fc_api_retries }}"
+  delay: "{{ fc_api_delay }}"
+  until: _fc_key_add.status in [201, 422]
+
+- name: Display SSH key management result for {{ ssh_key.username }}
+  ansible.builtin.debug:
+    msg: >-
+      {% if (_fc_key_add.skipped | default(false)) or (_fc_key_add is defined and _fc_key_add.status == 422) %}
+      SSH key for {{ ssh_key.username }} already exists, skipped
+      {% elif _fc_key_add is defined and _fc_key_add.status == 201 %}
+      SSH key provided for {{ ssh_key.username }} added successfully
+      {% elif ssh_key.generate | default(false) %}
+      SSH key generated for {{ ssh_key.username }}
+      {% else %}
+      SSH key status for {{ ssh_key.username }} unknown
+      {% endif %}
+...
