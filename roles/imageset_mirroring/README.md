@@ -32,10 +32,10 @@ This role provides three different approaches to mirror operators from a source 
 
 #### mirror-latest & mirror-all
 
-| Variable          | Type       | Required | Description                                                                               |
-|-------------------|------------|----------|-------------------------------------------------------------------------------------------|
-| `im_source_index` | string     | yes      | Source catalog index (e.g., `registry.redhat.io/redhat/redhat-operator-index:v4.20`)      |
-| `im_operators`    | dictionary | yes      | Dictionary of operators to mirror (keys are operator names)                               |
+| Variable          | Type       | Required | Description                                                                                                                                                          |
+|-------------------|------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `im_source_index` | string     | yes      | Default source catalog index (e.g., `registry.redhat.io/redhat/redhat-operator-index:v4.20`). Can be overridden per-operator.                                       |
+| `im_operators`    | dictionary | yes      | Dictionary of operators to mirror (keys are operator names). Each operator value can be an empty dict or contain a `catalog` key to override the default catalog.  |
 
 #### mirror-custom
 
@@ -59,6 +59,29 @@ This role provides three different approaches to mirror operators from a source 
       mcg-operator:
       ocs-client-operator:
       advanced-cluster-management:
+    im_allow_insecure_registries: true
+    im_auths_file: /path/to/pull-secret.json
+```
+
+### Example 1c: Mirror Latest Version from Multiple Catalogs
+
+```yaml
+- name: "Mirror operators from different catalogs"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.imageset_mirroring
+  vars:
+    im_task: latest
+    im_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+    im_target: registry.lab:4443
+    im_operators:
+      # These operators use the default im_source_index
+      mcg-operator:
+      ocs-client-operator:
+      # This operator overrides the catalog
+      custom-operator:
+        catalog: quay.io/prega/prega-operator-index:v4.21-latest
+      another-custom-operator:
+        catalog: quay.io/prega/prega-operator-index:v4.21-latest
     im_allow_insecure_registries: true
     im_auths_file: /path/to/pull-secret.json
 ```
@@ -94,6 +117,23 @@ This role provides three different approaches to mirror operators from a source 
     im_operators:
       openshift-gitops-operator:
       rhacm-operator:
+```
+
+### Example 2b: Mirror All Versions from Multiple Catalogs
+
+```yaml
+- name: "Mirror all operators from multiple catalogs"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.imageset_mirroring
+  vars:
+    im_task: all
+    im_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+    im_target: registry.lab:4443
+    im_operators:
+      openshift-gitops-operator:
+      rhacm-operator:
+      prega-operator:
+        catalog: quay.io/prega/prega-operator-index:v4.21-20251111T044345
 ```
 
 ### Example 3: Mirror Using Custom ImageSetConfiguration
@@ -167,16 +207,18 @@ This role provides three different approaches to mirror operators from a source 
 ### mirror-latest
 
 1. Downloads the latest `oc-mirror` binary
-2. Queries the source catalog for each operator's default channel
-3. Identifies the latest CSV version for the default channel
-4. Generates an ImageSetConfiguration with specific version constraints
-5. Executes `oc-mirror` to perform the mirroring
+2. Groups operators by their catalog source (using `im_source_index` as default)
+3. Queries each catalog for each operator's default channel
+4. Identifies the latest CSV version for the default channel
+5. Generates an ImageSetConfiguration with multiple catalog entries (if operators use different catalogs)
+6. Executes `oc-mirror` to perform the mirroring
 
 ### mirror-all
 
 1. Downloads the latest `oc-mirror` binary
-2. Generates an ImageSetConfiguration with `full: true` for all operators
-3. Executes `oc-mirror` to mirror all channels and versions
+2. Groups operators by their catalog source (using `im_source_index` as default)
+3. Generates an ImageSetConfiguration with `full: true` for all operators, organized by catalog
+4. Executes `oc-mirror` to mirror all channels and versions
 
 ### mirror-custom
 
