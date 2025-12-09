@@ -20,13 +20,22 @@ A role to manage ArgoCD projects, repositories and applications.
 | ac_project_def     | <sup>1</sup>                    | config-project                                  | The ArgoCD project definition.
 | ac_project         | project                         | config-app-create                               | The ArgoCD project to use. 
 | ac_repo_revision   | main                            | config-app-create                               | The branch or commit hash of the Git repository to use.
-| ac_repo            | None                            | config-app-create, config-repo                  | The Git repository URL for the application.
+| ac_repo            | None                            | config-app-create, config-repo                  | The Git repository URL for the application. For SSH repositories, don't include the scheme or port. See ac_ssh_port.
 | ac_ssh_key         | None                            | config-app-create, config-repo                  | The SSH key to use for accessing the Git repository.
+| ac_ssh_port        | 22                              | config-repo                                     | The SSH port to use for the repository connection.
 | ac_wait_retries    | 30                              | wait-for-healthy                                | The number of retries to wait for the application to become healthy.
 | ac_wait_delay      | 10                              | wait-for-healthy                                | The time to wait between retries for the application to become healthy.
 
 <sup>1</sup> See [defaults](defaults/main.yml) for the default project definition.
 <sup>2</sup> See [defaults](defaults/main.yml) for the default permissions definition.
+
+> [!IMPORTANT]
+> When using a custom port, do not include it in the `ac_repo`, it will be added
+> automatically through the role.
+> Example:
+>   ac_repo: git@git.example.com:org/repo.git
+>   ac_ssh_port: 1234
+>   becomes: ssh://git@git.example.com:1234/org/repo.git
 
 ## Usage examples
 
@@ -56,9 +65,10 @@ A role to manage ArgoCD projects, repositories and applications.
     name: redhatci.ocp.argocd_config
     tasks_from: config-repo
   vars:
-    ac_repo: my-repo-url
+    ac_repo: git@git.example.com/org/repo.git
     ac_repo_revision: main
     ac_ssh_key: /path/to/ssh/key
+    ac_ssh_port: 2222
 ```
 
 ### Create Application
@@ -73,7 +83,7 @@ A role to manage ArgoCD projects, repositories and applications.
     ac_app_name: my-app
     ac_app_namespace: my-namespace
     ac_app_path: path/to/app
-    ac_repo: my-repo-url
+    ac_repo: git@git.example.com/org/repo.git
     ac_repo_revision: main
 ```
 

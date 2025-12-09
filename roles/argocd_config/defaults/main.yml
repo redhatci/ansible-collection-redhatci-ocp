@@ -36,5 +36,6 @@ ac_project_def:
     sourceRepos:
       - '*'
 ac_repo_revision: main
+ac_ssh_port: 22
 ac_wait_retries: 30
 ac_wait_delay: 10
