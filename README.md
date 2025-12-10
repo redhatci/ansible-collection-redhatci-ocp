@@ -66,12 +66,13 @@ Name | Description
 [redhatci.ocp.etcd_data](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/etcd_data/README.md) | Allows to query, encrypt or decrypt etcd data using the supported encryption types.
 [redhatci.ocp.example_cnf_deploy](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/example_cnf_deploy/README.md) | Deploys the example-cnf workload on top of an OpenShift cluster
 [redhatci.ocp.extract_openshift_installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/extract_openshift_installer/README.md) | Extracts openshift_installer binary from the release image.
+[redhatci.ocp.fbc_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/fbc_catalog/README.md) | Create File Base Catalogs (FBC) for Operator Lifecycle Manager (OLM).
+[redhatci.ocp.forgejo_config](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/forgejo_config/README.md) | A role to configure an already deployed Forgejo Git service instance.
 [redhatci.ocp.forgejo_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/forgejo_setup/README.md) | A role to deploy and configure Forgejo Git service.
 [redhatci.ocp.generate_agent_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_agent_iso/README.md) | Creates the boot ISO using OpenShift_installer's agent sub-command
 [redhatci.ocp.generate_manifests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_manifests/README.md) | Generates the manifests required for OpenShift_installer's agent sub-command
 [redhatci.ocp.generate_ssh_key_pair](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_ssh_key_pair/README.md) | Produces an ssh key pair
 [redhatci.ocp.gitops_configure_repo](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/gitops_configure_repo/README.md) | Configures the SSH Git repo credentials for the openshift-gitops-operator to be able to connect to the repositories.
-[redhatci.ocp.fbc_catalog](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/fbc_catalog/README.md) | Create File Base Catalogs (FBC) for Operator Lifecycle Manager (OLM).
 [redhatci.ocp.get_logs_from_namespace](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/get_logs_from_namespace/README.md) | Extracts multiple logs from pods and events in a Namespace.
 [redhatci.ocp.hco_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hco_setup/README.md) | Deploys and configures the `hco-operator` through the `kubevirt-hyperconverged` CRs.
 [redhatci.ocp.hostedbm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hostedbm/README.md) | This role allows to create hosted guest clusters with BM workers.
