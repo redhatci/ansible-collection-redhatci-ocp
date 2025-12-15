@@ -27,6 +27,7 @@ This role provides three different approaches to mirror operators from a source 
 | `im_allow_insecure_registries` | boolean | no       | `false` | Allow insecure registries (sets `--dest-tls-verify=false` and `--src-tls-verify=false`)              |
 | `im_keep_working_dir`          | boolean | no       | `false` | Keep temporary working directory after mirroring completes                                           |
 | `im_auths_file`                | string  | no       | -       | Path to registry authentication file (e.g., `/path/to/pull-secret.json`)                             |
+| `im_no_log`                    | boolean | no       | `false`  | Suppress logging of sensitive information                                                            | 
 
 ### Task-Specific Variables
 

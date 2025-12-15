@@ -6,6 +6,23 @@
       - im_operators | dict2items | length > 0
     fail_msg: "im_operators must contain at least one operator"
 
+- name: Setup auth config for oc-mirror
+  when: im_auths_file is defined
+  no_log: "{{ im_no_log }}"
+  block:
+    - name: Create auth config directory
+      ansible.builtin.file:
+        path: "{{ _im_tmp_dir.path }}/auth"
+        state: directory
+        mode: "0700"
+
+    - name: Copy auth file to config.json
+      ansible.builtin.copy:
+        src: "{{ im_auths_file }}"
+        dest: "{{ _im_tmp_dir.path }}/auth/config.json"
+        mode: "0600"
+        remote_src: true
+
 - name: Get operator default channel and CSV
   ansible.builtin.shell:
     cmd: |
@@ -20,6 +37,7 @@
             in_csv_section && $2==def_channel {csv=$3}
             END {print operator, def_channel, csv}'
     executable: /bin/bash
+  environment: "{{ {'DOCKER_CONFIG': _im_tmp_dir.path + '/auth'} if im_auths_file is defined else {} }}"
   register: _im_operator_info
   until: _im_operator_info.rc == 0
   retries: 3
