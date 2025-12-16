@@ -84,17 +84,12 @@
     - name: "Render additional catalogs"
       vars:
         extra_catalogs: >-
-          {{
-            (pc_operators | type_debug == "dict") |
-            ternary(
-              pc_operators | dict2items |
-              selectattr('value.catalog', 'defined') |
-              map(attribute='value.catalog') |
-              list | unique |
-              difference([pc_source_catalog]),
-              []
-            )
-          }}
+          {{ ((pc_operators | type_debug == "dict") | ternary(pc_operators, {})) |
+             dict2items |
+             selectattr('value.catalog', 'defined') |
+             map(attribute='value.catalog') |
+             list | unique |
+             difference([pc_source_catalog]) }}
       ansible.builtin.shell:
         chdir: "{{ pc_tmp_dir }}"
         cmd: >
