@@ -1,5 +1,5 @@
 ---
 im_allow_insecure_registries: false
 im_keep_working_dir: false
-im_no_log: false
+im_no_log: true
 ...
