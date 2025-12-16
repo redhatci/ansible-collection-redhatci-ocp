@@ -139,6 +139,11 @@ argument_specs:
         type: str
         required: false
         description: Application password. If not provided, a random 32-character password will be auto-generated.
+      fs_use_systemd:
+        type: bool
+        required: false
+        default: false
+        description: Whether to create and enable systemd user units for the pod.
       fs_wait_retries:
         type: int
         required: false
@@ -175,3 +180,8 @@ argument_specs:
         required: false
         default: "{{ ansible_env.HOME }}/forgejo"
         description: Base directory path (displayed in removal information).
+      fs_use_systemd:
+        type: bool
+        required: false
+        default: false
+        description: Whether to remove systemd user units for the pod.
