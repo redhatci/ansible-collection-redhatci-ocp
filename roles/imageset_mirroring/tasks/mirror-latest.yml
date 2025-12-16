@@ -20,6 +20,7 @@
             in_csv_section && $2==def_channel {csv=$3}
             END {print operator, def_channel, csv}'
     executable: /bin/bash
+    chdir: "{{ _im_tmp_dir.path }}"
   register: _im_operator_info
   until: _im_operator_info.rc == 0
   retries: 3

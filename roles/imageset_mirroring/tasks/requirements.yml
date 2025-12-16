@@ -5,6 +5,11 @@
     prefix: im_tmp.
   register: _im_tmp_dir
 
+- name: Set permissions on temporary directory
+  ansible.builtin.file:
+    path: "{{ _im_tmp_dir.path }}"
+    mode: "0700"
+
 - name: Extract latest oc-mirror
   ansible.builtin.unarchive:
     src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/oc-mirror.tar.gz"
