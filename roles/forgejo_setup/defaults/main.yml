@@ -2,6 +2,7 @@
 # Forgejo configuration defaults
 fs_state: present
 fs_user: "{{ ansible_user_id }}"
+fs_user_home: "{{ ansible_user_dir }}"
 fs_user_uid: "{{ ansible_user_uid }}"
 fs_user_gid: "{{ ansible_user_gid }}"
 fs_base_dir: "{{ ansible_env.HOME }}/forgejo"
@@ -9,6 +10,7 @@ fs_data_dir: "{{ fs_base_dir }}/data"
 fs_db_dir: "{{ fs_base_dir }}/db"
 fs_db_container_dir: "/var/lib/postgresql/18/docker"
 fs_server_domain: localhost
+fs_use_systemd: false
 
 # Container configuration
 fs_app_image: codeberg.org/forgejo/forgejo:13

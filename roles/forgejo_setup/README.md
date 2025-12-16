@@ -43,6 +43,7 @@ All containers run in rootless mode within a single pod
 | fs_pod_name             | forgejo                            | Podman pod name
 | fs_pod_ssh_port         | 2222                               | Host port for Forgejo SSH interface
 | fs_postgres_image       | mirror.gcr.io/library/postgres:18  | DB container image
+| fs_use_systemd          | false                              | Whether to create systemd user units for the pod
 | fs_user                 | {{ ansible_user_id }}              | User to run containers as (rootless mode)
 | fs_user_gid             | {{ ansible_user_gid }}             | GID of the user running containers
 | fs_user_uid             | {{ ansible_user_uid }}             | UID of the user running containers
@@ -78,11 +79,12 @@ All containers run in rootless mode within a single pod
     fs_pod_ssh_port: 2222
     fs_postgres_password: "secure_password_here"
     fs_base_dir: /opt/forgejo
-    fs_forgego_server: git.example.com
+    fs_use_systemd: true
+    fs_forgejo_server: git.example.com
     fs_app_env_vars:
-      FORGEJO__server__DOMAIN: "{{ fs_forgego_server }}"
-      FORGEJO__server__ROOT_URL: "https://{{ fs_forgego_server }}"
-      FORGEJO__server__SSH_DOMAIN: "{{ fs_forgego_server }}"
+      FORGEJO__server__DOMAIN: "{{ fs_forgejo_server }}"
+      FORGEJO__server__ROOT_URL: "https://{{ fs_forgejo_server }}"
+      FORGEJO__server__SSH_DOMAIN: "{{ fs_forgejo_server }}"
 ```
 
 ### Remove Forgejo Deployment
@@ -93,6 +95,7 @@ All containers run in rootless mode within a single pod
     name: redhatci.ocp.forgejo_setup
   vars:
     fs_state: absent
+    fs_use_systemd: true
 ```
 
 ## Post-Installation
