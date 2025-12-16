@@ -30,12 +30,7 @@
       umask 0022
       {{ _im_tmp_dir.path }}/oc-mirror list operators \
         --catalog {{ item.value.catalog | default(im_source_index) }} \
-        --package {{ item.key }} \
-        2>/dev/null | \
-      awk 'NR==2 {operator=$1; def_channel=$NF}
-            /^PACKAGE/ {in_csv_section=1; next}
-            in_csv_section && $2==def_channel {csv=$3}
-            END {print operator, def_channel, csv}'
+        --package {{ item.key }}
     executable: /bin/bash
   environment: "{{ {'DOCKER_CONFIG': _im_tmp_dir.path + '/auth'} if im_auths_file is defined else {} }}"
   register: _im_operator_info
@@ -46,6 +41,30 @@
   loop_control:
     label: "{{ item.key }} from {{ item.value.catalog | default(im_source_index) }}"
   changed_when: false
+
+# - name: Get operator default channel and CSV
+#   ansible.builtin.shell:
+#     cmd: |
+#       set -o pipefail
+#       umask 0022
+#       {{ _im_tmp_dir.path }}/oc-mirror list operators \
+#         --catalog {{ item.value.catalog | default(im_source_index) }} \
+#         --package {{ item.key }} \
+#         2>/dev/null | \
+#       awk 'NR==2 {operator=$1; def_channel=$NF}
+#             /^PACKAGE/ {in_csv_section=1; next}
+#             in_csv_section && $2==def_channel {csv=$3}
+#             END {print operator, def_channel, csv}'
+#     executable: /bin/bash
+#   environment: "{{ {'DOCKER_CONFIG': _im_tmp_dir.path + '/auth'} if im_auths_file is defined else {} }}"
+#   register: _im_operator_info
+#   until: _im_operator_info.rc == 0
+#   retries: 3
+#   delay: 10
+#   loop: "{{ im_operators | dict2items }}"
+#   loop_control:
+#     label: "{{ item.key }} from {{ item.value.catalog | default(im_source_index) }}"
+#   changed_when: false
 
 - name: Render ImageSetConfiguration for latest version of listed operators
   ansible.builtin.template:
