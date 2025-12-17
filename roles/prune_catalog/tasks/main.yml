@@ -89,7 +89,8 @@
              selectattr('value.catalog', 'defined') |
              map(attribute='value.catalog') |
              list | unique |
-             difference([pc_source_catalog]) }}
+             difference([pc_source_catalog])
+          }}
       ansible.builtin.shell:
         chdir: "{{ pc_tmp_dir }}"
         cmd: >
