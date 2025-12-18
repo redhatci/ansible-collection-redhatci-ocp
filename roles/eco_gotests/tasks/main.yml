@@ -22,10 +22,12 @@
 
 - name: "Rename junit XML files with the feature name"
   ansible.builtin.shell: |
-    for d in ptp sriov; do
-      if [ -d "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/${d}" ]; then
-        cd "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/${d}"
-        for i in *; do mv "${i}" "${d}_${i}"; done
-      fi
-    done
+    if [ -d "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/{{ item }}" ]; then
+      find "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/{{ item }}" \
+        -type f \
+        -exec sh -c 'mv "$1" "{{ eco_gotests_log_dir }}/{{ item }}_$(basename "$1")"' _ {} \;
+    fi
+  loop:
+    - ptp
+    - sriov
   changed_when: false
