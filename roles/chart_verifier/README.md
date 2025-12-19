@@ -161,7 +161,7 @@ See below for an example of how to use the chart_verifier in a DCI pipeline.
   prev_stages: [ocp-upgrade, ocp]
   ansible_playbook: /usr/share/dci-openshift-app-agent/dci-openshift-app-agent.yml
   ansible_cfg: /var/lib/dci/pipelines/ansible.cfg
-  ansible_inventory: /var/lib/dci/inventories/dallas/8nodes/cluster6-post.yml
+  ansible_inventory: /var/lib/dci/inventories/clusterN-post.yml
   dci_credentials: /etc/dci-openshift-app-agent/dci_credentials.yml
   ansible_extravars:
     dci_cache_dir: /var/lib/dci-pipeline
