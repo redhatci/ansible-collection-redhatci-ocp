@@ -7,7 +7,7 @@
         cmd: "loginctl disable-linger {{ fs_user }}"
       become: true
       args:
-        removes: "/var/lib/loginctl/users/{{ fs_user }}"
+        removes: "/var/lib/systemd/linger/{{ fs_user }}"
 
     - name: Disable and stop Forgejo pod systemd service
       ansible.builtin.systemd:
