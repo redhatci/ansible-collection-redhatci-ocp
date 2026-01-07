@@ -13,6 +13,9 @@
     kind: StorageClass
   register: storage_class
   no_log: true
+  retries: 20
+  delay: 3
+  until: storage_class.resources is defined
 
 - name: "Fail when there is no storage class available"
   ansible.builtin.fail:
