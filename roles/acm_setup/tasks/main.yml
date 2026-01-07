@@ -36,7 +36,7 @@
     - deployment_info is defined
     - deployment_info.resources is defined
     - deployment_info.resources | length > 0
-  retries: 180
+  retries: 300
   delay: 10
 
 - name: "Configure hugepages on postgres containers"
