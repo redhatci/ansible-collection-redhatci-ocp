@@ -9,7 +9,7 @@
 
 - name: "Get Storage Classes"
   kubernetes.core.k8s_info:
-    api_version: v1
+    api_version: storage.k8s.io/v1
     kind: StorageClass
   register: storage_class
   no_log: true
