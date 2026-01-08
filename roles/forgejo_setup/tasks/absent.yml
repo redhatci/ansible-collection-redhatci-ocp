@@ -17,6 +17,10 @@
         enabled: false
         masked: true
         daemon_reload: true
+      become: true
+      become_user: "{{ fs_user }}"
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ fs_user_uid }}"
 
 - name: Remove application container
   containers.podman.podman_container:
