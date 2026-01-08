@@ -85,6 +85,7 @@
         group: "{{ mor_group }}"
         mode: "0755"
         setype: "httpd_sys_content_t"
+      become: true
       register: _mor_install_mode
       retries: 3
       delay: 5
