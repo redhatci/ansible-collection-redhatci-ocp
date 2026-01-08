@@ -32,6 +32,7 @@
     ports:
       - "{{ fs_pod_http_port }}:3000"
       - "{{ fs_pod_ssh_port }}:22"
+  register: _fs_pod_info
 
 - name: Deploy database container in pod
   containers.podman.podman_container:
@@ -94,6 +95,45 @@
   until: _fs_app_ready.status == 200
   retries: "{{ fs_wait_retries }}"
   delay: "{{ fs_wait_delay }}"
+
+- name: Systemd units
+  when: fs_use_systemd | bool
+  block:
+    - name: Create systemd user directory
+      ansible.builtin.file:
+        path: "{{ fs_user_home }}/.config/systemd/user/"
+        recurse: true
+        state: directory
+        owner: "{{ fs_user }}"
+        mode: '0755'
+
+    - name: Create systemd units
+      containers.podman.podman_generate_systemd:
+        name: "{{ _fs_pod_info.pod.Id }}"
+        dest: "{{ fs_user_home }}/.config/systemd/user"
+        force: true
+        no_header: true
+        restart_policy: on-failure
+        use_names: true
+
+    - name: Enable and start Forgejo pod systemd service
+      ansible.builtin.systemd:
+        name: pod-forgejo
+        scope: user
+        daemon_reload: true
+        state: started
+        enabled: true
+      register: _fs_user_svc
+      retries: 3
+      delay: 5
+      until: _fs_user_svc is succeeded
+
+    - name: Enable systemd linger for user
+      ansible.builtin.command:
+        cmd: "loginctl enable-linger {{ fs_user }}"
+      become: true
+      args:
+        creates: "/var/lib/systemd/linger/{{ fs_user }}"
 
 - name: Auto Install
   when:

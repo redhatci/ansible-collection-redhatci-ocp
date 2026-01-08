@@ -1,4 +1,27 @@
 ---
+- name: Systemd units
+  when: fs_use_systemd | bool
+  block:
+    - name: Disable linger for user
+      ansible.builtin.command:
+        cmd: "loginctl disable-linger {{ fs_user }}"
+      become: true
+      args:
+        removes: "/var/lib/systemd/linger/{{ fs_user }}"
+
+    - name: Disable and stop Forgejo pod systemd service
+      ansible.builtin.systemd:
+        name: pod-forgejo
+        scope: user
+        state: stopped
+        enabled: false
+        masked: true
+        daemon_reload: true
+      become: true
+      become_user: "{{ fs_user }}"
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ fs_user_uid }}"
+
 - name: Remove application container
   containers.podman.podman_container:
     name: "{{ fs_app_container_name }}"
