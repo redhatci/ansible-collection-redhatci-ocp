@@ -22,7 +22,7 @@
   loop:
     - { path: "{{ fs_base_dir }}", owner: "{{ fs_user }}" }
     - { path: "{{ fs_data_dir }}", owner: "{{ fs_user }}" }
-    - { path: "{{ fs_db_dir }}", mode: '0700' }
+    - { path: "{{ fs_db_dir }}", owner: "{{ fs_user }}", mode: '0700' }
 
 - name: Create Podman pod for Forgejo
   containers.podman.podman_pod:
