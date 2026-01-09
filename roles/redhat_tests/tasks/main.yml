@@ -8,7 +8,7 @@
     name: redhatci.ocp.check_resource
   vars:
     resource_to_check: "MachineConfigPool"
-    check_wait_retries: 30
+    check_wait_retries: 40
     check_wait_delay: 10
 
 - name: "redhat_tests : Run openshift conformance tests"  # noqa: name[casing]
