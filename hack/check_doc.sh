@@ -16,7 +16,7 @@
 
 # when run outside of a GitHub action
 if [ -z "$GITHUB_STEP_SUMMARY" ]; then
-    GITHUB_STEP_SUMMARY=/dev/null
+    GITHUB_STEP_SUMMARY=/dev/stdout
 fi
 
 rc=0
