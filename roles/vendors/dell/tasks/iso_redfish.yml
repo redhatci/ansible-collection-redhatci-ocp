@@ -1,26 +1,27 @@
 ---
 - name: DELL Power Off
-  community.general.redfish_command:
-    category: Systems
-    command: PowerGracefulShutdown
-    baseuri: "{{ bmc_address }}"
-    username: "{{ bmc_user }}"
-    password: "{{ bmc_password }}"
-
-- name: Shutdown
+  vars:
+    power_state_filter: "redfish_facts.system.entries[] | [?PowerState == 'On']"
   block:
-    - name: Wait for machine to DELL Shutdown
+    - name: Send graceful shutdown command
+      community.general.redfish_command:
+        category: Systems
+        command: PowerGracefulShutdown
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+
+    - name: Wait for graceful shutdown
       community.general.redfish_info:
         category: Systems
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
-      register: system_inventory
-      until: (system_inventory |  json_query(filter_str) | length) == 0
+      register: power_status
+      no_log: true
+      until: (power_status | json_query(power_state_filter) | length) == 0
       retries: 10
       delay: 30
-      vars:
-        filter_str: "redfish_facts.system.entries[] | [?PowerState == 'On']"
   rescue:
     - name: DELL Force Power Off
       community.general.redfish_command:
@@ -29,6 +30,18 @@
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
+
+    - name: Wait for force shutdown
+      community.general.redfish_info:
+        category: Systems
+        baseuri: "{{ bmc_address }}"
+        username: "{{ bmc_user }}"
+        password: "{{ bmc_password }}"
+      register: power_status
+      no_log: true
+      until: (power_status | json_query(power_state_filter) | length) == 0
+      retries: 10
+      delay: 10
 
 - name: Set one time boot to Virtual Media
   block:
