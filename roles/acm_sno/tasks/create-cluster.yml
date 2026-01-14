@@ -50,6 +50,7 @@
       data:
         .dockerconfigjson: "{{ acm_pull_secret }}"
       type: kubernetes.io/dockerconfigjson
+  no_log: true
 
 - name: "Define Random ClusterImageSet name"
   ansible.builtin.set_fact:
@@ -229,6 +230,7 @@
           name: "pullsecret-{{ acm_cluster_name }}"
         sshAuthorizedKey: "{{ acm_ssh_key }}"
         ignitionConfigOverride: "{{ ignition_config | default(omit) }}"
+  no_log: true
 
 - name: "Wait for the boot ISO creation"
   kubernetes.core.k8s_info:
@@ -255,6 +257,7 @@
         name: "bmh-{{ acm_cluster_name }}"
         namespace: "{{ acm_cluster_name }}"
       type: Opaque
+  no_log: true
 
 - name: "Create BareMetalHost"
   kubernetes.core.k8s:

@@ -29,7 +29,7 @@
   ansible.builtin.set_fact:
     acm_user_ca_bundle: '{{ acm_user_bundle | default(user_ca_bundle.resources[0].data["ca-bundle.crt"]) }}'
   when:
-    - user_bundle is defined or
+    - acm_user_bundle is defined or
       user_ca_bundle.resources | length == 1
 
 - name: "Get hub cluster pull_secret details"
@@ -39,9 +39,11 @@
     name: "pull-secret"
     namespace: openshift-config
   register: acm_pull_secret
+  no_log: true
 
 - name: "Setting config facts based on Hub Cluster configs"
   ansible.builtin.set_fact:
     acm_ssh_key: "{{ worker_mc.resources[0].spec.config.passwd.users[0].sshAuthorizedKeys[0] }}"
     acm_pull_secret: '{{ acm_pull_secret.resources[0].data[".dockerconfigjson"] }}'
+  no_log: true
 ...
