@@ -29,7 +29,7 @@
     msg: "At least a VM in config file {{ kvirt_vm_config_file }} does not contain a name"
   when: vm_configs | selectattr('name', 'undefined') | list | length > 0
 
-- name: "Get Storage Classes"
+- name: Get Storage Classes
   kubernetes.core.k8s_info:
     api_version: storage.k8s.io/v1
     kind: StorageClass
@@ -63,8 +63,9 @@
     - "not('true' in query_results)"
     - kvirt_cluster_storage_class is undefined
 
-- name: "Check if the CNV CRD is present"
+- name: Check if the CNV CRD is present
   kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
     name: kubevirts.kubevirt.io
   register: kvirt_crd
