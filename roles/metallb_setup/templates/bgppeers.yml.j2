@@ -8,3 +8,10 @@ spec:
   peerASN: {{ peer.remote_asn }}
   myASN: {{ peer.local_asn }}
   bfdProfile: "{{ mlb_bfd_profile }}"
+{# disableMP is deprecated and ignorted in 4.20+ #}
+{% if _ms_ocp_ver < '4.20' and peer.disable_mp is defined %}
+  disableMP: {{ peer.disable_mp }}
+{# dualStackAddressFamily is used 4.20 and later #}
+{% elif _ms_ocp_ver >= '4.20' and peer.dual_stack_address_family is defined %}
+  dualStackAddressFamily: {{ peer.dual_stack_address_family }}
+{% endif %}

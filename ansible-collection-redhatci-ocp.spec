@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.16.EPOCH
+Version:        2.17.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Jan 15 2026 Tony Garcia <tonyg@redhat.com> - 2.17.EPOCH-VERS
+- Version bump for role updates - metallb_setup
+
 * Tue Dec  2 2025 Tony Garcia <tonyg@redhat.com> - 2.16.EPOCH-VERS
 - Add forgejo_config role
 
