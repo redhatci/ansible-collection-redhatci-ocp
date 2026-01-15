@@ -22,7 +22,7 @@
       Running{%- else %}
       Stopped{%- endif %}
   kubernetes.core.k8s_info:
-    api: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
+    api_version: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
     kind: VirtualMachine
     name: "{{ vm.name }}"
     namespace: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
