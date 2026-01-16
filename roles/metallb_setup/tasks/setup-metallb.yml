@@ -1,4 +1,12 @@
 ---
+- name: Get OpenShift Version
+  kubernetes.core.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: _ms_cluster_version
+  no_log: true
+
 - name: "Set the MetalLB Instance"
   vars:
     instance: |-
@@ -73,6 +81,8 @@
       no_log: true
 
     - name: "Create MetalLB BGP Peers"
+      vars:
+        _sm_ocp_ver: "{{ _ms_cluster_version.resources[0].status.desired.version }}"
       kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', 'bgppeers.yml.j2') }}"

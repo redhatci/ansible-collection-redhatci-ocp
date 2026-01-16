@@ -14,22 +14,24 @@ NOTES:
 
 ## Variables
 
-| Variable               | Default        | Type         | Required    | Description                                                              |
-| ---------------------- | ---------------|------------- | ----------- | -------------------------------------------------------------------------|
-| mlb_setup_name         | metallb        | String       | No          | Name of the BGP Instance to setup, could represent a vlan or network name|
-| mlb_ipaddr_pool        | undefined      | List         | Yes         | Pool of addresses to advertise, could be one or multiple IPv4/IPv6 CIDRs |
-| mlb_bgp_peers          | metallb        | List         | No          | A list of values to create BGP Peers for MetalLB. See variables below.   |
-|   name                 | undefined      | String       | Yes         | Name to identify the BGP Peer                                            |
-|   address              | undefined      | IP           | Yes         | IP address of the BGP Peer, IPv4 or IPv6                                 |
-|   remote_asn           | undefined      | Int          | Yes         | Autonomous System (AS) of the Remote Peer                                |
-|   local_asn            | undefined      | Int          | Yes         | Autonomous System (AS) of the Local setup with MetalLB                   |
-| mlb_ipv4_enabled       | true           | Boolean      | No          | By default BGP setup with IPv4 is deployed, hence pools need to be IPv4  |
-| mlb_ipv6_enabled       | false          | Boolean      | No          | If IPv6 Pools are defined for BGP, enable this boolean                   |
-| mlb_namespace          | metallb-system | String       | No          | Default name of the namespace to use to install operator resources       |
-| mlb_bfd_profile        | bfd-fastest    | String       | No          | Name of the BFD profile to use for BGP                                   |
-| mlb_wait_retries       | 18             | Int          | No          | How many times to retry OCP operations that fail |
-| mlb_wait_delay         | 10             | Int          | No          | How long to wait between retries of OCP operations that fail |
-| mlb_settings           | ""             | File Path    | No          | An optional YAML file with the variables listed above.                   |
+| Variable                   | Default        | Type         | Required    | Description
+| -------------------------- | ---------------|------------- | ----------- | -----------
+| mlb_setup_name             | metallb        | String       | No          | Name of the BGP Instance to setup, could represent a vlan or network name.
+| mlb_ipaddr_pool            | undefined      | List         | Yes         | Pool of addresses to advertise, could be one or multiple IPv4/IPv6 CIDRs.
+| mlb_bgp_peers              | metallb        | List         | No          | A list of values to create BGP Peers for MetalLB. See variables below.
+|   name                     | undefined      | String       | Yes         | Name to identify the BGP Peer.
+|   address                  | undefined      | IP           | Yes         | IP address of the BGP Peer, IPv4 or IPv6.
+|   remote_asn               | undefined      | Int          | Yes         | Autonomous System (AS) of the Remote Peer.
+|   local_asn                | undefined      | Int          | Yes         | Autonomous System (AS) of the Local setup with MetalLB.
+|  disable_mp                | undefined      | Boolean      | No          | (Deprecated and ignored in 4.20+) Disable Multi-Protocol support for this peer.
+|  dual_stack_address_family | undefined      | Boolean      | No          | (4.20+) Enable Dual Stack Address Family for this peer.
+| mlb_ipv4_enabled           | true           | Boolean      | No          | By default BGP setup with IPv4 is deployed, hence pools need to be IPv4.
+| mlb_ipv6_enabled           | false          | Boolean      | No          | If IPv6 Pools are defined for BGP, enable this boolean.
+| mlb_namespace              | metallb-system | String       | No          | Default name of the namespace to use to install operator resources.
+| mlb_bfd_profile            | bfd-fastest    | String       | No          | Name of the BFD profile to use for BGP.
+| mlb_wait_retries           | 18             | Int          | No          | How many times to retry OCP operations that fail.
+| mlb_wait_delay             | 10             | Int          | No          | How long to wait between retries of OCP operations that fail.
+| mlb_settings               | ""             | File Path    | No          | An optional YAML file with the variables listed above.
 
 ## Role requirements for BGP mode
   - An OpenShift cluster with worker nodes using OCP >= 4.10.
@@ -39,7 +41,8 @@ NOTES:
 
 ## Usage example
 
-This is an example of how to use the metallb role to configure a MetalLB instance in BGP mode.
+This is an example of how to use the metallb role to configure a MetalLB instance in BGP mode with IPv4 and IPv6 address pools,
+and preventing Multi-Protocol (MP), i.e. using separate IPv4 and IPv6 sessions with the BGP peers.
 
 ```yaml
 - name: "Setup MetalLB Operator"
@@ -55,10 +58,12 @@ This is an example of how to use the metallb role to configure a MetalLB instanc
         address: 192.168.90.2
         remote_asn: 65451
         local_asn: 65452
+        dual_stack_address_family: false
       - name: "switch01-clusterX-vlan123-ipv6"
         address: fdb0:5b21:e84a:90::2
         remote_asn: 65451
         local_asn: 65452
+        dual_stack_address_family: false
 ```
 
 Remove MetalLB created by the role
