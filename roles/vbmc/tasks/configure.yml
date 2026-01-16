@@ -102,7 +102,7 @@
     set -eo pipefail
     NODE_XML=`virsh dumpxml {{ item }}`
     disks_list="["
-    for dsk in $(virsh domblklist {{ item }} | tail -n +3 | awk '{print $1}'); do
+    for dsk in $(virsh domblklist {{ item }} | tail -n +3 | awk '$2 != "-" && $2 != "" {print $1}'); do
         if [ -z "$first_disk" ]; then
             first_disk="$dsk"
         fi
