@@ -118,7 +118,7 @@
         'cpu': '`echo "$NODE_XML" | grep vcpu | cut -d\< -f2 | cut -d\> -f2`',
         'hint_serial': '`echo "$NODE_XML" | grep "<serial>" | cut -d\< -f2 | cut -d\> -f2`',
         'disks': ${disks_list},
-        'disk_bytes': ${disks_info}    
+        'disk_bytes': ${disks_info}
     }"
   with_items: "{{ vbmc_nodes | sort }}"
   register: nodes_info
