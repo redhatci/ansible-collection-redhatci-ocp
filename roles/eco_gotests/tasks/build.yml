@@ -1,0 +1,12 @@
+---
+
+- name: "Build the eco-gotests image"
+  ansible.builtin.command:
+    cmd: "make build-docker-image"
+    chdir: "{{ eco_gotests_path }}"
+
+- name: "Overwrite image name"
+  ansible.builtin.set_fact:
+    eco_gotests_image: "eco-gotests:latest"
+
+...
