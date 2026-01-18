@@ -82,7 +82,7 @@
 
     - name: "Create MetalLB BGP Peers"
       vars:
-        _sm_ocp_ver: "{{ _ms_cluster_version.resources[0].status.desired.version }}"
+        _ms_ocp_ver: "{{ _ms_cluster_version.resources[0].status.desired.version }}"
       kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', 'bgppeers.yml.j2') }}"
