@@ -1,0 +1,52 @@
+set -o pipefail
+umask 0022
+
+catalog="{{ catalog }}"
+operators="{{ operators | join(' ') }}"
+opm_bin="{{ opm_bin }}"
+jq_bin="{{ jq_bin }}"
+
+opm_render_output=$("$opm_bin" render "$catalog" 2>/dev/null)
+opm_rc=$?
+if [ $opm_rc -ne 0 ]; then
+  echo "Error: opm render failed with exit code $opm_rc" >&2
+  echo "$opm_render_output" >&2
+  exit 1
+fi
+
+catalog_data=$(echo "$opm_render_output" | "$jq_bin" -s '.')
+
+# Process each operator
+for operator in $operators; do
+  [ -z "$operator" ] && continue
+  
+  # Get default channel from package
+  default_channel=$(echo "$catalog_data" | \
+    "$jq_bin" -r --arg pkg "$operator" \
+      '.[] | select(.name == $pkg and .schema == "olm.package") | .defaultChannel // empty' | head -n1)
+  
+  if [ -n "$default_channel" ] && [ "$default_channel" != "null" ] && [ "$default_channel" != "" ]; then
+    # Get the head CSV entry from the default channel (last entry is the head)
+    head_csv=$(echo "$catalog_data" | \
+      "$jq_bin" -r --arg pkg "$operator" --arg ch "$default_channel" \
+        '.[] | select(.package == $pkg and .schema == "olm.channel" and .name == $ch) | 
+         .entries[-1].name // empty' | head -n1)
+    
+    if [ -n "$head_csv" ] && [ "$head_csv" != "null" ] && [ "$head_csv" != "" ]; then
+      # Get the full version from the bundle's olm.package property
+      version=$(echo "$catalog_data" | \
+        "$jq_bin" -r --arg csv "$head_csv" \
+          '.[] | select(.name == $csv and .schema == "olm.bundle") | 
+           .properties[] | select(.type == "olm.package") | .value.version // empty' | head -n1)
+      
+      # Fallback to extracting from CSV name if bundle version not found
+      if [ -z "$version" ] || [ "$version" == "null" ] || [ "$version" == "" ]; then
+        version=$(echo "$head_csv" | sed -E 's/^[^.]*\.v?([0-9.]+.*)/\1/')
+      fi
+      
+      if [ -n "$version" ] && [ "$version" != "null" ] && [ "$version" != "" ]; then
+        echo "$operator $default_channel $version"
+      fi
+    fi
+  fi
+done

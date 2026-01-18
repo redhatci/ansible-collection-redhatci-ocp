@@ -14,7 +14,7 @@ This role provides three different approaches to mirror operators from a source 
 
 - `oc-mirror` binary (automatically downloaded by the role)
 - Network access to source and target registries
-- Valid authentication for registries (if required)
+- Valid authentication for registries (if required). Passing the DOCKER_CONFIG variable is supported.
 
 ## Role Variables
 
@@ -149,10 +149,10 @@ This role provides three different approaches to mirror operators from a source 
     im_auths_file: /path/to/pull-secret.json
 ```
 
-### Example 4: Generate Configuration Only (No Mirror)
+### Example 4: Generate Configuration and keep the working directory
 
 ```yaml
-- name: "Generate ImageSetConfiguration without mirroring"
+- name: "Generate ImageSetConfiguration"
   ansible.builtin.include_role:
     name: redhatci.ocp.imageset_mirroring
     tasks_from: mirror-latest
@@ -206,7 +206,7 @@ This role provides three different approaches to mirror operators from a source 
 
 ### mirror-latest
 
-1. Downloads the latest `oc-mirror` binary
+1. Downloads the required binaries
 2. Groups operators by their catalog source (using `im_source_index` as default)
 3. Queries each catalog for each operator's default channel
 4. Identifies the latest CSV version for the default channel
@@ -215,14 +215,14 @@ This role provides three different approaches to mirror operators from a source 
 
 ### mirror-all
 
-1. Downloads the latest `oc-mirror` binary
+1. Downloads the required binaries
 2. Groups operators by their catalog source (using `im_source_index` as default)
 3. Generates an ImageSetConfiguration with `full: true` for all operators, organized by catalog
 4. Executes `oc-mirror` to mirror all channels and versions
 
 ### mirror-custom
 
-1. Downloads the latest `oc-mirror` binary
+1. Downloads the required binaries
 2. Uses the provided custom ImageSetConfiguration file
 3. Executes `oc-mirror` to perform the mirroring
 
