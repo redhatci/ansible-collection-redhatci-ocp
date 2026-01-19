@@ -1,0 +1,212 @@
+---
+# This file is in sync with defaults/main.yml
+argument_specs:
+  main:
+    short_description: Mirror OCP release artifacts and container images
+    description: >
+      Mirrors a given OpenShift release version to a cache directory to be served via HTTP server.
+      Optionally mirrors container images to a local registry for disconnected installations.
+    options:
+      mor_version:
+        type: str
+        required: true
+        description: >
+          An OpenShift version number (e.g., 4.20.15, 4.21.0-0.nightly-2026-01-02-123456).
+      mor_pull_url:
+        type: str
+        required: true
+        description: >
+          The OCP release image URL for the release
+          (e.g., quay.io/path/to/release@sha256:...).
+      mor_oc:
+        type: str
+        required: true
+        description: Path to the oc binary (stable version is recommended).
+      mor_cache_dir:
+        type: str
+        required: false
+        default: /var/lib/dci-openshift-agent/releases
+        description: >
+          Base directory that will hold the OCP version binaries and OS images.
+          In a disconnected cluster, this directory is supposed to be served
+          behind an HTTP server (e.g., Apache).
+      mor_is_type:
+        type: str
+        required: false
+        default: "{{ mor_version is version('4.14', '>=') | ternary('idms', 'icsp') }}"
+        choices:
+          - idms
+          - icsp
+        description: >
+          Image Source file type. Default is 'icsp' for OCP 4.13 and below,
+          'idms' for OCP 4.14 and above.
+      mor_install_type:
+        type: raw
+        required: false
+        default: ipi
+        description: >
+          Installation type(s) to include. Can be a string or a list of strings.
+          Supported values: ipi, sno, upi, assisted, vsphere, acm, abi, aws, azure.
+      mor_list_install_type:
+        type: list
+        required: false
+        default:
+          - ipi
+          - sno
+          - upi
+          - assisted
+          - vsphere
+          - acm
+          - abi
+          - aws
+          - azure
+        description: List of supported install types used internally by the role.
+      mor_installer:
+        type: str
+        required: false
+        default: "{{ mor_version is version('4.16', '>=') | ternary('openshift-install', 'openshift-baremetal-install') }}"
+        description: >
+          Installer binary name. Default is 'openshift-install' for OCP 4.16+,
+          'openshift-baremetal-install' for earlier versions.
+      mor_extra_flags:
+        type: str
+        required: false
+        default: ""
+        description: >
+          Extra flags to pass to the oc adm release mirror command.
+          Example: '--skip-verification'.
+      mor_force:
+        type: bool
+        required: false
+        default: false
+        description: >
+          If set to true, the role will re-download all OCP release resources
+          even if they already exist.
+      mor_mirror_disk_images:
+        type: bool
+        required: false
+        default: true
+        description: Download all disk images depending on install type.
+      mor_mirror_container_images:
+        type: bool
+        required: false
+        default: true
+        description: >
+          Mirror all container images from upstream container registries to the
+          provided local registry. Requires mor_registry_url and mor_auths_file.
+      mor_write_custom_config:
+        type: bool
+        required: false
+        default: true
+        description: >
+          Write OCP configuration files and set custom URL facts.
+          Requires mor_webserver_url when enabled.
+      mor_auths_file:
+        type: str
+        required: false
+        description: >
+          Path to the authentication file used for container registries
+          (e.g., $HOME/.docker/config.json). Required when mor_mirror_container_images is true.
+          Also required to download release artifacts.
+      mor_webserver_url:
+        type: str
+        required: false
+        description: >
+          URL of the web server where the installation artifacts are stored.
+          Must be an http or https URL. Required when mor_write_custom_config is true.
+      mor_registry_url:
+        type: str
+        required: false
+        description: >
+          Registry URL to mirror the release images to.
+          Required when mor_mirror_container_images is true.
+      mor_registry_path:
+        type: str
+        required: false
+        default: "ocp-{{ mor_base_version }}/{{ mor_version }}"
+        description: >
+          Repository path to mirror release images.
+          For example: ocp-4.20/4.21.0-0.nightly-2026-01-01-123456.
+      mor_allow_insecure_registry:
+        type: bool
+        required: false
+        default: true
+        description: >
+          Allow interacting with registries that are using an unknown CA certificate.
+      mor_owner:
+        type: raw
+        required: false
+        default: "{{ ansible_user_uid }}"
+        description: User ID for ownership of created files and directories.
+      mor_group:
+        type: raw
+        required: false
+        default: "{{ ansible_user_gid }}"
+        description: Group ID for ownership of created files and directories.
+      mor_base_version:
+        type: str
+        required: false
+        default: "{{ mor_version.split('.')[:2] | join('.') }}"
+        description: >
+          Base version extracted from mor_version (e.g., 4.20 from 4.20.45).
+          Used internally for directory naming.
+      mor_upi:
+        type: list
+        required: false
+        default: []
+        description: List of images required for UPI installation type.
+      mor_ipi:
+        type: list
+        required: false
+        default:
+          - openstack
+          - qemu
+          - metal_iso
+        description: List of images required for IPI installation type.
+      mor_vsphere:
+        type: list
+        required: false
+        default:
+          - openstack
+          - qemu
+        description: List of images required for vSphere installation type.
+      mor_sno:
+        type: list
+        required: false
+        default:
+          - metal_pxe_rootfs
+          - metal_iso
+        description: List of images required for SNO installation type.
+      mor_acm:
+        type: list
+        required: false
+        default:
+          - metal_pxe_rootfs
+          - metal_iso
+        description: List of images required for ACM installation type.
+      mor_assisted:
+        type: list
+        required: false
+        default:
+          - metal_pxe_rootfs
+          - metal_iso
+        description: List of images required for Assisted Installer installation type.
+      mor_abi:
+        type: list
+        required: false
+        default:
+          - metal_pxe_rootfs
+          - metal_iso
+        description: List of images required for ABI installation type.
+      mor_aws:
+        type: list
+        required: false
+        default:
+          - aws
+        description: List of images required for AWS installation type.
+      mor_azure:
+        type: list
+        required: false
+        default:
+          - azurestack
+        description: List of images required for Azure installation type.
