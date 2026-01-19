@@ -20,3 +20,28 @@
   retries: 3
   delay: 60
   until: _im_get_oc_mirror is success
+
+- name: Download stable opm client
+  vars:
+    ocp_clients_url:
+      "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable\
+      /opm-linux.tar.gz"
+  ansible.builtin.unarchive:
+    src: "{{ ocp_clients_url }}"
+    dest: "{{ _im_tmp_dir.path }}"
+    remote_src: true
+    mode: "0755"
+  register: _im_get_opm
+  retries: 3
+  delay: 10
+  until: _im_get_opm is success
+
+- name: Download jq binary
+  ansible.builtin.get_url:
+    url: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64"
+    dest: "{{ _im_tmp_dir.path }}/jq"
+    mode: "0755"
+  register: _im_get_jq
+  retries: 3
+  delay: 60
+  until: _im_get_jq is success

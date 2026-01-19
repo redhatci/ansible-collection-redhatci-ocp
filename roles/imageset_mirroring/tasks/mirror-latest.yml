@@ -1,4 +1,8 @@
 ---
+- name: Include requirements
+  ansible.builtin.include_tasks: requirements.yml
+  when: _im_tmp_dir is not defined
+
 - name: Validate im_operators is not empty
   ansible.builtin.assert:
     that:
@@ -6,39 +10,43 @@
       - im_operators | dict2items | length > 0
     fail_msg: "im_operators must contain at least one operator"
 
-- name: Get operator default channel and CSV
+- name: Build catalog group
+  ansible.builtin.set_fact:
+    im_operators_by_catalog: >-
+      {%- set result = {} -%}
+      {%- for item in im_operators | dict2items -%}
+        {%- set catalog = (item.value is mapping and item.value.catalog is defined) | ternary(item.value.catalog, im_source_index) -%}
+        {%- if result.get(catalog) is none -%}
+          {%- set _ = result.update({catalog: []}) -%}
+        {%- endif -%}
+        {%- set _ = result[catalog].append(item.key) -%}
+      {%- endfor -%}
+      {{ result }}
+
+- name: Get operator info from catalog
   ansible.builtin.shell:
-    cmd: |
-      set -o pipefail
-      umask 0022
-      {{ _im_tmp_dir.path }}/oc-mirror list operators \
-        --catalog {{ item.value.catalog | default(im_source_index) }} \
-        --package {{ item.key }} \
-        2>/dev/null | \
-      awk 'NR==2 {operator=$1; def_channel=$NF}
-            /^PACKAGE/ {in_csv_section=1; next}
-            in_csv_section && $2==def_channel {csv=$3}
-            END {print operator, def_channel, csv}'
+    cmd: "{{ lookup('template', 'get-operator-info.sh.j2') }}"
     executable: /bin/bash
     chdir: "{{ _im_tmp_dir.path }}"
-  register: _im_operator_info
-  until: _im_operator_info.rc == 0
+  vars:
+    catalog: "{{ item.key }}"
+    operators: "{{ item.value }}"
+    opm_bin: "{{ _im_tmp_dir.path }}/opm-rhel8"
+    jq_bin: "{{ _im_tmp_dir.path }}/jq"
+  register: _im_catalog_operator_info
+  until: _im_catalog_operator_info.rc == 0
   retries: 3
   delay: 10
-  loop: "{{ im_operators | dict2items }}"
+  loop: "{{ im_operators_by_catalog | dict2items }}"
   loop_control:
-    label: "{{ item.key }} from {{ item.value.catalog | default(im_source_index) }}"
+    label: "{{ item.key }} ({{ item.value | length }} operators)"
   changed_when: false
 
 - name: Render ImageSetConfiguration for latest version of listed operators
-  ansible.builtin.template:
-    src: imagesetconfig-latest.yaml.j2
-    dest: "{{ _im_tmp_dir.path }}/imagesetconfig.yaml"
-    mode: "0644"
   vars:
-    _im_operators_with_catalog: >-
+    im_operators_with_catalog: >-
       {%- set result = [] -%}
-      {%- for item in _im_operator_info.results -%}
+      {%- for item in im_operator_info | default([]) -%}
         {%- set _ = result.append({
               'catalog': item.item.value.catalog | default(im_source_index),
               'stdout': item.stdout,
@@ -47,8 +55,33 @@
         -%}
       {%- endfor -%}
       {{ result }}
-    _im_catalogs_with_operators: >-
-      {{ _im_operators_with_catalog | groupby('catalog') }}
+    im_catalogs_with_operators: >-
+      {{ im_operators_with_catalog | groupby('catalog') }}
+    im_operator_info: >-
+      {%- set result = [] -%}
+      {%- for catalog_result in _im_catalog_operator_info.results -%}
+        {%- set catalog = catalog_result.item.key -%}
+        {%- for line in catalog_result.stdout_lines | default([]) -%}
+          {%- if line | trim | length > 0 -%}
+            {%- set parts = line.split() -%}
+            {%- if parts | length >= 3 -%}
+              {%- set operator = parts[0] -%}
+              {%- set channel = parts[1] -%}
+              {%- set version = parts[2] -%}
+              {%- set _ = result.append({
+                    'item': {'key': operator, 'value': {'catalog': catalog}},
+                    'stdout': line
+                  })
+              -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ result }}
+  ansible.builtin.template:
+    src: imagesetconfig-latest.yaml.j2
+    dest: "{{ _im_tmp_dir.path }}/imagesetconfig.yaml"
+    mode: "0644"
 
 - name: "Print ImageSetConfiguration content"
   ansible.builtin.debug:
