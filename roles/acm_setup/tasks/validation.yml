@@ -43,7 +43,7 @@
 
 - name: "Get available CSVs"
   kubernetes.core.k8s_info:
-    api: operators.coreos.com/v1alpha1
+    api_version: operators.coreos.com/v1alpha1
     kind: ClusterServiceVersion
   register: current_csvs
   retries: 5
@@ -60,6 +60,7 @@
 
 - name: "Get workers information"
   kubernetes.core.k8s_info:
+    api_version: v1
     kind: Node
   register: node_info
   no_log: true

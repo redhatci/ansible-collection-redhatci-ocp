@@ -19,7 +19,7 @@
 
 - name: "Get cluster user-ca certificate"
   kubernetes.core.k8s_info:
-    api: v1
+    api_version: v1
     kind: ConfigMap
     name: "user-ca-bundle"
     namespace: openshift-config
