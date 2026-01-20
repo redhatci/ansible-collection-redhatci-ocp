@@ -23,7 +23,7 @@
     {%- if mor_allow_insecure_registry | bool %}
     --insecure
     {%- endif %}
-    {%- if mor_extra_flags | default('') | length > 0 %}
+    {%- if mor_extra_flags | length > 0 %}
     {{ mor_extra_flags }}
     {%- endif %}
   retries: 3
