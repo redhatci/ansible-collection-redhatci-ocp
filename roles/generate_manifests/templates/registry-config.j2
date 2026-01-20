@@ -1,3 +1,6 @@
+{% if gm_image_sources is defined and gm_image_sources | length > 0 %}
+{{ gm_image_sources }}
+{% else %}
 imageContentSources:
   - source: quay.io/openshift-release-dev/ocp-release
     mirrors:
@@ -14,5 +17,6 @@ imageContentSources:
   - source: quay.io/edge-infrastructure
     mirrors:
       - {{ mirror_registry }}/edge-infrastructure
+{% endif %}
 additionalTrustBundle: |
   {{ mirror_certificate | indent(2) }}
