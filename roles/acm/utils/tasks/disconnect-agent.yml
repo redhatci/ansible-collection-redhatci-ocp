@@ -21,7 +21,7 @@
 
 - name: Check the AgentServiceConfig instance
   kubernetes.core.k8s_info:
-    api: agent-install.openshift.io/v1beta1
+    api_version: agent-install.openshift.io/v1beta1
     kind: AgentServiceConfig
     name: agent
     namespace: multicluster-engine
