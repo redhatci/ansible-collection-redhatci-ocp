@@ -39,7 +39,6 @@ All of the variables have sane defaults which you can override to force things, 
       hctl: 0:0:0:1
       wwn: '0x5000000000'  # remember to quote hex values
     gm_image_sources: |  # override the default imageContentSources block
-      imageContentSources:
         - source: quay.io/openshift-release-dev/ocp-release
           mirrors:
             - my-custom-registry.example.com:5000/my-repo
