@@ -3,6 +3,7 @@
   containers.podman.podman_container:
     name: "eco-gotests-ptp-{{ eco_gotests_date }}"
     image: "{{ eco_gotests_image }}"
+    pull: newer
     state: started
     interactive: true
     network_mode: host
