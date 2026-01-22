@@ -19,6 +19,7 @@ All of the variables have sane defaults which you can override to force things, 
 | mirror_registry               | $REGISTRY_HOST_FQDN:5000          | No        | Local container image mirror |
 | ocp_registry_namespace        | ocp4                              | No        | Namespace for image mirror |
 | ocp_registry_image            | openshift4                        | No        | Name for image in the image mirror |
+| gm_image_sources              | (default block)                   | No        | Override the default ICSP block [^2] |
 | single_node_openshift_enabled | false                             | No        | Install OCP in single-node mode |
 
 ## Usage Examples
@@ -37,8 +38,17 @@ All of the variables have sane defaults which you can override to force things, 
     root_device_hints:  # you can also use more specific device hints. This overrides installation_disk_path
       hctl: 0:0:0:1
       wwn: '0x5000000000'  # remember to quote hex values
+    gm_image_sources: |  # override the default imageContentSources block
+        - source: quay.io/openshift-release-dev/ocp-release
+          mirrors:
+            - my-custom-registry.example.com:5000/my-repo
+        - source: registry.example.com/ocp/release
+          mirrors:
+            - my-custom-registry.example.com:5000/my-repo
   ansible.builtin.include_role:
     name: redhatci.ocp.generate_manifests
 ```
 
 [^1]: As per the [OCP 4.17 docs](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html-single/installing_an_on-premise_cluster_with_the_agent-based_installer/index#root-device-hints_preparing-to-install-with-agent-based-installer)
+
+[^2]: When `gm_image_sources` is defined, it completely replaces the default `imageContentSources` block in the registry configuration. The value should be a YAML string containing the full `ICSP/IDMS` block with proper indentation. If not defined, the default block with standard OpenShift release sources and mirrors is used.
