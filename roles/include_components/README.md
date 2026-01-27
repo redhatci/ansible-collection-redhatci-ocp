@@ -23,6 +23,10 @@ Variables used by this role:
 | ic_commit_urls | False    | List   | Optional. List of GitHub URLs pointing directly to code commits. The URL format is `https://github.com/organisation/reponame/commit/commit_hash` and should contain the full commit hash. See examples.
 | ic_listed      | False    | List   | Optional. List of components, each element must contain name and version keys. The type key is optional, if not provided, it defaults to the value of name.
 
+> [!NOTE]
+> When a Git repository is tracked as a component, the role automatically extracts the
+> repository name and prevents the same from being tracked again as an RPM component.
+
 ## Examples
 
 Create a Git component providing the source directory
@@ -42,7 +46,7 @@ Create a component providing the commit URLs
 ```yaml
 - name: Create a component providing repo_url and commit_id
   ansible.builtin.include_role:
-  name: redhatci.ocp.include_components
+    name: redhatci.ocp.include_components
   vars:
     ic_commit_urls:
       - "https://github.com/my-organisation/my-reponame/commit/b6bcc3506c0d84baa0c020f6b776a181b931f57a"

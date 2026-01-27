@@ -19,6 +19,6 @@
   retries: 5
   delay: 20
   when:
-    - "'component' in package_component"
-    - "'id' in package_component.component"
+    - package_component.component is defined
+    - package_component.component.id is defined
 ...

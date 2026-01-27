@@ -19,10 +19,7 @@
   ansible.builtin.include_tasks: track_rpm.yml
   loop: "{{ ic_rpms | default([]) }}"
   when:
-    - item is not in
-      ( (ic_gits + ic_dev_gits) |
-        map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') |
-        map('regex_replace', 'python', 'python3') | list)
+    - item is not in (ic_git_repo_names | map('regex_replace', 'python', 'python3') | list)
     - item in ansible_facts.packages
 
 - name: Track Github components
@@ -35,9 +32,6 @@
   ansible.builtin.include_tasks: track_listed_component.yml
   loop: "{{ ic_listed | default([]) }}"
   when:
-    - item.name is not in
-      ( (ic_gits + ic_dev_gits) |
-        map('regex_replace', '^(?:.*/(.+)|.*/([^/]+))$', '\\1') |
-        map('regex_replace', 'python', 'python3') | list)
+    - item.name is not in (ic_git_repo_names | map('regex_replace', 'python', 'python3') | list)
 
 ...

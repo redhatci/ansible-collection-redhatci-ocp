@@ -35,7 +35,7 @@
         state: present
       register: git_component
 
-    - name: 'Attach git component to the job'
+    - name: Attach git component to the job
       ansible.legacy.dci_job_component:
         component_id: "{{ git_component.component.id }}"
         job_id: " {{ job_id }} "
@@ -43,5 +43,16 @@
       until: job_component_result is not failed
       retries: 5
       delay: 20
+
+- name: Add repository name to list
+  vars:
+    _repo_name: "{{ repo_url.stdout | basename | regex_replace('[.]git$', '') }}"
+  ansible.builtin.set_fact:
+    ic_git_repo_names: "{{ ic_git_repo_names + [_repo_name] }}"
+  when:
+    - last_commit_id.rc == 0
+    - repo_url is defined
+    - repo_url.stdout is defined
+    - _repo_name not in ic_git_repo_names
 
 ...
