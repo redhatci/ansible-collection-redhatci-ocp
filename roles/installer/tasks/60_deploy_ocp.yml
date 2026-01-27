@@ -18,6 +18,7 @@
     - increase_bootstrap_timeout is not defined
     - increase_install_timeout is not defined
   tags: install
+  no_log: true
 
 - name: Deploy OpenShift Cluster with extended timeouts
   when: increase_bootstrap_timeout is defined or increase_install_timeout is defined
@@ -52,3 +53,4 @@
       until: wait_for_install_result is succeeded
       retries: "{{ increase_install_timeout|default(1)|int }}"
       delay: 1
+      no_log: true
