@@ -1,6 +1,7 @@
 ---
 - name: Define OCS Storage Cluster settings
   kubernetes.core.k8s:
+    api_version: ocs.openshift.io/v1
     definition: "{{ lookup('template', 'openshift-storage-cluster.yml.j2') }}"
   register: intocsresult
   when:
@@ -12,6 +13,7 @@
   block:
     - name: Define External RHCS Cluster Settings in a secret
       kubernetes.core.k8s:
+        api_version: v1
         definition:
           apiVersion: v1
           kind: Secret
@@ -25,6 +27,7 @@
 
     - name: Enable External OCS Storage Cluster
       kubernetes.core.k8s:
+        api_version: ocs.openshift.io/v1
         definition: "{{ lookup('template', 'openshift-storage-cluster.yml.j2') }}"
       register: extocsresult
 
@@ -36,6 +39,7 @@
 
 - name: Get OCS health status
   kubernetes.core.k8s_info:
+    api_version: ceph.rook.io/v1
     kind: CephCluster
     namespace: "{{ ocs_storage_namespace }}"
     name: "{{ ocs_storagecluster_name }}-cephcluster"
@@ -51,6 +55,7 @@
 
 - name: Deploy the Rook-Ceph toolbox pod
   kubernetes.core.k8s:
+    api_version: ocs.openshift.io/v1
     definition:
       apiVersion: ocs.openshift.io/v1
       kind: OCSInitialization
@@ -64,6 +69,7 @@
 
 - name: Check OCS Storage Class exists
   kubernetes.core.k8s_info:
+    api_version: storage.k8s.io/v1
     kind: StorageClass
     name: "{{ ocs_default_storage_class }}"
   register: ocs_storage_class
@@ -73,6 +79,7 @@
 
 - name: Set Default Openshift Storage Class
   kubernetes.core.k8s:
+    api_version: storage.k8s.io/v1
     definition:
       apiVersion: storage.k8s.io/v1
       kind: StorageClass

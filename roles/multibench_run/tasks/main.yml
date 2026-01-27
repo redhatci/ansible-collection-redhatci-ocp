@@ -63,13 +63,13 @@
     - name: Delete the crucible-rickshaw namespace and its resources
       kubernetes.core.k8s:
         state: absent
-        api: v1
+        api_version: v1
         kind: Namespace
         name: crucible-rickshaw
 
     - name: Wait for namespace to be deleted
       kubernetes.core.k8s_info:
-        api: v1
+        api_version: v1
         kind: Namespace
         name: crucible-rickshaw
       register: _multibench_run_namespace_info

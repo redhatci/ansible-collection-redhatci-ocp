@@ -32,7 +32,7 @@
 
 - name: "Get cluster version"
   kubernetes.core.k8s_info:
-    api: config.openshift.io/v1
+    api_version: config.openshift.io/v1
     kind: ClusterVersion
     name: version
   register: cluster_version
