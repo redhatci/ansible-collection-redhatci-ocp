@@ -16,6 +16,7 @@
       sourceNamespace: "openshift-marketplace"
       startingCSV: "{{ me_csv }}"
   kubernetes.core.k8s:
+    api_version: operator.open-cluster-management.io/v1
     definition:
       apiVersion: operator.open-cluster-management.io/v1
       kind: MultiClusterHub
@@ -47,6 +48,7 @@
   block:
     - name: "Annotate the Search Object"
       kubernetes.core.k8s:
+        api_version: search.open-cluster-management.io/v1alpha1
         definition:
           kind: Search
           apiVersion: search.open-cluster-management.io/v1alpha1
@@ -78,6 +80,7 @@
                     limits:
                       {{ hub_hugepages_type }}: {{ hub_hugepages_size }}
       kubernetes.core.k8s:
+        api_version: apps/v1
         state: present
         definition: "{{ dep_definition }}"
 
@@ -114,6 +117,7 @@
   block:
     - name: "Disable ClusterImageSet subscription"
       kubernetes.core.k8s:
+        api_version: operator.open-cluster-management.io/v1
         definition:
           apiVersion: operator.open-cluster-management.io/v1
           kind: MultiClusterHub
@@ -125,11 +129,10 @@
 
     - name: "Delete AppSub to fast channel"
       kubernetes.core.k8s:
-        api: apps.open-cluster-management.io/v1
+        api_version: apps.open-cluster-management.io/v1
         state: absent
         kind: Subscription
         name: hive-clusterimagesets-subscription-fast-0
-        definition:
         namespace: "{{ hub_namespace }}"
 
     - name: "Get available ClusterImageSets"
@@ -143,7 +146,7 @@
         subs_details: "resources[*].{ app_subs_name: metadata.name }"
         app_subs: "{{ cis_list | json_query(subs_details) }}"
       kubernetes.core.k8s:
-        api: hive.openshift.io/v1
+        api_version: hive.openshift.io/v1
         state: absent
         kind: ClusterImageSet
         name: "{{ sub.app_subs_name }}"
@@ -157,6 +160,7 @@
 
 - name: "Enable feature gate for Central Infrastructure Management service"
   kubernetes.core.k8s:
+    api_version: hive.openshift.io/v1
     definition:
       apiVersion: hive.openshift.io/v1
       kind: HiveConfig
@@ -184,6 +188,7 @@
 
 - name: "Disable provisioning network and update to watch all Namespaces"
   kubernetes.core.k8s:
+    api_version: metal3.io/v1alpha1
     definition:
       apiVersion: metal3.io/v1alpha1
       kind: Provisioning
@@ -214,6 +219,7 @@
   block:
     - name: "Enable Hypershift component"
       kubernetes.core.k8s:
+        api_version: multicluster.openshift.io/v1
         definition:
           apiVersion: multicluster.openshift.io/v1
           kind: MultiClusterEngine
@@ -227,6 +233,7 @@
 
     - name: "Enable hypershift Cluster-Addon"
       kubernetes.core.k8s:
+        api_version: addon.open-cluster-management.io/v1alpha1
         definition:
           apiVersion: addon.open-cluster-management.io/v1alpha1
           kind: ManagedClusterAddOn
@@ -238,6 +245,7 @@
 
     - name: "Enable Ingress Wildcards for Hosted Clusters subdomains"
       kubernetes.core.k8s:
+        api_version: operator.openshift.io/v1
         definition:
           apiVersion: operator.openshift.io/v1
           kind: IngressController
@@ -266,6 +274,7 @@
   block:
     - name: Enable component for SiteConfig Operator
       kubernetes.core.k8s:
+        api_version: operator.open-cluster-management.io/v1
         definition:
           apiVersion: operator.open-cluster-management.io/v1
           kind: MultiClusterHub
@@ -368,6 +377,7 @@
             name: mirror-registry-config-map
       {% endif %}
   kubernetes.core.k8s:
+    api_version: agent-install.openshift.io/v1beta1
     state: present
     definition: "{{ agent_def }}"
 
@@ -414,6 +424,7 @@
 
 - name: "Create an initial ClusterImageSet based on Hub release info"
   kubernetes.core.k8s:
+    api_version: hive.openshift.io/v1
     definition:
       apiVersion: hive.openshift.io/v1
       kind: ClusterImageSet

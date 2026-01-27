@@ -40,7 +40,7 @@
 
 - name: "test_ Get VMI status"  # noqa: name[casing]
   kubernetes.core.k8s_info:
-    api: kubevirt.io/{{ hs_kubevirt_api_version }}
+    api_version: kubevirt.io/{{ hs_kubevirt_api_version }}
     kind: VirtualMachineInstance
     name: test-vm
     namespace: default

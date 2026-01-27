@@ -20,6 +20,7 @@
         nodeSelector:
           node-role.kubernetes.io/worker: ""{%- endif %}
   kubernetes.core.k8s:
+    api_version: metallb.io/v1beta1
     state: present
     definition: "{{ instance }}"
 
@@ -38,6 +39,7 @@
 
 - name: "Create MetalLB IP Address Pool"
   kubernetes.core.k8s:
+    api_version: metallb.io/v1beta1
     state: present
     definition:
       apiVersion: metallb.io/v1beta1
@@ -59,6 +61,7 @@
   block:
     - name: "Create MetalLB BFD Profile"
       kubernetes.core.k8s:
+        api_version: metallb.io/v1beta1
         state: present
         definition:
           apiVersion: metallb.io/v1beta1

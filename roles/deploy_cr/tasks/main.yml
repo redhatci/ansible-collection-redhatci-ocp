@@ -1,6 +1,7 @@
 ---
 - name: Deploy CR {{ dc_kind }}
   kubernetes.core.k8s:
+    api_version: "{{ dc_api_version }}"
     definition:
       apiVersion: "{{ dc_api_version }}"
       kind: "{{ dc_kind }}"

@@ -1,6 +1,7 @@
 ---
 - name: Create LVMCluster for specified device
   kubernetes.core.k8s:
+    api_version: lvm.topolvm.io/v1alpha1
     state: present
     definition: "{{ lookup('template', 'lvmcluster.yml.j2') | from_yaml }}"
   register: _sl_lvmcluster_create_result
@@ -32,6 +33,7 @@
 
 - name: Create StorageClass
   kubernetes.core.k8s:
+    api_version: storage.k8s.io/v1
     state: present
     definition:
       apiVersion: storage.k8s.io/v1

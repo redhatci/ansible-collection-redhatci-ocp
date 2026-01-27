@@ -36,6 +36,7 @@
 
     - name: Get ArgoCD password
       kubernetes.core.k8s_info:
+        api_version: v1
         kind: Secret
         namespace: "{{ ac_namespace }}"
         name: openshift-gitops-cluster
@@ -44,6 +45,7 @@
 
     - name: Get ArgoCD url
       kubernetes.core.k8s_info:
+        api_version: route.openshift.io/v1
         kind: Route
         namespace: "{{ ac_namespace }}"
         name: openshift-gitops-server

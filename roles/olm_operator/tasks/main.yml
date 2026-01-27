@@ -12,7 +12,7 @@
 
 - name: Check CatalogSource is Ready
   kubernetes.core.k8s_info:
-    api: operators.coreos.com/v1alpha1
+    api_version: operators.coreos.com/v1alpha1
     kind: CatalogSource
     name: "{{ source }}"
     namespace: "{{ source_ns }}"
@@ -24,6 +24,7 @@
 
 - name: Create Namespace for OLM operator
   kubernetes.core.k8s:
+    api_version: v1
     definition:
       apiVersion: v1
       kind: Namespace
@@ -33,6 +34,7 @@
 
 - name: Labeling namespace to cover PodSecurity requirements
   kubernetes.core.k8s:
+    api_version: v1
     definition:
       apiVersion: v1
       kind: Namespace
@@ -111,6 +113,7 @@
         group_spec: "{{  {'targetNamespaces': []} if all_namespaces |
                      default(false) else {'targetNamespaces': [namespace]} }}"
       kubernetes.core.k8s:
+        api_version: operators.coreos.com/v1
         definition:
           apiVersion: operators.coreos.com/v1
           kind: OperatorGroup
@@ -123,6 +126,7 @@
       vars:
         _oo_approval: "{{ (install_approval == 'Automatic' or (starting_csv | length > 0)) | ternary('Automatic', 'Manual') }}"
       kubernetes.core.k8s:
+        api_version: operators.coreos.com/v1alpha1
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: Subscription
@@ -161,6 +165,7 @@
 
     - name: Approve all InstallPlans that contain the operator CSV
       kubernetes.core.k8s:
+        api_version: operators.coreos.com/v1alpha1
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: InstallPlan
@@ -180,7 +185,7 @@
       block:
         - name: Wait for CSV to be ready
           kubernetes.core.k8s_info:
-            api: operators.coreos.com/v1alpha1
+            api_version: operators.coreos.com/v1alpha1
             namespace: "{{ namespace }}"
             kind: ClusterServiceVersion
             name: "{{ operator_csv }}"
@@ -198,6 +203,7 @@
 
         - name: Fail if not all pods reach a successful state
           kubernetes.core.k8s_info:
+            api_version: v1
             kind: Pod
             namespace: "{{ namespace }}"
           register: _oo_olm_pod
@@ -209,6 +215,7 @@
 
     - name: Patch subscription according to install_approval
       kubernetes.core.k8s:
+        api_version: operators.coreos.com/v1alpha1
         definition:
           apiVersion: operators.coreos.com/v1alpha1
           kind: Subscription
@@ -229,14 +236,14 @@
   rescue:
     - name: Catalog sources information
       kubernetes.core.k8s_info:
-        api: operators.coreos.com/v1alpha1
+        api_version: operators.coreos.com/v1alpha1
         kind: CatalogSource
       register: catalog_info
       no_log: true
 
     - name: Subscriptions information
       kubernetes.core.k8s_info:
-        api: operators.coreos.com/v1alpha1
+        api_version: operators.coreos.com/v1alpha1
         kind: Subscription
         namespace: "{{ namespace }}"
       register: subs_info
@@ -244,7 +251,7 @@
 
     - name: Install plan information
       kubernetes.core.k8s_info:
-        api: operators.coreos.com/v1alpha1
+        api_version: operators.coreos.com/v1alpha1
         kind: InstallPlan
         namespace: "{{ namespace }}"
       register: ip_info
