@@ -7,6 +7,7 @@
 
 - name: "Creating namespace"
   kubernetes.core.k8s:
+    api_version: v1
     definition:
       apiVersion: v1
       kind: Namespace
@@ -58,6 +59,7 @@
 
 - name: "Delete the managed-nfs-storage StorageClass"
   kubernetes.core.k8s:
+    api_version: storage.k8s.io/v1
     definition:
       apiVersion: storage.k8s.io/v1
       kind: StorageClass
@@ -129,7 +131,7 @@
 
 - name: "Check if a default storageclass exists"
   kubernetes.core.k8s_info:
-    api_version: v1
+    api_version: storage.k8s.io/v1
     kind: StorageClass
   register: storage_class
 
@@ -160,11 +162,13 @@
       {% endif %}
         archiveOnDelete: "false"
   kubernetes.core.k8s:
+    api_version: storage.k8s.io/v1
     state: present
     definition: "{{ sc_def }}"
 
 - name: "Deploy nfs-client-provisioner"
   kubernetes.core.k8s:
+    api_version: apps/v1
     definition:
       apiVersion: apps/v1
       kind: Deployment
@@ -222,6 +226,7 @@
 
 - name: "Create a test_ PVC"
   kubernetes.core.k8s:
+    api_version: v1
     definition:
       kind: PersistentVolumeClaim
       apiVersion: v1
@@ -254,8 +259,8 @@
 
 - name: "Delete the Test_ PVC"
   kubernetes.core.k8s:
+    api_version: v1
     state: absent
-    api: v1
     kind: PersistentVolumeClaim
     name: test-nfs-claim
     namespace: "{{ nes_namespace }}"
