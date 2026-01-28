@@ -1,13 +1,4 @@
 ---
-- name: "Validate_ required variables"
-  ansible.builtin.assert:
-    that:
-      - mor_cache_dir | string
-      - mor_version | string
-      - mor_pull_url | string
-      - mor_oc | string
-      - mor_is_type | lower in mor_is_types
-
 - name: "Check if authentication file exists"
   ansible.builtin.stat:
     path: "{{ mor_auths_file }}"
@@ -62,6 +53,8 @@
 
 - name: "Download release resources"
   ansible.builtin.include_tasks: artifacts.yml
+  when:
+    - mor_auths_file_check.stat.exists | default(false) | bool
 
 - name: "Write webserver configuration files"
   ansible.builtin.include_tasks: files.yml
