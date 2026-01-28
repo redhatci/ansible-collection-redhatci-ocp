@@ -25,7 +25,7 @@
   copy:
     content: "{{ mrc_auth_data | to_json }}"
     dest: "{{ mrc_auth_file.path }}"
-    owner: "{{ ansible_user_id }}"
+    owner: "{{ ansible_user_uid }}"
     group: "{{ ansible_user_gid }}"
     mode: "0400"
 
