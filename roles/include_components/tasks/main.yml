@@ -1,4 +1,8 @@
 ---
+- name: Debug task
+  debug:
+    msg: "Adding component."
+
 - name: Track development git repos
   ansible.builtin.include_tasks: track_dev_git_repo.yml
   loop: "{{ ic_dev_gits }}"
