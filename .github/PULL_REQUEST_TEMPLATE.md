@@ -16,9 +16,9 @@
 <!-- See: https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/CONTRIBUTING.md#ci-pipelines -->
 
 <!-- Examples:
-- [ ] TestDallas: ocp-4.17-vanilla - <JobURL>
-- [ ] TestDallasHybrid: ocp-4.17-vanilla-hybrid - <JobURL>
-- [ ] TestDallasWorkload: preflight-green - <JobURL>
+- [ ] Testvcp: ocp-4.17-vanilla - <JobURL>
+- [ ] TestvcpHybrid: ocp-4.17-vanilla-hybrid - <JobURL>
+- [ ] TestvcpWorkload: preflight-green - <JobURL>
 - [ ] TestBos2: virt - <JobURL>
 - [ ] TestBos2Sno: sno - <JobURL>
 - [ ] TestBos2SnoBaremetal: sno - <JobURL>
