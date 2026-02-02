@@ -5,7 +5,7 @@
 
 - name: "Create reports directory"
   ansible.builtin.file:
-    path: "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/{{ item | lower }}"
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/{{ item | lower }}"
     state: directory
     mode: '0755'
   loop: "{{ eco_gotests_test_suites | list }}"
@@ -22,8 +22,8 @@
 
 - name: "Rename junit XML files with the feature name"
   ansible.builtin.shell: |
-    if [ -d "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/{{ item }}" ]; then
-      find "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/{{ item }}" \
+    if [ -d "{{ eco_gotests_log_dir }}/eco_gotests/{{ item }}" ]; then
+      find "{{ eco_gotests_log_dir }}/eco_gotests/{{ item }}" \
         -type f \
         -exec sh -c 'mv "$1" "{{ eco_gotests_log_dir }}/{{ item }}_$(basename "$1")"' _ {} \;
     fi
