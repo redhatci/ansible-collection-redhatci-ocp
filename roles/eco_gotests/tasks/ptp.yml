@@ -1,4 +1,33 @@
 ---
+- name: "Check PTP prerequisites - PtpOperatorConfig"
+  kubernetes.core.k8s_info:
+    api_version: ptp.openshift.io/v1
+    kind: PtpOperatorConfig
+    name: default
+    namespace: openshift-ptp
+  register: _eco_gotests_ptp_operator_config
+  failed_when: false
+
+- name: "Validate PTP prerequisites - enableEventPublisher"
+  ansible.builtin.assert:
+    that:
+      - _eco_gotests_ptp_operator_config.resources is defined
+      - _eco_gotests_ptp_operator_config.resources | length > 0
+      - _eco_gotests_ptp_operator_config.resources[0].spec.ptpEventConfig is defined
+      - _eco_gotests_ptp_operator_config.resources[0].spec.ptpEventConfig.enableEventPublisher | default(false) == true
+    fail_msg: "PTP prerequisite check failed: spec.ptpEventConfig.enableEventPublisher must be true"
+    success_msg: "PTP prerequisite check passed: enableEventPublisher is true"
+
+- name: "Validate PTP prerequisites - apiVersion"
+  ansible.builtin.assert:
+    that:
+      - _eco_gotests_ptp_operator_config.resources is defined
+      - _eco_gotests_ptp_operator_config.resources | length > 0
+      - _eco_gotests_ptp_operator_config.resources[0].spec.ptpEventConfig is defined
+      - _eco_gotests_ptp_operator_config.resources[0].spec.ptpEventConfig.apiVersion | default("") == "2.0"
+    fail_msg: "PTP prerequisite check failed: spec.ptpEventConfig.apiVersion must be '2.0'"
+    success_msg: "PTP prerequisite check passed: apiVersion is '2.0'"
+
 - name: "Run PTP tests with eco-gotests"
   containers.podman.podman_container:
     name: "eco-gotests-ptp-{{ eco_gotests_date }}"
@@ -16,7 +45,7 @@
       REGISTRY_AUTH_FILE: "{{ eco_gotests_registry_auth_file }}"
     volumes:
       - "{{ eco_gotests_kubconfig_dir }}/:/kubeconfig:Z"
-      - "{{ eco_gotests_log_dir }}/{{ eco_gotests_date }}/eco_gotests/ptp:/tmp/reports:Z"
+      - "{{ eco_gotests_log_dir }}/eco_gotests/ptp:/tmp/reports:Z"
     detach: false
     remove: true
   failed_when: false
