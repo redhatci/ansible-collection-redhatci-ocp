@@ -1,6 +1,7 @@
 ---
 - name: "Get API request counts for a workload ns {{ da_ns }}"
   kubernetes.core.k8s_info:
+    api: apiserver.openshift.io/v1
     kind: APIRequestCount
     namespace: "{{ da_ns }}"
   register: deprecated_api_apirequestcount
