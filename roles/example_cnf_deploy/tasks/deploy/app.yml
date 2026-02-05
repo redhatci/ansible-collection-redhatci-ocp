@@ -13,6 +13,7 @@
 
 - name: "Get the clusterversion info"
   kubernetes.core.k8s_info:
+    api_version: config.openshift.io/v1
     kind: ClusterVersion
   register: _ecd_cluster_version
 
@@ -44,6 +45,7 @@
 
 - name: "Check CNFApp pod count to be greater than 0"
   kubernetes.core.k8s_info:
+    api_version: v1
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:
@@ -57,6 +59,7 @@
 # At least confirm that the first CNFApp pod is up and running, if using more than one
 - name: "Check CNFApp pod status to be running"
   kubernetes.core.k8s_info:
+    api_version: v1
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Pod
     label_selectors:

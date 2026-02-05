@@ -4,6 +4,7 @@
 
 - name: "Discover all namespaces"
   kubernetes.core.k8s_info:
+    api_version: v1
     kind: Namespace
   register: _da_cluster_namespaces
 
