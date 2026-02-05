@@ -1,0 +1,159 @@
+---
+# node_info role - Gather node hardware and kernel information from
+# an OpenShift cluster
+
+- name: Gather cluster hardware/kernel data (best-effort, errors ignored)
+  ignore_errors: true
+  block:
+    - name: Get list of nodes from cluster
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Node
+      register: _ni_nodes_info
+      no_log: true
+
+    - name: Filter ready nodes
+      ansible.builtin.set_fact:
+        ni_ready_node_names: >-
+          {{ ni_ready_node_names | default([]) + [item.metadata.name] }}
+      loop: "{{ _ni_nodes_info.resources | default([]) }}"
+      when:
+        - item.status.conditions is defined
+        - item.status.conditions
+          | selectattr('type', 'equalto', 'Ready')
+          | selectattr('status', 'equalto', 'True')
+          | list | length > 0
+      no_log: true
+
+    - name: Debug ready_node_names
+      ansible.builtin.debug:
+        var: ni_ready_node_names
+      when: ni_ready_node_names is defined
+
+    - name: Get kernel information for all nodes
+      ansible.builtin.shell:
+        cmd: >
+          {{ ni_oc_tool_path }} debug node/{{ node_name }}
+          -- chroot /host sh -c 'echo "{\"node\": \"{{ node_name }}\",
+          \"version\": \"$(uname -r)\", \"params\": \"$(cat /proc/cmdline)\"}"'
+      register: _ni_kernel_info
+      loop: "{{ ni_ready_node_names | default([]) }}"
+      loop_control:
+        loop_var: node_name
+      when: ni_ready_node_names is defined
+      changed_when: false
+
+    - name: Save kernel information to files
+      ansible.builtin.copy:
+        content: >-
+          {{ { 'kernel': {
+            'node': (item.stdout | from_json).node,
+            'version': (item.stdout | from_json).version,
+            'params': (((item.stdout | from_json).params | default('') | cmdline_to_json | from_json))
+          } } | to_json }}
+        dest: "{{ ni_job_logs_path }}/kernel.{{ item.node_name }}.json"
+        mode: '0644'
+      loop: "{{ _ni_kernel_info.results | default([]) }}"
+      when:
+        - item is defined
+        - item.rc is defined
+        - item.rc == 0
+        - item.stdout is defined
+        - (item.stdout | length) > 0
+
+    - name: Disconnected image
+      when:
+        - ni_disconnected | bool
+        - ni_local_registry | length > 0
+        - ni_pullsecret_file | length > 0
+        - ni_ready_node_names is defined
+      block:
+        - name: Create temporary build directory for container
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: lshw-build.
+          register: _ni_build_dir
+
+        - name: Copy Containerfile to a temporary location
+          ansible.builtin.copy:
+            src: "files/Containerfile"
+            dest: "{{ _ni_build_dir.path }}/Containerfile"
+            mode: '0644'
+
+        - name: Build lshw image (disconnected)
+          containers.podman.podman_image:
+            name: "{{ ni_local_registry }}{{ ni_local_img_path }}"
+            path: "{{ _ni_build_dir.path }}"
+            state: build
+            tag: "{{ ni_tag }}"
+            force: true
+            push: true
+            auth_file: "{{ ni_pullsecret_file }}"
+            build:
+              file: "{{ _ni_build_dir.path }}/Containerfile"
+          register: _ni_build_img
+          retries: 3
+          delay: 30
+          until: _ni_build_img is succeeded
+
+        - name: Clean up build directory
+          ansible.builtin.file:
+            path: "{{ _ni_build_dir.path }}"
+            state: absent
+
+        - name: Cleanup local lshw image
+          containers.podman.podman_image:
+            name: "{{ ni_local_registry }}{{ ni_local_img_path }}"
+            tag: "{{ ni_tag }}"
+            state: absent
+
+    - name: Extract hw details
+      vars:
+        _ni_hw_img: >-
+          {{
+            (ni_disconnected | bool) |
+            ternary(
+              ni_local_registry ~ ni_local_img_path ~ ':' ~ ni_tag,
+              'registry.access.redhat.com/ubi10/ubi-minimal:latest')
+          }}
+      environment:
+        preinstall: >-
+          {{
+            (ni_disconnected | bool) |
+            ternary('', 'microdnf install -y lshw &> /dev/null &&')
+          }}
+      ansible.builtin.shell:
+        cmd: >
+          {{ ni_oc_tool_path }} debug node/{{ node_name }}
+          --image={{ _ni_hw_img }}
+          --
+          bash -c "${preinstall} lshw -json -sanitize -numeric"
+      register: _ni_hardware_info
+      loop: "{{ ni_ready_node_names | default([]) }}"
+      loop_control:
+        loop_var: node_name
+      when:
+        - ni_ready_node_names is defined
+      no_log: true
+      changed_when: false
+
+    - name: Debug hardware_info
+      ansible.builtin.debug:
+        msg: "{{ _ni_hardware_info.results }}"
+      when:
+        - _ni_hardware_info is defined
+        - _ni_hardware_info.results is defined
+
+    - name: Save hardware information to files
+      ansible.builtin.copy:
+        content: >-
+          {{ { 'hardware': {
+            'node': item.node_name,
+            'data': (item.stdout | from_json | dot_to_underscore) if (item.stdout is defined and item.rc == 0) else (null | default({})),
+            'error': item.stderr if (item.rc is defined and item.rc != 0) else (null | default(''))
+          } } | to_json }}
+        dest: "{{ ni_job_logs_path }}/hardware.{{ item.node_name }}.json"
+        mode: '0644'
+      loop: "{{ _ni_hardware_info.results | default([]) }}"
+
+...

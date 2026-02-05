@@ -1,0 +1,16 @@
+---
+# node_info role default variables
+
+# Path to the oc tool binary
+ni_oc_tool_path: "/usr/local/bin/oc"
+
+# Job logs directory where output files will be saved
+ni_job_logs_path: "/tmp/node-info-logs"
+
+# Disconnected environment settings
+ni_disconnected: false
+ni_local_registry: ""
+ni_pullsecret_file: ""
+ni_tag: "latest"
+ni_local_img_path: "/dci/lshw"
+...
