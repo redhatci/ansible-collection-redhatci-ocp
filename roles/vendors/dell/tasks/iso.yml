@@ -17,7 +17,7 @@
         "{{ boot_iso_url }}",
       ]
   register: drac_version
-  no_log: true
+  no_log: false
 
 - name: Using iDRAC ISO method for 13G and below
   ansible.builtin.include_tasks: ./iso_idrac.yml

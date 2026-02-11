@@ -66,6 +66,11 @@
 - name: Eject Virtual Media
   ansible.builtin.include_tasks: eject.yml
 
+- name: "debug virtual media"
+  ansible.builtin.debug:
+    var: boot_iso_url
+    verbosity: 1
+
 - name: DELL Insert Virtual Media
   community.general.redfish_command:
     category: Manager
