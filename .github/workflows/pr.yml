@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Install dependent PRs if needed
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@826c144163ac67bf08347590a5f81afd45da63ca # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: 3.11
 
@@ -95,18 +95,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
 
       - name: Install dependent PRs if needed
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@826c144163ac67bf08347590a5f81afd45da63ca # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
 
       - name: Set up Python
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: 3.11
 
@@ -130,7 +130,7 @@ jobs:
     steps:
 
       - name: Check all dependent Pull Requests are merged
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@826c144163ac67bf08347590a5f81afd45da63ca # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           check-unmerged-pr: true
@@ -140,10 +140,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Install dependent PRs if needed
-        uses: depends-on/depends-on-action@61cb3f4a0e2c8ae4b90c9448dc57c7ba9ca24c35 # main
+        uses: depends-on/depends-on-action@826c144163ac67bf08347590a5f81afd45da63ca # main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
