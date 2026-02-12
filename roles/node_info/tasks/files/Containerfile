@@ -1,0 +1,8 @@
+FROM registry.access.redhat.com/ubi10/ubi-minimal:latest
+
+# Install lshw and other useful tools
+RUN microdnf update -y && \
+    microdnf install -y lshw && \
+    microdnf clean all
+
+LABEL quay.expires-after=6h

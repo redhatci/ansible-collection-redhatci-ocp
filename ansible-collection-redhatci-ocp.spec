@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.19.EPOCH
+Version:        2.20.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+
+* Thu Feb  5 2026 Frederic Lepied <flepied@redhat.com> - 2.20.EPOCH-VERS
+- Add node_info role
 
 * Wed Jan 21 2026 Beto Rdz <josearod@redhat.com> - 2.19.EPOCH-VERS
 - Version bump for override ICS - generate_manifests
