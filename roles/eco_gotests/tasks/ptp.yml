@@ -29,6 +29,8 @@
     success_msg: "PTP prerequisite check passed: apiVersion is '2.0'"
 
 - name: "Run PTP tests with eco-gotests"
+  vars:
+    _eco_gotests_ptp_test_labels: "{{ eco_gotests_skip_labels_ptp | map('regex_replace', '^', '!') | join(' && ') | default('', true) }}"
   containers.podman.podman_container:
     name: "eco-gotests-ptp-{{ eco_gotests_date }}"
     image: "{{ eco_gotests_image }}"
@@ -43,6 +45,7 @@
       KUBECONFIG: "/kubeconfig/kubeconfig"
       ECO_TEST_FEATURES: "ptp"
       REGISTRY_AUTH_FILE: "{{ eco_gotests_registry_auth_file }}"
+      ECO_TEST_LABELS: "{{ _eco_gotests_ptp_test_labels }}"
     volumes:
       - "{{ eco_gotests_kubconfig_dir }}/:/kubeconfig:Z"
       - "{{ eco_gotests_log_dir }}/eco_gotests/ptp:/tmp/reports:Z"
