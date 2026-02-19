@@ -1,0 +1,113 @@
+{% set num_uperf = num_uperf | int %}
+{% set ids_str = "1" if num_uperf == 1 else "1-" ~ num_uperf %}
+{% set ep_suffix = "1" if num_uperf == 1 else "1-" ~ num_uperf %}
+{% set config_base = multibench_uperf_config_base %}
+{
+    "benchmarks": [
+        {
+            "name": "uperf",
+            "ids": "{{ ids_str }}",
+            "mv-params": {
+                "global-options": [
+                    {
+                        "name": "common-params",
+                        "params": [
+                            {
+                                "arg": "duration",
+                                "vals": [
+                                    "{{ multibench_uperf_duration | default('180') }}"
+                                ]
+                            },
+                            {
+                                "arg": "protocol",
+                                "vals": [
+                                    "tcp"
+                                ]
+                            },
+                            {
+                                "arg": "nthreads",
+                                "vals": [
+                                    "{{ multibench_uperf_nthreads | default('1500') }}"
+                                ]
+                            },
+                            {
+                                "arg": "ifname",
+                                "vals": [
+                                    "{{ multibench_uperf_ifname | default('eth0') }}"
+                                ],
+                                "role": "server"
+                            }
+                        ]
+                    }
+                ],
+                "sets": [
+                    {
+                        "include": "common-params",
+                        "params": [
+                            {% for i in range(1, num_uperf + 1) %}
+                            {
+                                "arg": "test-type",
+                                "vals": [
+                                    "crr"
+                                ],
+                                "id": "{{ i }}"
+                            },
+                            {
+                                "arg": "wsize",
+                                "vals": [
+                                    "512"
+                                ],
+                                "id": "{{ i }}"
+                            },
+                            {
+                                "arg": "rsize",
+                                "vals": [
+                                    "2048"
+                                ],
+                                "id": "{{ i }}"
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "endpoints": [
+        {
+            "type": "k8s",
+            "user": "kni",
+            "host": "{{ ocp_host }}",
+            "nodeSelector": [
+                "client-{{ ep_suffix }}:{{ config_base }}/nodeSelector-client1.json",
+                "server-{{ ep_suffix }}:{{ config_base }}/nodeSelector-server.json"
+            ],
+            "userenv": "stream9",
+            "resources": [
+                "client-{{ ep_suffix }}:{{ config_base }}/resource-client.json",
+                "server-{{ ep_suffix }}:{{ config_base }}/resource-server.json",
+                "default:{{ config_base }}/resource-default.json"
+            ],
+            "runtimeClassName": "performance-blueprint-profile",
+            "PsecurityContext": "client-{{ ep_suffix }}:{{ config_base }}/security-context.json",
+            "controller-ip": "{{ multibench_uperf_controller_ip | default('192.168.5.30') }}",
+            "client": "{{ ids_str }}",
+            "server": "{{ ids_str }}"
+        }
+    ],
+    "run-params": {
+        "num-samples": {{ num_samples | int }},
+        "max-sample-failures": 2
+    },
+    "tags": {
+        "dci": "manual"
+    },
+    "tool-params": [
+        { "tool": "ovs" },
+        { "tool": "kernel",
+          "params": [ {"arg":"subtools","val":"perf"}, { "arg": "record-opts", "val": "--freq=100 --namespaces --all-cgroups -g" } ]
+        },
+        { "tool": "sysstat" },
+        { "tool": "procstat" }
+    ]
+}

@@ -27,6 +27,23 @@
     mode: '0644'
   delegate_to: "{{ multibench_host }}"
   become: true
+  when: multibench_uperf_num is not defined or multibench_uperf_num | int == 0
+  register: dest_json_file
+
+- name: Generate input json file for multibench-uperf run
+  ansible.builtin.template:
+    src: templates/all-in-one-uperf.json.j2
+    dest: "{{ multibench_script_dir }}/{{ num_uperf }}uperf-all-in-one.json"
+    mode: '0644'
+  delegate_to: "{{ multibench_host }}"
+  become: true
+  when: multibench_uperf_num is defined and multibench_uperf_num | int > 0
+  register: dest_json_file
+
+- name: Save multibench_input_json_file
+  ansible.builtin.set_fact:
+    multibench_input_json_file: "{{ dest_json_file.dest }}"
+  when: dest_json_file is defined and dest_json_file.dest is defined
 
 - name: Creating an output directory if needed
   when:
@@ -52,7 +69,7 @@
     - name: First try on launching multibench workload
       ansible.builtin.shell:
         cmd: >
-          ./{{ multibench_script }} config.ini
+          ./{{ multibench_script }} config.ini {{ multibench_input_json_file }}
         chdir: "{{ multibench_script_dir }}"
       delegate_to: "{{ multibench_host }}"
       become: true
@@ -88,9 +105,9 @@
       changed_when: _multibench_run_results.rc == 0
 
 - name: Retrieve summary results from Multibench VM
-  vars:    
+  vars:
     multibench_run_regex_file: >-
-      {{ _multibench_run_results.stdout | regex_search('crucible/run/([^/\s]+)/run/result-summary') }}
+      {{ _multibench_run_results.stdout | regex_search('crucible/run/([^/\s]+)/run/result-summary', '\\1') | first }}
     multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}/run/result-summary.txt"
   ansible.builtin.fetch:
     src: "{{ multibench_run_filepath }}"
@@ -101,11 +118,11 @@
   become: true
 
 # Collect crucible metrics using primary period-id from result-summary and upload to DCI
-- name: Collect crucible metrics from result-summary period and upload to DCI
-  when: multibench_crucible_metric_collect | default(true) | bool
+- name: Collect crucible metrics using primary period-id from result-summary
+  when: multibench_crucible_metric_collect | bool
   become: true
   delegate_to: "{{ multibench_host }}"
-  block:   
+  block:
 
     - name: Extract all primary period-ids from result-summary
       ansible.builtin.shell: |
@@ -139,6 +156,7 @@
         _crucible_metric_outfile: "/tmp/{{ multibench_crucible_metric_filename }}"
       loop: "{{ _crucible_primary_period_ids }}"
       loop_control:
+        extended: true
         label: "{{ item }}"
       when: (_crucible_primary_period_ids | default([])) | length > 0
 
