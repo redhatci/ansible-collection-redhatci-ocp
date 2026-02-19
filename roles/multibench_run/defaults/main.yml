@@ -3,7 +3,6 @@ num_uperf: "{{ multibench_uperf_num | default('2') }}"
 multibench_tags:
   automation: ansible
 multibench_script_dir: "/root/crucible-examples/multibench/openshift/example-A/daily"
-
 multibench_uperf_config_base: "/root/crucible-examples/multibench/openshift/example-A/daily/uperf_config"
 multibench_script: "run-daily.sh"
 multibench_uperf_controller_ip: "{{ multibench_controller_ip | default('192.168.5.30') }}"

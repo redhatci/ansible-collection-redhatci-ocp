@@ -106,13 +106,14 @@
 
 - name: Retrieve summary results from Multibench VM
   vars:
-    multibench_run_regex_file: >-
-      {{ _multibench_run_results.stdout | regex_search('crucible/run/([^/\s]+)/run/result-summary', '\\1') | first }}
-    multibench_run_filepath: "/var/lib/crucible/run/{{ multibench_run_regex_file }}/run/result-summary.txt"
+    # Match run dir from path like /var/lib/crucible/run/RUN_ID/run/result-summary.[txt|json|yaml]
+    _run_id_match: "{{ _multibench_run_results.stdout | regex_findall('/var/lib/crucible/run/([^/]+)/run/result-summary') | first | default('') }}"
+    multibench_run_filepath: "/var/lib/crucible/run/{{ _run_id_match }}/run/result-summary.txt"
   ansible.builtin.fetch:
     src: "{{ multibench_run_filepath }}"
     dest: "{{ multibench_run_output_dir.path }}/result-summary.txt"
     flat: true
+  when: _run_id_match | length > 0
   failed_when: false
   delegate_to: "{{ multibench_host }}"
   become: true
