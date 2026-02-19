@@ -28,7 +28,7 @@
   delegate_to: "{{ multibench_host }}"
   become: true
   when: multibench_uperf_num is not defined
-  register: dest_json_file_default
+  register: _multibench_run_default_json_file
 
 - name: Generate input json file for multibench-uperf run
   ansible.builtin.template:
@@ -38,15 +38,15 @@
   delegate_to: "{{ multibench_host }}"
   become: true
   when: multibench_uperf_num is defined and multibench_uperf_num | int > 0
-  register: dest_json_file_uperf
+  register: _multibench_run_uperf_json_file
 
 - name: Save multibench_input_json_file
   ansible.builtin.set_fact:
     multibench_input_json_file: >-
-      {{ dest_json_file_default.dest | default(dest_json_file_uperf.dest | default('')) }}
+      {{ _multibench_run_default_json_file.dest | default(_multibench_run_uperf_json_file.dest | default('')) }}
   when: >-
-    (dest_json_file_default.dest is defined) or
-    (dest_json_file_uperf.dest is defined)
+    (_multibench_run_default_json_file.dest is defined) or
+    (_multibench_run_uperf_json_file.dest is defined)
 
 - name: Creating an output directory if needed
   when:
@@ -125,18 +125,17 @@
 - name: Collect crucible metrics using primary period-id from result-summary
   when: multibench_crucible_metric_collect | bool
   become: true
-  delegate_to: "{{ multibench_host }}"
   block:
 
     - name: Extract all primary period-ids from result-summary
       ansible.builtin.shell: |
         set -e
         grep -E 'primary period-id:' "{{ multibench_run_output_dir.path }}/result-summary.txt" | sed -nE 's/.*primary period-id:[[:space:]]*([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}).*/\1/p'
-      register: _period_ids_result
+      register: _multibench_run_period_ids_result
 
     - name: Set list of primary period-ids
       ansible.builtin.set_fact:
-        _crucible_primary_period_ids: "{{ (_period_ids_result.stdout_lines | default([])) | map('trim') | select() | list }}"
+        _crucible_primary_period_ids: "{{ (_multibench_run_period_ids_result.stdout_lines | default([])) | map('trim') | select() | list }}"
 
     - name: Run crucible get metric for each primary period and save to file on multibench host
       ansible.builtin.shell: |
@@ -163,21 +162,13 @@
         extended: true
         label: "{{ item }}"
       when: (_crucible_primary_period_ids | default([])) | length > 0
+      delegate_to: "{{ multibench_host }}"
 
-    - name: Fetch crucible metric output to multibench host
+    - name: Fetch crucible metric output from multibench host
       ansible.builtin.fetch:
         src: "/tmp/{{ multibench_crucible_metric_filename }}"
         dest: "{{ multibench_run_output_dir.path }}/{{ multibench_crucible_metric_filename }}"
         flat: true
       when: (_crucible_primary_period_ids | default([])) | length > 0
 
-    - name: Copy crucible metric file to job_logs path
-      ansible.builtin.copy:
-        src: "{{ multibench_run_output_dir.path }}/{{ multibench_crucible_metric_filename }}"
-        dest: "{{ job_logs.path }}/{{ multibench_crucible_metric_filename }}"
-        mode: "0644"
-      when:
-        - (_crucible_primary_period_ids | default([])) | length > 0
-        - job_logs is defined
-        - job_logs.path is defined
 ...
