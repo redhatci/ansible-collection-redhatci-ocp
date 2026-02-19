@@ -27,7 +27,7 @@
     mode: '0644'
   delegate_to: "{{ multibench_host }}"
   become: true
-  when: multibench_uperf_num is not defined or multibench_uperf_num | int == 0
+  when: multibench_uperf_num is not defined
   register: dest_json_file
 
 - name: Generate input json file for multibench-uperf run
