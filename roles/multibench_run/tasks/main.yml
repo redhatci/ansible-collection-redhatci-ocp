@@ -28,7 +28,7 @@
   delegate_to: "{{ multibench_host }}"
   become: true
   when: multibench_uperf_num is not defined
-  register: dest_json_file
+  register: dest_json_file_default
 
 - name: Generate input json file for multibench-uperf run
   ansible.builtin.template:
@@ -38,12 +38,15 @@
   delegate_to: "{{ multibench_host }}"
   become: true
   when: multibench_uperf_num is defined and multibench_uperf_num | int > 0
-  register: dest_json_file
+  register: dest_json_file_uperf
 
 - name: Save multibench_input_json_file
   ansible.builtin.set_fact:
-    multibench_input_json_file: "{{ dest_json_file.dest }}"
-  when: dest_json_file is defined and dest_json_file.dest is defined
+    multibench_input_json_file: >-
+      {{ dest_json_file_default.dest | default(dest_json_file_uperf.dest | default('')) }}
+  when: >-
+    (dest_json_file_default.dest is defined) or
+    (dest_json_file_uperf.dest is defined)
 
 - name: Creating an output directory if needed
   when:
