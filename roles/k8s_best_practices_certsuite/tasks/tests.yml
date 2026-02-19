@@ -81,7 +81,7 @@
         {{ kbpc_certsuite_image }} \
         {{ kbpc_container_command }}
       register: _kbpc_exec_output
-      no_log: true
+#      no_log: true
 
   always:
     - name: Save output in a file
