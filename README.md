@@ -97,6 +97,7 @@ Name | Description
 [redhatci.ocp.mount_discovery_iso_for_pxe](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/mount_discovery_iso_for_pxe/README.md) | Extracts the required artifacts for a pxe boot from a discovery iso
 [redhatci.ocp.multibench_run](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/multibench_run/README.md) | Launch a crucible scenario on OCP
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
+[redhatci.ocp.node_info](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_info/README.md) | Gather node hardware and kernel information from an OpenShift cluster.
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.ocp_add_users](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_add_users/README.md) | Add users to an OpenShift cluster through htpasswd Identity Provider.
 [redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster. 

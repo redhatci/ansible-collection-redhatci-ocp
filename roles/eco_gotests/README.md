@@ -27,6 +27,8 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 #### General Configuration
 - `eco_gotests_image` (default: `"quay.io/ocp-edge-qe/eco-gotests:latest"`): Container image for eco-gotests
 - `eco_gotests_path` (default: undefined): path where to find the source code to build the container. If this is specified, the `eco_gotests_image` is ignored.
+- `eco_gotests_skip_labels_ptp` (default: `[]`): List of test labels to skip for PTP tests. These labels will be excluded using Ginkgo label filter syntax (`!label`). Common PTP labels include: `node-reboot`, `process-restart`, `event-consumer`, `events-and-metrics`, `interfaces`, `leap-file`, `ntp-fallback`. Example: `['node-reboot', 'process-restart']` to skip node reboot and process restart tests.
+
 
 #### SRIOV Test Configuration
 - `eco_gotests_sriov_labels` (default: `"sriov-hw-enabled"`): Test labels for SRIOV tests
@@ -70,3 +72,21 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
   roles:
     - redhatci.ocp.eco_gotests
 ```
+
+## Example with Skipped Tests
+
+```yaml
+---
+- name: Run eco-gotests skipping specific test categories
+  hosts: localhost
+  gather_facts: false
+  vars:
+    eco_gotests_test_suites: ['ptp']
+    eco_gotests_skip_labels_ptp: ['node-reboot', 'process-restart']
+    eco_gotests_kubconfig_dir: /home/user/clusterconfigs
+    eco_gotests_registry_auth_file: /home/user/pull-secret.json
+  roles:
+    - redhatci.ocp.eco_gotests
+```
+
+This example will run all PTP tests except those labeled with `node-reboot` and `process-restart`.

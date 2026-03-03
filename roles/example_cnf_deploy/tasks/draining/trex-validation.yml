@@ -20,6 +20,7 @@
 
 - name: "Wait for the TRex app TestCompleted event"
   kubernetes.core.k8s_info:
+    api_version: v1
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:
@@ -32,6 +33,7 @@
 
 - name: "Wait for the TRex app TestPassed or TestFailed event"
   kubernetes.core.k8s_info:
+    api_version: v1
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors: "involvedObject.name={{ ecd_trex_app_cr_name }}"
@@ -51,6 +53,7 @@
 # Only if TRexApp job passed
 - name: "Wait for the TRex app PacketMatched event"
   kubernetes.core.k8s_info:
+    api_version: v1
     namespace: "{{ ecd_cnf_namespace }}"
     kind: Event
     field_selectors:

@@ -17,3 +17,5 @@ eco_gotests_sriov_timeout: "12h"
 eco_gotests_verbose_level: 100
 eco_gotests_test_verbose: true
 eco_gotests_dump_failed_tests: true
+
+eco_gotests_skip_labels_ptp: []
