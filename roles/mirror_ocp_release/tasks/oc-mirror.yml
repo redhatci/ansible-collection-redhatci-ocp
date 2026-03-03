@@ -1,0 +1,125 @@
+---
+- name: Check if the release image is pullable from the local registry
+  ansible.builtin.command: >
+    skopeo inspect
+    --no-tags
+    --authfile {{ mor_auths_file }}
+    {%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false
+    {%- endif %}
+    docker://{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images:{{ mor_version }}-x86_64
+  register: _mor_release_image
+  failed_when: false
+  when: not mor_force | bool
+
+- name: Mirror the release to the local registry
+  when:
+    - (_mor_release_image is defined and
+      _mor_release_image.rc is defined and
+      _mor_release_image.rc != 0)
+      or mor_force | bool
+  block:
+
+    - name: Create temporary directory for tooling
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: mirror_tmp.
+      register: _mor_tmp_dir
+
+    - name: Set permissions on temporary directory
+      ansible.builtin.file:
+        path: "{{ _mor_tmp_dir.path }}"
+        mode: "0700"
+
+    - name: Render ImageSetConfiguration for requested release
+      ansible.builtin.template:
+        src: ocp-release.yaml.j2
+        dest: "{{ _mor_tmp_dir.path }}/ocp-release.yaml"
+        mode: "0644"
+
+    - name: Print ImageSetConfiguration content
+      ansible.builtin.debug:
+        msg: "{{ lookup('file', _mor_tmp_dir.path + '/ocp-release.yaml') }}"
+
+    - name: Extract latest oc-mirror
+      ansible.builtin.unarchive:
+        src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/oc-mirror.tar.gz"
+        dest: "{{ _mor_tmp_dir.path }}"
+        remote_src: true
+        mode: "0755"
+      register: _mor_get_oc_mirror
+      retries: 3
+      delay: 60
+      until: _mor_get_oc_mirror is success
+
+    - name: Find an available ephemeral port for oc-mirror
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          sleep 0.$(shuf -i 0-999 -n 1)
+          while :; do
+            port=$(shuf -i 32768-60999 -n 1)
+            ss -lnt | awk '{print $4}' | grep -q ":${port}$" || { echo $port; break; }
+          done
+        executable: /bin/bash
+      register: _mor_ephemeral_port
+      changed_when: false
+
+    - name: Mirror the release to the local registry
+      ansible.builtin.shell:
+        cmd: >
+          umask 0022 &&
+          {{ _mor_tmp_dir.path }}/oc-mirror --v2 --config={{ _mor_tmp_dir.path }}/ocp-release.yaml
+          --authfile {{ mor_auths_file }}
+          --workspace file://{{ _mor_tmp_dir.path }}
+          docker://{{ mor_registry_url }}/{{ mor_registry_path }}
+          --port {{ _mor_ephemeral_port.stdout }}
+          {% if mor_allow_insecure_registry | bool %}
+          --dest-tls-verify=false
+          --src-tls-verify=false
+          {% endif %}
+          {% if mor_build != 'ga' | bool %}
+          --ignore-release-signature
+          {% endif %}
+      register: _mor_cmd_output
+      retries: 3
+      delay: 10
+      until: _mor_cmd_output.rc == 0
+      changed_when: _mor_cmd_output.rc == 0
+
+    - name: Mirror the release signature to the local registry
+      vars:
+        _mor_pull_url_baseline: "{{ mor_pull_url.split('@')[0] }}"
+        _mor_digest_tag: "{{ mor_pull_url.split('@')[-1] | replace(':', '-') }}"
+      ansible.builtin.shell:
+        cmd: >
+          {{ mor_oc }} image mirror "{{ _mor_pull_url_baseline }}:{{ _mor_digest_tag }}.sig" "{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images:{{ _mor_digest_tag }}.sig"
+          --registry-config="{{ mor_auths_file }}"
+          {% if mor_allow_insecure_registry | bool %}
+          --insecure
+          {% endif %}
+      register: _mor_cmd_output
+      retries: 3
+      delay: 10
+      until: _mor_cmd_output.rc == 0
+      changed_when: _mor_cmd_output.rc == 0
+      when:
+        - mor_build == 'ga' | bool
+
+    - name: Write Image Source manifest
+      ansible.builtin.copy:
+        src: "{{ _mor_tmp_dir.path }}/working-dir/cluster-resources/idms-oc-mirror.yaml"
+        dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagesource.yaml"
+        remote_src: true
+        owner: "{{ mor_owner }}"
+        group: "{{ mor_group }}"
+        mode: "0644"
+        setype: httpd_sys_content_t
+      become: true
+
+  always:
+    - name: Clean up temporary directory
+      ansible.builtin.file:
+        path: "{{ _mor_tmp_dir.path }}"
+        state: absent
+...

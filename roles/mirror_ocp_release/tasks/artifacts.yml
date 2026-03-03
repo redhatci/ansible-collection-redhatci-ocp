@@ -8,8 +8,7 @@
     - not mor_force
 
 - name: "Extract the OCP installer and metadata"
-  when:
-    - mor_force or not _mor_target.stat.exists
+  when: mor_force or not _mor_target.stat.exists
   block:
     - name: "Extract installer and metadata from release image"
       ansible.builtin.shell: >
