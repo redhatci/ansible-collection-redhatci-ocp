@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        2.22.EPOCH
+Version:        3.0.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue May  5 2026 Tony Garcia <tonyg@redhat.com> - 3.0.EPOCH-VERS
+- Deprecate setup_minio role into a consolidated one: s3_setup
+
 * Fri May  1 2026 Tony Garcia <tonyg@redhat.com> - 2.22.EPOCH-VERS
 - Version bump due to changes in acm_setup
 

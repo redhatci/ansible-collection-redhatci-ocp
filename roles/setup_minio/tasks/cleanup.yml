@@ -1,8 +1,0 @@
----
-- name: "Delete Minio Namespace"
-  kubernetes.core.k8s:
-    state: absent
-    api: "v1"
-    kind: "Namespace"
-    name: "{{ sm_namespace }}"
-...

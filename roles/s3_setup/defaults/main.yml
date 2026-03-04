@@ -1,0 +1,38 @@
+---
+# Deployment mode: 'standalone' (podman container) or 'k8s' (Kubernetes/OpenShift)
+ss_mode: standalone
+ss_state: present
+
+# Credentials (auto-generated if not provided)
+# ss_username:
+# ss_password:
+ss_credentials_generated: false
+
+# Container image
+ss_image: cgr.dev/chainguard/minio
+
+# Bucket configuration
+ss_buckets: []
+
+# Waiting times
+ss_wait_retries: 30
+ss_wait_delay: 5
+
+# Standalone-specific defaults
+ss_user: "{{ ansible_user_id }}"
+ss_user_home: "{{ ansible_user_dir }}"
+ss_user_uid: "{{ ansible_user_uid }}"
+ss_user_gid: "{{ ansible_user_gid }}"
+ss_base_dir: "{{ ansible_env.HOME }}/minio-server"
+ss_data_dir: "{{ ss_base_dir }}/data"
+ss_server_domain: localhost
+ss_use_systemd: false
+ss_container_name: minio
+ss_api_port: 9000
+ss_console_port: 9001
+
+# k8s-specific defaults
+ss_namespace: minio
+# ss_storage_class:  # REQUIRED for k8s mode
+ss_claim_size: 10Gi
+ss_service_type: NodePort

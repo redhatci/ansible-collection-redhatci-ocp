@@ -1,0 +1,98 @@
+---
+- name: Generate credentials
+  ansible.builtin.include_tasks: credentials.yml
+
+- name: Ensure base directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default(omit) }}"
+  loop:
+    - { path: "{{ ss_base_dir }}", owner: "{{ ss_user }}" }
+    - { path: "{{ ss_data_dir }}", owner: "{{ ss_user }}" }
+
+- name: Deploy S3 server container
+  containers.podman.podman_container:
+    name: "{{ ss_container_name }}"
+    image: "{{ ss_image }}"
+    state: started
+    recreate: true
+    command: "server /data --console-address :9001"
+    ports:
+      - "{{ ss_api_port }}:9000"
+      - "{{ ss_console_port }}:9001"
+    env:
+      MINIO_ROOT_USER: "{{ ss_username }}"
+      MINIO_ROOT_PASSWORD: "{{ ss_password }}"
+    volume:
+      - "{{ ss_data_dir }}:/data:Z"
+    healthcheck: "curl -f http://localhost:9000/minio/health/live || exit 1"
+    healthcheck_interval: 10s
+    healthcheck_timeout: 5s
+    healthcheck_retries: 5
+  register: _ss_container_info
+
+- name: Wait for S3 server to be ready
+  ansible.builtin.uri:
+    url: "http://{{ ss_server_domain }}:{{ ss_api_port }}/minio/health/live"
+    status_code: 200
+  register: _ss_health
+  until: _ss_health.status == 200
+  retries: "{{ ss_wait_retries }}"
+  delay: "{{ ss_wait_delay }}"
+
+- name: Configure MinIO client alias
+  containers.podman.podman_container_exec:
+    name: "{{ ss_container_name }}"
+    command: "mc alias set myminio http://localhost:9000 {{ ss_username }} {{ ss_password }}"
+  changed_when: false
+  no_log: true
+  when: ss_buckets | length > 0
+
+- name: Create buckets
+  ansible.builtin.include_tasks: buckets.yml
+  loop: "{{ ss_buckets }}"
+  loop_control:
+    loop_var: bucket
+    label: "{{ bucket }}"
+  when: ss_buckets | length > 0
+
+- name: Systemd units
+  when: ss_use_systemd | bool
+  block:
+    - name: Create systemd user directory
+      ansible.builtin.file:
+        path: "{{ ss_user_home }}/.config/systemd/user/"
+        recurse: true
+        state: directory
+        owner: "{{ ss_user }}"
+        mode: '0755'
+
+    - name: Create systemd units
+      containers.podman.podman_generate_systemd:
+        name: "{{ _ss_container_info.container.Id }}"
+        dest: "{{ ss_user_home }}/.config/systemd/user"
+        force: true
+        no_header: true
+        restart_policy: on-failure
+        use_names: true
+
+    - name: Enable and start S3 server systemd service
+      ansible.builtin.systemd:
+        name: "container-{{ ss_container_name }}"
+        scope: user
+        daemon_reload: true
+        state: started
+        enabled: true
+      register: _ss_user_svc
+      retries: 3
+      delay: 5
+      until: _ss_user_svc is succeeded
+
+    - name: Enable systemd linger for user
+      ansible.builtin.command:
+        cmd: "loginctl enable-linger {{ ss_user }}"
+      become: true
+      args:
+        creates: "/var/lib/systemd/linger/{{ ss_user }}"
