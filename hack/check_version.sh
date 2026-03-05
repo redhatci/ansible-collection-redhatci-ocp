@@ -47,10 +47,10 @@ if [ -z "$branch" ]; then
 fi
 
 REMOVED=$(git diff --diff-filter=D --name-only origin/main...$branch | grep -Eo '^roles/.+/' |
-sed -Ee 's@/(defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@/@g' -e 's@/$@@' -e 's@^roles/@@' | uniq)
+sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | uniq)
 
 ADDED=$(git diff --diff-filter=A --name-only origin/main...$branch | grep -Eo '^roles/.+/' |
-sed -Ee 's@/(defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@/@g' -e 's@/$@@' -e 's@^roles/@@' | uniq)
+sed -Ee 's@(roles|defaults|templates|vars|scripts|handlers|tests|meta|tasks|files)/@@g' -e 's@/$@@' | uniq)
 
 # check if the roles are fully removed
 if [ -n "$REMOVED" ]; then
