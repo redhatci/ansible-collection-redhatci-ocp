@@ -18,6 +18,13 @@ argument_specs:
         description: >
           The OCP release image URL for the release
           (e.g., quay.io/path/to/release@sha256:...).
+      mor_build:
+        type: str
+        required: false
+        default: "ga"
+        description: >
+          The build type of the OCP release.
+          Supported values: ga, candidate, dev, nightly.
       mor_oc:
         type: str
         required: true
