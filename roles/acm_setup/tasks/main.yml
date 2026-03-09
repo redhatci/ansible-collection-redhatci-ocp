@@ -197,13 +197,6 @@
           spec:
             replicas: 0
 
-    - name: "List CSVs in openshift-operator-lifecycle-manager"
-      kubernetes.core.k8s_info:
-        api_version: operators.coreos.com/v1alpha1
-        kind: ClusterServiceVersion
-        namespace: openshift-operator-lifecycle-manager
-      register: _as_olm_csvs
-
     - name: "Delete packageserver CSV"
       kubernetes.core.k8s:
         state: absent
@@ -211,31 +204,14 @@
         kind: ClusterServiceVersion
         name: packageserver
         namespace: openshift-operator-lifecycle-manager
-      when:
-        - _as_olm_csvs.resources |
-          selectattr('metadata.name', 'equalto', 'packageserver') |
-          list |
-          length > 0
-
-    - name: "Get Hive operator pods in multicluster-engine"
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Pod
-        namespace: multicluster-engine
-        label_selector: control-plane=hive-operator
-      register: _as_hive_operator_pods
 
     - name: "Refresh Hive operator (delete pods to force restart)"
       kubernetes.core.k8s:
         state: absent
         api_version: v1
         kind: Pod
-        name: "{{ item.metadata.name }}"
         namespace: multicluster-engine
-      loop: "{{ _as_hive_operator_pods.resources | default([]) }}"
-      when: _as_hive_operator_pods.resources | length > 0
-      loop_control:
-        label: "{{ item.metadata.name }}"
+        label_selectors: control-plane=hive-operator
 
     - name: "Wait for Hive pods to be Running (retry after cleanup)"
       kubernetes.core.k8s_info:
