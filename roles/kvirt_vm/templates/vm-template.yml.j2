@@ -14,7 +14,7 @@ spec:
       spec:
         accessModes: [ "{{ vm.disk_mode | default(kvirt_vm_disk_mode)  }}" ]
 {% if vm.storage_class is defined %}
-        storageClassName: "{{ vm.storage_class | default(kvirt_vm_storage_class) }}"
+        storageClassName: "{{ vm.storage_class }}"
 {% endif %}
         source:
           blank: {}
