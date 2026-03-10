@@ -65,6 +65,7 @@
       register: _mor_ephemeral_port
       changed_when: false
 
+    # Only GA and Candidate builds include signed images
     - name: Mirror the release to the local registry
       ansible.builtin.shell:
         cmd: >
@@ -78,7 +79,7 @@
           --dest-tls-verify=false
           --src-tls-verify=false
           {% endif %}
-          {% if mor_build != 'ga' | bool %}
+          {% if mor_build not in ['ga', 'candidate'] %}
           --ignore-release-signature
           {% endif %}
       register: _mor_cmd_output
@@ -86,25 +87,6 @@
       delay: 10
       until: _mor_cmd_output.rc == 0
       changed_when: _mor_cmd_output.rc == 0
-
-    - name: Mirror the release signature to the local registry
-      vars:
-        _mor_pull_url_baseline: "{{ mor_pull_url.split('@')[0] }}"
-        _mor_digest_tag: "{{ mor_pull_url.split('@')[-1] | replace(':', '-') }}"
-      ansible.builtin.shell:
-        cmd: >
-          {{ mor_oc }} image mirror "{{ _mor_pull_url_baseline }}:{{ _mor_digest_tag }}.sig" "{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images:{{ _mor_digest_tag }}.sig"
-          --registry-config="{{ mor_auths_file }}"
-          {% if mor_allow_insecure_registry | bool %}
-          --insecure
-          {% endif %}
-      register: _mor_cmd_output
-      retries: 3
-      delay: 10
-      until: _mor_cmd_output.rc == 0
-      changed_when: _mor_cmd_output.rc == 0
-      when:
-        - mor_build == 'ga' | bool
 
     - name: Write Image Source manifest
       ansible.builtin.copy:

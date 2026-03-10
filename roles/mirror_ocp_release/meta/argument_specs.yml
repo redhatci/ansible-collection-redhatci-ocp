@@ -21,6 +21,11 @@ argument_specs:
       mor_build:
         type: str
         required: false
+        choices:
+          - "candidate"
+          - "dev"
+          - "ga"
+          - "nightly"
         default: "ga"
         description: >
           The build type of the OCP release.
