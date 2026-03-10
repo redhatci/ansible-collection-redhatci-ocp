@@ -172,15 +172,57 @@
           featureSet: Custom
 
 - name: "Wait for Hive pods to be Running"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: "hive"
-  register: pod_list
-  until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
-  retries: 20
-  delay: 15
-  no_log: true
+  block:
+    - name: "Wait for Hive pods to be Running"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "hive"
+      register: pod_list
+      until: pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+      retries: 20
+      delay: 15
+      no_log: true
+  rescue:
+    # OCPBUGS-76460
+    - name: "Scale package-server-manager to 0"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: package-server-manager
+            namespace: openshift-operator-lifecycle-manager
+          spec:
+            replicas: 0
+
+    - name: "Delete packageserver CSV"
+      kubernetes.core.k8s:
+        state: absent
+        api_version: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
+        name: packageserver
+        namespace: openshift-operator-lifecycle-manager
+
+    - name: "Refresh Hive operator (delete pods to force restart)"
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Pod
+        namespace: multicluster-engine
+        label_selectors: control-plane=hive-operator
+
+    - name: "Wait for Hive pods to be Running (retry after cleanup)"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "hive"
+      register: _as_pod_list
+      until: _as_pod_list|json_query('resources[*].status.phase')|unique == ["Running"]
+      retries: 20
+      delay: 15
+      no_log: true
 
 - name: "Disable provisioning network and update to watch all Namespaces"
   kubernetes.core.k8s:
