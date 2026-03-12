@@ -13,8 +13,8 @@
   register: _ecd_crd_info
   retries: 1
   delay: 5
-  until: _ecd_crd_info.resources|length != 0
-  failed_when: _ecd_crd_info.resources|length == 0
+  until: _ecd_crd_info.resources | default([]) | length != 0
+  failed_when: _ecd_crd_info.resources | defaul([]) |length == 0
 
 - name: "Inspect index image"
   ansible.builtin.shell:
