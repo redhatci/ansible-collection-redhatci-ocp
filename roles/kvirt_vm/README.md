@@ -36,7 +36,9 @@ This role has been tested only in x86_64 architectures.
 | cpu_sockets                   | 1                             | no          | VM CPU sockets
 | cpu_threads                   | 1                             | no          | VM CPU threads
 | network_interface_multiqueue  | true                          | no          | Enable NIC multiqueue
-| running                       | false                         | no          | Set the initial VM power state
+| run_strategy                  | Manual                        | no          | Set the initial VM power state, deprecates `running`. Valid values:
+Always, Halted, Manual, RerunOnFailure.
+| running                       | Undefined                     | no          | `DEPRECATED`, use `run_strategy` instead. Set the initial VM power state. Takes precedence over `run_strategy` when defined.
 | node_selector                 |                               | no          | Configure nodes selector
 | interfaces                    | virtio/masquerade             | no          | Network interface definitions
 | networks                      | Pod network                   | no          | VM network definitions
@@ -79,7 +81,7 @@ vm_configs:
     cpu_sockets: 1
     cpu_threads: 1
     network_interface_multiqueue: true
-    running: false
+    run_strategy: Manual
     node_selector:
       kubernetes.io/hostname: master-1
     interfaces:

@@ -22,7 +22,11 @@ spec:
           resources:
             requests:
               storage: "{{ vm.disk_size | default(kvirt_vm_disk_size) }}"
-  running: {{ vm.running | default(kvirt_vm_running) }}
+{% if vm.running is defined %}
+  running: {{ vm.running }}
+{% else %}
+  runStrategy: {{ vm.run_strategy | default(kvirt_vm_run_strategy) }}
+{% endif %}
   template:
     metadata:
       annotations:
