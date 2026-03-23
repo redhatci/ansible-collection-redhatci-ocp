@@ -120,8 +120,6 @@
           spec: "{{ operator_group_spec | default(group_spec, true) }}"
 
     - name: Create subscription for OLM operator
-      vars:
-        _oo_approval: "{{ (install_approval == 'Automatic' or (starting_csv | length > 0)) | ternary('Automatic', 'Manual') }}"
       kubernetes.core.k8s:
         definition:
           apiVersion: operators.coreos.com/v1alpha1
@@ -131,7 +129,7 @@
             namespace: "{{ namespace }}"
           spec:
             channel: "{{ desired_channel }}"
-            installPlanApproval: "{{ _oo_approval }}"
+            installPlanApproval: "{{ install_approval }}"
             config:
               resources: {}
             name: "{{ operator }}"
