@@ -107,9 +107,7 @@
           --dest-tls-verify=false
           --src-tls-verify=false
           {% endif %}
-          {% if mor_build not in ['ga', 'candidate'] %}
           --ignore-release-signature
-          {% endif %}
       register: _mor_cmd_output
       retries: 3
       delay: 10
