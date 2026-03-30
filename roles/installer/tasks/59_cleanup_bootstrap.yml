@@ -37,6 +37,8 @@
   community.libvirt.virt:
     name: "{{ item }}"
     command: undefine
+    flags:
+      - nvram
   with_items: "{{ all_vms.list_vms }}"
   when: item is search("bootstrap")
   become: true
