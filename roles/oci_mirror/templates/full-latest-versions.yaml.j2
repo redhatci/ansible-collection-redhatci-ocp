@@ -2,7 +2,7 @@ apiVersion: mirror.openshift.io/v2alpha1
 kind: ImageSetConfiguration
 mirror:
   operators:
-{% for catalog, results in im_catalogs_with_operators %}
+{% for catalog, results in om_catalogs_with_operators %}
     - catalog: {{ catalog }}
       full: false
       packages:

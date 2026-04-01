@@ -1,0 +1,18 @@
+---
+- name: Validate om_source_index is not empty
+  ansible.builtin.assert:
+    that:
+      - om_source_index is defined
+      - om_source_index | length > 0
+    fail_msg: "om_source_index must be defined"
+
+- name: Render ImageSetConfiguration for full catalog (all channels/versions)
+  ansible.builtin.template:
+    src: full-all-versions.yaml.j2
+    dest: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+    mode: "0644"
+
+- name: Mirror the operators
+  vars:
+    om_imageset_config_path: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+  ansible.builtin.include_tasks: mirroring.yml

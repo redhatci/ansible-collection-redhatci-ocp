@@ -1,0 +1,66 @@
+---
+- name: Mirror operators using oc-mirror
+  block:
+
+    - name: Include requirements
+      ansible.builtin.include_tasks: requirements.yml
+
+    - name: Execute mirror from custom ImageSetConfiguration
+      ansible.builtin.include_tasks: mirror-custom.yml
+      when: om_custom_config is defined
+
+    - name: Execute standard oc-mirror workflows
+      when: om_custom_config is undefined
+      block:
+
+        - name: Assert om_target_versions for standard mirror branches
+          ansible.builtin.assert:
+            that:
+              - om_target_versions is defined
+              - om_target_versions in ['latest', 'all']
+            fail_msg: >
+              om_target_versions must be 'latest' or 'all' when om_custom_config is not set
+
+        - name: "Execute mirror of custom all versions"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: "pruned-all-versions.yml"
+          when:
+            - om_operators is defined
+            - om_operators | length > 0
+            - om_target_versions == "all"
+
+        - name: "Execute mirror of pruned latest version"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: "pruned-latest-versions.yml"
+          when:
+            - om_operators is defined
+            - om_operators | length > 0
+            - om_target_versions == "latest"
+
+        - name: "Execute mirror of full all versions"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: "full-all-versions.yml"
+          when:
+            - (om_operators is not defined) or (om_operators | default({}, true) | length == 0)
+            - om_target_versions == "all"
+
+        - name: "Execute mirror of full latest version"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: "full-latest-versions.yml"
+          when:
+            - (om_operators is not defined) or (om_operators | default({}, true) | length == 0)
+            - om_target_versions == "latest"
+
+  always:
+    - name: Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ _om_tmp_dir.path }}"
+        state: absent
+      when:
+        - not om_keep_working_dir | bool
+        - _om_tmp_dir is defined
+        - _om_tmp_dir.path is defined

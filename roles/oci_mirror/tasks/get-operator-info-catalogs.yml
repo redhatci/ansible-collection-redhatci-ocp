@@ -1,0 +1,20 @@
+---
+- name: Get operator info from catalog
+  ansible.builtin.shell:
+    cmd: "{{ lookup('template', 'get-operator-info.sh.j2') }}"
+    executable: /bin/bash
+    chdir: "{{ _om_tmp_dir.path }}"
+  vars:
+    catalog: "{{ item.key }}"
+    operators: "{{ item.value }}"
+    opm_bin: "{{ _om_tmp_dir.path }}/opm-rhel8"
+    jq_bin: "{{ _om_tmp_dir.path }}/jq"
+  register: _om_catalog_operator_info
+  until: _om_catalog_operator_info.rc == 0
+  retries: 3
+  delay: 10
+  loop: "{{ om_operators_by_catalog | dict2items }}"
+  loop_control:
+    label: "{{ item.key }} ({{ item.value | length }} operators)"
+  changed_when: false
+  no_log: true

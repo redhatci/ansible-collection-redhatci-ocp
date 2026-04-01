@@ -1,0 +1,190 @@
+---
+argument_specs:
+  main:
+    short_description: Mirror operators using oc-mirror
+    description: >
+      Default task. Runs requirements.yml, then mirror-custom.yml when om_custom_config
+      is set (takes priority over standard branches). Otherwise runs the standard block of
+      include_role calls for pruned-all-versions, pruned-latest-versions, full-all-versions, and
+      full-latest-versions — each gated by om_target_versions (latest or all) and om_operators presence; see main.yml
+      for the exact when conditions.
+    options:
+      om_target_versions:
+        type: str
+        required: false
+        choices:
+          - latest
+          - all
+        description: >
+          Selects latest versus all channels/versions for standard workflows when om_custom_config
+          is not defined. Ignored when om_custom_config is set.
+      om_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      om_custom_config:
+        type: str
+        required: false
+        description: >
+          Path to a custom ImageSetConfiguration YAML. When set, runs mirror-custom.yml after
+          requirements and skips standard pruned/full task branches.
+      om_source_index:
+        type: str
+        required: false
+        description: >
+          Default catalog index for standard operator workflows when om_custom_config is not used.
+          Required by the pruned-* and full-* task files that consume it.
+      om_operators:
+        type: dict
+        required: false
+        description: >
+          Operator dictionary for standard workflows when om_custom_config is not used. Presence
+          and emptiness determine pruned versus full paths together with om_target_versions (see main.yml).
+      om_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      om_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).
+      om_keep_working_dir:
+        type: bool
+        required: false
+        default: false
+        description: Keep the temporary working directory after mirroring completes.
+
+  pruned-all-versions:
+    short_description: Mirror all channels/versions for listed operators (pruned ImageSet)
+    description: >
+      tasks_from pruned-all-versions.yml. Renders a pruned ImageSet for each listed operator across catalogs, then includes mirroring.yml.
+    options:
+      om_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      om_source_index:
+        type: str
+        required: true
+        description: |
+          Default source catalog index when an operator entry does not set catalog
+          (e.g. registry.redhat.io/redhat/redhat-operator-index:v4.20).
+      om_operators:
+        type: dict
+        required: true
+        description: |
+          Non-empty dictionary of operators to mirror (keys are operator names).
+          Each value may be {} or include catalog to override om_source_index.
+      om_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      om_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).
+
+  pruned-latest-versions:
+    short_description: Mirror latest channel versions for listed operators (pruned ImageSet)
+    description: >
+      tasks_from pruned-latest-versions.yml. Resolves latest versions per operator, renders ImageSetConfiguration, then includes mirroring.yml.
+    options:
+      om_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      om_source_index:
+        type: str
+        required: true
+        description: |
+          Default source catalog index when an operator entry does not set catalog.
+      om_operators:
+        type: dict
+        required: true
+        description: |
+          Non-empty dictionary of operators to mirror (keys are operator names).
+          Each value may be {} or include catalog to override om_source_index.
+      om_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      om_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).
+
+  full-all-versions:
+    short_description: Full-catalog ImageSet for all channels/versions (full ImageSet, om_target_versions all)
+    description: >
+      tasks_from full-all-versions.yml. Asserts om_source_index, renders full-all-versions.yaml.j2, then includes mirroring.yml.
+    options:
+      om_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      om_source_index:
+        type: str
+        required: true
+        description: |
+          Source catalog index for the ImageSet (e.g. registry.redhat.io/redhat/redhat-operator-index:v4.20).
+      om_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      om_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).
+
+  full-latest-versions:
+    short_description: Full-catalog latest versions (lists operators from index; om_target_versions latest)
+    description: >
+      tasks_from full-latest-versions.yml. Lists operators from om_source_index via oc-mirror, builds operator metadata, renders ImageSetConfiguration,
+      then includes mirroring.yml.
+    options:
+      om_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      om_source_index:
+        type: str
+        required: true
+        description: |
+          Catalog index to list and mirror (e.g. registry.redhat.io/redhat/redhat-operator-index:v4.20).
+      om_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      om_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).
+
+  mirror-custom:
+    short_description: Mirror using a provided ImageSetConfiguration file
+    description: >
+      tasks_from mirror-custom.yml. Sets om_imageset_config_path from om_custom_config and includes
+      mirroring.yml. Invoked from main when om_custom_config is defined, or via tasks_from on this file.
+    options:
+      om_target:
+        type: str
+        required: true
+        description: The target registry to mirror operators to (e.g., registry.example.com:5000).
+      om_custom_config:
+        type: str
+        required: true
+        description: Path to custom ImageSetConfiguration YAML file.
+      om_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: Allow insecure registries (sets --dest-tls-verify=false and --src-tls-verify=false).
+      om_auths_file:
+        type: str
+        required: false
+        description: Path to the registry authentication file (e.g., /path/to/pull-secret.json).

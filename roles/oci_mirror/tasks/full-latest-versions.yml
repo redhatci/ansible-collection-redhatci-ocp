@@ -1,0 +1,72 @@
+---
+- name: List operators from catalog
+  ansible.builtin.shell:
+    cmd: >
+      umask 0022 &&
+      {{ _om_tmp_dir.path }}/oc-mirror --v1 list operators --catalog {{ om_source_index }} > {{ _om_tmp_dir.path }}/operators.txt
+  register: _om_cmd_output
+  retries: 3
+  delay: 10
+  until: _om_cmd_output.rc == 0
+  changed_when: _om_cmd_output.rc == 0
+
+- name: Read operators list file for parsing
+  ansible.builtin.slurp:
+    src: "{{ _om_tmp_dir.path }}/operators.txt"
+  register: _om_operators_list_slurp
+  no_log: true
+
+- name: Parse catalog listing and query operator metadata
+  vars:
+    om_catalog_operator_names: "{{ (_om_operators_list_slurp.content |
+                                b64decode).splitlines() |
+                                map('trim') |
+                                reject('equalto', '')|
+                                reject('match', '^W[0-9]{4}') |
+                                reject('match', '^NAME\\s') |
+                                map('regex_replace', '\\s.*$', '')|
+                                unique | list }}"
+  block:
+    - name: Assert catalog listed at least one operator package
+      ansible.builtin.assert:
+        that:
+          - om_catalog_operator_names | length > 0
+        fail_msg: "No operator names parsed from oc-mirror list output (operators.txt)."
+
+    - name: Build om_operators from catalog
+      ansible.builtin.set_fact:
+        om_packages: {}
+
+    - name: Merge each catalog operator into om_operators
+      ansible.builtin.set_fact:
+        om_packages: "{{ om_packages | combine({item: {}}) }}"
+      loop: "{{ om_catalog_operator_names }}"
+      loop_control:
+        label: "{{ item }}"
+      no_log: true
+
+    - name: Build catalog group (operator names per index for get-operator-info)
+      ansible.builtin.set_fact:
+        om_operators_by_catalog: >-
+          {%- set result = {} -%}
+          {%- for item in om_packages | dict2items -%}
+            {%- set catalog = (item.value is mapping and item.value.catalog is defined) | ternary(item.value.catalog, om_source_index) -%}
+            {%- if result.get(catalog) is none -%}
+              {%- set _ = result.update({catalog: []}) -%}
+            {%- endif -%}
+            {%- set _ = result[catalog].append(item.key) -%}
+          {%- endfor -%}
+          {{ result }}
+
+    - name: Query operator metadata from catalogs (opm)
+      ansible.builtin.include_tasks: get-operator-info-catalogs.yml
+
+- name: Build latest-channel ImageSetConfiguration
+  ansible.builtin.include_tasks: render-latest-imagesetconfig.yml
+  vars:
+    om_latest_imageset_template: full-latest-versions.yaml.j2
+
+- name: Mirror the operators
+  vars:
+    om_imageset_config_path: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+  ansible.builtin.include_tasks: mirroring.yml

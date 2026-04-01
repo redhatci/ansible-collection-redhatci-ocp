@@ -1,0 +1,33 @@
+---
+- name: Validate om_operators is not empty
+  ansible.builtin.assert:
+    that:
+      - om_operators is defined
+      - om_operators | dict2items | length > 0
+    fail_msg: "om_operators must contain at least one operator"
+
+- name: Build catalog group
+  ansible.builtin.set_fact:
+    om_operators_by_catalog: >-
+      {%- set result = {} -%}
+      {%- for item in om_operators | dict2items -%}
+        {%- set catalog = (item.value is mapping and item.value.catalog is defined) | ternary(item.value.catalog, om_source_index) -%}
+        {%- if result.get(catalog) is none -%}
+          {%- set _ = result.update({catalog: []}) -%}
+        {%- endif -%}
+        {%- set _ = result[catalog].append(item.key) -%}
+      {%- endfor -%}
+      {{ result }}
+
+- name: Query operator metadata from catalogs (opm)
+  ansible.builtin.include_tasks: get-operator-info-catalogs.yml
+
+- name: Build latest ImageSetConfiguration
+  ansible.builtin.include_tasks: render-latest-imagesetconfig.yml
+  vars:
+    om_latest_imageset_template: pruned-latest-versions.yaml.j2
+
+- name: Mirror the operators
+  vars:
+    om_imageset_config_path: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+  ansible.builtin.include_tasks: mirroring.yml

@@ -1,0 +1,33 @@
+---
+- name: Validate custom mirror inputs
+  ansible.builtin.assert:
+    that:
+      - om_target is defined
+      - om_target | length > 0
+      - om_custom_config is defined
+      - om_custom_config | length > 0
+    fail_msg: "om_target and om_custom_config must be set for custom mirroring."
+
+- name: Check ImageSetConfiguration file exists
+  ansible.builtin.stat:
+    path: "{{ om_custom_config }}"
+  register: _om_custom_cfg_stat
+
+- name: Assert ImageSetConfiguration path is not a directory
+  ansible.builtin.assert:
+    that:
+      - _om_custom_cfg_stat.stat.exists
+      - not (_om_custom_cfg_stat.stat.isdir | default(false))
+    fail_msg: "om_custom_config must exist and be a readable file on the target: {{ om_custom_config }}"
+
+- name: Copy ImageSetConfiguration to fixed path
+  ansible.builtin.copy:
+    src: "{{ om_custom_config }}"
+    dest: /tmp/imagesets/custom-new.yaml
+    remote_src: true
+    mode: "0644"
+
+- name: Mirror the operators
+  vars:
+    om_imageset_config_path: "{{ om_custom_config }}"
+  ansible.builtin.include_tasks: mirroring.yml

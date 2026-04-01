@@ -1,0 +1,6 @@
+apiVersion: mirror.openshift.io/v2alpha1
+kind: ImageSetConfiguration
+mirror:
+  operators:
+    - catalog: {{ om_source_index }}
+      full: true
