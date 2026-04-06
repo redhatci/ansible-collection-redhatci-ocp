@@ -1,0 +1,116 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy KubeVirt virtual machines
+    description: >
+      Deploy KubeVirt virtual machines on an OpenShift cluster.
+      Validates the storage class and CNV operator, then creates VMs
+      based on the provided configuration file. Only the root disk is created.
+      Requires a running OpenShift cluster with valid credentials (e.g. KUBECONFIG).
+    options:
+      kvirt_vm_config_file:
+        type: str
+        required: true
+        description: >
+          Path to the configuration file containing the VM settings.
+          The file must define a `vm_configs` list with at least a `name` for each VM.
+      kvirt_vm_api_version:
+        type: str
+        required: false
+        default: kubevirt.io/v1
+        description: >
+          The KubeVirt API version to use for the VirtualMachine resources.
+      kvirt_vm_namespace:
+        type: str
+        required: false
+        default: default
+        description: >
+          The default namespace for the VMs. Can be overridden per VM in the config file.
+      kvirt_vm_memory:
+        type: str
+        required: false
+        default: 8Gi
+        description: >
+          The default memory allocation for the VMs. Can be overridden per VM in the config file.
+      kvirt_vm_disk_mode:
+        type: str
+        required: false
+        default: ReadWriteOnce
+        description: >
+          The default disk access mode for the root disk. Can be overridden per VM in the config file.
+      kvirt_vm_disk_size:
+        type: str
+        required: false
+        default: 60Gi
+        description: >
+          The default root disk size. Can be overridden per VM in the config file.
+      kvirt_vm_os:
+        type: str
+        required: false
+        default: rhcos
+        description: >
+          The default operating system annotation for the VMs. Can be overridden per VM in the config file.
+      kvirt_vm_cpu_cores:
+        type: int
+        required: false
+        default: 8
+        description: >
+          The default number of CPU cores. Can be overridden per VM in the config file.
+      kvirt_vm_cpu_sockets:
+        type: int
+        required: false
+        default: 1
+        description: >
+          The default number of CPU sockets. Can be overridden per VM in the config file.
+      kvirt_vm_cpu_threads:
+        type: int
+        required: false
+        default: 1
+        description: >
+          The default number of CPU threads. Can be overridden per VM in the config file.
+      kvirt_vm_network_interface_multiqueue:
+        type: bool
+        required: false
+        default: true
+        description: >
+          Enable network interface multiqueue by default. Can be overridden per VM in the config file.
+      kvirt_vm_run_strategy:
+        type: str
+        required: false
+        default: Manual
+        choices:
+          - Always
+          - Halted
+          - Manual
+          - RerunOnFailure
+        description: >
+          The run strategy for VMs. The old `running` is still supported if defined, which takes precedence.
+          The default is Manual, valid options are: Always, Halted, Manual or RerunOnFailure.
+          Can be overridden per VM in the config file.
+      kvirt_vm_force:
+        type: bool
+        required: false
+        default: false
+        description: >
+          Whether to destroy and recreate VMs if they already exist. Can be overridden per VM in the config file.
+      kvirt_vm_interfaces:
+        type: list
+        required: false
+        elements: dict
+        description: >
+          The default network interface definitions for the VMs.
+          Defaults to a single virtio/masquerade interface.
+          Can be overridden per VM in the config file.
+      kvirt_vm_networks:
+        type: list
+        required: false
+        elements: dict
+        description: >
+          The default network definitions for the VMs.
+          Defaults to the pod network.
+          Can be overridden per VM in the config file.
+      kvirt_cluster_storage_class:
+        type: str
+        required: false
+        description: >
+          The storage class to validate against. If not defined, a default storage class must exist in the cluster.

@@ -9,7 +9,7 @@ kvirt_vm_cpu_cores: 8
 kvirt_vm_cpu_sockets: 1
 kvirt_vm_cpu_threads: 1
 kvirt_vm_network_interface_multiqueue: true
-kvirt_vm_running: false
+kvirt_vm_run_strategy: Manual
 kvirt_vm_force: false
 kvirt_vm_interfaces:
   - masquerade: {}

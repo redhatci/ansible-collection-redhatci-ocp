@@ -18,9 +18,12 @@
 - name: Wait for VM to be in desired state {{ vm.name }}
   vars:
     state: |-
-      {%- if vm.running | default(kvirt_vm_running) %}
+      {%- if vm.running is defined %}
+      {{ vm.running | bool | ternary('Running', 'Stopped') }}
+      {%- else %}
+      {%- if (vm.run_strategy | default(kvirt_vm_run_strategy)) in ['Always', 'RerunOnFailure'] %}
       Running{%- else %}
-      Stopped{%- endif %}
+      Stopped{%- endif %}{%- endif %}
   kubernetes.core.k8s_info:
     api_version: "{{ vm.api_version | default(kvirt_vm_api_version) }}"
     kind: VirtualMachine
