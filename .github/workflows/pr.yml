@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Install ansible-lint
         # Install ansible-lint from same branch as GHA
@@ -90,7 +90,7 @@ jobs:
       matrix:
         ansible:
           - stable-2.9          # used by DCI on RHEL8
-          - stable-2.18         # latest stable version
+          - stable-2.20         # latest stable version
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -108,7 +108,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Install ansible-base ${{ matrix.ansible }}
         run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
