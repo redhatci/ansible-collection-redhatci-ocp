@@ -13,7 +13,7 @@
 - name: Wait for selected nodes to have SR-IOV resource {{ sriov_conf.resource }}
   vars:
     sriov_filter: "{{ '[*].status.allocatable.\"openshift.io/' + sriov_conf.resource + '\".to_number(@)' }}"
-    nodes_with_sriov: "{{ nodes.resources | json_query(sriov_filter) }}"
+    nodes_with_sriov: "{{ _sc_nodes.resources | json_query(sriov_filter) }}"
     sriov_policy_pf: "{{ sriov_conf.node_policy.nic_selector.pf_names[0].split('#') }}"
     sriov_policy_pf_range: "{{ (sriov_policy_pf[1] | default('')).split('-') }}"
     vfs: "{{ sriov_policy_pf_range[1] | default(sriov_conf.node_policy.num_vfs, true) | int - sriov_policy_pf_range[0] | default(1, true) | int + 1 }}"
@@ -23,11 +23,11 @@
       {{ sriov_conf.node_policy.node_selector |
          default({"node-role.kubernetes.io/worker": ""}) |
          list }}
-  register: nodes
+  register: _sc_nodes
   retries: "{{ selected_nodes.resources | length * sriov_config_retries_per_node | int }}"
   delay: "{{ sriov_config_delay_per_node | int }}"
   until:
-    - nodes_with_sriov | length == nodes.resources | length
+    - nodes_with_sriov | length == _sc_nodes.resources | length
     - nodes_with_sriov | sort | unique | length == 1
     - nodes_with_sriov | sort | unique | first | int >= vfs | int
   no_log: true
