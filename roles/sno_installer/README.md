@@ -20,6 +20,8 @@ For any type of SNO installation, these variables are always required
 
 Variable                      | Required | Default    | Description
 ------------------------------|----------|------------|-------------
+si_bootstraposimage           | no       | (unset)    | When set, written to `install-config.yaml` as `BootstrapInPlace.bootstrapOSImage` (URL to the RHCOS image used during bootstrap; mirrors the `installer` role variable of the same name).
+si_clusterosimage             | no       | (unset)    | When set, written to `install-config.yaml` as `BootstrapInPlace.clusterOSImage` (URL to the RHCOS image used for the cluster; mirrors the `installer` role variable of the same name).
 si_cache_dir                  | no       | /opt/cache | Path to the directory in the registry host containing every OCP version installation artifacts.
 si_cache_server               | no       | {{ inventory_hostname }} | The cache server to use for storing and serving installation artifacts. Defaults to the current inventory host but can be overridden to point to a different SSH-accessible host containing the cache directory and serving the installation artifacts.
 si_cache_server_major_version | no       | {{ ansible_distribution_major_version }} | Distribution major version for the cache server if it's different than the version in the provision host.
