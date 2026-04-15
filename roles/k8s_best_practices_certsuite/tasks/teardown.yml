@@ -25,6 +25,15 @@
 - name: Clean certsuite resources
   when: kbpc_postrun_delete_resources|bool
   block:
+    - name: Delete certsuite-probe DaemonSet
+      kubernetes.core.k8s:
+        api_version: apps/v1
+        kind: DaemonSet
+        name: certsuite-probe
+        namespace: cnf-suite
+        state: absent
+        wait: true
+
     - name: Delete cnf-suite Namespace
       kubernetes.core.k8s:
         api_version: v1
