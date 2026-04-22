@@ -10,6 +10,11 @@
     mode: '0755'
   loop: "{{ eco_gotests_test_suites | list }}"
 
+- name: "Build container image"
+  ansible.builtin.include_tasks: build.yml
+  when:
+    - 'eco_gotests_path is defined'
+
 - name: "Eco_gotests : Run PTP tests"
   ansible.builtin.include_tasks: ptp.yml
   when:
