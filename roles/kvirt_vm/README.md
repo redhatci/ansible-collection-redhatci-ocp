@@ -41,6 +41,7 @@ Always, Halted, Manual, RerunOnFailure.
 | running                       | Undefined                     | no          | `DEPRECATED`, use `run_strategy` instead. Set the initial VM power state. Takes precedence over `run_strategy` when defined.
 | node_selector                 |                               | no          | Configure nodes selector
 | interfaces                    | virtio/masquerade             | no          | Network interface definitions
+| labels                        |                               | no          | A dictionary with labels for the VM
 | networks                      | Pod network                   | no          | VM network definitions
 
 ## Usage examples
