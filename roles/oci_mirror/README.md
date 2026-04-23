@@ -1,53 +1,98 @@
 # oci_mirror
 
-Use `oc-mirror` to copy operator catalog images from a source index into a target registry.
+Mirror OpenShift operator catalogs into a registry.
 
-For supported layouts, the role builds an ImageSetConfiguration, then runs `oc-mirror` so content is pushed to **`om_target`**. You can instead set **`om_custom_config`**.
+Either you point the role at an existing **ImageSetConfiguration**, or you let it build one from a catalog index, a mirroring mode, and an optional operator list. If that list is missing or empty, the role mirrors the **full** index; if it is non-empty, only those operators are included.
 
 ## Requirements
 
-- Network access to download tooling and to reach source/target registries
-- Valid registry authentication when needed (e.g. `om_auths_file` or `DOCKER_CONFIG`)
+- Reachable download URLs for bundled tooling (`oc-mirror`, `opm`, `jq`) and for the registries you mirror from/to
+- Registry credentials when the index or target needs them (`om_auths_file`, or env such as `DOCKER_CONFIG`)
 
-## Role Variables
+## Role variables
 
-### Common variables
+### Always relevant
 
-| Variable                       | Type    | Required | Default | Description                                                                                                                   |
-|--------------------------------|---------|----------|---------|-------------------------------------------------------------------------------------------------------------------------------|
-| `om_target`                    | string  | yes      |         | Target registry (e.g. `registry.example.com:5000`)                                                                            |
-| `om_target_versions`           | string  | yes\*    |         | `latest` or `all` for standard branches. Ignored when `om_custom_config` is set.                                              |
-| `om_custom_config`             | string  | no       |         | Path to a custom ImageSetConfiguration YAML. When set, runs the custom mirror after requirements and skips standard branches. |
-| `om_allow_insecure_registries` | boolean | no       | `false` | Sets `--dest-tls-verify=false` and `--src-tls-verify=false` where applicable                                                  |
-| `om_keep_working_dir`          | boolean | no       | `false` | Keep the temp working directory after the role finishes                                                                       |
-| `om_auths_file`                | string  | no       |         | Pull secret / registry auth JSON path                                                                                         |
-| `om_remove_signatures`         | boolean | no       | `false` | Passes `--remove-signatures` to `oc-mirror` when `true`. Required when there are images are not signed.                       |
-| `om_ignore_errors`             | boolean | no       | `false` | Sets Ansible `ignore_errors` on the mirror task when `true`                                                                   |
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `om_target` | string | (none) | **Required.** Target registry (e.g. `registry.example.com:5000`). |
+| `om_custom_config` | string | (none) | Path to your own ImageSetConfiguration. When set, the standard index/operator variables below are not used. |
+| `om_allow_insecure_registries` | bool | `false` | Disables TLS verify for source and dest where `oc-mirror` supports it. |
+| `om_auths_file` | string | (none) | Pull secret / registry auth JSON path. |
+| `om_keep_working_dir` | bool | `false` | Keep the temp workspace after the role finishes (useful for debugging). |
+| `om_remove_signatures` | bool | `false` | Pass `--remove-signatures` to `oc-mirror` (needed for some unsigned images). |
+| `om_ignore_errors` | bool | `false` | Sets Ansible `ignore_errors` on the mirror task. |
 
-\*Required for standard operator mirroring when `om_custom_config` is not used.
+### Standard path only (`om_custom_config` not set)
 
-### Standard operator mirroring (`om_custom_config` unset)
+These are checked in `tasks/main.yml` once you are on the standard branch: `om_target_versions` must be `latest` or `all`, and `om_source_index` must be a non-empty string.
 
-| Variable          | Type   | Required | Description                                                                                                                    |
-|-------------------|--------|----------|--------------------------------------------------------------------------------------------------------------------------------|
-| `om_source_index` | string | yes\*    | Default catalog index (e.g. `registry.redhat.io/redhat/redhat-operator-index:v4.20`). Overridable per operator with `catalog`. |
-| `om_operators`    | dict   | yes\*    | Operators to mirror (keys = operator names). Value may be `{}` or `catalog: <index image>`.                                    |
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `om_target_versions` | string | (none) | `latest` or `all` — channel scope for the generated ImageSet. |
+| `om_source_index` | string | (none) | Default catalog index image (e.g. `registry.redhat.io/redhat/redhat-operator-index:v4.20`). |
+| `om_operators` | dict | (none) | Keys are operator names; values are often `{}` or include `catalog:` to pull from another index. Omit or use `{}` with no keys for **full** index mirroring. |
 
-### Custom mirroring (`om_custom_config` set)
-
-| Variable           | Type   | Required | Description                                                        |
-|--------------------|--------|----------|--------------------------------------------------------------------|
-| `om_custom_config` | string | yes      | Path to the ImageSetConfiguration file used.                       |
+For custom ImageSet mirroring you only need what that file implies plus `om_target` (and auth / TLS flags as usual); `mirror-custom.yml` validates `om_custom_config` and that the file exists.
 
 ## Examples
 
-The snippets below show some common mirroring use cases.
+### Mirrors what is defined in the custom imageset
 
-### Mirror latest — operators from multiple catalogs
+- name: Mirrors what is defined in the custom imageset
+  ansible.builtin.include_role:
+    name: redhatci.ocp.oci_mirror
+  vars:
+    om_target: registry.lab:4443
+    om_custom_config: /tmp/imagesets/custom.yml
 
-Some operators use the default `om_source_index`; others can be taken from separate catalogs. The following is the only case supported with multiple catalogs.
+### Mirror latest version of the listed operators
+
 ```yaml
-- name: Mirror custom operators from multiple catalogs
+- name: Mirror latest version of the listed operators
+  ansible.builtin.include_role:
+    name: redhatci.ocp.oci_mirror
+  vars:
+    om_target_versions: latest
+    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+    om_target: registry.lab:4443
+    om_operators:
+      mcg-operator:
+      ocs-client-operator:
+      ocs-operator:
+      odf-csi-addons-operator:
+      odf-prometheus-operator:
+      rook-ceph-operator:
+```
+
+### Full index
+
+```yaml
+- name: Full index
+  ansible.builtin.include_role:
+    name: redhatci.ocp.oci_mirror
+  vars:
+    om_target_versions: all
+    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+    om_target: registry.lab:4443
+```
+
+```yaml
+- name: Mirror entire index with latest operators versions
+  ansible.builtin.include_role:
+    name: redhatci.ocp.oci_mirror
+  vars:
+    om_target_versions: latest
+    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+    om_target: registry.lab:4443
+```
+
+### Multiple catalogs (per-operator `catalog`)
+
+Some operators stay on `om_source_index`; others use another index via `catalog` on that operator entry.
+
+```yaml
+- name: Mirror operators from mixed catalogs
   ansible.builtin.include_role:
     name: redhatci.ocp.oci_mirror
   vars:
@@ -70,86 +115,10 @@ Some operators use the default `om_source_index`; others can be taken from separ
       odf-prometheus-operator:
 ```
 
-### Mirror using a custom ImageSetConfiguration
-
-`om_custom_config` is a custom imagesetconfig file used as is to mirror the defined artifacts.
-
-```yaml
-- name: Mirror custom imageset configuration
-  ansible.builtin.include_role:
-    name: redhatci.ocp.oci_mirror
-  vars:
-    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
-    om_target: registry.lab:4443
-    om_custom_config: /tmp/imagesets/custom.yml
-```
-
-### Mirror latest — listed operators
-
-```yaml
-- name: Mirror latest versions of operators
-  ansible.builtin.include_role:
-    name: redhatci.ocp.oci_mirror
-  vars:
-    om_target_versions: latest
-    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
-    om_target: registry.lab:4443
-    om_operators:
-      mcg-operator:
-      ocs-client-operator:
-      ocs-operator:
-      odf-csi-addons-operator:
-      odf-prometheus-operator:
-      rook-ceph-operator:
-```
-
-### Mirror all channels/versions
-
-```yaml
-- name: Mirror custom operators
-  ansible.builtin.include_role:
-    name: redhatci.ocp.oci_mirror
-  vars:
-    om_target_versions: all
-    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
-    om_target: registry.lab:4443
-    om_operators:
-      mcg-operator:
-      ocs-client-operator:
-      ocs-operator:
-      odf-csi-addons-operator:
-      odf-prometheus-operator:
-      rook-ceph-operator:
-```
-
-### Mirror full index
-
-```yaml
-- name: Mirror index
-  ansible.builtin.include_role:
-    name: redhatci.ocp.oci_mirror
-  vars:
-    om_target_versions: all
-    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
-    om_target: registry.lab:4443
-```
-
-### Mirror full index (latest channel only)
-
-```yaml
-- name: Mirror latest versions of operators (full catalog)
-  ansible.builtin.include_role:
-    name: redhatci.ocp.oci_mirror
-  vars:
-    om_target_versions: latest
-    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
-    om_target: registry.lab:4443
-```
-
 ### Keep the working directory
 
 ```yaml
-- name: Mirror and keep temp workspace
+- name: Mirror and keeps temp workspace
   ansible.builtin.include_role:
     name: redhatci.ocp.oci_mirror
   vars:
@@ -162,49 +131,11 @@ Some operators use the default `om_source_index`; others can be taken from separ
     om_keep_working_dir: true
 ```
 
-### Playbook with shared vars
+## Output / facts
 
-```yaml
----
-- name: Mirror operators to disconnected registry
-  hosts: localhost
-  gather_facts: true
-  vars:
-    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
-    om_target: registry.lab:4443
-    om_auths_file: /run/user/1000/containers/auth.json
-    om_allow_insecure_registries: true
+When mirroring produces manifests, they land under the **`om_output_dir`** fact (a temp dir unless you keep it).
 
-  tasks:
-    - name: Mirror latest ODF operators
-      ansible.builtin.include_role:
-        name: redhatci.ocp.oci_mirror
-      vars:
-        om_target_versions: latest
-        om_operators:
-          mcg-operator:
-          ocs-client-operator:
-          ocs-operator:
-          odf-csi-addons-operator:
-          odf-prometheus-operator:
-          rook-ceph-operator:
-
-    - name: Mirror all channels for listed operators
-      ansible.builtin.include_role:
-        name: redhatci.ocp.oci_mirror
-      vars:
-        om_target_versions: all
-        om_operators:
-          advanced-cluster-management:
-          multicluster-engine:
-```
-
-### Facts set after mirroring
-
-After `mirroring.yml` copies at least one generated manifest (IDMS and/or catalogs) into a dedicated temp directory under **`om_output_dir`** fact.
+Typical files:
 
 - `idms-oc-mirror.yaml` — ImageDigestMirrorSet
-- `cs-*.yaml` or `cc-*.yaml` — CatalogSource vs ClusterCatalog, per OpenShift **`version`** (see `mirroring.yml`)
-
-`cs-*.yaml` for catalogSources are aimed to be used in cluster with OLM classic.
-`cc-*.yaml` for catalogSources are aimed to be used in cluster with OLMv1.
+- `cs-*.yaml` or `cc-*.yaml` — catalog manifests; which shape you get depends on OpenShift version (classic OLM vs OLM v1). See `tasks/mirroring.yml` for details.

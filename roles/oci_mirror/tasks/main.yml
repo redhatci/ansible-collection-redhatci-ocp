@@ -17,42 +17,41 @@
           ansible.builtin.assert:
             that:
               - om_target_versions is defined
-              - om_target_versions in ['latest', 'all']
             fail_msg: >
-              om_target_versions must be 'latest' or 'all' when om_custom_config is not set
+              om_target_versions must be defined when not using `om_custom_config`.
 
-        - name: "Execute mirror of custom all versions"
-          ansible.builtin.include_role:
-            name: redhatci.ocp.oci_mirror
-            tasks_from: "pruned-all-versions.yml"
+        - name: Assert om_source_index for standard mirror branches
+          ansible.builtin.assert:
+            that:
+              - om_source_index is defined
+              - om_source_index | length > 0
+            fail_msg: >
+              om_source_index must be set when om_custom_config is not defined.
+
+        - name: "Execute mirror of pruned all versions"
+          ansible.builtin.include_tasks: pruned-all-versions.yml
           when:
             - om_operators is defined
             - om_operators | length > 0
             - om_target_versions == "all"
 
         - name: "Execute mirror of pruned latest version"
-          ansible.builtin.include_role:
-            name: redhatci.ocp.oci_mirror
-            tasks_from: "pruned-latest-versions.yml"
+          ansible.builtin.include_tasks: pruned-latest-versions.yml
           when:
             - om_operators is defined
             - om_operators | length > 0
             - om_target_versions == "latest"
 
         - name: "Execute mirror of full all versions"
-          ansible.builtin.include_role:
-            name: redhatci.ocp.oci_mirror
-            tasks_from: "full-all-versions.yml"
+          ansible.builtin.include_tasks: full-all-versions.yml
           when:
-            - (om_operators is not defined) or (om_operators | default({}, true) | length == 0)
+            - (om_operators is not defined) or (om_operators | length == 0)
             - om_target_versions == "all"
 
         - name: "Execute mirror of full latest version"
-          ansible.builtin.include_role:
-            name: redhatci.ocp.oci_mirror
-            tasks_from: "full-latest-versions.yml"
+          ansible.builtin.include_tasks: full-latest-versions.yml
           when:
-            - (om_operators is not defined) or (om_operators | default({}, true) | length == 0)
+            - (om_operators is not defined) or (om_operators | length == 0)
             - om_target_versions == "latest"
 
   always:

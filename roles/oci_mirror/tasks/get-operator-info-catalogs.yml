@@ -7,7 +7,7 @@
   vars:
     catalog: "{{ item.key }}"
     operators: "{{ item.value }}"
-    opm_bin: "{{ _om_tmp_dir.path }}/opm-rhel8"
+    opm_bin: "{{ _om_tmp_dir.path }}/opm-rhel{{ ansible_distribution_major_version }}"
     jq_bin: "{{ _om_tmp_dir.path }}/jq"
   register: _om_catalog_operator_info
   until: _om_catalog_operator_info.rc == 0
