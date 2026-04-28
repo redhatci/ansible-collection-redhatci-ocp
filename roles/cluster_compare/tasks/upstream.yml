@@ -11,7 +11,7 @@
     remote_src: true
     mode: '0755'
   register: _cc_extract
-  retries: 1
+  retries: 6
   delay: 10
   until: _cc_extract is not failed
   loop_control:
