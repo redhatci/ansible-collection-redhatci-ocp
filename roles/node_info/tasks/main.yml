@@ -61,6 +61,7 @@
         - item.rc == 0
         - item.stdout is defined
         - (item.stdout | length) > 0
+      no_log: true
 
     - name: Disconnected image
       when:
@@ -138,13 +139,6 @@
       no_log: true
       changed_when: false
 
-    - name: Debug hardware_info
-      ansible.builtin.debug:
-        msg: "{{ _ni_hardware_info.results }}"
-      when:
-        - _ni_hardware_info is defined
-        - _ni_hardware_info.results is defined
-
     - name: Save hardware information to files
       ansible.builtin.copy:
         content: >-
@@ -156,5 +150,6 @@
         dest: "{{ ni_job_logs_path }}/hardware.{{ item.node_name }}.json"
         mode: '0644'
       loop: "{{ _ni_hardware_info.results | default([]) }}"
+      no_log: true
 
 ...
