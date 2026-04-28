@@ -19,3 +19,4 @@ eco_gotests_test_verbose: true
 eco_gotests_dump_failed_tests: true
 
 eco_gotests_skip_labels_ptp: []
+eco_gotests_ptp_check_prerequisites: true

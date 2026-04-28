@@ -27,6 +27,7 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 #### General Configuration
 - `eco_gotests_image` (default: `"quay.io/ocp-edge-qe/eco-gotests:latest"`): Container image for eco-gotests
 - `eco_gotests_skip_labels_ptp` (default: `[]`): List of test labels to skip for PTP tests. These labels will be excluded using Ginkgo label filter syntax (`!label`). Common PTP labels include: `node-reboot`, `process-restart`, `event-consumer`, `events-and-metrics`, `interfaces`, `leap-file`, `ntp-fallback`. Example: `['node-reboot', 'process-restart']` to skip node reboot and process restart tests.
+- `eco_gotests_ptp_check_prerequisites` (default: `true`): Enable or disable PTP prerequisites validation (`PtpOperatorConfig` checks for `enableEventPublisher` and `apiVersion`).
 - `eco_gotests_path` (default: undefined): path where to find the source code to build the container. If this is specified, the `eco_gotests_image` is ignored.
 
 #### SRIOV Test Configuration
