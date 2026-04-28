@@ -15,7 +15,7 @@
       ECO_REPORTS_DUMP_DIR: "/tmp/reports"
       ECO_VERBOSE_LEVEL: "{{ eco_gotests_verbose_level }}"
       ECO_TEST_VERBOSE: "{{ eco_gotests_test_verbose | lower }}"
-      ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | lower }}"
+      ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | bool }}"
       ECO_TEST_FEATURES: "sriov"
       ECO_TEST_LABELS: "{{ eco_gotests_sriov_labels }}"
       ECO_WORKER_LABEL: "{{ eco_gotests_worker_label }}"
@@ -32,3 +32,33 @@
     remove: true
     command: ["--timeout={{ eco_gotests_sriov_timeout }}", "--keep-going"]
   failed_when: false
+
+- name: "Stat failed SRIOV suite dump directory"
+  ansible.builtin.stat:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/sriov/failed_sriov_suite_test"
+  register: _eco_gotests_sriov_failed_dump_stat
+
+- name: "Compress failed SRIOV suite dumps to failed_sriov_suite_test.tar.gz"
+  ansible.builtin.archive:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/sriov/failed_sriov_suite_test"
+    dest: "{{ eco_gotests_log_dir }}/failed_sriov_suite_test.tar.gz"
+    format: gz
+    mode: "0644"
+  when:
+    - eco_gotests_dump_failed_tests | bool
+    - _eco_gotests_sriov_failed_dump_stat.stat.exists | default(false)
+    - _eco_gotests_sriov_failed_dump_stat.stat.isdir | default(false)
+
+- name: "Remove failed SRIOV suite dump directory after compression"
+  ansible.builtin.file:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/sriov/failed_sriov_suite_test"
+    state: absent
+  when:
+    - eco_gotests_dump_failed_tests | bool
+    - _eco_gotests_sriov_failed_dump_stat.stat.exists | default(false)
+    - _eco_gotests_sriov_failed_dump_stat.stat.isdir | default(false)
+
+- name: "Remove temporary SRIOV testrun report file"
+  ansible.builtin.file:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/sriov/report_testrun.xml"
+    state: absent

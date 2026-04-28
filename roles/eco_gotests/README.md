@@ -28,6 +28,7 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 - `eco_gotests_image` (default: `"quay.io/ocp-edge-qe/eco-gotests:latest"`): Container image for eco-gotests
 - `eco_gotests_skip_labels_ptp` (default: `[]`): List of test labels to skip for PTP tests. These labels will be excluded using Ginkgo label filter syntax (`!label`). Common PTP labels include: `node-reboot`, `process-restart`, `event-consumer`, `events-and-metrics`, `interfaces`, `leap-file`, `ntp-fallback`. Example: `['node-reboot', 'process-restart']` to skip node reboot and process restart tests.
 - `eco_gotests_path` (default: undefined): path where to find the source code to build the container. If this is specified, the `eco_gotests_image` is ignored.
+- `eco_gotests_dump_failed_tests` (default: `false`): When true, eco-gotests sets `ECO_DUMP_FAILED_TESTS` and writes per-failure logs and must-gather under the suite reports directory. 
 
 #### SRIOV Test Configuration
 - `eco_gotests_sriov_labels` (default: `"sriov-hw-enabled"`): Test labels for SRIOV tests
@@ -37,10 +38,10 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 - `eco_gotests_dpdk_test_container` (default: `"quay.io/ocp-edge-qe/eco-gotests-rootless-dpdk:v4.16.0"`): DPDK test container
 - `eco_gotests_frr_image` (default: `"quay.io/ocp-edge-qe/frr:stable_7.5"`): FRR image
 - `eco_gotests_sriov_timeout` (default: `"12h"`): Timeout for SRIOV tests
-- `eco_gotests_reports_dump_dir` (default: `"/tmp/reports"`): Directory for dumping reports
 - `eco_gotests_verbose_level` (default: `100`): Verbosity level
 - `eco_gotests_test_verbose` (default: `true`): Enable verbose test output
-- `eco_gotests_dump_failed_tests` (default: `true`): Dump failed test information
+
+SRIOV uses the same `eco_gotests_dump_failed_tests` toggle; reports are written at `/tmp/reports` in the container, mapped to `{{ eco_gotests_log_dir }}/eco_gotests/sriov` on the host.
 
 ## Example Playbook
 
