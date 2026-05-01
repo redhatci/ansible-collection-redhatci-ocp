@@ -57,12 +57,11 @@
     - always
     - validation
 
-- name: Fail if both bootstraposimage and clusterosimage variables are empty.
+- name: Fail if bootstraposimage variable is empty.
   fail:
-    msg: "Both bootraposimage and clusterosimage are empty. Please provide a URL or comment out."
+    msg: "bootstraposimage is defined but empty. Please provide a URL or comment out."
   when:
     - bootstraposimage is defined and bootstraposimage|length == 0
-    - clusterosimage is defined and clusterosimage|length == 0
   tags:
     - always
     - validation
@@ -71,10 +70,7 @@
   set_fact:
     cache_enabled: true
   when: (cache_enabled|bool) or
-        (bootstraposimage is undefined and clusterosimage is defined) or
-        (bootstraposimage is defined and clusterosimage is undefined) or
-        (clusterosimage is defined and bootstraposimage|length == 0) or
-        (bootstraposimage is defined and clusterosimage|length == 0)
+        (bootstraposimage is undefined)
   tags:
     - always
     - validation
@@ -83,7 +79,7 @@
   set_fact:
     cache_enabled: false
   when: (not cache_enabled|bool) or
-        (bootstraposimage is defined and clusterosimage is defined)
+        (bootstraposimage is defined)
   tags:
     - always
     - validation

@@ -13,8 +13,4 @@ data:
   ironic_inspector_endpoint: http://{{ prov_ip|ipwrap }}:5050/v1/
   provisioning_interface: {{ masters_prov_nic }}
   provisioning_ip: {{ prov_ip }}/24
-{% if clusterosimage is defined and clusterosimage|length %}
-  rhcos_image_url: {{ clusterosimage }}
-{% else %}
   rhcos_image_url: {{ rhcos_path }}{{ rhcos_uri }}
-{% endif %}
