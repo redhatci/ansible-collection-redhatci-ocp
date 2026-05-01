@@ -50,7 +50,7 @@
           {{ { 'kernel': {
             'node': (item.stdout | from_json).node,
             'version': (item.stdout | from_json).version,
-            'params': (((item.stdout | from_json).params | default('') | cmdline_to_json | from_json))
+            'params': (((item.stdout | from_json).params | default('') | redhatci.ocp.cmdline_to_json | from_json))
           } } | to_json }}
         dest: "{{ ni_job_logs_path }}/kernel.{{ item.node_name }}.json"
         mode: '0644'

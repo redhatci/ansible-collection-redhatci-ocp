@@ -164,6 +164,7 @@ Name | Type | Description
 [redhatci.ocp.junit2obj]() | Filter | Transforms a JUnit XML into a corresponding JSON text
 [redhatci.ocp.nmcli]() | Module | A modified module to manage networking based on [community.general.nmcli](https://github.com/ansible-collections/community.general)
 [redhatci.ocp.ocp_compatibility]() | Filter | Parse the deprecated and to-be-deprecated API after the workload installation
+[redhatci.ocp.cmdline_to_json]() | Filter | Convert a kernel command line string to a JSON object
 [redhatci.ocp.redact]() | Filter | Redact sensitive values from a dictionary
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
 
