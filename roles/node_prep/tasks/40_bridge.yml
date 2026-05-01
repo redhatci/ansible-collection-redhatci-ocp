@@ -4,14 +4,16 @@
   tags: network
   block:
     - name: Get the provision connection name
-      shell: |
+      ansible.builtin.shell: |
+        set -o pipefail
         nmcli device show {{ prov_nic }} | grep GENERAL.CONNECTION | awk '{sub(/[^ ]+[ ]+/,"")}1'
       register: prov_con_name
       when:
         - not enable_virtualmedia|bool
 
     - name: Get the public connection name
-      shell: |
+      ansible.builtin.shell: |
+        set -o pipefail
         nmcli device show {{ pub_nic }} | grep GENERAL.CONNECTION | awk '{sub(/[^ ]+[ ]+/,"")}1'
       register: pub_con_name
 
@@ -150,14 +152,14 @@
         state: present
 
     - name: Reload {{ baremetal_bridge }} bridge and slave interfaces
-      shell: |
+      ansible.builtin.shell: |
         /usr/bin/nmcli con reload {{ item }}; /usr/bin/nmcli con up {{ item }}
       with_items:
         - "{{ baremetal_bridge }}"
         - "{{ pub_nic }}"
 
     - name: Reload provisioning bridge and slave interfaces
-      shell: |
+      ansible.builtin.shell: |
         /usr/bin/nmcli con reload {{ item }}; /usr/bin/nmcli con up {{ item }}
       with_items:
         - "{{ provisioning_bridge }}"

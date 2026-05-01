@@ -17,6 +17,7 @@
     - name: Get catalog Digest
       ansible.builtin.shell:
         cmd: >
+          set -o pipefail ;
           skopeo inspect
           {% if mc_allow_unsecure_registry | bool %}
           --tls-verify=false

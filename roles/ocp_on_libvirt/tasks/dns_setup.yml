@@ -1,6 +1,8 @@
 ---
-- name: Register mac addresses  # noqa: risky-shell-pipe
-  ansible.builtin.shell: "virsh domiflist {{ item }} | awk '/{{ net }}/ {print $5}'"
+- name: Register mac addresses
+  ansible.builtin.shell: |
+    set -o pipefail
+    virsh domiflist {{ item }} | awk '/{{ net }}/ {print $5}'
   with_items: "{{ resources }}"
   register: mac_list
   become: "{{ libvirt_become }}"
@@ -15,8 +17,9 @@
     vm_inv_info: "{{ vm_inv_info | default({}) | combine({item.cmd.split()[2]: {'mac': item.stdout}}) }}"
   with_items: "{{ mac_list.results }}"
 
-- name: Wait for VMs IPs  # noqa: risky-shell-pipe
+- name: Wait for VMs IPs
   ansible.builtin.shell: >
+    set -o pipefail ;
     virsh net-dhcp-leases {{ net }} |
     awk '($4 == "ipv4") && ($3 == "{{ item.value.mac }}") {print $5}'
   register: ip_list

@@ -130,6 +130,7 @@
 - name: "Run chart show to get chart details"
   ansible.builtin.shell:
     cmd: >
+      set -o pipefail ;
       {{ helm_tool_path }} show chart {{ work_chart_dir }}/{{ chart.chart_file | basename }} |
       {{ yq_tool_path }} e -o json -
   register: chart_show
@@ -178,6 +179,7 @@
 - name: "Validate_ number of mandatory tests that have failed"
   ansible.builtin.shell:
     cmd: >
+      set -o pipefail ;
       {{ yq_tool_path }} e '[.results[] | select(.outcome == "FAIL" and .type != "Optional")] | length' report.yaml
   register: cv_fail_count
   args:
