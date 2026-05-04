@@ -33,6 +33,10 @@
         url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64"
         dest: "{{ _ac_tmp_dir.path }}/argocd"
         mode: "0750"
+      register: _ac_cli
+      retries: 6
+      delay: 10
+      until: _ac_cli is not failed
 
     - name: Get ArgoCD password
       kubernetes.core.k8s_info:
