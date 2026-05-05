@@ -11,21 +11,22 @@ The configuration of the ACM hub can be customized by using the following variab
 
 ## Variables
 
-| Variable                           | Default                       | Required    | Description
-| ---------------------------------- | ----------------------------- | ----------- | ----------------------------------------------
-|hub_availability                    |High                           |No           | Multicluster hub High Availability configuration
-|hub_disable_selfmanagement          |False                          |No           | Do not import the hub cluster as managed in ACM
-|hub_namespace                       |open-cluster-management        |No           | Namespace where ACM has been installed and will be configured
-|hub_instance                        |multiclusterhub                |No           | Name of the multiclusterhub instance to be created (fail if already exists)
-|hub_disconnected                    |false                          |No           | If true, it will create custom ClusterImageSets and remove the Channel subscriptions
-|hub_sc                              |Undefined                      |If no default StorageClass is available | Desired storage class for ACM resources. If undefined, the default SC will be used
-|hub_hugepages_type                  |hugepages-2Mi                  |No           | Hugepages type to be configured for Postgres search pods. x86_64 support hugepages-2Mi and hugepages-1Gi
-|hub_hugepages_size                  |1024Mi                         |No           | Hugepages `hub_hugepages_type` size
-|hub_db_volume_size                  |40Gi                           |No           | This value specifies how much storage it is allocated for storing files like database tables and database views for the clusters. You might need to use a higher value if there are many clusters
-|hub_fs_volume_size                  |50Gi                           |No           | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters
-|hub_img_volume_size                 |40Gi                           |No           | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS
-|hub_img_svc_skip_tls_verify     |false                          |No           | Skip TLS verification in the AgentServiceConfig for image service operations. Useful in environments with self-signed certificates or certificate issues.
-|hub_os_images                       |<Undefined>                    |No           | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images). It is mandatory for disconnected environments.
+| Variable                     | Default                  | Required  | Description
+| ---------------------------- | ------------------------ | --------- | ----------------------------------------------
+| hub_availability             | High                     | No        | Multicluster hub High Availability configuration
+| hub_disable_selfmanagement   | False                    | No        | Do not import the hub cluster as managed in ACM
+| hub_namespace                | open-cluster-management  | No        | Namespace where ACM has been installed and will be configured
+| hub_instance                 | multiclusterhub          | No        | Name of the multiclusterhub instance to be created (fail if already exists)
+| hub_disconnected             | false                    | No        | If true, it will create custom ClusterImageSets and remove the Channel subscriptions
+| hub_sc                       | Undefined                | No        | Desired storage class for ACM resources. If undefined, the default SC will be used
+| hub_hugepages_type           | hugepages-2Mi            | No        | Hugepages type to be configured for Postgres search pods. x86_64 support hugepages-2Mi and hugepages-1Gi
+| hub_hugepages_size           | 1024Mi                   | No        | Hugepages `hub_hugepages_type` size
+| hub_db_volume_size           | 40Gi                     | No        | This value specifies how much storage it is allocated for storing files like database tables and database views for the clusters. You might need to use a higher value if there are many clusters
+| hub_fs_volume_size           | 50Gi                     | No        | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters
+| hub_img_volume_size          | 80Gi                     | No        | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS
+| hub_img_svc_skip_tls_verify  | false                    | No        | Skip TLS verification in the AgentServiceConfig for image service operations. Useful in environments with self-signed certificates or certificate issues.
+| hub_os_images                | <Undefined>              | No        | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images). It is mandatory for disconnected environments.
+| hub_use_configmap            | false                    | No        | Allow the AgentServiceConfig to use a ConfigMap with custom env vars to modify its behavior like to disable Image Policy.
 
 ## Requirements
 1. An OpenShift Cluster with a subscription for the ACM operator.
