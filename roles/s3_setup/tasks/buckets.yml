@@ -1,0 +1,7 @@
+---
+- name: "Create bucket {{ bucket }}"
+  containers.podman.podman_container_exec:
+    name: "{{ ss_container_name }}"
+    command: "mc mb --ignore-existing myminio/{{ bucket }}"
+  register: _ss_bucket_result
+  changed_when: "'created' in (_ss_bucket_result.stdout | default(''))"

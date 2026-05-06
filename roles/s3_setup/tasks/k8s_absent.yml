@@ -1,0 +1,7 @@
+---
+- name: Delete S3 server namespace
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Namespace
+    name: "{{ ss_namespace }}"

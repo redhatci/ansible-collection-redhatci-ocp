@@ -1,0 +1,235 @@
+---
+argument_specs:
+  main:
+    short_description: Main entry point for S3 server deployment
+    description: >
+      Dispatches to standalone (Podman) or Kubernetes tasks
+      based on ss_mode and ss_state.
+    options:
+      ss_mode:
+        type: str
+        required: false
+        default: standalone
+        choices:
+          - standalone
+          - k8s
+        description: >
+          Deployment mode. 'standalone' deploys a rootless Podman container.
+          'k8s' deploys into a Kubernetes/OpenShift cluster.
+      ss_state:
+        type: str
+        required: false
+        default: present
+        choices:
+          - present
+          - absent
+        description: >
+          State of the S3 server deployment
+          (present to deploy, absent to remove).
+
+  present:
+    short_description: Deploy S3 server as a rootless Podman container
+    description: >
+      Deploy an S3-compatible object storage server as a rootless
+      Podman container. Creates the necessary directories, deploys
+      the container, waits for readiness, and optionally creates
+      buckets.
+    options:
+      ss_user:
+        type: str
+        required: false
+        default: "{{ ansible_user_id }}"
+        description: User to run containers as (rootless mode).
+      ss_user_home:
+        type: str
+        required: false
+        default: "{{ ansible_user_dir }}"
+        description: Home directory of the user running containers.
+      ss_user_uid:
+        type: str
+        required: false
+        default: "{{ ansible_user_uid }}"
+        description: UID of the user running containers.
+      ss_user_gid:
+        type: str
+        required: false
+        default: "{{ ansible_user_gid }}"
+        description: GID of the user running containers.
+      ss_base_dir:
+        type: str
+        required: false
+        default: "{{ ansible_env.HOME }}/minio-server"
+        description: Base directory for data storage.
+      ss_data_dir:
+        type: str
+        required: false
+        default: "{{ ss_base_dir }}/data"
+        description: Directory for data storage.
+      ss_image:
+        type: str
+        required: false
+        default: cgr.dev/chainguard/minio
+        description: S3 server container image to use.
+      ss_container_name:
+        type: str
+        required: false
+        default: minio
+        description: Name of the container.
+      ss_server_domain:
+        type: str
+        required: false
+        default: localhost
+        description: Domain name or IP address for the S3 server.
+      ss_api_port:
+        type: int
+        required: false
+        default: 9000
+        description: Host port for the S3 API.
+      ss_console_port:
+        type: int
+        required: false
+        default: 9001
+        description: Host port for the web console.
+      ss_username:
+        type: str
+        required: false
+        description: >
+          Root user (access key). If not provided, a random
+          16-character string will be auto-generated.
+      ss_password:
+        type: str
+        required: false
+        description: >
+          Root password (secret key). If not provided, a random
+          32-character string will be auto-generated.
+      ss_buckets:
+        type: list
+        elements: str
+        required: false
+        default: []
+        description: List of bucket names to create.
+      ss_use_systemd:
+        type: bool
+        required: false
+        default: false
+        description: >
+          Whether to create and enable a systemd user unit
+          for the container.
+      ss_wait_retries:
+        type: int
+        required: false
+        default: 30
+        description: Number of retries when waiting for readiness.
+      ss_wait_delay:
+        type: int
+        required: false
+        default: 5
+        description: Delay in seconds between retries.
+
+  absent:
+    short_description: Remove standalone S3 server deployment
+    description: >
+      Remove the S3 server container. Data directories are preserved
+      and must be manually deleted if needed.
+    options:
+      ss_container_name:
+        type: str
+        required: false
+        default: minio
+        description: Name of the container to remove.
+      ss_base_dir:
+        type: str
+        required: false
+        default: "{{ ansible_env.HOME }}/minio-server"
+        description: Base directory path (displayed in removal info).
+      ss_use_systemd:
+        type: bool
+        required: false
+        default: false
+        description: >
+          Whether to remove the systemd user unit for the container.
+      ss_user:
+        type: str
+        required: false
+        default: "{{ ansible_user_id }}"
+        description: User that runs the container (for systemd cleanup).
+      ss_user_uid:
+        type: str
+        required: false
+        default: "{{ ansible_user_uid }}"
+        description: UID of the user (for systemd cleanup).
+
+  k8s_present:
+    short_description: Deploy S3 server in Kubernetes/OpenShift
+    description: >
+      Deploy an S3-compatible object storage server in a Kubernetes
+      or OpenShift cluster. Creates a namespace, PVC, Deployment,
+      Service, and optionally creates buckets via a Job.
+    options:
+      ss_image:
+        type: str
+        required: false
+        default: cgr.dev/chainguard/minio
+        description: S3 server container image.
+      ss_username:
+        type: str
+        required: false
+        description: >
+          Root user (access key). If not provided, a random
+          16-character string will be auto-generated.
+      ss_password:
+        type: str
+        required: false
+        description: >
+          Root password (secret key). If not provided, a random
+          32-character string will be auto-generated.
+      ss_namespace:
+        type: str
+        required: false
+        default: minio
+        description: Kubernetes namespace for the deployment.
+      ss_storage_class:
+        type: str
+        required: true
+        description: >
+          Storage class name with ReadWriteMany (RWX) support.
+      ss_claim_size:
+        type: str
+        required: false
+        default: 10Gi
+        description: PVC storage size request.
+      ss_service_type:
+        type: str
+        required: false
+        default: NodePort
+        description: >
+          Kubernetes service type
+          (NodePort, LoadBalancer, or ClusterIP).
+      ss_buckets:
+        type: list
+        elements: str
+        required: false
+        default: []
+        description: List of bucket names to create.
+      ss_wait_retries:
+        type: int
+        required: false
+        default: 30
+        description: Number of retries when waiting for PVC binding.
+      ss_wait_delay:
+        type: int
+        required: false
+        default: 5
+        description: Delay in seconds between retries.
+
+  k8s_absent:
+    short_description: Remove S3 server Kubernetes deployment
+    description: >
+      Remove the S3 server deployment by deleting the entire
+      namespace, which cascade-deletes all resources within it.
+    options:
+      ss_namespace:
+        type: str
+        required: false
+        default: minio
+        description: Kubernetes namespace to delete.

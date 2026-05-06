@@ -1,5 +1,0 @@
----
-deployment_name: minio
-service_name: minio-service
-pvc_name: minio-pvc-claim
-...

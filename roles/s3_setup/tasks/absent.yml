@@ -1,0 +1,37 @@
+---
+- name: Systemd units
+  when: ss_use_systemd | bool
+  block:
+    - name: Disable and stop S3 server systemd service
+      ansible.builtin.systemd:
+        name: "container-{{ ss_container_name }}"
+        scope: user
+        state: stopped
+        enabled: false
+        masked: true
+        daemon_reload: true
+      become: true
+      become_user: "{{ ss_user }}"
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ ss_user_uid }}"
+
+    - name: Disable linger for user
+      ansible.builtin.command:
+        cmd: "loginctl disable-linger {{ ss_user }}"
+      become: true
+      args:
+        removes: "/var/lib/systemd/linger/{{ ss_user }}"
+
+- name: Remove S3 server container
+  containers.podman.podman_container:
+    name: "{{ ss_container_name }}"
+    state: absent
+  become: true
+  become_user: "{{ ss_user }}"
+
+- name: Display removal information
+  ansible.builtin.debug:
+    msg:
+      - "S3 server container has been removed"
+      - "Data directories remain at {{ ss_base_dir }}"
+      - "To completely remove all data, manually delete: {{ ss_base_dir }}"

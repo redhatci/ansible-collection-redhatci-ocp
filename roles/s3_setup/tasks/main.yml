@@ -1,0 +1,32 @@
+---
+- name: Include standalone present tasks
+  ansible.builtin.include_role:
+    name: redhatci.ocp.s3_setup
+    tasks_from: present.yml
+  when:
+    - ss_state == 'present'
+    - ss_mode == 'standalone'
+
+- name: Include k8s present tasks
+  ansible.builtin.include_role:
+    name: redhatci.ocp.s3_setup
+    tasks_from: k8s_present.yml
+  when:
+    - ss_state == 'present'
+    - ss_mode == 'k8s'
+
+- name: Include standalone absent tasks
+  ansible.builtin.include_role:
+    name: redhatci.ocp.s3_setup
+    tasks_from: absent.yml
+  when:
+    - ss_state == 'absent'
+    - ss_mode == 'standalone'
+
+- name: Include k8s absent tasks
+  ansible.builtin.include_role:
+    name: redhatci.ocp.s3_setup
+    tasks_from: k8s_absent.yml
+  when:
+    - ss_state == 'absent'
+    - ss_mode == 'k8s'

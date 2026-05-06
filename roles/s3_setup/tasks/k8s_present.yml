@@ -1,0 +1,198 @@
+---
+- name: Generate credentials
+  ansible.builtin.include_tasks: credentials.yml
+
+- name: Create namespace for S3 server
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ ss_namespace }}"
+        labels:
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/enforce-version: latest
+          security.openshift.io/scc.podSecurityLabelSync: "false"
+
+- name: Create S3 server PVC
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: s3-server-pvc
+        namespace: "{{ ss_namespace }}"
+      spec:
+        storageClassName: "{{ ss_storage_class }}"
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: "{{ ss_claim_size }}"
+
+- name: Wait for S3 server PVC to be Bound
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "{{ ss_namespace }}"
+    name: s3-server-pvc
+  register: _ss_pvc
+  until:
+    - _ss_pvc.resources is defined
+    - _ss_pvc.resources | length > 0
+    - _ss_pvc.resources[0].status.phase == "Bound"
+  retries: "{{ ss_wait_retries }}"
+  delay: "{{ ss_wait_delay }}"
+
+- name: Create S3 credentials Secret
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: s3-credentials
+        namespace: "{{ ss_namespace }}"
+      stringData:
+        MINIO_ROOT_USER: "{{ ss_username }}"
+        MINIO_ROOT_PASSWORD: "{{ ss_password }}"
+  no_log: true
+
+- name: Create S3 server Deployment
+  kubernetes.core.k8s:
+    wait: true
+    wait_timeout: 300
+    wait_sleep: 30
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: s3-server
+        namespace: "{{ ss_namespace }}"
+      spec:
+        selector:
+          matchLabels:
+            app: s3-server
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: s3-server
+          spec:
+            volumes:
+              - name: data
+                persistentVolumeClaim:
+                  claimName: s3-server-pvc
+            containers:
+              - name: s3-server
+                image: "{{ ss_image }}"
+                args:
+                  - server
+                  - /data
+                  - --console-address
+                  - ":9001"
+                volumeMounts:
+                  - name: data
+                    mountPath: /data
+                env:
+                  - name: MINIO_ROOT_USER
+                    valueFrom:
+                      secretKeyRef:
+                        name: s3-credentials
+                        key: MINIO_ROOT_USER
+                  - name: MINIO_ROOT_PASSWORD
+                    valueFrom:
+                      secretKeyRef:
+                        name: s3-credentials
+                        key: MINIO_ROOT_PASSWORD
+                ports:
+                  - containerPort: 9000
+                    name: api
+                  - containerPort: 9001
+                    name: console
+                readinessProbe:
+                  httpGet:
+                    path: /minio/health/ready
+                    port: 9000
+                  initialDelaySeconds: 120
+                  periodSeconds: 20
+                livenessProbe:
+                  httpGet:
+                    path: /minio/health/live
+                    port: 9000
+                  initialDelaySeconds: 120
+                  periodSeconds: 20
+
+- name: Create S3 server Service
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: s3-server
+        namespace: "{{ ss_namespace }}"
+      spec:
+        type: "{{ ss_service_type }}"
+        ports:
+          - name: api
+            port: 9000
+            targetPort: 9000
+            protocol: TCP
+          - name: console
+            port: 9001
+            targetPort: 9001
+            protocol: TCP
+        selector:
+          app: s3-server
+
+- name: Create buckets
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: "s3-create-bucket-{{ item }}"
+        namespace: "{{ ss_namespace }}"
+      spec:
+        template:
+          metadata:
+            name: "s3-create-bucket-{{ item }}"
+          spec:
+            containers:
+              - name: s3-client
+                image: "{{ ss_image }}"
+                env:
+                  - name: MINIO_ROOT_USER
+                    valueFrom:
+                      secretKeyRef:
+                        name: s3-credentials
+                        key: MINIO_ROOT_USER
+                  - name: MINIO_ROOT_PASSWORD
+                    valueFrom:
+                      secretKeyRef:
+                        name: s3-credentials
+                        key: MINIO_ROOT_PASSWORD
+                command:
+                  - /bin/sh
+                  - -c
+                  - >
+                    mc --config-dir /tmp/
+                    alias set
+                    local http://s3-server.{{ ss_namespace }}:9000
+                    "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+                    --api S3v4;
+                    mc --config-dir /tmp/
+                    mb --ignore-existing
+                    local/{{ item }}
+            restartPolicy: Never
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 420
+    wait_condition:
+      type: Complete
+      status: "True"
+  loop: "{{ ss_buckets }}"
+  loop_control:
+    label: "{{ item }}"
+  when: ss_buckets | length > 0
