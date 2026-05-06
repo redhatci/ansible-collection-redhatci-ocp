@@ -1,0 +1,33 @@
+---
+- name: Validate om_operators is not empty
+  ansible.builtin.assert:
+    that:
+      - om_operators is defined
+      - om_operators | dict2items | length > 0
+      - om_source_index is defined
+      - om_source_index | length > 0
+    fail_msg: "om_operators must contain at least one operator"
+
+- name: Render ImageSetConfiguration for all versions of listed operators
+  ansible.builtin.template:
+    src: pruned-all-versions.yaml.j2
+    dest: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+    mode: "0644"
+  vars:
+    _om_operators_with_catalog: >-
+      {%- set result = [] -%}
+      {%- for op_key, op_value in om_operators.items() -%}
+        {%- set _ = result.append({
+              'catalog': op_value.catalog | default(om_source_index),
+              'operator': op_key
+            })
+        -%}
+      {%- endfor -%}
+      {{ result }}
+    _om_catalogs_with_operators: >-
+      {{ _om_operators_with_catalog | groupby('catalog') }}
+
+- name: Mirror the operators
+  vars:
+    om_imageset_config_path: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+  ansible.builtin.include_tasks: mirroring.yml

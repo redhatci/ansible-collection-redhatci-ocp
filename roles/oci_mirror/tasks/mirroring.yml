@@ -1,0 +1,91 @@
+---
+- name: Find an available ephemeral port for oc-mirror
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      sleep 0.$(shuf -i 0-999 -n 1)
+      while :; do
+        port=$(shuf -i 32768-60999 -n 1)
+        ss -lnt | awk '{print $4}' | grep -q ":${port}$" || { echo $port; break; }
+      done
+    executable: /bin/bash
+  register: _om_ephemeral_port
+  changed_when: false
+
+- name: Print ImageSetConfiguration content
+  ansible.builtin.debug:
+    msg: "{{ lookup('file', om_imageset_config_path) }}"
+
+- name: Mirror the operators
+  ansible.builtin.shell:
+    cmd: >
+      umask 0022 &&
+      {{ _om_tmp_dir.path }}/oc-mirror --v2 --config={{ om_imageset_config_path }}
+      --workspace file://{{ _om_tmp_dir.path }}
+      docker://{{ om_target }}
+      --port {{ _om_ephemeral_port.stdout }}
+      {% if om_allow_insecure_registries | bool %}
+      --dest-tls-verify=false
+      --src-tls-verify=false
+      {% endif %}
+      {% if om_auths_file is defined %}
+      --authfile {{ om_auths_file }}
+      {% endif %}
+      {% if om_remove_signatures | bool %}
+      --remove-signatures
+      {% endif %}
+  register: _om_cmd_output
+  retries: 3
+  delay: 10
+  until: _om_cmd_output.rc == 0
+  ignore_errors: "{{ om_ignore_errors }}"
+  changed_when: _om_cmd_output.rc == 0
+
+- name: "Find generated CatalogSource manifests"
+  ansible.builtin.find:
+    paths: "{{ _om_tmp_dir.path }}"
+    recurse: true
+    patterns:
+      - "cs-*.yaml"
+      - "cc-*.yaml"
+  register: _om_catalog_manifest
+
+- name: "Find generated IDMS manifests"
+  ansible.builtin.find:
+    paths: "{{ _om_tmp_dir.path }}"
+    recurse: true
+    patterns:
+      - "idms-oc-mirror.yaml"
+  register: _om_image_source_manifest
+
+- name: "Create output directory for manifests"
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: om_output.
+  register: _om_output_dir
+
+- name: "Copy IDMS to output directory"
+  ansible.builtin.copy:
+    src: "{{ _om_image_source_manifest.files[0].path }}"
+    dest: "{{ _om_output_dir.path }}/{{ _om_image_source_manifest.files[0].path | basename }}"
+    mode: "0644"
+    remote_src: true
+  when:
+    - _om_image_source_manifest.matched > 0
+
+- name: "Copy CatalogSource or ClusterCatalog to output directory"
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ _om_output_dir.path }}/{{ item.path | basename }}"
+    mode: "0644"
+    remote_src: true
+  loop: "{{ _om_catalog_manifest.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when:
+    - _om_catalog_manifest.matched > 0
+
+- name: Expose manifests output directory
+  ansible.builtin.set_fact:
+    om_output_dir: "{{ _om_output_dir.path }}"
+  when: _om_output_dir is defined

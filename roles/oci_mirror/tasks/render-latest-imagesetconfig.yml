@@ -1,0 +1,41 @@
+---
+- name: Render ImageSetConfiguration for latest version of listed operators
+  vars:
+    om_operators_with_catalog: >-
+      {%- set result = [] -%}
+      {%- for item in om_operator_info | default([]) -%}
+        {%- set _ = result.append({
+              'catalog': item.item.value.catalog | default(om_source_index),
+              'stdout': item.stdout,
+              'operator': item.item.key
+            })
+        -%}
+      {%- endfor -%}
+      {{ result }}
+    om_catalogs_with_operators: >-
+      {{ om_operators_with_catalog | groupby('catalog') }}
+    om_operator_info: >-
+      {%- set result = [] -%}
+      {%- for catalog_result in _om_catalog_operator_info.results -%}
+        {%- set catalog = catalog_result.item.key -%}
+        {%- for line in catalog_result.stdout_lines | default([]) -%}
+          {%- if line | trim | length > 0 -%}
+            {%- set parts = line.split() -%}
+            {%- if parts | length >= 3 -%}
+              {%- set operator = parts[0] -%}
+              {%- set channel = parts[1] -%}
+              {%- set version = parts[2] -%}
+              {%- set _ = result.append({
+                    'item': {'key': operator, 'value': {'catalog': catalog}},
+                    'stdout': line
+                  })
+              -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ result }}
+  ansible.builtin.template:
+    src: "{{ om_latest_imageset_template }}"
+    dest: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+    mode: "0644"

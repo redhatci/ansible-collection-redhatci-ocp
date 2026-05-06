@@ -1,0 +1,66 @@
+---
+argument_specs:
+  main:
+    short_description: Mirror operators using oc-mirror
+    description: >
+      Mirrors catalog images to om_target. With om_custom_config you supply an
+      ImageSetConfiguration; otherwise the role uses om_target_versions,
+      om_source_index, and optionally om_operators to build one.
+    options:
+      om_target:
+        type: str
+        required: true
+        description: Destination registry (e.g. registry.example.com:5000).
+      om_custom_config:
+        type: str
+        required: false
+        description: >
+          ImageSetConfiguration file path. When set, the custom path runs and
+          standard index/operator vars are ignored.
+      om_target_versions:
+        type: str
+        required: false
+        choices:
+          - latest
+          - all
+        description: >
+          latest or all channels; only used without om_custom_config.
+      om_source_index:
+        type: str
+        required: false
+        description: >
+          Default catalog index image (e.g.
+          registry.redhat.io/redhat/redhat-operator-index:v4.20). Required
+          without om_custom_config.
+      om_operators:
+        type: dict
+        required: false
+        description: >
+          Operator names as keys; omit or leave empty to mirror the whole index.
+          Only used without om_custom_config.
+      om_allow_insecure_registries:
+        type: bool
+        required: false
+        default: false
+        description: >
+          Do not verify TLS certificates.
+      om_auths_file:
+        type: str
+        required: false
+        description: Path to registry auth JSON (pull secret).
+      om_keep_working_dir:
+        type: bool
+        required: false
+        default: false
+        description: >
+          Do not delete the temp working directory when the role finishes.
+      om_remove_signatures:
+        type: bool
+        required: false
+        default: false
+        description: Removes image signatures.
+      om_ignore_errors:
+        type: bool
+        required: false
+        default: false
+        description: Ignore errors during mirroring.

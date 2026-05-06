@@ -99,6 +99,7 @@ Name | Description
 [redhatci.ocp.nfs_external_storage](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/nfs_external_storage/README.md) | Add NFS external storage provisioner to a cluster.
 [redhatci.ocp.node_info](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_info/README.md) | Gather node hardware and kernel information from an OpenShift cluster.
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
+[redhatci.ocp.oci_mirror](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/oci_mirror/README.md) | Mirror OpenShift operator catalogs and images using oc-mirror.
 [redhatci.ocp.ocp_add_users](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_add_users/README.md) | Add users to an OpenShift cluster through htpasswd Identity Provider.
 [redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster. 
 [redhatci.ocp.ocp_logging](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_logging/README.md) | Enables the OCP logging subsystem.
@@ -151,7 +152,6 @@ Name | Description
 [redhatci.ocp.vendors.zt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/vendors/zt/README.md) | Boots a zt machine to iso or disk via redfish
 [redhatci.ocp.verify_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/verify_tests/README.md) | Verification of tests based on rules
 [redhatci.ocp.ztp.setup_cluster_image_set](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ztp/setup_cluster_image_set/README.md) | Create a clusterImageSet object in the hub cluster aligned with the values in the site config manifest.
-[redhatci.ocp.imageset_mirroring](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/imageset_mirroring/README.md) | Mirror OpenShift operator catalogs and images using oc-mirror.
 
 ## Plugins
 

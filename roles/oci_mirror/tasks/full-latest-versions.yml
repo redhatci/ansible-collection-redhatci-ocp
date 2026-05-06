@@ -1,0 +1,61 @@
+---
+- name: List operators from catalog
+  ansible.builtin.shell:
+    cmd: >
+      set -eo pipefail;
+      umask 0022 &&
+      {{ _om_tmp_dir.path }}/opm-rhel{{ ansible_distribution_major_version }} render {{ om_source_index }} |
+      {{ _om_tmp_dir.path }}/jq -r 'select(.schema == "olm.package") | .name' |
+      sort -u
+  register: _om_cmd_output
+  retries: 3
+  delay: 10
+  until: _om_cmd_output.rc == 0
+  changed_when: _om_cmd_output.rc == 0
+
+- name: Parse catalog listing and query operator metadata
+  vars:
+    om_catalog_operator_names: "{{ _om_cmd_output.stdout_lines |
+                                map('trim') |
+                                reject('equalto', '') |
+                                unique | list }}"
+  block:
+    - name: Assert catalog listed at least one operator package
+      ansible.builtin.assert:
+        that:
+          - om_catalog_operator_names | length > 0
+        fail_msg: "No operator names parsed from opm render output."
+
+    - name: Merge each catalog operator into om_operators
+      ansible.builtin.set_fact:
+        om_packages: "{{ om_packages | default({}) | combine({item: {}}) }}"
+      loop: "{{ om_catalog_operator_names }}"
+      loop_control:
+        label: "{{ item }}"
+      no_log: true
+
+    - name: Build catalog group (operator names per index for get-operator-info)
+      ansible.builtin.set_fact:
+        om_operators_by_catalog: >-
+          {%- set result = {} -%}
+          {%- for item in om_packages | dict2items -%}
+            {%- set catalog = (item.value is mapping and item.value.catalog is defined) | ternary(item.value.catalog, om_source_index) -%}
+            {%- if result.get(catalog) is none -%}
+              {%- set _ = result.update({catalog: []}) -%}
+            {%- endif -%}
+            {%- set _ = result[catalog].append(item.key) -%}
+          {%- endfor -%}
+          {{ result }}
+
+    - name: Query operator metadata from catalogs (opm)
+      ansible.builtin.include_tasks: get-operator-info-catalogs.yml
+
+- name: Build latest-channel ImageSetConfiguration
+  ansible.builtin.include_tasks: render-latest-imagesetconfig.yml
+  vars:
+    om_latest_imageset_template: full-latest-versions.yaml.j2
+
+- name: Mirror the operators
+  vars:
+    om_imageset_config_path: "{{ _om_tmp_dir.path }}/imagesetconfig.yaml"
+  ansible.builtin.include_tasks: mirroring.yml
