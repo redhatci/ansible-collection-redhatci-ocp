@@ -5,7 +5,7 @@
     - name: Create rng device XML file
       ansible.builtin.template:
         src: rng_device.xml.j2
-        dest: "/tmp/{{ cluster_name }}_rng_device.xml"
+        dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ cluster_name }}_rng_device.xml"
         mode: "0664"
 
     - name: Create vm create scripts dir

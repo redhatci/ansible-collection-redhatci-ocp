@@ -1,4 +1,4 @@
-key_pair_dir: /tmp/ssh_key_pair
+key_pair_dir: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/ssh_key_pair"
 private_key_name: "{{ cluster_name }}"
 public_key_name: "{{ cluster_name }}.pub"
 path_base_dir: /home/redhat

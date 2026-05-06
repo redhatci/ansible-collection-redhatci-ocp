@@ -24,7 +24,7 @@
 
 - name: Get the PullSecret from provisioner into temp file on control machine
   ansible.builtin.fetch:
-    dest: /tmp/
+    dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/"
     flat: true
     src: "{{ dir }}/pull-secret.txt"
   when:
@@ -49,7 +49,7 @@
 
 - name: Copy the PullSecret from control machine to the registry host
   ansible.builtin.copy:
-    src: /tmp/pull-secret.txt
+    src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/pull-secret.txt"
     dest: "{{ dir }}/pull-secret.txt"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -64,7 +64,7 @@
 
 - name: Remove the temporary copy of the PullSecret on control machine
   ansible.builtin.file:
-    path: /tmp/pull-secret.txt
+    path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/pull-secret.txt"
     state: absent
   when:
     - registry_creation|bool
@@ -146,7 +146,7 @@
 
 - name: Get the install from registry host into temp file on control machine
   ansible.builtin.fetch:
-    dest: /tmp/
+    dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/"
     flat: true
     src: "{{ tempdir_loc }}/{{ installer_cmd }}"
   when: registry_creation|bool
@@ -156,7 +156,7 @@
 
 - name: Copy the install binary from control machine to the provisioner host
   ansible.builtin.copy:
-    src: /tmp/{{ installer_cmd }}
+    src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ installer_cmd }}"
     dest: "/usr/local/bin/{{ installer_cmd }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -170,7 +170,7 @@
 
 - name: Remove the temporary copy of the install binary on control machine
   ansible.builtin.file:
-    path: "/tmp/{{ installer_cmd }}"
+    path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ installer_cmd }}"
     state: absent
   when:
     - registry_creation|bool

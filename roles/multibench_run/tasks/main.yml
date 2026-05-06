@@ -157,7 +157,7 @@
           >> "{{ _multibench_run_crucible_metric_outfile }}"
         {% endif %}
       vars:
-        _multibench_run_crucible_metric_outfile: "/tmp/crucible-metric-{{ multibench_crucible_metric_source }}-{{ multibench_crucible_metric_type }}.txt"
+        _multibench_run_crucible_metric_outfile: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/crucible-metric-{{ multibench_crucible_metric_source }}-{{ multibench_crucible_metric_type }}.txt"
       loop: "{{ multibench_run_crucible_primary_period_ids }}"
       loop_control:
         extended: true
@@ -167,7 +167,7 @@
 
     - name: Fetch crucible metric output from multibench host
       ansible.builtin.fetch:
-        src: "/tmp/crucible-metric-{{ multibench_crucible_metric_source }}-{{ multibench_crucible_metric_type }}.txt"
+        src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/crucible-metric-{{ multibench_crucible_metric_source }}-{{ multibench_crucible_metric_type }}.txt"
         dest: "{{ multibench_run_output_dir.path }}/crucible-metric-{{ multibench_crucible_metric_source }}-{{ multibench_crucible_metric_type }}.txt"
         flat: true
       when: (multibench_run_crucible_primary_period_ids | default([])) | length > 0
