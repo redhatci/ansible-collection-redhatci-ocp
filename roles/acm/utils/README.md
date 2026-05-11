@@ -50,6 +50,12 @@ into the `registries.conf` format using a custom registry.
 Disconnects the Assisted Service Agent by using a ConfigMap with the `registries.conf` content and CA bundle, as
 well as information about the OpenShift version and the ISO and rootfs images to use.
 
+
+### Assisted Service custom Config
+
+Allow the AgentServiceConfig to use a ConfigMap with custom env vars to modify its behavior like to disable Image Policy.
+The disable Image Policy allows spoke clusters to not enforce the verification of signatures on images. This is useful for images that are not signed, as custom builds or nightly builds.
+
 ## Usage example
 
 See below some examples of how to use the redhatci.ocp.acm.utils role 
@@ -139,4 +145,13 @@ This task generates the `utils_acm_registries` variable containing the transform
   ansible.builtin.include_role:
     name: redhatci.ocp.acm.utils
     tasks_from: validate-policies
+```
+
+### Example: Assisted Service custom Config
+
+```yaml
+- name: Disable signature verification
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: assisted-service-custom-config
 ```

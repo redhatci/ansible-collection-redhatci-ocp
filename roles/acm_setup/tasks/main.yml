@@ -341,18 +341,6 @@
     namespace: multicluster-engine
   register: _asg
 
-- name: Use Assisted Service ConfigMap (disable image policy)
-  when: hub_use_configmap | bool
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: assisted-service-config
-        namespace: multicluster-engine
-      data:
-        OPENSHIFT_INSTALL_EXPERIMENTAL_DISABLE_IMAGE_POLICY: "true"
-
 - name: "Get Hub Cluster mirroring configuration"
   ansible.builtin.include_tasks: get-mirroring-config.yml
   when:
@@ -372,13 +360,6 @@
           (hub_disconnected | bool) |
           ternary(
             {'unsupported.agent-install.openshift.io/assisted-service-allow-unrestricted-image-pulls': 'true'},
-            {}
-          )
-        ) |
-        combine(
-          (hub_use_configmap | bool) |
-          ternary(
-            {'unsupported.agent-install.openshift.io/assisted-service-configmap': 'assisted-service-config'},
             {}
           )
         )

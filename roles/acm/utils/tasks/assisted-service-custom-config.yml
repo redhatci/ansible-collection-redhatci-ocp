@@ -1,0 +1,23 @@
+---
+- name: Use Assisted Service ConfigMap (disable image policy)
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: assisted-service-config
+        namespace: multicluster-engine
+      data:
+        OPENSHIFT_INSTALL_EXPERIMENTAL_DISABLE_IMAGE_POLICY: "true"
+
+- name: Patch AgentServiceConfig to use custom config
+  kubernetes.core.k8s:
+    api_version: agent-install.openshift.io/v1beta1
+    state: patched
+    kind: AgentServiceConfig
+    name: agent
+    namespace: multicluster-engine
+    definition:
+      metadata:
+        annotations:
+          unsupported.agent-install.openshift.io/assisted-service-configmap: assisted-service-config

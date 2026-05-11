@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        3.0.EPOCH
+Version:        3.1.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon May 11 2026 Tony Garcia <tonyg@redhat.com> - 3.1.EPOCH-VERS
+- Move functionality from acm_setup to acm.utils
+
 * Tue May  5 2026 Beto Rdz  <josearod@redhat.com> - 3.0.EPOCH-VERS
 - Renamed imageset_mirroring to oci_mirror
 
