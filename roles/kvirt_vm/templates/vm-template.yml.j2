@@ -3,9 +3,11 @@ kind: "VirtualMachine"
 metadata:
   name: "{{ vm.name }}"
   namespace: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
-  labels:
 {% if vm.labels is defined %}
-{{ vm.labels | to_nice_yaml | indent(4, True) }}
+  labels:
+{% for key, value in vm.labels.items() %}
+    {{ key }}: "{{ value }}"
+{% endfor %}
 {% endif %}
 spec:
   dataVolumeTemplates:
@@ -38,7 +40,9 @@ spec:
       labels:
         kubevirt.io/domain: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
 {% if vm.labels is defined %}
-{{ vm.labels | to_nice_yaml | indent(8, True) | trim }}
+{% for key, value in vm.labels.items() %}
+        {{ key }}: "{{ value }}"
+{% endfor %}
 {% endif %}
     spec:
 {% if vm.node_selector is defined %}
