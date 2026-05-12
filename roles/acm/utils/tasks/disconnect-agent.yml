@@ -57,12 +57,14 @@
     kind: Pod
     label_selectors:
       - "app=assisted-image-service"
-    field_selectors:
-      - status.phase=Running
     namespace: multicluster-engine
-    wait: true
   register: pod_list
-  until: pod_list | json_query('resources[*].status.phase') | unique == ["Running"]
+  until:
+    - pod_list.resources | length > 0
+    - >
+      pod_list.resources
+      | json_query('[?status.conditions[?type==`Ready` && status==`True`]]')
+      | length == pod_list.resources | length
   retries: 20
   delay: 15
   no_log: true
@@ -73,12 +75,14 @@
     kind: Pod
     label_selectors:
       - "app=assisted-service"
-    field_selectors:
-      - status.phase=Running
     namespace: multicluster-engine
-    wait: true
   register: pod_list
-  until: pod_list | json_query('resources[*].status.phase') | unique == ["Running"]
+  until:
+    - pod_list.resources | length > 0
+    - >
+      pod_list.resources
+      | json_query('[?status.conditions[?type==`Ready` && status==`True`]]')
+      | length == pod_list.resources | length
   retries: 20
   delay: 15
   no_log: true
