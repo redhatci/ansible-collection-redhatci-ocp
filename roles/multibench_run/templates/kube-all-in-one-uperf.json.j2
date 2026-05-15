@@ -1,0 +1,109 @@
+{% set num_uperf = num_uperf | int %}
+{% set ids_str = "1" if num_uperf == 1 else "1-" ~ num_uperf %}
+{% set ep_suffix = "1" if num_uperf == 1 else "1-" ~ num_uperf %}
+{% set config_base = multibench_uperf_config_base %}
+{
+  "schema": { "version": "2023.09.27" },
+  "benchmarks": [
+    {
+      "name": "uperf",
+      "ids": "{{ ids_str }}",
+      "mv-params": {
+        "global-options": [
+          {
+            "name": "common-params",
+            "params": [
+              { "arg": "duration", "vals": ["{{ multibench_uperf_duration | default('180') }}"] },
+              { "arg": "protocol", "vals": ["tcp"] },
+              { "arg": "nthreads", "vals": ["{{ multibench_uperf_nthreads | default('1500') }}"] },
+              { "arg": "ifname", "vals": ["{{ multibench_uperf_ifname | default('eth0') }}"], "role": "server" }
+            ]
+          }
+        ],
+        "sets": [
+          {
+            "include": "common-params",
+            "params": [
+              {% for i in range(1, num_uperf + 1) %}
+              { "arg": "test-type", "vals": ["crr"], "id": "{{ i }}" },
+              { "arg": "wsize", "vals": ["512"], "id": "{{ i }}" },
+              { "arg": "rsize", "vals": ["2048"], "id": "{{ i }}" }{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "endpoints": [
+    {
+      "type": "kube",
+      "user": "kni",
+      "host": "{{ ocp_host }}",
+      "controller-ip-address": "{{ multibench_uperf_controller_ip | default('192.168.5.30') }}",
+      "engines": { "client": "{{ ids_str }}", "server": "{{ ids_str }}" },
+      "config": [
+        {
+          "targets": [{ "role": "client", "ids": "{{ ids_str }}" }],
+          "settings": {
+            "userenv": "stream9",
+            "runtimeClassName": "performance-blueprint-profile",
+            "nodeSelector": {
+              "kubernetes.io/hostname": "worker-1"
+            },
+            "resources": {
+              "requests": { "cpu": "6", "memory": "1024Mi" },
+              "limits": { "cpu": "6", "memory": "1024Mi" }
+            },
+            "securityContext": {
+              "pod": {
+                "sysctls": [
+                  { "name": "net.ipv4.tcp_tw_reuse", "value": "1" }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "targets": [{ "role": "server", "ids": "{{ ids_str }}" }],
+          "settings": {
+            "userenv": "stream9",
+            "runtimeClassName": "performance-blueprint-profile",
+            "nodeSelector": {
+              "kubernetes.io/hostname": "worker-3"
+            },
+            "resources": {
+              "requests": { "cpu": "2", "memory": "1024Mi" },
+              "limits": { "cpu": "2", "memory": "1024Mi" }
+            }
+          }
+        },
+        {
+          "targets": "default",
+          "settings": {
+            "resources": {
+              "requests": { "cpu": "1" },
+              "limits": { "cpu": "1" }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "run-params": {
+    "num-samples": {{ num_samples | int }},
+    "max-sample-failures": 2
+  },
+  "tags": { "dci": "manual" },
+  "tool-params": [
+    { "tool": "ovs" },
+    {
+      "tool": "sysstat",
+      "params": [
+        { "arg": "subtools", "val": "mpstat", "enabled": "yes" }
+      ]
+    },
+    { "tool": "kernel" },
+    { "tool": "procstat" }
+  ]
+}
