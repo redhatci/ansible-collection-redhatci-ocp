@@ -1,6 +1,17 @@
 ---
+- name: Ensure parent directory for PullSecret exists
+  ansible.builtin.file:
+    path: "{{ pullsecret_file | dirname }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0700"
+  tags:
+    - pullsecret
+    - extract
+
 - name: Copy PullSecret into {{ pullsecret_file }}
-  copy:
+  ansible.builtin.copy:
     content: "{{ pullsecret }}"
     dest: "{{ pullsecret_file }}"
     owner: "{{ ansible_user }}"
@@ -12,7 +23,7 @@
     - extract
 
 - name: Get the PullSecret from provisioner into temp file on control machine
-  fetch:
+  ansible.builtin.fetch:
     dest: /tmp/
     flat: true
     src: "{{ dir }}/pull-secret.txt"
@@ -23,7 +34,7 @@
     - extract
 
 - name: Create config dir
-  file:
+  ansible.builtin.file:
     path: "{{ dir }}"
     state: directory
     owner: "{{ ansible_user }}"
@@ -37,7 +48,7 @@
     - extract
 
 - name: Copy the PullSecret from control machine to the registry host
-  copy:
+  ansible.builtin.copy:
     src: /tmp/pull-secret.txt
     dest: "{{ dir }}/pull-secret.txt"
     owner: "{{ ansible_user }}"
@@ -52,7 +63,7 @@
     - extract
 
 - name: Remove the temporary copy of the PullSecret on control machine
-  file:
+  ansible.builtin.file:
     path: /tmp/pull-secret.txt
     state: absent
   when:
@@ -63,7 +74,7 @@
     - extract
 
 - name: Confirm whether or not internet connectivity on provisioner host
-  uri:
+  ansible.builtin.uri:
     url: https://www.redhat.com
     status_code: [-1, 200, 301]
     timeout: 1
@@ -76,13 +87,13 @@
     - extract
 
 - name: Setting Fact of which ansible temp file to use
-  set_fact:
+  ansible.builtin.set_fact:
     tempdir_loc: "{{ disconnected_installer | ternary(registry_host_tempdir, tempdir) }}"
   tags:
     - extract
 
 - name: Extracting the installer
-  command: >
+  ansible.builtin.command: >
     /usr/local/bin/oc adm release extract
     --registry-config {{ pullsecret_file | quote }}
     --command={{ installer_cmd |quote }}
@@ -99,7 +110,7 @@
   changed_when: false
 
 - name: Remove the temporary copy of the PullSecret on registry host
-  file:
+  ansible.builtin.file:
     path: "{{ dir }}"
     state: absent
   when:
@@ -110,7 +121,7 @@
     - extract
 
 - name: OFFLINE mode requires installer pre-extracted
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ webserver_url }}/{{ version }}/{{ installer_cmd }}"
     dest: "{{ tempdir }}/{{ installer_cmd }}"
   register: result
@@ -122,7 +133,7 @@
     - extract
 
 - name: Copy install binary to /usr/local/bin
-  copy:
+  ansible.builtin.copy:
     src: "{{ tempdir_loc }}/{{ installer_cmd }}"
     dest: /usr/local/bin/
     owner: "{{ ansible_user }}"
@@ -134,7 +145,7 @@
   tags: extract
 
 - name: Get the install from registry host into temp file on control machine
-  fetch:
+  ansible.builtin.fetch:
     dest: /tmp/
     flat: true
     src: "{{ tempdir_loc }}/{{ installer_cmd }}"
@@ -144,7 +155,7 @@
     - extract
 
 - name: Copy the install binary from control machine to the provisioner host
-  copy:
+  ansible.builtin.copy:
     src: /tmp/{{ installer_cmd }}
     dest: "/usr/local/bin/{{ installer_cmd }}"
     owner: "{{ ansible_user }}"
@@ -158,7 +169,7 @@
     - extract
 
 - name: Remove the temporary copy of the install binary on control machine
-  file:
+  ansible.builtin.file:
     path: "/tmp/{{ installer_cmd }}"
     state: absent
   when:
