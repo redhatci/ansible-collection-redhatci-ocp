@@ -83,6 +83,7 @@ Name | Description
 [redhatci.ocp.jenkins_job_launcher](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/jenkins_job_launcher/README.md) | Launch Jenkins jobs
 [redhatci.ocp.junit2json](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/junit2json/README.md) | Convert JUnit XML files into JSON for reporting/observability role
 [redhatci.ocp.k8s_best_practices_certsuite](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/k8s_best_practices_certsuite/README.md) | Executes the [Red Hat Best Practices Test Suite for Kubernetes](https://github.com/redhat-best-practices-for-k8s/certsuite) tool.
+[redhatci.ocp.kubevirt_redfish](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/kubevirt_redfish/README.md) | Deploy kubevirt-redfish, a Redfish BMC emulator for KubeVirt virtual machines on OpenShift.
 [redhatci.ocp.kvirt_vm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/kvirt_vm/README.md) | Deployment of Kubevirt virtual machines.
 [redhatci.ocp.label_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/label_nodes/README.md) | Applies labels defined at inventory level to the OCP cluster nodes.
 [redhatci.ocp.manage_firewalld_zone](roles/manage_firewalld_zone/README.md) | Manage a FirewallD zone.

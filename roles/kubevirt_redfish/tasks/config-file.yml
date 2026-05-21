@@ -1,0 +1,20 @@
+---
+- name: Read configuration file
+  ansible.builtin.slurp:
+    src: "{{ kr_config_file }}"
+  register: _kr_config_file_content
+  no_log: true
+
+- name: Create configuration Secret from file
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: kubevirt-redfish-config
+        namespace: "{{ kr_namespace }}"
+      type: Opaque
+      data:
+        config.yaml: "{{ _kr_config_file_content.content }}"
+  no_log: true

@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        3.1.EPOCH
+Version:        3.2.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue May 21 2026 Tony Garcia <tonyg@redhat.com> - 3.2.EPOCH-VERS
+- Add kubevirt_redfish role
+
 * Mon May 11 2026 Tony Garcia <tonyg@redhat.com> - 3.1.EPOCH-VERS
 - Move functionality from acm_setup to acm.utils
 

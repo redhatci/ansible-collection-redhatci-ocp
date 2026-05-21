@@ -1,0 +1,51 @@
+---
+kr_version: v4.22
+kr_image: "registry.redhat.io/container-native-virtualization/kubevirt-redfish-rhel9:{{ kr_version }}"
+kr_helper_image: "registry.access.redhat.com/ubi10/ubi-minimal:latest"
+kr_namespace: "kubevirt-redfish"
+kr_sa_name: "kubevirt-redfish-sa"
+# Options: namespaced, cluster
+kr_scope: "namespaced"
+
+kr_delete_namespace: false
+
+kr_config_file: ""
+
+kr_vm_configs: []
+kr_vm_username: admin
+
+# Options: legacy, enhanced
+kr_system_id_convention: "legacy"
+
+kr_server_host: "0.0.0.0"
+kr_server_port: 8443
+kr_server_tls_enabled: false
+
+kr_log_level: "info"
+kr_redfish_log_level: "INFO"
+# This is a string evaluated by the server as it's passed in an env
+kr_redfish_logging_enabled: "true"
+
+kr_replicas: 1
+kr_image_pull_policy: "Always"
+
+kr_resources_requests_memory: "512Mi"
+kr_resources_requests_cpu: "100m"
+kr_resources_limits_memory: "2Gi"
+kr_resources_limits_cpu: "500m"
+
+kr_datavolume_storage_size: "5Gi"
+kr_datavolume_allow_insecure_tls: true
+kr_datavolume_storage_class: "managed-nfs-storage"
+kr_datavolume_vm_update_timeout: "2m"
+kr_datavolume_iso_download_timeout: "30m"
+
+kr_service_type: "ClusterIP"
+kr_create_route: true
+kr_route_tls_termination: "edge"
+kr_route_insecure_policy: "Redirect"
+
+kr_state: "present"
+
+kr_deployment_wait: true
+kr_deployment_wait_timeout: 300

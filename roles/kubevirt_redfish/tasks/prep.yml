@@ -1,0 +1,51 @@
+---
+- name: Create namespace {{ kr_namespace }}
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ kr_namespace }}"
+
+- name: Create ServiceAccount {{ kr_sa_name }}
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: "{{ kr_sa_name }}"
+        namespace: "{{ kr_namespace }}"
+        labels: "{{ _kr_rbac_labels }}"
+
+- name: Create RBAC role for kubevirt-redfish
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: "{{ (kr_scope == 'cluster') | ternary('ClusterRole', 'Role') }}"
+      metadata:
+        name: kubevirt-redfish-role
+        namespace: "{{ (kr_scope == 'namespaced') | ternary(kr_namespace, omit) }}"
+        labels: "{{ _kr_rbac_labels }}"
+      rules: "{{ _kr_rbac_rules }}"
+
+- name: Create RBAC role binding for kubevirt-redfish
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: "{{ (kr_scope == 'cluster') | ternary('ClusterRoleBinding', 'RoleBinding') }}"
+      metadata:
+        name: kubevirt-redfish-rolebinding
+        namespace: "{{ (kr_scope == 'namespaced') | ternary(kr_namespace, omit) }}"
+        labels: "{{ _kr_rbac_labels }}"
+      subjects:
+        - kind: ServiceAccount
+          name: "{{ kr_sa_name }}"
+          namespace: "{{ kr_namespace }}"
+      roleRef:
+        kind: "{{ (kr_scope == 'cluster') | ternary('ClusterRole', 'Role') }}"
+        name: kubevirt-redfish-role
+        apiGroup: rbac.authorization.k8s.io

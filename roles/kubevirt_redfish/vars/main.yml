@@ -1,0 +1,45 @@
+---
+_kr_rbac_rules:
+  - apiGroups: ["kubevirt.io"]
+    resources:
+      - virtualmachines
+      - virtualmachineinstances
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["kubevirt.io"]
+    resources:
+      - virtualmachines/status
+      - virtualmachineinstances/status
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["kubevirt.io"]
+    resources:
+      - virtualmachines/restart
+      - virtualmachines/start
+      - virtualmachines/stop
+    verbs: ["create"]
+  - apiGroups: ["subresources.kubevirt.io"]
+    resources:
+      - virtualmachineinstances/pause
+      - virtualmachineinstances/unpause
+    verbs: ["create", "update"]
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps", "secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  - apiGroups: ["cdi.kubevirt.io"]
+    resources: ["datavolumes", "volumeimportsources"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list"]
+
+_kr_rbac_labels:
+  app.kubernetes.io/name: kubevirt-redfish
+  app.kubernetes.io/component: rbac

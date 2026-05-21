@@ -1,0 +1,25 @@
+---
+- name: Remove kubevirt-redfish resources
+  ansible.builtin.include_tasks: teardown.yml
+  when:
+    - kr_state == "absent"
+
+- name: Deploy kubevirt-redfish
+  when: kr_state == "present"
+  block:
+    - name: Prepare kubevirt-redfish namespace
+      ansible.builtin.include_tasks: prep.yml
+
+    - name: Apply configuration from file
+      when: kr_config_file | length > 0
+      ansible.builtin.include_tasks: config-file.yml
+
+    - name: Config from variables
+      when:
+        - kr_config_file | length == 0
+        - kr_vm_configs | length > 0
+      ansible.builtin.include_tasks: config-vars.yml
+
+    - name: Deploy kubevirt-redfish workload
+      ansible.builtin.include_tasks: deploy.yml
+      when: kr_config_file | length > 0 or kr_vm_configs | length > 0

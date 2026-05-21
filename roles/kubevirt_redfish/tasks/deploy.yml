@@ -1,0 +1,133 @@
+---
+- name: Create Deployment
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: kubevirt-redfish
+        namespace: "{{ kr_namespace }}"
+        labels:
+          app.kubernetes.io/name: kubevirt-redfish
+          app.kubernetes.io/component: server
+      spec:
+        replicas: "{{ kr_replicas }}"
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: kubevirt-redfish
+            app.kubernetes.io/component: server
+        template:
+          metadata:
+            labels:
+              app.kubernetes.io/name: kubevirt-redfish
+              app.kubernetes.io/component: server
+          spec:
+            serviceAccountName: "{{ kr_sa_name }}"
+            securityContext:
+              runAsNonRoot: true
+            containers:
+              - name: kubevirt-redfish
+                image: "{{ kr_image }}"
+                imagePullPolicy: "{{ kr_image_pull_policy }}"
+                ports:
+                  - name: http
+                    containerPort: "{{ kr_server_port }}"
+                    protocol: TCP
+                env:
+                  - name: CONFIG_PATH
+                    value: "/app/config/config.yaml"
+                  - name: LOG_LEVEL
+                    value: "{{ kr_log_level }}"
+                  - name: REDFISH_LOG_LEVEL
+                    value: "{{ kr_redfish_log_level }}"
+                  - name: REDFISH_LOGGING_ENABLED
+                    value: "{{ kr_redfish_logging_enabled }}"
+                resources:
+                  requests:
+                    memory: "{{ kr_resources_requests_memory }}"
+                    cpu: "{{ kr_resources_requests_cpu }}"
+                  limits:
+                    memory: "{{ kr_resources_limits_memory }}"
+                    cpu: "{{ kr_resources_limits_cpu }}"
+                livenessProbe:
+                  httpGet:
+                    path: /redfish/v1/
+                    port: "{{ kr_server_port }}"
+                    scheme: "{{ kr_server_tls_enabled | bool | ternary('HTTPS', 'HTTP') }}"
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+                readinessProbe:
+                  httpGet:
+                    path: /redfish/v1/
+                    port: "{{ kr_server_port }}"
+                    scheme: "{{ kr_server_tls_enabled | bool | ternary('HTTPS', 'HTTP') }}"
+                  initialDelaySeconds: 5
+                  periodSeconds: 5
+                  timeoutSeconds: 3
+                  failureThreshold: 3
+                securityContext:
+                  runAsNonRoot: true
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                      - "ALL"
+                volumeMounts:
+                  - name: config-volume
+                    mountPath: /app/config
+                    readOnly: true
+            volumes:
+              - name: config-volume
+                secret:
+                  secretName: kubevirt-redfish-config
+    wait: "{{ kr_deployment_wait }}"
+    wait_timeout: "{{ kr_deployment_wait_timeout }}"
+
+- name: Create Service
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: kubevirt-redfish
+        namespace: "{{ kr_namespace }}"
+        labels:
+          app.kubernetes.io/name: kubevirt-redfish
+          app.kubernetes.io/component: server
+      spec:
+        type: "{{ kr_service_type }}"
+        ports:
+          - name: http
+            port: "{{ kr_server_port }}"
+            targetPort: "{{ kr_server_port }}"
+            protocol: TCP
+        selector:
+          app.kubernetes.io/name: kubevirt-redfish
+          app.kubernetes.io/component: server
+
+- name: Create Route
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: route.openshift.io/v1
+      kind: Route
+      metadata:
+        name: kubevirt-redfish
+        namespace: "{{ kr_namespace }}"
+        labels:
+          app.kubernetes.io/name: kubevirt-redfish
+          app.kubernetes.io/component: server
+      spec:
+        port:
+          targetPort: http
+        tls:
+          termination: "{{ kr_route_tls_termination }}"
+          insecureEdgeTerminationPolicy: "{{ kr_route_insecure_policy }}"
+        to:
+          kind: Service
+          name: kubevirt-redfish
+          weight: 100
+  when: kr_create_route | bool
