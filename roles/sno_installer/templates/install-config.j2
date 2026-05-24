@@ -53,6 +53,12 @@ BootstrapInPlace:
 {% else %}
   InstallationDisk: /dev/vda
 {% endif %}
+{% if si_bootstraposimage is defined and si_bootstraposimage|length %}
+  bootstrapOSImage: '{{ si_bootstraposimage }}'
+{% endif %}
+{% if si_clusterosimage is defined and si_clusterosimage|length %}
+  clusterOSImage: '{{ si_clusterosimage }}'
+{% endif %}
 publish: External
 pullSecret: '{{ pullsecret }}'
 sshKey: '{{ key }}'
