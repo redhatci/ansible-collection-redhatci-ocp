@@ -8,6 +8,8 @@
   register: install_status
   retries: 6
   delay: 5
+  until:
+    - install_status.resources | default([]) | length > 0
   no_log: true
 
 - name: Get completion progress
