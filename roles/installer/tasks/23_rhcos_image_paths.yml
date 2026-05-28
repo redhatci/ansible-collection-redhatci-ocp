@@ -3,7 +3,8 @@
   when: release_version is ansible.builtin.version('4.7', '<=')
   block:
     - name: Get COMMIT_ID
-      shell: |
+      ansible.builtin.shell: |
+        set -o pipefail
         /usr/local/bin/{{ installer_cmd }} version | grep '^built from commit' | awk '{print $4}'
       register: commit_id
       tags: rhcospath
@@ -40,7 +41,7 @@
   when: release_version is ansible.builtin.version('4.8', '>=')
   block:
     - name: Extract rhcos.json
-      shell: |
+      ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} coreos print-stream-json
       register: rhcos_json_stream
       retries: 3

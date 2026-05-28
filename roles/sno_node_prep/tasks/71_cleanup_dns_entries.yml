@@ -16,6 +16,7 @@
 
     - name: Verify if there are more config files in NM dnsmasq.d
       ansible.builtin.shell: >
+        set -o pipefail ;
         ls /etc/NetworkManager/dnsmasq.d/ | wc -l
       register: dnsmasqconf
 

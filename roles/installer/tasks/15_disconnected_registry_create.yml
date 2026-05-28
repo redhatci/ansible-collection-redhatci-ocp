@@ -158,7 +158,7 @@
       when: firewall == "iptables"
 
     - name: Save iptables configuration
-      shell: |
+      ansible.builtin.shell: |
         /usr/sbin/iptables-save > /etc/sysconfig/iptables
       become: true
       when: firewall == "iptables"
@@ -214,7 +214,8 @@
       delegate_to: localhost
 
     - name: append auth to pullsecret
-      shell: |
+      ansible.builtin.shell: |
+        set -o pipefail
         echo '{{ pullsecret }}' | jq -c \
           '.auths += {{ disconnected_auth }}'
       register: new_pullsecret

@@ -24,7 +24,7 @@
      -v {{ ts_registry_auth }}:/auths.json:z
      -e KUBECONFIG=/tests/kubeconfig
      {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
-     /bin/bash -c "openshift-tests images --to-repository {{ ts_registry }}/conformance-test
+     /bin/bash -c "set -o pipefail ; openshift-tests images --to-repository {{ ts_registry }}/conformance-test
      | oc image mirror --insecure=true -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
      && openshift-tests run openshift/network/third-party --from-repository {{ ts_registry }}/conformance-test
      --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /logs > /logs/cni_tests_results.log"

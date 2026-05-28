@@ -44,7 +44,8 @@
       no_log: true
 
     - name: append auth to pullsecret
-      shell: |
+      ansible.builtin.shell: |
+        set -o pipefail
         echo '{{ pullsecret }}' | jq -c \
           '.auths += {{ disconnected_auths_b64.content | string | b64decode }}'
       register: new_pullsecret
