@@ -84,10 +84,20 @@
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
+          SS=$(command -v ss 2>/dev/null || true)
+          if [[ -z $SS ]]; then
+            for _p in /usr/sbin/ss /sbin/ss; do
+              if [[ -x $_p ]]; then
+                SS=$_p
+                break
+              fi
+            done
+          fi
+          [[ -n $SS ]] || { echo "ss not found" >&2; exit 1; }
           sleep 0.$(shuf -i 0-999 -n 1)
           while :; do
             port=$(shuf -i 32768-60999 -n 1)
-            ss -lnt | awk '{print $4}' | grep -q ":${port}$" || { echo $port; break; }
+            "$SS" -lnt | awk '{print $4}' | grep -q ":${port}$" || { echo "$port"; break; }
           done
         executable: /bin/bash
       register: _mor_ephemeral_port
