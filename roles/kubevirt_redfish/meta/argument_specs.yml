@@ -1,0 +1,289 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy kubevirt-redfish on OpenShift
+    description: >
+      Deploys the kubevirt-redfish Redfish BMC emulator for KubeVirt
+      virtual machines. Creates namespace, RBAC, configuration secret,
+      deployment, service, and optionally an OpenShift route.
+    options:
+      kr_version:
+        type: str
+        required: false
+        default: v4.22
+        description: >
+          The tag with the version for the image to use to deploy
+          kubevirt-redfish.
+      kr_image:
+        type: str
+        required: false
+        default: "registry.redhat.io/container-native-virtualization/kubevirt-redfish-rhel9:{{ kr_version }}"
+        description: >
+          Container image for kubevirt-redfish server.
+          The user is responsible for ensuring this image is
+          accessible from the cluster (mirrored if needed).
+
+      kr_helper_image:
+        type: str
+        required: false
+        default: "registry.access.redhat.com/ubi10/ubi-minimal:latest"
+        description: >
+          Helper image used by datavolume operations. The user is
+          responsible for ensuring this image is accessible from the
+          cluster (mirrored if needed).
+
+      kr_namespace:
+        type: str
+        required: false
+        default: "kubevirt-redfish"
+        description: Kubernetes namespace for the deployment.
+
+      kr_sa_name:
+        type: str
+        required: false
+        default: "kubevirt-redfish-sa"
+        description: Name of the ServiceAccount to create.
+
+      kr_scope:
+        type: str
+        required: false
+        default: "namespaced"
+        choices:
+          - namespaced
+          - cluster
+        description: >
+          Deployment scope. namespaced creates a Role and RoleBinding
+          in kr_namespace. cluster creates a ClusterRole and
+          ClusterRoleBinding for monitoring VMs across all namespaces.
+
+      kr_config_file:
+        type: path
+        required: false
+        default: ""
+        description: >
+          Path to a pre-built kubevirt-redfish config.yaml file.
+          When set, this file is used as-is for the configuration
+          Secret, and kr_vm_configs and other config variables
+          (kr_server_*, kr_datavolume_*, etc.) are ignored.
+          Mutually exclusive with kr_vm_configs.
+
+      kr_vm_configs:
+        type: list
+        required: false
+        default: []
+        elements: dict
+        description: >
+          List of virtual machine configurations. Each entry defines
+          a VM that kubevirt-redfish will manage via Redfish API.
+          Required when kr_config_file is not set.
+        options:
+          name:
+            type: str
+            required: true
+            description: Name of the virtual machine.
+          namespace:
+            type: str
+            required: true
+            description: Namespace where the virtual machine resides.
+          username:
+            type: str
+            required: false
+            default: admin
+            description: The user for Redfish authentication.
+          bmc_password:
+            type: str
+            required: true
+            description: BMC password for Redfish authentication.
+
+      kr_system_id_convention:
+        type: str
+        required: false
+        default: "legacy"
+        choices:
+          - "legacy"
+          - "enhanced"
+        description: Default system ID convention for chassis.
+
+      kr_server_host:
+        type: str
+        required: false
+        default: "0.0.0.0"
+        description: Bind address for the kubevirt-redfish server.
+
+      kr_server_port:
+        type: int
+        required: false
+        default: 8443
+        description: Port for the kubevirt-redfish server.
+
+      kr_server_tls_enabled:
+        type: bool
+        required: false
+        default: false
+        description: Enable TLS on the kubevirt-redfish server.
+
+      kr_log_level:
+        type: str
+        required: false
+        default: "info"
+        choices:
+          - debug
+          - info
+          - warning
+          - error
+        description: Application log level.
+
+      kr_redfish_log_level:
+        type: str
+        required: false
+        default: "INFO"
+        choices:
+          - DEBUG
+          - INFO
+          - WARNING
+          - ERROR
+        description: Redfish protocol log level.
+
+      kr_redfish_logging_enabled:
+        type: str
+        required: false
+        default: "true"
+        choices:
+          - "true"
+          - "false"
+        description: Enable or disable Redfish protocol logging.
+
+      kr_replicas:
+        type: int
+        required: false
+        default: 1
+        description: Number of deployment replicas.
+
+      kr_image_pull_policy:
+        type: str
+        required: false
+        default: "Always"
+        choices:
+          - Always
+          - IfNotPresent
+          - Never
+        description: Image pull policy for the deployment.
+
+      kr_resources_requests_memory:
+        type: str
+        required: false
+        default: "512Mi"
+        description: Memory request for the container.
+
+      kr_resources_requests_cpu:
+        type: str
+        required: false
+        default: "100m"
+        description: CPU request for the container.
+
+      kr_resources_limits_memory:
+        type: str
+        required: false
+        default: "2Gi"
+        description: Memory limit for the container.
+
+      kr_resources_limits_cpu:
+        type: str
+        required: false
+        default: "500m"
+        description: CPU limit for the container.
+
+      kr_datavolume_storage_size:
+        type: str
+        required: false
+        default: "5Gi"
+        description: Storage size for datavolume operations.
+
+      kr_datavolume_allow_insecure_tls:
+        type: bool
+        required: false
+        default: true
+        description: Allow insecure TLS for datavolume operations.
+
+      kr_datavolume_storage_class:
+        type: str
+        required: false
+        default: "managed-nfs-storage"
+        description: Storage class for datavolume PVCs.
+
+      kr_datavolume_vm_update_timeout:
+        type: str
+        required: false
+        default: "2m"
+        description: Timeout for VM update operations.
+
+      kr_datavolume_iso_download_timeout:
+        type: str
+        required: false
+        default: "30m"
+        description: Timeout for ISO download operations.
+
+      kr_service_type:
+        type: str
+        required: false
+        default: "ClusterIP"
+        choices:
+          - ClusterIP
+          - NodePort
+          - LoadBalancer
+        description: Kubernetes Service type.
+
+      kr_create_route:
+        type: bool
+        required: false
+        default: true
+        description: Create an OpenShift Route for the service.
+
+      kr_route_tls_termination:
+        type: str
+        required: false
+        default: "edge"
+        choices:
+          - edge
+          - passthrough
+          - reencrypt
+        description: TLS termination type for the Route.
+
+      kr_route_insecure_policy:
+        type: str
+        required: false
+        default: "Redirect"
+        choices:
+          - Allow
+          - Redirect
+          - None
+        description: Insecure edge termination policy for the Route.
+
+      kr_state:
+        type: str
+        required: false
+        default: "present"
+        choices:
+          - present
+          - absent
+        description: >
+          Desired state. Set to absent to remove all
+          kubevirt-redfish resources.
+
+      kr_delete_namespace:
+        type: bool
+        required: false
+        description: >
+          Delete also the namespace where kubevirt-redfish was deployed.
+
+      kr_deployment_wait:
+        type: bool
+        required: false
+        default: true
+        description: Wait for deployment to become ready.
+
+      kr_deployment_wait_timeout:
+        type: int
+        required: false
+        default: 300
+        description: Timeout in seconds when waiting for deployment readiness.

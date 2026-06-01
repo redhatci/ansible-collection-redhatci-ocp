@@ -1,0 +1,47 @@
+---
+- name: Delete kubevirt-redfish resources
+  vars:
+    _kr_resources:
+      - api_version: route.openshift.io/v1
+        kind: Route
+        name: kubevirt-redfish
+        namespace: "{{ kr_namespace }}"
+      - api_version: v1
+        kind: Service
+        name: kubevirt-redfish
+        namespace: "{{ kr_namespace }}"
+      - api_version: apps/v1
+        kind: Deployment
+        name: kubevirt-redfish
+        namespace: "{{ kr_namespace }}"
+      - api_version: v1
+        kind: Secret
+        name: kubevirt-redfish-config
+        namespace: "{{ kr_namespace }}"
+      - api_version: rbac.authorization.k8s.io/v1
+        kind: "{{ (kr_scope == 'cluster') | ternary('ClusterRoleBinding', 'RoleBinding') }}"
+        name: kubevirt-redfish-rolebinding
+        namespace: "{{ (kr_scope == 'namespaced') | ternary(kr_namespace, omit) }}"
+      - api_version: rbac.authorization.k8s.io/v1
+        kind: "{{ (kr_scope == 'cluster') | ternary('ClusterRole', 'Role') }}"
+        name: kubevirt-redfish-role
+        namespace: "{{ (kr_scope == 'namespaced') | ternary(kr_namespace, omit) }}"
+      - api_version: v1
+        kind: ServiceAccount
+        name: "{{ kr_sa_name }}"
+        namespace: "{{ kr_namespace }}"
+      - api_version: v1
+        kind: Namespace
+        name: "{{ kr_namespace }}"
+  kubernetes.core.k8s:
+    state: absent
+    api_version: "{{ _kr_res.api_version }}"
+    kind: "{{ _kr_res.kind }}"
+    name: "{{ _kr_res.name }}"
+    namespace: "{{ _kr_res.namespace | default(omit) }}"
+    wait: true
+  when: _kr_res.kind != "Namespace" or (kr_delete_namespace | bool)
+  loop: "{{ _kr_resources }}"
+  loop_control:
+    loop_var: _kr_res
+    label: "{{ _kr_res.kind }}/{{ _kr_res.name }}"

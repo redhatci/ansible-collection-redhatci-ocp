@@ -1,0 +1,64 @@
+---
+- name: Create configuration Secret from variables
+  vars:
+    _kr_config_data: |
+      kubevirt:
+        api_version: "v1"
+        timeout: 30
+
+      server:
+        host: "{{ kr_server_host }}"
+        port: "{{ kr_server_port }}"
+        tls:
+          enabled: "{{ kr_server_tls_enabled }}"
+
+      system_id_convention: "{{ kr_system_id_convention }}"
+
+      chassis:
+      {% for vm in kr_vm_configs %}
+        - name: "{{ vm.name }}"
+          namespace: "{{ vm.namespace }}"
+          service_account: "{{ kr_sa_name }}"
+          vm_selector:
+            labels:
+              redfish-enabled: "true"
+      {% endfor %}
+
+      authentication:
+        users:
+      {% set _users = {} %}
+      {% for vm in kr_vm_configs %}
+      {%   set _uname = vm.username | default(kr_vm_username) %}
+      {%   if _uname not in _users %}
+      {%     set _ = _users.update({_uname: {"password": vm.bmc_password, "chassis": []}}) %}
+      {%   endif %}
+      {%   set _ = _users[_uname]["chassis"].append(vm.name) %}
+      {% endfor %}
+      {% for uname, udata in _users.items() %}
+          - username: "{{ uname }}"
+            password: "{{ udata.password }}"
+            chassis:
+      {% for c in udata.chassis %}
+              - "{{ c }}"
+      {% endfor %}
+      {% endfor %}
+
+      datavolume:
+        storage_size: "{{ kr_datavolume_storage_size }}"
+        allow_insecure_tls: "{{ kr_datavolume_allow_insecure_tls }}"
+        storage_class: "{{ kr_datavolume_storage_class }}"
+        vm_update_timeout: "{{ kr_datavolume_vm_update_timeout }}"
+        iso_download_timeout: "{{ kr_datavolume_iso_download_timeout }}"
+        helper_image: "{{ kr_helper_image }}"
+  kubernetes.core.k8s:
+    state: present
+    definition: |
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: kubevirt-redfish-config
+        namespace: "{{ kr_namespace }}"
+      type: Opaque
+      data:
+        config.yaml: "{{ _kr_config_data | b64encode }}"
+  no_log: true
