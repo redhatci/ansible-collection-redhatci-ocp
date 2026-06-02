@@ -1,16 +1,7 @@
 ---
 - name: Find an available ephemeral port for oc-mirror
-  ansible.builtin.shell:
-    cmd: |
-      set -o pipefail
-      sleep 0.$(shuf -i 0-999 -n 1)
-      while :; do
-        port=$(shuf -i 32768-60999 -n 1)
-        ss -lnt | awk '{print $4}' | grep -q ":${port}$" || { echo $port; break; }
-      done
-    executable: /bin/bash
+  redhatci.ocp.find_available_port:
   register: _om_ephemeral_port
-  changed_when: false
 
 - name: Print ImageSetConfiguration content
   ansible.builtin.debug:
@@ -23,7 +14,7 @@
       {{ _om_tmp_dir.path }}/oc-mirror --v2 --config={{ om_imageset_config_path }}
       --workspace file://{{ _om_tmp_dir.path }}
       docker://{{ om_target }}
-      --port {{ _om_ephemeral_port.stdout }}
+      --port {{ _om_ephemeral_port.port }}
       {% if om_allow_insecure_registries | bool %}
       --dest-tls-verify=false
       --src-tls-verify=false
