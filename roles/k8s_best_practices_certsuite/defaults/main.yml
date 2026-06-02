@@ -101,6 +101,7 @@ kbpc_feedback:
   networking-reserved-partner-ports: ""
   networking-restart-on-reboot-sriov-pod: ""
   networking-undeclared-container-ports-usage: ""
+  networking-unsecured-container-ports: ""
   observability-compatibility-with-next-ocp-release: ""
   observability-container-logging: ""
   observability-crd-status: ""
