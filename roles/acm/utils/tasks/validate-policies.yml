@@ -50,6 +50,7 @@
         msg: >-
           Non-compliant Enforced policies: {{ non_compliant_enforced_policies }}
       when:
+        - utils_policy_strict | bool
         - non_compliant_enforced_policies | length > 0
 
     - name: Fail if any policy is non-compliant
@@ -57,5 +58,5 @@
         msg: >-
           Policies not compliant: {{ non_compliant_policies }}
       when:
-        - utils_policy_strict
+        - utils_policy_strict | bool
         - non_compliant_policies | length > 0
