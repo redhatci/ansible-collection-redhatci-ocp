@@ -81,17 +81,8 @@
       until: _mor_get_oc_mirror is success
 
     - name: Find an available ephemeral port for oc-mirror
-      ansible.builtin.shell:
-        cmd: |
-          set -o pipefail
-          sleep 0.$(shuf -i 0-999 -n 1)
-          while :; do
-            port=$(shuf -i 32768-60999 -n 1)
-            ss -lnt | awk '{print $4}' | grep -q ":${port}$" || { echo $port; break; }
-          done
-        executable: /bin/bash
+      redhatci.ocp.find_available_port:
       register: _mor_ephemeral_port
-      changed_when: false
 
     # Only GA and Candidate builds include signed images
     - name: Mirror the release to the local registry
@@ -102,7 +93,7 @@
           --authfile {{ mor_auths_file }}
           --workspace file://{{ _mor_tmp_dir.path }}
           docker://{{ mor_registry_url }}/{{ mor_registry_path }}
-          --port {{ _mor_ephemeral_port.stdout }}
+          --port {{ _mor_ephemeral_port.port }}
           {% if mor_allow_insecure_registry | bool %}
           --dest-tls-verify=false
           --src-tls-verify=false
