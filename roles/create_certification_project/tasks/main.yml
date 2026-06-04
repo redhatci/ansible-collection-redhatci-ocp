@@ -3,9 +3,8 @@
 # it could be container, operator, cnf, or helmchart
 - name: Validate_ cert_item to be defined
   ansible.builtin.assert:
-    that: "{{ cert_item }} is defined"
-    fail_msg: "The parameter cert_item is required to create cert project"
-    success_msg: "The parameter {{ cert_item }} is present"
+    that: cert_item is defined
+    success_msg: "The parameter cert_item is present"
 
 - name: Reset the project id to handle multiple CNF
   ansible.builtin.set_fact:

@@ -1,13 +1,11 @@
 ---
 - name: "Validate parameters"
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required"
-  with_items:
-    - acm_bmc_user
-    - acm_bmc_address
-    - acm_boot_mac_address
-    - acm_machine_cidr
+    that:
+      - acm_bmc_user is defined
+      - acm_bmc_address is defined
+      - acm_boot_mac_address is defined
+      - acm_machine_cidr is defined
 
 - name: "Create a managed cluster namespace"
   kubernetes.core.k8s:

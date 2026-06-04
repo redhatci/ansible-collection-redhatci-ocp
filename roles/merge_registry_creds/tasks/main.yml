@@ -1,10 +1,9 @@
 ---
 - name: "Check if the list has items"
-  assert:
+  ansible.builtin.assert:
     that:
-      - "{{ mrc_auths is defined }}"
-      - "{{ mrc_auths | length > 0 }}"
-    fail_msg: "A list of JSON auth files is required"
+      - mrc_auths is defined
+      - mrc_auths | length > 0
 
 - name: "Combine auths"
   set_fact:

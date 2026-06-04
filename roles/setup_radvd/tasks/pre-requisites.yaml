@@ -1,27 +1,21 @@
 ---
 - name: "Validate_ required parameters are defined"
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required. See README.md for more details."
-  loop:
-    - setup_radvd_baremetal_bridge
-    - setup_radvd_ipv6_network_cidr
+    that:
+      - setup_radvd_baremetal_bridge is defined
+      - setup_radvd_ipv6_network_cidr is defined
 
 - name: "Validate_ values of interval and lifetime parameters are positive integers"
   ansible.builtin.assert:
-    that: "{{ item }} | int > 0"
-    fail_msg: "The interval parameters must be positive integers."
-  loop:
-    - setup_radvd_min_interval
-    - setup_radvd_max_interval
-    - setup_radvd_default_lifetime
+    that:
+      - setup_radvd_min_interval | int > 0
+      - setup_radvd_max_interval | int > 0
+      - setup_radvd_default_lifetime | int > 0
 
 - name: "Validate_ for intervals, min < max"
   ansible.builtin.assert:
     that: setup_radvd_min_interval | int < setup_radvd_max_interval | int
-    fail_msg: "Min must be less than Max."
 
 - name: "Validate_ that setup_radvd_ipv6_network_cidr is a proper ipv6 network address"
   ansible.builtin.assert:
     that: setup_radvd_ipv6_network_cidr | ansible.utils.ipv6('network')
-    fail_msg: "setup_radvd_ipv6_network_cidr must be a valid IPv6 network address."

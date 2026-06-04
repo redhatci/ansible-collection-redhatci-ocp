@@ -7,7 +7,7 @@
     success_msg: "All chart required parameters are defined"
 
 - name: "Check if chart.values_file is iterable"
-  assert:
+  ansible.builtin.assert:
     that:
       - chart.values_file | type_debug == "list"
       - chart.values_file is iterable

@@ -1,6 +1,6 @@
 ---
 - name: Check for pull_secret
-  assert:
+  ansible.builtin.assert:
     that:
       - pull_secret is defined
       - pull_secret.auths is defined
@@ -10,7 +10,7 @@
   when: pull_secret_check | bool
 
 - name: Check for ssh_public_key
-  assert:
+  ansible.builtin.assert:
     that:
       - ssh_public_key is defined
       - ssh_public_key is string
@@ -20,7 +20,7 @@
   when: ssh_public_check | bool
 
 - name: Check for mirror_certificate
-  assert:
+  ansible.builtin.assert:
     that:
       - mirror_certificate is defined
       - mirror_certificate is string

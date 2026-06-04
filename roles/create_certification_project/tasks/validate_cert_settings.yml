@@ -1,50 +1,44 @@
 ---
 - name: Validate_ cert_settings for container project
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required to update cert project"
-    success_msg: "The parameter {{ item }} is present"
-  with_items:
-    - cert_item.short_description
-    - cert_settings.auto_publish
-    - cert_settings.email_address
-    - cert_settings.build_categories
-    - cert_settings.registry_override_instruct
-    - cert_settings.application_categories
-    - cert_settings.os_content_type
-    - cert_settings.privileged
-    - cert_settings.release_category
-    - cert_settings.repository_description
+    that:
+      - cert_item.short_description is defined
+      - cert_settings.auto_publish is defined
+      - cert_settings.email_address is defined
+      - cert_settings.build_categories is defined
+      - cert_settings.registry_override_instruct is defined
+      - cert_settings.application_categories is defined
+      - cert_settings.os_content_type is defined
+      - cert_settings.privileged is defined
+      - cert_settings.release_category is defined
+      - cert_settings.repository_description is defined
+    success_msg: "All required cert_settings parameters are present"
   when: product_type == 'container'
 
 - name: Validate_ cert_settings for operator project
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required to update cert project"
-    success_msg: "The parameter {{ item }} is present"
-  with_items:
-    - cert_item.short_description
-    - cert_settings.auto_publish
-    - cert_settings.email_address
-    - cert_settings.registry_override_instruct
-    - cert_settings.application_categories
-    - cert_settings.privileged
-    - cert_settings.repository_description
+    that:
+      - cert_item.short_description is defined
+      - cert_settings.auto_publish is defined
+      - cert_settings.email_address is defined
+      - cert_settings.registry_override_instruct is defined
+      - cert_settings.application_categories is defined
+      - cert_settings.privileged is defined
+      - cert_settings.repository_description is defined
+    success_msg: "All required cert_settings parameters are present"
   when: product_type == 'operator'
 
 - name: Validate_ cert_settings for Helm Chart project
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required to update cert project"
-    success_msg: "The parameter {{ item }} is present"
-  with_items:
-    - cert_item.short_description
-    - cert_settings.long_description
-    - cert_settings.email_address
-    - cert_settings.distribution_method
-    - cert_settings.application_categories
-    - cert_settings.distribution_instructions
-    - cert_settings.github_usernames
+    that:
+      - cert_item.short_description is defined
+      - cert_settings.long_description is defined
+      - cert_settings.email_address is defined
+      - cert_settings.distribution_method is defined
+      - cert_settings.application_categories is defined
+      - cert_settings.distribution_instructions is defined
+      - cert_settings.github_usernames is defined
+    success_msg: "All required cert_settings parameters are present"
   when: product_type == 'helmchart'
 
 - name: Validate_ Short Description Length

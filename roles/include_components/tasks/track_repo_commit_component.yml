@@ -1,6 +1,6 @@
 ---
 - name: Assert ic_commit_url
-  assert:
+  ansible.builtin.assert:
     that:
       # Assert that ic_commit_url is a valid URL
       # of the sort https://github.com/organisation/reponame/commit/commit_hash

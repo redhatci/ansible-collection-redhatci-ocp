@@ -1,6 +1,6 @@
 ---
 - name: Check that release_url variable is not defined
-  assert:
+  ansible.builtin.assert:
     that:
       - release_url is not defined
     fail_msg: >
