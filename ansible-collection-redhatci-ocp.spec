@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        3.3.EPOCH
+Version:        3.4.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -54,6 +54,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Jun  5 2026 Frederic Lepied <flepied@redhat.com> - 3.4.EPOCH-VERS
+- Add cmdline_to_json filter plugin
+
 * Tue Jun  2 2026 Tony Garcia <tonyg@redhat.com> - 3.3.EPOCH-VERS
 - Add find_available_port module
 
