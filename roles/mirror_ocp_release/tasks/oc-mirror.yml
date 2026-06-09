@@ -65,9 +65,14 @@
         dest: "{{ _mor_tmp_dir.path }}/ocp-release.yaml"
         mode: "0644"
 
+    - name: Read ImageSetConfiguration content
+      ansible.builtin.slurp:
+        src: "{{ _mor_tmp_dir.path }}/ocp-release.yaml"
+      register: _mor_imageset_config
+
     - name: Print ImageSetConfiguration content
       ansible.builtin.debug:
-        msg: "{{ lookup('file', _mor_tmp_dir.path + '/ocp-release.yaml') }}"
+        msg: "{{ _mor_imageset_config.content | b64decode }}"
 
     - name: Extract latest oc-mirror
       ansible.builtin.unarchive:
@@ -88,7 +93,7 @@
     - name: Mirror the release to the local registry
       ansible.builtin.shell:
         cmd: >
-          umask 0022 &&
+          umask 0022 && env -u REGISTRY_AUTH_FILE
           {{ _mor_tmp_dir.path }}/oc-mirror --v2 --config={{ _mor_tmp_dir.path }}/ocp-release.yaml
           --authfile {{ mor_auths_file }}
           --workspace file://{{ _mor_tmp_dir.path }}
