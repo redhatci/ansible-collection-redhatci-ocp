@@ -2,13 +2,10 @@
 - name: Ensure required variables are defined
   ansible.builtin.assert:
     that:
-      - "{{ item }} is defined"
-    fail_msg: "The variable {{ item }} is not defined. Please define it to proceed."
-  loop:
-    - hostedbm_cluster_name
-    - hostedbm_cluster_base_domain
-    - hostedbm_guest_ingress_ip
-    - hostedbm_kubeconfig_file
+      - hostedbm_cluster_name is defined
+      - hostedbm_cluster_base_domain is defined
+      - hostedbm_guest_ingress_ip is defined
+      - hostedbm_kubeconfig_file is defined
 
 - name: Manage directories for deployment
   ansible.builtin.file:

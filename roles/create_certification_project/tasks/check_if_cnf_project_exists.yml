@@ -1,7 +1,7 @@
 ---
 - name: Check that organization_id is defined
   ansible.builtin.assert:
-    that: "{{ organization_id }} is defined"
+    that: organization_id is defined
 
 - name: Get certification cnf projects for the organization
   vars:

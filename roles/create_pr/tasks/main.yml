@@ -1,16 +1,14 @@
 ---
 - name: Validate_ the presence of parameters
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required"
-  with_items:
-    - product_type
-    - product_name
-    - product_version
-    - fork_name
-    - github_token_path
-    - target_repository
-    - work_dir
+    that:
+      - product_type is defined
+      - product_name is defined
+      - product_version is defined
+      - fork_name is defined
+      - github_token_path is defined
+      - target_repository is defined
+      - work_dir is defined
 
 - name: Validate_ that cert_project_id is provided
   ansible.builtin.fail:

@@ -43,10 +43,8 @@
 
 - name: "Validate_ parameters are defined"
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required. See README.md for more details"
-  loop:
-    - mlb_ipaddr_pool
+    that:
+      - mlb_ipaddr_pool is defined
 
 - name: "Validate_ values of mlb_wait_* are positive integers"
   ansible.builtin.assert:
@@ -70,8 +68,7 @@
 
 - name: "Validate_ parameter mlb_ipaddr_pool is a list"
   ansible.builtin.assert:
-    that: "{{ mlb_ipaddr_pool }} is iterable"
-    fail_msg: "The parameter {{ mlb_ipaddr_pool }} is required to be a list"
+    that: mlb_ipaddr_pool is iterable
 
 - name: "Validate_ values of mlb_bgp_peers are defined"
   ansible.builtin.assert:

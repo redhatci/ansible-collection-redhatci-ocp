@@ -1,12 +1,10 @@
 ---
 - name: Validate_ parameters
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required"
-  with_items:
-    - opcap_target_catalog_source
-    - opcap_catalog_source_namespace
-    - opcap_output_dir
+    that:
+      - opcap_target_catalog_source is defined
+      - opcap_catalog_source_namespace is defined
+      - opcap_output_dir is defined
 
 - name: Create tmp dir for opcap tool
   ansible.builtin.tempfile:

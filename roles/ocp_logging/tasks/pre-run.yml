@@ -19,16 +19,14 @@
 
 - name: "Validate_ parameters"
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required"
-  with_items:
-    - ol_access_key_id
-    - ol_access_key_secret
-    - ol_bucket
-    - ol_endpoint
-    - ol_region
-    - ol_loki_size
-    - ol_storage_class
+    that:
+      - ol_access_key_id is defined
+      - ol_access_key_secret is defined
+      - ol_bucket is defined
+      - ol_endpoint is defined
+      - ol_region is defined
+      - ol_loki_size is defined
+      - ol_storage_class is defined
 
 - name: "Get cluster version"
   kubernetes.core.k8s_info:

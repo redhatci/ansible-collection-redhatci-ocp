@@ -1,12 +1,10 @@
 ---
 - name: "Validate_ parameters"
   ansible.builtin.assert:
-    that: "{{ item }} is defined"
-    fail_msg: "The parameter {{ item }} is required"
-  with_items:
-    - kubeconfig_path
-    - ocp_version_full
-    - dci_charts
+    that:
+      - kubeconfig_path is defined
+      - ocp_version_full is defined
+      - dci_charts is defined
 
 - name: "Get partner name"
   ansible.builtin.include_tasks: get-partner-name.yml
