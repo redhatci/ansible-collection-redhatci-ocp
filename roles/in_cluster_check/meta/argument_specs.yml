@@ -1,0 +1,54 @@
+---
+argument_specs:
+  main:
+    short_description: Run in-cluster checks which generate HTML report file and json result files.
+    description: |
+      Main entry point for the `redhatci.ocp.in_cluster_check` role.
+      Executes the Pen Drive container scanner, discovers HTML reports in the job logs path and json result files.
+      Converts JSON result files into JUnit XML files.
+    options:
+      icc_pullsecret_file:
+        type: str 
+        required: true
+        description: Registry auth file for podman
+      icc_kubeconfig_path:
+        type: str
+        required: true
+        description: Host kubeconfig path mounted into the scanner container
+      icc_image:
+        type: str
+        required: true
+        default: "registry.redhat.io/pen-drive/pen-drive-scanner-rhel9:1.0"
+        description: In-cluster check container image
+      icc_flow:
+        type: str
+        required: false
+        default: "in-cluster-check"
+        description: Flow option passed to the container entrypoint
+        choices:
+          - "in-cluster-check"
+          - "gather"
+          - "scan"
+          - "full-run"
+          - "kube-compare"
+      icc_keep_must_gather_data:
+        type: bool
+        required: true
+        default: false
+        description: Keep must-gather data after the run    
+      icc_json2junit_patterns:
+        type: str
+        required: false
+        default: "*.in_cluster_checks.json"
+        description: Glob patterns used to find JSON result files to convert into JUnit XML
+      icc_json2junit_output_dir:
+        type: str
+        required: false
+        default: "{{ icc_job_logs_path }}"
+        description: Directory where generated JUnit XML files are written
+      icc_json2junit_suite_name:
+        type: str
+        required: false
+        default: "In-cluster checks"
+        description: JUnit testsuite name written into the generated XML report
+...
