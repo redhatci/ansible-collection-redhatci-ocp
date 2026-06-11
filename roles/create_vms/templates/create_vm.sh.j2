@@ -40,6 +40,7 @@ virt-install \
     {% if item.additional_vm_install_options is defined %}
     {{ item.additional_vm_install_options }} \
     {% endif %}
+    --serial file,path=/tmp/{{item.name}}-console.log
     --events on_reboot=restart \
     --autostart \
     --print-xml > /tmp/{{item.name}}.xml
