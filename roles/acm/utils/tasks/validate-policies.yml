@@ -9,14 +9,35 @@
   until:
     - all_policies.resources is defined
     - all_policies.resources | length > 0
+  retries: "{{ utils_policy_retries }}"
+  delay: "{{ utils_policy_delay }}"
+  failed_when: all_policies is undefined
+
+- name: Wait for policy compliance status
+  kubernetes.core.k8s_info:
+    api_version: policy.open-cluster-management.io/v1
+    kind: Policy
+    namespace: "{{ utils_policy_namespace }}"
+  register: all_policies
+  until:
+    - all_policies.resources is defined
+    - all_policies.resources | length > 0
+    - >-
+      all_policies.resources | length
+      == (
+        all_policies.resources | json_query("[?status.compliant].metadata.name") | length
+      )
     - >-
       all_policies.resources
       | json_query("[?status.compliant && status.compliant != 'Compliant' && spec.remediationAction == 'enforce'].metadata.name")
       | length == 0
     - >-
-      all_policies.resources
-      | json_query("[?status.compliant && status.compliant != 'Compliant'].metadata.name")
-      | length == 0
+      not utils_policy_strict | bool
+      or (
+        all_policies.resources
+        | json_query("[?status.compliant && status.compliant != 'Compliant'].metadata.name")
+        | length == 0
+      )
   retries: "{{ utils_policy_retries }}"
   delay: "{{ utils_policy_delay }}"
   failed_when: all_policies is undefined
