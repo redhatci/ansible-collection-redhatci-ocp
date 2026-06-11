@@ -5,7 +5,7 @@
 ni_oc_tool_path: "/usr/local/bin/oc"
 
 # Job logs directory where output files will be saved
-ni_job_logs_path: "/tmp/node-info-logs"
+ni_job_logs_path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/node-info-logs"
 
 # Disconnected environment settings
 ni_disconnected: false

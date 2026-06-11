@@ -183,7 +183,7 @@
   block:
     - name: "Get the openshift client tools from registry host into temp file on control machine"
       ansible.builtin.fetch:
-        dest: /tmp/
+        dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/"
         flat: true
         src: "{{ cache_dir }}/{{ version }}/{{ item }}"
       loop:
@@ -193,7 +193,7 @@
 
     - name: "Copy the openshift client tools from control machine to the provisioner host"
       ansible.builtin.copy:
-        src: "/tmp/{{ item }}"
+        src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ item }}"
         dest: "{{ dir }}/{{ item }}"
         owner: "{{ ansible_user_id }}"
         group: "{{ ansible_user_gid }}"
@@ -205,7 +205,7 @@
 
     - name: "Remove the temporary copy of the openshift clients on control machine"
       ansible.builtin.file:
-        path: "/tmp/{{ item }}"
+        path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ item }}"
         state: absent
       loop:
         - kubectl

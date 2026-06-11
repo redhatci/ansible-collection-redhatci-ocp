@@ -31,7 +31,7 @@
 
 - name: "Create directories"
   ansible.builtin.file:
-    path: "/tmp/vm-{{ host['name'] }}"
+    path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/vm-{{ host['name'] }}"
     state: "directory"
     mode: "0755"
   when: ool_node_not_exists
@@ -39,22 +39,22 @@
 - name: "Prepare cloud-config/user-data-local"
   ansible.builtin.template:
     src: "templates/cloud-config/user-data"
-    dest: "/tmp/vm-{{ host['name'] }}/user-data"
+    dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/vm-{{ host['name'] }}/user-data"
     mode: "0644"
   when: ool_node_not_exists
 
 - name: "Prepare cloud-config/meta-data"
   ansible.builtin.template:
     src: "templates/cloud-config/meta-data"
-    dest: "/tmp/vm-{{ host['name'] }}/meta-data"
+    dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/vm-{{ host['name'] }}/meta-data"
     mode: "0644"
   when: ool_node_not_exists
 
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   ansible.builtin.command: |
-    mkisofs -o /tmp/vm-{{ host['name'] }}.iso -V cidata -r -J
-      --quiet /tmp/vm-{{ host['name'] }}/user-data
-      /tmp/vm-{{ host['name'] }}/meta-data
+    mkisofs -o {{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/vm-{{ host['name'] }}.iso -V cidata -r -J
+      --quiet {{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/vm-{{ host['name'] }}/user-data
+      {{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/vm-{{ host['name'] }}/meta-data
   become: "{{ libvirt_become }}"
   when: ool_node_not_exists
 

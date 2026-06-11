@@ -42,8 +42,8 @@ virt-install \
     {% endif %}
     --events on_reboot=restart \
     --autostart \
-    --print-xml > /tmp/{{item.name}}.xml
+    --print-xml > {{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{item.name}}.xml
 
-virsh define --file /tmp/{{item.name}}.xml
+virsh define --file {{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{item.name}}.xml
 
-virsh detach-device {{ item.name }} /tmp/{{ cluster_name }}_rng_device.xml --config
+virsh detach-device {{ item.name }} {{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ cluster_name }}_rng_device.xml --config
