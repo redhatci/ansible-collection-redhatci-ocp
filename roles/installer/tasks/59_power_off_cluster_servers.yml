@@ -15,8 +15,6 @@
         ( item not in groups['dell_hosts_redfish'] | default([]) )
           and
         ( item not in groups['hp_hosts_redfish'] | default([]) )
-          and
-        ( item not in groups['kvm_hosts_redfish'] | default([]) )
       loop: "{{ groups.masters + groups.workers | default([]) }}"
 
     - name: Check node power status via ipmi to filter off nodes
@@ -85,10 +83,7 @@
       ) or (
         groups['hp_hosts_redfish'] is defined and
         groups['hp_hosts_redfish'] | length > 0
-      ) or (
-        groups['kvm_hosts_redfish'] is defined and
-        groups['kvm_hosts_redfish'] | length > 0
       )
     )
-  loop: "{{ groups['dell_hosts_redfish'] | default([]) + groups['hp_hosts_redfish'] | default([]) + groups['kvm_hosts_redfish'] | default([]) }}"
+  loop: "{{ groups['dell_hosts_redfish'] | default([]) + groups['hp_hosts_redfish'] | default([]) }}"
 ...
