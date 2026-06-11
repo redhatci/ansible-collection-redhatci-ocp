@@ -1,0 +1,7 @@
+---
+icc_image: "registry.redhat.io/pen-drive/pen-drive-scanner-rhel9:1.0"
+icc_flow: "in-cluster-check"
+icc_keep_must_gather_data: false
+icc_tls_verify: false
+icc_pullsecret_file: "{{ pullsecret_file }}"
+icc_kubeconfig_path: "{{ KUBECONFIG_PATH }}"

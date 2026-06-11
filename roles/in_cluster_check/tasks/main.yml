@@ -1,0 +1,33 @@
+---
+- name: Validate in_cluster_check required variables
+  ansible.builtin.assert:
+    that:
+      - icc_pullsecret_file is defined
+      - icc_pullsecret_file | length > 0
+      - icc_kubeconfig_path is defined
+      - icc_kubeconfig_path | length > 0
+      - job_logs.path is defined
+      - job_logs.path | length > 0
+
+- name: Execute in-cluster check container tool
+  ansible.builtin.shell: |
+    podman run --rm \
+      --tls-verify={{ icc_tls_verify | bool | ternary('true', 'false') }} \
+      --authfile={{ icc_pullsecret_file }} \
+      --userns=keep-id --user=$(id -u):$(id -g) \
+      -v {{ icc_kubeconfig_path }}:/opt/app-root/.kube/config:Z,ro \
+      -v "{{ job_logs.path }}:/mg:Z" \
+      --tz=local \
+      {{ icc_image }} {{ icc_flow }} --keep-must-gather-data={{ icc_keep_must_gather_data | bool | ternary('true', 'false') }}
+  register: _icc_tool_result
+
+- name: Identify in-cluster check HTML test report files
+  ansible.builtin.find:
+    paths: "{{ job_logs.path }}"
+    patterns: "*-report.html"
+    file_type: file
+  register: _icc_html_files
+  when:
+    - _icc_tool_result.stdout is defined
+    - _icc_tool_result.rc == 0
+  ignore_errors: true
