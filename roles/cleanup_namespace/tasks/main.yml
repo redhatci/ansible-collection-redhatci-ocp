@@ -1,0 +1,65 @@
+---
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - cn_namespace is defined
+      - cn_namespace | string | length > 0
+
+- name: Find stuck resources in namespace {{ cn_namespace }}
+  redhatci.ocp.cleanup_stuck_resources:
+    namespace: "{{ cn_namespace }}"
+    kubeconfig: "{{ cn_kubeconfig | default(omit, true) }}"
+    skip_api_resources: "{{ cn_skip_api_resources }}"
+  register: _cn_stuck
+
+- name: Report non-available API services
+  ansible.builtin.debug:
+    msg: "WARNING: {{ item }}"
+  loop: "{{ _cn_stuck.non_available_api_services }}"
+  when: _cn_stuck.non_available_api_services | length > 0
+
+- name: Report stuck resources found
+  ansible.builtin.debug:
+    msg: >-
+      Found {{ _cn_stuck.resources | length }} stuck resource(s)
+      in namespace {{ cn_namespace }}
+
+- name: Report stuck resources (dry run)
+  ansible.builtin.debug:
+    msg: >-
+      Would remove finalizers from {{ item.resource_type }}/{{ item.name }}
+      ({{ item.api_version }})
+  loop: "{{ _cn_stuck.resources }}"
+  when:
+    - cn_dry_run | bool
+    - _cn_stuck.resources | length > 0
+
+- name: Remove finalizers from stuck resources
+  kubernetes.core.k8s:
+    api_version: "{{ item.api_version }}"
+    kind: "{{ item.kind }}"
+    name: "{{ item.name }}"
+    namespace: "{{ item.namespace }}"
+    definition:
+      metadata:
+        finalizers: null
+  loop: "{{ _cn_stuck.resources }}"
+  when:
+    - not (cn_dry_run | bool)
+    - _cn_stuck.resources | length > 0
+  register: _cn_patch_result
+  failed_when:
+    - _cn_patch_result is failed
+    - "'NotFound' not in _cn_patch_result.msg | default('')"
+
+- name: Summary
+  ansible.builtin.debug:
+    msg: >-
+      {% if cn_dry_run | bool %}
+      {{ _cn_stuck.resources | length }} stuck resource(s) would have been
+      cleaned up in namespace {{ cn_namespace }}.
+      {% else %}
+      {{ _cn_stuck.resources | length }} stuck resource(s) cleaned up
+      in namespace {{ cn_namespace }}.
+      {% endif %}
+...
