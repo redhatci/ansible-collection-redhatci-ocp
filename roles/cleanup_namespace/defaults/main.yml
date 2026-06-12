@@ -1,0 +1,5 @@
+---
+cn_dry_run: false
+cn_skip_api_resources: []
+cn_remove_all_finalizers: true
+...
