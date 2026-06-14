@@ -18,5 +18,7 @@ eco_gotests_sriov_timeout: "12h"
 eco_gotests_verbose_level: 100
 eco_gotests_test_verbose: true
 
+eco_gotests_kubeconfig_dir: "{{ eco_gotests_kubconfig_dir | default('') }}"
+
 eco_gotests_skip_labels_ptp: []
 eco_gotests_ptp_check_prerequisites: true
