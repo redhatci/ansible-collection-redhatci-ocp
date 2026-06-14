@@ -52,7 +52,7 @@
       ECO_REPORTS_DUMP_DIR: "/tmp/reports"
       ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | bool }}"
     volumes:
-      - "{{ eco_gotests_kubconfig_dir }}/:/kubeconfig:Z"
+      - "{{ eco_gotests_kubeconfig_dir }}/:/kubeconfig:Z"
       - "{{ eco_gotests_log_dir }}/eco_gotests/ptp:/tmp/reports:Z"
     detach: false
     remove: true
