@@ -19,7 +19,7 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 
 - `eco_gotests_test_suites`: List of test suites to run (e.g., `['ptp', 'sriov']`)
 - `eco_gotests_log_dir`: Path where test logs and reports will be stored
-- `eco_gotests_kubconfig_dir`: Directory containing kubeconfig files
+- `eco_gotests_kubeconfig_dir`: Directory containing kubeconfig files
 - `eco_gotests_registry_auth_file`: Path to the registry authentication file
 
 ### Optional Variables
@@ -53,7 +53,7 @@ SRIOV uses the same `eco_gotests_dump_failed_tests` toggle; reports are written 
   gather_facts: false
   vars:
     eco_gotests_test_suites: ['ptp', 'sriov']
-    eco_gotests_kubconfig_dir: /home/user/clusterconfigs
+    eco_gotests_kubeconfig_dir: /home/user/clusterconfigs
     eco_gotests_registry_auth_file: /home/user/pull-secret.json
   roles:
     - redhatci.ocp.eco_gotests
@@ -84,7 +84,7 @@ SRIOV uses the same `eco_gotests_dump_failed_tests` toggle; reports are written 
   vars:
     eco_gotests_test_suites: ['ptp']
     eco_gotests_skip_labels_ptp: ['node-reboot', 'process-restart']
-    eco_gotests_kubconfig_dir: /home/user/clusterconfigs
+    eco_gotests_kubeconfig_dir: /home/user/clusterconfigs
     eco_gotests_registry_auth_file: /home/user/pull-secret.json
   roles:
     - redhatci.ocp.eco_gotests
