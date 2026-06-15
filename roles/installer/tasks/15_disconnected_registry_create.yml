@@ -43,7 +43,7 @@
 
 - name: Get the oc command from provisioner into temp file on control machine
   fetch:
-    dest: /tmp/
+    dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/"
     flat: true
     src: /usr/local/bin/oc
   when: groups['registry_host'][0] != groups['provisioner'][0]
@@ -52,7 +52,7 @@
 
 - name: Copy the oc command from control machine to the registry host
   copy:
-    src: /tmp/oc
+    src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/oc"
     dest: "/usr/local/bin/oc"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -65,7 +65,7 @@
 
 - name: Remove the temporary copy of the oc command on control machine
   file:
-    path: /tmp/oc
+    path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/oc"
     state: absent
   when: groups['registry_host'][0] != groups['provisioner'][0]
   delegate_to: localhost
@@ -419,7 +419,7 @@
 
 - name: Fetch the domain cert from the registry host
   fetch:
-    dest: /tmp/domain.crt
+    dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/domain.crt"
     src: "{{ registry_dir_cert }}/domain.crt"
     flat: true
   delegate_to: "{{ groups['registry_host'][0] }}"
@@ -428,7 +428,7 @@
 
 - name: Copy the domain cert to the provisioner host
   copy:
-    src: /tmp/domain.crt
+    src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/domain.crt"
     dest: "/etc/pki/ca-trust/source/anchors/{{ groups['registry_host'][0] }}-domain.crt"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"

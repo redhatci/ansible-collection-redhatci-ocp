@@ -3,7 +3,7 @@
 # Eco-gotests configuration
 eco_gotests_image: "quay.io/ocp-edge-qe/eco-gotests:latest"
 eco_gotests_test_suites: []  # ['ptp', 'sriov']
-eco_gotests_log_dir: "/tmp/gotests_log"
+eco_gotests_log_dir: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/gotests_log"
 eco_gotests_registry_auth_file: ""
 eco_gotests_dump_failed_tests: false
 

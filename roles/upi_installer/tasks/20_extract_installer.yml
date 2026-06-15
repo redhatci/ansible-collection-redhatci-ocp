@@ -52,14 +52,14 @@
   block:
     - name: "Get the openshift install from registry host into temp file on control machine"
       ansible.builtin.fetch:
-        dest: /tmp/
+        dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/"
         flat: true
         src: "{{ cache_dir }}/{{ version }}/openshift-install"
       delegate_to: "{{ groups['registry_host'][0] }}"
 
     - name: "Copy the openshift installer from control machine to the provisioner host"
       ansible.builtin.copy:
-        src: "/tmp/openshift-install"
+        src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/openshift-install"
         dest: "{{ dir }}/openshift-install"
         owner: "{{ ansible_user_id }}"
         group: "{{ ansible_user_gid }}"
@@ -68,7 +68,7 @@
 
     - name: "Remove the temporary copy of the openshift installer on control machine"
       ansible.builtin.file:
-        path: "/tmp/openshift-install"
+        path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/openshift-install"
         state: absent
       delegate_to: localhost
 

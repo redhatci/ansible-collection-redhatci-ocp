@@ -109,7 +109,7 @@
 # 15_disconnected_registry_create.yml can handle extracting to the registry host already
 - name: Get the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz from registry host into temp file on control machine
   fetch:
-    dest: /tmp/
+    dest: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/"
     flat: true
     src: "{{ temp_directory_loc }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
   when: registry_creation|bool
@@ -119,7 +119,7 @@
 
 - name: Copy the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz from control machine to the provisioner host
   copy:
-    src: "/tmp/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
+    src: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     dest: "{{ tempdir }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -131,7 +131,7 @@
 
 - name: Remove the temporary copy of the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz on control machine
   file:
-    path: "/tmp/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
+    path: "{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     state: absent
   when: registry_creation|bool
   delegate_to: localhost

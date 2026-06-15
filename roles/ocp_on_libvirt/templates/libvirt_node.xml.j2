@@ -40,7 +40,7 @@
 {% endif %}
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
-      <source file='/tmp/vm-{{ host['name'] }}.iso'/>
+      <source file='{{ lookup('env', 'TMPDIR') | default('/tmp', true) }}/vm-{{ host['name'] }}.iso'/>
       <backingStore/>
       <target dev='hda' bus='{{ "sata" if bootmode == "uefi" else "ide" }}'/>
       <readonly/>
