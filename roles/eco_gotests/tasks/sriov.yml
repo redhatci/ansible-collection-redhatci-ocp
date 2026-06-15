@@ -16,7 +16,7 @@
       ECO_VERBOSE_LEVEL: "{{ eco_gotests_verbose_level }}"
       ECO_TEST_VERBOSE: "{{ eco_gotests_test_verbose | lower }}"
       ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | bool }}"
-      ECO_TEST_FEATURES: "sriov"
+      ECO_TEST_FEATURES: "{{ eco_gotests_eco_test_features_sriov }}"
       ECO_TEST_LABELS: "{{ eco_gotests_sriov_labels }}"
       ECO_WORKER_LABEL: "{{ eco_gotests_worker_label }}"
       ECO_CNF_CORE_NET_CNF_MCP_LABEL: "{{ eco_gotests_worker_label }}"

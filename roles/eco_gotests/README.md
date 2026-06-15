@@ -26,12 +26,16 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 
 #### General Configuration
 - `eco_gotests_image` (default: `"quay.io/ocp-edge-qe/eco-gotests:latest"`): Container image for eco-gotests
-- `eco_gotests_skip_labels_ptp` (default: `[]`): List of test labels to skip for PTP tests. These labels will be excluded using Ginkgo label filter syntax (`!label`). Common PTP labels include: `node-reboot`, `process-restart`, `event-consumer`, `events-and-metrics`, `interfaces`, `leap-file`, `ntp-fallback`. Example: `['node-reboot', 'process-restart']` to skip node reboot and process restart tests.
+- `eco_gotests_run_labels_ptp` (default: `[]`): List of Ginkgo labels to **run** for PTP tests. When non-empty, only tests matching these labels are selected; multiple entries are combined with ` && ` (AND). When empty, no positive label filter is applied (all PTP tests in the suite are candidates, subject to skips). Common PTP labels include: `node-reboot`, `process-restart`, `event-consumer`, `events-and-metrics`, `interfaces`, `leap-file`, `ntp-fallback`. Example: `['events-and-metrics']` to run only that category.
+- `eco_gotests_skip_labels_ptp` (default: `[]`): List of test labels to skip for PTP tests. These labels will be excluded using Ginkgo label filter syntax (`!label`). When combined with `eco_gotests_run_labels_ptp`, the effective filter is `run_label_1 && ... && !skip_label_1 && ...`. Common PTP labels are the same as above. Example: `['node-reboot', 'process-restart']` to skip node reboot and process restart tests.
+- `eco_gotests_eco_test_features_ptp` (default: `"ptp"`): Value passed to the eco-gotests container as `ECO_TEST_FEATURES` for the PTP run. Override if you need a different feature selector supported by eco-gotests.
 - `eco_gotests_ptp_check_prerequisites` (default: `true`): Enable or disable PTP prerequisites validation (`PtpOperatorConfig` checks for `enableEventPublisher` and `apiVersion`).
+- `eco_gotests_ptp_run_timeout_sec` (default: `3600`): Maximum wall-clock time in **seconds** that the PTP test container is allowed to run. The role passes this to `containers.podman.podman_container` as `timeout` (Podman `--timeout`); the runtime stops the container when the limit is reached. The default is one hour.
 - `eco_gotests_path` (default: undefined): path where to find the source code to build the container. If this is specified, the `eco_gotests_image` is ignored.
-- `eco_gotests_dump_failed_tests` (default: `false`): When true, eco-gotests sets `ECO_DUMP_FAILED_TESTS` and writes per-failure logs and must-gather under the suite reports directory. 
+- `eco_gotests_dump_failed_tests` (default: `false`): When true, eco-gotests sets `ECO_DUMP_FAILED_TESTS` and writes per-failure logs and must-gather under the suite reports directory.
 
 #### SRIOV Test Configuration
+- `eco_gotests_eco_test_features_sriov` (default: `"sriov"`): Value passed to the eco-gotests container as `ECO_TEST_FEATURES` for the SRIOV run.
 - `eco_gotests_sriov_labels` (default: `"sriov-hw-enabled"`): Test labels for SRIOV tests
 - `eco_gotests_worker_label` (default: `"worker"`): Worker node label
 - `eco_gotests_sriov_interface_list` (default: `"ens3f0np0,ens3f1np1"`): SRIOV interface list
