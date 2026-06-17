@@ -33,7 +33,7 @@
   when: job_id is defined
 
 - name: Get latest tag from Preflight repository
-  uri:
+  ansible.builtin.uri:
     url: "https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/tags"
     method: GET
   register: preflight_github_tags

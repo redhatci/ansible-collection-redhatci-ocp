@@ -11,7 +11,7 @@
   register: pool_info
 
 - name: Get pools to Remove
-  set_fact:
+  ansible.builtin.set_fact:
     pools_to_remove: "{{ pools_to_remove | default({}) | combine({item.name: item.data}) }}"
   loop: "{{
       pool_info.results |
@@ -21,12 +21,12 @@
   when: item.data.path == images_dir
 
 - name: Find images
-  find:
+  ansible.builtin.find:
     path: "{{ images_dir }}"
   register: images_to_remove
 
 - name: Remove file in image dir
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   loop: "{{ images_to_remove.files |  map(attribute='path') | list }}"

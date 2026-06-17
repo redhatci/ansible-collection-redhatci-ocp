@@ -65,7 +65,7 @@
       changed_when: false
 
     - name: Apply SELinux container file context to extracted files
-      ansible.builtin.sefcontext:
+      community.general.sefcontext:
         target: "{{ mor_cache_dir }}/{{ mor_version }}"
         setype: container_file_t
       become: true

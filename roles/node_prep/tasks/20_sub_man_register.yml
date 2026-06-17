@@ -1,6 +1,6 @@
 ---
 - name: Register host via Activation key
-  redhat_subscription:
+  community.general.redhat_subscription:
     activationkey: "{{ activation_key }}"
     org_id: "{{ org_id }}"
     state: present

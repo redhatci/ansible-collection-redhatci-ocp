@@ -1,6 +1,6 @@
 ---
 - name: Generate metal3-config.yaml
-  template:
+  ansible.builtin.template:
     src: metal3-config.j2
     dest: "{{ dir }}/metal3-config.yaml"
     owner: "{{ ansible_user }}"

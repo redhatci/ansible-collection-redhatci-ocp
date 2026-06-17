@@ -1,10 +1,10 @@
 ---
 - name: Check if override path is defined for extra openshift manifests
-  set_fact:
+  ansible.builtin.set_fact:
     extramanifestsopenshift_path: "{{ customize_extramanifestsopenshift_path | default(role_path + '/files/openshift') }}"
 
 - name: Copy Dual-Stack related manifest
-  copy:
+  ansible.builtin.copy:
     src: ipv6-dual-stack-no-upgrade.yml
     dest: "{{ extramanifestsopenshift_path }}/"
     mode: "0644"
@@ -15,7 +15,7 @@
   delegate_to: localhost
 
 - name: Add Manifests from files dir
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ dir }}/openshift/"
     owner: "{{ ansible_user }}"
@@ -25,11 +25,11 @@
   tags: extramanifests
 
 - name: Check if override path is defined for extramanifests
-  set_fact:
+  ansible.builtin.set_fact:
     extramanifests_path: "{{ customize_extramanifests_path | default(role_path + '/files/manifests') }}"
 
 - name: Add Manifests from files dir
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ dir }}/manifests/"
     owner: "{{ ansible_user }}"
@@ -43,11 +43,11 @@
   tags: extramanifests
   block:
     - name: Create chrony.conf
-      set_fact:
+      ansible.builtin.set_fact:
         chronyconfig: "{{ lookup('template', 'chrony.conf.j2') | b64encode }}"
 
     - name: Inject chrony.conf in a machine-config object
-      template:
+      ansible.builtin.template:
         src: etc-chrony.conf.j2
         dest: "{{ dir }}/openshift/98-{{ item }}-etc-chrony.conf.yaml"
         owner: "{{ ansible_user }}"

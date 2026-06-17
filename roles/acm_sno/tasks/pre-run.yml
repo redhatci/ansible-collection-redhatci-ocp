@@ -1,6 +1,6 @@
 ---
 - name: "Fail when acm_user_registry is not defined"
-  fail:
+  ansible.builtin.fail:
     msg: >
       acm_user_registry variable is required for disconnected environments
       Please review the example of the acm_user_registry variable in the role
@@ -16,7 +16,7 @@
   register: acm_crd
 
 - name: "Fail if ACM CRD is not present"
-  fail:
+  ansible.builtin.fail:
     msg: "CRDs are not present"
   when: acm_crd.resources | list | count == 0
 
@@ -28,7 +28,7 @@
   register: _asg
 
 - name: "Fail if AgentServiceConfig is missing"
-  fail:
+  ansible.builtin.fail:
     msg: "An Agent Service config must be running on the Hub/Management Cluster"
   when: _asg.resources | default([]) | length == 0
 

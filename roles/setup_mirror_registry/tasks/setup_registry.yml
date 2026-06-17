@@ -3,12 +3,12 @@
   become: true
   block:
     - name: Install podman
-      package:
+      ansible.builtin.package:
         name: podman
         state: present
 
     - name: Open registry port, zone internal and public, for firewalld
-      firewalld:
+      ansible.posix.firewalld:
         port: "{{ registry_port }}/tcp"
         permanent: true
         immediate: true
@@ -19,7 +19,7 @@
       - public
 
     - name: Create directory to hold the registry files
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         owner:  "{{ file_owner }}"
         group:  "{{ file_group }}"
@@ -32,12 +32,12 @@
         - "{{ registry_dir_data }}"
 
 - name: Generate htpasswd entry
-  command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
+  ansible.builtin.command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
   register: htpass_entry
   changed_when: false
 
 - name: Write htpasswd file
-  copy:
+  ansible.builtin.copy:
     content: '{{ htpass_entry.stdout }}'
     dest: "{{ registry_dir_auth }}/htpasswd"
     owner:  "{{ file_owner }}"
@@ -48,11 +48,11 @@
   become: true
 
 - name: Set disconnected_auth
-  set_fact:
+  ansible.builtin.set_fact:
     disconnected_registry_up: "{{ disconnected_registry_user }}:{{ disconnected_registry_password }}"
 
 - name: Update pull_secret variable
-  set_fact:
+  ansible.builtin.set_fact:
     pull_secret: "{{ pull_secret | combine({
       'auths': pull_secret['auths'] | combine({
         local_registry: {
@@ -63,13 +63,13 @@
       ) }}"
 
 - name: Write updated pull_secret
-  copy:
+  ansible.builtin.copy:
     content: "{{ pull_secret | to_json }}"
     dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
     mode: "0644"
 
 - name: Update bastion
-  set_fact:
+  ansible.builtin.set_fact:
     pull_secret: "{{ pull_secret }}"
   delegate_to: bastion
   delegate_facts: true
@@ -101,7 +101,7 @@
   register: registry_container_info
 
 - name: Setting facts about container
-  set_fact:
+  ansible.builtin.set_fact:
     container_registry_name: "{{ registry_container_info.container.Name }}"
     container_registry_pidfile: "{{ registry_container_info.container.ConmonPidFile }}"
 
@@ -109,7 +109,7 @@
   become: true
   block:
     - name: Copy the systemd service file
-      copy:
+      ansible.builtin.copy:
         content: |
           [Unit]
           Description=Podman container-registry.service
@@ -132,12 +132,12 @@
         scope: system
 
     - name: Start container-registry.service
-      systemd:
+      ansible.builtin.systemd:
         name: container-registry
         enabled: true
         scope: system
 
     - name: Start container-registry.service
-      systemd:
+      ansible.builtin.systemd:
         name: container-registry
         state: started

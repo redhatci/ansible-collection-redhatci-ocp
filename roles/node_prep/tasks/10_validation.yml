@@ -1,6 +1,6 @@
 ---
 - name: Check ansible version
-  fail:
+  ansible.builtin.fail:
     msg: Use Ansible version 2.9 or greater to run this playbook
   when: ansible_version.full is version('2.9.0', '<')
   delegate_to: localhost
@@ -10,7 +10,7 @@
     - fully_disconnected
 
 - name: Ensure Python libraries are installed
-  python_requirements_info:
+  community.general.python_requirements_info:
     dependencies:
       - dnspython
       - netaddr
@@ -21,7 +21,7 @@
     - validation
 
 - name: Fail if Python modules are missing
-  fail:
+  ansible.builtin.fail:
     msg: |
          Missing python module(s) {{ _py_facts.not_found }} on localhost
   when: _py_facts.not_found | length > 0
@@ -30,7 +30,7 @@
     - validation
 
 - name: Fail if version is undefined or empty.
-  fail:
+  ansible.builtin.fail:
     msg: "The version is undefined or empty. Use a value such as 'latest-4.3' or 'latest-4.4' or an explicit version."
   when: (version is undefined) or (version|length == 0)
   tags:
@@ -38,7 +38,7 @@
     - validation
 
 - name: Fail if build is undefined or empty
-  fail:
+  ansible.builtin.fail:
     msg: "The build is undefined or empty. Use a value such as 'dev' or 'ga'."
   when: (build is undefined) or (build|length == 0)
   tags:
@@ -46,7 +46,7 @@
     - validation
 
 - name: Fail if a required install-config variable is undefined or empty.
-  fail:
+  ansible.builtin.fail:
     msg: "A variable regarding install-config.yml is undefined or empty."
   when: >
     (domain is undefined) or (domain|length == 0) or
@@ -58,7 +58,7 @@
     - validation
 
 - name: Fail if both bootstraposimage and clusterosimage variables are empty.
-  fail:
+  ansible.builtin.fail:
     msg: "Both bootraposimage and clusterosimage are empty. Please provide a URL or comment out."
   when:
     - bootstraposimage is defined and bootstraposimage|length == 0
@@ -68,7 +68,7 @@
     - validation
 
 - name: Conditions to set cache_enabled to true
-  set_fact:
+  ansible.builtin.set_fact:
     cache_enabled: true
   when: (cache_enabled|bool) or
         (bootstraposimage is undefined and clusterosimage is defined) or
@@ -80,7 +80,7 @@
     - validation
 
 - name: Conditions to set cache_enabled to false
-  set_fact:
+  ansible.builtin.set_fact:
     cache_enabled: false
   when: (not cache_enabled|bool) or
         (bootstraposimage is defined and clusterosimage is defined)
@@ -89,13 +89,13 @@
     - validation
 
 - name: Check whether caching is enabled
-  debug:
+  ansible.builtin.debug:
     msg: "cache enable {{ cache_enabled }}"
     verbosity: 2
   tags: validation
 
 - name: Verify DNS records for Wildcard (Ingress) VIP
-  set_fact:
+  ansible.builtin.set_fact:
     ingressvip: "{{ lookup('dig', 'foo.apps.{{ cluster |quote }}.{{ domain | quote }}.', '{{ qtype }}' ) }}"
   when: ((ingressvip is undefined) or (ingressvip|length == 0))
   tags:
@@ -103,7 +103,7 @@
     - validation
 
 - name: Verify DNS records for API VIP
-  set_fact:
+  ansible.builtin.set_fact:
     apivip: "{{ lookup('dig', 'api.{{ cluster |quote }}.{{ domain | quote }}.', '{{ qtype }}' ) }}"
   when: ((apivip is undefined) or (apivip|length == 0))
   tags:
@@ -111,19 +111,19 @@
     - validation
 
 - name: Display API VIP IP
-  debug:
+  ansible.builtin.debug:
     msg: "The API VIP is {{ apivip }}"
     verbosity: 2
   tags: validation
 
 - name: Display Ingress VIP IP
-  debug:
+  ansible.builtin.debug:
     msg: "The Wildcard (Ingress) VIP is {{ ingressvip }}"
     verbosity: 2
   tags: validation
 
 - name: Fail if incorrect API VIP
-  fail:
+  ansible.builtin.fail:
     msg: "The API VIP IP seems to be incorrect. Value was NXDOMAIN or empty string."
   when: (apivip == 'NXDOMAIN') or (apivip|length == 0)
   tags:
@@ -131,7 +131,7 @@
     - validation
 
 - name: Fail if incorrect Ingress VIP
-  fail:
+  ansible.builtin.fail:
     msg: "The Ingress VIP IP seems to be incorrect. Value was NXDOMAIN or empty string."
   when: (ingressvip == 'NXDOMAIN') or (ingressvip|length == 0)
   tags:
@@ -139,7 +139,7 @@
     - validation
 
 - name: Set release_url for development envs
-  set_fact:
+  ansible.builtin.set_fact:
     release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview') }}"
   when:
     - build == 'dev'
@@ -149,7 +149,7 @@
     - validation
 
 - name: Set release_url for GA envs
-  set_fact:
+  ansible.builtin.set_fact:
     release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp') }}"
   when:
     - build == 'ga'
@@ -159,7 +159,7 @@
     - validation
 
 - name: Confirm whether or not internet connectivity on provisioner host
-  uri:
+  ansible.builtin.uri:
     url: https://www.redhat.com
     status_code: [-1, 200, 301]
     timeout: 1
@@ -172,7 +172,7 @@
     - validation
 
 - name: Set fact disconnected_registry_auths_file
-  set_fact:
+  ansible.builtin.set_fact:
     disconnected_registry_auths_file: "{{ hostvars[groups['registry_host'][0]]['disconnected_registry_auths_file'] }}"
   when:
     - groups['registry_host'] is defined
@@ -182,7 +182,7 @@
     - validation
 
 - name: Set fact disconnected_registry_mirrors_file
-  set_fact:
+  ansible.builtin.set_fact:
     disconnected_registry_mirrors_file: "{{ hostvars[groups['registry_host'][0]]['disconnected_registry_mirrors_file'] }}"
   when:
     - groups['registry_host'] is defined
@@ -192,7 +192,7 @@
     - validation
 
 - name: Verify Registry host details
-  set_fact:
+  ansible.builtin.set_fact:
     registry_host_exists: true
   when:
     - groups['registry_host'] is defined
@@ -202,7 +202,7 @@
     - create_registry
 
 - name: Check if disconnected_registry_auths_file is set
-  set_fact:
+  ansible.builtin.set_fact:
     dra_set: true
   when:
     - disconnected_registry_auths_file is defined
@@ -213,7 +213,7 @@
     - create_registry
 
 - name: Check if disconnected_registry_mirrors_file is set
-  set_fact:
+  ansible.builtin.set_fact:
     drm_set: true
   when:
     - disconnected_registry_mirrors_file is defined
@@ -224,7 +224,7 @@
     - create_registry
 
 - name: Fail when provision host no online access and registry host not creating registry (can't assume access)
-  fail:
+  ansible.builtin.fail:
     msg: |
          A host with online access is required to create cache webserver.
          Either provision host or registry host (if creating registry)
@@ -248,27 +248,27 @@
     - registry_host_exists
   block:
     - name: Check if Python cryptography libraries are installed
-      python_requirements_info:
+      community.general.python_requirements_info:
         dependencies:
           - cryptography>=1.2.3
       delegate_to: localhost
       register: _py_crypto
 
     - name: Check if Python PyOpenSSL libraries are installed
-      python_requirements_info:
+      community.general.python_requirements_info:
         dependencies:
           - PyOpenSSL>=0.6
       delegate_to: localhost
       register: _py_pyopenssl
 
     - name: "Fail on missing required cryptography libraries cryptography OR PyOpenSSL"
-      fail:
+      ansible.builtin.fail:
         msg: "Required cryptography libraries are missing cryptography OR PyOpenSSL"
       when: (_py_crypto.not_found != []) and
             (_py_pyopenssl.not_found != [] )
 
 - name: Get Release.txt File
-  uri:
+  ansible.builtin.uri:
     url: "{{ release_url }}/{{ version }}/release.txt"
     return_content: true
   register: result
@@ -282,7 +282,7 @@
     - validation
 
 - name: Set Fact for Release Image
-  set_fact:
+  ansible.builtin.set_fact:
     release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
     release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
   tags:
@@ -290,7 +290,7 @@
     - validation
 
 - name: Get the release version
-  debug:
+  ansible.builtin.debug:
     msg: "release version {{ release_version }}"
     verbosity: 2
   tags: validation
@@ -347,7 +347,7 @@
         - validation
 
 - name: Fail if dual-stack is requested and build does not support it
-  fail:
+  ansible.builtin.fail:
     msg: This release {{ release_version }} does not support dual-stack deployments
   when:
     - release_version is ansible.builtin.version('4.6', '<')
@@ -357,7 +357,7 @@
     - validation
 
 - name: Fail if dualstack_baremetal and ipv4_baremetal are both true
-  fail:
+  ansible.builtin.fail:
     msg: Only one of ipv4_baremetal and dualstack_baremetal variables can be true
   when: ipv4_baremetal and dualstack_baremetal
   tags:
@@ -365,7 +365,7 @@
     - validation
 
 - name: Check for valid extcidrnet (IPv4)
-  fail:
+  ansible.builtin.fail:
     msg: extcidrnet should be a valid IPv4 CIDR
   when: not ipv6_enabled|bool and not extcidrnet|ipv4
   tags:
@@ -373,7 +373,7 @@
     - validation
 
 - name: Check for valid extcidrnet (IPv6)
-  fail:
+  ansible.builtin.fail:
     msg: extcidrnet6 should be a valid IPv6 address
   when: ipv6_enabled|bool and not (ipv4_baremetal or dualstack_baremetal) and not extcidrnet6|ipv6
   tags:
@@ -381,7 +381,7 @@
     - validation
 
 - name: Check for valid extcidrnet and extcidrnet6 (Dual-Stack)
-  fail:
+  ansible.builtin.fail:
     msg: extcidrnet should be a valid IPv4 address and extcidrnet6 should be a valid IPv6 address
   when: ipv6_enabled|bool and dualstack_baremetal|bool and not (extcidrnet|ipv4 and extcidrnet6|ipv6)
   tags:
@@ -389,7 +389,7 @@
     - validation
 
 - name: Check if openshift-client-linux-{{ version }}.tar.gz exists
-  uri:
+  ansible.builtin.uri:
     url: "{{ release_url }}/{{ version }}/openshift-client-linux-{{ release_version }}.tar.gz"
     method: HEAD
   until: ocp_client_chk.status == 200
@@ -400,7 +400,7 @@
   tags: validation
 
 - name: Fail if hostgroups not defined in inventory/hosts file
-  fail:
+  ansible.builtin.fail:
     msg: "The masters group is not defined. Please add masters to the inventory/hosts file"
   when: "'masters' not in groups"
   tags:
@@ -408,7 +408,7 @@
     - validation
 
 - name: Set Fact of num of workers and masters based on inventory
-  set_fact:
+  ansible.builtin.set_fact:
     numworkers: "{{ groups['workers'] | default([]) | length }}"
     nummasters: "{{ groups['masters'] | length }}"
   tags:
@@ -416,14 +416,14 @@
     - validation
 
 - name: Gather the rpm package facts
-  package_facts:
+  ansible.builtin.package_facts:
     manager: auto
   tags:
     - always
     - validation
 
 - name: Set Fact for firewall variable
-  set_fact:
+  ansible.builtin.set_fact:
     firewall: "iptables"
   when: "'iptables-services' in ansible_facts.packages"
   tags:
@@ -431,7 +431,7 @@
     - validation
 
 - name: Set Fact for provisioning nic
-  set_fact:
+  ansible.builtin.set_fact:
     masters_prov_nic: "{{ prov_nic }}"
   when:
     - (masters_prov_nic is undefined) or (masters_prov_nic|length == 0)
@@ -441,7 +441,7 @@
     - validation
 
 - name: Fail if DNSVIP not set (OCP 4.4 or lower)
-  fail:
+  ansible.builtin.fail:
     msg: "dnsvip variable is undefined or empty."
   when:
     - release_version is ansible.builtin.version('4.5', '<')
@@ -451,7 +451,7 @@
     - validation
 
 - name: Get all the chassis results from all the hosts
-  redfish_info:
+  community.general.redfish_info:
     category: Chassis
     command: GetChassisInventory
     baseuri: "{{ hostvars[item]['ipmi_address']|ipwrap }}"
@@ -469,7 +469,7 @@
   tags: validation
 
 - name: Get all the firmware results from all the hosts
-  redfish_info:
+  community.general.redfish_info:
     category: Update
     command: GetFirmwareInventory
     baseuri: "{{ hostvars[item]['ipmi_address']|ipwrap }}"
@@ -487,7 +487,7 @@
   tags: validation
   block:
     - name: Add all the hosts that are Dell to a group with iDRAC firmware higher than 4.20.20.20
-      add_host:
+      ansible.builtin.add_host:
         groups: dell_hosts_redfish
         hostname: "{{ chassis_result.results[item|int].item }}"
       loop: "{{ range(0, numworkers|int + nummasters|int, 1)|list }}"
@@ -503,14 +503,14 @@
       delay: 10 # Every 10 seconds
   rescue:
     - name: Attempt to add all hosts that are part of the Dell group failed
-      debug:
+      ansible.builtin.debug:
         msg: 'Adding hosts to dynamic Dell group failed or redfish_inspection was set to false. All inventory systems will use IPMI.'
 
 - name: Adding hosts to to their dynamic HP inventory group
   tags: validation
   block:
     - name: Add all the hosts that are HP to a group
-      add_host:
+      ansible.builtin.add_host:
         groups: hp_hosts_redfish
         hostname: "{{ chassis_result.results[item|int].item }}"
       loop: "{{ range(0, numworkers|int + nummasters|int, 1)|list }}"
@@ -523,11 +523,11 @@
       delay: 10 # Every 10 seconds
   rescue:
     - name: Attempt to add all hosts that are part of the HP group failed
-      debug:
+      ansible.builtin.debug:
         msg: 'Adding hosts to dynamic HP group failed or redfish_inspection was set to false. All inventory systems will use IPMI.'
 
 - name: Fail when provisioningHostIP and bootstrapProvisioningIP are not set when virtualmedia option is enabled
-  fail:
+  ansible.builtin.fail:
     msg: "provisioningHostIP must be set when enable_virtualmedia is set"
   when:
     - enable_virtualmedia|bool
@@ -550,7 +550,7 @@
     - validation
 
 - name: Fail when bootstrapExternalStaticDNS variable is not set when virtualmedia option and static bootstrap booleans are enabled in OCP 4.14 and above
-  fail:
+  ansible.builtin.fail:
     msg: "bootstrapExternalStaticDNS variable must be set when enable_virtualmedia and static_bootstrap_extnet are set in OCP >= 4.14"
   when:
     - release_version is ansible.builtin.version('4.14', '>=')
@@ -562,7 +562,7 @@
     - validation
 
 - name: Verify if master_network_config_template is defined and exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ master_network_config_template }}"
     get_checksum: false
   register: master_nm_template
@@ -573,7 +573,7 @@
     - validation
 
 - name: Fail when master_network_config_template is defined but not exists
-  fail:
+  ansible.builtin.fail:
     msg: "Variable master_network_config_template is defined but path does not exists"
   when:
     - master_network_config_template is defined
@@ -583,7 +583,7 @@
     - validation
 
 - name: Verify if worker_network_config_template is defined and exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ worker_network_config_template }}"
     get_checksum: false
   register: worker_nm_template
@@ -594,7 +594,7 @@
     - validation
 
 - name: Fail when worker_network_config_template is defined but not exists
-  fail:
+  ansible.builtin.fail:
     msg: "Variable worker_network_config_template is defined but path does not exists"
   when:
     - worker_network_config_template is defined

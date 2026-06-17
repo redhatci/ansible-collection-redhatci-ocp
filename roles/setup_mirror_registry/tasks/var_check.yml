@@ -1,15 +1,15 @@
 ---
 - name: Check REGISTRY_HTTP_SECRET is set
-  fail:
+  ansible.builtin.fail:
     msg: REGISTRY_HTTP_SECRET must be set and not empty
   when: (REGISTRY_HTTP_SECRET is not defined) or (REGISTRY_HTTP_SECRET == "")
 
 - name: Check disconnected_registry_user is set
-  fail:
+  ansible.builtin.fail:
     msg: disconnected_registry_user must be set and not empty
   when: (disconnected_registry_user is not defined) or (disconnected_registry_user == "")
 
 - name: Check disconnected_registry_password is set
-  fail:
+  ansible.builtin.fail:
     msg: disconnected_registry_password must be set and not empty
   when: (disconnected_registry_password is not defined) or (disconnected_registry_password == "")

@@ -83,7 +83,7 @@
   register: _eco_gotests_ptp_failed_dump_stat
 
 - name: "Compress failed PTP suite dumps to failed_ptp_suite_test.tar.gz"
-  ansible.builtin.archive:
+  community.general.archive:
     path: "{{ eco_gotests_log_dir }}/eco_gotests/ptp/failed_ptp_suite_test"
     dest: "{{ eco_gotests_log_dir }}/failed_ptp_suite_test.tar.gz"
     format: gz

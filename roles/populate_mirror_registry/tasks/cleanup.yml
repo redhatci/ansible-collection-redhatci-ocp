@@ -2,6 +2,6 @@
 # As "opm" is no longer used, let's remove the tmp directory with the binaries.
 # "oc" and "kubectl" will remain in /usr/local/bin
 - name: Remove tmp directory for all binaries
-  file:
+  ansible.builtin.file:
     path: "{{ binaries_tool_path }}"
     state: absent

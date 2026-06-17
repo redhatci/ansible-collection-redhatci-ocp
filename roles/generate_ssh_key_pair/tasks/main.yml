@@ -1,11 +1,11 @@
 ---
 - name: "Remove temporary ssh_keys folder {{ key_pair_dir }}"
-  file:
+  ansible.builtin.file:
     path: "{{ key_pair_dir }}"
     state: absent
 
 - name: "Make sure {{ fetched_dest }} exists"
-  file:
+  ansible.builtin.file:
     path: "{{ fetched_dest }}"
     state: directory
     recurse: true
@@ -13,7 +13,7 @@
   become: false
 
 - name: Make key dir
-  file:
+  ansible.builtin.file:
     path: "{{ key_pair_dir }}"
     mode: "0775"
     state: directory
@@ -25,7 +25,7 @@
   args: "{{ openssh_keypair_args | default({}) }}"
 
 - name: Fetch SSH Key
-  fetch:
+  ansible.builtin.fetch:
     src: "{{ item }}"
     dest: "{{ fetched_dest }}/ssh_keys/"
     flat: true
@@ -37,13 +37,13 @@
   delegate_to: bastion
   block:
     - name: Make SSH Key folder
-      file:
+      ansible.builtin.file:
         path: "{{ ssh_key_dest_dir }}"
         mode: "0775"
         state: directory
 
     - name: Copy SSH Key files to bastion
-      copy:
+      ansible.builtin.copy:
         src: "{{ fetched_dest }}/ssh_keys/{{ item }}"
         dest: "{{ ssh_key_dest_dir }}/{{ item }}"
         mode: preserve
@@ -52,12 +52,12 @@
         - "{{ public_key_name }}"
 
 - name: "Remove temporary ssh_keys folder {{ key_pair_dir }}"
-  file:
+  ansible.builtin.file:
     path: "{{ key_pair_dir }}"
     state: absent
 
 - name: Distribute public key to all hosts
-  set_fact:
+  ansible.builtin.set_fact:
     ssh_public_key: "{{ lookup('file', fetched_dest + '/ssh_keys/' + public_key_name) }}"
   delegate_to: "{{ item }}"
   delegate_facts: true
