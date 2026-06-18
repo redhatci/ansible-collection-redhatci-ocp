@@ -26,7 +26,7 @@
       ECO_CNF_CORE_NET_FRR_IMAGE: "{{ eco_gotests_frr_image }}"
       REGISTRY_AUTH_FILE: "{{ eco_gotests_registry_auth_file }}"
     volumes:
-      - "{{ eco_gotests_kubconfig_dir }}/:/kubeconfig:Z"
+      - "{{ eco_gotests_kubeconfig_dir }}/:/kubeconfig:Z"
       - "{{ eco_gotests_log_dir }}/eco_gotests/sriov:/tmp/reports:Z"
     detach: false
     remove: true

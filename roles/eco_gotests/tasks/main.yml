@@ -18,12 +18,17 @@
 - name: "Eco_gotests : Run PTP tests"
   ansible.builtin.include_tasks: ptp.yml
   when:
-    - '"ptp" in ( eco_gotests_test_suites | lower )'
+    - '"ptp" in (eco_gotests_test_suites | map("lower") | list)'
 
 - name: "Eco_gotests : Run SRIOV tests"
   ansible.builtin.include_tasks: sriov.yml
   when:
-    - '"sriov" in ( eco_gotests_test_suites | lower )'
+    - '"sriov" in (eco_gotests_test_suites | map("lower") | list)'
+
+- name: "Eco_gotests : Run generic tests"
+  ansible.builtin.include_tasks: generic.yml
+  when:
+    - '"generic" in (eco_gotests_test_suites | map("lower") | list)'
 
 - name: "Rename junit XML files with the feature name"
   ansible.builtin.shell: |
@@ -32,7 +37,7 @@
         -type f \
         -exec sh -c 'mv "$1" "{{ eco_gotests_log_dir }}/{{ item }}_$(basename "$1")"' _ {} \;
     fi
-  loop:
-    - ptp
-    - sriov
+  loop: >-
+    {{ ['ptp', 'sriov'] +
+       ([eco_gotests_generic_features] if eco_gotests_generic_features else []) }}
   changed_when: false
