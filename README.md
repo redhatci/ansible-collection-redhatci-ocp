@@ -159,7 +159,7 @@ Name | Description
 
 Name | Type | Description
 --- | --- | ---
-[redhatci.ocp.cleanup_stuck_resources]() | Module | A module to find namespaced resources stuck in termination
+[redhatci.ocp.cleanup_stuck_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/modules/cleanup_stuck_resources.py) | Module | A module to find namespaced resources stuck in termination
 [redhatci.ocp.find_available_port]() | Module | A module to find an available port in a given range
 [redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
 [redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
