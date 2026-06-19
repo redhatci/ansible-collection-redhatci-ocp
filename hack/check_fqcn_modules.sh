@@ -17,7 +17,7 @@ SCAN_PATHS=("${@:-roles/}")
 # Extracts only the dotted module name, stripping any value after the colon.
 modules=$(
     grep -roh --include='*.yml' --include='*.yaml' \
-        -E '^\s+[a-z_]+\.[a-z_]+\.[a-z_]+:' "${SCAN_PATHS[@]}" |
+        -E '^\s+[a-z0-9_]+\.[a-z0-9_]+\.[a-z0-9_]+:' "${SCAN_PATHS[@]}" |
     sed -E 's/^\s+//; s/:$//' |
     grep -v '^\s*#' |
     sort -u
@@ -48,7 +48,7 @@ if [ "$failed" -gt 0 ]; then
     for f in "${failures[@]}"; do
         # Show where it's used
         locations=$(grep -rl --include='*.yml' --include='*.yaml' \
-            "  ${f}:" "${SCAN_PATHS[@]}" 2>/dev/null | head -5)
+            "[[:space:]]\+${f}:" "${SCAN_PATHS[@]}" 2>/dev/null | head -5)
         echo "  - $f"
         for loc in $locations; do
             echo "      used in: $loc"

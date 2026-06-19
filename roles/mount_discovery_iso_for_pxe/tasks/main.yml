@@ -9,7 +9,7 @@
         state: present
 
     - name: mount the discovery iso
-      ansible.builtin.mount:
+      ansible.posix.mount:
         src: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
         path: /mnt/iso
         state: mounted
@@ -56,7 +56,7 @@
         remote_src: true # Remote because http_host is not required to be ansible controller
 
     - name: Unmount a mounted volume
-      ansible.builtin.mount:
+      ansible.posix.mount:
         path: "{{ item }}"
         state: unmounted
       with_items:
