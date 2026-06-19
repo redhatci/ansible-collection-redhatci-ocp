@@ -46,6 +46,7 @@ Name | Description
 [redhatci.ocp.boot_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/boot_iso/README.md) | Boots nodes to the provided ISO on its vendor.
 [redhatci.ocp.catalog_source](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/catalog_source/README.md) | A Role to deploy an OLM-based CatalogSource
 [redhatci.ocp.chart_verifier](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/chart_verifier/README.md) | Executes the [chart-verifier](https://github.com/redhat-certification/chart-verifier) tool.
+[redhatci.ocp.cleanup_namespace](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/cleanup_namespace/README.md) | Finds and cleans up Kubernetes resources stuck in termination within a namespace.
 [redhatci.ocp.check_resource](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/check_resource/README.md) | Role to wait for the deployment of a given resource
 [redhatci.ocp.cluster_compare](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/cluster_compare/README.md) | A role to facilitate the comparison of Kubernetes cluster configurations by using the kube-compare tool.
 [redhatci.ocp.commit_changes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/commit_changes/README.md) | Automatically stages and commits added, modified, and removed files in a specified directory within a git repository.
@@ -158,6 +159,7 @@ Name | Description
 
 Name | Type | Description
 --- | --- | ---
+[redhatci.ocp.cleanup_stuck_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/modules/cleanup_stuck_resources.py) | Module | A module to find namespaced resources stuck in termination
 [redhatci.ocp.find_available_port]() | Module | A module to find an available port in a given range
 [redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
 [redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary
