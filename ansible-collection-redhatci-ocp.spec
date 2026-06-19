@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Jun 19 2026 Frederic Lepied <flepied@redhat.com> - 3.5.EPOCH-VERS
+- Add generic test runner for eco_gotests role
+
 * Thu Jun 12 2026 Frederic Lepied <flepied@redhat.com> - 3.5.EPOCH-VERS
 - Add cleanup_namespace role and cleanup_stuck_resources module
 
