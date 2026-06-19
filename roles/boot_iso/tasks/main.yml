@@ -3,7 +3,7 @@
 
 - name: "Fail playbook without boot_iso_url"
   ansible.builtin.fail:
-    msg="Missing argument: this playbook requires 'boot_iso' to be defined with the URL of the ISO to boot the systems"
+    msg: "Missing argument: this playbook requires 'boot_iso' to be defined with the URL of the ISO to boot the systems"
   when: boot_iso_url is not defined
   delegate_to: bastion
 

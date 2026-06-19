@@ -203,66 +203,77 @@ def find_yaml_files(base_dirs, exclude_dirs=None):
     return sorted(yaml_files)
 
 
-def get_task_modules(filepath):
-    """Parse YAML and return set of (line_number, module_name) for task-level modules."""
+def get_task_module_locations(filepath):
+    """Parse YAML and return set of (line_number, module_name) tuples.
+
+    Uses yaml.compose_all() to obtain MappingNode start_mark.line for each
+    task-level action key, so that fix_file() can scope rewrites to the
+    exact lines where modules are invoked (avoiding false positives on
+    parameter keys like ``group:`` inside an ``ansible.builtin.file`` task).
+
+    Line numbers are 1-based to match enumerate(lines, 1).
+    """
     try:
         with open(filepath) as f:
             content = f.read()
     except (IOError, OSError):
         return set()
 
-    # Use yaml.compose_all to get node info with line numbers
     try:
-        docs = list(yaml.safe_load_all(content))
+        nodes = list(yaml.compose_all(content))
     except yaml.YAMLError:
         return set()
 
-    task_modules = set()
+    locations = set()
 
-    def process_task(task):
-        """Extract module name from a task dict."""
-        if not isinstance(task, dict):
+    def process_task_node(node):
+        """Extract (line_number, module_name) from a task MappingNode."""
+        if not isinstance(node, yaml.MappingNode):
             return
-        for key in task:
+        for key_node, _value_node in node.value:
+            if not isinstance(key_node, yaml.ScalarNode):
+                continue
+            key = key_node.value
             if key in TASK_KEYWORDS:
                 continue
-            # This key is likely a module name
             if (key in BUILTIN_MODULES or key in NON_BUILTIN_MODULES
                     or key.startswith("ansible.") or "." in key):
-                task_modules.add(key)
+                # start_mark.line is 0-based; store as 1-based
+                locations.add((key_node.start_mark.line + 1, key))
 
-    def process_tasks_list(tasks):
-        """Process a list of tasks."""
-        if not isinstance(tasks, list):
+    def process_tasks_list_node(node):
+        """Process a SequenceNode of tasks."""
+        if not isinstance(node, yaml.SequenceNode):
             return
-        for task in tasks:
-            if not isinstance(task, dict):
+        for item in node.value:
+            if not isinstance(item, yaml.MappingNode):
                 continue
-            process_task(task)
-            # Handle block/rescue/always
-            for section in ("block", "rescue", "always"):
-                if section in task and isinstance(task[section], list):
-                    process_tasks_list(task[section])
+            process_task_node(item)
+            for key_node, value_node in item.value:
+                if not isinstance(key_node, yaml.ScalarNode):
+                    continue
+                # Handle block/rescue/always
+                if key_node.value in ("block", "rescue", "always"):
+                    process_tasks_list_node(value_node)
+                # Descend into play task sections (list-of-plays case)
+                if key_node.value in ("tasks", "pre_tasks",
+                                      "post_tasks", "handlers"):
+                    process_tasks_list_node(value_node)
 
-    for doc in docs:
-        if isinstance(doc, list):
-            process_tasks_list(doc)
-        elif isinstance(doc, dict):
-            # Could be a playbook
-            if "tasks" in doc:
-                process_tasks_list(doc["tasks"])
-            if "pre_tasks" in doc:
-                process_tasks_list(doc["pre_tasks"])
-            if "post_tasks" in doc:
-                process_tasks_list(doc["post_tasks"])
-            if "handlers" in doc:
-                process_tasks_list(doc["handlers"])
-            if "roles" in doc:
-                pass  # roles are not tasks
+    for node in nodes:
+        if isinstance(node, yaml.SequenceNode):
+            process_tasks_list_node(node)
+        elif isinstance(node, yaml.MappingNode):
+            # Could be a playbook with task sections
+            for key_node, value_node in node.value:
+                if isinstance(key_node, yaml.ScalarNode):
+                    if key_node.value in ("tasks", "pre_tasks",
+                                          "post_tasks", "handlers"):
+                        process_tasks_list_node(value_node)
             # Could be a single task
-            process_task(doc)
+            process_task_node(node)
 
-    return task_modules
+    return locations
 
 
 def fix_file(filepath, dry_run=False):
@@ -274,13 +285,14 @@ def fix_file(filepath, dry_run=False):
         print(f"  Error reading {filepath}: {e}")
         return 0
 
-    # Get the set of module names used at task level in this file
-    task_modules = get_task_modules(filepath)
+    # Get (line_number, module_name) tuples for task-level actions
+    task_action_locations = get_task_module_locations(filepath)
 
     lines = list(original_lines)
     changes = 0
 
     for i, line in enumerate(lines):
+        line_no = i + 1  # 1-based to match task_action_locations
         stripped = line.lstrip()
         if not stripped or stripped.startswith("#"):
             continue
@@ -307,10 +319,11 @@ def fix_file(filepath, dry_run=False):
                 break
 
         # 3. Fix action-core: bare builtin module → FQCN
-        # Only fix if this module name was identified as a task-level module
+        # Only fix if this exact line was identified as a task-level action
         for bare, fqcn in BUILTIN_MODULES.items():
             pattern = f"{bare}:"
-            if stripped.startswith(pattern) and bare in task_modules:
+            if (stripped.startswith(pattern)
+                    and (line_no, bare) in task_action_locations):
                 # Don't replace if it's already FQCN
                 if not stripped.startswith(f"ansible.builtin.{bare}:"):
                     new_line = f"{indent}{fqcn}:{stripped[len(pattern):]}"
@@ -321,7 +334,8 @@ def fix_file(filepath, dry_run=False):
         # 4. Fix action: bare non-builtin module → FQCN
         for bare, fqcn in NON_BUILTIN_MODULES.items():
             pattern = f"{bare}:"
-            if stripped.startswith(pattern) and bare in task_modules:
+            if (stripped.startswith(pattern)
+                    and (line_no, bare) in task_action_locations):
                 # Don't replace if already has dots (already FQCN)
                 if "." not in bare:
                     new_line = f"{indent}{fqcn}:{stripped[len(pattern):]}"
