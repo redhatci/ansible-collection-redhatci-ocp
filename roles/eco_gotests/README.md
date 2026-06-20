@@ -54,6 +54,9 @@ SRIOV uses the same `eco_gotests_dump_failed_tests` toggle; reports are written 
 - `eco_gotests_generic_skip_labels` (default: `[]`): List of Ginkgo labels to skip (prefixed with `!` and joined with `&&`).
 - `eco_gotests_generic_env` (default: `{}`): Additional environment variables to pass to the container. Merged on top of the base environment using `combine()`.
 - `eco_gotests_generic_timeout` (default: `'12h'`): Timeout for the test run.
+- `eco_gotests_generic_run_label_operator` (default: `'||'`): Operator used to join run labels. Use `'||'` for OR semantics (default) or `'&&'` for AND semantics (used internally by PTP).
+
+> **Note:** PTP and SRIOV test suites now delegate to the generic runner internally. All PTP/SRIOV user-facing variables remain unchanged — they are mapped to generic runner variables automatically.
 
 ## Example Playbook
 

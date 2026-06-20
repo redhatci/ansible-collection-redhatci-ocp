@@ -17,11 +17,11 @@
     _eco_gotests_generic_test_labels: >-
       {%- if eco_gotests_generic_run_labels | length > 0
       and eco_gotests_generic_skip_labels | length > 0 -%}
-      {{ '(' ~ (eco_gotests_generic_run_labels | join(' || '))
+      {{ '(' ~ (eco_gotests_generic_run_labels | join(' ' ~ eco_gotests_generic_run_label_operator ~ ' '))
       ~ ') && '
       ~ (eco_gotests_generic_skip_labels | map('regex_replace', '^', '!') | join(' && ')) }}
       {%- elif eco_gotests_generic_run_labels | length > 0 -%}
-      {{ eco_gotests_generic_run_labels | join(' || ') }}
+      {{ eco_gotests_generic_run_labels | join(' ' ~ eco_gotests_generic_run_label_operator ~ ' ') }}
       {%- elif eco_gotests_generic_skip_labels | length > 0 -%}
       {{ eco_gotests_generic_skip_labels | map('regex_replace', '^', '!') | join(' && ') }}
       {%- endif -%}
