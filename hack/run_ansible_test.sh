@@ -16,18 +16,6 @@
 
 set -ex
 
-# If docker is actually podman, ensure DOCKER_HOST points to the podman socket
-# so that ansible-test --docker can communicate with the container runtime.
-if [ -z "$DOCKER_HOST" ] && command -v docker &>/dev/null; then
-    real_docker=$(readlink -f "$(command -v docker)")
-    if [[ "$real_docker" == */podman ]]; then
-        podman_sock="/run/user/$(id -u)/podman/podman.sock"
-        if [ -S "$podman_sock" ]; then
-            export DOCKER_HOST="unix://$podman_sock"
-        fi
-    fi
-fi
-
 # when run outside of a GitHub action
 if [ -z "$GITHUB_STEP_SUMMARY" ]; then
     GITHUB_STEP_SUMMARY=/dev/null
