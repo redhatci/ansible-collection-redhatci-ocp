@@ -1,6 +1,6 @@
 ---
 - name: Get node_records for nodes
-  set_fact:
+  ansible.builtin.set_fact:
     node_dns_records: "{{ (node_dns_records | default({})) | combine(
         {
           item: {
@@ -16,7 +16,7 @@
   when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] is defined
 
 - name: Get node_records for node bmc_addresses when it is an IP address
-  set_fact:
+  ansible.builtin.set_fact:
     bmc_dns_records: "{{ (bmc_dns_records | default({})) | combine(
         {
           item: {
@@ -32,7 +32,7 @@
     - hostvars[item]['bmc_ip'] | ansible.utils.ipaddr('bool')
 
 - name: Define bmc_address where required
-  set_fact:
+  ansible.builtin.set_fact:
     bmc_address: "{{ item.data.address }}"
   delegate_to: "{{ item.host }}"
   delegate_facts: true
@@ -41,7 +41,7 @@
     - bmc_dns_records is defined
 
 - name: Get bastions, services (not including registry) when it ansible_host is an IP address
-  include_tasks: create_host_entry.yml
+  ansible.builtin.include_tasks: create_host_entry.yml
   vars:
     entry_address: "{{ hostvars[item]['ansible_fqdn'] }}"
     entry_name: "{{ item }}"
@@ -52,7 +52,7 @@
     - not (hostvars[item]['dns_skip_record'] | default(False)) | bool
 
 - name: Get registry_host when it ansible_host is an IP address
-  include_tasks: create_host_entry.yml
+  ansible.builtin.include_tasks: create_host_entry.yml
   vars:
     entry_address: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
     entry_name: "registry_host"
@@ -63,7 +63,7 @@
     - not (hostvars['registry_host']['dns_skip_record'] | default(False)) | bool
 
 - name: Get vm_hosts when ansible_host is an IP address
-  include_tasks: create_host_entry.yml
+  ansible.builtin.include_tasks: create_host_entry.yml
   vars:
     entry_address: "{{ hostvars[item]['sushy_fqdn'] | default(hostvars[item]['ansible_fqdn']) }}"
     entry_name: "{{ item }}"
@@ -73,7 +73,7 @@
 
 - name: Configure firewall
   become: true
-  import_tasks: configure_firewall.yml
+  ansible.builtin.import_tasks: configure_firewall.yml
 
 - name: Install dnsmasq
   become: true
@@ -82,7 +82,7 @@
     state: present
 
 - name: "Make sure {{ TFTP_ROOT }} exists"
-  file:
+  ansible.builtin.file:
     path: "{{ TFTP_ROOT }}"
     state: directory
     recurse: true
@@ -90,12 +90,12 @@
 
 - name: Configure dnsmasq via NetworkManager
   become: true
-  import_tasks: network-manager.yml
+  ansible.builtin.import_tasks: network-manager.yml
   when: dns_service_name == "NetworkManager"
 
 - name: Configure dnsmasq via dnsmasq
   become: true
-  import_tasks: dnsmasq.yml
+  ansible.builtin.import_tasks: dnsmasq.yml
   when: dns_service_name == "dnsmasq"
 
 - name: "Restart {{ dns_service_name }}"

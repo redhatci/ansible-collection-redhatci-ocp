@@ -45,7 +45,7 @@
     local_branch: "{{ product_name }}"
 
 - name: "Generate a one time use SSH key"
-  ansible.builtin.openssh_keypair:
+  community.crypto.openssh_keypair:
     path: "{{ work_dir }}/ssh_key"
     type: ed25519
     state: present

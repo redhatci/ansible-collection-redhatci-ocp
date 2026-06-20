@@ -1,5 +1,5 @@
 - name: Create inventory host to vm name mapper
-  set_fact:
+  ansible.builtin.set_fact:
     cluster_vm_names: "{{ (cluster_vm_names | default([])) + [item.name] }}"
   loop: "{{ kvm_nodes }}"
 
@@ -12,17 +12,17 @@
   become: true
   block:
     - name: "Install virt-manager"
-      package:
+      ansible.builtin.package:
         name: "{{ virt_packages }}"
         state: present
 
     - name: Start libvirtd
-      service:
+      ansible.builtin.service:
         name: libvirtd
         state: started
 
 - name: Destroy vms
-  import_tasks: destroy_networks.yml
+  ansible.builtin.import_tasks: destroy_networks.yml
   become: true
 
 - name: Get VMs to Remove
@@ -34,22 +34,22 @@
       become: true
 
     - name: VM list
-      debug:
+      ansible.builtin.debug:
         var: vms_list.list_vms
         verbosity: 1
 
     - name: Get filtered vm list
-      set_fact:
+      ansible.builtin.set_fact:
         vms_to_remove: "{{ (vms_to_remove | default([])) + [item] }}"
       loop: "{{ vms_list.list_vms }}"
       when: item in cluster_vm_names
 
 - name: VMS to remove
-  debug:
+  ansible.builtin.debug:
     var: vms_to_remove
     verbosity: 1
 
 - name: Destroy vms
-  import_tasks: destroy_vms.yml
+  ansible.builtin.import_tasks: destroy_vms.yml
   failed_when: false
   become: true

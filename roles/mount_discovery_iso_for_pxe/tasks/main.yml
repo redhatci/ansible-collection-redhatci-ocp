@@ -4,12 +4,12 @@
   block:
 
     - name: Install syslinux
-      package:
+      ansible.builtin.package:
         name: syslinux
         state: present
 
     - name: mount the discovery iso
-      mount:
+      ansible.posix.mount:
         src: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
         path: /mnt/iso
         state: mounted
@@ -17,7 +17,7 @@
         opts: ro,noauto
 
     - name: "Create mount point {{ mount_efiboot_directory }}"
-      file:
+      ansible.builtin.file:
         path: "{{ mount_efiboot_directory }}"
         state: directory
         mode: '0755'
@@ -28,19 +28,19 @@
       changed_when: false
 
     - name: Create grub Configuration File
-      template:
+      ansible.builtin.template:
         src: "./grub.cfg.j2"
         dest: "{{ tftp_root }}/grub.cfg"
         mode: '0644'
 
     - name: Create a directory pxe
-      file:
+      ansible.builtin.file:
         path: "{{ rootfs_directory }}"
         state: directory
         mode: '0755'
 
     - name: Copy mount files to tftp directory
-      copy:
+      ansible.builtin.copy:
         src: "{{ item }}"
         dest: "{{ rootfs_directory }}"
         mode: '0644'
@@ -49,14 +49,14 @@
       with_items: "{{ mounted_iso_files }}"
 
     - name: Copy mount rootfs to http directory
-      copy:
+      ansible.builtin.copy:
         src: "{{ mount_images_directory }}/pxeboot/rootfs.img"
         dest: "{{ rootfs_directory }}"
         mode: '0644'
         remote_src: true # Remote because http_host is not required to be ansible controller
 
     - name: Unmount a mounted volume
-      mount:
+      ansible.posix.mount:
         path: "{{ item }}"
         state: unmounted
       with_items:
@@ -64,7 +64,7 @@
         - "/mnt/iso"
 
     - name: Copy system file to http directory
-      copy:
+      ansible.builtin.copy:
         src: "{{ item }}"
         dest: "{{ rootfs_directory }}"
         mode: '0644'
@@ -76,14 +76,14 @@
   delegate_to: tftp_host
   block:
     - name: Download system files
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item }}" 
         dest: "{{ tftp_root }}"
         mode: '0644'
       with_items: "{{ system_files_to_download }}"
     
     - name: Download tftp files
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item }}"
         dest: "{{ tftp_root }}"
         mode: '0644'

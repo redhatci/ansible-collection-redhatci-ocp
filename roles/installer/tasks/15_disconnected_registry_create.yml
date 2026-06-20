@@ -1,6 +1,6 @@
 ---
 - name: Find any old tmp dirs with OpenShift related binaries on registry host
-  find:
+  ansible.builtin.find:
     paths: /tmp
     patterns: "baremetal-deploy.*"
     file_type: directory
@@ -11,7 +11,7 @@
     - create_registry
 
 - name: Delete any old tmp dirs with OpenShift related binaries on registry host
-  file:
+  ansible.builtin.file:
     path: "{{ item['path'] }}"
     state: absent
   loop: "{{ registry_tmp_results['files'] }}"
@@ -21,7 +21,7 @@
     - create_registry
 
 - name: Find any existing /usr/local/bin OpenShift binaries on registry host
-  find:
+  ansible.builtin.find:
     paths: /usr/local/bin
     patterns: "oc,{{ installer_cmd }},kubectl"
   register: binary_results
@@ -31,7 +31,7 @@
     - create_registry
 
 - name: Remove any existing /usr/local/bin OpenShift binaries on registry host
-  file:
+  ansible.builtin.file:
     path: "{{ item['path'] }}"
     state: absent
   loop: "{{ binary_results['files'] }}"
@@ -42,7 +42,7 @@
     - create_registry
 
 - name: Get the oc command from provisioner into temp file on control machine
-  fetch:
+  ansible.builtin.fetch:
     dest: /tmp/
     flat: true
     src: /usr/local/bin/oc
@@ -51,7 +51,7 @@
     - create_registry
 
 - name: Copy the oc command from control machine to the registry host
-  copy:
+  ansible.builtin.copy:
     src: /tmp/oc
     dest: "/usr/local/bin/oc"
     owner: "{{ ansible_user }}"
@@ -64,7 +64,7 @@
     - create_registry
 
 - name: Remove the temporary copy of the oc command on control machine
-  file:
+  ansible.builtin.file:
     path: /tmp/oc
     state: absent
   when: groups['registry_host'][0] != groups['provisioner'][0]
@@ -73,7 +73,7 @@
     - create_registry
 
 - name: Create tmp directory to store OpenShift binaries on registry host
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
     prefix: "baremetal-deploy."
     suffix: "{{ release_version }}"
@@ -83,7 +83,7 @@
     - create_registry
 
 - name: Set fact for tmp directory on registry host
-  set_fact:
+  ansible.builtin.set_fact:
     tempdir: "{{ registry_tempdir.path }}"
   tags:
     - create_registry
@@ -95,7 +95,7 @@
     - create_registry
   block:
     - name: set cert facts to be easier
-      set_fact:
+      ansible.builtin.set_fact:
         cert_country: "{{ hostvars[groups['registry_host'][0]]['cert_country'] }}"
         cert_state: "{{ hostvars[groups['registry_host'][0]]['cert_state'] }}"
         cert_locality: "{{ hostvars[groups['registry_host'][0]]['cert_locality'] }}"
@@ -103,7 +103,7 @@
         cert_organizational_unit: "{{ hostvars[groups['registry_host'][0]]['cert_organizational_unit'] }}"
 
     - name: Verify the certificate variables are set
-      fail:
+      ansible.builtin.fail:
         msg:
           - "Must specify cert_country, cert_state, cert_locality, cert_organization, and cert_organizational_unit"
           - "cert_country:             {{ cert_country }}"
@@ -128,7 +128,7 @@
         or  ( cert_organizational_unit | trim == '' )
 
     - name: Make sure needed packages are installed
-      package:
+      ansible.builtin.package:
         state: present
         name: "{{ item }}"
       loop:
@@ -136,7 +136,7 @@
       become: true
 
     - name: Open registry port, zone libvirt and public, for firewalld
-      firewalld:
+      ansible.posix.firewalld:
         port: "{{ registry_port }}/tcp"
         permanent: true
         immediate: true
@@ -149,7 +149,7 @@
       when: firewall != "iptables"
 
     - name: Open registry port for iptables
-      iptables:
+      ansible.builtin.iptables:
         chain: INPUT
         protocol: tcp
         destination_port: "{{ registry_port }}"
@@ -164,7 +164,7 @@
       when: firewall == "iptables"
 
     - name: Create directory to hold the registry files
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: directory
         owner: "{{ ansible_user }}"
@@ -178,11 +178,11 @@
       become: true
 
     - name: Generate htpasswd entry
-      command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
+      ansible.builtin.command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
       register: htpass_entry
 
     - name: Write htpasswd file
-      copy:
+      ansible.builtin.copy:
         content: '{{ htpass_entry.stdout }}'
         dest: "{{ registry_dir_auth }}/htpasswd"
         owner: "{{ ansible_user }}"
@@ -191,22 +191,22 @@
         force: true
 
     - name: Set disconnected_auth
-      set_fact:
+      ansible.builtin.set_fact:
         disconnected_registry_up: "{{ disconnected_registry_user }}:{{ disconnected_registry_password }}"
 
     - name: Create registry auth for pullsecret
-      set_fact:
+      ansible.builtin.set_fact:
         disconnected_auth: '  {"{{ local_registry }}": {"auth": "{{ disconnected_registry_up | b64encode }}", "email": "{{ ansible_user }}@redhat.com" } }'
 
     - name: Write auth for disconnected to registry host
-      copy:
+      ansible.builtin.copy:
         content: "{{ disconnected_auth }}"
         dest: "{{ ansible_env.HOME }}/{{ registry_auth_file }}"
         backup: true
         force: true
 
     - name: Write auth for disconnected to localhost
-      copy:
+      ansible.builtin.copy:
         content: "{{ disconnected_auth }}"
         dest: "{{ lookup ('env', 'PWD') }}/{{ registry_auth_file }}"
         backup: true
@@ -221,15 +221,15 @@
       register: new_pullsecret
 
     - name: set pullsecret with new auth
-      set_fact:
+      ansible.builtin.set_fact:
         pullsecret: "  {{ new_pullsecret.stdout }}"
 
     - name: Generate an OpenSSL private key
-      openssl_privatekey:
+      community.crypto.openssl_privatekey:
         path: "{{ registry_dir_cert }}/domain.key"
 
     - name: Generate an OpenSSL CSR
-      openssl_csr:
+      community.crypto.openssl_csr:
         path: "{{ registry_dir_cert }}/domain.csr"
         privatekey_path: "{{ registry_dir_cert }}/domain.key"
         common_name: "{{ groups['registry_host'][0] }}"
@@ -243,14 +243,14 @@
         basic_constraints: ['CA:TRUE']
 
     - name: Generate a selfsigned OpenSSL CA Certificate
-      openssl_certificate:
+      community.crypto.x509_certificate:
         path: "{{ registry_dir_cert }}/domainCA.crt"
         privatekey_path: "{{ registry_dir_cert }}/domain.key"
         csr_path: "{{ registry_dir_cert }}/domain.csr"
         provider: selfsigned
 
     - name: Generate an ownca OpenSSL Certificate
-      openssl_certificate:
+      community.crypto.x509_certificate:
         path: "{{ registry_dir_cert }}/domain.crt"
         ownca_privatekey_path: "{{ registry_dir_cert }}/domain.key"
         csr_path: "{{ registry_dir_cert }}/domain.csr"
@@ -259,7 +259,7 @@
         provider: ownca
 
     - name: Copy cert to pki directory
-      copy:
+      ansible.builtin.copy:
         src: "{{ registry_dir_cert }}/domain.crt"
         dest: /etc/pki/ca-trust/source/anchors/domain.crt
         remote_src: true
@@ -271,7 +271,7 @@
       become: true
 
     - name: Update the CA trust files
-      command: update-ca-trust extract
+      ansible.builtin.command: update-ca-trust extract
       become: true
 
     - name: Create container to serve the registry
@@ -294,16 +294,16 @@
       register: registry_container_info
 
     - name: Setting facts about container
-      set_fact:
+      ansible.builtin.set_fact:
         container_registry_name: "{{ registry_container_info.container.Name }}"
         container_registry_pidfile: "{{ registry_container_info.container.ConmonPidFile }}"
 
     - name: Ensure user specific systemd instance are persistent
-      command: |
+      ansible.builtin.command: |
               /usr/bin/loginctl enable-linger {{ ansible_user }}
 
     - name: Create systemd user directory
-      file:
+      ansible.builtin.file:
         path: "{{ ansible_user_dir }}/.config/systemd/user"
         state: directory
         owner: "{{ ansible_user }}"
@@ -311,7 +311,7 @@
         mode: '0775'
 
     - name: Copy the systemd service file
-      copy:
+      ansible.builtin.copy:
         content: |
           [Unit]
           Description=Podman container-registry.service
@@ -330,47 +330,47 @@
         mode: '0644'
 
     - name: Reload systemd service
-      systemd:
+      ansible.builtin.systemd:
         daemon_reexec: true
         scope: user
       environment:
         DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
     - name: Enable container-registry.service
-      systemd:
+      ansible.builtin.systemd:
         name: container-registry
         enabled: true
         scope: user
       environment:
         DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
     - name: Start container-registry.service
-      systemd:
+      ansible.builtin.systemd:
         name: container-registry
         state: started
         scope: user
       environment:
         DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
     - name: Read in the contents of domain.crt
-      slurp:
+      ansible.builtin.slurp:
         src: "{{ registry_dir_cert }}/domain.crt"
       register: domain_cert_b64
 
     - name: Set trustbundle fact to contents of domain.crt
-      set_fact:
+      ansible.builtin.set_fact:
         trustbundle: "{{ domain_cert_b64.content | string | b64decode }}"
 
     - name: Create mirrorred registry information
-      set_fact:
+      ansible.builtin.set_fact:
         install_config_appends: "{{ lookup('template', 'install-config-appends.j2') }}"
 
     - name: Create {{ install_config_appends_file }}
-      copy:
+      ansible.builtin.copy:
         content: "{{ install_config_appends }}"
         dest: "{{ ansible_env.HOME }}/{{ install_config_appends_file }}"
         backup: true
         force: true
 
     - name: Create {{ install_config_appends_file }} on localhost
-      copy:
+      ansible.builtin.copy:
         content: "{{ install_config_appends }}"
         dest: "{{ lookup ('env', 'PWD') }}/{{ install_config_appends_file }}"
         backup: true
@@ -378,7 +378,7 @@
       delegate_to: localhost
 
     - name: Information
-      debug:
+      ansible.builtin.debug:
         msg:
           - "To reuse this disconnected registry for other deployments, you must do the following:"
           - "Add the authentication from either "
@@ -391,13 +391,13 @@
           - "    install-config.yaml file."
 
     - name: Create temporary pullsecret file
-      copy:
+      ansible.builtin.copy:
         content: "{{ pullsecret }}"
         dest: "{{ ansible_env.HOME }}/pullsecret.txt"
         force: true
 
     - name: Mirror remote registry to local
-      command:
+      ansible.builtin.command:
         '
         /usr/local/bin/oc adm release mirror
           -a "{{ ansible_env.HOME }}/pullsecret.txt"
@@ -407,18 +407,18 @@
           '
 
     - name: Remove temporary pullsecret file
-      file:
+      ansible.builtin.file:
         path: "{{ ansible_env.HOME }}/pullsecret.txt"
         state: absent
 
 - name: Set fact to pull oc installer from disconnected registry
-  set_fact:
+  ansible.builtin.set_fact:
     disconnected_installer: "{{ local_registry }}/{{ local_repo }}:{{ release_version }}"
   tags:
     - create_registry
 
 - name: Fetch the domain cert from the registry host
-  fetch:
+  ansible.builtin.fetch:
     dest: /tmp/domain.crt
     src: "{{ registry_dir_cert }}/domain.crt"
     flat: true
@@ -427,7 +427,7 @@
     - create_registry
 
 - name: Copy the domain cert to the provisioner host
-  copy:
+  ansible.builtin.copy:
     src: /tmp/domain.crt
     dest: "/etc/pki/ca-trust/source/anchors/{{ groups['registry_host'][0] }}-domain.crt"
     owner: "{{ ansible_user }}"
@@ -438,7 +438,7 @@
     - create_registry
 
 - name: Update the CA trust files on the provisioner host
-  command: update-ca-trust extract
+  ansible.builtin.command: update-ca-trust extract
   become: true
   tags:
     - create_registry

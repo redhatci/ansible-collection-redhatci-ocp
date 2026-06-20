@@ -80,7 +80,7 @@
     mode: "0755"
 
 - name: Set SELinux context under the consoles directory
-  ansible.builtin.sefcontext:
+  community.general.sefcontext:
     target: '/var/lib/libvirt/consoles(/.*)?'
     setype: svirt_home_t
   become: true

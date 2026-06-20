@@ -57,5 +57,5 @@
       changed_when: false
 
     - name: Fail properly because installation was not completed
-      fail:
+      ansible.builtin.fail:
         msg: "Installation was not completed"

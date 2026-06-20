@@ -1,6 +1,6 @@
 ---
 - name: Enable and restart Services
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: restarted
     enabled: true
@@ -10,7 +10,7 @@
   tags: services
 
 - name: Enable Services (iptables)
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: restarted
     enabled: true
@@ -21,7 +21,7 @@
   when: firewall == "iptables"
 
 - name: Enable Services (firewalld)
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: started
     enabled: true

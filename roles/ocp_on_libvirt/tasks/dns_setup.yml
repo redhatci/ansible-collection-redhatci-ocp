@@ -48,7 +48,7 @@
   become: "{{ libvirt_become }}"
 
 - name: Use local dnsmasq for name resolution
-  ansible.builtin.ini_file:
+  community.general.ini_file:
     path: /etc/NetworkManager/conf.d/dnsmasq.conf
     section: main
     option: dns

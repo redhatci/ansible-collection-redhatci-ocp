@@ -1,10 +1,10 @@
 ---
 - name: Check if override path is defined for customize_filesystem
-  set_fact:
+  ansible.builtin.set_fact:
     custom_path: "{{ customize_node_filesystems | default( role_path + '/files/customize_filesystem' ) }}"
 
 - name: Verify if {{ custom_path }}/master/worker is empty
-  find:
+  ansible.builtin.find:
     paths: "{{ custom_path }}/{{ item }}"
     recurse: true
     follow: true
@@ -21,11 +21,11 @@
   block:
 
     - name: Create OpenShift Ignition Configs
-      shell: |
+      ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} create ignition-configs
 
     - name: Copy Ignition Config Files
-      copy:
+      ansible.builtin.copy:
         src: "{{ dir }}/{{ item }}.ign"
         dest: "{{ dir }}/{{ item }}.ign.orig"
         remote_src: true
@@ -34,13 +34,13 @@
         - "worker"
 
     - name: Copy customize_filesystem to tempdir
-      copy:
+      ansible.builtin.copy:
         src: "{{ custom_path }}/"
         dest: "{{ tempdir }}/customize_filesystem"
         force: true
 
     - name: Cleanup Any .gitkeep Files in the Fake Root
-      file:
+      ansible.builtin.file:
         path: "{{ tempdir }}/customize_filesystem/{{ item }}/.gitkeep"
         state: absent
         follow: true
@@ -50,7 +50,7 @@
       become: true
 
     - name: Augment Ignition Config Files
-      script: |
+      ansible.builtin.script: |
         filetranspile-1.1.1.py -i {{ dir }}/{{ item }}.ign.orig -f {{ tempdir }}/customize_filesystem/{{ item }} -o {{ dir }}/{{ item }}.ign
       args:
         executable: python3
@@ -60,7 +60,7 @@
       become: true
 
     - name: Create backup of ignition config files
-      copy:
+      ansible.builtin.copy:
         src: "{{ dir }}/{{ item }}.ign"
         dest: "{{ dir }}/{{ item }}.ign.bkup"
         owner: "{{ ansible_user }}"

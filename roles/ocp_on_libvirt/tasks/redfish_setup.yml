@@ -1,5 +1,5 @@
 - name: Set hardware vendor to "kvm"
-  set_fact:
+  ansible.builtin.set_fact:
     vendor: kvm
     bmc_user: "{{ vbmc_user }}"
     bmc_password: "{{ vbmc_pass }}"

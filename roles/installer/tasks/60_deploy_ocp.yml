@@ -1,18 +1,18 @@
 ---
 - name: Add Kubeconfig to Ansible User .bashrc
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ ansible_user_dir }}/.bashrc"
     line: "export KUBECONFIG={{ dir }}/auth/kubeconfig"
   tags: install
 
 - name: Show File to monitor for installation status
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Preparing to deploy the OpenShift cluster."
       - "You can tail the logs at {{ dir }}/.openshift_install.log on {{ groups['provisioner'][0] }} to monitor the progress."
 
 - name: Deploy OpenShift Cluster
-  shell: |
+  ansible.builtin.shell: |
     /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug create cluster
   when:
     - increase_bootstrap_timeout is not defined
@@ -25,7 +25,7 @@
   tags: install
   block:
     - name: Run OpenShift Cluster install as async task
-      shell: |
+      ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug create cluster
       async: 3600
       poll: 0
@@ -33,13 +33,13 @@
       register: installer_result
 
     - name: Wait for kubeconfig file
-      wait_for:
+      ansible.builtin.wait_for:
         path: "{{ dir }}/auth/kubeconfig"
         timeout: 90
         msg: Timeout waiting for kubeconfig file
 
     - name: Wait for Bootstrap Complete
-      shell: |
+      ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for bootstrap-complete
       register: wait_for_bootstrap_result
       until: wait_for_bootstrap_result is succeeded
@@ -47,7 +47,7 @@
       delay: 1
 
     - name: Wait for Install Complete
-      shell: |
+      ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for install-complete
       register: wait_for_install_result
       until: wait_for_install_result is succeeded

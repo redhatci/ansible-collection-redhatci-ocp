@@ -1,6 +1,6 @@
 ---
 - name: Resources cleanup
-  include_tasks: cleanup.yml
+  ansible.builtin.include_tasks: cleanup.yml
 
 - name: Create the Namespace
   kubernetes.core.k8s:

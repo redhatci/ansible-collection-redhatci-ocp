@@ -1,6 +1,6 @@
 ---
 - name: Check if creating a new disconnected registry and registry exists
-  set_fact:
+  ansible.builtin.set_fact:
     registry_creation: true
   when:
     - not dra_set
@@ -8,7 +8,7 @@
     - registry_host_exists
 
 - name: Find any old tmp dirs with OpenShift related binaries
-  find:
+  ansible.builtin.find:
     paths: /tmp
     patterns: "baremetal-deploy.*"
     file_type: directory
@@ -18,7 +18,7 @@
     - getoc
 
 - name: Delete any old tmp dirs with OpenShift related binaries
-  file:
+  ansible.builtin.file:
     path: "{{ item['path'] }}"
     state: absent
   loop: "{{ tmp_results['files'] }}"
@@ -27,7 +27,7 @@
     - getoc
 
 - name: Find any existing /usr/local/bin OpenShift binaries
-  find:
+  ansible.builtin.find:
     paths: /usr/local/bin
     patterns: "oc,{{ installer_cmd }},kubectl"
   register: binary_results
@@ -36,7 +36,7 @@
     - getoc
 
 - name: Remove any existing /usr/local/bin OpenShift binaries
-  file:
+  ansible.builtin.file:
     path: "{{ item['path'] }}"
     state: absent
   loop: "{{ binary_results['files'] }}"
@@ -46,7 +46,7 @@
     - getoc
 
 - name: Create tmp directory to store OpenShift binaries
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
     prefix: "baremetal-deploy."
     suffix: "{{ release_version }}"
@@ -63,12 +63,12 @@
   tags: getoc
 
 - name: Set fact for tmp directory
-  set_fact:
+  ansible.builtin.set_fact:
     tempdir: "{{ tempdiroutput.path }}"
   tags: getoc
 
 - name: Create tmp directory to store OpenShift binaries on registry host
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
     prefix: "baremetal-deploy."
     suffix: "{{ release_version }}"
@@ -79,20 +79,20 @@
     - getoc
 
 - name: Set fact for tmp directory on registry host
-  set_fact:
+  ansible.builtin.set_fact:
     registry_host_tempdir: "{{ registryhost_tempdir.path }}"
   when: registry_creation|bool
   tags:
     - getoc
 
 - name: Setting Fact of which ansible temp file to use
-  set_fact:
+  ansible.builtin.set_fact:
     temp_directory_loc: "{{ (registry_creation) | ternary(registry_host_tempdir, tempdir) }}"
   tags:
     - getoc
 
 - name: Get the ocp client tar gunzip file
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ release_url }}/{{ version }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     dest: "{{ temp_directory_loc }}"
     owner: "{{ ansible_user }}"
@@ -108,7 +108,7 @@
 # If the registry host got the tar, lets just copy it to the prov host
 # 15_disconnected_registry_create.yml can handle extracting to the registry host already
 - name: Get the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz from registry host into temp file on control machine
-  fetch:
+  ansible.builtin.fetch:
     dest: /tmp/
     flat: true
     src: "{{ temp_directory_loc }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
@@ -118,7 +118,7 @@
     - getoc
 
 - name: Copy the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz from control machine to the provisioner host
-  copy:
+  ansible.builtin.copy:
     src: "/tmp/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     dest: "{{ tempdir }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     owner: "{{ ansible_user }}"
@@ -130,7 +130,7 @@
     - getoc
 
 - name: Remove the temporary copy of the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz on control machine
-  file:
+  ansible.builtin.file:
     path: "/tmp/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     state: absent
   when: registry_creation|bool
@@ -139,7 +139,7 @@
     - getoc
 
 - name: "Untar the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ tempdir }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     dest: "{{ tempdir }}"
     owner: "{{ ansible_user }}"
@@ -149,7 +149,7 @@
   tags: getoc
 
 - name: Copy oc binary to /usr/local/bin
-  copy:
+  ansible.builtin.copy:
     src: "{{ tempdir }}/{{ item }}"
     dest: /usr/local/bin/
     owner: "{{ ansible_user }}"

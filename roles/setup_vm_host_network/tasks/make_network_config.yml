@@ -4,7 +4,7 @@
   when: vm_vlan_tag is defined
   block:
     - name: Build vlan interface definition
-      set_fact:
+      ansible.builtin.set_fact:
         vlan_interface:
           name: "{{ vm_vlan_name }}"
           type: vlan
@@ -13,11 +13,11 @@
             tag: "{{ vm_vlan_tag }}"
 
     - name: Set vm_bridge_port_name as vlan interface name
-      set_fact:
+      ansible.builtin.set_fact:
         vm_bridge_port_name: "{{ vm_vlan_name }}"
 
 - name: Build bridge interface definition and add to interfaces list
-  set_fact:
+  ansible.builtin.set_fact:
     network_config_interfaces:
       - type: linux-bridge
         name: "{{ vm_bridge_name }}"
@@ -31,11 +31,11 @@
             name: "{{ vm_bridge_port_name }}"
 
 - name: Append vlan to network_config_interfaces
-  set_fact:
+  ansible.builtin.set_fact:
     network_config_interfaces: "{{ network_config_interfaces + [vlan_interface] }}"
   when: vm_vlan_tag is defined
 
 - name: Build network_config
-  set_fact:
+  ansible.builtin.set_fact:
     network_config:
       interfaces: "{{ network_config_interfaces }}"
