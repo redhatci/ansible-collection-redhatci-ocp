@@ -189,6 +189,7 @@
         group: "{{ ansible_user }}"
         backup: true
         force: true
+        mode: "0640"
 
     - name: Set disconnected_auth
       ansible.builtin.set_fact:
@@ -204,6 +205,7 @@
         dest: "{{ ansible_env.HOME }}/{{ registry_auth_file }}"
         backup: true
         force: true
+        mode: "0640"
 
     - name: Write auth for disconnected to localhost
       ansible.builtin.copy:
@@ -211,6 +213,7 @@
         dest: "{{ lookup ('env', 'PWD') }}/{{ registry_auth_file }}"
         backup: true
         force: true
+        mode: "0640"
       delegate_to: localhost
 
     - name: append auth to pullsecret
@@ -368,6 +371,7 @@
         dest: "{{ ansible_env.HOME }}/{{ install_config_appends_file }}"
         backup: true
         force: true
+        mode: "0644"
 
     - name: Create {{ install_config_appends_file }} on localhost
       ansible.builtin.copy:
@@ -375,6 +379,7 @@
         dest: "{{ lookup ('env', 'PWD') }}/{{ install_config_appends_file }}"
         backup: true
         force: true
+        mode: "0644"
       delegate_to: localhost
 
     - name: Information
@@ -395,6 +400,7 @@
         content: "{{ pullsecret }}"
         dest: "{{ ansible_env.HOME }}/pullsecret.txt"
         force: true
+        mode: "0600"
 
     - name: Mirror remote registry to local
       ansible.builtin.command:

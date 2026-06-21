@@ -20,6 +20,7 @@
     dest: "{{ dir }}/openshift/"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+    mode: "0644"
   with_fileglob:
     - "{{ extramanifestsopenshift_path }}/*"
   tags: extramanifests
@@ -34,6 +35,7 @@
     dest: "{{ dir }}/manifests/"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+    mode: "0644"
   with_fileglob:
     - "{{ extramanifests_path }}/*"
   tags: extramanifests
@@ -52,6 +54,7 @@
         dest: "{{ dir }}/openshift/98-{{ item }}-etc-chrony.conf.yaml"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
+        mode: "0644"
       with_items:
         - master
         - worker
