@@ -1,0 +1,82 @@
+---
+- name: "Validate generic runner configuration"
+  ansible.builtin.assert:
+    that:
+      - eco_gotests_generic_features | length > 0
+    fail_msg: "eco_gotests_generic_features must be set when using the 'generic' test suite"
+    success_msg: "Generic runner configured for feature: {{ eco_gotests_generic_features }}"
+
+- name: "Create reports directory for generic tests: {{ eco_gotests_generic_features }}"
+  ansible.builtin.file:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}"
+    state: directory
+    mode: '0755'
+
+- name: "Run eco-gotests generic tests: {{ eco_gotests_generic_features }}"
+  vars:
+    _eco_gotests_generic_test_labels: >-
+      {%- if eco_gotests_generic_run_labels | length > 0
+      and eco_gotests_generic_skip_labels | length > 0 -%}
+      {{ '(' ~ (eco_gotests_generic_run_labels | join(' ' ~ eco_gotests_generic_run_label_operator ~ ' '))
+      ~ ') && '
+      ~ (eco_gotests_generic_skip_labels | map('regex_replace', '^', '!') | join(' && ')) }}
+      {%- elif eco_gotests_generic_run_labels | length > 0 -%}
+      {{ eco_gotests_generic_run_labels | join(' ' ~ eco_gotests_generic_run_label_operator ~ ' ') }}
+      {%- elif eco_gotests_generic_skip_labels | length > 0 -%}
+      {{ eco_gotests_generic_skip_labels | map('regex_replace', '^', '!') | join(' && ') }}
+      {%- endif -%}
+    _eco_gotests_generic_base_env:
+      KUBECONFIG: "/kubeconfig/kubeconfig"
+      ECO_TEST_FEATURES: "{{ eco_gotests_generic_features }}"
+      REGISTRY_AUTH_FILE: "{{ eco_gotests_registry_auth_file }}"
+      ECO_TEST_LABELS: "{{ _eco_gotests_generic_test_labels }}"
+      ECO_REPORTS_DUMP_DIR: "/tmp/reports"
+      ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | bool }}"
+  containers.podman.podman_container:
+    name: "eco-gotests-{{ eco_gotests_generic_features }}-{{ eco_gotests_date }}"
+    image: "{{ eco_gotests_image }}"
+    pull: newer
+    state: started
+    interactive: true
+    network_mode: host
+    uidmap:
+      - "0:1:1000"
+      - "1000:0:1"
+    env: "{{ _eco_gotests_generic_base_env | combine(eco_gotests_generic_env) }}"
+    volumes:
+      - "{{ eco_gotests_kubeconfig_dir }}/:/kubeconfig:Z"
+      - "{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}:/tmp/reports:Z"
+    detach: false
+    remove: true
+    command: ["--timeout={{ eco_gotests_generic_timeout }}", "--keep-going"]
+  failed_when: false
+
+- name: "Stat failed suite dump directory: {{ eco_gotests_generic_features }}"
+  ansible.builtin.stat:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}/failed_{{ eco_gotests_generic_features }}_suite_test"
+  register: _eco_gotests_generic_failed_dump_stat
+
+- name: "Compress failed suite dumps: {{ eco_gotests_generic_features }}"
+  community.general.archive:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}/failed_{{ eco_gotests_generic_features }}_suite_test"
+    dest: "{{ eco_gotests_log_dir }}/failed_{{ eco_gotests_generic_features }}_suite_test.tar.gz"
+    format: gz
+    mode: "0644"
+  when:
+    - eco_gotests_dump_failed_tests | bool
+    - _eco_gotests_generic_failed_dump_stat.stat.exists | default(false)
+    - _eco_gotests_generic_failed_dump_stat.stat.isdir | default(false)
+
+- name: "Remove failed suite dump directory after compression: {{ eco_gotests_generic_features }}"
+  ansible.builtin.file:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}/failed_{{ eco_gotests_generic_features }}_suite_test"
+    state: absent
+  when:
+    - eco_gotests_dump_failed_tests | bool
+    - _eco_gotests_generic_failed_dump_stat.stat.exists | default(false)
+    - _eco_gotests_generic_failed_dump_stat.stat.isdir | default(false)
+
+- name: "Remove temporary testrun report file: {{ eco_gotests_generic_features }}"
+  ansible.builtin.file:
+    path: "{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}/report_testrun.xml"
+    state: absent

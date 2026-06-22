@@ -1,6 +1,6 @@
 # eco_gotests
 
-This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) for OpenShift CNF (Cloud Native Functions) testing, specifically for PTP (Precision Time Protocol) and SRIOV (Single Root I/O Virtualization) test suites.
+This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) for OpenShift CNF (Cloud Native Functions) testing. It supports PTP (Precision Time Protocol), SRIOV (Single Root I/O Virtualization), and a generic test runner for any eco-gotests feature with configurable label filtering.
 
 ## Requirements
 
@@ -17,9 +17,9 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 
 ### Required Variables
 
-- `eco_gotests_test_suites`: List of test suites to run (e.g., `['ptp', 'sriov']`)
+- `eco_gotests_test_suites`: List of test suites to run (e.g., `['ptp', 'sriov', 'generic']`)
 - `eco_gotests_log_dir`: Path where test logs and reports will be stored
-- `eco_gotests_kubconfig_dir`: Directory containing kubeconfig files
+- `eco_gotests_kubeconfig_dir`: Directory containing kubeconfig files
 - `eco_gotests_registry_auth_file`: Path to the registry authentication file
 
 ### Optional Variables
@@ -48,6 +48,16 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 
 SRIOV uses the same `eco_gotests_dump_failed_tests` toggle; reports are written at `/tmp/reports` in the container, mapped to `{{ eco_gotests_log_dir }}/eco_gotests/sriov` on the host.
 
+#### Generic Test Runner Configuration
+- `eco_gotests_generic_features` (default: `''`): The ECO_TEST_FEATURES value (e.g., `'network'`, `'ran'`). **Required** when using `'generic'` in `eco_gotests_test_suites`.
+- `eco_gotests_generic_run_labels` (default: `[]`): List of Ginkgo labels to run (joined with `||`). Example: `['lacp-bond-stability']`.
+- `eco_gotests_generic_skip_labels` (default: `[]`): List of Ginkgo labels to skip (prefixed with `!` and joined with `&&`).
+- `eco_gotests_generic_env` (default: `{}`): Additional environment variables to pass to the container. Merged on top of the base environment using `combine()`.
+- `eco_gotests_generic_timeout` (default: `'12h'`): Timeout for the test run.
+- `eco_gotests_generic_run_label_operator` (default: `'||'`): Operator used to join run labels. Use `'||'` for OR semantics (default) or `'&&'` for AND semantics (used internally by PTP).
+
+> **Note:** PTP and SRIOV test suites now delegate to the generic runner internally. All PTP/SRIOV user-facing variables remain unchanged — they are mapped to generic runner variables automatically.
+
 ## Example Playbook
 
 ```yaml
@@ -57,7 +67,7 @@ SRIOV uses the same `eco_gotests_dump_failed_tests` toggle; reports are written 
   gather_facts: false
   vars:
     eco_gotests_test_suites: ['ptp', 'sriov']
-    eco_gotests_kubconfig_dir: /home/user/clusterconfigs
+    eco_gotests_kubeconfig_dir: /home/user/clusterconfigs
     eco_gotests_registry_auth_file: /home/user/pull-secret.json
   roles:
     - redhatci.ocp.eco_gotests
@@ -88,10 +98,31 @@ SRIOV uses the same `eco_gotests_dump_failed_tests` toggle; reports are written 
   vars:
     eco_gotests_test_suites: ['ptp']
     eco_gotests_skip_labels_ptp: ['node-reboot', 'process-restart']
-    eco_gotests_kubconfig_dir: /home/user/clusterconfigs
+    eco_gotests_kubeconfig_dir: /home/user/clusterconfigs
     eco_gotests_registry_auth_file: /home/user/pull-secret.json
   roles:
     - redhatci.ocp.eco_gotests
 ```
 
 This example will run all PTP tests except those labeled with `node-reboot` and `process-restart`.
+
+## Example with Generic Runner (LACP Bond Stability)
+
+```yaml
+---
+- name: Run LACP bond stability tests via generic eco-gotests runner
+  hosts: localhost
+  gather_facts: false
+  vars:
+    eco_gotests_test_suites: ['generic']
+    eco_gotests_generic_features: 'network'
+    eco_gotests_generic_run_labels: ['lacp-bond-stability']
+    eco_gotests_generic_env:
+      ECO_LACP_BONDED_NODES: "worker-0,worker-1"
+    eco_gotests_kubeconfig_dir: /home/user/clusterconfigs
+    eco_gotests_registry_auth_file: /home/user/pull-secret.json
+  roles:
+    - redhatci.ocp.eco_gotests
+```
+
+This example uses the generic runner to launch only the `lacp-bond-stability` labeled tests from the `network` feature, passing the `ECO_LACP_BONDED_NODES` environment variable to the container.
