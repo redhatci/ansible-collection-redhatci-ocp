@@ -39,7 +39,8 @@
         src: "{{ custom_path }}/"
         dest: "{{ tempdir }}/customize_filesystem"
         force: true
-        mode: "0644"
+        mode: preserve
+        directory_mode: "0755"
 
     - name: Cleanup Any .gitkeep Files in the Fake Root
       ansible.builtin.file:
