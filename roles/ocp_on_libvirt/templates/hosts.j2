@@ -96,6 +96,8 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/n
 {% if enable_redfish | bool -%}
 [kvm_hosts_redfish]
 {% for key, value in ironic_nodes.items() -%}
+{% if 'provision' not in key -%}
 {{ key }}
+{% endif -%}
 {% endfor %}
 {%- endif %}
