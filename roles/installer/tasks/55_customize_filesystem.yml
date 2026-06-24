@@ -29,6 +29,7 @@
         src: "{{ dir }}/{{ item }}.ign"
         dest: "{{ dir }}/{{ item }}.ign.orig"
         remote_src: true
+        mode: "0644"
       with_items:
         - "master"
         - "worker"
@@ -38,6 +39,8 @@
         src: "{{ custom_path }}/"
         dest: "{{ tempdir }}/customize_filesystem"
         force: true
+        mode: preserve
+        directory_mode: "0755"
 
     - name: Cleanup Any .gitkeep Files in the Fake Root
       ansible.builtin.file:
