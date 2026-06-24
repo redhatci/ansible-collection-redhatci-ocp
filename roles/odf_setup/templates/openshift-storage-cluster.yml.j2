@@ -24,6 +24,97 @@ spec:
 {% elif ocs_install_type == 'internal' %}
   manageNodes: false
   monDataDirHostPath: /var/lib/rook
+{% if (odf_setup_ocs_on_control_plane | default(false) | bool) and (ocp_version is version("4.16", ">=")) %}
+  placement:
+    all:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+    mds:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+    rgw:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+    toolbox:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+    csi-rbdplugin:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+    csi-cephfsplugin:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+    metrics-exporter:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+    noobaa-core:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+{% endif %}
   storageDeviceSets:
   - count: {{ ocs_total_deviceset | default(local_storage_devices | length) }}
     dataPVCTemplate:
@@ -36,7 +127,21 @@ spec:
         storageClassName: localblock
         volumeMode: Block
     name: ocs-deviceset
+{% if (odf_setup_ocs_on_control_plane | default(false) | bool) and (ocp_version is version("4.16", ">=")) %}
+    placement:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node.ocs.openshift.io/storage
+        operator: Exists
+        effect: NoSchedule
+{% else %}
     placement: {}
+{% endif %}
     portable: false
     replica: {{ replica_size | int }}
     resources: {}

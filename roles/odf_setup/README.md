@@ -34,6 +34,7 @@ Role Variables
 | ocs_total_deviceset              | length of local_storage_devices | Int | No          | (Optional) number of device sets for OCS |
 | odf_setup_enable_encryption      | false | Boolean | No          | Whether enable disk cluster-wide encryption for ODF |
 | odf_setup_key_rotation_period    | weekly | String | No          | Period of key rotation: daily, weekly, monthly, etc. |
+| odf_setup_ocs_on_control_plane   | false | Boolean | No          | Set true when ODF storage runs on dedicated control-plane nodes (e.g. MNO masters). Adds master/control-plane tolerations to LSO and StorageCluster storageDeviceSets. |
 
 
 Inventory Groups and Variables

@@ -40,3 +40,18 @@ odf_setup_key_rotation_period: weekly
 
 # ODF enable Ceph Tools
 odf_setup_enable_ceph_tools: true
+
+# CSI_PLUGIN_TOLERATIONS for rook-ceph-operator-config
+odf_setup_csi_plugin_tolerations: |
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node.ocs.openshift.io/storage
+    operator: Exists
+    effect: NoSchedule
+
+# ODF setup on control plane nodes. When true, add control-plane tolerations for LSO workloads.
+odf_setup_ocs_on_control_plane: false
