@@ -11,7 +11,7 @@
         immediate: true
       become: true
 
-    - name: Open port {{ webserver_caching_port }}/tcp, zone public, for cache for firewalld
+    - name: Open port for cache via firewalld
       ansible.posix.firewalld:
         port: "{{ webserver_caching_port }}/tcp"
         permanent: true
@@ -33,7 +33,7 @@
         jump: ACCEPT
       become: true
 
-    - name: Open port {{ webserver_caching_port }}/tcp for cache for iptables
+    - name: Open port for cache via iptables
       ansible.builtin.iptables:
         chain: INPUT
         protocol: tcp

@@ -3,7 +3,7 @@
   ansible.builtin.set_fact:
     custom_path: "{{ customize_node_filesystems | default( role_path + '/files/customize_filesystem' ) }}"
 
-- name: Verify if {{ custom_path }}/master/worker is empty
+- name: Verify if custom filesystem path master/worker is empty - {{ custom_path }}
   ansible.builtin.find:
     paths: "{{ custom_path }}/{{ item }}"
     recurse: true

@@ -29,12 +29,12 @@
 
 # Ansible didn't like me putting these facts in same task
 # separating to get correct value
-- name: the host url
+- name: The host url
   ansible.builtin.set_fact:
     the_host_url: "{{ host_url }}"
   tags: cache
 
-- name: the_host url
+- name: The_host url
   ansible.builtin.debug:
     msg: "{{ the_host_url }}"
     verbosity: 2
@@ -60,7 +60,7 @@
 # SELinux when already has httpd_sys_content_t giving issues changing,thus leaving it the same
 # for the provision_cache_store to prevent issues. Also removing ":z" from podman_container for
 # provision_cache_store in the later task.
-- name: Create {{ provision_cache_store }} and {{ httpd_cache_files }} on host with online access
+- name: Create cache store and httpd cache dirs on host with online access
   ansible.builtin.file:
     path: "{{ item[0] }}"
     state: directory
@@ -74,7 +74,7 @@
   delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
-- name: Add magic and httpd.conf file to {{ httpd_cache_files }} dir
+- name: Add magic and httpd.conf file to cache dir - {{ httpd_cache_files }}
   ansible.builtin.template:
     src: "{{ item[0] }}"
     dest: "{{ httpd_cache_files }}/{{ item[1] }}"
@@ -108,7 +108,7 @@
   tags: cache
   when: release_version is ansible.builtin.version('4.8', '>=')
 
-- name: Download {{ rhcos_qemu_uri }} for cache
+- name: Download RHCOS QEMU image for cache - {{ rhcos_qemu_uri }}
   ansible.builtin.get_url:
     url: "{{ rhcos_path }}{{ rhcos_qemu_uri }}"
     dest: "{{ provision_cache_store }}{{ rhcos_qemu_uri }}"
@@ -122,7 +122,7 @@
   delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
-- name: Download {{ rhcos_uri }} for cache
+- name: Download RHCOS image for cache - {{ rhcos_uri }}
   ansible.builtin.get_url:
     url: "{{ rhcos_path }}{{ rhcos_uri }}"
     dest: "{{ provision_cache_store }}{{ rhcos_uri }}"

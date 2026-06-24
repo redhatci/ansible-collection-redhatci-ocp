@@ -17,6 +17,9 @@ exclude_paths:
   - tests
   - roles/**/molecule
 
+enable_list:
+  - name
+
 skip_list:
   - var-naming[no-role-prefix]
 
