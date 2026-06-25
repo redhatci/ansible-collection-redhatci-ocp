@@ -26,11 +26,22 @@ for operator in $operators; do
       '.[] | select(.name == $pkg and .schema == "olm.package") | .defaultChannel // empty' | head -n1)
   
   if [ -n "$default_channel" ] && [ "$default_channel" != "null" ] && [ "$default_channel" != "" ]; then
-    # Get the head CSV entry from the default channel (last entry is the head)
+    # Get the head CSV entry from the default channel (highest stable semver)
     head_csv=$(echo "$catalog_data" | \
-      "$jq_bin" -r --arg pkg "$operator" --arg ch "$default_channel" \
-        '.[] | select(.package == $pkg and .schema == "olm.channel" and .name == $ch) | 
-         .entries[-1].name // empty' | head -n1)
+      "$jq_bin" -r --arg pkg "$operator" --arg ch "$default_channel" '
+        def csv_version_key($pkg):
+          ltrimstr($pkg + ".v")
+          | capture("^(?<major>\\d+)(?:\\.(?<minor>\\d+))?(?:\\.(?<patch>\\d+))?(?<suffix>.*)$")?
+          | [
+              ((.major // "0") | tonumber),
+              ((.minor // "0") | tonumber),
+              ((.patch // "0") | tonumber),
+              (if (.suffix // "") == "" then 1 else 0 end),
+              (.suffix // "")
+            ];
+        .[] | select(.package == $pkg and .schema == "olm.channel" and .name == $ch)
+        | .entries | map(.name)
+        | max_by(csv_version_key($pkg)) // empty' | head -n1)
     
     if [ -n "$head_csv" ] && [ "$head_csv" != "null" ] && [ "$head_csv" != "" ]; then
       # Get the full version from the bundle's olm.package property
