@@ -74,7 +74,7 @@
   delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
-- name: Add magic and httpd.conf file to cache dir - {{ httpd_cache_files }}
+- name: Add magic and httpd.conf file to cache dir
   ansible.builtin.template:
     src: "{{ item[0] }}"
     dest: "{{ httpd_cache_files }}/{{ item[1] }}"

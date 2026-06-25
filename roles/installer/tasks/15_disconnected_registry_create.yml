@@ -373,7 +373,7 @@
         force: true
         mode: "0644"
 
-    - name: Create install config appends file on localhost - {{ install_config_appends_file }}
+    - name: Create install config appends file on localhost
       ansible.builtin.copy:
         content: "{{ install_config_appends }}"
         dest: "{{ lookup ('env', 'PWD') }}/{{ install_config_appends_file }}"
