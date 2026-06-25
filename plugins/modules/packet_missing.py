@@ -30,11 +30,13 @@ options:
             - K8S Event resource list for packet matches
         required: true
         type: list
+        elements: dict
     dropped:
         description:
             - K8S Event resource list for packet dropped
         required: true
         type: list
+        elements: dict
     strict:
         description:
             - Whether to uset strict checking on events or ignore short differences
@@ -139,8 +141,8 @@ def get_missing_list(module, result):
 
 def run_module():
     module_args = dict(
-        matched=dict(type='list', required=True),
-        dropped=dict(type='list', required=True),
+        matched=dict(type='list', elements='dict', required=True),
+        dropped=dict(type='list', elements='dict', required=True),
         strict=dict(type='bool', required=False, default=False)
     )
 

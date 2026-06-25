@@ -119,7 +119,7 @@ class IgnitionSpec(abc.ABC):
         # Walk through the files and append them for merging
         all_files = []
         all_links = []
-        for root, _, files in os.walk(self.fake_root):
+        for root, unused_dirs, files in os.walk(self.fake_root):
             for file in files:
                 path = os.path.sep.join([root, file])
                 host_path = path.replace(self.fake_root, "")
