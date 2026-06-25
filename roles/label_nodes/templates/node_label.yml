@@ -3,6 +3,6 @@ kind: Node
 metadata:
   name: {{ host_item[inv_host].name }}
   labels:
-{% for key, value in host_item[inv_host].labels.items() %}
+{%- for key, value in host_item[inv_host].labels.items() %}
     {{ key }}: "{{ value }}"
-{% endfor %}
+{%- endfor %}
