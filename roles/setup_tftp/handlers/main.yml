@@ -11,4 +11,3 @@
     name: tftp.socket
     state: started
     enabled: true
-

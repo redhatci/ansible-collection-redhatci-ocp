@@ -19,7 +19,7 @@ module: packet_missing
 
 short_description: Organize packet missing events
 
-version_added: "2.9"
+version_added: "1.0.0"
 
 description:
     - Organize the packet missing and recovery events to find packet loss
