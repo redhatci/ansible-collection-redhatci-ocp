@@ -20,7 +20,7 @@
 # The pullsecret is copied in config_file_path in setup_mirror_registry, and this copy can
 # be modified in that role. This role is usually executed prior to populate_mirror_registry,
 # so we need to check if the pullsecret is present there or not.
-- name: "Check if {{ pull_secret_file_name }} has already been copied in {{ config_file_path }}"
+- name: "Check if pull secret file has already been copied"
   ansible.builtin.stat:
     path: "{{ config_file_path }}/{{ pull_secret_file_name }}"
   register: copied_pull_secret

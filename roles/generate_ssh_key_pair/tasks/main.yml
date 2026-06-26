@@ -4,7 +4,7 @@
     path: "{{ key_pair_dir }}"
     state: absent
 
-- name: "Make sure {{ fetched_dest }} exists"
+- name: "Make sure destination directory exists - {{ fetched_dest }}"
   ansible.builtin.file:
     path: "{{ fetched_dest }}"
     state: directory

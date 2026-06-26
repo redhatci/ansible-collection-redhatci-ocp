@@ -30,7 +30,7 @@
   tags:
     - network_facts
 
-- name: set provisioning subnet with IPV4
+- name: Set provisioning subnet with IPV4
   ansible.builtin.set_fact:
     provisioning_subnet: "{{ ip | ipaddr('network') }}/{{ ip | ipaddr('prefix') }}"
   vars:
@@ -41,7 +41,7 @@
   tags:
     - network_facts
 
-- name: set provisioning subnet with IPV6
+- name: Set provisioning subnet with IPV6
   ansible.builtin.set_fact:
     provisioning_subnet: "{{ ip | ipaddr('network') }}/{{ ip | ipaddr('prefix') }}"
   vars:

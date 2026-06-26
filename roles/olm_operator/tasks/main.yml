@@ -262,7 +262,7 @@
       ansible.builtin.debug:
         msg: "{{ ip_info.resources }}"
 
-    - name: Issues during {{ operator }} operator installation
+    - name: Issues during operator installation - {{ operator }}
       ansible.builtin.fail:
         msg: >
           There where issues during the operator deployment. See debug info in

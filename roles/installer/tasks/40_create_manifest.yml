@@ -17,7 +17,7 @@
     - "{{ dir }}/manifests"
   tags: manifests
 
-- name: Copy the metal3-config.yaml to {{ dir }}/openshift directory
+- name: Copy the metal3-config.yaml to openshift directory
   ansible.builtin.copy:
     src: "{{ dir }}/metal3-config.yaml"
     dest: "{{ dir }}/openshift/98_metal3-config.yaml"

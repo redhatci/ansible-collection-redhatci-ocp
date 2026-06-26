@@ -24,7 +24,7 @@
       when:
         - not enable_virtualmedia|bool
 
-    - name: Delete {{ prov_con_name.stdout }} due to modify nmcli bug
+    - name: Delete connection due to modify nmcli bug - {{ prov_con_name.stdout }}
       redhatci.ocp.nmcli:
         conn_name: "{{ prov_con_name.stdout }}"
         type: ethernet
@@ -33,7 +33,7 @@
         - not enable_virtualmedia|bool
         - prov_con_name.stdout != '--'
 
-    - name: Delete {{ prov_nic }} due to modify nmcli bug
+    - name: Delete NIC due to modify nmcli bug - {{ prov_nic }}
       redhatci.ocp.nmcli:
         conn_name: "{{ item }}"
         type: ethernet
@@ -52,7 +52,7 @@
       when:
         - not enable_virtualmedia|bool
 
-    - name: set provisioning network fact
+    - name: Set provisioning network fact
       ansible.builtin.set_fact:
         prov_bridge_ip: "{{ prov_network | next_nth_usable(1) }}/{{ prov_network | ipaddr('prefix') }}"
       when:
@@ -118,7 +118,7 @@
         - release_version is ansible.builtin.version('4.3', '>')
         - not ipv4_provisioning|bool
 
-    - name: Create Bridge labeled {{ baremetal_bridge }} for ipv4
+    - name: Create bridge labeled for ipv4 - {{ baremetal_bridge }}
       redhatci.ocp.nmcli:
         conn_name: "{{ baremetal_bridge }}"
         type: bridge
@@ -129,7 +129,7 @@
       when: (not ipv6_enabled|bool) or
             (ipv4_baremetal|bool)
 
-    - name: Create Bridge labeled {{ baremetal_bridge }} for ipv6/dual-stack
+    - name: Create bridge labeled for ipv6/dual-stack - {{ baremetal_bridge }}
       redhatci.ocp.nmcli:
         conn_name: "{{ baremetal_bridge }}"
         type: bridge
@@ -151,7 +151,7 @@
         autoconnect: true
         state: present
 
-    - name: Reload {{ baremetal_bridge }} bridge and slave interfaces
+    - name: Reload bridge and slave interfaces - {{ baremetal_bridge }}
       ansible.builtin.shell: |
         /usr/bin/nmcli con reload {{ item }}; /usr/bin/nmcli con up {{ item }}
       with_items:
