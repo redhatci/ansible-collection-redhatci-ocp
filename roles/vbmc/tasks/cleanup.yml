@@ -28,7 +28,6 @@
   failed_when: false
   changed_when: false
 
-  changed_when: false
 - name: Check if we still have vbmc nodes
   ansible.builtin.shell: |
     set -eo pipefail

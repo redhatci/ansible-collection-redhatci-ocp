@@ -17,7 +17,6 @@
     git push origin --delete "{{ target_ztp_gitops_repo_dst_branch }}"
   changed_when: false
 
-  changed_when: false
 - name: Create new branch
   ansible.builtin.shell: |
     cd "{{ temp_dir.path }}/ztp-gitops/" && \

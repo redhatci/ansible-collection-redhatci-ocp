@@ -42,9 +42,6 @@
         'x509: certificate has expired or is not yet valid' in _mabi_install_output.stderr"
 
   rescue:
-      changed_when: false
-    # Using master-0 IP address to reach the bootstrap VM
-    # Placing the logs in repo_root_path
     - name: Gather logs from installation
       vars:
         rendezvous_ip_address: "{{ hostvars[agent_based_installer_bootstrap_node][host_ip_keyword] }}"

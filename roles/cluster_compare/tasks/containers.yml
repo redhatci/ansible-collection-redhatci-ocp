@@ -29,5 +29,5 @@
       ansible.builtin.shell: |
         podman rm -f ofe-cc-ref
         podman cp $(podman create --name ofe-cc-ref {{ cc_reference_container_source }}):{{ cc_reference_metadata_yaml_location }} {{ cc_work_dir }}/bin/
-...
       changed_when: false
+...

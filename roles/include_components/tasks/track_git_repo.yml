@@ -5,7 +5,6 @@
   ignore_errors: true
   changed_when: false
 
-  changed_when: false
 - name: Get repo url  # noqa: command-instead-of-module
   ansible.builtin.command: "git -C {{ item }} config --get remote.origin.url"
   register: repo_url

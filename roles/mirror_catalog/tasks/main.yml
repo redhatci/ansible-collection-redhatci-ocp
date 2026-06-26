@@ -82,7 +82,6 @@
   when:
     - mc_is_type | lower == "idms"
   block:
-      changed_when: false
     - name: Transform ICSP to IDMS
       ansible.builtin.command:
         cmd: >

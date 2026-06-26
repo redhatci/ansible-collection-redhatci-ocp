@@ -5,7 +5,6 @@
     {{ ecd_oc_path }} adm cordon {{ ecd_cnf_existing_node }}
   changed_when: false
 
-  changed_when: false
 - name: "Wait until node changes to SchedulingDisabled status"
   ansible.builtin.shell: >
     set -eo pipefail;

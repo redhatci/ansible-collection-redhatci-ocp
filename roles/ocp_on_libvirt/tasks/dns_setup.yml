@@ -8,7 +8,6 @@
   become: "{{ libvirt_become }}"
   changed_when: false
 
-  changed_when: false
 - name: Register net information
   ansible.builtin.command: "virsh net-dumpxml {{ net }}"
   register: net_dump

@@ -15,7 +15,6 @@
   when: ool_node_not_exists
   changed_when: false
 
-  changed_when: false
 - name: Sync memory data to disk
   ansible.builtin.command: sync
   changed_when: false

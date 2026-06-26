@@ -250,7 +250,6 @@
         - _czga_repo_server_pod.resources is defined
         - _czga_repo_server_pod.resources | length == 1
         - _czga_repo_server_pod.resources[0] | community.general.json_query("status.conditions[?type=='Ready'].status") == ["True"]
-          changed_when: false
         - '"kustomize" in _czga_repo_server_pod.resources[0] | community.general.json_query("spec.volumes[].name")'
 
     - name: Run the policies and cluster apps

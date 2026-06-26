@@ -159,7 +159,6 @@
         /usr/bin/nmcli con reload {{ item }}; /usr/bin/nmcli con up {{ item }}
       with_items:
         - "{{ baremetal_bridge }}"
-          changed_when: false
         - "{{ pub_nic }}"
       changed_when: false
 

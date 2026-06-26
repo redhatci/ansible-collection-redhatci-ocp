@@ -7,7 +7,6 @@
   with_items: "{{ vbmc_nodes }}"
   changed_when: false
 
-  changed_when: false
 - name: Check and run vbmc node if it is down
   ansible.builtin.command: "vbmc start {{ item.item }}"
   with_items: "{{ vbmc_status.results }}"

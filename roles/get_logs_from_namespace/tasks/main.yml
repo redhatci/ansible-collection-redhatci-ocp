@@ -57,7 +57,6 @@
   loop: "{{ pod_list | json_query('resources[*].metadata.name') }}"
   changed_when: false
 
-  changed_when: false
 - name: "Get pods status from namespace"
   ansible.builtin.shell: >
     {{ glfn_oc }} get pods
@@ -74,5 +73,5 @@
     --namespace={{ glfn_ns }}
     > {{ glfn_dir }}/{{ glfn_ns }}_events.log ;
     [ -s {{ glfn_dir }}/{{ glfn_ns }}_events.log ] || rm -f {{ glfn_dir }}/{{ glfn_ns }}_events.log
-...
   changed_when: false
+...

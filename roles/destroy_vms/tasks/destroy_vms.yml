@@ -27,7 +27,6 @@
 # In some cases the disks removed through the "Undefine" task does not correspond to the disks that
 # could be created with the *current* inventory. This task will remove the disk files that would have
 # been created with the current inventory.
-  changed_when: false
 - name: Remove disk files  # noqa: command-instead-of-shell
   ansible.builtin.shell:
     cmd: >-

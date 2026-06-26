@@ -22,7 +22,6 @@
     chdir: "{{ opcap_dir.path }}/opcap/bin"
   changed_when: false
 
-  changed_when: false
 - name: Run opcap check
   ansible.builtin.command:
     cmd: >

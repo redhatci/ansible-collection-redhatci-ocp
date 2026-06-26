@@ -52,7 +52,6 @@
       register: scis_cluster_image_sets_output
 
   always:
-      changed_when: false
     - name: Delete temporary directory
       ansible.builtin.file:
         path: "{{ scis_tmp.path }}"

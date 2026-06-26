@@ -122,7 +122,6 @@
       ignore_errors: true
 
   always:
-      changed_when: false
     - name: "test_ redhat_tests: Delete cluster sonobuoy's resources"  # noqa: name[casing]
       environment:
         KUBECONFIG: "{{ ts_configs_dir }}/kubeconfig"

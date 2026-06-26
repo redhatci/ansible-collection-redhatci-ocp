@@ -15,7 +15,6 @@
   tags: install_bm
   changed_when: false
 
-  changed_when: false
 - name: "Set PXE - UEFI Temporally on next boot"
   ansible.builtin.command: >
     ipmitool -I lanplus -H {{ hostvars[groups['masters'][0]]['ipmi_address'] }}

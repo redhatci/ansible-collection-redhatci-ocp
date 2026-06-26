@@ -145,7 +145,7 @@
         - oc
 
     - name: Check binary installed
-      ansible.builtin.command: 
+      ansible.builtin.command:
         cmd: "{{ binaries_tool_path }}/{{ item }} help"
       with_items:
         - kubectl
@@ -165,10 +165,9 @@
       with_items:
         - kubectl
         - oc
-          changed_when: false
 
     - name: Check binary installed
-      ansible.builtin.command: 
+      ansible.builtin.command:
         cmd: "/usr/local/bin/{{ item }} help"
       with_items:
         - kubectl
@@ -221,6 +220,6 @@
       become: true
 
     - name: Check opm installed
-      ansible.builtin.command:  
+      ansible.builtin.command:
         cmd: "{{ binaries_tool_path }}/opm version"
       changed_when: false

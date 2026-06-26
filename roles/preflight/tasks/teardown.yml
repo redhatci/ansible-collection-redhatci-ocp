@@ -37,5 +37,5 @@
 
     - name: Update trusted CA
       ansible.builtin.command: /bin/update-ca-trust
-...
       changed_when: false
+...

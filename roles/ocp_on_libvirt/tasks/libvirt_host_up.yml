@@ -23,7 +23,6 @@
   when: host['disk_size'] is defined and ool_node_not_exists
   changed_when: false
 
-  changed_when: false
 - name: "Create an additional disk"
   ansible.builtin.command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }} "
   become: "{{ libvirt_become }}"

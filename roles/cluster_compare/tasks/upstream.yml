@@ -81,5 +81,5 @@
       retries: 3
       delay: 5
       until: _cc_junit_output.rc == 0
-...
       changed_when: false
+...

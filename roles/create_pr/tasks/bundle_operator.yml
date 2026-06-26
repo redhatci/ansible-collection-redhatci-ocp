@@ -20,7 +20,6 @@
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}"
   changed_when: false
 
-  changed_when: false
 - name: "Render bundle operator image"
   ansible.builtin.command: >
     {{ opm_tool_path }} render {{ operator.bundle_image }}

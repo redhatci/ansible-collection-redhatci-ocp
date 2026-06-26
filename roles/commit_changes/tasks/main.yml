@@ -17,7 +17,6 @@
     - cc_author_name | length > 0
   changed_when: false
 
-  changed_when: false
 - name: Set git author email
   ansible.builtin.command: git config user.email "{{ cc_author_email }}"  # noqa: command-instead-of-module
   args:

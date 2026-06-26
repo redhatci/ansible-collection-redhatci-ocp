@@ -35,5 +35,5 @@
   ansible.builtin.command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ mor_uri | basename }}"
   become: true
   when: _mor_selinux.rc == 0
-...
   changed_when: false
+...
