@@ -20,7 +20,9 @@
     cmd: >
       ./opcap list packages --catalogsource={{ opcap_target_catalog_source }}
     chdir: "{{ opcap_dir.path }}/opcap/bin"
+  changed_when: false
 
+  changed_when: false
 - name: Run opcap check
   ansible.builtin.command:
     cmd: >
@@ -32,6 +34,7 @@
       {% endif %}
     chdir: "{{ opcap_dir.path }}/opcap/bin"
   register: opcap_check
+  changed_when: false
 
 - name: "Copy results in {{ opcap_output_dir }}"
   ansible.builtin.copy:

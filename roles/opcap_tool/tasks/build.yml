@@ -23,3 +23,4 @@
       ./bin/opcap version
     chdir: "{{ opcap_dir.path }}/opcap"
 ...
+  changed_when: false

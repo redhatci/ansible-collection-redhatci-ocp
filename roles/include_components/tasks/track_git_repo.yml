@@ -3,11 +3,14 @@
   ansible.builtin.command: "git -C {{ item }} rev-parse HEAD"
   register: last_commit_id
   ignore_errors: true
+  changed_when: false
 
+  changed_when: false
 - name: Get repo url  # noqa: command-instead-of-module
   ansible.builtin.command: "git -C {{ item }} config --get remote.origin.url"
   register: repo_url
   when: last_commit_id.rc == 0
+  changed_when: false
 
 - name: Search for the git component
   ansible.legacy.dci_component:

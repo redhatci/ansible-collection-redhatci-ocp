@@ -3,7 +3,9 @@
 - name: "Cordon the node where testpmd-app is running"
   ansible.builtin.shell: |
     {{ ecd_oc_path }} adm cordon {{ ecd_cnf_existing_node }}
+  changed_when: false
 
+  changed_when: false
 - name: "Wait until node changes to SchedulingDisabled status"
   ansible.builtin.shell: >
     set -eo pipefail;
@@ -13,6 +15,7 @@
   until: '"SchedulingDisabled" in _ecd_nodes.stdout'
   retries: 6
   delay: 10
+  changed_when: false
 
 # Not really needing a complete draining, just removing testpmd-app pod
 # Running this in asynchronous mode, then we will wait until pod is deleted

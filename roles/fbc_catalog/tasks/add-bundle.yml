@@ -8,6 +8,7 @@
   retries: 2
   delay: 10
   until: rendered_bundle.rc == 0
+  changed_when: false
 
 - name: "Get inspected data"
   ansible.builtin.set_fact:
@@ -21,6 +22,7 @@
     fbc_operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     fbc_short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
 
+  changed_when: false
 - name: "Inspect the bundle image"
   ansible.builtin.shell: >
     if [ -n "$DOCKER_CONFIG" ]; then
@@ -33,6 +35,7 @@
   retries: 2
   delay: 10
   until: bundle_inspect.rc == 0
+  changed_when: false
 
 - name: "Set default channel"
   vars:
@@ -40,6 +43,7 @@
     bundle_channel: "{{ bundle_inspect.stdout | from_json | json_query(query_channel) }}"
   ansible.builtin.set_fact:
     fbc_default_channel: "{{ bundle_channel | default('latest', true) }}"
+  changed_when: false
 
 - name: "Initialize operators index"
   ansible.builtin.shell: >
@@ -48,6 +52,7 @@
     --output=yaml >> catalog/index.yml
   args:
     chdir: "{{ fbc_tmp_dir }}"
+  changed_when: false
 
 - name: "Render bundle for {{ fbc_short_name }}"
   ansible.builtin.shell: >
@@ -59,6 +64,7 @@
   retries: 3
   delay: 10
   until: render_result.rc == 0
+  changed_when: false
 
 - name: "Append operator channel"
   ansible.builtin.blockinfile:

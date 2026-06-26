@@ -19,6 +19,7 @@
         set -o pipefail ;
         ls /etc/NetworkManager/dnsmasq.d/ | wc -l
       register: dnsmasqconf
+      changed_when: false
 
     - name: Remove dnsmasq from the DNS configuration of NetworkManager
       ansible.builtin.file:

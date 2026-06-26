@@ -24,6 +24,7 @@
         cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
         chdir: "{{ manifests_dir }}"
       when: not mabi_retry_install_complete_check|bool
+      changed_when: false
 
     - name: Wait for install complete - with retries
       ansible.builtin.command:
@@ -41,6 +42,7 @@
         'x509: certificate has expired or is not yet valid' in _mabi_install_output.stderr"
 
   rescue:
+      changed_when: false
     # Using master-0 IP address to reach the bootstrap VM
     # Placing the logs in repo_root_path
     - name: Gather logs from installation

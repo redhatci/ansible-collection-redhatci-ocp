@@ -26,13 +26,16 @@
     done
   when: vbmc_proc.rc == 0
   failed_when: false
+  changed_when: false
 
+  changed_when: false
 - name: Check if we still have vbmc nodes
   ansible.builtin.shell: |
     set -eo pipefail
     {{ vbmc_bin }} list | awk '/[0-9]{2}/ {print $2}' | wc -l
   register: vbmc_list
   failed_when: false
+  changed_when: false
 
 - name: Stop VBMC
   when: vbmc_list.stdout | int == 0
@@ -56,6 +59,7 @@
       ansible.builtin.command: killall vbmc
       when: vbmc_proc.rc == 0
       ignore_errors: true
+      changed_when: false
 
 - name: Remove VBMC
   become: true

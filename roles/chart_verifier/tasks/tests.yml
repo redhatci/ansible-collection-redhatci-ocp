@@ -134,6 +134,7 @@
       {{ helm_tool_path }} show chart {{ work_chart_dir }}/{{ chart.chart_file | basename }} |
       {{ yq_tool_path }} e -o json -
   register: chart_show
+  changed_when: false
 
 - name: "Set charts details"
   vars:
@@ -143,6 +144,7 @@
     chart_version: "{{ chart_info.version }}"
     chart_description: "{{ chart_info.description }}"
 
+  changed_when: false
 - name: "Running Chart Verifier"
   ansible.builtin.shell:
     cmd: >
@@ -167,6 +169,7 @@
   args:
     chdir: "{{ work_chart_dir }}"
   ignore_errors: true
+  changed_when: false
 
 - name: "Copy the report to the Job's log_dir"
   ansible.builtin.copy:
@@ -175,6 +178,7 @@
     dest: "{{ logs_dir }}/{{ chart_name }}_{{ index }}_report.yaml"
     remote_src: true
   delegate_to: localhost
+  changed_when: false
 
 - name: "Validate_ number of mandatory tests that have failed"
   ansible.builtin.shell:
@@ -185,6 +189,7 @@
   args:
     chdir: "{{ work_chart_dir }}"
     executable: /bin/bash
+  changed_when: false
 
 # Only submit the results if there are no failed tests
 - name: "Submit CV and create pull request"

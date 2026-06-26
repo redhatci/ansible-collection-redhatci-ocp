@@ -39,6 +39,7 @@
   register: _mor_release_image
   failed_when: false
   when: not mor_force | bool
+  changed_when: false
 
 - name: Mirror the release to the local registry
   when:

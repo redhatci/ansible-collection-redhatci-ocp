@@ -58,6 +58,7 @@
   retries: 6
   delay: 2
   until: not catalog_validation.failed
+  changed_when: false
 
 - name: "Add Dockerfile"
   ansible.builtin.template:
@@ -65,6 +66,7 @@
     dest: "{{ fbc_tmp_dir }}/catalog.Dockerfile"
     mode: "0644"
 
+  changed_when: false
 - name: "Build the catalog"
   ansible.builtin.command: >
     podman build .
@@ -73,6 +75,7 @@
     -t {{ fbc_index_image }}
   args:
     chdir: "{{ fbc_tmp_dir }}"
+  changed_when: false
 
 - name: "Delete temp directory"
   ansible.builtin.file:

@@ -8,6 +8,7 @@
       retries: 5
       delay: 5
   rescue:
+      changed_when: false
     - name: Check log message
       ansible.builtin.debug:
         msg: "{{ command_result.stderr }}"

@@ -40,6 +40,7 @@
       ignore_errors: true
       when:
         - not (dci_disconnected | default(false) | bool)
+      changed_when: false
 
     - name: "test_ redhat_tests: Run the kubevirt tests (disconnected)"  # noqa: name[casing]
       when: >
@@ -76,6 +77,7 @@
               --plugin kubevirt-conformance.yaml
             chdir: "{{ tmp_vct_dir.path }}"
           ignore_errors: true
+          changed_when: false
 
     - name: "Pause for Logs collection to be completed"
       ansible.builtin.pause:
@@ -95,6 +97,7 @@
       retries: 3
       delay: 5
       ignore_errors: true
+      changed_when: false
 
     - name: "test_ copy results tarball to the logs directory"  # noqa: name[casing]
       ansible.builtin.copy:
@@ -119,6 +122,7 @@
       ignore_errors: true
 
   always:
+      changed_when: false
     - name: "test_ redhat_tests: Delete cluster sonobuoy's resources"  # noqa: name[casing]
       environment:
         KUBECONFIG: "{{ ts_configs_dir }}/kubeconfig"
@@ -127,6 +131,7 @@
           ./sonobuoy
           delete
         chdir: "{{ tmp_vct_dir.path }}"
+      changed_when: false
 
     - name: "Removing tmp directory"
       ansible.builtin.file:

@@ -84,6 +84,7 @@
       no_log: true
 
   always:
+      changed_when: false
     - name: Save output in a file
       ansible.builtin.copy:
         content: "{{ _kbpc_exec_output.stdout }}"

@@ -14,3 +14,4 @@
      > {{ ts_log_dir }}/csi-report.log
   ignore_errors: true
 ...
+  changed_when: false

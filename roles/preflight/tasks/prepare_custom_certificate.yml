@@ -13,6 +13,7 @@
     /etc/pki/tls/certs/ca-bundle.trust.crt
   register: cabundle
   no_log: true
+  changed_when: false
 
 - name: Copy ca in directory with dockerconfig
   ansible.builtin.copy:
@@ -27,9 +28,11 @@
     mode: "0644"
   become: true
 
+  changed_when: false
 - name: Update trusted ca
   ansible.builtin.command: /bin/update-ca-trust
   become: true
+  changed_when: false
 
 - name: Merge the ca trust with the custom ca
   ansible.builtin.blockinfile:

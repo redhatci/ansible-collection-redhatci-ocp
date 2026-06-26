@@ -41,6 +41,7 @@
       until: _mi_skopeo_copy is not failed
 
   rescue:
+      changed_when: false
     - name: "Image already mirrored"
       ansible.builtin.command: >
         skopeo inspect
@@ -55,3 +56,4 @@
       register: _mi_inspect
       failed_when: _mi_inspect.rc != 0
 ...
+      changed_when: false

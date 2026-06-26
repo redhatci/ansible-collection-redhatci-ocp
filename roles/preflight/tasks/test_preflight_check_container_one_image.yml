@@ -97,6 +97,7 @@
             --submit
             {% endif %}
       rescue:
+          changed_when: false
         - name: Do not fail when preflight check container throws an error
           ansible.builtin.debug:
             msg: "Do not fail when preflight check container throws an error"

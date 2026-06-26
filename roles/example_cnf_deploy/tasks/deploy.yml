@@ -23,6 +23,7 @@
   delay: 5
   until:
     - _ecd_catalog_data_cmd.rc == 0
+  changed_when: false
 
 - name: "Set trex-app version from the catalog"
   ansible.builtin.set_fact:

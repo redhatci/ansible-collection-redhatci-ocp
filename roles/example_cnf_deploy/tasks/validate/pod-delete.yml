@@ -27,6 +27,7 @@
 - name: "Cordon the node"
   ansible.builtin.shell: |
     {{ ecd_oc_path }} adm cordon {{ ecd_cnfapp_existing_node }}
+  changed_when: false
 
 - name: Delete the cnf app pod
   kubernetes.core.k8s:
@@ -59,9 +60,11 @@
     loop_var: pod
   when: "pod.metadata.name not in ecd_cnf_app_list"
 
+  changed_when: false
 - name: "Uncordon the node"
   ansible.builtin.shell: |
     {{ ecd_oc_path }} adm uncordon {{ ecd_cnfapp_existing_node }}
+  changed_when: false
 
 - name: "Fail if CNFApp pod is not migrated"
   ansible.builtin.fail:

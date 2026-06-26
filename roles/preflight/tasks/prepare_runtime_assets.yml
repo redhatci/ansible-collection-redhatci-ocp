@@ -13,6 +13,7 @@
   retries: 2
   delay: 10
   until: not preflight_assets.failed
+  changed_when: false
 
 - name: Get scorecard config images
   ansible.builtin.set_fact:

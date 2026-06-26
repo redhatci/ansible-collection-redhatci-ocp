@@ -5,12 +5,15 @@
     {{ vbmc_bin }} delete {{ item }}
   ignore_errors: true
   with_items: "{{ vbmc_nodes }}"
+  changed_when: false
 
+  changed_when: false
 - name: Get current count of used vbmc ports
   ansible.builtin.shell: |
     set -o pipefail
     {{ vbmc_bin | quote }} list | grep -c 62 || true
   register: vbmc_used_ports
+  changed_when: false
 
 - name: Define vbmc_port for each VM
   ansible.builtin.set_fact:
@@ -31,6 +34,7 @@
 
 - name: Setup firewall
   ansible.builtin.include_tasks: firewalld.yml
+  changed_when: false
 
 - name: Add nodes to vbmc
   ansible.builtin.command: >
@@ -40,12 +44,14 @@
       --password {{ vbmc_pass }}
       --address {% if not baremetal_net_ipv6 | bool %}::ffff:{% endif %}{{ vbmc_management_address }}
   with_dict: "{{ vbmc_ports }}"
+  changed_when: false
 
 - name: Start nodes using vbmc
   ansible.builtin.include_tasks: start_node.yml
   loop: "{{ vbmc_ports | dict2items }}"
   loop_control:
     loop_var: node
+  changed_when: false
 
 - name: Setting nodes power status using ipmitool
   ansible.builtin.command: >
@@ -61,6 +67,7 @@
   until: command_result.rc == 0
   retries: 5
   delay: 5
+  changed_when: false
 
 - name: Get vbmc VMs power status using ipmitool
   ansible.builtin.command: >
@@ -76,12 +83,14 @@
   until: ipmitool_results.rc == 0
   retries: 5
   delay: 5
+  changed_when: false
 
 - name: Validate_ that all VMs are powered on
   ansible.builtin.fail:
     msg: "Node is not powered on! (ipmitool stdout: '{{ item.stdout }}')"
   when: "item.stdout != 'Chassis Power is on'"
   with_items: "{{ ipmitool_results.results }}"
+  changed_when: false
 
 - name: Power off nodes with ipmitool
   ansible.builtin.command: >
@@ -97,6 +106,7 @@
   until: command_result.rc == 0
   retries: 5
   delay: 5
+  changed_when: false
 
 - name: Get information about vm from hypervisor
   delegate_to: "{{ vbmc_host }}"
@@ -124,6 +134,7 @@
     }"
   with_items: "{{ vbmc_nodes | sort }}"
   register: nodes_info
+  changed_when: false
 
 - name: Generate file containing install-scripts vbmc details
   ansible.builtin.template:

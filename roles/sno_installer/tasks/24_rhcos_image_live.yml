@@ -48,3 +48,4 @@
   become: true
   tags: rhcos_live
 ...
+  changed_when: false

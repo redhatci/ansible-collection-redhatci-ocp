@@ -126,6 +126,7 @@
   rescue:
     - name: Print hanging resources
       ansible.builtin.command: "{{ oc_tool_path }} get all -n {{ preflight_namespace }}"
+      changed_when: false
 
     - name: Impossible to destroy namespace
       ansible.builtin.fail:

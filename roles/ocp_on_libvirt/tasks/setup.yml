@@ -88,6 +88,7 @@
 - name: Restore the contexts under the consoles directory
   ansible.builtin.command: /usr/sbin/restorecon -irv /var/lib/libvirt/consoles
   become: true
+  changed_when: false
 
 - name: "Add user to libvirt, kvm, and qemu groups"
   become: true

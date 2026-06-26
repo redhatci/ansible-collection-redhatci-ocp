@@ -81,6 +81,7 @@
             --tools
             --from  "{{ release_image_item.remote | quote }}"
             --to "{{ downloads_path }}/{{ openshift_full_version }}"
+      changed_when: false
 
     - name: Remove temporary oc stable client
       ansible.builtin.file:
@@ -149,6 +150,7 @@
       with_items:
         - kubectl
         - oc
+      changed_when: false
 
     # Also keep the binary in /usr/local/bin, since "oc" is used in other roles.
     - name: Copy binary to /usr/local/bin
@@ -163,6 +165,7 @@
       with_items:
         - kubectl
         - oc
+          changed_when: false
 
     - name: Check binary installed
       ansible.builtin.command: 
@@ -170,6 +173,7 @@
       with_items:
         - kubectl
         - oc
+      changed_when: false
 
 - name: Install opm
   tags:
@@ -219,3 +223,4 @@
     - name: Check opm installed
       ansible.builtin.command:  
         cmd: "{{ binaries_tool_path }}/opm version"
+      changed_when: false

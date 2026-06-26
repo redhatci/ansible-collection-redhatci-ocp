@@ -8,12 +8,15 @@
             "logLevel":"debug",
             "featureGates":{"custom":{"enabled":["AlphaAgentInstallStrategy"]},
                                  "featureSet":"Custom"}}}'
+  changed_when: false
 
+  changed_when: false
 - name: Modify the Provisioning resource to allow the Bare Metal Operator to watch all namespaces
   ansible.builtin.shell: |
     {{ iog_oc_tool_path }} patch provisioning provisioning-configuration \
        --type merge -p '{"spec":{"watchAllNamespaces": true }}'
   when: metallb
+  changed_when: false
 
 - name: Create Agent Service config
   kubernetes.core.k8s:

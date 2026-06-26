@@ -8,12 +8,15 @@
   register: _ic_last_commit_id
   args:
     chdir: "{{ item }}"
+  changed_when: false
 
+  changed_when: false
 - name: Get repo url  # noqa: command-instead-of-module
   ansible.builtin.command: git -C {{ item }} config --get remote.origin.url
   register: repo_url
   when: _ic_last_commit_id.rc == 0
   no_log: true
+  changed_when: false
 
 # create the component the same way as in
 # dci-ansible/action_plugins/git.py

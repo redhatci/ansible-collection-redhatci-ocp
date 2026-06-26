@@ -22,10 +22,12 @@
   ansible.builtin.shell:
     cmd: "virsh undefine --remove-all-storage --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
   loop: "{{ vms_to_remove | default([]) }}"
+  changed_when: false
 
 # In some cases the disks removed through the "Undefine" task does not correspond to the disks that
 # could be created with the *current* inventory. This task will remove the disk files that would have
 # been created with the current inventory.
+  changed_when: false
 - name: Remove disk files  # noqa: command-instead-of-shell
   ansible.builtin.shell:
     cmd: >-
@@ -36,3 +38,4 @@
   loop: "{{ kvm_nodes | default([]) }}"
   loop_control:
     label: item.name
+  changed_when: false
