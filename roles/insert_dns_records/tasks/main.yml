@@ -81,9 +81,9 @@
     name: dnsmasq
     state: present
 
-- name: "Make sure TFTP root directory exists - {{ TFTP_ROOT }}"
+- name: "Make sure TFTP root directory exists - {{ tftp_root }}"
   ansible.builtin.file:
-    path: "{{ TFTP_ROOT }}"
+    path: "{{ tftp_root }}"
     state: directory
     recurse: true
   when: use_pxe | bool
