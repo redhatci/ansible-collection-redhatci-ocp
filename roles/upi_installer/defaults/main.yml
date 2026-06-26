@@ -1,6 +1,4 @@
 ---
-serverport: 8000
-upi_installer_timeout: 600
 webserver_url: ""
 cache_dir: "/opt/cache"
 upi_pullsecret: "{{ cache_dir }}/pull-secret.txt"
