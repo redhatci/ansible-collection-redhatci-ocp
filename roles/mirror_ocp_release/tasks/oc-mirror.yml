@@ -76,7 +76,7 @@
 
     - name: Extract latest oc-mirror
       ansible.builtin.unarchive:
-        src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/oc-mirror.tar.gz"
+        src: "{{ mor_oc_mirror_binary_url }}"
         dest: "{{ _mor_tmp_dir.path }}"
         remote_src: true
         mode: "0755"
@@ -88,6 +88,14 @@
     - name: Find an available ephemeral port for oc-mirror
       redhatci.ocp.find_available_port:
       register: _mor_ephemeral_port
+
+    - name: Workaround oc-mirror v2 authfile issue
+      no_log: true
+      ansible.builtin.copy:
+        src: "{{ mor_auths_file }}"
+        remote_src: true
+        dest: "$XDG_RUNTIME_DIR/containers/auth.json"
+        mode: "0644"
 
     # Only GA and Candidate builds include signed images
     - name: Mirror the release to the local registry
@@ -109,6 +117,12 @@
       delay: 10
       until: _mor_cmd_output.rc == 0
       changed_when: _mor_cmd_output.rc == 0
+
+    - name: Remove authfile workaround oc-mirror
+      no_log: true
+      ansible.builtin.file:
+        path: "$XDG_RUNTIME_DIR/containers/auth.json"
+        state: absent
 
     - name: Write Image Source manifest
       ansible.builtin.copy:
