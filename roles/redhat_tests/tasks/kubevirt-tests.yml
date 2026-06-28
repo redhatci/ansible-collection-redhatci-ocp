@@ -120,6 +120,7 @@
       retries: 3
       delay: 5
       ignore_errors: true
+      changed_when: false
 
   always:
     - name: "test_ redhat_tests: Delete cluster sonobuoy's resources"  # noqa: name[casing]

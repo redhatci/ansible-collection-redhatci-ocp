@@ -31,6 +31,7 @@
       async: 3600
       poll: 0
       ignore_errors: true
+      changed_when: false
       register: installer_result
 
     - name: Wait for kubeconfig file

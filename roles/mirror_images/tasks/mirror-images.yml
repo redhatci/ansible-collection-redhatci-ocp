@@ -39,6 +39,7 @@
       retries: 5
       delay: 5
       until: _mi_skopeo_copy is not failed
+      changed_when: false
 
   rescue:
     - name: "Image already mirrored"

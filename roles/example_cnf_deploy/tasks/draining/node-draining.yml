@@ -23,3 +23,4 @@
     {{ oc_tool_path }} adm drain {{ ecd_cnf_existing_node }} --pod-selector example-cnf-type=cnf-app --delete-emptydir-data
   async: 60
   poll: 0
+  changed_when: false

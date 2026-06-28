@@ -71,6 +71,7 @@
     {{ operator.bundle_image }}
   async: 600
   poll: 0
+  changed_when: false
   register: preflight_exec
 
 - name: "Retrieve async logs for {{ operator.name }}"

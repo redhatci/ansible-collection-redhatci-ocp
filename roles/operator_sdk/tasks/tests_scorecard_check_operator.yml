@@ -87,6 +87,7 @@
           "{{ scorecard_operator_dir }}"
         chdir: "{{ scorecard_tmp_dir.path }}"
       register: scorecard_exec
+      changed_when: false
   rescue:
     - name: Get Scorecard pods
       kubernetes.core.k8s_info:
