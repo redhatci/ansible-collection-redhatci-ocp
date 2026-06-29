@@ -8,7 +8,7 @@ argument_specs:
       Converts JSON result files into JUnit XML files.
     options:
       icc_pullsecret_file:
-        type: str 
+        type: str
         required: true
         description: Registry auth file for podman
       icc_kubeconfig_path:
@@ -35,7 +35,7 @@ argument_specs:
         type: bool
         required: true
         default: false
-        description: Keep must-gather data after the run    
+        description: Keep must-gather data after the run (only for gather, scan, and full-run flows)
       icc_json2junit_patterns:
         type: str
         required: false

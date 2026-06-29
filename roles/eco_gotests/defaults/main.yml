@@ -8,6 +8,7 @@ eco_gotests_registry_auth_file: ""
 eco_gotests_dump_failed_tests: false
 
 # SRIOV test configuration
+eco_gotests_eco_test_features_sriov: "sriov"
 eco_gotests_sriov_labels: "sriov-hw-enabled"
 eco_gotests_worker_label: "worker"
 eco_gotests_sriov_interface_list: "ens3f0np0,ens3f1np1"
@@ -18,5 +19,20 @@ eco_gotests_sriov_timeout: "12h"
 eco_gotests_verbose_level: 100
 eco_gotests_test_verbose: true
 
+eco_gotests_kubeconfig_dir: "{{ eco_gotests_kubconfig_dir | default('') }}"
+
+# PTP test configuration
+eco_gotests_eco_test_features_ptp: "ptp"
+eco_gotests_run_labels_ptp: []
 eco_gotests_skip_labels_ptp: []
 eco_gotests_ptp_check_prerequisites: true
+# Max wall-clock time (seconds) for the PTP eco-gotests podman run; Ansible stops the task after this (default 1h).
+eco_gotests_ptp_run_timeout_sec: 3600
+
+# Generic test runner configuration
+eco_gotests_generic_features: ''
+eco_gotests_generic_run_labels: []
+eco_gotests_generic_skip_labels: []
+eco_gotests_generic_env: {}
+eco_gotests_generic_timeout: '12h'
+eco_gotests_generic_run_label_operator: '||'

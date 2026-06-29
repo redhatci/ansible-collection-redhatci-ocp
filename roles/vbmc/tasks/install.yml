@@ -113,7 +113,7 @@
         daemon_reload: true
 
     - name: Allow platform-python to be executed by systemd
-      ansible.builtin.sefcontext:
+      community.general.sefcontext:
         target: "{{ vbmc_virtualenv }}/bin/platform-python"
         setype: bin_t
         state: present

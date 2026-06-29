@@ -22,7 +22,7 @@
   no_log: "{{ oau_secure_log | bool }}"
 
 - name: Create http auth file for new users
-  ansible.builtin.htpasswd:
+  community.general.htpasswd:
     path: "{{ oau_dir }}/new_users.htpasswd"
     name: "{{ user }}"
     password: "{{ oau_pass[user] }}"

@@ -1,17 +1,22 @@
 ---
 # tasks file for disconnected_registry
-- import_tasks: var_check.yml
+- name: Check required variables
+  import_tasks: var_check.yml
   tags: create_registry
 
-- import_tasks: prerequisites.yml
+- name: Install prerequisites
+  import_tasks: prerequisites.yml
   tags:
     - create_registry
 
-- import_tasks: set_mirror_cert.yml
+- name: Set mirror registry certificate
+  import_tasks: set_mirror_cert.yml
 
-- import_tasks: setup_registry.yml
+- name: Set up the mirror registry
+  import_tasks: setup_registry.yml
   tags: create_registry
 
-- import_tasks: retrieve_config.yml
+- name: Retrieve registry configuration
+  import_tasks: retrieve_config.yml
   tags:
     - copy_config

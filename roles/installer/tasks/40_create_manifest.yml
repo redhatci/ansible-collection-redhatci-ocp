@@ -1,11 +1,11 @@
 ---
 - name: Create OpenShift Manifest
-  shell: |
+  ansible.builtin.shell: |
     /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} create manifests
   tags: manifests
 
 - name: Ensure the manifests dir is owned by {{ ansible_user }}
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     recurse: true
@@ -17,8 +17,8 @@
     - "{{ dir }}/manifests"
   tags: manifests
 
-- name: Copy the metal3-config.yaml to {{ dir }}/openshift directory
-  copy:
+- name: Copy the metal3-config.yaml to openshift directory
+  ansible.builtin.copy:
     src: "{{ dir }}/metal3-config.yaml"
     dest: "{{ dir }}/openshift/98_metal3-config.yaml"
     owner: "{{ ansible_user }}"

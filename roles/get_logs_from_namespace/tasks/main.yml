@@ -16,7 +16,7 @@
   when: glfn_dir is not defined
   block:
     - name: Create logs directory
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         prefix: glfn_logs.
       register: logs

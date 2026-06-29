@@ -12,7 +12,7 @@
       to check that you are using the correct release image
 
 - name: Make sure needed packages are installed
-  package:
+  ansible.builtin.package:
     name: tar
     state: present
   become: true
@@ -20,14 +20,14 @@
 # The pullsecret is copied in config_file_path in setup_mirror_registry, and this copy can
 # be modified in that role. This role is usually executed prior to populate_mirror_registry,
 # so we need to check if the pullsecret is present there or not.
-- name: "Check if {{ pull_secret_file_name }} has already been copied in {{ config_file_path }}"
-  stat:
+- name: "Check if pull secret file has already been copied"
+  ansible.builtin.stat:
     path: "{{ config_file_path }}/{{ pull_secret_file_name }}"
   register: copied_pull_secret
 
 # If not present, let's copy it for the next tasks that require it.
 - name: Copy pull_secret
-  copy:
+  ansible.builtin.copy:
     src: "{{ local_pull_secret_path }}"
     dest: "{{ config_file_path }}/{{ pull_secret_file_name }}"
     mode: "0644"
@@ -46,7 +46,7 @@
     - "{{ downloads_path }}/{{ openshift_full_version }}"
 
 - name: Check if artifacts from release image have already been downloaded
-  stat:
+  ansible.builtin.stat:
     path: "{{ downloads_path }}/{{ openshift_full_version }}/release.txt"
   register: downloaded_artifacts
 
@@ -61,20 +61,20 @@
   block:
     # we need to temporarily download ocp stable binary to extract the artifacts
     - name: Create tmp directory for oc stable client
-      tempfile:
+      ansible.builtin.tempfile:
         state: directory
         prefix: oc.
       register: oc_tmp_dir
 
     - name: Download stable client
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ stable_release_url }}/{{ stable_oc_tar }}"
         dest: "{{ oc_tmp_dir.path }}"
         mode: "0755"
         remote_src: true
 
     - name: Extract artifacts from release image (x86_64)
-      command:
+      ansible.builtin.command:
         cmd: >
           "{{ oc_tmp_dir.path }}/oc" adm release extract
             --registry-config "{{ config_file_path }}/{{ pull_secret_file_name }}"
@@ -83,30 +83,30 @@
             --to "{{ downloads_path }}/{{ openshift_full_version }}"
 
     - name: Remove temporary oc stable client
-      file:
+      ansible.builtin.file:
         path: "{{ oc_tmp_dir.path }}"
         state: absent
 
 - name: Setup Version/Image facts
   block:
     - name: "Read Release.txt downloaded file"
-      slurp:
+      ansible.builtin.slurp:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/release.txt"
       register: result
 
     - name: Set Fact for Release Image
-      set_fact:
+      ansible.builtin.set_fact:
         release_version: "{{ result.content | b64decode | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
         release_image: "{{ result.content | b64decode | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
 
 - name: Create tmp directory for all binaries
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
     prefix: binaries.
   register: binaries_tmp_dir
 
 - name: Set binaries_tool_path based on the tmp directory path
-  set_fact:
+  ansible.builtin.set_fact:
     binaries_tool_path: "{{ binaries_tmp_dir.path }}"
 
 - name: Install oc
@@ -115,12 +115,12 @@
     - fetch_oc
   block:
     - name: Check if oc binary has been extracted
-      stat:
+      ansible.builtin.stat:
         path: "{{ downloads_path }}/{{ openshift_full_version }}/oc"
       register: extracted_oc
 
     - name: Extract oc binary
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ oc_tar }}"
         dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
         owner: "{{ file_owner }}"
@@ -131,7 +131,7 @@
         - not extracted_oc.stat.exists
 
     - name: Copy binary to binaries_tool_path
-      copy:
+      ansible.builtin.copy:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ item }}"
         dest: "{{ binaries_tool_path }}/{{ item }}"
         owner: "{{ file_owner }}"
@@ -144,7 +144,7 @@
         - oc
 
     - name: Check binary installed
-      command: 
+      ansible.builtin.command: 
         cmd: "{{ binaries_tool_path }}/{{ item }} help"
       with_items:
         - kubectl
@@ -152,7 +152,7 @@
 
     # Also keep the binary in /usr/local/bin, since "oc" is used in other roles.
     - name: Copy binary to /usr/local/bin
-      copy:
+      ansible.builtin.copy:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ item }}"
         dest: "/usr/local/bin/{{ item }}"
         owner: "{{ file_owner }}"
@@ -165,7 +165,7 @@
         - oc
 
     - name: Check binary installed
-      command: 
+      ansible.builtin.command: 
         cmd: "/usr/local/bin/{{ item }} help"
       with_items:
         - kubectl
@@ -177,13 +177,13 @@
     - fetch_opm
   block:
     - name: Check if opm tarball has been previously downloaded
-      stat:
+      ansible.builtin.stat:
         path: "{{ downloads_path }}/{{ openshift_full_version }}/{{ stable_opm_tar }}"
       register: downloaded_opm_tar
 
     # opm needs to be downloaded from stable clients
     - name: Download opm tarball
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ stable_release_url }}/{{ stable_opm_tar }}"
         dest: "{{ downloads_path }}/{{ openshift_full_version }}/"
         mode: "0664"
@@ -191,12 +191,12 @@
         - not downloaded_opm_tar.stat.exists
 
     - name: Check if opm binary has been extracted
-      stat:
+      ansible.builtin.stat:
         path: "{{ downloads_path }}/{{ openshift_full_version }}/opm"
       register: extracted_opm
 
     - name: Extract binary
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/{{ stable_opm_tar }}"
         dest: "{{ downloads_path }}/{{ openshift_full_version }}"
         owner: "{{ file_owner }}"
@@ -207,7 +207,7 @@
         - not extracted_opm.stat.exists
 
     - name: Copy opm to binaries_tool_path
-      copy:
+      ansible.builtin.copy:
         src: "{{ downloads_path }}/{{ openshift_full_version }}/opm"
         dest: "{{ binaries_tool_path }}/opm"
         owner: "{{ file_owner }}"
@@ -217,5 +217,5 @@
       become: true
 
     - name: Check opm installed
-      command:  
+      ansible.builtin.command:  
         cmd: "{{ binaries_tool_path }}/opm version"

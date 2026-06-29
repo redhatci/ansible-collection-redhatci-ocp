@@ -4,17 +4,17 @@
   tags: storagepool
   block:
     - name: Define Storage Pool for default
-      virt_pool:
+      community.libvirt.virt_pool:
         command: define
         name: default
         xml: '{{ lookup("template", "dir.xml.j2") }}'
 
     - name: Start Storage Pool for default
-      virt_pool:
+      community.libvirt.virt_pool:
         state: active
         name: default
 
     - name: Autostart Storage Pool for default
-      virt_pool:
+      community.libvirt.virt_pool:
         autostart: true
         name: default

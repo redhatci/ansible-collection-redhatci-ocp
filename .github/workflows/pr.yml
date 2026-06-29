@@ -32,6 +32,16 @@ jobs:
       - name: Install requirements for plugins
         run: pip install -r meta/requirements.txt
 
+      - name: Install galaxy dependencies for module resolution
+        run: >
+          ansible-galaxy collection install
+          ansible.posix ansible.utils community.crypto
+          community.general community.libvirt
+          containers.podman kubernetes.core
+
+      - name: Verify FQCN module references are resolvable
+        run: ./hack/check_fqcn_modules.sh
+
       - name: Compare current branch vs main branch
         # Run ansible-lint on this branch then compare vs main branch
         run: |

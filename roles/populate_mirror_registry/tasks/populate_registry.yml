@@ -11,13 +11,13 @@
         state: present
 
     - name: Create podman auth dir
-      file:
+      ansible.builtin.file:
         path: "{{ config_file_path }}/containers/"
         state: directory
         mode: "0755"
 
     - name: Copy pull_secrets file.
-      copy:
+      ansible.builtin.copy:
         src: "{{ config_file_path }}/{{ pull_secret_file_name }}"
         dest: "{{ config_file_path }}/containers/auth.json"
         mode: "0644"
@@ -30,7 +30,7 @@
         XDG_RUNTIME_DIR: "{{ config_file_path }}"
 
     - name: Mirror remote ocpmetal image registry to local
-      command:
+      ansible.builtin.command:
         cmd: >
           "{{ binaries_tool_path }}"/oc image mirror
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
@@ -39,7 +39,7 @@
       loop: "{{ ocpmetal_images }}"
 
     - name: Mirror release image to local (x86_64)
-      command:
+      ansible.builtin.command:
         cmd: >
           "{{ binaries_tool_path }}"/oc adm release mirror
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
@@ -48,7 +48,7 @@
             --to="{{ release_image_item.local | quote }}"
 
     - name: Mirror release image to local (arm64)
-      command:
+      ansible.builtin.command:
         cmd: >
           "{{ binaries_tool_path }}"/oc adm release mirror
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
@@ -74,6 +74,7 @@
       ansible.builtin.file:
         path: "{{ temp_dir.path }}/configs"
         state: directory
+        mode: "0755"
 
     # I found that the list of packages was so large that pulling them
     # back into ansible for processing was not possible via normal means
@@ -82,15 +83,16 @@
       ansible.builtin.template:
         src: filter.sh.j2
         dest: "{{ temp_dir.path }}/filter.sh"
+        mode: "0755"
 
     - name: Runfilter
-      command:
+      ansible.builtin.command:
         cmd: "bash {{ temp_dir.path }}/filter.sh"
       environment:
         XDG_RUNTIME_DIR: "{{ config_file_path }}"
 
     - name: Build pruned OLM index
-      command:
+      ansible.builtin.command:
         cmd: >
           {{ downloads_path }}/{{ openshift_full_version }}/opm
             generate dockerfile {{ temp_dir.path }}/configs
@@ -98,7 +100,7 @@
         XDG_RUNTIME_DIR: "{{ config_file_path }}"
 
     - name: Build pruned index
-      command:
+      ansible.builtin.command:
         cmd: >
           podman build
             -t  {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
@@ -107,7 +109,7 @@
         chdir: "{{ temp_dir.path }}"
 
     - name: "Validate pruned index"
-      command:
+      ansible.builtin.command:
         cmd: >
           {{ downloads_path }}/{{ openshift_full_version }}/opm
             validate configs/
@@ -115,7 +117,7 @@
         chdir: "{{ temp_dir.path }}"
 
     - name: Push pruned index to local registry
-      command:
+      ansible.builtin.command:
         cmd: >
           podman push
             --tls-verify=false
@@ -123,7 +125,7 @@
             --authfile "{{ config_file_path }}/{{ pull_secret_file_name }}"
 
     - name: Mirror Catalog to local registry
-      command:
+      ansible.builtin.command:
         cmd: >
           {{ binaries_tool_path }}/oc adm catalog mirror
             {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}

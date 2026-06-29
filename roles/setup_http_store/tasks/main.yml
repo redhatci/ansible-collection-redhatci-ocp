@@ -8,7 +8,7 @@
       become: true
 
     - name: Open http port, zone internal and public, for firewalld
-      ansible.builtin.firewalld:
+      ansible.posix.firewalld:
         port: "{{ http_port }}/tcp"
         permanent: true
         immediate: true

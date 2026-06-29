@@ -124,6 +124,7 @@
   ansible.builtin.get_url:
     url: "{{ webserver_url }}/{{ version }}/{{ installer_cmd }}"
     dest: "{{ tempdir }}/{{ installer_cmd }}"
+    mode: "0755"
   register: result
   retries: 3
   delay: 10

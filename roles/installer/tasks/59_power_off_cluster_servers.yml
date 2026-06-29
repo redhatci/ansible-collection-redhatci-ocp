@@ -71,6 +71,7 @@
     baseuri: "{{ hostvars[item]['ipmi_address'] }}"
     username: "{{ hostvars[item]['ipmi_user'] }}"
     password: "{{ hostvars[item]['ipmi_password'] }}"
+    resource_id: "{{ hostvars[item]['kvm_uuid'] | default(omit) }}"
   when: |
     (
       (hostvars[item]['poweroff'] is not defined) or

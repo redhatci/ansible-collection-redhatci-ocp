@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        3.5.EPOCH
+Version:        3.7.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -27,6 +27,7 @@ Requires: git
 Requires: jq
 Requires: podman
 Requires: python3-jmespath
+Requires: python3-kubernetes
 Requires: python3-netaddr
 Requires: python3-pyyaml
 Requires: skopeo
@@ -54,8 +55,14 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
-* Wed Jun 10 2026 Rajesh Chiluveru <rchiluve@redhat.com> - 3.5.EPOCH-VERS
+* Mon July 01 2026 Rajesh Chiluveru <rchiluve@redhat.com> - 3.7.EPOCH-VERS
 - Add in_cluster_check role
+
+* Fri Jun 19 2026 Frederic Lepied <flepied@redhat.com> - 3.6.EPOCH-VERS
+- Add generic test runner for eco_gotests role
+
+* Thu Jun 12 2026 Frederic Lepied <flepied@redhat.com> - 3.5.EPOCH-VERS
+- Add cleanup_namespace role and cleanup_stuck_resources module
 
 * Thu Jun  5 2026 Frederic Lepied <flepied@redhat.com> - 3.4.EPOCH-VERS
 - Add cmdline_to_json filter plugin

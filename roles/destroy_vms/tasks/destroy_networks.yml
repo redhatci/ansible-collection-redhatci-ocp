@@ -2,12 +2,12 @@
   become: true
   ignore_errors: true
   block:
-    - name: destroy network
+    - name: Destroy network
       community.libvirt.virt_net:
         name: "{{ network_name }}"
         command: destroy
 
-    - name: undefine network
+    - name: Undefine network
       community.libvirt.virt_net:
         name: "{{ network_name }}"
         command: undefine

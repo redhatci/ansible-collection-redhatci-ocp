@@ -16,7 +16,7 @@
     loop_var: network
 
 - name: Include dnsmasq in the DNS configuration of NetworkManager
-  ansible.builtin.ini_file:
+  community.general.ini_file:
     path: /etc/NetworkManager/conf.d/dnsmasq.conf
     section: main
     option: dns

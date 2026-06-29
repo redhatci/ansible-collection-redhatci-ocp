@@ -46,6 +46,7 @@ Name | Description
 [redhatci.ocp.boot_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/boot_iso/README.md) | Boots nodes to the provided ISO on its vendor.
 [redhatci.ocp.catalog_source](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/catalog_source/README.md) | A Role to deploy an OLM-based CatalogSource
 [redhatci.ocp.chart_verifier](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/chart_verifier/README.md) | Executes the [chart-verifier](https://github.com/redhat-certification/chart-verifier) tool.
+[redhatci.ocp.cleanup_namespace](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/cleanup_namespace/README.md) | Finds and cleans up Kubernetes resources stuck in termination within a namespace.
 [redhatci.ocp.check_resource](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/check_resource/README.md) | Role to wait for the deployment of a given resource
 [redhatci.ocp.cluster_compare](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/cluster_compare/README.md) | A role to facilitate the comparison of Kubernetes cluster configurations by using the kube-compare tool.
 [redhatci.ocp.commit_changes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/commit_changes/README.md) | Automatically stages and commits added, modified, and removed files in a specified directory within a git repository.
@@ -78,7 +79,7 @@ Name | Description
 [redhatci.ocp.hostedbm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hostedbm/README.md) | This role allows to create hosted guest clusters with BM workers.
 [redhatci.ocp.include_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/include_components/README.md) | Create and attach DCI components to DCI jobs from git repositories, RPMs or commit URLs.
 [redhatci.ocp.insert_dns_records](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/insert_dns_records/README.md) | Setups `dnsmasq` (either directly or via `NetworkManager`) inserting the DNS A records required for OpenShift install.
-[redhatci.ocp.in_cluster_check](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/in_cluster_check/README.md) | Runs the [Pen Drive](https://catalog.redhat.com/en/software/containers/pen-drive/pen-drive-scanner-rhel9/68a605de092c681dd3e05d67) in-cluster check scanner against an OpenShift cluster and collects HTML test reports.
+[redhatci.ocp.in_cluster_check](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/in_cluster_check/README.md) | Runs the [Pen Drive](https://catalog.redhat.com/en/software/containers/pen-drive/pen-drive-scanner-rhel9/68a605de092c681dd3e05d67) in-cluster check scanner against an OpenShift cluster and collects test reports either HTML or JSON. Converts JSON reports to Junit
 [redhatci.ocp.installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/installer/README.md) | [IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.install_operator_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/install_operator_gitops/README.md) | Installs and configures the openshift-gitops-operator so it can be used for ZTP deployments.
 [redhatci.ocp.jenkins_job_launcher](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/jenkins_job_launcher/README.md) | Launch Jenkins jobs
@@ -159,6 +160,7 @@ Name | Description
 
 Name | Type | Description
 --- | --- | ---
+[redhatci.ocp.cleanup_stuck_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/plugins/modules/cleanup_stuck_resources.py) | Module | A module to find namespaced resources stuck in termination
 [redhatci.ocp.find_available_port]() | Module | A module to find an available port in a given range
 [redhatci.ocp.get_compatible_rhocp_repo]() | Module | A module to find the latest available version of the RHOCP repository
 [redhatci.ocp.junit2dict]() | Filter | Transforms a JUnit into a dictionary

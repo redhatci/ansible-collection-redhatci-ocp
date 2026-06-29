@@ -21,6 +21,7 @@ All of the variables have sane defaults which you can override to force things, 
 | ocp_registry_image            | openshift4                        | No        | Name for image in the image mirror |
 | gm_image_sources              | (default block)                   | No        | Override the default ICSP block [^2] |
 | single_node_openshift_enabled | false                             | No        | Install OCP in single-node mode |
+| partitioning_enabled          | false                             | No        | Enable CPU partitioning mode for all Nodes |
 
 ## Usage Examples
 
@@ -45,6 +46,7 @@ All of the variables have sane defaults which you can override to force things, 
         - source: registry.example.com/ocp/release
           mirrors:
             - my-custom-registry.example.com:5000/my-repo
+    partitioning_enabled: false
   ansible.builtin.include_role:
     name: redhatci.ocp.generate_manifests
 ```

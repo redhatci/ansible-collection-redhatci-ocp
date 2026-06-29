@@ -31,59 +31,26 @@
         fail_msg: "PTP prerequisite check failed: spec.ptpEventConfig.apiVersion must be '2.0'"
         success_msg: "PTP prerequisite check passed: apiVersion is '2.0'"
 
-- name: "Run PTP tests with eco-gotests"
-  vars:
-    _eco_gotests_ptp_test_labels: "{{ eco_gotests_skip_labels_ptp | map('regex_replace', '^', '!') | join(' && ') | default('', true) }}"
-  containers.podman.podman_container:
-    name: "eco-gotests-ptp-{{ eco_gotests_date }}"
-    image: "{{ eco_gotests_image }}"
-    pull: newer
-    state: started
-    interactive: true
-    network_mode: host
-    uidmap:
-      - "0:1:1000"
-      - "1000:0:1"
-    env:
-      KUBECONFIG: "/kubeconfig/kubeconfig"
-      ECO_TEST_FEATURES: "ptp"
-      REGISTRY_AUTH_FILE: "{{ eco_gotests_registry_auth_file }}"
-      ECO_TEST_LABELS: "{{ _eco_gotests_ptp_test_labels }}"
-      ECO_REPORTS_DUMP_DIR: "/tmp/reports"
-      ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | bool }}"
-    volumes:
-      - "{{ eco_gotests_kubconfig_dir }}/:/kubeconfig:Z"
-      - "{{ eco_gotests_log_dir }}/eco_gotests/ptp:/tmp/reports:Z"
-    detach: false
-    remove: true
-  failed_when: false
+- name: "Show relevant PTP variables for verification"
+  ansible.builtin.debug:
+    msg:
+      eco_gotests_image: "{{ eco_gotests_image }}"
+      eco_gotests_kubconfig_dir: "{{ eco_gotests_kubconfig_dir }}"
+      eco_gotests_log_dir: "{{ eco_gotests_log_dir }}"
+      eco_gotests_eco_test_features_ptp: "{{ eco_gotests_eco_test_features_ptp }}"
+      eco_gotests_registry_auth_file: "{{ eco_gotests_registry_auth_file }}"
+      eco_gotests_run_labels_ptp: "{{ eco_gotests_run_labels_ptp | default([]) }}"
+      eco_gotests_skip_labels_ptp: "{{ eco_gotests_skip_labels_ptp | default([]) }}"
+      eco_gotests_ptp_run_timeout_sec: "{{ eco_gotests_ptp_run_timeout_sec }}"
 
-- name: "Stat failed PTP suite dump directory"
-  ansible.builtin.stat:
-    path: "{{ eco_gotests_log_dir }}/eco_gotests/ptp/failed_ptp_suite_test"
-  register: _eco_gotests_ptp_failed_dump_stat
+- name: "Map PTP variables to generic runner"
+  ansible.builtin.set_fact:
+    eco_gotests_generic_features: "{{ eco_gotests_eco_test_features_ptp }}"
+    eco_gotests_generic_run_labels: "{{ eco_gotests_run_labels_ptp }}"
+    eco_gotests_generic_skip_labels: "{{ eco_gotests_skip_labels_ptp }}"
+    eco_gotests_generic_env: {}
+    eco_gotests_generic_timeout: "{{ eco_gotests_ptp_run_timeout_sec }}s"
+    eco_gotests_generic_run_label_operator: '&&'
 
-- name: "Compress failed PTP suite dumps to failed_ptp_suite_test.tar.gz"
-  ansible.builtin.archive:
-    path: "{{ eco_gotests_log_dir }}/eco_gotests/ptp/failed_ptp_suite_test"
-    dest: "{{ eco_gotests_log_dir }}/failed_ptp_suite_test.tar.gz"
-    format: gz
-    mode: "0644"
-  when:
-    - eco_gotests_dump_failed_tests | bool
-    - _eco_gotests_ptp_failed_dump_stat.stat.exists | default(false)
-    - _eco_gotests_ptp_failed_dump_stat.stat.isdir | default(false)
-
-- name: "Remove failed PTP suite dump directory after compression"
-  ansible.builtin.file:
-    path: "{{ eco_gotests_log_dir }}/eco_gotests/ptp/failed_ptp_suite_test"
-    state: absent
-  when:
-    - eco_gotests_dump_failed_tests | bool
-    - _eco_gotests_ptp_failed_dump_stat.stat.exists | default(false)
-    - _eco_gotests_ptp_failed_dump_stat.stat.isdir | default(false)
-
-- name: "Remove temporary PTP testrun report file"
-  ansible.builtin.file:
-    path: "{{ eco_gotests_log_dir }}/eco_gotests/ptp/report_testrun.xml"
-    state: absent
+- name: "Run PTP tests via generic runner"
+  ansible.builtin.include_tasks: generic.yml

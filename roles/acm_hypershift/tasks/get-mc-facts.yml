@@ -17,7 +17,7 @@
     - name: Set the pullsecret file
       vars:
         pull_secret: "{{ mc_pull_secret.resources[0].data['.dockerconfigjson'] | b64decode }}"
-      copy:
+      ansible.builtin.copy:
         content: "{{ pull_secret }}"
         dest: "{{ ah_tmp_dir }}/{{ auths_file }}"
         mode: "0600"
@@ -45,7 +45,7 @@
       vars:
         idms_query: "resources[*].spec.imageDigestMirrors"
         mirrors: "{{ mc_idms | json_query(idms_query) | flatten | to_yaml }}"
-      copy:
+      ansible.builtin.copy:
         content: "{{ mirrors }}"
         dest: "{{ ah_tmp_dir }}/{{ ics_file }}"
         mode: "0644"
@@ -68,7 +68,7 @@
     - name: Set target release from Management cluster
       vars:
         mc_desired_release: "resources[0].status.desired.image"
-      set_fact:
+      ansible.builtin.set_fact:
         ah_release_image: "{{ mc_cv | json_query(mc_desired_release) }}"
       when:
         - mc_cv is defined
@@ -98,7 +98,7 @@
           from_yaml )['install-config'] |
           from_yaml }}
         mc_ssh_key: "{{ cluster_install_info.sshKey }}"
-      copy:
+      ansible.builtin.copy:
         content: "{{ mc_ssh_key }}"
         dest: "{{ ah_tmp_dir }}/{{ ssh_pub_key }}"
         mode: "0400"
@@ -126,7 +126,7 @@
     - name: Get the user_ca_bundle content
       vars:
         user_ca_bundle: '{{ mc_user_ca_bundle.resources[0].data["ca-bundle.crt"] }}'
-      copy:
+      ansible.builtin.copy:
         content: "{{ user_ca_bundle }}"
         dest: "{{ ah_tmp_dir }}/{{ bundle_file }}"
         mode: "0600"
