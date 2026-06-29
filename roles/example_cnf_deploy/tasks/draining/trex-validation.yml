@@ -1,5 +1,4 @@
 ---
-
 - name: "Extract TRexApp job duration"
   block:
     - name: Retrieve TRexApp information
@@ -16,7 +15,7 @@
       vars:
         _ecd_trex_retrieved_duration: "{{ _ecd_trex_app_cr.resources[0].spec.duration }}"
       ansible.builtin.set_fact:
-        ecd_trex_duration: "{{ (_ecd_trex_retrieved_duration == -1)|ternary(1800, _ecd_trex_retrieved_duration) }}"
+        ecd_trex_duration: "{{ (_ecd_trex_retrieved_duration == -1) | ternary(1800, _ecd_trex_retrieved_duration) }}"
 
 - name: "Wait for the TRex app TestCompleted event"
   kubernetes.core.k8s_info:
@@ -27,7 +26,7 @@
       - "reason==TestCompleted"
       - "involvedObject.name={{ ecd_trex_app_cr_name }}"
   register: _ecd_trex_event
-  retries: "{{ (ecd_trex_duration|int/2)|round|int }}"
+  retries: "{{ (ecd_trex_duration | int / 2) | round | int }}"
   delay: 10
   until: _ecd_trex_event.resources|length > 0
 
@@ -60,7 +59,7 @@
       - "reason==PacketMatched"
       - "involvedObject.name={{ ecd_trex_app_cr_name }}"
   register: _ecd_trex_result
-  retries: "{{ (ecd_trex_duration|int/2)|round|int }}"
+  retries: "{{ (ecd_trex_duration | int / 2) | round | int }}"
   delay: 5
   until: "_ecd_trex_result.resources | length > 0"
   when:
@@ -87,17 +86,16 @@
   vars:
     _ecd_pod_deletion_time: "{{ _ecd_timestamp_pod_deletion.stdout }}"
     _ecd_pod_recreation_time: "{{ _ecd_timestamp_pod_recreation.stdout }}"
-    _ecd_pod_downtime: "{{ _ecd_pod_recreation_time|float - _ecd_pod_deletion_time|float }}"
-    _ecd_trex_downtime_unit: "{{ _ecd_pod_downtime|float / ecd_trex_duration|float }}"
+    _ecd_pod_downtime: "{{ _ecd_pod_recreation_time | float - _ecd_pod_deletion_time | float }}"
+    _ecd_trex_downtime_unit: "{{ _ecd_pod_downtime | float / ecd_trex_duration | float }}"
   ansible.builtin.set_fact:
     ecd_trex_downtime_seconds: "{{ _ecd_pod_downtime }}"
-    ecd_trex_downtime_percentage: "{{ _ecd_trex_downtime_unit|float * 100.0 }}"
+    ecd_trex_downtime_percentage: "{{ _ecd_trex_downtime_unit | float * 100.0 }}"
 
 - name: "Create a file to save downtime value"
   ansible.builtin.copy:
     dest: "{{ ecd_job_logs_path }}/trex-downtime.log"
-    content: "Downtime is {{ ecd_trex_downtime_seconds }} seconds, \
-      representing the {{ ecd_trex_downtime_percentage }} % of TRex \
-      job duration, which is {{ ecd_trex_duration }} seconds"
+    content: "Downtime is {{ ecd_trex_downtime_seconds }} seconds, representing the {{ ecd_trex_downtime_percentage }} % of TRex job duration, which is {{ ecd_trex_duration
+      }} seconds"
     mode: "0755"
   ignore_errors: true

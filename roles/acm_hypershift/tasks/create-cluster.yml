@@ -2,23 +2,12 @@
 - name: Deploy hypershift cluster
   ansible.builtin.shell:
     cmd: >
-      set -e;
-      {{ ah_hcp_cli_path }} create cluster {{ ah_cluster_type }}
-      --name={{ ah_cluster_generated_name }}
-      {%- if ah_base_domain is defined %} --base_domain={{ ah_base_domain }}{%- endif %}
-      --pull-secret={{ ah_pullsecret_file }}
-      --namespace={{ ah_clusters_ns }}
-      --cluster-cidr={{ ah_cluster_network_cidr }}
-      --memory="{{ ah_node_memory }}"
-      --node-pool-replicas={{ ah_node_pool_replicas }}
-      --release-image={{ ah_release_image }}
-      {%- if ah_ics is defined %} --image-content-sources "{{ ah_ics }}"{%- endif %}
-      {%- if ah_ca_bundle_file is defined %} --additional-trust-bundle "{{ ah_ca_bundle_file }}"{%- endif %}
-      {%- if ah_hc_annotations | length >0 %} --annotations {{ ah_hc_annotations }}{%- endif %}
-      {%- if ah_ssh_key | length >0 %} --ssh-key {{ ah_ssh_key }}{%- endif %}
-      {% if ah_control_plane_availability_policy is defined %}
-      --control-plane-availability-policy="{{ ah_control_plane_availability_policy }}"
-      {% endif %}
+      set -e; {{ ah_hcp_cli_path }} create cluster {{ ah_cluster_type }} --name={{ ah_cluster_generated_name }}{%- if ah_base_domain is defined %} --base_domain={{
+      ah_base_domain }}{%- endif %} --pull-secret={{ ah_pullsecret_file }} --namespace={{ ah_clusters_ns }} --cluster-cidr={{ ah_cluster_network_cidr }} --memory="{{
+      ah_node_memory }}" --node-pool-replicas={{ ah_node_pool_replicas }} --release-image={{ ah_release_image }}{%- if ah_ics is defined %} --image-content-sources
+      "{{ ah_ics }}"{%- endif %}{%- if ah_ca_bundle_file is defined %} --additional-trust-bundle "{{ ah_ca_bundle_file }}"{%- endif %}{%- if ah_hc_annotations | length
+      > 0 %} --annotations {{ ah_hc_annotations }}{%- endif %}{%- if ah_ssh_key | length > 0 %} --ssh-key {{ ah_ssh_key }}{%- endif %} {% if ah_control_plane_availability_policy
+      is defined %} --control-plane-availability-policy="{{ ah_control_plane_availability_policy }}" {% endif %}
   changed_when: false
 
 - name: Remove working directory
@@ -72,5 +61,3 @@
   vars:
     utils_cluster_name: "{{ ah_cluster_generated_name }}"
     utils_cluster_namespace: "{{ ah_clusters_ns }}"
-
-...
