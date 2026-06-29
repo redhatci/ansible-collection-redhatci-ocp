@@ -1,3 +1,4 @@
+---
 - name: List vm storage pools
   community.libvirt.virt_pool:
     command: list_pools
@@ -13,11 +14,7 @@
 - name: Get pools to Remove
   ansible.builtin.set_fact:
     pools_to_remove: "{{ pools_to_remove | default({}) | combine({item.name: item.data}) }}"
-  loop: "{{
-      pool_info.results |
-      map(attribute='pools') | list | combine |
-      dict2items(key_name='name', value_name='data')
-    }}"
+  loop: "{{ pool_info.results | map(attribute='pools') | list | combine | dict2items(key_name='name', value_name='data') }}"
   when: item.data.path == images_dir
 
 - name: Find images
@@ -29,7 +26,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ images_to_remove.files |  map(attribute='path') | list }}"
+  loop: "{{ images_to_remove.files | map(attribute='path') | list }}"
 
 - name: Remove pools
   community.libvirt.virt_pool:

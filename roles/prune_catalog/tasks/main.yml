@@ -3,8 +3,7 @@
   ansible.builtin.assert:
     that:
       - pc_operators is defined
-      - pc_operators | type_debug == "list" or
-        pc_operators | type_debug == "dict"
+      - pc_operators | type_debug == "list" or pc_operators | type_debug == "dict"
       - pc_source_catalog is defined
       - pc_destination_catalog is defined
       - pc_source_catalog | length > 0
@@ -13,13 +12,9 @@
 
 - name: "Check if image is pullable - {{ pc_source_catalog }}"
   ansible.builtin.command: >
-    skopeo inspect --no-tags
-    {%- if pc_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
-    {%- if lookup('ansible.builtin.env', 'DOCKER_CONFIG') | length %}
-    --authfile "$DOCKER_CONFIG/config.json"
-    {%- endif %}
+    skopeo inspect --no-tags{%- if pc_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}{%- if lookup('ansible.builtin.env', 'DOCKER_CONFIG') | length %}
+    --authfile "$DOCKER_CONFIG/config.json"{%- endif %}
     docker://{{ pc_source_catalog }}
   register: skopeo_result
   changed_when: skopeo_result.rc == 0
@@ -49,9 +44,8 @@
 
     - name: "Download stable opm client"
       vars:
-        ocp_clients_url:
-          "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable\
-          /opm-linux{{ ansible_distribution_major_version is version('9', '==') | ternary('-rhel9', '') }}.tar.gz"
+        ocp_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux{{ ansible_distribution_major_version is version('9', '==')
+          | ternary('-rhel9', '') }}.tar.gz"
       ansible.builtin.unarchive:
         src: "{{ ocp_clients_url }}"
         dest: "{{ pc_tmp_dir }}"
@@ -162,4 +156,3 @@
       ansible.builtin.file:
         state: absent
         path: "{{ pc_tmp_dir }}"
-...

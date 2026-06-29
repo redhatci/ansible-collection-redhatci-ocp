@@ -5,9 +5,9 @@
     ecd_trex_profile_name: "{{ ecd_trex_test_config_item.trex_profile_name | default('') }}"
     ecd_trex_profile_cm_name: "{{ ecd_trex_test_config_item.trex_profile_cm_name | default('') }}"
     ecd_random_str: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=5') }}"
-    ecd_packet_rate: ''
-    ecd_packet_size: ''
-    ecd_duration: ''
+    ecd_packet_rate: ""
+    ecd_packet_size: ""
+    ecd_duration: ""
 
 - name: Set packet rate if defined
   ansible.builtin.set_fact:
