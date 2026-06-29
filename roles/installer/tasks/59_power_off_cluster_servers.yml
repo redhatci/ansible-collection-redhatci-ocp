@@ -67,10 +67,14 @@
 
 - name: Power Off via Redfish
   tags: powerservers
+  vars:
+    _baseuri: >-
+      {{ hostvars[item]['ipmi_address'] }}{{ ':' + hostvars[item]['redfish_port'] | string
+      if hostvars[item]['redfish_port'] is defined else '' }}
   community.general.redfish_command:
     category: Systems
     command: PowerGracefulShutdown
-    baseuri: "{{ hostvars[item]['ipmi_address'] }}"
+    baseuri: "{{ _baseuri }}"
     username: "{{ hostvars[item]['ipmi_user'] }}"
     password: "{{ hostvars[item]['ipmi_password'] }}"
     resource_id: "{{ hostvars[item]['kvm_uuid'] | default(omit) }}"
