@@ -90,7 +90,7 @@
       register: _mor_ephemeral_port
 
     # Only GA and Candidate builds include signed images
-    - name: Mirror the release to the local registry
+    - name: Mirror the release directly to the local registry
       ansible.builtin.shell:
         cmd: >
           umask 0022 && env -u REGISTRY_AUTH_FILE
@@ -109,6 +109,50 @@
       delay: 10
       until: _mor_cmd_output.rc == 0
       changed_when: _mor_cmd_output.rc == 0
+      when: not mor_d2m_workflow | bool
+
+    # D2M two-step workflow: Mirror-to-Disk then Disk-to-Mirror
+    # This path avoids TOCTOU race conditions where upstream image
+    # digests can change between mirror resolution and push.
+    - name: "D2M step 1 - Mirror to disk archive (M2D)"
+      ansible.builtin.shell:
+        cmd: >
+          umask 0022 && env -u REGISTRY_AUTH_FILE
+          {{ _mor_tmp_dir.path }}/oc-mirror --v2 --config={{ _mor_tmp_dir.path }}/ocp-release.yaml
+          --authfile {{ mor_auths_file }}
+          --workspace file://{{ _mor_tmp_dir.path }}
+          file://{{ _mor_tmp_dir.path }}/archive
+          --port {{ _mor_ephemeral_port.port }}
+          {% if mor_allow_insecure_registry | bool %}
+          --src-tls-verify=false
+          {% endif %}
+          --ignore-release-signature
+      register: _mor_m2d_output
+      retries: 3
+      delay: 10
+      until: _mor_m2d_output.rc == 0
+      changed_when: _mor_m2d_output.rc == 0
+      when: mor_d2m_workflow | bool
+
+    - name: "D2M step 2 - Push disk archive to local registry (D2M)"
+      ansible.builtin.shell:
+        cmd: >
+          umask 0022 && env -u REGISTRY_AUTH_FILE
+          {{ _mor_tmp_dir.path }}/oc-mirror --v2
+          --authfile {{ mor_auths_file }}
+          --workspace file://{{ _mor_tmp_dir.path }}
+          --from file://{{ _mor_tmp_dir.path }}/archive
+          docker://{{ mor_registry_url }}/{{ mor_registry_path }}
+          --port {{ _mor_ephemeral_port.port }}
+          {% if mor_allow_insecure_registry | bool %}
+          --dest-tls-verify=false
+          {% endif %}
+      register: _mor_d2m_output
+      retries: 3
+      delay: 10
+      until: _mor_d2m_output.rc == 0
+      changed_when: _mor_d2m_output.rc == 0
+      when: mor_d2m_workflow | bool
 
     - name: Write Image Source manifest
       ansible.builtin.copy:
@@ -120,6 +164,10 @@
         mode: "0644"
         setype: httpd_sys_content_t
       become: true
+
+    - name: Verify mirrored image digests
+      ansible.builtin.include_tasks: verify-digests.yml
+      when: mor_verify_digests | bool
 
   always:
     - name: Clean up temporary directory

@@ -20,6 +20,8 @@ mor_registry_path: "ocp-{{ mor_base_version }}/{{ mor_version }}"
 mor_build: "ga"
 mor_allow_insecure_registry: true
 mor_extra_flags: ""
+mor_d2m_workflow: false
+mor_verify_digests: true
 # Required images according install type
 mor_upi: []
 mor_ipi:

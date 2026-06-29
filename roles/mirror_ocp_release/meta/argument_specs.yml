@@ -222,3 +222,22 @@ argument_specs:
         default:
           - azurestack
         description: List of images required for Azure installation type.
+      mor_d2m_workflow:
+        type: bool
+        required: false
+        default: false
+        description: >
+          Enable the two-step Disk-to-Mirror (D2M) workflow. When true,
+          oc-mirror first archives images to a local disk (M2D) then
+          pushes the archive to the target registry (D2M). This avoids
+          TOCTOU race conditions where upstream digests change between
+          mirror resolution and push.
+      mor_verify_digests:
+        type: bool
+        required: false
+        default: true
+        description: >
+          After mirroring, verify that the release image digest in the
+          local registry matches the pre-mirror digest captured from
+          the upstream source. Detects TOCTOU digest drift.
+          See ECOENGCL-475 and PR #1390 for background.

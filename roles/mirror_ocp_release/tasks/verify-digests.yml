@@ -1,0 +1,34 @@
+---
+# Post-mirror digest verification
+# Detects TOCTOU digest drift where the upstream image changes between
+# mirror resolution and push, causing a digest mismatch in the local
+# registry.  See ECOENGCL-475 and PR #1390 for background.
+
+- name: Inspect mirrored release image digest from local registry
+  ansible.builtin.command: >
+    skopeo inspect
+    --no-tags
+    --authfile {{ mor_auths_file }}
+    {%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false
+    {%- endif %}
+    --format '{{ "{{" }} .Digest {{ "}}" }}'
+    docker://{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images@{{ mor_release_image_digest }}
+  register: _mor_post_mirror_digest
+  changed_when: false
+
+- name: Verify mirrored digest matches pre-mirror digest
+  ansible.builtin.assert:
+    that:
+      - _mor_post_mirror_digest.stdout | trim == mor_release_image_digest
+    fail_msg: >-
+      TOCTOU digest drift detected!
+      The pre-mirror digest ({{ mor_release_image_digest }}) does not match
+      the post-mirror digest ({{ _mor_post_mirror_digest.stdout | trim }})
+      in the local registry.  This indicates the upstream release image
+      changed between mirror resolution and push.
+      See ECOENGCL-475 and PR #1390 for details.
+    success_msg: >-
+      Post-mirror digest verification passed:
+      {{ mor_release_image_digest }}
+...

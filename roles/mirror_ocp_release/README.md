@@ -28,6 +28,48 @@ If enabled, the role requires a container registry to mirror the OCP container i
 | mor_allow_insecure_registry  | true                                                               | No       | Allow interacting with registries that are using an unknown CA certificate.
 | mor_extra_flags              | ""                                                                 | No       | Extra flags to pass to the `oc adm release mirror` command when mirroring release images.
 | mor_build                    | ga                                                                 | No       | The build type of the OCP release. Supported values: ga, candidate, dev, nightly.
+| mor_d2m_workflow             | false                                                              | No       | Enable two-step Disk-to-Mirror (D2M) workflow. Avoids TOCTOU race conditions during mirroring.
+| mor_verify_digests           | true                                                               | No       | Verify that the mirrored release image digest matches the pre-mirror digest. Detects TOCTOU drift.
+
+## D2M Workflow Validation
+
+The default mirroring path streams images directly from the upstream registry to
+the local registry in a single `oc-mirror` invocation. This can be subject to
+TOCTOU (Time-of-Check-Time-of-Use) race conditions where the upstream release
+image digest changes between mirror resolution and push (see [ECOENGCL-475] and
+[PR #1390]).
+
+When `mor_d2m_workflow` is enabled, the role uses a two-step path:
+
+1. **M2D (Mirror-to-Disk):** `oc-mirror` archives the upstream images to a local
+   disk directory.
+2. **D2M (Disk-to-Mirror):** `oc-mirror` pushes the on-disk archive to the
+   target registry.
+
+After mirroring (regardless of which workflow is used), if `mor_verify_digests`
+is `true` (default), the role inspects the mirrored release image in the local
+registry and asserts that its digest matches the pre-mirror digest captured from
+the upstream source. A mismatch causes a clear failure referencing the TOCTOU
+issue.
+
+### Usage example
+
+```yaml
+- name: Mirror release with D2M workflow
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_ocp_release
+  vars:
+    mor_version: "4.17.5"
+    mor_pull_url: "quay.io/openshift-release-dev/ocp-release@sha256:abc123..."
+    mor_auths_file: "/var/pull_secret"
+    mor_webserver_url: "https://mywebserver"
+    mor_registry_url: "my-registry:5000"
+    mor_d2m_workflow: true
+    mor_verify_digests: true
+```
+
+[ECOENGCL-475]: https://issues.redhat.com/browse/ECOENGCL-475
+[PR #1390]: https://github.com/redhatci/ocp/pull/1390
 
 ## Requirements
 
