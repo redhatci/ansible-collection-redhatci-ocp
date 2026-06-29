@@ -1,3 +1,4 @@
+---
 - name: Validate 'role' exists before deriving defaults
   ansible.builtin.assert:
     that:
@@ -35,11 +36,8 @@
 
 - name: Set kvm_network_interfaces
   ansible.builtin.set_fact:
-    kvm_network_interfaces: "{{
-        hostvars[kvm_node_hostname]['network_interfaces'] | default(
-          {(hostvars[vm_hostname]['vm_bridge_name'] | default(cluster_name + '-br')): vm_mac}
-        )
-      }}"
+    kvm_network_interfaces: "{{ hostvars[kvm_node_hostname]['network_interfaces'] | default({(hostvars[vm_hostname]['vm_bridge_name'] | default(cluster_name + '-br')):
+      vm_mac}) }}"
 
 - name: Build node
   ansible.builtin.set_fact:
@@ -55,7 +53,7 @@
 
 - name: Add per-VM additional virt-install options when provided
   ansible.builtin.set_fact:
-    kvm_node: "{{ kvm_node | combine({'additional_vm_install_options': kvm_node_spec['additional_vm_install_options']}) }}"  # noqa: redhat-ci[no-role-prefix]
+    kvm_node: "{{ kvm_node | combine({'additional_vm_install_options': kvm_node_spec['additional_vm_install_options']}) }}" # noqa: redhat-ci[no-role-prefix]
   when:
     - "'additional_vm_install_options' in kvm_node_spec"
     - "(kvm_node_spec['additional_vm_install_options'] | string | trim) | length > 0"
@@ -63,4 +61,4 @@
 
 - name: Update processed_kvm_nodes
   ansible.builtin.set_fact:
-    processed_kvm_nodes: "{{ processed_kvm_nodes | combine({kvm_node.vm_host: ((processed_kvm_nodes[kvm_node.vm_host] | default([])) +  [kvm_node])}) }}"
+    processed_kvm_nodes: "{{ processed_kvm_nodes | combine({kvm_node.vm_host: ((processed_kvm_nodes[kvm_node.vm_host] | default([])) + [kvm_node])}) }}"

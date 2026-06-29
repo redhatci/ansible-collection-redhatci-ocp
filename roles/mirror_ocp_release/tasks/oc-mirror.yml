@@ -8,10 +8,8 @@
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
-    --authfile {{ mor_auths_file }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
+    --authfile {{ mor_auths_file }}{%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}
     --format '{{ "{{" }} .Digest {{ "}}" }}'
     docker://{{ mor_pull_url | regex_replace('^docker://', '') }}
   register: _mor_skopeo_pull_digest
@@ -31,10 +29,8 @@
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
-    --authfile {{ mor_auths_file }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
+    --authfile {{ mor_auths_file }}{%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}
     docker://{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images@{{ mor_release_image_digest }}
   register: _mor_release_image
   failed_when: false
@@ -42,12 +38,8 @@
 
 - name: Mirror the release to the local registry
   when:
-    - (_mor_release_image is defined and
-      _mor_release_image.rc is defined and
-      _mor_release_image.rc != 0)
-      or mor_force | bool
+    - (_mor_release_image is defined and _mor_release_image.rc is defined and _mor_release_image.rc != 0) or mor_force | bool
   block:
-
     - name: Create temporary directory for tooling
       ansible.builtin.tempfile:
         state: directory
@@ -126,4 +118,3 @@
       ansible.builtin.file:
         path: "{{ _mor_tmp_dir.path }}"
         state: absent
-...

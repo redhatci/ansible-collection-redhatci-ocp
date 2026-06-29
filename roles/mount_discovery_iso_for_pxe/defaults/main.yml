@@ -4,7 +4,7 @@ tftp_root: "{{ hostvars['tftp_host']['tftp_directory'] | default('/var/lib/tftpb
 mount_images_directory: "/mnt/iso/images"
 mount_efiboot_directory: "/mnt/efiboot"
 pxe_directory: "pxe"
-rootfs_directory: "/opt/http_store/data/{{pxe_directory}}"
+rootfs_directory: "/opt/http_store/data/{{ pxe_directory }}"
 mounted_iso_files:
   - "{{ mount_images_directory }}/ignition.img"
   - "{{ mount_images_directory }}/efiboot.img"
@@ -23,8 +23,8 @@ tftp_files_to_download:
   - "{{ mounted_tftp_files }}/BOOTX64.EFI"
 
 system_files_to_download:
-  - "{{ mounted_tftp_files }}/lpxelinux.0" 
-  - "{{ mounted_tftp_files }}/ldlinux.c32"  
+  - "{{ mounted_tftp_files }}/lpxelinux.0"
+  - "{{ mounted_tftp_files }}/ldlinux.c32"
   - "{{ mounted_tftp_files }}/menu.c32"
 
 system_files_directory: "/usr/share/syslinux"

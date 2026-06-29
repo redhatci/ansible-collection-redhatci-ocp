@@ -47,7 +47,7 @@
 - name: Find old bootstrap VM Storage
   ansible.builtin.find:
     paths: "{{ item }}"
-    patterns: '*-bootstrap,*-bootstrap.ign'
+    patterns: "*-bootstrap,*-bootstrap.ign"
     file_type: any
   register: find_results
   with_items: "{{ default_libvirt_pool_dir }}"
@@ -56,7 +56,7 @@
 
 - name: Create list of old paths
   ansible.builtin.set_fact:
-    vm_paths: "{{ vm_paths  | default([]) + find_results.results[item|int] | json_query('files[*].path') }}"
+    vm_paths: "{{ vm_paths | default([]) + find_results.results[item | int] | json_query('files[*].path') }}"
   with_sequence: start=0 count={{ default_libvirt_pool_dir | length }}
 
 - name: Delete old bootstrap VMs Storage

@@ -53,7 +53,7 @@
         mode: '0755'
 
     - name: Compress HTML results web page to upload it to DCI
-      ansible.builtin.archive:  # noqa: fqcn[canonical]
+      community.general.archive:
         path:
           - "{{ kbpc_logs_location }}/cnf-test-results/*"
         dest: "{{ kbpc_log_path }}/{{ kbpc_html_report_filename }}"

@@ -71,15 +71,8 @@
   ansible.builtin.shell:
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
-      set -x -o pipefail;
-      oc adm release info
-      {{ ah_release_image }}
-      {%- if ah_allow_insecure_registry | bool %}
-      --insecure
-      {%- endif %}
-      --output json
-      --registry-config={{ ah_pullsecret_file }} |
-      jq -r .metadata.version
+      set -x -o pipefail; oc adm release info {{ ah_release_image }}{%- if ah_allow_insecure_registry | bool %} --insecure{%- endif %} --output json --registry-config={{
+      ah_pullsecret_file }} | jq -r .metadata.version
   retries: 3
   delay: 10
   register: ah_ocp_version
@@ -115,4 +108,3 @@
 
 - name: Hypershift cluster creation
   ansible.builtin.include_tasks: create-cluster.yml
-...

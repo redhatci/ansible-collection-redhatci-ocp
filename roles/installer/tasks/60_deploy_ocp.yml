@@ -43,7 +43,7 @@
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for bootstrap-complete
       register: wait_for_bootstrap_result
       until: wait_for_bootstrap_result is succeeded
-      retries: "{{ increase_bootstrap_timeout|default(1)|int }}"
+      retries: "{{ increase_bootstrap_timeout | default(1) | int }}"
       delay: 1
 
     - name: Wait for Install Complete
@@ -51,6 +51,6 @@
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for install-complete
       register: wait_for_install_result
       until: wait_for_install_result is succeeded
-      retries: "{{ increase_install_timeout|default(1)|int }}"
+      retries: "{{ increase_install_timeout | default(1) | int }}"
       delay: 1
       no_log: true
