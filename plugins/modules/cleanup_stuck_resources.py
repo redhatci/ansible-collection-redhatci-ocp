@@ -119,9 +119,6 @@ import traceback
 
 from ansible.module_utils.basic import AnsibleModule
 
-HAS_KUBERNETES = False
-KUBERNETES_IMPORT_ERROR = None
-
 try:
     from kubernetes import client, config
     from kubernetes.client.rest import ApiException
@@ -129,6 +126,7 @@ try:
 
     HAS_KUBERNETES = True
 except ImportError:
+    HAS_KUBERNETES = False
     KUBERNETES_IMPORT_ERROR = traceback.format_exc()
 
 
@@ -180,7 +178,7 @@ def extract_item_metadata(item, default_namespace):
 
 
 def is_stuck_resource(deletion_ts, finalizers, namespace_terminating,
-                      remove_all_finalizers):
+                     remove_all_finalizers):
     if not finalizers:
         return False
     if remove_all_finalizers:

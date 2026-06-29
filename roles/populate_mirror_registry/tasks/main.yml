@@ -1,21 +1,17 @@
 ---
 # tasks file for populate_mirror_registry
-- name: Check required variables
-  import_tasks: var_check.yml
+- import_tasks: var_check.yml
   tags:
     - populate_registry
 
-- name: Install prerequisites
-  import_tasks: prerequisites.yml
+- import_tasks: prerequisites.yml
   tags:
     - populate_registry
 
-- name: Populate the mirror registry
-  import_tasks: populate_registry.yml
+- import_tasks: populate_registry.yml
   tags:
     - populate_registry
 
-- name: Clean up temporary resources
-  import_tasks: cleanup.yml
+- import_tasks: cleanup.yml
   tags:
     - populate_registry

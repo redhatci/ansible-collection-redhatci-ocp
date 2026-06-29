@@ -1,12 +1,10 @@
 ---
-- name: Include validation checks
-  include_tasks: 10_validation.yml
+- include_tasks: 10_validation.yml
   tags:
   - validation
   - create_registry
 
-- name: Include disconnected registry validation
-  include_tasks: 15_validation_disconnected_registry.yml
+- include_tasks: 15_validation_disconnected_registry.yml
   when:
     - "'registry_host' in groups"
     - "groups['registry_host']"
@@ -14,32 +12,23 @@
     - disconnected
     - create_registry
 
-- name: Include subscription manager registration
-  include_tasks: 20_sub_man_register.yml
+- include_tasks: 20_sub_man_register.yml
   tags: subscription
-- name: Include required packages installation
-  include_tasks: 30_req_packages.yml
+- include_tasks: 30_req_packages.yml
   tags: packages
-- name: Include network bridge configuration
-  include_tasks: 40_bridge.yml
+- include_tasks: 40_bridge.yml
   tags:
     - network
-- name: Include networking facts gathering
-  include_tasks: 45_networking_facts.yml
+- include_tasks: 45_networking_facts.yml
   tags:
     - network_facts
-- name: Include sudo user modification
-  include_tasks: 50_modify_sudo_user.yml
+- include_tasks: 50_modify_sudo_user.yml
   tags: user
-- name: Include services enablement
-  include_tasks: 60_enabled_services.yml
+- include_tasks: 60_enabled_services.yml
   tags: services
-- name: Include firewall services configuration
-  include_tasks: 70_enabled_fw_services.yml
+- include_tasks: 70_enabled_fw_services.yml
   tags: firewall
-- name: Include libvirt storage pool setup
-  include_tasks: 80_libvirt_pool.yml
+- include_tasks: 80_libvirt_pool.yml
   tags: storagepool
-- name: Include config and install directories creation
-  include_tasks: 90_create_config_install_dirs.yml
+- include_tasks: 90_create_config_install_dirs.yml
   tags: clusterconfigs

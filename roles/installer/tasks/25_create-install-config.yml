@@ -1,5 +1,5 @@
 ---
-- name: Verify that SSH key exists for user - {{ ansible_user }}
+- name: Verify that SSH key for {{ ansible_user }} exists
   ansible.builtin.stat:
     path: "{{ ansible_user_dir }}/.ssh/id_rsa.pub"
   register: sshkeypath

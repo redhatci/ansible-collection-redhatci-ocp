@@ -107,7 +107,7 @@
 
 # If the registry host got the tar, lets just copy it to the prov host
 # 15_disconnected_registry_create.yml can handle extracting to the registry host already
-- name: Get the installer tar.gz from registry host into temp file on control machine
+- name: Get the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz from registry host into temp file on control machine
   ansible.builtin.fetch:
     dest: /tmp/
     flat: true
@@ -117,7 +117,7 @@
   tags:
     - getoc
 
-- name: Copy the installer tar.gz from control machine to the provisioner host
+- name: Copy the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz from control machine to the provisioner host
   ansible.builtin.copy:
     src: "/tmp/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     dest: "{{ tempdir }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
@@ -129,7 +129,7 @@
   tags:
     - getoc
 
-- name: Remove the temporary copy of the installer tar.gz on control machine
+- name: Remove the temporary copy of the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz on control machine
   ansible.builtin.file:
     path: "/tmp/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     state: absent
@@ -138,7 +138,7 @@
   tags:
     - getoc
 
-- name: Untar the installer tar.gz
+- name: "Untar the {{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
   ansible.builtin.unarchive:
     src: "{{ tempdir }}/{{ installer_oc_installer_prefix }}-{{ release_version }}.tar.gz"
     dest: "{{ tempdir }}"

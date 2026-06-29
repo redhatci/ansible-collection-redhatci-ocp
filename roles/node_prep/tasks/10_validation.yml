@@ -388,7 +388,7 @@
     - always
     - validation
 
-- name: Check if openshift-client-linux tar.gz exists - {{ version }}
+- name: Check if openshift-client-linux-{{ version }}.tar.gz exists
   ansible.builtin.uri:
     url: "{{ release_url }}/{{ version }}/openshift-client-linux-{{ release_version }}.tar.gz"
     method: HEAD

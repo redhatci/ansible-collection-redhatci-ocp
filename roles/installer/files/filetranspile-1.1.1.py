@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Takes a fake root and appends them into a provided ignition configuration.
@@ -118,7 +119,7 @@ class IgnitionSpec(abc.ABC):
         # Walk through the files and append them for merging
         all_files = []
         all_links = []
-        for root, _unused_dirs, files in os.walk(self.fake_root):
+        for root, _, files in os.walk(self.fake_root):
             for file in files:
                 path = os.path.sep.join([root, file])
                 host_path = path.replace(self.fake_root, "")

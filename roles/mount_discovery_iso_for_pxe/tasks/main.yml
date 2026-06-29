@@ -1,5 +1,5 @@
 ---
-- name: Prepare PXE
+- name: prepare PXE
   become: true
   block:
 
@@ -8,7 +8,7 @@
         name: syslinux
         state: present
 
-    - name: Mount the discovery iso
+    - name: mount the discovery iso
       ansible.posix.mount:
         src: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
         path: /mnt/iso
@@ -71,7 +71,7 @@
         remote_src: true # Remote because http_host is not required to be ansible controller
       with_items: "{{ system_files }}"
 
-- name: Copy files from http-store to tftp
+- name: copy files from http-store to tftp
   become: true
   delegate_to: tftp_host
   block:

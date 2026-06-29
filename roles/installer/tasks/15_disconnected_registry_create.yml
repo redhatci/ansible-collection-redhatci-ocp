@@ -94,7 +94,7 @@
     - disconnected
     - create_registry
   block:
-    - name: Set cert facts to be easier
+    - name: set cert facts to be easier
       ansible.builtin.set_fact:
         cert_country: "{{ hostvars[groups['registry_host'][0]]['cert_country'] }}"
         cert_state: "{{ hostvars[groups['registry_host'][0]]['cert_state'] }}"
@@ -216,14 +216,14 @@
         mode: "0640"
       delegate_to: localhost
 
-    - name: Append auth to pullsecret
+    - name: append auth to pullsecret
       ansible.builtin.shell: |
         set -o pipefail
         echo '{{ pullsecret }}' | jq -c \
           '.auths += {{ disconnected_auth }}'
       register: new_pullsecret
 
-    - name: Set pullsecret with new auth
+    - name: set pullsecret with new auth
       ansible.builtin.set_fact:
         pullsecret: "  {{ new_pullsecret.stdout }}"
 
@@ -373,7 +373,7 @@
         force: true
         mode: "0644"
 
-    - name: Create install config appends file on localhost
+    - name: Create {{ install_config_appends_file }} on localhost
       ansible.builtin.copy:
         content: "{{ install_config_appends }}"
         dest: "{{ lookup ('env', 'PWD') }}/{{ install_config_appends_file }}"

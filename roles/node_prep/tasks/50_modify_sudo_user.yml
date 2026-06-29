@@ -1,5 +1,5 @@
 ---
-- name: Add user to libvirt group and get ssh key setup - {{ ansible_user }}
+- name: Add "{{ ansible_user }}" user to libvirt group and get ssh key setup
   ansible.builtin.user:
     name: "{{ ansible_user }}"
     groups: libvirt
