@@ -71,7 +71,11 @@
 
     - name: Set up files with directory context
       ansible.builtin.set_fact:
-        preflight_files_context: "{{ preflight_files_context | default([]) + [{'files': item.files, 'container_image': item.dir.item.container_image, 'path': item.dir.path}] }}"
+        preflight_files_context: >-
+          {{ preflight_files_context | default([])
+          + [{'files': item.files,
+          'container_image': item.dir.item.container_image,
+          'path': item.dir.path}] }}
       loop: "{{ _preflight_found_files.results }}"
       loop_control:
         loop_var: "item"

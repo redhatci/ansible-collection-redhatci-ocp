@@ -28,4 +28,8 @@ listen_addresses:
   - "127.0.0.1"
   - "{{ listen_address }}"
 
-TFTP_ROOT: "{% if (hostvars['tftp_host'] is defined) and (hostvars['tftp_host']['tftp_directory']) is defined %}{{ hostvars['tftp_host']['tftp_directory'] }}{% else %}/var/lib/tftpboot/{% endif %}"
+TFTP_ROOT: >-
+  {% if (hostvars['tftp_host'] is defined) and
+  (hostvars['tftp_host']['tftp_directory']) is defined %}{{
+  hostvars['tftp_host']['tftp_directory']
+  }}{% else %}/var/lib/tftpboot/{% endif %}
