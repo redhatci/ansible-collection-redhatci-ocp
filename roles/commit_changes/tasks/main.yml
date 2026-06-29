@@ -43,7 +43,7 @@
     chdir: "{{ cc_directory }}"
   when: cc_autopush | default(false)
   register: _cc_result
-  failed_when: _cc_result.rc > 1
+  failed_when: _cc_result.rc != 0
   changed_when: _cc_result.rc == 0
 
 ...
