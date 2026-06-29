@@ -15,8 +15,8 @@
     - "metadata"
 
 - name: "Git create a local branch"
-  ansible.builtin.command: "git checkout -b {{ local_branch }}"  # noqa: command-instead-of-module
-  args:
+  ansible.builtin.command:  # noqa: command-instead-of-module
+    cmd: "git checkout -b {{ local_branch }}"
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}"
 
 - name: "Render bundle operator image"
@@ -67,7 +67,6 @@
       git config user.name {{ github_username }}
       git add operators/{{ product_name }}
       git commit -m 'Added {{ product_name }} version {{ product_version }}'
-  args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
 
 - name: Ensure that remote branch is absent to avoid merge conflicts
@@ -76,7 +75,6 @@
       eval "$(ssh-agent)"
       ssh-add {{ work_dir }}/ssh_key
       git push origin --delete {{ local_branch }}
-  args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
   ignore_errors: true
 
@@ -90,7 +88,6 @@
       --title "operator {{ product_name }} ({{ product_version }})" \
       --body "Adding Operator {{ product_name }} version {{ product_version }} - DCI Job: {{ job_id }}" \
       --repo {{ target_repository }}
-  args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
   register: pr_details
 
