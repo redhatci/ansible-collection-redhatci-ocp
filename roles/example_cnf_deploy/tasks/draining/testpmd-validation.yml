@@ -59,9 +59,8 @@
       - ecd_cnf_new_node != ecd_pktgen_existing_node
       - ecd_cnf_new_pod != ecd_cnf_existing_pod
     fail_msg: "New testpmd-app pod does not match the conditions defined to consider it is a new one"
-  changed_when: false
 
 - name: "Uncordon the node after finishing the draining and rescheduling process"
   ansible.builtin.shell: |
     {{ oc_tool_path }} adm uncordon {{ ecd_cnf_existing_node }}
-  changed_when: false
+  changed_when: true

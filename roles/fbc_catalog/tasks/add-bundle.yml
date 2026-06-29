@@ -22,7 +22,6 @@
     fbc_operator_name: "{{ bundle_data | json_query('name') | join('') }}"
     fbc_short_name: "{{ bundle_data | json_query(name_query) | join('') }}"
 
-  changed_when: false
 - name: "Inspect the bundle image"
   ansible.builtin.shell: >
     if [ -n "$DOCKER_CONFIG" ]; then
@@ -43,7 +42,6 @@
     bundle_channel: "{{ bundle_inspect.stdout | from_json | json_query(query_channel) }}"
   ansible.builtin.set_fact:
     fbc_default_channel: "{{ bundle_channel | default('latest', true) }}"
-  changed_when: false
 
 - name: "Initialize operators index"
   ansible.builtin.shell: >

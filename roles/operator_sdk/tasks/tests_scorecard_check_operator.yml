@@ -112,7 +112,6 @@
     content: "{{ scorecard_exec.stdout }}"
     dest: "{{ scorecard_job_logs.path }}/{{ scorecard_prefix }}_basic_check_spec_test.xml"
     mode: "0644"
-  changed_when: false
 
 - name: Run operator-sdk scorecard with suite=olm
   ansible.builtin.shell:

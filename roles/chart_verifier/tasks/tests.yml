@@ -144,7 +144,6 @@
     chart_version: "{{ chart_info.version }}"
     chart_description: "{{ chart_info.description }}"
 
-  changed_when: false
 - name: "Running Chart Verifier"
   ansible.builtin.shell:
     cmd: >
@@ -178,7 +177,6 @@
     dest: "{{ logs_dir }}/{{ chart_name }}_{{ index }}_report.yaml"
     remote_src: true
   delegate_to: localhost
-  changed_when: false
 
 - name: "Validate_ number of mandatory tests that have failed"
   ansible.builtin.shell:

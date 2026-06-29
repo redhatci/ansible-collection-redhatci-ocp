@@ -41,7 +41,6 @@
 
 # We have to tag using the last stable version
 # to make Pyxis submission work
-  changed_when: false
 - name: Build Preflight image  # noqa: command-instead-of-shell
   vars:
     push_image: >-

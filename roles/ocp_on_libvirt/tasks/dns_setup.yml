@@ -18,7 +18,6 @@
   ansible.builtin.set_fact:
     vm_inv_info: "{{ vm_inv_info | default({}) | combine({item.cmd.split()[2]: {'mac': item.stdout}}) }}"
   with_items: "{{ mac_list.results }}"
-  changed_when: false
 
 - name: Wait for VMs IPs
   ansible.builtin.shell: >
@@ -42,7 +41,6 @@
 - name: Merge ip addresses to the vm_inv_info dict
   ansible.builtin.set_fact:
     vm_inv_info: "{{ vm_inv_info | default({}) | combine(vm_ip_dict | default({}), recursive=True) }}"
-  changed_when: false
 
 - name: Make IPs persistent
   ansible.builtin.shell: "virsh net-update {{ net }} add ip-dhcp-host \"<host mac='{{ item.value.mac }}' name='{{ item.key }}.{{ cluster_domain }}' ip='{{ item.value.ip }}' />\" --live --config"
@@ -51,7 +49,7 @@
     - "item.value.ip not in net_dump.stdout"
   with_dict: "{{ vm_inv_info }}"
   become: "{{ libvirt_become }}"
-  changed_when: false
+  changed_when: true
 
 - name: Use local dnsmasq for name resolution
   community.general.ini_file:

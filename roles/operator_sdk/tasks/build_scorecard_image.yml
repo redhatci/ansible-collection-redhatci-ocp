@@ -26,7 +26,6 @@
     operator_sdk_img: "{{ operator_sdk_img + '-' + job_id }}"
   when: job_id is defined
 
-  changed_when: false
 - name: Build Operator-SDK image
   ansible.builtin.shell:
     cmd: >

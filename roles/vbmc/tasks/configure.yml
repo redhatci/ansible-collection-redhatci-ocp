@@ -33,7 +33,6 @@
 
 - name: Setup firewall
   ansible.builtin.include_tasks: firewalld.yml
-  changed_when: false
 
 - name: Add nodes to vbmc
   ansible.builtin.command: >
@@ -50,7 +49,6 @@
   loop: "{{ vbmc_ports | dict2items }}"
   loop_control:
     loop_var: node
-  changed_when: false
 
 - name: Setting nodes power status using ipmitool
   ansible.builtin.command: >
@@ -89,7 +87,6 @@
     msg: "Node is not powered on! (ipmitool stdout: '{{ item.stdout }}')"
   when: "item.stdout != 'Chassis Power is on'"
   with_items: "{{ ipmitool_results.results }}"
-  changed_when: false
 
 - name: Power off nodes with ipmitool
   ansible.builtin.command: >

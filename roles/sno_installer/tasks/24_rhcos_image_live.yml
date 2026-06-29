@@ -47,5 +47,5 @@
     /usr/sbin/restorecon -R "{{ si_cache_dir }}/{{ rhcos_live_iso_name }}"
   become: true
   tags: rhcos_live
-  changed_when: false
+  changed_when: true
 ...

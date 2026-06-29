@@ -66,7 +66,6 @@
     dest: "{{ fbc_tmp_dir }}/catalog.Dockerfile"
     mode: "0644"
 
-  changed_when: false
 - name: "Build the catalog"
   ansible.builtin.command: >
     podman build .

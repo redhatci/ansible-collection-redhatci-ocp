@@ -35,7 +35,6 @@
     preflight_partner_creds: "{{ partner_creds | expanduser }}"
   when: partner_creds is defined
 
-  changed_when: false
 - name: Get the image available for the root user
   ansible.builtin.command:
     cmd: >

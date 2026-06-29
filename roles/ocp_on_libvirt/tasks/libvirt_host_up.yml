@@ -51,7 +51,6 @@
     dest: "/tmp/vm-{{ host['name'] }}/meta-data"
     mode: "0644"
   when: ool_node_not_exists
-  changed_when: false
 
 - name: "Generate ci data cd image for cloud-init when cloud config is defined"
   ansible.builtin.command: |
@@ -68,7 +67,6 @@
     command: define
     xml: "{{ lookup('template', 'libvirt_node.xml.j2') }}"
   when: ool_node_not_exists
-  changed_when: false
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync

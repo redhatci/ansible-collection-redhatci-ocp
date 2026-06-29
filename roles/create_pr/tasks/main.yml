@@ -68,7 +68,7 @@
 - name: "Add ssh-key to Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X POST user/keys -f key='{{ public_key }}'"
   register: gh_add_response
-  changed_when: false
+  changed_when: true
   args:
     chdir: "{{ work_dir }}"
 
@@ -110,10 +110,10 @@
 - name: "Delete the one time use key from Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X DELETE user/keys/{{ key_id }}"
   ignore_errors: true
-  changed_when: false
+  changed_when: true
 
 - name: "GH logout"
   ansible.builtin.command: "{{ gh_tool_path }} auth logout --hostname github.com"
   failed_when: false
-  changed_when: false
+  changed_when: true
 ...

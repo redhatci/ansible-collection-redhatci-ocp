@@ -28,7 +28,6 @@
     mode: "0644"
   become: true
 
-  changed_when: false
 - name: Update trusted ca
   ansible.builtin.command: /bin/update-ca-trust
   become: true

@@ -18,7 +18,7 @@
   ansible.builtin.command: "git checkout -b {{ local_branch }}"  # noqa: command-instead-of-module
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}"
-  changed_when: false
+  changed_when: true
 
 - name: "Render bundle operator image"
   ansible.builtin.command: >
@@ -41,7 +41,6 @@
     operator_name: "{{ bundle_data | json_query('name') | join('') }}"  # noqa: jinja[invalid]
     short_name: "{{ bundle_data | json_query(name_query) | join('') }}"  # noqa: jinja[invalid]
     operator_version: "{{ bundle_data | json_query(version_query) | join('') }}"  # noqa: jinja[invalid]
-  changed_when: false
 
 - name: Copy manifest files from bundle
   ansible.builtin.shell:
@@ -49,7 +48,7 @@
       podman cp
       $(podman create --rm {{ operator.bundle_image }} bash):/manifests/. .
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/manifests"
-  changed_when: false
+  changed_when: true
 
 - name: Retrieve annotations.yaml file from bundle image
   ansible.builtin.shell:
@@ -57,14 +56,13 @@
       podman cp
       $(podman create --rm {{ operator.bundle_image }} bash):/metadata/annotations.yaml .
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata"
-  changed_when: false
+  changed_when: true
 
 - name: "Render CI.yaml file"
   ansible.builtin.template:
     src: ci.yaml.j2
     dest: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/ci.yaml"
     mode: "0760"
-  changed_when: false
 
 - name: "Git add new operator files to the repository"
   ansible.builtin.shell:  # noqa: command-instead-of-module
