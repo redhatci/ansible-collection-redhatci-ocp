@@ -28,7 +28,8 @@
   ansible.builtin.debug:
     msg: >-
       Would remove finalizers from {{ item.resource_type }}/{{ item.name }}
-      ({{ item.api_version }})
+      ({{ item.api_version }}){% if cn_delete_resources | bool %}
+      and delete the resource{% endif %}
   loop: "{{ _cn_stuck.resources }}"
   when:
     - cn_dry_run | bool
@@ -55,6 +56,28 @@
     - _cn_patch_result is failed
     - "'NotFound' not in (_cn_patch_result.msg | default(''))"
 
+- name: Delete stuck resources
+  kubernetes.core.k8s:
+    api_version: "{{ item.api_version }}"
+    kind: "{{ item.kind }}"
+    name: "{{ item.name }}"
+    namespace: "{{ item.namespace }}"
+    state: absent
+    delete_options:
+      gracePeriodSeconds: 0
+      propagationPolicy: Background
+  loop: "{{ _cn_stuck.resources }}"
+  loop_control:
+    label: "{{ item.kind }}/{{ item.name }}"
+  when:
+    - not (cn_dry_run | bool)
+    - cn_delete_resources | bool
+    - _cn_stuck.resources | length > 0
+  register: _cn_delete_result
+  failed_when:
+    - _cn_delete_result is failed
+    - "'NotFound' not in (_cn_delete_result.msg | default(''))"
+
 - name: Summary
   ansible.builtin.debug:
     msg: >-
@@ -65,4 +88,3 @@
       {{ _cn_stuck.resources | length }} stuck resource(s) cleaned up
       in namespace {{ cn_namespace }}.
       {% endif %}
-...

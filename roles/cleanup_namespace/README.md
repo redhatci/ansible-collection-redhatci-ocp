@@ -22,6 +22,7 @@ This role dynamically discovers all namespaced API resource types and scans for 
 | cn_dry_run | No | `false` | When `true`, only report stuck resources without removing finalizers |
 | cn_skip_api_resources | No | `[]` | List of API resources to skip (format: `resource.group`, e.g. `events.events.k8s.io`) |
 | cn_remove_all_finalizers | No | `true` | When `true`, remove finalizers from any resource in the namespace that still has them. When `false`, only resources already terminating or in a terminating namespace are cleaned |
+| cn_delete_resources | No | `true` | When `true`, delete each stuck resource after removing its finalizers |
 
 ## Output
 
