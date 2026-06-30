@@ -111,21 +111,10 @@
           - "cert_locality:            {{ cert_locality }}"
           - "cert_organization:        {{ cert_organization }}"
           - "cert_organizational_unit: {{ cert_organizational_unit }}"
-      when: ( cert_country is not defined )
-        or  ( cert_country is none )
-        or  ( cert_country | trim == '' )
-        or  ( cert_state is not defined )
-        or  ( cert_state is none )
-        or  ( cert_state | trim == '' )
-        or  ( cert_locality is not defined )
-        or  ( cert_locality is none )
-        or  ( cert_locality | trim == '' )
-        or  ( cert_organization is not defined )
-        or  ( cert_organization is none )
-        or  ( cert_organization | trim == '' )
-        or  ( cert_organizational_unit is not defined )
-        or  ( cert_organizational_unit is none )
-        or  ( cert_organizational_unit | trim == '' )
+      when: ( cert_country is not defined ) or  ( cert_country is none ) or  ( cert_country | trim == '' ) or  ( cert_state is not defined ) or  ( cert_state is
+        none ) or  ( cert_state | trim == '' ) or  ( cert_locality is not defined ) or  ( cert_locality is none ) or  ( cert_locality | trim == '' ) or  (
+        cert_organization is not defined ) or  ( cert_organization is none ) or  ( cert_organization | trim == '' ) or  ( cert_organizational_unit is not
+        defined ) or  ( cert_organizational_unit is none ) or  ( cert_organizational_unit | trim == '' )
 
     - name: Make sure needed packages are installed
       ansible.builtin.package:
@@ -183,7 +172,7 @@
 
     - name: Write htpasswd file
       ansible.builtin.copy:
-        content: '{{ htpass_entry.stdout }}'
+        content: "{{ htpass_entry.stdout }}"
         dest: "{{ registry_dir_auth }}/htpasswd"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
@@ -210,7 +199,7 @@
     - name: Write auth for disconnected to localhost
       ansible.builtin.copy:
         content: "{{ disconnected_auth }}"
-        dest: "{{ lookup ('env', 'PWD') }}/{{ registry_auth_file }}"
+        dest: "{{ lookup('env', 'PWD') }}/{{ registry_auth_file }}"
         backup: true
         force: true
         mode: "0640"
@@ -243,7 +232,7 @@
         organizational_unit_name: "{{ cert_organizational_unit }}"
         basic_constraints_critical: true
         create_subject_key_identifier: true
-        basic_constraints: ['CA:TRUE']
+        basic_constraints: ["CA:TRUE"]
 
     - name: Generate a selfsigned OpenSSL CA Certificate
       community.crypto.x509_certificate:
@@ -303,7 +292,7 @@
 
     - name: Ensure user specific systemd instance are persistent
       ansible.builtin.command: |
-              /usr/bin/loginctl enable-linger {{ ansible_user }}
+        /usr/bin/loginctl enable-linger {{ ansible_user }}
 
     - name: Create systemd user directory
       ansible.builtin.file:
@@ -311,7 +300,7 @@
         state: directory
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
-        mode: '0775'
+        mode: "0775"
 
     - name: Copy the systemd service file
       ansible.builtin.copy:
@@ -330,28 +319,28 @@
         dest: "{{ ansible_user_dir }}/.config/systemd/user/container-registry.service"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
-        mode: '0644'
+        mode: "0644"
 
     - name: Reload systemd service
       ansible.builtin.systemd:
         daemon_reexec: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
     - name: Enable container-registry.service
       ansible.builtin.systemd:
         name: container-registry
         enabled: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
     - name: Start container-registry.service
       ansible.builtin.systemd:
         name: container-registry
         state: started
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
     - name: Read in the contents of domain.crt
       ansible.builtin.slurp:
         src: "{{ registry_dir_cert }}/domain.crt"
@@ -376,7 +365,7 @@
     - name: Create install config appends file on localhost
       ansible.builtin.copy:
         content: "{{ install_config_appends }}"
-        dest: "{{ lookup ('env', 'PWD') }}/{{ install_config_appends_file }}"
+        dest: "{{ lookup('env', 'PWD') }}/{{ install_config_appends_file }}"
         backup: true
         force: true
         mode: "0644"
@@ -403,14 +392,8 @@
         mode: "0600"
 
     - name: Mirror remote registry to local
-      ansible.builtin.command:
-        '
-        /usr/local/bin/oc adm release mirror
-          -a "{{ ansible_env.HOME }}/pullsecret.txt"
-          --from="{{ release_image | quote }}"
-          --to-release-image="{{ local_registry | quote }}/{{ local_repo | quote }}:{{ release_version | quote }}"
-          --to="{{ local_registry | quote }}/{{ local_repo | quote }}"
-          '
+      ansible.builtin.command: ' /usr/local/bin/oc adm release mirror -a "{{ ansible_env.HOME }}/pullsecret.txt" --from="{{ release_image | quote }}" --to-release-image="{{
+        local_registry | quote }}/{{ local_repo | quote }}:{{ release_version | quote }}" --to="{{ local_registry | quote }}/{{ local_repo | quote }}" '
 
     - name: Remove temporary pullsecret file
       ansible.builtin.file:

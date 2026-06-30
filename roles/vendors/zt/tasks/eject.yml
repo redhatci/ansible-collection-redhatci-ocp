@@ -23,16 +23,8 @@
 
     - name: Get blocking virtual_media
       ansible.builtin.set_fact:
-        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
-            | flatten(levels=2)
-            | selectattr('ConnectedVia', 'defined') | list
-            | json_query('[?(
-                (ConnectedVia == `URL` || ConnectedVia == `URI`)
-                && Image != null
-                && contains(MediaTypes, `CD`)
-              )]'
-            ) | from_yaml
-          }}"
+        blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries | flatten(levels=2) | selectattr('ConnectedVia', 'defined') | list | json_query('[?(
+          (ConnectedVia == `URL` || ConnectedVia == `URI`) && Image != null && contains(MediaTypes, `CD`) )]') | from_yaml }}"
 
     - name: Debug
       ansible.builtin.debug:
@@ -51,4 +43,3 @@
         resource_id: "{{ resource_id }}"
       loop: "{{ blocking_virtual_media }}"
       no_log: true
-...

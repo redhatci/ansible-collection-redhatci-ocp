@@ -14,21 +14,9 @@
 
 - name: Attempting to eject blocking media (if any)
   vars:
-    blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries
-        | flatten(levels=2)
-        | selectattr('ConnectedVia', 'defined') | list
-        | json_query('[?(
-            ConnectedVia == `URI`
-            && Image != null
-            && (
-              contains(MediaTypes, `CD`)
-              || contains(MediaTypes, `Floppy`)
-              || contains(MediaTypes, `USBStick`)
-              || contains(MediaTypes, `DVD`)
-            )
-          )]'
-        ) | from_yaml
-      }}"
+    blocking_virtual_media: "{{ result.redfish_facts.virtual_media.entries | flatten(levels=2) | selectattr('ConnectedVia', 'defined') | list | json_query('[?( ConnectedVia
+      == `URI` && Image != null && ( contains(MediaTypes, `CD`) || contains(MediaTypes, `Floppy`) || contains(MediaTypes, `USBStick`) || contains(MediaTypes, `DVD`)
+      ) )]') | from_yaml }}"
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaEject
@@ -45,4 +33,3 @@
   until: result is succeeded
   register: result
   no_log: true
-...

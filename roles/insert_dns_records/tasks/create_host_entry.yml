@@ -1,19 +1,13 @@
+---
 - name: Make sure ansible_fqdn is populated if required
   ansible.builtin.setup:
   delegate_to: "{{ entry_name }}"
   delegate_facts: true
-  when: 
+  when:
     - entry_extra_check | default(true)
     - hostvars[entry_name]['ansible_fqdn'] is not defined
 
 - name: "Populate dns entry for {{ entry_name }}"
   ansible.builtin.set_fact:
-    other_host_dns_records: "{{ (other_host_dns_records | default({})) | combine(
-        {
-          entry_address : {
-            'name': (other_host_dns_records[entry_address]['name'] | default([])) + [entry_name],
-            'address': entry_address,
-            'ip': hostvars[entry_name][host_ip_keyword],
-          }
-        }
-      ) }}"
+    other_host_dns_records: "{{ (other_host_dns_records | default({})) | combine(\n    {\n        entry_address: {\n            'name': (other_host_dns_records[entry_address]['name']
+      | default([])) + [entry_name],\n            'address': entry_address,\n            'ip': hostvars[entry_name][host_ip_keyword],\n        }\n    }\n) }}"

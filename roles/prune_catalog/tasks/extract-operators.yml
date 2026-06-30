@@ -12,4 +12,3 @@
   changed_when: extract_result.rc != 0
   loop_control:
     loop_var: operator_name
-...

@@ -78,4 +78,3 @@
   when:
     - ah_control_plane_availability_policy is defined
     - ah_control_plane_availability_policy not in ah_control_plane_availability_policies
-...

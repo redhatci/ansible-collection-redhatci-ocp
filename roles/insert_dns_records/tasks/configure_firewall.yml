@@ -1,3 +1,4 @@
+---
 - name: Open port in firewall for DNS
   ansible.posix.firewalld:
     port: "53/udp"

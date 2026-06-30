@@ -33,4 +33,3 @@
     - cpo_pods | json_query(status_query) | flatten | unique == ["True"]
   retries: 30
   delay: 10
-...

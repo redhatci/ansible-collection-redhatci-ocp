@@ -3,15 +3,8 @@
   ansible.builtin.shell:
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
-      set -x -o pipefail ;
-      {{ ah_oc_cli_path }} adm release info
-      {{ ah_release_image }}
-      {%- if ah_allow_insecure_registry | bool %}
-      --insecure
-      {%- endif %}
-      --registry-config={{ ah_pullsecret_file }} |
-      grep -w hypershift |
-      awk '{print $2}'
+      set -x -o pipefail ; {{ ah_oc_cli_path }} adm release info {{ ah_release_image }}{%- if ah_allow_insecure_registry | bool %} --insecure{%- endif %} --registry-config={{
+      ah_pullsecret_file }} | grep -w hypershift | awk '{print $2}'
   no_log: true
   retries: 3
   delay: 10
@@ -42,10 +35,8 @@
 - name: Fail if Control-Plane Operator image is not pullable from local registry
   ansible.builtin.command: >
     skopeo inspect
-    --no-tags
-    {%- if ah_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
+    --no-tags{%- if ah_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}
     docker://{{ cpo_image_path }}
   no_log: true
   register: skopeo_result
@@ -56,15 +47,8 @@
   ansible.builtin.shell:
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
-      set -x;
-      {{ ah_oc_cli_path }} image extract
-      {{ ah_release_image }}
-      --confirm
-      --file /release-manifests/0000_50_installer_coreos-bootimages.yaml
-      --registry-config={{ ah_pullsecret_file }}
-      {%- if ah_allow_insecure_registry | bool %}
-      --insecure
-      {%- endif %}
+      set -x; {{ ah_oc_cli_path }} image extract {{ ah_release_image }} --confirm --file /release-manifests/0000_50_installer_coreos-bootimages.yaml --registry-config={{
+      ah_pullsecret_file }}{%- if ah_allow_insecure_registry | bool %} --insecure{%- endif %}
   retries: 3
   delay: 10
   register: hs_boot_images
@@ -96,17 +80,10 @@
   ansible.builtin.shell:
     chdir: "{{ ah_tmp_dir }}"
     cmd: >
-      set -x;
-      {{ ah_oc_cli_path }} image mirror
-      {{ kvirt_rhcos_digest }}
-      {{ local_registry_path }}:{{ rhcos_tag }}
-      --registry-config={{ ah_pullsecret_file }}
-      {%- if ah_allow_insecure_registry | bool %}
-      --insecure
-      {%- endif %}
+      set -x; {{ ah_oc_cli_path }} image mirror {{ kvirt_rhcos_digest }} {{ local_registry_path }}:{{ rhcos_tag }} --registry-config={{ ah_pullsecret_file }}{%- if
+      ah_allow_insecure_registry | bool %} --insecure{%- endif %}
   retries: 3
   delay: 10
   register: hs_boot_images
   changed_when: hs_boot_images.rc != 0
   until: hs_boot_images.rc == 0
-...
