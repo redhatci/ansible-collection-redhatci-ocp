@@ -10,7 +10,7 @@
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
 
 - name: Set preflight release
-  ansible.builtin.set_fact: 
+  ansible.builtin.set_fact:
     preflight_release: "{{ preflight_output.test_library.version.split('+')[0] }}"
 
 - name: Get latest commit hash for the Preflight release

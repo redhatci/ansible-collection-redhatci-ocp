@@ -25,7 +25,11 @@
     ocp_release_data:
       container_image: "{{ mor_release_image }}"
       rhcos_version: "{{ rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.metal.release') }}"
-      rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (rhcos.stdout | from_json | json_query('architectures.x86_64.artifacts.' + item.path))}) }}"
+      rhcos_images: >-
+        {{ ocp_release_data['rhcos_images'] | default({})
+        | combine({item.key: (rhcos.stdout | from_json
+        | json_query('architectures.x86_64.artifacts.'
+        + item.path))}) }}
   with_items:
     - {'key': 'aws_location', 'path': 'aws.formats."vmdk.gz".disk.location'}
     - {'key': 'aws_sha256', 'path': 'aws.formats."vmdk.gz".disk.sha256'}
@@ -66,7 +70,11 @@
     ocp_release_data:
       container_image: "{{ mor_release_image }}"
       rhcos_version: "{{ rhcos_ver }}"
-      rhcos_images: "{{ ocp_release_data['rhcos_images'] | default({}) | combine({item.key: (item.baseURI | default('')) + (rhcos.stdout | from_json | json_query('images.' + item.path))}) }}"
+      rhcos_images: >-
+        {{ ocp_release_data['rhcos_images'] | default({})
+        | combine({item.key: (item.baseURI | default(''))
+        + (rhcos.stdout | from_json
+        | json_query('images.' + item.path))}) }}
   with_items:
     - {'key': 'aws_location', 'baseURI': "{{ base_uri }}", 'path': 'aws.path'}
     - {'key': 'aws_sha256', 'path': 'aws.sha256'}
@@ -103,9 +111,21 @@
 # TODO: remove for releases >= 4.8
 - name: "Set facts for *osimage URL overrides"
   ansible.builtin.set_fact:
-    bootstraposimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['qemu_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['qemu_uncompressed_sha256'] }}"
-    clusterosimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['openstack_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['openstack_sha256'] }}"
-    metalosimage: "{{ mor_webserver_url }}/{{ ocp_release_data['rhcos_images']['metal_iso_location'] | basename }}?sha256={{ ocp_release_data['rhcos_images']['metal_iso_sha256'] }}"
+    bootstraposimage: >-
+      {{ mor_webserver_url }}/{{
+      ocp_release_data['rhcos_images']['qemu_location']
+      | basename }}?sha256={{
+      ocp_release_data['rhcos_images']['qemu_uncompressed_sha256'] }}
+    clusterosimage: >-
+      {{ mor_webserver_url }}/{{
+      ocp_release_data['rhcos_images']['openstack_location']
+      | basename }}?sha256={{
+      ocp_release_data['rhcos_images']['openstack_sha256'] }}
+    metalosimage: >-
+      {{ mor_webserver_url }}/{{
+      ocp_release_data['rhcos_images']['metal_iso_location']
+      | basename }}?sha256={{
+      ocp_release_data['rhcos_images']['metal_iso_sha256'] }}
   when:
     - mor_write_custom_config | bool
 ...

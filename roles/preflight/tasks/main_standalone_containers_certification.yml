@@ -76,7 +76,11 @@
             loop_var: batched_images
             index_var: batch_index
           vars:
-            preflight_current_project_batch: "{{ preflight_cert_projects[(batch_index * max_images_per_batch) : (batch_index * max_images_per_batch + batched_images | length)] }}"
+            preflight_current_project_batch: >-
+              {{ preflight_cert_projects[
+              (batch_index * max_images_per_batch) :
+              (batch_index * max_images_per_batch
+              + batched_images | length)] }}
   always:
     - name: Teardown
       ansible.builtin.include_tasks: teardown.yml

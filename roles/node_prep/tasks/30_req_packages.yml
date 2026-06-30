@@ -2,15 +2,15 @@
 - name: Install packages
   tags: packages
   block:
-  - name: Create list of packages to be installed
-    ansible.builtin.set_fact:
-      package_list: "{{ package_list + cache_package_list }}"
-    when: cache_enabled|bool
+    - name: Create list of packages to be installed
+      ansible.builtin.set_fact:
+        package_list: "{{ package_list + cache_package_list }}"
+      when: cache_enabled|bool
 
-  - name: Install required packages
-    ansible.builtin.yum:
-      name: "{{ package_list }}"
-      state: present
-      update_cache: true
-      disable_gpg_check: true
-    become: true
+    - name: Install required packages
+      ansible.builtin.yum:
+        name: "{{ package_list }}"
+        state: present
+        update_cache: true
+        disable_gpg_check: true
+      become: true

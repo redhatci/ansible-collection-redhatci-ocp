@@ -130,7 +130,9 @@
     - name: Extract all primary period-ids from result-summary
       ansible.builtin.shell: |
         set -eo pipefail
-        grep -E 'primary period-id:' "{{ multibench_run_output_dir.path }}/result-summary.txt" | sed -nE 's/.*primary period-id:[[:space:]]*([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}).*/\1/p'
+        grep -E 'primary period-id:' \
+          "{{ multibench_run_output_dir.path }}/result-summary.txt" |
+          sed -nE 's/.*primary period-id:[[:space:]]*([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}).*/\1/p'
       register: _multibench_run_period_ids_result
 
     - name: Set list of primary period-ids
