@@ -36,3 +36,4 @@
     --wait -1
   become: true
   tags: install
+  changed_when: false

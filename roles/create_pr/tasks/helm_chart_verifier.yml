@@ -19,6 +19,7 @@
   ansible.builtin.command: "git checkout -b {{ local_branch }}"  # noqa: command-instead-of-module
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
+  changed_when: false
 
 - name: "Create target directory on the repository"
   ansible.builtin.file:
@@ -43,6 +44,7 @@
   when:
     - publish_chart | bool
 
+  changed_when: false
 - name: "Git add chart_file and report.yaml to the repository"
   vars:
     partner: "{{  partner_name | replace(' ', '_') }}"
@@ -54,6 +56,7 @@
       git commit -m 'Added files for {{ chart_name }}_{{ chart_version }}'
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
+  changed_when: false
 
 - name: Ensure that remote branch is absent to avoid merge conflicts
   ansible.builtin.shell:
@@ -64,6 +67,7 @@
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
   ignore_errors: true
+  changed_when: false
 
 - name: "Push branch and create PR to the forked repository"
   ansible.builtin.shell:
@@ -78,6 +82,7 @@
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
   register: pr_details
+  changed_when: false
 
 - name: "Append details to the general report"
   ansible.builtin.lineinfile:

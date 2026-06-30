@@ -17,6 +17,7 @@
   retries: 2
   delay: 30
   until: sha is succeeded
+  changed_when: false
 
 - name: Debug image digest
   ansible.builtin.debug:

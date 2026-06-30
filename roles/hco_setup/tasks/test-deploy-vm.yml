@@ -17,6 +17,7 @@
       delay: 5
       until:
         - copy is not failed
+      changed_when: false
 
     - name: "Set VM image in disconnected mode"
       ansible.builtin.set_fact:

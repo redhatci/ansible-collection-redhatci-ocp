@@ -3,6 +3,7 @@
   ansible.builtin.shell: |
     /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} create manifests
   tags: manifests
+  changed_when: false
 
 - name: Ensure the manifests dir is owned by {{ ansible_user }}
   ansible.builtin.file:

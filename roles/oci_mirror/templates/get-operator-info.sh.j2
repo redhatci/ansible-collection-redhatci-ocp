@@ -29,8 +29,8 @@ for operator in $operators; do
     # Get the head CSV entry from the default channel (highest stable semver)
     head_csv=$(echo "$catalog_data" | \
       "$jq_bin" -r --arg pkg "$operator" --arg ch "$default_channel" '
-        def csv_version_key($pkg):
-          ltrimstr($pkg + ".v")
+        def csv_version_key:
+          capture(".*\\.v(?<version>.*)$")?.version // .
           | capture("^(?<major>\\d+)(?:\\.(?<minor>\\d+))?(?:\\.(?<patch>\\d+))?(?<suffix>.*)$")?
           | [
               ((.major // "0") | tonumber),
@@ -41,7 +41,7 @@ for operator in $operators; do
             ];
         .[] | select(.package == $pkg and .schema == "olm.channel" and .name == $ch)
         | .entries | map(.name)
-        | max_by(csv_version_key($pkg)) // empty' | head -n1)
+        | max_by(csv_version_key) // empty' | head -n1)
     
     if [ -n "$head_csv" ] && [ "$head_csv" != "null" ] && [ "$head_csv" != "" ]; then
       # Get the full version from the bundle's olm.package property

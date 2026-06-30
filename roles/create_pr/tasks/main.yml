@@ -27,14 +27,17 @@
     chdir: "{{ work_dir }}"
   register: gh_login
   failed_when: gh_login.rc != 0
+  changed_when: false
 
 - name: "Configure Git protocol"
   ansible.builtin.command: "{{ gh_tool_path }} config set git_protocol ssh"
+  changed_when: false
 
 - name: "Get GitHub status details"
   ansible.builtin.command:
     cmd: "{{ gh_tool_path }} api user --jq .login"
   register: github_status
+  changed_when: false
 
 - name: "Get the GitHub username"
   ansible.builtin.set_fact:
@@ -65,6 +68,7 @@
 - name: "Add ssh-key to Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X POST user/keys -f key='{{ public_key }}'"
   register: gh_add_response
+  changed_when: true
   args:
     chdir: "{{ work_dir }}"
 
@@ -78,6 +82,7 @@
     chdir: "{{ work_dir }}"
   register: gh_fork
   failed_when: gh_fork.rc != 0
+  changed_when: false
 
 - name: Sync the git fork
   ansible.builtin.command: "{{ gh_tool_path }} repo sync {{ github_username }}/{{ fork_name }} --force"
@@ -85,12 +90,14 @@
     chdir: "{{ work_dir }}"
   register: gh_fork_sync
   failed_when: gh_fork_sync.rc != 0
+  changed_when: false
 
 - name: Clone the git repository
   ansible.builtin.command:
     cmd: "{{ gh_tool_path }} repo clone {{ github_username }}/{{ fork_name }}"
   args:
     chdir: "{{ work_dir }}"
+  changed_when: false
 
 - name: Create PR for Helm Chart Verifier
   ansible.builtin.include_tasks: helm_chart_verifier.yml
@@ -103,8 +110,10 @@
 - name: "Delete the one time use key from Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X DELETE user/keys/{{ key_id }}"
   ignore_errors: true
+  changed_when: true
 
 - name: "GH logout"
   ansible.builtin.command: "{{ gh_tool_path }} auth logout --hostname github.com"
   failed_when: false
+  changed_when: true
 ...
