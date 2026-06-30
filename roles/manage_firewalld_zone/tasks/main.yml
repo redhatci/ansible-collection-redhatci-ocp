@@ -14,14 +14,10 @@
     zone: "{{ mfz_zone }}"
     state: "{{ mfz_state }}"
     permanent: true
-  register: _mfz_zone_state
+  notify: Reload firewalld
 
-- name: Reload firewalld if zone state changed
-  become: true
-  when: _mfz_zone_state is changed
-  ansible.builtin.service:
-    name: firewalld
-    state: reloaded
+- name: Flush handlers to reload firewalld before managing zone attributes
+  ansible.builtin.meta: flush_handlers
 
 # if zone is present, manage its attributes
 - name: Manage zone attributes

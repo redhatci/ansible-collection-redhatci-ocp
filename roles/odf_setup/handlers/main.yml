@@ -1,0 +1,4 @@
+---
+- name: Pause for OCS pod deployment
+  ansible.builtin.pause:
+    seconds: 60
