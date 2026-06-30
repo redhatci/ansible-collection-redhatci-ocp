@@ -112,8 +112,8 @@
       when: not mor_d2m_workflow | bool
 
     # D2M two-step workflow: Mirror-to-Disk then Disk-to-Mirror
-    # This path avoids TOCTOU race conditions where upstream image
-    # digests can change between mirror resolution and push.
+    # This path mirrors to disk first, then pushes to the local registry,
+    # matching the workflow used by customers in disconnected environments.
     - name: "D2M step 1 - Mirror to disk archive (M2D)"
       ansible.builtin.shell:
         cmd: >

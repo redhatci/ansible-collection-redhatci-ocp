@@ -229,9 +229,8 @@ argument_specs:
         description: >
           Enable the two-step Disk-to-Mirror (D2M) workflow. When true,
           oc-mirror first archives images to a local disk (M2D) then
-          pushes the archive to the target registry (D2M). This avoids
-          TOCTOU race conditions where upstream digests change between
-          mirror resolution and push.
+          pushes the archive to the target registry (D2M), matching
+          the workflow used by customers in disconnected environments.
       mor_verify_digests:
         type: bool
         required: false
@@ -239,5 +238,5 @@ argument_specs:
         description: >
           After mirroring, verify that the release image digest in the
           local registry matches the pre-mirror digest captured from
-          the upstream source. Detects TOCTOU digest drift.
-          See ECOENGCL-475 and PR #1390 for background.
+          the upstream source. Ensures the mirrored release image
+          digest matches the expected pre-mirror digest.
