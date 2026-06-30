@@ -9,7 +9,7 @@
     channel: stable # noqa: redhat-ci[no-role-prefix]
     install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
     operator: metallb-operator # noqa: redhat-ci[no-role-prefix]
-    namespace: metallb-system # noqa: redhat-ci[no-role-prefix]
+    namespace: metallb-system # noqa: redhat-ci[no-role-prefix] var-naming[no-reserved]
     source: redhat-operators # noqa: redhat-ci[no-role-prefix]
     source_ns: openshift-marketplace # noqa: redhat-ci[no-role-prefix]
 
