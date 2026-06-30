@@ -224,19 +224,19 @@
       delay: 15
       no_log: true
 
-- name: "Disable provisioning network and update to watch all Namespaces"
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: metal3.io/v1alpha1
-      kind: Provisioning
-      metadata:
-        name: provisioning-configuration
-      spec:
-        provisioningDHCPRange: null
-        provisioningIP: null
-        provisioningNetworkCIDR: null
-        provisioningNetwork: "Disabled"
-        watchAllNamespaces: true
+# - name: "Disable provisioning network and update to watch all Namespaces"
+#   kubernetes.core.k8s:
+#     definition:
+#       apiVersion: metal3.io/v1alpha1
+#       kind: Provisioning
+#       metadata:
+#         name: provisioning-configuration
+#       spec:
+#         provisioningDHCPRange: null
+#         provisioningIP: null
+#         provisioningNetworkCIDR: null
+#         provisioningNetwork: "Disabled"
+#         watchAllNamespaces: true
 
 - name: "Get cluster version"
   kubernetes.core.k8s_info:
