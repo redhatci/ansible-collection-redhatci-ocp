@@ -1,0 +1,31 @@
+---
+# Post-mirror integrity check
+# Verifies that the mirrored release image digest in the local registry
+# matches the expected pre-mirror digest.
+
+- name: Inspect mirrored release image digest from local registry
+  ansible.builtin.command: >
+    skopeo inspect
+    --no-tags
+    --authfile {{ mor_auths_file }}
+    {%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false
+    {%- endif %}
+    --format '{{ "{{" }} .Digest {{ "}}" }}'
+    docker://{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images:{{ mor_version }}
+  register: _mor_post_mirror_digest
+  changed_when: false
+
+- name: Verify mirrored digest matches pre-mirror digest
+  ansible.builtin.assert:
+    that:
+      - _mor_post_mirror_digest.stdout | trim == mor_release_image_digest
+    fail_msg: >-
+      Post-mirror digest mismatch detected!
+      The pre-mirror digest ({{ mor_release_image_digest }}) does not match
+      the post-mirror digest ({{ _mor_post_mirror_digest.stdout | trim }})
+      in the local registry.
+    success_msg: >-
+      Post-mirror digest verification passed:
+      {{ mor_release_image_digest }}
+...
