@@ -1,0 +1,9 @@
+---
+icc_image: "registry.redhat.io/pen-drive/pen-drive-scanner-rhel9:1.0"
+icc_flow: "in-cluster-check"
+icc_keep_must_gather_data: false
+icc_pullsecret_file: "{{ icc_pullsecret_file }}"
+icc_kubeconfig_path: "{{ icc_kubeconfig_path }}"
+icc_json2junit_patterns: "*.in_cluster_checks.json"
+icc_json2junit_output_dir: "{{ icc_job_logs_path }}"
+icc_json2junit_suite_name: "In-cluster checks"

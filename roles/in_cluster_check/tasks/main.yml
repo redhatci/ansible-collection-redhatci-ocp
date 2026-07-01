@@ -1,0 +1,70 @@
+---
+- name: Validate in_cluster_check required variables
+  ansible.builtin.assert:
+    that:
+      - icc_pullsecret_file is defined
+      - icc_pullsecret_file | length > 0
+      - icc_kubeconfig_path is defined
+      - icc_kubeconfig_path | length > 0
+      - icc_job_logs_path is defined
+      - icc_job_logs_path | length > 0
+
+- name: Execute in-cluster check container tool
+  containers.podman.podman_container:
+    name: "in-cluster-check-{{ ansible_date_time.iso8601_basic_short }}"
+    image: "{{ icc_image }}"
+    state: started
+    authfile: "{{ icc_pullsecret_file }}"
+    userns: keep-id
+    timezone: local
+    volumes:
+      - "{{ icc_kubeconfig_path }}:/opt/app-root/.kube/config:Z,ro"
+      - "{{ icc_job_logs_path }}:/mg:Z"
+    command:
+      - "{{ icc_flow }}"
+    detach: false
+    remove: true
+  register: _icc_container_result
+  failed_when: false
+
+- name: Identify in-cluster check HTML test report files
+  ansible.builtin.find:
+    paths: "{{ icc_job_logs_path }}"
+    patterns: "*-report.html"
+    file_type: file
+  register: _icc_html_files
+  when:
+    - not _icc_container_result.failed | default(false)
+    - _icc_container_result.container.State.ExitCode | default(1) == 0
+  ignore_errors: true
+
+- name: Identify in-cluster check JSON result files
+  ansible.builtin.find:
+    paths: "{{ icc_job_logs_path }}"
+    patterns: "{{ icc_json2junit_patterns }}"
+    recurse: true
+    file_type: file
+  register: _icc_json_files
+  ignore_errors: true
+
+- name: Generate JUnit XML from JSON check results
+  vars:
+    icc_junit_output_path: "{{ item.path | regex_replace('\\.json$', '-junit.xml') }}"
+  ansible.builtin.set_fact:
+    icc_junit_result: >-
+      {{ lookup('file', item.path) | from_json | redhatci.ocp.json2junit(icc_junit_output_path, icc_json2junit_suite_name) }}
+  loop: "{{ _icc_json_files.files | default([]) }}"
+  when: _icc_json_files.files | default([]) | length > 0
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Verify JUnit XML files were generated
+  ansible.builtin.stat:
+    path: "{{ item.path | regex_replace('\\.json$', '-junit.xml') }}"
+  loop: "{{ _icc_json_files.files | default([]) }}"
+  register: _icc_junit_files
+  when: _icc_json_files.files | default([]) | length > 0
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+...

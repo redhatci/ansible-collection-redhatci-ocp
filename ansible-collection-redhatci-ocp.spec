@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        3.6.EPOCH
+Version:        3.7.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon July 01 2026 Rajesh Chiluveru <rchiluve@redhat.com> - 3.7.EPOCH-VERS
+- Add in_cluster_check role
+
 * Fri Jun 19 2026 Frederic Lepied <flepied@redhat.com> - 3.6.EPOCH-VERS
 - Add generic test runner for eco_gotests role
 
