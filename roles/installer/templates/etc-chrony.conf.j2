@@ -30,7 +30,7 @@ spec:
         group:
           name: root
         mode: 420
-{% if ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int > 5)) %}
+{% if (release_version.split('.')[0]|int >= 5) or ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int > 5)) %}
         overwrite: true
 {% endif %}
         path: /etc/chrony.conf
