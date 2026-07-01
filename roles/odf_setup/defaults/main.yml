@@ -40,3 +40,6 @@ odf_setup_key_rotation_period: weekly
 
 # ODF enable Ceph Tools
 odf_setup_enable_ceph_tools: true
+
+# ODF setup on control plane nodes. When true, add control-plane tolerations for LSO workloads.
+odf_setup_ocs_on_control_plane: false
