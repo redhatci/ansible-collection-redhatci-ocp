@@ -159,7 +159,7 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-0"
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.client[0] }}"
             }
           }
         },
@@ -169,7 +169,7 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-1"
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.client[1] }}"
             }
           }
         },
@@ -179,7 +179,7 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-2"
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.client[2] }}"
             }
           }
         },
@@ -189,8 +189,8 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-0"
-            }    
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.server[0] }}"
+            }
           }
         },
         {
@@ -199,7 +199,7 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-1"
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.server[1] }}"
             }
           }
         },
@@ -209,7 +209,7 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-2"
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.server[2] }}"
             }
           }
         },

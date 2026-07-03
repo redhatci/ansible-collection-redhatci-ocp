@@ -12,6 +12,37 @@
     msg: "Host does not have crucible installed. Please run playbooks/multibench_setup_host.yml before using this role."
   when: _multibench_run_binaries.rc != 0
 
+- name: Validate multibench_uperf_num is a sane value if defined
+  ansible.builtin.assert:
+    that:
+      - multibench_uperf_num | int > 0
+    fail_msg: "multibench_uperf_num must be a positive integer when defined"
+  when: multibench_uperf_num is defined
+
+- name: Validate multibench_target_nodes for uperf workload
+  ansible.builtin.assert:
+    that:
+      - multibench_target_nodes is defined
+      - multibench_target_nodes.client is defined
+      - multibench_target_nodes.client | length >= 1
+      - multibench_target_nodes.server is defined
+      - multibench_target_nodes.server | length >= 1
+    fail_msg: "multibench_target_nodes.client and multibench_target_nodes.server must be defined with at least 1 node each when multibench_uperf_num is defined and > 0"
+    success_msg: "multibench_target_nodes validated for uperf workload"
+  when: multibench_uperf_num is defined and multibench_uperf_num | int > 0
+
+- name: Validate multibench_target_nodes for default workload
+  ansible.builtin.assert:
+    that:
+      - multibench_target_nodes is defined
+      - multibench_target_nodes.client is defined
+      - multibench_target_nodes.client | length >= 3
+      - multibench_target_nodes.server is defined
+      - multibench_target_nodes.server | length >= 3
+    fail_msg: "multibench_target_nodes.client and multibench_target_nodes.server must be defined with at least 3 nodes each when running default workload"
+    success_msg: "multibench_target_nodes validated for default workload"
+  when: multibench_uperf_num is not defined
+
 - name: Generate config file for multibench
   ansible.builtin.template:
     src: templates/config.ini.j2

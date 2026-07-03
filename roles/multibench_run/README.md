@@ -15,11 +15,56 @@ It uses a pre-existing VM/host where all the crucible binaries are ready.
 | multibench_script         | run.sh	                                                 | string    | false    | Name of the script to be executed for launching the crucible cmd. Located in the `multibench_script_dir` |
 | multibench_script_dir     | /root/crucible-examples/multibench/openshift/example-A	 | string    | false    | Path of the multibench script on the multi-bench host                                                    |
 | multibench_tags           | automation:ansible                                      | key:value | false    | Tag to be added to the multi-bench Run in the Opensearch DB                                              |
+| multibench_target_nodes | client: [worker-0, worker-1, worker-2], server: [worker-0, worker-1, worker-2 | dict with lists | false | Dictionary defining target worker nodes for client and server roles. Must contain at least 3 nodes for each role when running default workload, or at least 1 node when multibench_uperf_num is defined |
 | multibench_crucible_metric_collect   | true                        | bool    | false    | When true, extract primary period-id from result-summary, run `crucible get metric`, and optionally upload to DCI                         |
 | multibench_crucible_metric_source   | mpstat                     | string  | false    | Crucible metric source (e.g. mpstat)                                                                     |
 | multibench_crucible_metric_type    | Busy-CPU                   | string  | false    | Crucible metric type                                                                                     |
 | multibench_crucible_metric_breakout| hostname=worker-3,num      | string  | false    | Crucible metric breakout filter                                                                          |
 | multibench_crucible_metric_filename| crucible-metric-mpstat-busy-cpu.txt | string | false | Name of the file where metric output is saved and uploaded to DCI                                       |
+
+## Configuring Target Worker Nodes
+The role uses the `multibench_target_nodes` variable to specify which worker nodes should run the client and server workloads. This is particularly important when working with OpenShift clusters that use FQDN node names.
+
+### Default Configuration
+By default, the role targets workers using short hostnames:
+```yaml
+multibench_target_nodes:
+  client:
+    - worker-0
+    - worker-1
+    - worker-2
+  server:
+    - worker-0
+    - worker-1
+    - worker-2
+```
+
+### Using FQDN Node Names
+For clusters where worker nodes have FQDN names (e.g., `worker-0.ocp.example.com`), override the variable in your playbook:
+
+```yaml
+- name: "Include role multi-bench"
+  include_role:
+    name: redhatci.ocp.multibench_run
+  vars:
+    ocp_host: "{{ groups['provisioner'] | first }}"
+    multibench_host: "{{ groups['multibench'] | first }}"
+    multibench_target_nodes:
+      client:
+        - worker-0.ocp.example.com
+        - worker-1.ocp.example.com
+        - worker-2.ocp.example.com
+      server:
+        - worker-0.ocp.example.com
+        - worker-1.ocp.example.com
+        - worker-2.ocp.example.com
+```
+
+### Node Requirements
+- **Default workload** (`kube-all-in-one.json.j2`): Requires at least 3 nodes in both client and server lists
+- **Uperf workload** (`kube-all-in-one-uperf.json.j2`): Requires at least 1 node in both client and server lists (when `multibench_uperf_num` is defined and > 0)
+
+The role will validate these requirements and fail early if insufficient nodes are provided.
 
 ## Presentation of the workload
 By default, the workload launched by default is the example-A of Multi-bench, composed of 2 uperf scenarios and 1 iperf.
