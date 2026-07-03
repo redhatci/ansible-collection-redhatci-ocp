@@ -2,8 +2,8 @@
 - name: "Map SRIOV variables to generic runner"
   ansible.builtin.set_fact:
     eco_gotests_generic_features: "{{ eco_gotests_eco_test_features_sriov }}"
-    eco_gotests_generic_run_labels: []
-    eco_gotests_generic_skip_labels: []
+    eco_gotests_generic_run_labels: "{{ eco_gotests_run_labels_sriov }}"
+    eco_gotests_generic_skip_labels: "{{ eco_gotests_skip_labels_sriov }}"
     eco_gotests_generic_env:
       ECO_VERBOSE_LEVEL: "{{ eco_gotests_verbose_level }}"
       ECO_TEST_VERBOSE: "{{ eco_gotests_test_verbose | lower }}"
