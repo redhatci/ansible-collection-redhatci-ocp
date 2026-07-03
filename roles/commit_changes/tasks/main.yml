@@ -15,6 +15,7 @@
   when:
     - cc_author_name is defined
     - cc_author_name | length > 0
+  changed_when: false
 
 - name: Set git author email
   ansible.builtin.command: git config user.email "{{ cc_author_email }}"  # noqa: command-instead-of-module
@@ -23,11 +24,13 @@
   when:
     - cc_author_email is defined
     - cc_author_email | length > 0
+  changed_when: false
 
 - name: Stage changes in directory
   ansible.builtin.command: git add --all .  # noqa: command-instead-of-module
   args:
     chdir: "{{ cc_directory }}"
+  changed_when: false
 
 - name: Commit changes
   ansible.builtin.command: git commit -m "{{ cc_message }}"  # noqa: command-instead-of-module

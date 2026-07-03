@@ -120,6 +120,8 @@
 
     - name: Apply new SELinux file context for platform-python
       ansible.builtin.command: "restorecon -irv {{ vbmc_virtualenv }}/bin/platform-python"
+      register: _vbmc_restorecon
+      changed_when: _vbmc_restorecon.stdout | length > 0
 
     - name: Restart virtualbmc
       ansible.builtin.service:

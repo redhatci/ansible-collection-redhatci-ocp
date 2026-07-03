@@ -16,6 +16,7 @@
         crucible help
       register: crucible_help
       ignore_errors: true
+      changed_when: false
 
     - name: "Install the crucible binaries"
       when:
@@ -48,6 +49,7 @@
               --email {{ multibench_git_email | default("ansible@whatever.com") }} \
               --verbose --client-server-tls-verify true
             chdir: "/root/crucible"
+          changed_when: true
 
     - name: "Clone the crucible-example repository"
       ansible.builtin.git:

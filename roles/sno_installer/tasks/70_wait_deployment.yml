@@ -39,3 +39,4 @@
   environment:
     KUBECONFIG: "{{ dir }}/auth/kubeconfig"
   tags: waitdeploy
+  changed_when: false

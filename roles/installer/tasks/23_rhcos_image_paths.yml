@@ -8,6 +8,7 @@
         /usr/local/bin/{{ installer_cmd }} version | grep '^built from commit' | awk '{print $4}'
       register: commit_id
       tags: rhcospath
+      changed_when: false
 
     - name: Get the URLs
       ansible.builtin.set_fact:
@@ -48,6 +49,7 @@
       delay: 10
       until: rhcos_json_stream is not failed
       tags: rhcospath
+      changed_when: false
 
     - name: Set rhcos_json fact
       ansible.builtin.set_fact:

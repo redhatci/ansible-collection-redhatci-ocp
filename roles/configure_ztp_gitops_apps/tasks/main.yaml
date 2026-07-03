@@ -63,10 +63,12 @@
       ansible.builtin.shell: |
         set -o pipefail
         podman run --authfile "{{ temp_dir.path }}"/temp-pull-secret.json --rm --log-driver=none "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}" extract /home/ztp --tar | tar x -C "{{ temp_dir.path }}"/ztp/
+      changed_when: false
 
     - name: Set the proper permissions
       ansible.builtin.shell: |
         sudo chown "{{ ansible_user }}":"{{ ansible_user }}" -R "{{ temp_dir.path }}"/ztp/
+      changed_when: false
 
     ## Configure clusters
     - name: Replace namespace in clusters-app.yaml
@@ -191,6 +193,7 @@
     - name: Patch the ArgoCD instance to install the GitOps ZTP plugin
       ansible.builtin.shell: |
         {{ czga_oc_tool_path }} --kubeconfig="{{ temp_dir.path }}/kubeconfig" patch argocd openshift-gitops -n openshift-gitops --patch-file "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json" --type=merge
+      changed_when: true
 
     - name: Disable proxy addon
       kubernetes.core.k8s:
@@ -252,6 +255,7 @@
     - name: Run the policies and cluster apps
       ansible.builtin.shell: |
         {{ czga_oc_tool_path }} --kubeconfig="{{ temp_dir.path }}/kubeconfig" apply -k "{{ temp_dir.path }}/ztp/argocd/deployment"
+      changed_when: true
 
     - name: Remove the temporary directories
       ansible.builtin.file:

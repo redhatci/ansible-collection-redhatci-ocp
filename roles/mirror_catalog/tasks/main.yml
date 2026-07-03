@@ -32,6 +32,7 @@
       delay: 5
       until:
         - image_digest.stdout | regex_search('^sha')
+      changed_when: false
 
     - name: Set catalog with digest
       vars:
@@ -44,6 +45,7 @@
     state: directory
   register: mc_tmp
 
+  changed_when: false
 - name: Mirror operators
   ansible.builtin.shell:
     cmd: >
@@ -68,6 +70,7 @@
   retries: 3
   delay: 10
   until: catalog_manifests_output.rc == 0
+  changed_when: false
 
 - name: Set the Image Source file
   ansible.builtin.tempfile:
@@ -86,6 +89,7 @@
           {{ mc_tmp.path }}/manifests/imageContentSourcePolicy.yaml
           --dest-dir {{ mc_tmp.path }}
       register: migrate_result
+      changed_when: false
 
     - name: Set new image source file
       ansible.builtin.set_fact:

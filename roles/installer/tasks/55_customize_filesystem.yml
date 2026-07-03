@@ -23,6 +23,7 @@
     - name: Create OpenShift Ignition Configs
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} create ignition-configs
+      changed_when: false
 
     - name: Copy Ignition Config Files
       ansible.builtin.copy:
