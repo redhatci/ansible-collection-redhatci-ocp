@@ -25,7 +25,7 @@
         src: "{{ om_workspace_dir }}/.om-m2d-digests.json"
       register: _om_digest_map_raw
 
-    - name: Parse digest map
+    - name: Parse digest map  # noqa: redhat-ci[no-role-prefix]
       ansible.builtin.set_fact:
         _om_digest_map: "{{ _om_digest_map_raw.content | b64decode | from_json }}"
 

@@ -2,7 +2,7 @@
 # Mirror-to-Disk (M2D): write image content to a local disk workspace.
 # The workspace can later be used in a Disk-to-Mirror (D2M) operation.
 
-- name: Compute catalog images for pre-mirror digest capture
+- name: Compute catalog images for pre-mirror digest capture  # noqa: redhat-ci[no-role-prefix]
   ansible.builtin.set_fact:
     _om_m2d_catalog_images: >-
       {%- set images = [om_source_index] if om_source_index is defined and om_source_index | length > 0 else [] -%}
@@ -36,7 +36,7 @@
   changed_when: false
   when: om_verify_digests | bool
 
-- name: Build digest map from catalog images
+- name: Build digest map from catalog images  # noqa: redhat-ci[no-role-prefix]
   ansible.builtin.set_fact:
     _om_m2d_digest_map: >-
       {%- set result = {} -%}
