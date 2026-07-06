@@ -464,7 +464,7 @@
   with_items:
     - "{{ groups.masters }}"
     - "{{ groups.workers | default([]) }}"
-  ignore_errors: true
+  failed_when: false
   when: redfish_inspection|bool
   tags: validation
 
@@ -479,7 +479,7 @@
   with_items:
     - "{{ groups.masters }}"
     - "{{ groups.workers | default([]) }}"
-  ignore_errors: true
+  failed_when: false
   when: redfish_inspection|bool
   tags: validation
 

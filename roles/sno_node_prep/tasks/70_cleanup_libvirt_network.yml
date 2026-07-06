@@ -5,7 +5,7 @@
     command: status
   register: network_exists
   become: true
-  ignore_errors: true
+  failed_when: false
   tags:
     - cleanup
 

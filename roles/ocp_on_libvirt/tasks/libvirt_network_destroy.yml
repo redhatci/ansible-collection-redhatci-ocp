@@ -3,7 +3,7 @@
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: status
-  ignore_errors: true
+  failed_when: false
   register: node_exists
 
 - name: "Destroy network"

@@ -8,7 +8,7 @@
       -e KUBECONFIG=/tests/kubeconfig
       {{ ts_e2e_image }}:{{ ts_ocp_version_maj }}.{{ ts_ocp_version_min }}
       /bin/bash -c "openshift-tests run openshift/network/third-party --junit-dir /logs > /logs/cni_tests_results.log"
-  ignore_errors: true
+  failed_when: false
   when:
     - not (dci_disconnected | default(false) | bool)
     - ts_ocp_version_maj|int == 4
@@ -28,7 +28,7 @@
      | oc image mirror --insecure=true -a /auths.json -f - --keep-manifest-list=true --continue-on-error=true --skip-missing=true
      && openshift-tests run openshift/network/third-party --from-repository {{ ts_registry }}/conformance-test
      --provider='{\"type\":\"baremetal\",\"disconnected\":true}' --junit-dir /logs > /logs/cni_tests_results.log"
-  ignore_errors: true
+  failed_when: false
   when:
     - dci_disconnected | default(false) | bool
     - ts_ocp_version_maj|int == 4

@@ -1,8 +1,13 @@
 ---
 - name: Check if container has already been certified
-  ansible.builtin.include_tasks: test_check_if_container_certified.yml
-  when: not preflight_test_certified_image
-  ignore_errors: true
+  block:
+    - name: Run certified check for container
+      ansible.builtin.include_tasks: test_check_if_container_certified.yml
+      when: not preflight_test_certified_image
+  rescue:
+    - name: Log certification check failure and continue
+      ansible.builtin.debug:
+        msg: "Certification check failed, continuing"
 
 - name: "Non-certified image or force test run for {{ current_operator_image }}"
   when: not (already_certified | default(false) | bool)

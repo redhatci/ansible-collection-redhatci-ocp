@@ -57,7 +57,7 @@
       ../../scripts/get-example-cnf-status.sh > example-cnf-pre-job-status.log
   args:
     chdir: "{{ ecd_job_logs_path }}"
-  ignore_errors: true
+  failed_when: false
   no_log: true
 
 - name: TRexApp block
@@ -133,7 +133,7 @@
           ../../scripts/get-example-cnf-status.sh > example-cnf-post-job-status.log
       args:
         chdir: "{{ ecd_job_logs_path }}"
-      ignore_errors: true
+      failed_when: false
       no_log: true
 
     - name: Save results extracted from example-cnf logs in a separate file
@@ -148,7 +148,7 @@
           ../../scripts/get-example-cnf-results.sh > example-cnf-results.log
       args:
         chdir: "{{ ecd_job_logs_path }}"
-      ignore_errors: true
+      failed_when: false
       no_log: true
 
     # Omit this check if we are running TRex job in continuous mode

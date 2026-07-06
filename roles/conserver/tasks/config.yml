@@ -16,7 +16,7 @@
                -I lanplus
                sol info
   register: _conserver_sol
-  ignore_errors: true
+  failed_when: false
   changed_when: true
   loop: "{{ cluster_nodes }}"
 

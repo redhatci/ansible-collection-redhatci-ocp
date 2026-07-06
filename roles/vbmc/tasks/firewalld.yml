@@ -11,7 +11,7 @@
   when: ansible_distribution_version|int < 8
 
 - name: Allow access to port vbmc from baremetal network
-  ignore_errors: true
+  failed_when: false
   become: true
   ansible.posix.firewalld:
     zone: "{{ zone }}"

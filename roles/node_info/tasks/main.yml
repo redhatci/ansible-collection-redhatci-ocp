@@ -3,7 +3,6 @@
 # an OpenShift cluster
 
 - name: Gather cluster hardware/kernel data (best-effort, errors ignored)
-  ignore_errors: true
   block:
     - name: Get list of nodes from cluster
       kubernetes.core.k8s_info:
@@ -151,5 +150,9 @@
         mode: '0644'
       loop: "{{ _ni_hardware_info.results | default([]) }}"
       no_log: true
+  rescue:
+    - name: Log hardware/kernel data collection failure and continue
+      ansible.builtin.debug:
+        msg: "Hardware and kernel data collection failed, continuing"
 
 ...

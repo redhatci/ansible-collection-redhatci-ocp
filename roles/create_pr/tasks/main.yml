@@ -102,7 +102,7 @@
 
 - name: "Delete the one time use key from Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X DELETE user/keys/{{ key_id }}"
-  ignore_errors: true
+  failed_when: false
 
 - name: "GH logout"
   ansible.builtin.command: "{{ gh_tool_path }} auth logout --hostname github.com"

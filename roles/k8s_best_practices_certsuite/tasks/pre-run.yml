@@ -26,7 +26,7 @@
       If you need credentials to pull the images under test,
       you need to set up kbpc_partner_creds variable,
       else certsuite execution will fail.
-  ignore_errors: true
+  failed_when: false
 
 # Depending on the presence or not of `kbpc_code_src_dir` variable,
 # defined by test-runner script when testing a PR from certsuite
