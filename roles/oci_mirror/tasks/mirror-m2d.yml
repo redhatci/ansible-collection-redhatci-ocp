@@ -1,0 +1,77 @@
+---
+# Mirror-to-Disk (M2D): write image content to a local disk workspace.
+# The workspace can later be used in a Disk-to-Mirror (D2M) operation.
+
+- name: Compute catalog images for pre-mirror digest capture
+  ansible.builtin.set_fact:
+    _om_m2d_catalog_images: >-
+      {%- set images = [om_source_index] if om_source_index is defined and om_source_index | length > 0 else [] -%}
+      {%- if om_operators is defined -%}
+        {%- for item in om_operators | dict2items -%}
+          {%- if item.value is mapping and item.value.catalog is defined -%}
+            {%- if item.value.catalog not in images -%}
+              {%- set _ = images.append(item.value.catalog) -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{ images }}
+  when: om_verify_digests | bool
+
+- name: Inspect catalog image digests before mirroring
+  ansible.builtin.command:
+    cmd: >
+      skopeo inspect --format '{{ "{{" }}.Digest{{ "}}" }}'
+      docker://{{ item }}
+      {% if om_allow_insecure_registries | bool %}
+      --tls-verify=false
+      {% endif %}
+      {% if om_auths_file is defined %}
+      --authfile {{ om_auths_file }}
+      {% endif %}
+  register: _om_m2d_digest_results
+  loop: "{{ _om_m2d_catalog_images }}"
+  loop_control:
+    label: "{{ item }}"
+  changed_when: false
+  when: om_verify_digests | bool
+
+- name: Build digest map from catalog images
+  ansible.builtin.set_fact:
+    _om_m2d_digest_map: >-
+      {%- set result = {} -%}
+      {%- for res in _om_m2d_digest_results.results -%}
+        {%- set _ = result.update({res.item: res.stdout | trim}) -%}
+      {%- endfor -%}
+      {{ result }}
+  when: om_verify_digests | bool
+
+- name: Save digest map to workspace for later D2M verification
+  ansible.builtin.copy:
+    content: "{{ _om_m2d_digest_map | to_nice_json }}"
+    dest: "{{ om_workspace_dir }}/.om-m2d-digests.json"
+    mode: "0640"
+  when: om_verify_digests | bool
+
+- name: Run oc-mirror mirror-to-disk
+  ansible.builtin.shell:
+    cmd: >
+      umask 0022 &&
+      {{ _om_tmp_dir.path }}/oc-mirror --v2 --config={{ om_imageset_config_path }}
+      --workspace file://{{ om_workspace_dir }}
+      --port {{ _om_ephemeral_port.port }}
+      {% if om_allow_insecure_registries | bool %}
+      --src-tls-verify=false
+      {% endif %}
+      {% if om_auths_file is defined %}
+      --authfile {{ om_auths_file }}
+      {% endif %}
+      {% if om_remove_signatures | bool %}
+      --remove-signatures
+      {% endif %}
+  register: _om_cmd_output
+  retries: 3
+  delay: 10
+  until: _om_cmd_output.rc == 0
+  ignore_errors: "{{ om_ignore_errors }}"
+  changed_when: _om_cmd_output.rc == 0

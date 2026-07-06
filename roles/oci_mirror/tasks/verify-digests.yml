@@ -1,0 +1,66 @@
+---
+# Verify that catalog image digests in the target registry match those
+# recorded at mirror-to-disk time. A mismatch indicates the source
+# catalog was updated between the M2D and D2M phases (time-of-check /
+# time-of-use drift), so the mirrored content may be stale.
+
+- name: Check that the digest map file exists
+  ansible.builtin.stat:
+    path: "{{ om_workspace_dir }}/.om-m2d-digests.json"
+  register: _om_digest_map_stat
+
+- name: Skip digest verification when no digest map is present
+  ansible.builtin.debug:
+    msg: >
+      Digest map not found at {{ om_workspace_dir }}/.om-m2d-digests.json —
+      skipping post-D2M digest verification. Run M2D with om_verify_digests: true
+      to enable this check.
+  when: not _om_digest_map_stat.stat.exists
+
+- name: Verify catalog digests
+  when: _om_digest_map_stat.stat.exists
+  block:
+    - name: Read digest map recorded during M2D phase
+      ansible.builtin.slurp:
+        src: "{{ om_workspace_dir }}/.om-m2d-digests.json"
+      register: _om_digest_map_raw
+
+    - name: Parse digest map
+      ansible.builtin.set_fact:
+        _om_digest_map: "{{ _om_digest_map_raw.content | b64decode | from_json }}"
+
+    - name: Inspect catalog images in target registry
+      ansible.builtin.command:
+        cmd: >
+          skopeo inspect --format '{{ "{{" }}.Digest{{ "}}" }}'
+          docker://{{ item.key }}
+          {% if om_allow_insecure_registries | bool %}
+          --tls-verify=false
+          {% endif %}
+          {% if om_auths_file is defined %}
+          --authfile {{ om_auths_file }}
+          {% endif %}
+      register: _om_post_d2m_digest_results
+      loop: "{{ _om_digest_map | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      changed_when: false
+
+    - name: Assert catalog digests have not drifted
+      ansible.builtin.assert:
+        that:
+          - item.stdout | trim == _om_digest_map[item.item.key]
+        fail_msg: >
+          Catalog digest drift detected for {{ item.item.key }}.
+          Digest at M2D time : {{ _om_digest_map[item.item.key] }}
+          Digest after D2M   : {{ item.stdout | trim }}
+          The source catalog was updated between the mirror-to-disk and
+          disk-to-mirror phases. The mirrored content may not match the
+          latest catalog. Re-run the M2D phase to refresh the workspace,
+          then repeat D2M. In fully air-gapped environments this check
+          cannot reach the source registry and should be disabled by
+          setting om_verify_digests: false.
+        success_msg: "Catalog digest verified for {{ item.item.key }}"
+      loop: "{{ _om_post_d2m_digest_results.results }}"
+      loop_control:
+        label: "{{ item.item.key }}"

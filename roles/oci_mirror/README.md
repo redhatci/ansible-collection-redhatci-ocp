@@ -15,13 +15,17 @@ Either you point the role at an existing **ImageSetConfiguration**, or you let i
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `om_target` | string | (none) | **Required.** Target registry (e.g. `registry.example.com:5000`). |
+| `om_target` | string | (none) | **Required.** Target registry (e.g. `registry.example.com:5000`). Not used for `om_operation: m2d`. |
 | `om_custom_config` | string | (none) | Path to your own ImageSetConfiguration. When set, the standard index/operator variables below are not used. |
 | `om_allow_insecure_registries` | bool | `false` | Disables TLS verify for source and dest where `oc-mirror` supports it. |
 | `om_auths_file` | string | (none) | Pull secret / registry auth JSON path. |
 | `om_keep_working_dir` | bool | `false` | Keep the temp workspace after the role finishes (useful for debugging). |
 | `om_remove_signatures` | bool | `false` | Pass `--remove-signatures` to `oc-mirror` (needed for some unsigned images). |
 | `om_ignore_errors` | bool | `false` | Sets Ansible `ignore_errors` on the mirror task. |
+| `om_operation` | string | `mirror` | Operation mode: `mirror` (combined, online), `m2d` (mirror-to-disk), or `d2m` (disk-to-mirror). |
+| `om_workspace_dir` | string | `""` | Path to the disk workspace used for `m2d` and `d2m` operations. **Required** when `om_operation` is `m2d` or `d2m`. |
+| `om_verify_digests` | bool | `false` | When `true`, capture catalog image digests during M2D and verify them after D2M to detect catalog drift between the two phases. |
+| `om_helm_charts` | list | `[]` | List of Helm chart repository entries to include in the generated ImageSetConfiguration. See examples below. |
 
 ### Standard path only (`om_custom_config` not set)
 
@@ -131,6 +135,74 @@ Some operators stay on `om_source_index`; others use another index via `catalog`
     om_keep_working_dir: true
 ```
 
+### Two-phase workflow (Mirror-to-Disk then Disk-to-Mirror)
+
+When direct internet access is not available from the target environment, use the
+two-phase workflow: first mirror to disk (M2D) on an internet-connected host, then
+push from disk to the disconnected registry (D2M).
+
+**Phase 1 — Mirror to disk (M2D):**
+
+```yaml
+- name: Mirror operators to local disk workspace
+  ansible.builtin.include_role:
+    name: redhatci.ocp.oci_mirror
+  vars:
+    om_operation: m2d
+    om_workspace_dir: /mnt/mirror-workspace
+    om_target_versions: latest
+    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+    om_operators:
+      odf-operator:
+      local-storage-operator:
+    # Optionally capture pre-mirror catalog digests for drift detection:
+    om_verify_digests: true
+```
+
+Transfer `om_workspace_dir` to the disconnected environment (e.g. via USB/tape).
+
+**Phase 2 — Disk to mirror (D2M):**
+
+```yaml
+- name: Push mirrored content from disk to disconnected registry
+  ansible.builtin.include_role:
+    name: redhatci.ocp.oci_mirror
+  vars:
+    om_operation: d2m
+    om_workspace_dir: /mnt/mirror-workspace
+    om_target: registry.disconnected.lab:5000
+    # Verify catalog digests did not drift between M2D and D2M phases.
+    # NOTE: om_verify_digests requires skopeo to be able to reach the
+    # original source registry. Disable this flag in fully air-gapped
+    # D2M environments where source registry access is not available.
+    om_verify_digests: true
+```
+
+### Helm chart mirroring
+
+Include Helm chart repositories in the generated ImageSetConfiguration:
+
+```yaml
+- name: Mirror operators and Helm charts
+  ansible.builtin.include_role:
+    name: redhatci.ocp.oci_mirror
+  vars:
+    om_target_versions: latest
+    om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+    om_target: registry.lab:4443
+    om_operators:
+      odf-operator:
+    om_helm_charts:
+      - name: my-charts
+        url: https://charts.example.com
+        charts:
+          - name: my-app
+            version: "1.2.3"
+          - name: another-chart
+      - name: openshift-charts
+        url: https://charts.openshift.io
+```
+
 ## Output / facts
 
 When mirroring produces manifests, they land under the **`om_output_dir`** fact (a temp dir unless you keep it).
@@ -139,3 +211,7 @@ Typical files:
 
 - `idms-oc-mirror.yaml` — ImageDigestMirrorSet
 - `cs-*.yaml` or `cc-*.yaml` — catalog manifests; which shape you get depends on OpenShift version (classic OLM vs OLM v1). See `tasks/mirroring.yml` for details.
+
+## Notes
+
+- **`om_verify_digests` in air-gapped D2M environments**: The digest verification step inspects catalog images in the original source registry. In a fully air-gapped environment during the D2M phase, the source registry is not reachable and `om_verify_digests: true` will fail. Set `om_verify_digests: false` (the default) when running D2M without internet access. The digest map written by M2D (`.om-m2d-digests.json`) is preserved in `om_workspace_dir` for offline auditing.

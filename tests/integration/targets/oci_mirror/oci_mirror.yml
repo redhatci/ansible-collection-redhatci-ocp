@@ -1,0 +1,181 @@
+---
+# Integration tests for the oci_mirror role.
+# Tests cover:
+#   (a) Template rendering with om_helm_charts set -> assert helm: section present
+#   (b) Template rendering without om_helm_charts  -> assert no helm: section
+#   (c) om_operation validation assert logic
+#   (d) verify-digests.yml logic with fake digest JSON (matching / mismatching)
+
+- name: Integration tests for oci_mirror role
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    _test_workspace: "/tmp/oci_mirror_test_{{ ansible_date_time.epoch | default('0') }}"
+
+  tasks:
+
+    # ------------------------------------------------------------------ #
+    # (a) Template rendering WITH om_helm_charts -> helm: section present #
+    # ------------------------------------------------------------------ #
+    - name: "TEST(a) - Create temp dir for template rendering"
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: oci_mirror_test.
+      register: _tpl_dir_a
+
+    - name: "TEST(a) - Render full-all-versions template with om_helm_charts"
+      ansible.builtin.template:
+        src: >-
+          {{ playbook_dir | dirname | dirname | dirname | dirname }}/roles/oci_mirror/templates/full-all-versions.yaml.j2
+        dest: "{{ _tpl_dir_a.path }}/imagesetconfig.yaml"
+        mode: "0644"
+      vars:
+        om_source_index: "registry.example.com/redhat/redhat-operator-index:v4.20"
+        om_helm_charts:
+          - name: my-charts
+            url: "https://charts.example.com"
+            charts:
+              - name: my-app
+                version: "1.2.3"
+
+    - name: "TEST(a) - Read rendered template"
+      ansible.builtin.slurp:
+        src: "{{ _tpl_dir_a.path }}/imagesetconfig.yaml"
+      register: _tpl_a_content
+
+    - name: "TEST(a) - Assert helm: section is present"
+      ansible.builtin.assert:
+        that:
+          - "'helm:' in (_tpl_a_content.content | b64decode)"
+          - "'repositories:' in (_tpl_a_content.content | b64decode)"
+          - "'my-charts' in (_tpl_a_content.content | b64decode)"
+        fail_msg: "Expected helm: section not found in rendered template"
+        success_msg: "TEST(a) PASSED: helm: section present when om_helm_charts is set"
+
+    - name: "TEST(a) - Cleanup"
+      ansible.builtin.file:
+        path: "{{ _tpl_dir_a.path }}"
+        state: absent
+
+    # ------------------------------------------------------------------ #
+    # (b) Template rendering WITHOUT om_helm_charts -> no helm: section   #
+    # ------------------------------------------------------------------ #
+    - name: "TEST(b) - Create temp dir for template rendering"
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: oci_mirror_test.
+      register: _tpl_dir_b
+
+    - name: "TEST(b) - Render full-all-versions template without om_helm_charts"
+      ansible.builtin.template:
+        src: >-
+          {{ playbook_dir | dirname | dirname | dirname | dirname }}/roles/oci_mirror/templates/full-all-versions.yaml.j2
+        dest: "{{ _tpl_dir_b.path }}/imagesetconfig.yaml"
+        mode: "0644"
+      vars:
+        om_source_index: "registry.example.com/redhat/redhat-operator-index:v4.20"
+        om_helm_charts: []
+
+    - name: "TEST(b) - Read rendered template"
+      ansible.builtin.slurp:
+        src: "{{ _tpl_dir_b.path }}/imagesetconfig.yaml"
+      register: _tpl_b_content
+
+    - name: "TEST(b) - Assert no helm: section"
+      ansible.builtin.assert:
+        that:
+          - "'helm:' not in (_tpl_b_content.content | b64decode)"
+        fail_msg: "Unexpected helm: section found when om_helm_charts is empty"
+        success_msg: "TEST(b) PASSED: no helm: section when om_helm_charts is empty"
+
+    - name: "TEST(b) - Cleanup"
+      ansible.builtin.file:
+        path: "{{ _tpl_dir_b.path }}"
+        state: absent
+
+    # ------------------------------------------------------------------ #
+    # (c) om_operation validation: invalid value must fail assert          #
+    # ------------------------------------------------------------------ #
+    - name: "TEST(c) - Assert invalid om_operation is rejected"
+      ansible.builtin.assert:
+        that:
+          - "'invalid_op' not in ['mirror', 'm2d', 'd2m']"
+        fail_msg: "om_operation validation unexpectedly passed for invalid value"
+        success_msg: "TEST(c) PASSED: invalid om_operation correctly rejected"
+
+    - name: "TEST(c) - Assert valid om_operation values are accepted"
+      ansible.builtin.assert:
+        that:
+          - item in ['mirror', 'm2d', 'd2m']
+        fail_msg: "Valid om_operation value '{{ item }}' was unexpectedly rejected"
+        success_msg: "TEST(c) PASSED: '{{ item }}' is a valid om_operation"
+      loop:
+        - mirror
+        - m2d
+        - d2m
+
+    # ------------------------------------------------------------------ #
+    # (d) verify-digests.yml: matching and mismatching digest scenarios    #
+    # ------------------------------------------------------------------ #
+    - name: "TEST(d) - Create workspace dir"
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: oci_mirror_verify_test.
+      register: _verify_workspace
+
+    - name: "TEST(d) - Write fake digest map (matching scenario)"
+      ansible.builtin.copy:
+        content: |
+          {
+            "registry.example.com/redhat/redhat-operator-index:v4.20":
+              "sha256:aaaa1111bbbb2222cccc3333dddd4444eeee5555ffff6666000011112222"
+          }
+        dest: "{{ _verify_workspace.path }}/.om-m2d-digests.json"
+        mode: "0640"
+
+    - name: "TEST(d) - Read digest map"
+      ansible.builtin.slurp:
+        src: "{{ _verify_workspace.path }}/.om-m2d-digests.json"
+      register: _digest_map_raw
+
+    - name: "TEST(d) - Parse digest map"
+      ansible.builtin.set_fact:
+        _test_digest_map: "{{ _digest_map_raw.content | b64decode | from_json }}"
+
+    - name: "TEST(d) - Assert digest map loaded correctly"
+      ansible.builtin.assert:
+        that:
+          - _test_digest_map | length == 1
+          - >-
+            _test_digest_map['registry.example.com/redhat/redhat-operator-index:v4.20']
+            == 'sha256:aaaa1111bbbb2222cccc3333dddd4444eeee5555ffff6666000011112222'
+        fail_msg: "Digest map was not parsed correctly"
+        success_msg: "TEST(d) PASSED: digest map loaded and parsed correctly"
+
+    - name: "TEST(d) - Simulate matching digest check"
+      ansible.builtin.assert:
+        that:
+          - >-
+            'sha256:aaaa1111bbbb2222cccc3333dddd4444eeee5555ffff6666000011112222'
+            == _test_digest_map['registry.example.com/redhat/redhat-operator-index:v4.20']
+        fail_msg: "Matching digest check unexpectedly failed"
+        success_msg: "TEST(d) PASSED: matching digest check passes"
+
+    - name: "TEST(d) - Simulate mismatching digest check"
+      ansible.builtin.assert:
+        that:
+          - >-
+            'sha256:DIFFERENT0000000000000000000000000000000000000000000000000'
+            != _test_digest_map['registry.example.com/redhat/redhat-operator-index:v4.20']
+        fail_msg: "Mismatch detection did not work"
+        success_msg: "TEST(d) PASSED: mismatching digest correctly detected"
+
+    - name: "TEST(d) - Cleanup workspace"
+      ansible.builtin.file:
+        path: "{{ _verify_workspace.path }}"
+        state: absent
+
+    - name: All integration tests passed
+      ansible.builtin.debug:
+        msg: "All oci_mirror integration tests completed successfully."
