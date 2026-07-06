@@ -15,7 +15,7 @@
     name: "{{ network['name'] }}"
   become: true
   when:
-    - not network_exists.failed
+    - network_exists.status is defined
   tags:
     - cleanup
 
@@ -25,7 +25,7 @@
     name: "{{ network['name'] }}"
   become: true
   when:
-    - not network_exists.failed
+    - network_exists.status is defined
   tags:
     - cleanup
 ...

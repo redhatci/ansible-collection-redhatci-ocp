@@ -80,7 +80,7 @@
     content: "{{ _ecd_trex_app_logs.log }}"
     dest: "{{ ecd_job_logs_path }}/{{ ecd_trex_app_cr_name }}.log"
     mode: "0755"
-  when: not _ecd_trex_app_logs.failed
+  when: _ecd_trex_app_logs.log is defined
   failed_when: false
 
 - name: "Calculate the downtime for TRex job execution"

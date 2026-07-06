@@ -1,19 +1,16 @@
-- name: Remove network
+- name: Destroy network
+  community.libvirt.virt_net:
+    name: "{{ network_name }}"
+    command: destroy
   become: true
-  block:
-    - name: Destroy network
-      community.libvirt.virt_net:
-        name: "{{ network_name }}"
-        command: destroy
+  failed_when: false
 
-    - name: Undefine network
-      community.libvirt.virt_net:
-        name: "{{ network_name }}"
-        command: undefine
-  rescue:
-    - name: Log network removal failure and continue
-      ansible.builtin.debug:
-        msg: "Network removal failed, continuing teardown"
+- name: Undefine network
+  community.libvirt.virt_net:
+    name: "{{ network_name }}"
+    command: undefine
+  become: true
+  failed_when: false
 
 - name: Delete existing bridges (if any)
   community.general.nmcli:

@@ -10,10 +10,10 @@
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: destroy
-  when: not node_exists.failed
+  when: node_exists.status is defined
 
 - name: "Undefine network"
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: undefine
-  when: not node_exists.failed
+  when: node_exists.status is defined

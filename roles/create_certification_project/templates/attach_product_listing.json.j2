@@ -1,6 +1,6 @@
 {
   "cert_projects": {{ all_cert_projects | to_nice_json(indent=2) }},
-  "published": {{ pl_published.json.published if pl_published is succeeded else false | bool }},
+  "published": {{ pl_published.json.published if pl_published.status == 200 else false | bool }},
   "target_platforms": [
     "Red Hat OpenShift"
   ],
