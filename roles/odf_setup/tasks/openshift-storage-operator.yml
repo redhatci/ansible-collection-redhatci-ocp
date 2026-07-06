@@ -6,6 +6,24 @@
   when:
     - ocs_install_type == 'internal'
 
+- name: Configure CSI plugin tolerations in rook-ceph-operator-config
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: ConfigMap
+    name: rook-ceph-operator-config
+    namespace: "{{ ocs_storage_namespace }}"
+    merge_type: merge
+    definition:
+      data:
+        CSI_PLUGIN_TOLERATIONS: "{{ odf_setup_csi_plugin_tolerations }}"
+  register: _odf_setup_csi_tolerations_patch
+  retries: 60
+  delay: 10
+  until: _odf_setup_csi_tolerations_patch is not failed
+  when:
+    - ocs_install_type == 'internal'
+    - odf_setup_ocs_on_control_plane | default(false) | bool
+
 - name: Tasks for External OCS/ODF Integration
   when:
     - ocs_install_type == 'external'
