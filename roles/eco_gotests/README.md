@@ -39,7 +39,8 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 - `eco_gotests_sriov_labels` (default: `"sriov-hw-enabled"`): Test labels for SRIOV tests
 - `eco_gotests_worker_label` (default: `"worker"`): Worker node label
 - `eco_gotests_sriov_interface_list` (default: `"ens3f0np0,ens3f1np1"`): SRIOV interface list
-- `eco_gotests_network_test_container` (default: `"quay.io/ocp-edge-qe/eco-gotests-network-client:v4.19"`): Network test container
+- `eco_gotests_network_test_container` (default: `"quay.io/ocp-edge-qe/eco-gotests-network-client:v4.20"`): Network test container for `tests/cnf/core/network/sriov`
+- `eco_gotests_ocp_sriov_test_container` (default: `"quay.io/ocp-edge-qe/eco-gotests-sriov-client:v4.20"`): Test container for `tests/ocp/sriov` (`ECO_OCP_SRIOV_TEST_CONTAINER`)
 - `eco_gotests_dpdk_test_container` (default: `"quay.io/ocp-edge-qe/eco-gotests-rootless-dpdk:v4.16.0"`): DPDK test container
 - `eco_gotests_frr_image` (default: `"quay.io/ocp-edge-qe/frr:stable_7.5"`): FRR image
 - `eco_gotests_sriov_timeout` (default: `"12h"`): Timeout for SRIOV tests
