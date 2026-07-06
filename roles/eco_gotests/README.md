@@ -36,6 +36,8 @@ This role runs [eco-gotests](https://github.com/rh-ecosystem-edge/eco-gotests) f
 
 #### SRIOV Test Configuration
 - `eco_gotests_eco_test_features_sriov` (default: `"sriov"`): Value passed to the eco-gotests container as `ECO_TEST_FEATURES` for the SRIOV run.
+- `eco_gotests_run_labels_sriov` (default: `[]`): List of Ginkgo labels to **run** for SRIOV tests. When non-empty, only tests matching these labels are selected; multiple entries are combined with ` || ` (OR). When empty, no positive label filter is applied (all SRIOV tests in the suite are candidates, subject to skips). Common SRIOV labels include: `sriov`, `sriov-hw-enabled`, `externallymanaged`, `paralleldraining`, `qinq`, `exposemtu`, `sriovmetrics`, `rdmametricsapi`, `mlxsecureboot`, `webhook-resource-injector`, `sriovnet-app-ns`. Example: `['qinq']` to run only QinQ tests.
+- `eco_gotests_skip_labels_sriov` (default: `[]`): List of test labels to skip for SRIOV tests. These labels will be excluded using Ginkgo label filter syntax (`!label`). When combined with `eco_gotests_run_labels_sriov`, the effective filter is `run_label_1 || ... && !skip_label_1 && ...`. Common SRIOV labels are the same as above. Example: `['paralleldraining', 'mlxsecureboot']` to skip parallel draining and Mellanox secure boot tests.
 - `eco_gotests_sriov_labels` (default: `"sriov-hw-enabled"`): Test labels for SRIOV tests
 - `eco_gotests_worker_label` (default: `"worker"`): Worker node label
 - `eco_gotests_sriov_interface_list` (default: `"ens3f0np0,ens3f1np1"`): SRIOV interface list

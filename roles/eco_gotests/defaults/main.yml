@@ -20,6 +20,8 @@ eco_gotests_frr_image: "quay.io/ocp-edge-qe/frr:stable_7.5"
 eco_gotests_sriov_timeout: "12h"
 eco_gotests_verbose_level: 100
 eco_gotests_test_verbose: true
+eco_gotests_run_labels_sriov: []
+eco_gotests_skip_labels_sriov: []
 
 eco_gotests_kubeconfig_dir: "{{ eco_gotests_kubconfig_dir | default('') }}"
 
