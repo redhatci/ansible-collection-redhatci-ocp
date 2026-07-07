@@ -23,6 +23,7 @@
   when:
     - ocs_install_type == 'internal'
     - odf_setup_ocs_on_control_plane | default(false) | bool
+    - ocp_version is version("4.16", ">=")
 
 - name: Tasks for External OCS/ODF Integration
   when:
