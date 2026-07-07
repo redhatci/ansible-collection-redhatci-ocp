@@ -49,7 +49,7 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-1"
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.client[0] }}"
             },
             "resources": {
               "requests": { "cpu": "6", "memory": "1024Mi" },
@@ -70,7 +70,7 @@
             "userenv": "stream9",
             "runtimeClassName": "performance-blueprint-profile",
             "nodeSelector": {
-              "kubernetes.io/hostname": "worker-3"
+              "kubernetes.io/hostname": "{{ multibench_target_nodes.server[0] }}"
             },
             "resources": {
               "requests": { "cpu": "2", "memory": "1024Mi" },
