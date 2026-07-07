@@ -113,6 +113,12 @@
       ansible.builtin.debug:
         msg: "Disconnected lshw image build failed, continuing with data collection"
 
+    - name: Clean up build directory after failure
+      ansible.builtin.file:
+        path: "{{ _ni_build_dir.path }}"
+        state: absent
+      when: _ni_build_dir.path is defined
+
 - name: Extract hw details
   vars:
     _ni_hw_img: >-
