@@ -144,7 +144,7 @@ def load_kube_config(kubeconfig):
             config.load_kube_config()
 
 
-def should_skip(resource_name, group, skip_list):
+def should_skip(resource_name, skip_list, group=None):
     key = "%s.%s" % (resource_name, group) if group else resource_name
     for skip in skip_list:
         if skip.lower() == key.lower():
@@ -190,14 +190,93 @@ def is_stuck_resource(deletion_ts, finalizers, namespace_terminating,
     return namespace_terminating
 
 
+def get_response_list_field(response, field):
+    """Return a list field from an API response object or dict."""
+    if isinstance(response, dict):
+        return response.get(field, []) or []
+    value = getattr(response, field, None)
+    return value or []
+
+
+def list_namespaced_resources_via_rest(api_client, version, resource_name,
+                                       namespace, group=None):
+    """List namespaced resources via the raw API.
+
+    Used as a fallback when kubernetes.dynamic discovery fails on API groups
+    such as subresources.kubevirt.io that expose subresource names with more
+    than one slash (for example
+    virtualmachineinstances/sev/querylaunchmeasurement).
+    """
+    if group:
+        path = "/apis/%s/%s/namespaces/%s/%s" % (
+            group, version, namespace, resource_name
+        )
+    else:
+        path = "/api/%s/namespaces/%s/%s" % (
+            version, namespace, resource_name
+        )
+    return api_client.call_api(
+        path,
+        "GET",
+        response_type="object",
+        auth_settings=["BearerToken"],
+        _return_http_data_only=True,
+    )
+
+
+def fetch_namespaced_resource_list(dyn_client, api_client, version,
+                                   res_name, res_kind, namespace,
+                                   group=None):
+    api_version = "%s/%s" % (group, version) if group else version
+    dynamic_error = None
+
+    if dyn_client is not None:
+        try:
+            resource_api = dyn_client.resources.get(
+                api_version=api_version,
+                kind=res_kind,
+            )
+            return resource_api.get(namespace=namespace), None
+        except Exception as e:
+            dynamic_error = e
+
+    try:
+        resource_list = list_namespaced_resources_via_rest(
+            api_client, version, res_name, namespace, group=group
+        )
+    except ApiException:
+        raise
+    except Exception as e:
+        if dynamic_error is not None:
+            raise dynamic_error
+        raise e
+
+    if dynamic_error is not None:
+        fallback_warning = (
+            "DynamicClient failed for %s (%s), used REST API fallback: %s"
+            % (res_name, api_version, str(dynamic_error))
+        )
+        return resource_list, fallback_warning
+
+    return resource_list, None
+
+
 def find_stuck_resources(namespace, skip_api_resources, remove_all_finalizers,
                          module):
     api_client = client.ApiClient()
     core_v1 = client.CoreV1Api(api_client)
-    dyn_client = DynamicClient(api_client)
+    dyn_client = None
     stuck = []
     warnings = []
     seen = set()
+
+    try:
+        dyn_client = DynamicClient(api_client)
+    except Exception as e:
+        warnings.append(
+            "DynamicClient initialization failed, using REST API only: %s"
+            % str(e)
+        )
 
     # Check if namespace exists and whether it is terminating
     namespace_terminating = False
@@ -219,7 +298,7 @@ def find_stuck_resources(namespace, skip_api_resources, remove_all_finalizers,
     # Core API (v1)
     try:
         core_resources = core_v1.get_api_resources()
-        api_groups.append(("", "v1", core_resources.resources))
+        api_groups.append((None, "v1", core_resources.resources))
     except ApiException as e:
         warnings.append("Failed to discover core API resources: %s" % str(e))
 
@@ -244,11 +323,8 @@ def find_stuck_resources(namespace, skip_api_resources, remove_all_finalizers,
                 auth_settings=["BearerToken"],
                 _return_http_data_only=True,
             )
-            if hasattr(resp, "get"):
-                resources = resp.get("resources", [])
-            elif isinstance(resp, dict):
-                resources = resp.get("resources", [])
-            else:
+            resources = get_response_list_field(resp, "resources")
+            if not resources:
                 continue
             api_groups.append((group_name, version, resources))
         except Exception as e:
@@ -282,7 +358,7 @@ def find_stuck_resources(namespace, skip_api_resources, remove_all_finalizers,
                 if "/" in res_name:
                     continue
 
-                if should_skip(res_name, group, skip_api_resources):
+                if should_skip(res_name, skip_api_resources, group=group):
                     continue
 
                 if not supports_patch(res_verbs):
@@ -291,21 +367,14 @@ def find_stuck_resources(namespace, skip_api_resources, remove_all_finalizers,
                 api_version = "%s/%s" % (group, version) if group else version
 
                 try:
-                    resource_api = dyn_client.resources.get(
-                        api_version=api_version,
-                        kind=res_kind,
+                    resource_list, fallback_warning = (
+                        fetch_namespaced_resource_list(
+                            dyn_client, api_client, version,
+                            res_name, res_kind, namespace, group=group
+                        )
                     )
-                except Exception as e:
-                    warnings.append(
-                        "Failed to resolve %s (%s): %s"
-                        % (res_name, api_version, str(e))
-                    )
-                    continue
-
-                try:
-                    resource_list = resource_api.get(
-                        namespace=namespace,
-                    )
+                    if fallback_warning:
+                        warnings.append(fallback_warning)
                 except ApiException as e:
                     if e.status in (404, 403):
                         continue
@@ -321,11 +390,7 @@ def find_stuck_resources(namespace, skip_api_resources, remove_all_finalizers,
                     )
                     continue
 
-                items = []
-                if hasattr(resource_list, "items") and resource_list.items:
-                    items = resource_list.items
-                elif isinstance(resource_list, dict):
-                    items = resource_list.get("items", [])
+                items = get_response_list_field(resource_list, "items")
 
                 for item in items:
                     meta = extract_item_metadata(item, namespace)
