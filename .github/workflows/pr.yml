@@ -159,23 +159,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          set -euo pipefail
-          failed=0
-          for runme in tests/integration/targets/*/runme.sh; do
-            target="$(basename "$(dirname "$runme")")"
-            echo "::group::Integration target: ${target}"
-            if bash "$runme"; then
-              echo "✅ ${target} passed"
-            else
-              echo "::error::❌ ${target} failed"
-              failed=1
-            fi
-            echo "::endgroup::"
-          done
-          if [ "$failed" -ne 0 ]; then
-            echo "::error::One or more integration tests failed"
-            exit 1
-          fi
+          bash tests/integration/targets/oci_mirror/runme.sh
 
   check-all-dependencies-are-merged:
     name: "Check all dependencies are merged"

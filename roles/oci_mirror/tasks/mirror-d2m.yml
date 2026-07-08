@@ -79,7 +79,3 @@
   ansible.builtin.set_fact:
     om_output_dir: "{{ _om_output_dir.path }}"
   when: _om_output_dir is defined
-
-- name: Verify catalog image digests after disk-to-mirror
-  ansible.builtin.include_tasks: verify-digests.yml
-  when: om_verify_digests | bool

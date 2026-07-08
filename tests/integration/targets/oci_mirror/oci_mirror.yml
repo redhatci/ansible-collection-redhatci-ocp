@@ -4,14 +4,10 @@
 #   (a) Template rendering with om_helm_charts set -> assert helm: section present
 #   (b) Template rendering without om_helm_charts  -> assert no helm: section
 #   (c) om_operation validation assert logic
-#   (d) verify-digests.yml logic with fake digest JSON (matching / mismatching)
 
 - name: Integration tests for oci_mirror role
   hosts: localhost
   gather_facts: false
-
-  vars:
-    _test_workspace: "/tmp/oci_mirror_test_{{ ansible_date_time.epoch | default('0') }}"
 
   tasks:
 
@@ -114,67 +110,6 @@
         - mirror
         - m2d
         - d2m
-
-    # ------------------------------------------------------------------ #
-    # (d) verify-digests.yml: matching and mismatching digest scenarios    #
-    # ------------------------------------------------------------------ #
-    - name: "TEST(d) - Create workspace dir"
-      ansible.builtin.tempfile:
-        state: directory
-        prefix: oci_mirror_verify_test.
-      register: _verify_workspace
-
-    - name: "TEST(d) - Write fake digest map (matching scenario)"
-      ansible.builtin.copy:
-        content: |
-          {
-            "registry.example.com/redhat/redhat-operator-index:v4.20":
-              "sha256:aaaa1111bbbb2222cccc3333dddd4444eeee5555ffff6666000011112222"
-          }
-        dest: "{{ _verify_workspace.path }}/.om-m2d-digests.json"
-        mode: "0640"
-
-    - name: "TEST(d) - Read digest map"
-      ansible.builtin.slurp:
-        src: "{{ _verify_workspace.path }}/.om-m2d-digests.json"
-      register: _digest_map_raw
-
-    - name: "TEST(d) - Parse digest map"
-      ansible.builtin.set_fact:
-        _test_digest_map: "{{ _digest_map_raw.content | b64decode | from_json }}"
-
-    - name: "TEST(d) - Assert digest map loaded correctly"
-      ansible.builtin.assert:
-        that:
-          - _test_digest_map | length == 1
-          - >-
-            _test_digest_map['registry.example.com/redhat/redhat-operator-index:v4.20']
-            == 'sha256:aaaa1111bbbb2222cccc3333dddd4444eeee5555ffff6666000011112222'
-        fail_msg: "Digest map was not parsed correctly"
-        success_msg: "TEST(d) PASSED: digest map loaded and parsed correctly"
-
-    - name: "TEST(d) - Simulate matching digest check"
-      ansible.builtin.assert:
-        that:
-          - >-
-            'sha256:aaaa1111bbbb2222cccc3333dddd4444eeee5555ffff6666000011112222'
-            == _test_digest_map['registry.example.com/redhat/redhat-operator-index:v4.20']
-        fail_msg: "Matching digest check unexpectedly failed"
-        success_msg: "TEST(d) PASSED: matching digest check passes"
-
-    - name: "TEST(d) - Simulate mismatching digest check"
-      ansible.builtin.assert:
-        that:
-          - >-
-            'sha256:DIFFERENT0000000000000000000000000000000000000000000000000'
-            != _test_digest_map['registry.example.com/redhat/redhat-operator-index:v4.20']
-        fail_msg: "Mismatch detection did not work"
-        success_msg: "TEST(d) PASSED: mismatching digest correctly detected"
-
-    - name: "TEST(d) - Cleanup workspace"
-      ansible.builtin.file:
-        path: "{{ _verify_workspace.path }}"
-        state: absent
 
     - name: All integration tests passed
       ansible.builtin.debug:

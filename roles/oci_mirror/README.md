@@ -24,7 +24,6 @@ Either you point the role at an existing **ImageSetConfiguration**, or you let i
 | `om_ignore_errors` | bool | `false` | Sets Ansible `ignore_errors` on the mirror task. |
 | `om_operation` | string | `mirror` | Operation mode: `mirror` (combined, online), `m2d` (mirror-to-disk), or `d2m` (disk-to-mirror). |
 | `om_workspace_dir` | string | `""` | Path to the disk workspace used for `m2d` and `d2m` operations. **Required** when `om_operation` is `m2d` or `d2m`. |
-| `om_verify_digests` | bool | `false` | When `true`, capture catalog image digests during M2D and verify them after D2M to detect catalog drift between the two phases. |
 | `om_helm_charts` | list | `[]` | List of Helm chart repository entries to include in the generated ImageSetConfiguration. See examples below. |
 
 ### Standard path only (`om_custom_config` not set)
@@ -155,8 +154,6 @@ push from disk to the disconnected registry (D2M).
     om_operators:
       odf-operator:
       local-storage-operator:
-    # Optionally capture pre-mirror catalog digests for drift detection:
-    om_verify_digests: true
 ```
 
 Transfer `om_workspace_dir` to the disconnected environment (e.g. via USB/tape).
@@ -171,11 +168,6 @@ Transfer `om_workspace_dir` to the disconnected environment (e.g. via USB/tape).
     om_operation: d2m
     om_workspace_dir: /mnt/mirror-workspace
     om_target: registry.disconnected.lab:5000
-    # Verify catalog digests did not drift between M2D and D2M phases.
-    # NOTE: om_verify_digests requires skopeo to be able to reach the
-    # original source registry. Disable this flag in fully air-gapped
-    # D2M environments where source registry access is not available.
-    om_verify_digests: true
 ```
 
 ### Helm chart mirroring
@@ -211,7 +203,3 @@ Typical files:
 
 - `idms-oc-mirror.yaml` — ImageDigestMirrorSet
 - `cs-*.yaml` or `cc-*.yaml` — catalog manifests; which shape you get depends on OpenShift version (classic OLM vs OLM v1). See `tasks/mirroring.yml` for details.
-
-## Notes
-
-- **`om_verify_digests` in air-gapped D2M environments**: The digest verification step inspects catalog images in the original source registry. In a fully air-gapped environment during the D2M phase, the source registry is not reachable and `om_verify_digests: true` will fail. Set `om_verify_digests: false` (the default) when running D2M without internet access. The digest map written by M2D (`.om-m2d-digests.json`) is preserved in `om_workspace_dir` for offline auditing.
