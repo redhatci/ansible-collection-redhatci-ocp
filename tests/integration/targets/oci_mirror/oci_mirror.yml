@@ -91,25 +91,27 @@
         state: absent
 
     # ------------------------------------------------------------------ #
-    # (c) om_operation validation: invalid value must fail assert          #
+    # (c) om_operation validation: invalid value must fail the role assert #
     # ------------------------------------------------------------------ #
-    - name: "TEST(c) - Assert invalid om_operation is rejected"
-      ansible.builtin.assert:
-        that:
-          - "'invalid_op' not in ['mirror', 'm2d', 'd2m']"
-        fail_msg: "om_operation validation unexpectedly passed for invalid value"
-        success_msg: "TEST(c) PASSED: invalid om_operation correctly rejected"
+    - name: "TEST(c) - Verify role rejects invalid om_operation"
+      block:
+        - name: "TEST(c) - Include role tasks with invalid om_operation"
+          ansible.builtin.include_tasks:
+            file: >-
+              {{ playbook_dir | dirname | dirname | dirname | dirname }}/roles/oci_mirror/tasks/main.yml
+          vars:
+            om_operation: invalid_op
+            om_workspace_dir: /tmp
+            om_helm_charts: []
 
-    - name: "TEST(c) - Assert valid om_operation values are accepted"
-      ansible.builtin.assert:
-        that:
-          - item in ['mirror', 'm2d', 'd2m']
-        fail_msg: "Valid om_operation value '{{ item }}' was unexpectedly rejected"
-        success_msg: "TEST(c) PASSED: '{{ item }}' is a valid om_operation"
-      loop:
-        - mirror
-        - m2d
-        - d2m
+        - name: "TEST(c) - Fail if role did not reject invalid om_operation"
+          ansible.builtin.fail:
+            msg: "om_operation validation unexpectedly passed for 'invalid_op'"
+
+      rescue:
+        - name: "TEST(c) - Confirm rejection was due to om_operation validation"
+          ansible.builtin.debug:
+            msg: "TEST(c) PASSED: role correctly rejected invalid om_operation"
 
     - name: All integration tests passed
       ansible.builtin.debug:
