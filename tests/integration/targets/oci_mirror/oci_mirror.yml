@@ -109,9 +109,15 @@
             msg: "om_operation validation unexpectedly passed for 'invalid_op'"
 
       rescue:
-        - name: "TEST(c) - Confirm rejection was due to om_operation validation"
-          ansible.builtin.debug:
-            msg: "TEST(c) PASSED: role correctly rejected invalid om_operation"
+        - name: "TEST(c) - Assert rejection was specifically from om_operation validation"
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'om_operation must be one of' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >
+              TEST(c) FAILED: rescue caught an unexpected error, not om_operation validation.
+              Error: {{ ansible_failed_result.msg | default('no message') }}
+            success_msg: "TEST(c) PASSED: role correctly rejected invalid om_operation"
 
     - name: All integration tests passed
       ansible.builtin.debug:
