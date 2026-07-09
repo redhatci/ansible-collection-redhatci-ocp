@@ -13,7 +13,7 @@ mounted_iso_files:
   - "{{ mount_efiboot_directory }}/EFI/BOOT/grubx64.efi"
   - "{{ mount_efiboot_directory }}/EFI/BOOT/BOOTX64.EFI"
 
-mounted_tftp_files: "http://{{ HTTPD_PXE_HOST }}/{{ pxe_directory }}"
+mounted_tftp_files: "http://{{ HTTPD_PXE_HOST }}:{{ HTTPD_PORT_FOR_PXE }}/{{ pxe_directory }}"
 tftp_files_to_download:
   - "{{ mounted_tftp_files }}/ignition.img"
   - "{{ mounted_tftp_files }}/efiboot.img"
@@ -39,4 +39,4 @@ URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL 
 DOWNLOAD_DEST_FILE: "{{ discovery_iso_name }}"
 DOWNLOAD_DEST_PATH: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
 HTTPD_PXE_HOST: "{{ hostvars['http_store']['ansible_host'] }}"
-HTTPD_PORT_FOR_PXE: "{{ hostvars['httpd_pxe_host']['httpd_port_for_pxe'] }}"
+HTTPD_PORT_FOR_PXE: "{{ hostvars['http_store']['httpd_port_for_pxe'] | default(80) }}"
