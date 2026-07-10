@@ -95,6 +95,6 @@
         path: "{{ _om_tmp_dir.path }}"
         state: absent
       when:
-        - not om_keep_working_dir | bool
+        - not (om_keep_working_dir | default(false)) | bool
         - _om_tmp_dir is defined
         - _om_tmp_dir.path is defined
