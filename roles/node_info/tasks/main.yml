@@ -141,13 +141,13 @@
           no_log: true
           changed_when: false
       rescue:
-        - name: Extract hw details with native tools (fallback)
+        - name: Extract hw details with native tools (fallback)  # noqa: risky-shell-pipe
           vars:
             _ni_hw_script_b64: "{{ lookup('file', role_path ~ '/tasks/files/collect_hw_native.py') | b64encode }}"
           ansible.builtin.shell:
             cmd: >
               {{ ni_oc_tool_path }} debug node/{{ node_name }} -n default
-              -- chroot /host bash -c 'echo {{ _ni_hw_script_b64 }} | base64 -d | python3'
+              -- chroot /host bash -c 'set -o pipefail; echo {{ _ni_hw_script_b64 }} | base64 -d | python3'
           register: _ni_hardware_info
           loop: "{{ ni_ready_node_names | default([]) }}"
           loop_control:

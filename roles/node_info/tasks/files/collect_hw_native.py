@@ -11,19 +11,22 @@ without changes.
 
 import json
 import os
+import shlex
 import subprocess
 
 
 def run(cmd):
+    """Execute a shell command and return its stdout, or empty string on failure."""
     try:
         return subprocess.check_output(
-            cmd, shell=True, stderr=subprocess.DEVNULL, timeout=30
+            shlex.split(cmd), stderr=subprocess.DEVNULL, timeout=30
         ).decode().strip()
     except Exception:
         return ""
 
 
 def collect_system():
+    """Collect system product name and manufacturer via dmidecode."""
     return {
         "description": run("dmidecode -s system-product-name"),
         "vendor": run("dmidecode -s system-manufacturer"),
@@ -31,6 +34,7 @@ def collect_system():
 
 
 def collect_bios():
+    """Collect BIOS vendor and version via dmidecode."""
     return {
         "id": "firmware",
         "class": "memory",
@@ -41,19 +45,24 @@ def collect_bios():
 
 
 def collect_cpu():
+    """Collect CPU model, vendor, frequency, and topology via lscpu."""
     cpu = {}
     for line in run("lscpu").splitlines():
         if ":" in line:
             k, v = line.split(":", 1)
             cpu[k.strip()] = v.strip()
     mhz = cpu.get("CPU MHz", cpu.get("CPU max MHz", "0"))
+    try:
+        size = int(float(mhz) * 1_000_000)
+    except (ValueError, TypeError):
+        size = 0
     return {
         "id": "cpu",
         "class": "processor",
         "product": cpu.get("Model name", "Unknown"),
         "vendor": cpu.get("Vendor ID", "Unknown"),
         "units": "Hz",
-        "size": int(float(mhz) * 1_000_000),
+        "size": size,
         "configuration": {
             "cores": cpu.get("CPU(s)", "0"),
             "sockets": cpu.get("Socket(s)", "1"),
@@ -63,6 +72,7 @@ def collect_cpu():
 
 
 def collect_memory():
+    """Collect total memory size from /proc/meminfo."""
     with open("/proc/meminfo") as f:
         for line in f:
             if line.startswith("MemTotal"):
@@ -77,6 +87,7 @@ def collect_memory():
 
 
 def collect_storage():
+    """Collect block device inventory via lsblk in JSON mode."""
     raw = run("lsblk -Jb -o NAME,SIZE,TYPE,MODEL")
     if raw:
         try:
@@ -92,6 +103,7 @@ def collect_storage():
 
 
 def collect_pci():
+    """Collect PCI device list via lspci."""
     children = []
     for line in run("lspci -nn").splitlines():
         parts = line.split(" ", 1)
@@ -137,6 +149,7 @@ def collect_nic_firmware():
 
 
 def collect_network():
+    """Collect network interfaces and NIC firmware versions."""
     link_info = []
     raw = run("ip -j link show")
     if raw:
@@ -154,6 +167,7 @@ def collect_network():
 
 
 def main():
+    """Assemble and print the complete hardware inventory as JSON."""
     system = collect_system()
     data = {
         "id": "computer",
