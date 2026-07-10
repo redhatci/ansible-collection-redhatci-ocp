@@ -157,6 +157,24 @@
           no_log: true
           changed_when: false
 
+        - name: Warn if native tools fallback failed
+          ansible.builtin.fail:
+            msg: >-
+              Hardware collection failed: both lshw and native tools
+              fallback could not collect data. Check node connectivity
+              and available tools (python3, dmidecode, ethtool).
+          when:
+            - _ni_hardware_info.results | default([])
+              | selectattr('rc', 'defined')
+              | selectattr('rc', 'ne', 0) | list | length > 0
+
+    - name: Debug hardware_info
+      ansible.builtin.debug:
+        msg: "{{ _ni_hardware_info.results }}"
+      when:
+        - _ni_hardware_info is defined
+        - _ni_hardware_info.results is defined
+
     - name: Save hardware information to files
       ansible.builtin.copy:
         content: >-

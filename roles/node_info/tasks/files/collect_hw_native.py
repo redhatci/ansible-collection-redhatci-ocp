@@ -10,6 +10,7 @@ without changes.
 """
 
 import json
+import os
 import subprocess
 
 
@@ -102,18 +103,54 @@ def collect_pci():
     return {"id": "pci", "class": "bus", "children": children}
 
 
+def collect_nic_firmware():
+    """Collect NIC driver and firmware versions via ethtool -i.
+
+    Only probes physical (PCI-backed) interfaces by checking for
+    /sys/class/net/<iface>/device.
+    """
+    children = []
+    try:
+        ifaces = sorted(os.listdir("/sys/class/net"))
+    except OSError:
+        return children
+    for iface in ifaces:
+        if not os.path.exists(f"/sys/class/net/{iface}/device"):
+            continue
+        info = run(f"ethtool -i {iface}")
+        if not info:
+            continue
+        props = {}
+        for line in info.splitlines():
+            if ":" in line:
+                k, v = line.split(":", 1)
+                props[k.strip()] = v.strip()
+        if props.get("firmware-version"):
+            children.append({
+                "logicalname": iface,
+                "configuration": {
+                    "driver": props.get("driver", ""),
+                    "firmware": props.get("firmware-version", ""),
+                },
+            })
+    return children
+
+
 def collect_network():
+    link_info = []
     raw = run("ip -j link show")
     if raw:
         try:
-            return {
-                "id": "network",
-                "class": "network",
-                "children": json.loads(raw),
-            }
+            link_info = json.loads(raw)
         except json.JSONDecodeError:
             pass
-    return {"id": "network", "class": "network", "children": []}
+    firmware_info = collect_nic_firmware()
+    return {
+        "id": "network",
+        "class": "network",
+        "children": link_info,
+        "firmware": firmware_info,
+    }
 
 
 def main():
