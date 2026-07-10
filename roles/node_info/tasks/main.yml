@@ -140,6 +140,7 @@
             - ni_ready_node_names is defined
           no_log: true
           changed_when: false
+          ignore_errors: false
       rescue:
         - name: Extract hw details with native tools (fallback)  # noqa: risky-shell-pipe
           vars:
