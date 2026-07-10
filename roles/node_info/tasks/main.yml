@@ -143,7 +143,7 @@
       rescue:
         - name: Extract hw details with native tools (fallback)  # noqa: risky-shell-pipe
           vars:
-            _ni_hw_script_b64: "{{ lookup('file', role_path ~ '/tasks/files/collect_hw_native.py') | b64encode }}"
+            _ni_hw_script_b64: "{{ lookup('file', role_path ~ '/files/collect_hw_native.py') | b64encode }}"
           ansible.builtin.shell:
             cmd: >
               {{ ni_oc_tool_path }} debug node/{{ node_name }} -n default
