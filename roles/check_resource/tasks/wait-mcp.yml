@@ -4,6 +4,11 @@
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
   register: _cr_mcp_check
+  until:
+    - _cr_mcp_check.resources is defined
+    - _cr_mcp_check.resources | length > 0
+  retries: "{{ check_wait_retries }}"
+  delay: "{{ check_wait_delay }}"
   no_log: true
 
 - name: "Wait for MCP updates"
