@@ -495,7 +495,7 @@
         - not chassis_result.results[item].failed|bool
         - not firmware_result.results[item].failed|bool
         - "'Dell' in chassis_result.results[item].redfish_facts.chassis.entries[0].Manufacturer"
-        - firmware_result.results[item].redfish_facts.firmware.entries | json_query(query) | max >= "4.20.20.20"
+        - firmware_result.results[item].redfish_facts.firmware.entries | json_query(query) | max is ansible.builtin.version("4.20.20.20", ">=")
       vars:
         query: "[?Name=='Integrated Dell Remote Access Controller'].Version"
       register: dell_host_redfish_result
