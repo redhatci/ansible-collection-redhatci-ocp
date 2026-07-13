@@ -1,5 +1,6 @@
 set timeout=1
 menuentry 'Install Red Hat Enterprise Linux CoreOS' --class fedora --class gnu-linux --class gnu --class os {
+	# HTTPD_PORT_FOR_PXE is required here for non-default HTTP port environments (default: 80).
 	linuxefi vmlinuz random.trust_cpu=on ignition.firstboot ignition.platform.id=metal 'coreos.live.rootfs_url=http://{{ HTTPD_PXE_HOST }}:{{ HTTPD_PORT_FOR_PXE }}/{{ pxe_directory }}/rootfs.img' 
 	initrdefi initrd.img ignition.img
 }

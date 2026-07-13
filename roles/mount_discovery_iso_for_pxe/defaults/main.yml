@@ -39,4 +39,12 @@ URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL 
 DOWNLOAD_DEST_FILE: "{{ discovery_iso_name }}"
 DOWNLOAD_DEST_PATH: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
 HTTPD_PXE_HOST: "{{ hostvars['http_store']['ansible_host'] }}"
+# NOTE: The hostvars key 'http_store' below is intentional and correct — it matches
+# the same inventory host used for HTTPD_PXE_HOST above. Any other key (e.g.
+# 'httpd_pxe_host') would silently resolve to an empty string and produce broken URLs.
+#
+# WARNING: This role (mount_discovery_iso_for_pxe) is not covered by public CI.
+# It requires physical PXE/bare-metal hardware available only in private partner labs.
+# Changes to this role or its templates must be validated in a PXE lab environment
+# before merging.
 HTTPD_PORT_FOR_PXE: "{{ hostvars['http_store']['httpd_port_for_pxe'] | default(80) }}"
