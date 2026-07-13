@@ -28,9 +28,22 @@
   until: _deploy_cr_result is not failed
   when: dc_wait_for_cr | bool
 
-- name: Pause to wait for MCP to be updated if any
-  ansible.builtin.pause:
-    seconds: 60
+- name: Get list of all cluster nodes
+  kubernetes.core.k8s_info:
+    kind: Node
+  register: _deploy_cr_nodes
+  until:
+    - _deploy_cr_nodes.resources is defined
+    - _deploy_cr_nodes.resources | length > 0
+  retries: 6
+  delay: 10
+
+- name: Set wait times for SNO reboot
+  ansible.builtin.set_fact:
+    dc_wait_mc_retries: 4
+    dc_wait_mc_delay: 300
+  when:
+    - _deploy_cr_nodes.resources | length == 1
 
 - name: Wait for MCPs changes applied if any
   ansible.builtin.include_role:
