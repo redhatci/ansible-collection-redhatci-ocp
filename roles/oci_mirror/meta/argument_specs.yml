@@ -27,6 +27,7 @@ argument_specs:
           Must be writable by the Ansible user when using m2d or d2m modes.
       om_helm_charts:
         type: list
+        elements: dict
         required: false
         default: []
         description: >
