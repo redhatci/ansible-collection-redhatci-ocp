@@ -1,0 +1,77 @@
+---
+- name: Integration tests for oci_mirror manifest validation
+  hosts: testhost
+  gather_facts: false
+  tasks:
+
+    - name: Create temp directory for valid manifests
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: om_test_valid.
+      register: _test_valid_dir
+
+    - name: Create temp directory for bad manifests
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: om_test_bad.
+      register: _test_bad_dir
+
+    - name: Copy valid manifest fixtures to temp directory
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ _test_valid_dir.path }}/{{ item | basename }}"
+        mode: "0644"
+      loop:
+        - "files/valid/idms-oc-mirror.yaml"
+        - "files/valid/itms-oc-mirror.yaml"
+        - "files/valid/cs-redhat-operators.yaml"
+        - "files/valid/cc-redhat-operators.yaml"
+
+    - name: Validate valid manifests — should succeed
+      vars:
+        _om_output_dir:
+          path: "{{ _test_valid_dir.path }}"
+      ansible.builtin.include_role:
+        name: redhatci.ocp.oci_mirror
+        tasks_from: validate-manifests.yml
+
+    - name: Copy bad manifest fixture to temp directory
+      ansible.builtin.copy:
+        src: "files/bad/idms-empty-status.yaml"
+        dest: "{{ _test_bad_dir.path }}/idms-oc-mirror.yaml"
+        mode: "0644"
+
+    - name: Validate bad manifests — should fail
+      block:
+        - name: Run validation on bad manifest (expected to fail)
+          vars:
+            _om_output_dir:
+              path: "{{ _test_bad_dir.path }}"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: validate-manifests.yml
+
+        - name: Fail if validation did not raise an error
+          ansible.builtin.fail:
+            msg: "Validation should have failed for manifest with empty status but did not."
+
+      rescue:
+        - name: Confirm that the validation failure mentions empty status
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'empty' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >-
+              Validation failed but the error message did not mention 'empty'.
+              Got: {{ ansible_failed_result.msg | default('no message') }}
+
+      always:
+        - name: Clean up valid temp directory
+          ansible.builtin.file:
+            path: "{{ _test_valid_dir.path }}"
+            state: absent
+
+        - name: Clean up bad temp directory
+          ansible.builtin.file:
+            path: "{{ _test_bad_dir.path }}"
+            state: absent
