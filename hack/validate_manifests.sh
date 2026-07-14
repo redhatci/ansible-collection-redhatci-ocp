@@ -11,6 +11,7 @@
 #       ImageTagMirrorSet     : spec.imageTagMirrors non-empty list
 #       CatalogSource         : spec.sourceType and spec.image non-empty strings
 #       ClusterCatalog        : spec.source must be defined
+#       UpdateService         : spec.graphDataImage and spec.releases non-empty strings
 #
 # Exit 0 on success, exit 1 with ERROR lines on stderr on any failure.
 
@@ -98,6 +99,18 @@ def validate_manifest(path):
         if "source" not in spec:
             errors.append(
                 f"{basename}: 'spec.source' is missing (ClusterCatalog)"
+            )
+
+    elif kind == "UpdateService":
+        if not spec.get("graphDataImage", "").strip():
+            errors.append(
+                f"{basename}: 'spec.graphDataImage' is missing or empty "
+                "(UpdateService)"
+            )
+        if not spec.get("releases", "").strip():
+            errors.append(
+                f"{basename}: 'spec.releases' is missing or empty "
+                "(UpdateService)"
             )
 
     return errors

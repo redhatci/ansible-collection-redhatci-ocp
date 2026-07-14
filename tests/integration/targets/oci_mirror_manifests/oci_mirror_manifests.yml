@@ -26,6 +26,7 @@
         - "files/valid/itms-oc-mirror.yaml"
         - "files/valid/cs-redhat-operators.yaml"
         - "files/valid/cc-redhat-operators.yaml"
+        - "files/valid/update-service-oc-mirror.yaml"
 
     - name: Validate valid manifests — should succeed
       vars:
@@ -34,6 +35,33 @@
       ansible.builtin.include_role:
         name: redhatci.ocp.oci_mirror
         tasks_from: validate-manifests.yml
+
+    - name: "AC4 — Verify apiVersion matches expected schema per kind (GitOps/ACM compliance)"
+      vars:
+        _api_version_map:
+          ImageDigestMirrorSet: "config.openshift.io/v1"
+          ImageTagMirrorSet: "config.openshift.io/v1"
+          CatalogSource: "operators.coreos.com/v1alpha1"
+          ClusterCatalog: "catalogd.operatorframework.io/v1"
+          UpdateService: "updateservice.operator.openshift.io/v1"
+        _manifest: "{{ lookup('file', item.path) | from_yaml }}"
+        _kind: "{{ _manifest.kind | default('') }}"
+        _expected_api: "{{ _api_version_map[_kind] | default('') }}"
+      ansible.builtin.assert:
+        that:
+          - _kind not in _api_version_map or _manifest.apiVersion == _expected_api
+        fail_msg: >-
+          AC4 apiVersion mismatch in {{ item.path | basename }}:
+          kind={{ _kind }},
+          expected apiVersion={{ _expected_api }},
+          got={{ _manifest.apiVersion | default('empty') }}.
+        success_msg: >-
+          AC4 passed for {{ item.path | basename }}:
+          kind={{ _kind }}, apiVersion={{ _manifest.apiVersion | default('empty') }}.
+      loop: "{{ _om_manifest_files.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+      when: _om_manifest_files.files | length > 0
 
     - name: Copy bad manifest fixture to temp directory
       ansible.builtin.copy:
@@ -74,4 +102,46 @@
         - name: Clean up bad temp directory
           ansible.builtin.file:
             path: "{{ _test_bad_dir.path }}"
+            state: absent
+
+    - name: Create temp directory for bad UpdateService manifest
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: om_test_bad_us.
+      register: _test_bad_us_dir
+
+    - name: Validate bad UpdateService manifest — should fail
+      block:
+        - name: Copy bad UpdateService fixture to temp directory
+          ansible.builtin.copy:
+            src: "files/bad/update-service-empty-spec.yaml"
+            dest: "{{ _test_bad_us_dir.path }}/update-service-oc-mirror.yaml"
+            mode: "0644"
+
+        - name: Run validation on bad UpdateService manifest (expected to fail)
+          vars:
+            _om_output_dir:
+              path: "{{ _test_bad_us_dir.path }}"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: validate-manifests.yml
+
+        - name: Fail if UpdateService validation did not raise an error
+          ansible.builtin.fail:
+            msg: "Validation should have failed for UpdateService with empty spec but did not."
+
+      rescue:
+        - name: Confirm that the UpdateService validation failure mentions empty
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'empty' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >-
+              UpdateService validation failed but the error message did not mention 'empty'.
+              Got: {{ ansible_failed_result.msg | default('no message') }}
+
+      always:
+        - name: Clean up bad UpdateService temp directory
+          ansible.builtin.file:
+            path: "{{ _test_bad_us_dir.path }}"
             state: absent
