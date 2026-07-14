@@ -146,6 +146,8 @@ Each YAML file in that directory is parsed and checked for:
 - **CatalogSource** (`cs-*.yaml`): `spec.sourceType` and `spec.image` must be
   non-empty strings.
 - **ClusterCatalog** (`cc-*.yaml`): `spec.source` must be defined.
+- **UpdateService** (`update-service-*.yaml`): `spec.graphDataImage` and
+  `spec.releases` must be non-empty strings.
 
 Set `om_validate_manifests: false` to skip validation (e.g. when you know the
 mirroring tool produces partial output intentionally).
