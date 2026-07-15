@@ -37,6 +37,11 @@ spec:
     metadata:
       annotations:
         vm.kubevirt.io/os: "{{ vm.os | default(kvirt_vm_os) }}"
+{% if vm.annotations is defined %}
+{% for key, value in vm.annotations.items() %}
+        {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
       labels:
         kubevirt.io/domain: "{{ vm.namespace | default(kvirt_vm_namespace) }}"
 {% if vm.labels is defined %}
@@ -45,6 +50,19 @@ spec:
 {% endfor %}
 {% endif %}
     spec:
+{% if vm.affinity_group is defined %}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: affinity_group_{{ vm.affinity_group }}
+                operator: Exists
+            topologyKey: kubernetes.io/hostname
+{% endif %}
+{% if vm.readiness_probe is defined and vm.readiness_probe %}
+{{ vm.readiness_probe | to_nice_yaml(indent=2) | indent(6, first=True) }}
+{% endif %}
 {% if vm.node_selector is defined %}
       nodeSelector: {{ vm.node_selector }}
 {% endif %}
