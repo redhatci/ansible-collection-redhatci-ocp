@@ -6,7 +6,6 @@
   register: _cr_mcp_check
   until:
     - _cr_mcp_check.resources is defined
-    - _cr_mcp_check.resources | length > 0
   retries: "{{ check_wait_retries }}"
   delay: "{{ check_wait_delay }}"
   no_log: true
