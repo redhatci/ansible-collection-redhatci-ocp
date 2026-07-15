@@ -10,8 +10,8 @@ Extracts multiple logs from pods and events in a Namespace.
 
 | Variable | Default   | Required | Description                                        |
 | -------- | --------- | -------- | -------------------------------------------------- |
-| glfn_dir | undefined | No       | Path to the dir where extracted logs will be saved |
-| glfn_ns  | undefined | Yes      | Namespace to extract logs from                     |
+| glfn_dir | /var/tmp/ | Yes      | Path to the dir where extracted logs will be saved |
+| glfn_ns  | default   | Yes      | Namespace to extract logs from                     |
 | glfn_oc  | undefined | Yes      | Path to the oc client                              |
 
 ## Examples
