@@ -83,6 +83,7 @@
         - "'True' in _ecd_trex_app_cr_installation.stdout"
         - "'Running' in _ecd_trex_app_cr_installation.stdout"
         - "'Successful' in _ecd_trex_app_cr_installation.stdout"
+      changed_when: false
 
     - name: Wait for the TRex app TestStarted event
       kubernetes.core.k8s_info:

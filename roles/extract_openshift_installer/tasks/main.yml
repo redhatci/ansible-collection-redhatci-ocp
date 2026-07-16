@@ -21,6 +21,7 @@
       --command=openshift-install
       {{ release_image }}
       --to={{ extract_dest_path }}
+  changed_when: false
 
 - name: Check extracted installer has agent subcommand
   ansible.builtin.command:

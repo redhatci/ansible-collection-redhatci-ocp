@@ -15,16 +15,19 @@
   ansible.builtin.shell: |
     cd "{{ temp_dir.path }}/ztp-gitops/" && \
     git push origin --delete "{{ target_ztp_gitops_repo_dst_branch }}"
+  changed_when: true
 
 - name: Create new branch
   ansible.builtin.shell: |
     cd "{{ temp_dir.path }}/ztp-gitops/" && \
     git checkout -b "{{ target_ztp_gitops_repo_dst_branch }}"
+  changed_when: true
 
 - name: Push new branch
   ansible.builtin.shell: |
     cd "{{ temp_dir.path }}/ztp-gitops/" && \
     git push --set-upstream origin "{{ target_ztp_gitops_repo_dst_branch }}"
+  changed_when: true
 
 - name: Remove the temporary directory
   ansible.builtin.file:

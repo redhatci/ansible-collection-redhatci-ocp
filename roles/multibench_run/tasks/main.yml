@@ -6,6 +6,7 @@
   register: _multibench_run_binaries
   ignore_errors: true
   become: true
+  changed_when: false
 
 - name: Fail if the host is not setup properly
   ansible.builtin.fail:
@@ -163,6 +164,7 @@
         set -eo pipefail
         grep -E 'primary period-id:' "{{ multibench_run_output_dir.path }}/result-summary.txt" | sed -nE 's/.*primary period-id:[[:space:]]*([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}).*/\1/p'
       register: _multibench_run_period_ids_result
+      changed_when: false
 
     - name: Set list of primary period-ids
       ansible.builtin.set_fact:
@@ -195,6 +197,7 @@
         label: "{{ item }}"
       when: (multibench_run_crucible_primary_period_ids | default([])) | length > 0
       delegate_to: "{{ multibench_host }}"
+      changed_when: false
 
     - name: Fetch crucible metric output from multibench host
       ansible.builtin.fetch:

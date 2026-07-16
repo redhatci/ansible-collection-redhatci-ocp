@@ -13,6 +13,7 @@
     -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
     raw 0x00 0x08 0x03 0x08
   tags: install_bm
+  changed_when: false
 
 - name: "Set PXE - UEFI Temporally on next boot"
   ansible.builtin.command: >
@@ -24,6 +25,7 @@
   when:
     - (bootmode is not defined or bootmode != "legacy")
   tags: install_bm
+  changed_when: false
 
 - name: "Set PXE - BIOS Temporally on next boot"
   ansible.builtin.command: >
@@ -36,6 +38,7 @@
     - bootmode is defined
     - bootmode == "legacy"
   tags: install_bm
+  changed_when: false
 
 - name: "Recover power status of baremetal node"
   ansible.builtin.command: >
@@ -46,6 +49,7 @@
     power status
   register: node_power
   tags: install_bm
+  changed_when: false
 
 - name: "Start the baremetal node"
   ansible.builtin.command: >
@@ -57,6 +61,7 @@
   when:
     - "'Chassis Power is off' in node_power.stdout"
   tags: install_bm
+  changed_when: false
 
 - name: "Reset the baremetal node"
   ansible.builtin.command: >
@@ -68,6 +73,7 @@
   when:
     - "'Chassis Power is on' in node_power.stdout"
   tags: install_bm
+  changed_when: false
 
 - name: Show How to monitor for installation status
   ansible.builtin.debug:

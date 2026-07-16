@@ -34,6 +34,7 @@
       --since=10m
       --namespace ocs-disk-gatherer
   register: disk_id
+  changed_when: false
 
 - name: Configure Local Storage Volumes
   kubernetes.core.k8s:
