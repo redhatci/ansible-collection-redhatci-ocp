@@ -106,6 +106,7 @@ To specify which DCI lab to use and which resources to use, you can use the foll
   * `TestBos2`: virtual setup in the BOS2 lab.
   * `TestBos2Sno`: virtual SNO setup in the BOS2 lab.
   * `TestBos2SnoBaremetal`: baremetal SNO node in the BOS2 lab.
+  * `TestBos2MnoBaremetal`: IPI deployment on Dell baremetal MNO cluster at BOS2 (exercises node_prep iDRAC firmware gate).
 
 The following `Test-Hints` can be specified if needed in the description of the PR:
 
