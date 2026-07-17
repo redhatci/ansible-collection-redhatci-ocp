@@ -5,18 +5,12 @@
     patterns: "*.yaml"
     recurse: false
   register: _om_manifest_files
-  changed_when: false
 
 - name: "Parse and validate each manifest"
   vars:
     _manifest: "{{ lookup('file', item.path) | from_yaml }}"
     _path: "{{ item.path }}"
     _basename: "{{ item.path | basename }}"
-    _idms_files: "{{ _om_manifest_files.files | selectattr('path', 'search', 'idms-') | list }}"
-    _itms_files: "{{ _om_manifest_files.files | selectattr('path', 'search', 'itms-') | list }}"
-    _cs_files: "{{ _om_manifest_files.files | selectattr('path', 'search', 'cs-') | list }}"
-    _cc_files: "{{ _om_manifest_files.files | selectattr('path', 'search', 'cc-') | list }}"
-    _us_files: "{{ _om_manifest_files.files | selectattr('path', 'search', 'update-service-') | list }}"
   ansible.builtin.assert:
     that:
       - _manifest.apiVersion is defined and _manifest.apiVersion | length > 0
@@ -25,28 +19,28 @@
       - _manifest.metadata.name is defined and _manifest.metadata.name | length > 0
       - not (_manifest.status is defined and _manifest.status == {})
       - >-
-        not (_basename in (_idms_files | map(attribute='path') | map('basename') | list))
+        not _basename.startswith('idms-')
         or (_manifest.spec is defined
             and _manifest.spec.imageDigestMirrors is defined
             and _manifest.spec.imageDigestMirrors | length > 0)
       - >-
-        not (_basename in (_itms_files | map(attribute='path') | map('basename') | list))
+        not _basename.startswith('itms-')
         or (_manifest.spec is defined
             and _manifest.spec.imageTagMirrors is defined
             and _manifest.spec.imageTagMirrors | length > 0)
       - >-
-        not (_basename in (_cs_files | map(attribute='path') | map('basename') | list))
+        not _basename.startswith('cs-')
         or (_manifest.spec is defined
             and _manifest.spec.sourceType is defined
             and _manifest.spec.sourceType | length > 0
             and _manifest.spec.image is defined
             and _manifest.spec.image | length > 0)
       - >-
-        not (_basename in (_cc_files | map(attribute='path') | map('basename') | list))
+        not _basename.startswith('cc-')
         or (_manifest.spec is defined
             and _manifest.spec.source is defined)
       - >-
-        not (_basename in (_us_files | map(attribute='path') | map('basename') | list))
+        not _basename.startswith('update-service-')
         or ((_manifest.spec | default({})).graphDataImage is defined
             and (_manifest.spec | default({})).graphDataImage | length > 0
             and (_manifest.spec | default({})).releases is defined
