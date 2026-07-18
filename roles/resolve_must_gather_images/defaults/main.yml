@@ -1,0 +1,10 @@
+---
+# List of must-gather image entries.
+# Each entry can be:
+#   - A short name (e.g. "ptp-must-gather") resolved from installed
+#     operator CSV relatedImages
+#   - A full image reference (e.g. "registry.redhat.io/openshift4/ose-must-gather:v4.18")
+#     passed through unchanged
+rmgi_images:
+  - "ose-must-gather"
+...
