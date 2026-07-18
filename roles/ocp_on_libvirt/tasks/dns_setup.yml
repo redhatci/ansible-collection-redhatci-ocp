@@ -40,7 +40,12 @@
     vm_inv_info: "{{ vm_inv_info | default({}) | combine(vm_ip_dict | default({}), recursive=True) }}"
 
 - name: Make IPs persistent
-  ansible.builtin.shell: "virsh net-update {{ net }} add ip-dhcp-host \"<host mac='{{ item.value.mac }}' name='{{ item.key }}.{{ cluster_domain }}' ip='{{ item.value.ip }}' />\" --live --config"
+  ansible.builtin.shell: >-
+    virsh net-update {{ net }} add ip-dhcp-host
+    "<host mac='{{ item.value.mac }}'
+    name='{{ item.key }}.{{ cluster_domain }}'
+    ip='{{ item.value.ip }}' />"
+    --live --config
   when:
     - item.value.ip is defined
     - "item.value.ip not in net_dump.stdout"

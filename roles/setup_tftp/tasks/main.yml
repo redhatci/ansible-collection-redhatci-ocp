@@ -9,7 +9,7 @@
 
     - name: Start TFTP
       ansible.builtin.service:
-        name: tftp.socket 
+        name: tftp.socket
         state: started
         enabled: true
 

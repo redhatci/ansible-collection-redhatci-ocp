@@ -23,8 +23,8 @@ tftp_files_to_download:
   - "{{ mounted_tftp_files }}/BOOTX64.EFI"
 
 system_files_to_download:
-  - "{{ mounted_tftp_files }}/lpxelinux.0" 
-  - "{{ mounted_tftp_files }}/ldlinux.c32"  
+  - "{{ mounted_tftp_files }}/lpxelinux.0"
+  - "{{ mounted_tftp_files }}/ldlinux.c32"
   - "{{ mounted_tftp_files }}/menu.c32"
 
 system_files_directory: "/usr/share/syslinux"
