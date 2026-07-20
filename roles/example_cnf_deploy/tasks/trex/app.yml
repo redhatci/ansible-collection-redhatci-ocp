@@ -13,7 +13,8 @@
   block:
     - name: Create network list for trex with hardcoded macs
       ansible.builtin.set_fact:
-        ecd_networks_trex: "{{ ecd_networks_trex + [ item | combine({'mac': ecd_trex_mac_list[idx:idx+item.count], 'ip': ecd_trex_ip_list[idx:idx+item.count]})] }}"
+        ecd_networks_trex: "{{ ecd_networks_trex + [item | combine({'mac': ecd_trex_mac_list[idx : idx + item.count], 'ip': ecd_trex_ip_list[idx : idx + item.count]})]
+          }}"
       loop: "{{ ecd_sriov_networks }}"
       loop_control:
         index_var: idx
@@ -92,7 +93,7 @@
           - "reason==TestStarted"
           - "involvedObject.name={{ ecd_trex_app_cr_name }}"
       register: trex_event
-      retries: "{{ (ecd_duration | int / 2)| round | int }}"
+      retries: "{{ (ecd_duration | int / 2) | round | int }}"
       delay: 5
       until: trex_event.resources | length > 0
 
@@ -105,7 +106,7 @@
           - "reason==TestCompleted"
           - "involvedObject.name={{ ecd_trex_app_cr_name }}"
       register: _ecd_trex_event
-      retries: "{{ (ecd_duration | int / 2)| round | int }}"
+      retries: "{{ (ecd_duration | int / 2) | round | int }}"
       delay: 5
       until: _ecd_trex_event.resources|length > 0
       when: not ecd_trex_continuous_mode|bool
@@ -171,7 +172,7 @@
           - "reason==PacketMatched"
           - "involvedObject.name={{ ecd_trex_app_cr_name }}"
       register: ecd_trex_result
-      retries: "{{ (ecd_duration|int/2)|round|int }}"
+      retries: "{{ (ecd_duration | int / 2) | round | int }}"
       delay: 5
       until: "ecd_trex_result.resources | length > 0"
       when:
@@ -187,4 +188,3 @@
         - ecd_trex_result.resources is defined
         - ecd_trex_result.resources | length > 0
         - not ecd_trex_continuous_mode|bool
-...

@@ -1,3 +1,4 @@
+---
 - name: Render nmstate
   ansible.builtin.include_tasks: static.yml
   loop: "{{ groups['nodes'] }}"
@@ -17,14 +18,8 @@
 
 - name: Update pull_secret variable
   ansible.builtin.set_fact:
-    local_pull_secret: "{{ pull_secret | combine({
-        'auths': pull_secret['auths'] | combine({
-            'registry.ci.openshift.org': {
-              'auth': pull_secret['auths'][mirror_registry]['auth'],
-            }
-          })
-        })
-      }}"
+    local_pull_secret: "{{ pull_secret | combine(\n    {\n        'auths': pull_secret['auths']\n        | combine(\n            {\n                'registry.ci.openshift.org':
+      {\n                    'auth': pull_secret['auths'][mirror_registry]['auth'],\n                }\n            }\n        )\n    }\n) }}"
   when: use_local_mirror_registry  | bool
   no_log: true
 

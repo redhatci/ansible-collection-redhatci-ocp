@@ -1,3 +1,4 @@
+---
 - name: "Set network config for {{ item }}"
   ansible.builtin.set_fact:
     item_network_config: "{{ hostvars[item].network_config }}"

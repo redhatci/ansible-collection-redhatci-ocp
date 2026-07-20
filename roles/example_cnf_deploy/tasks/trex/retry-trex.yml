@@ -34,4 +34,3 @@
         mode: "0750"
       when: not _ecd_trex_app_logs.failed
       ignore_errors: true
-...

@@ -1,31 +1,16 @@
 ---
 - name: Get node_records for nodes
   ansible.builtin.set_fact:
-    node_dns_records: "{{ (node_dns_records | default({})) | combine(
-        {
-          item: {
-            'name': item,
-            'address': item + '.' + cluster_name + '.' + base_dns_domain,
-            'ip': hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)],
-            'mac': hostvars[item]['mac'] | default(False),
-            'use_dhcp': hostvars[item]['ip'] | default('dhcp') == 'dhcp',
-          }
-        }
-      ) }}"
+    node_dns_records: "{{ (node_dns_records | default({})) | combine(\n    {\n        item: {\n            'name': item,\n            'address': item + '.' + cluster_name
+      + '.' + base_dns_domain,\n            'ip': hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)],\n            'mac': hostvars[item]['mac']
+      | default(False),\n            'use_dhcp': hostvars[item]['ip'] | default('dhcp') == 'dhcp',\n        }\n    }\n) }}"
   loop: "{{ groups['nodes'] }}"
   when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] is defined
 
 - name: Get node_records for node bmc_addresses when it is an IP address
   ansible.builtin.set_fact:
-    bmc_dns_records: "{{ (bmc_dns_records | default({})) | combine(
-        {
-          item: {
-            'name': item,
-            'address': item + dns_bmc_address_suffix,
-            'ip': hostvars[item]['bmc_ip'],
-          }
-        }
-      ) }}"
+    bmc_dns_records: "{{ (bmc_dns_records | default({})) | combine(\n    {\n        item: {\n            'name': item,\n            'address': item + dns_bmc_address_suffix,\n\
+      \            'ip': hostvars[item]['bmc_ip'],\n        }\n    }\n) }}"
   loop: "{{ groups['nodes'] }}"
   when:
     - hostvars[item]['bmc_ip'] is defined
@@ -56,7 +41,7 @@
   vars:
     entry_address: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
     entry_name: "registry_host"
-    entry_extra_check: "{{ hostvars['registry_host']['registry_fqdn']  is not defined }}"
+    entry_extra_check: "{{ hostvars['registry_host']['registry_fqdn'] is not defined }}"
   when:
     - "'registry_host' in hostvars"
     - hostvars['registry_host'][hostvars['registry_host']['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool')
@@ -67,9 +52,10 @@
   vars:
     entry_address: "{{ hostvars[item]['sushy_fqdn'] | default(hostvars[item]['ansible_fqdn']) }}"
     entry_name: "{{ item }}"
-    entry_extra_check: "{{ hostvars[item]['sushy_fqdn']  is not defined }}"
+    entry_extra_check: "{{ hostvars[item]['sushy_fqdn'] is not defined }}"
   loop: "{{ groups['vm_hosts'] | default([]) }}"
-  when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool') and (not (hostvars[item]['dns_skip_record'] | default(False))) | bool
+  when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool') and (not (hostvars[item]['dns_skip_record']
+    | default(False))) | bool
 
 - name: Configure firewall
   become: true
