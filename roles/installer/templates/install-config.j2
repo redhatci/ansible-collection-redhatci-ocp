@@ -85,7 +85,7 @@ platform:
     externalMACAddress: '{{ externalMACAddress }}'
 {% endif %}
 {% endif %}
-{% if bootstraposimage is defined and bootstraposimage|length %}
+{% if (((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int < 22)) and (bootstraposimage is defined and bootstraposimage|length)) %}
     bootstrapOSImage: {{ bootstraposimage }}
 {% endif %}
 {% if (((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int < 10)) and (clusterosimage is defined and clusterosimage|length)) %}
