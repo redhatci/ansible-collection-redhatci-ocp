@@ -2,15 +2,50 @@
 - name: Mirror operators using oc-mirror
   block:
 
+    - name: Assert om_operation is valid
+      ansible.builtin.assert:
+        that:
+          - om_operation in ['mirror', 'm2d', 'd2m']
+        fail_msg: >
+          om_operation must be one of: mirror, m2d, d2m.
+          Got: '{{ om_operation }}'.
+
+    - name: Assert om_workspace_dir is set for M2D/D2M operations
+      ansible.builtin.assert:
+        that:
+          - om_workspace_dir | length > 0
+        fail_msg: >
+          om_workspace_dir must be set to a non-empty path when
+          om_operation is '{{ om_operation }}'.
+      when: om_operation in ['m2d', 'd2m']
+
+    - name: Assert om_target is set for mirror/D2M operations
+      ansible.builtin.assert:
+        that:
+          - om_target is defined
+          - om_target | length > 0
+        fail_msg: >
+          om_target must be set to a non-empty registry URL
+          when om_operation is mirror or d2m.
+      when: om_operation in ['mirror', 'd2m']
+
     - name: Include requirements
       ansible.builtin.include_tasks: requirements.yml
 
+    - name: Execute disk-to-mirror (D2M) workflow
+      ansible.builtin.include_tasks: mirror-d2m.yml
+      when: om_operation == 'd2m'
+
     - name: Execute mirror from custom ImageSetConfiguration
       ansible.builtin.include_tasks: mirror-custom.yml
-      when: om_custom_config is defined
+      when:
+        - om_custom_config is defined
+        - om_operation != 'd2m'
 
     - name: Execute standard oc-mirror workflows
-      when: om_custom_config is undefined
+      when:
+        - om_custom_config is undefined
+        - om_operation != 'd2m'
       block:
 
         - name: Assert om_target_versions for standard mirror branches
@@ -60,6 +95,6 @@
         path: "{{ _om_tmp_dir.path }}"
         state: absent
       when:
-        - not om_keep_working_dir | bool
+        - not (om_keep_working_dir | default(false)) | bool
         - _om_tmp_dir is defined
         - _om_tmp_dir.path is defined

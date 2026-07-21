@@ -3,3 +3,6 @@ om_allow_insecure_registries: false
 om_keep_working_dir: false
 om_remove_signatures: false
 om_ignore_errors: false
+om_operation: mirror
+om_workspace_dir: ""
+om_helm_charts: []

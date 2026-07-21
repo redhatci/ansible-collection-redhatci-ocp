@@ -1,0 +1,26 @@
+---
+# Mirror-to-Disk (M2D): write image content to a local disk workspace.
+# The workspace can later be used in a Disk-to-Mirror (D2M) operation.
+
+- name: Run oc-mirror mirror-to-disk
+  ansible.builtin.shell:
+    cmd: >
+      umask 0022 &&
+      {{ _om_tmp_dir.path }}/oc-mirror --v2 --config={{ om_imageset_config_path }}
+      --workspace file://{{ om_workspace_dir }}
+      --port {{ _om_ephemeral_port.port }}
+      {% if om_allow_insecure_registries | bool %}
+      --src-tls-verify=false
+      {% endif %}
+      {% if om_auths_file is defined %}
+      --authfile {{ om_auths_file }}
+      {% endif %}
+      {% if om_remove_signatures | bool %}
+      --remove-signatures
+      {% endif %}
+  register: _om_cmd_output
+  retries: 3
+  delay: 10
+  until: _om_cmd_output.rc == 0
+  ignore_errors: "{{ om_ignore_errors }}"
+  changed_when: _om_cmd_output.rc == 0

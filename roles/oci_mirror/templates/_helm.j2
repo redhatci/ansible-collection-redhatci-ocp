@@ -1,0 +1,17 @@
+{% if om_helm_charts | length > 0 %}
+  helm:
+    repositories:
+{% for chart in om_helm_charts %}
+      - name: "{{ chart.name }}"
+        url: "{{ chart.url }}"
+{% if chart.charts is defined %}
+        charts:
+{% for c in chart.charts %}
+          - name: "{{ c.name }}"
+{% if c.version is defined %}
+            version: "{{ c.version }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}

@@ -7,9 +7,35 @@ argument_specs:
       ImageSetConfiguration; otherwise the role uses om_target_versions,
       om_source_index, and optionally om_operators to build one.
     options:
+      om_operation:
+        type: str
+        required: false
+        default: mirror
+        choices:
+          - mirror
+          - m2d
+          - d2m
+        description: >
+          Operation mode: mirror (registry-to-registry), m2d (mirror-to-disk),
+          or d2m (disk-to-mirror). Defaults to mirror for backward compatibility.
+      om_workspace_dir:
+        type: str
+        required: false
+        default: ''
+        description: >
+          Path to workspace directory for disk-based operations (m2d/d2m).
+          Must be writable by the Ansible user when using m2d or d2m modes.
+      om_helm_charts:
+        type: list
+        elements: dict
+        required: false
+        default: []
+        description: >
+          List of Helm chart repositories to mirror. Each entry is a dict with
+          name, url, and charts keys.
       om_target:
         type: str
-        required: true
+        required: false
         description: Destination registry (e.g. registry.example.com:5000).
       om_custom_config:
         type: str
