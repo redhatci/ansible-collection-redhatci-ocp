@@ -14,7 +14,7 @@
     validate_certs: false
     return_content: true
   register: redfish_reply
-  ignore_errors: true
+  failed_when: false
 
 - name: Debug
   ansible.builtin.debug:

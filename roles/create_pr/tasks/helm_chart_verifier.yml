@@ -63,7 +63,7 @@
       git push origin --delete {{ local_branch }}
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
-  ignore_errors: true
+  failed_when: false
 
 - name: "Push branch and create PR to the forked repository"
   ansible.builtin.shell:

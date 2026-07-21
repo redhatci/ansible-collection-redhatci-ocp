@@ -1,4 +1,5 @@
 *.tar.gz
+*.output
 roles/**/.linted
 tests/integration/inventory
 tests/output

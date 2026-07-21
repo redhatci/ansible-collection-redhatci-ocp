@@ -74,8 +74,13 @@
   register: preflight_exec
 
 - name: "Retrieve async logs for {{ operator.name }}"
-  ansible.builtin.include_tasks: test_async_logs_check_operator.yml
-  ignore_errors: true
+  block:
+    - name: Run async log retrieval for operator
+      ansible.builtin.include_tasks: test_async_logs_check_operator.yml
+  rescue:
+    - name: Log async log retrieval failure and continue
+      ansible.builtin.debug:
+        msg: "Async log retrieval failed, continuing"
 
 - name: Check on preflight execution
   ansible.builtin.async_status:
@@ -84,7 +89,7 @@
   until: job_result.finished
   retries: 20
   delay: 30
-  ignore_errors: true
+  failed_when: false
 
 - name: Check cleanup
   ansible.builtin.async_status:

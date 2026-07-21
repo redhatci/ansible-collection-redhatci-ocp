@@ -43,19 +43,19 @@
         name: virtualbmc
         state: stopped
         enabled: false
-      ignore_errors: true
+      failed_when: false
 
     - name: Stop the Virtual BMCs
       become: true
       ansible.builtin.systemd:
         name: virtualbmc
         state: stopped
-      ignore_errors: true
+      failed_when: false
 
     - name: Kill vbmc processes if not managed by systemd
       ansible.builtin.command: killall vbmc
       when: vbmc_proc.rc == 0
-      ignore_errors: true
+      failed_when: false
 
 - name: Remove VBMC
   become: true
@@ -92,7 +92,7 @@
   with_items:
     - "/var/lib/dci-openshift-agent/.ssh/known_hosts"
     - "~{{ ansible_user }}/.ssh/known_hosts"
-  ignore_errors: true
+  failed_when: false
 
 - name: Delete scripts and configuration files
   ansible.builtin.file:
@@ -101,7 +101,7 @@
   with_items:
     - "{{ vbmc_systemd_unit }}"
     - "{{ vbmc_config_dir }}"
-  ignore_errors: true
+  failed_when: false
 
 - name: Reload systemd
   ansible.builtin.systemd:
