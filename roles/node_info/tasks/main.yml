@@ -110,34 +110,71 @@
             state: absent
 
     - name: Extract hw details
-      vars:
-        _ni_hw_img: >-
-          {{
-            (ni_disconnected | bool) |
-            ternary(
-              ni_local_registry ~ ni_local_img_path ~ ':' ~ ni_tag,
-              'registry.access.redhat.com/ubi10/ubi-minimal:latest')
-          }}
-      environment:
-        preinstall: >-
-          {{
-            (ni_disconnected | bool) |
-            ternary('', 'microdnf install -y lshw &> /dev/null &&')
-          }}
-      ansible.builtin.shell:
-        cmd: >
-          {{ ni_oc_tool_path }} debug node/{{ node_name }} -n default
-          --image={{ _ni_hw_img }}
-          --
-          bash -c "${preinstall} lshw -json -sanitize -numeric"
-      register: _ni_hardware_info
-      loop: "{{ ni_ready_node_names | default([]) }}"
-      loop_control:
-        loop_var: node_name
+      block:
+        - name: Extract hw details with lshw
+          vars:
+            _ni_hw_img: >-
+              {{
+                (ni_disconnected | bool) |
+                ternary(
+                  ni_local_registry ~ ni_local_img_path ~ ':' ~ ni_tag,
+                  'registry.access.redhat.com/ubi10/ubi-minimal:latest')
+              }}
+          environment:
+            preinstall: >-
+              {{
+                (ni_disconnected | bool) |
+                ternary('', 'microdnf install -y lshw &> /dev/null &&')
+              }}
+          ansible.builtin.shell:
+            cmd: >
+              {{ ni_oc_tool_path }} debug node/{{ node_name }} -n default
+              --image={{ _ni_hw_img }}
+              --
+              bash -c "${preinstall} lshw -json -sanitize -numeric"
+          register: _ni_hardware_info
+          loop: "{{ ni_ready_node_names | default([]) }}"
+          loop_control:
+            loop_var: node_name
+          when:
+            - ni_ready_node_names is defined
+          no_log: true
+          changed_when: false
+          ignore_errors: false
+      rescue:
+        - name: Extract hw details with native tools (fallback)  # noqa: risky-shell-pipe
+          vars:
+            _ni_hw_script_b64: "{{ lookup('file', role_path ~ '/files/collect_hw_native.py') | b64encode }}"
+          ansible.builtin.shell:
+            cmd: >
+              {{ ni_oc_tool_path }} debug node/{{ node_name }} -n default
+              -- chroot /host bash -c 'set -o pipefail; echo {{ _ni_hw_script_b64 }} | base64 -d | python3'
+          register: _ni_hardware_info
+          loop: "{{ ni_ready_node_names | default([]) }}"
+          loop_control:
+            loop_var: node_name
+          when:
+            - ni_ready_node_names is defined
+          no_log: true
+          changed_when: false
+
+        - name: Warn if native tools fallback failed
+          ansible.builtin.fail:
+            msg: >-
+              Hardware collection failed: both lshw and native tools
+              fallback could not collect data. Check node connectivity
+              and available tools (python3, dmidecode, ethtool).
+          when:
+            - _ni_hardware_info.results | default([])
+              | selectattr('rc', 'defined')
+              | selectattr('rc', 'ne', 0) | list | length > 0
+
+    - name: Debug hardware_info
+      ansible.builtin.debug:
+        msg: "{{ _ni_hardware_info.results }}"
       when:
-        - ni_ready_node_names is defined
-      no_log: true
-      changed_when: false
+        - _ni_hardware_info is defined
+        - _ni_hardware_info.results is defined
 
     - name: Save hardware information to files
       ansible.builtin.copy:
