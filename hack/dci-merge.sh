@@ -38,6 +38,24 @@ GH_HEADERS=(
     "Authorization: token ${GITHUB_TOKEN}"
 )
 
+validate_args() {
+    local args="${1}" label="${2}" pr="${3}"
+    if [[ -z "${args}" || "${args}" =~ ^[[:space:]]+$ ]]; then
+        return 1
+    fi
+    if ! [[ "${args}" =~ ^[A-Za-z0-9_./@:=\ -]+$ ]]; then
+        echo "ERROR: Invalid characters in ${label} args from PR #${pr}" >&2
+        exit 1
+    fi
+    local token
+    for token in ${args}; do
+        if [[ "${token}" == -* ]]; then
+            echo "ERROR: Option-like argument '${token}' in ${label} from PR #${pr}" >&2
+            exit 1
+        fi
+    done
+}
+
 send_status() {
     curl -s "${GH_HEADERS[@]/#/-H}" -X POST -d "{\"state\":\"$1\",\"description\":\"$2\",\"context\":\"$GITHUB_JOBNAME\"}" "$STATUSES_URL"
 }
@@ -53,6 +71,7 @@ NB_NOCHECK=0
 declare -a CMD
 declare -a CMD_SNO
 declare -a CMD_SNO_BM
+declare -a CMD_MNO_BM
 
 for PR in $PRS; do
     if [ -n "$PR" ]; then
@@ -69,22 +88,32 @@ for PR in $PRS; do
         fi
 
         # extract TestBos2 commands
-        # Remove \r character if present
-        if grep -qE "^\s*TestBos2:\s*" <<< "$DESC"; then
-            # shellcheck disable=SC2001,SC2086
-            CMD+=("$(sed -ne 's/^\s*TestBos2:\s*//p' <<< $DESC | sed 's/\r$//')")
+        if grep -qE "^\s*TestBos2:\s*" <<< "${DESC}"; then
+            RAW_ARGS="$(sed -ne 's/^\s*TestBos2:\s*//p' <<< "${DESC}" | sed 's/\r$//')"
+            if validate_args "${RAW_ARGS}" "TestBos2" "${PR}"; then
+                CMD+=("${RAW_ARGS}")
+            fi
         fi
         # extract TestBos2Sno commands
-        # Remove \r character if present
-        if grep -qE "^\s*TestBos2Sno:\s*" <<< "$DESC"; then
-            # shellcheck disable=SC2001,SC2086
-            CMD_SNO+=("$(sed -ne 's/^\s*TestBos2Sno:\s*//p' <<< $DESC | sed 's/\r$//')")
+        if grep -qE "^\s*TestBos2Sno:\s*" <<< "${DESC}"; then
+            RAW_ARGS="$(sed -ne 's/^\s*TestBos2Sno:\s*//p' <<< "${DESC}" | sed 's/\r$//')"
+            if validate_args "${RAW_ARGS}" "TestBos2Sno" "${PR}"; then
+                CMD_SNO+=("${RAW_ARGS}")
+            fi
         fi
-        # extract TestBos2Baremetal commands
-        # Remove \r character if present
-        if grep -qE "^\s*TestBos2Baremetal:\s*" <<< "$DESC"; then
-            # shellcheck disable=SC2001,SC2086
-            CMD_SNO_BM+=("$(sed -ne 's/^\s*TestBos2Baremetal:\s*//p' <<< $DESC | sed 's/\r$//')")
+        # extract TestBos2SnoBaremetal commands
+        if grep -qE "^\s*TestBos2SnoBaremetal:\s*" <<< "${DESC}"; then
+            RAW_ARGS="$(sed -ne 's/^\s*TestBos2SnoBaremetal:\s*//p' <<< "${DESC}" | sed 's/\r$//')"
+            if validate_args "${RAW_ARGS}" "TestBos2SnoBaremetal" "${PR}"; then
+                CMD_SNO_BM+=("${RAW_ARGS}")
+            fi
+        fi
+        # extract TestBos2MnoBaremetal commands
+        if grep -qE "^\s*TestBos2MnoBaremetal:\s*" <<< "${DESC}"; then
+            RAW_ARGS="$(sed -ne 's/^\s*TestBos2MnoBaremetal:\s*//p' <<< "${DESC}" | sed 's/\r$//')"
+            if validate_args "${RAW_ARGS}" "TestBos2MnoBaremetal" "${PR}"; then
+                CMD_MNO_BM+=("${RAW_ARGS}")
+            fi
         fi
     fi
 done
@@ -132,35 +161,55 @@ EOF
 COUNT=0
 
 for ARGS in "${CMD[@]}"; do
+    set +x
     # shellcheck disable=SC2086
-    dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner $DIR $ARGS || exit 1
+    dci-queue schedule "${DCI_QUEUE}" -- env "GITHUB_TOKEN=${GITHUB_TOKEN}" "STATUSES_URL=${STATUSES_URL}" DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner "${DIR}" ${ARGS} || exit 1
+    set -x
     COUNT=$((COUNT+1))
 done
 
-dci-queue list "$DCI_QUEUE"
+dci-queue list "${DCI_QUEUE}"
 
 if [ ${#CMD_SNO[@]} -gt 0 ]; then
     DCI_QUEUE="sno"
 
     for ARGS in "${CMD_SNO[@]}"; do
+        set +x
         # shellcheck disable=SC2086
-        dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner $DIR $ARGS || exit 1
+        dci-queue schedule "${DCI_QUEUE}" -- env "GITHUB_TOKEN=${GITHUB_TOKEN}" "STATUSES_URL=${STATUSES_URL}" DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner "${DIR}" ${ARGS} || exit 1
+        set -x
         COUNT=$((COUNT+1))
     done
 
-    dci-queue list "$DCI_QUEUE"
+    dci-queue list "${DCI_QUEUE}"
 fi
 
 if [ ${#CMD_SNO_BM[@]} -gt 0 ]; then
     DCI_QUEUE="sno_baremetal"
 
     for ARGS in "${CMD_SNO_BM[@]}"; do
+        set +x
         # shellcheck disable=SC2086
-        dci-queue schedule "$DCI_QUEUE" -- env GITHUB_TOKEN=$GITHUB_TOKEN STATUSES_URL=$STATUSES_URL DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner $DIR $ARGS || exit 1
+        dci-queue schedule "${DCI_QUEUE}" -- env "GITHUB_TOKEN=${GITHUB_TOKEN}" "STATUSES_URL=${STATUSES_URL}" DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner "${DIR}" ${ARGS} || exit 1
+        set -x
         COUNT=$((COUNT+1))
     done
 
-    dci-queue list "$DCI_QUEUE"
+    dci-queue list "${DCI_QUEUE}"
+fi
+
+if [ ${#CMD_MNO_BM[@]} -gt 0 ]; then
+    DCI_QUEUE="mno_baremetal"
+
+    for ARGS in "${CMD_MNO_BM[@]}"; do
+        set +x
+        # shellcheck disable=SC2086
+        dci-queue schedule "${DCI_QUEUE}" -- env "GITHUB_TOKEN=${GITHUB_TOKEN}" "STATUSES_URL=${STATUSES_URL}" DCI_QUEUE_RESOURCE=@RESOURCE /usr/share/dci-pipeline/test-runner "${DIR}" ${ARGS} || exit 1
+        set -x
+        COUNT=$((COUNT+1))
+    done
+
+    dci-queue list "${DCI_QUEUE}"
 fi
 
 if [ $COUNT -eq 0 ]; then
