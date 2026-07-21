@@ -1,0 +1,10 @@
+---
+apiVersion: updateservice.operator.openshift.io/v1
+kind: UpdateService
+metadata:
+  name: update-service-oc-mirror
+  namespace: openshift-update-service
+spec:
+  graphDataImage: registry.lab.example.com:5000/updateservice/graph-data:latest
+  releases: registry.lab.example.com:5000/openshift-release-dev/ocp-release
+  replicas: 2

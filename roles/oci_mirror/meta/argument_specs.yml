@@ -64,3 +64,15 @@ argument_specs:
         required: false
         default: false
         description: Ignore errors during mirroring.
+      om_validate_manifests:
+        type: bool
+        required: false
+        default: true
+        description: >
+          When true, validate all generated manifests in the output directory
+          after mirroring. Checks that apiVersion, kind, and metadata.name are
+          non-empty, that status is not an empty dict (which would indicate a
+          serialization defect), and that kind-specific spec fields are present
+          and non-empty (imageDigestMirrors for IDMS, imageTagMirrors for ITMS,
+          sourceType+image for CatalogSource, source for ClusterCatalog,
+          graphDataImage+releases for UpdateService).
