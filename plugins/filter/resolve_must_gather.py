@@ -69,7 +69,7 @@ RETURN = r"""
         description: >
             List of resolved image references. Short names are replaced with
             the full image reference from relatedImages. Unresolved short names
-            are kept as-is and a warning is emitted.
+            are kept as-is.
         type: list
         elements: str
 """
