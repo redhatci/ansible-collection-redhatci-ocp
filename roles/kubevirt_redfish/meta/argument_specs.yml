@@ -95,6 +95,14 @@ argument_specs:
             required: true
             description: BMC password for Redfish authentication.
 
+      kr_hashed:
+        type: bool
+        required: false
+        default: true
+        description: >
+          Hash BMC passwords using bcrypt.
+          When false, passwords are stored in plaintext (legacy).
+
       kr_system_id_convention:
         type: str
         required: false

@@ -36,7 +36,12 @@
       {% endfor %}
       {% for uname, udata in _users.items() %}
           - username: "{{ uname }}"
+      {% if not kr_hashed %}
             password: "{{ udata.password }}"
+      {% else %}
+            password:
+              hash: "{{ udata.password | password_hash('bcrypt') }}"
+      {% endif %}
             chassis:
       {% for c in udata.chassis %}
               - "{{ c }}"
