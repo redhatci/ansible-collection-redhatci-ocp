@@ -12,7 +12,7 @@
   ansible.builtin.uri:
     url: "{{ jjl_job_url }}/buildWithParameters/"
     method: POST
-    validate_certs: false
+    validate_certs: "{{ jjl_validate_certs }}"
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
     force_basic_auth: true
@@ -22,21 +22,23 @@
     headers:
       Content-Type: application/x-www-form-urlencoded
   register: queue_build_number
+  no_log: true
 
 - name: Get jenkins build number
   ansible.builtin.uri:
     url: '{{ queue_build_number.location }}/api/json'
     method: GET
-    validate_certs: false
+    validate_certs: "{{ jjl_validate_certs }}"
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
   register: jenkins_build_number
+  no_log: true
 
 - name: Wait for Jenkins status code
   ansible.builtin.uri:
     url: "{{ jenkins_build_number.json.executable.url }}/api/json"
     method: GET
-    validate_certs: false
+    validate_certs: "{{ jjl_validate_certs }}"
     user: "{{ jjl_username }}"
     password: "{{ jjl_token }}"
   register: in_progress
@@ -46,6 +48,7 @@
     - not in_progress.json.inProgress | bool
   retries: 200
   delay: "{{ jjl_delay_seconds }}" # total of 3hrs 20 minutes.
+  no_log: true
 
 - name: Fail if result is not SUCCESS
   ansible.builtin.fail:
