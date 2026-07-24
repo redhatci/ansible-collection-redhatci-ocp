@@ -77,11 +77,11 @@
   block:
     - name: Download system files
       ansible.builtin.get_url:
-        url: "{{ item }}" 
+        url: "{{ item }}"
         dest: "{{ tftp_root }}"
         mode: '0644'
       with_items: "{{ system_files_to_download }}"
-    
+
     - name: Download tftp files
       ansible.builtin.get_url:
         url: "{{ item }}"

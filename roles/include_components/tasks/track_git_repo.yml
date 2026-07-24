@@ -31,7 +31,12 @@
         team_id: "{{ job_info['job']['team_id'] }}"
         topic_id: "{{ job_info['job']['topic_id'] }}"
         type: "{{ repo_url.stdout | basename | regex_replace('[.]git$', '') }}"
-        url: "{{ repo_url.stdout | regex_replace('^(.*)@(.*):(.*)', 'https://\\2/\\3') | regex_replace('^ssh://(.*)@(.*)', 'https://\\2') | regex_replace('[.]git$', '') }}/commit/{{ last_commit_id.stdout }}"
+        url: >-
+          {{ repo_url.stdout
+          | regex_replace('^(.*)@(.*):(.*)', 'https://\\2/\\3')
+          | regex_replace('^ssh://(.*)@(.*)', 'https://\\2')
+          | regex_replace('[.]git$', '')
+          }}/commit/{{ last_commit_id.stdout }}
         state: present
       register: git_component
 
