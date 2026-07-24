@@ -1,6 +1,6 @@
 # choice from hypervisor or undercloud
-vbmc_user: "root"
-vbmc_pass: "password"
+vbmc_user: ""
+vbmc_pass: ""
 vbmc_home: "/root"
 vbmc_host: "hypervisor"
 vbmc_start_port: 6230

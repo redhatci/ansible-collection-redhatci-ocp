@@ -7,8 +7,8 @@ registry_port: "{{ registry_port_container }}"
 registry_dir: /opt/registry
 install_config_appends_file: install-config-appends.yml
 registry_auth_file: registry-auths.json
-disconnected_registry_user: dummy
-disconnected_registry_password: dummy
+disconnected_registry_user: ""
+disconnected_registry_password: ""
 webserver_cache_image: "quay.io/fedora/httpd-24:latest"
 webserver_caching_port: "{{ webserver_caching_port_container }}"
 webserver_caching_port_container: 8080
