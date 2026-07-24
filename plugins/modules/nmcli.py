@@ -115,7 +115,7 @@ options:
         description:
             - This is only used with bond and is the primary interface name (for "active-backup" mode), this is the usually the 'ifname'
     id:
-        descrption:
+        description:
             - This will allow to change the bridge slave device name (connection.id) to our preferred name.
         version: 2.9
     miimon:

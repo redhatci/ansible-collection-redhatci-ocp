@@ -1,0 +1,24 @@
+---
+- name: Get all ClusterServiceVersions
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+  register: _rmgi_csvs
+
+- name: Build relatedImages list from all CSVs
+  ansible.builtin.set_fact:
+    rmgi_related_images: >-
+      {{ _rmgi_csvs.resources
+         | json_query('[*].spec.relatedImages[*]')
+         | flatten }}
+
+- name: Resolve must-gather image names  # noqa: redhat-ci[no-role-prefix]
+  ansible.builtin.set_fact:
+    dci_must_gather_images: >-
+      {{ rmgi_images
+         | redhatci.ocp.resolve_must_gather(rmgi_related_images, rmgi_fallback_registry) }}
+
+- name: Display resolved must-gather images
+  ansible.builtin.debug:
+    msg: "Resolved must-gather images: {{ dci_must_gather_images }}"
+...
