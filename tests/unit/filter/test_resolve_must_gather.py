@@ -145,6 +145,32 @@ class TestResolveMustGather:
         # First match wins
         assert result == ["rhel8-image@sha256:111"]
 
+    def test_fallback_registry_core_ocp_image(self):
+        """Test fallback registry for core OCP images not present in any CSV."""
+        result = resolve_must_gather.resolve_must_gather(
+            ["ose-must-gather"],
+            [],
+            "registry.redhat.io/openshift4",
+        )
+        assert result == ["registry.redhat.io/openshift4/ose-must-gather"]
+
+    def test_fallback_registry_empty_string(self):
+        """Test that empty fallback_registry keeps unresolved name as-is (backward compat)."""
+        result = resolve_must_gather.resolve_must_gather(
+            ["nonexistent-must-gather"],
+            [],
+            "",
+        )
+        assert result == ["nonexistent-must-gather"]
+
+    def test_fallback_registry_disabled(self):
+        """Test that omitting fallback_registry keeps unresolved name as-is (backward compat)."""
+        result = resolve_must_gather.resolve_must_gather(
+            ["nonexistent-must-gather"],
+            [],
+        )
+        assert result == ["nonexistent-must-gather"]
+
 
 class TestFilterModule:
     def test_filter_module_exposes_filter(self):

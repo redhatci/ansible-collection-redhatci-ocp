@@ -7,4 +7,11 @@
 #     passed through unchanged
 rmgi_images:
   - "ose-must-gather"
+
+# Fallback registry prefix for short names that cannot be resolved from CSVs.
+# Core OCP images (e.g. ose-must-gather) are not in any CSV relatedImages.
+# When non-empty, unresolved short names are prefixed with this registry.
+# Example: "registry.redhat.io/openshift4" resolves "ose-must-gather" to
+# "registry.redhat.io/openshift4/ose-must-gather"
+rmgi_fallback_registry: "registry.redhat.io/openshift4"
 ...

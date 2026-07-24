@@ -18,13 +18,18 @@ exact image reference matching the installed operator version.
      passed through unchanged.
    - Otherwise, it is matched (substring) against the `relatedImages`
      name field and replaced with the full image reference.
+   - If no CSV match is found and `rmgi_fallback_registry` is non-empty,
+     the short name is prefixed with `rmgi_fallback_registry`. This
+     handles core OCP images (e.g. `ose-must-gather`) that are not
+     shipped by any operator CSV.
 4. Sets the resolved list as `dci_must_gather_images`.
 
 ## Variables
 
-| Variable    | Default              | Required | Description                                      |
-| ----------- | -------------------- | -------- | ------------------------------------------------ |
-| rmgi_images | `["ose-must-gather"]` | No       | List of must-gather image entries to resolve      |
+| Variable               | Default                            | Required | Description                                                                                                                                                                   |
+| ---------------------- | ---------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| rmgi_images            | `["ose-must-gather"]`              | No       | List of must-gather image entries to resolve                                                                                                                                  |
+| rmgi_fallback_registry | `"registry.redhat.io/openshift4"` | No       | Registry prefix for short names that cannot be resolved from any CSV. Core OCP images (e.g. `ose-must-gather`) are not in any CSV. Set to `""` to keep unresolved names as-is |
 
 ## Output
 
@@ -65,6 +70,37 @@ dci_must_gather_images:
       - "ose-must-gather"
       - "ptp-must-gather"
       - "registry.redhat.io/openshift4/custom-must-gather:latest"
+```
+
+### Resolve core OCP images using fallback registry
+
+Core OCP images such as `ose-must-gather` are not shipped by any operator
+CSV, so they cannot be resolved from `relatedImages`. The `rmgi_fallback_registry`
+variable provides a fallback: unresolved short names are prefixed with it.
+
+```yaml
+- name: Resolve must-gather images with fallback for core OCP images
+  ansible.builtin.include_role:
+    name: redhatci.ocp.resolve_must_gather_images
+  vars:
+    rmgi_images:
+      - "ose-must-gather"        # core OCP image — resolved via fallback
+      - "ptp-must-gather"        # operator image — resolved from CSV
+    rmgi_fallback_registry: "registry.redhat.io/openshift4"
+```
+
+This resolves to something like:
+
+```yaml
+dci_must_gather_images:
+  - "registry.redhat.io/openshift4/ose-must-gather"
+  - "registry.redhat.io/openshift4/ptp-must-gather-rhel9@sha256:def456..."
+```
+
+To disable the fallback and keep unresolved names as-is (original behaviour):
+
+```yaml
+    rmgi_fallback_registry: ""
 ```
 
 ### Use in a DCI pipeline configuration

@@ -28,7 +28,7 @@ DOCUMENTATION = r"""
           references and passed through unchanged.
         - Short names are matched against the relatedImages name field
           using substring search.
-    positional: _input, related_images
+    positional: _input, related_images, fallback_registry
     options:
         _input:
             description: >
@@ -44,6 +44,19 @@ DOCUMENTATION = r"""
             type: list
             elements: dict
             required: true
+        fallback_registry:
+            description: >
+                Registry prefix used when a short name cannot be resolved from
+                any CSV relatedImages. Core OCP images (e.g. ose-must-gather)
+                are not shipped by any operator CSV and therefore never appear
+                in relatedImages. When non-empty, unresolved short names are
+                prefixed with this value (e.g. "registry.redhat.io/openshift4"
+                resolves "ose-must-gather" to
+                "registry.redhat.io/openshift4/ose-must-gather"). Set to an
+                empty string to restore the original behaviour of keeping the
+                short name as-is.
+            type: str
+            default: ""
 """
 
 EXAMPLES = r"""
@@ -54,14 +67,27 @@ EXAMPLES = r"""
           {{ image_list | redhatci.ocp.resolve_must_gather(related_images) }}
       vars:
         image_list:
+          - "ptp-must-gather"
+          - "registry.redhat.io/openshift4/custom-image:v4.18"
+        related_images:
+          - name: "ptp-must-gather-rhel9"
+            image: "registry.redhat.io/openshift4/ptp-must-gather-rhel9@sha256:abc123"
+
+    # Resolve with fallback registry for core OCP images (not in any CSV)
+    - name: Resolve must-gather images with fallback for core OCP images
+      ansible.builtin.set_fact:
+        resolved_images: >-
+          {{ image_list
+             | redhatci.ocp.resolve_must_gather(related_images,
+                                                'registry.redhat.io/openshift4') }}
+      vars:
+        image_list:
           - "ose-must-gather"
           - "ptp-must-gather"
           - "registry.redhat.io/openshift4/custom-image:v4.18"
         related_images:
           - name: "ptp-must-gather-rhel9"
             image: "registry.redhat.io/openshift4/ptp-must-gather-rhel9@sha256:abc123"
-          - name: "ose-must-gather"
-            image: "registry.redhat.io/openshift4/ose-must-gather@sha256:def456"
 """
 
 RETURN = r"""
@@ -75,13 +101,18 @@ RETURN = r"""
 """
 
 
-def resolve_must_gather(image_list, related_images):
+def resolve_must_gather(image_list, related_images, fallback_registry=""):
     """Resolve must-gather image short names from CSV relatedImages.
 
     Args:
         image_list (list): List of image entries (short names or full refs).
         related_images (list): List of dicts with "name" and "image" keys
             from ClusterServiceVersion relatedImages.
+        fallback_registry (str): Registry prefix used when a short name cannot
+            be resolved from any CSV relatedImages. Core OCP images (e.g.
+            ose-must-gather) are not shipped by any operator CSV and therefore
+            never appear in relatedImages. When non-empty, unresolved short
+            names are prefixed with this value. Defaults to "" (keep as-is).
 
     Returns:
         list: Resolved image references.
@@ -116,6 +147,10 @@ def resolve_must_gather(image_list, related_images):
 
         if match:
             resolved.append(match)
+        elif fallback_registry:
+            # Core OCP images (e.g. ose-must-gather) are not in any CSV.
+            # Use the fallback registry to construct a full image reference.
+            resolved.append("{0}/{1}".format(fallback_registry, entry))
         else:
             # Keep original so the caller can decide what to do
             resolved.append(entry)
