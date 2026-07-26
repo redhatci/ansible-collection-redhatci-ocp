@@ -26,6 +26,7 @@
           $(podman create --rm {{ operator_sdk_img }}):/usr/local/bin/operator-sdk
           operator-sdk
         chdir: "{{ scorecard_tmp_dir.path }}"
+      changed_when: false
 
     - name: Manage images mirroring for Operator-sdk scorecard test suite
       ansible.builtin.include_tasks: mirroring.yml

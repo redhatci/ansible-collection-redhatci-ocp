@@ -48,6 +48,7 @@
           '.auths += {{ disconnected_auths_b64.content | string | b64decode }}'
       register: new_pullsecret
       no_log: true
+      changed_when: false
 
     - name: "Set pullsecret with new auth"
       ansible.builtin.set_fact:

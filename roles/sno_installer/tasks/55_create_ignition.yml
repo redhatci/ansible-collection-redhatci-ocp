@@ -6,6 +6,7 @@
     create single-node-ignition-config
   tags:
     - ignition
+  changed_when: false
 
 - name: "Set coreos sno ignition facts"
   ansible.builtin.set_fact:

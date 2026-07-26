@@ -11,6 +11,7 @@
   register: _mor_release_image
   failed_when: false
   when: not mor_force | bool
+  changed_when: false
 
 - name: Mirror release images to local registry
   ansible.builtin.command: >-

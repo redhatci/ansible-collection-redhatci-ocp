@@ -3,6 +3,7 @@
   ansible.builtin.command: |
     {{ ocp_binary_path }}/openshift-install --dir {{ dir }} create manifests
   tags: manifests
+  changed_when: false
 
 - name: Ensure the manifests dir is owned by {{ ansible_user }}
   ansible.builtin.file:

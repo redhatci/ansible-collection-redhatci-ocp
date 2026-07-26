@@ -6,11 +6,13 @@
   with_items: "{{ resources }}"
   register: mac_list
   become: "{{ libvirt_become }}"
+  changed_when: false
 
 - name: Register net information
   ansible.builtin.command: "virsh net-dumpxml {{ net }}"
   register: net_dump
   become: "{{ libvirt_become }}"
+  changed_when: false
 
 - name: Set vm_inv_info fact
   ansible.builtin.set_fact:
@@ -28,6 +30,7 @@
   delay: 5
   with_dict: "{{ vm_inv_info }}"
   become: "{{ libvirt_become }}"
+  changed_when: false
 
 - name: Construct dict with node name as key and with ip as value
   ansible.builtin.set_fact:
@@ -46,6 +49,7 @@
     - "item.value.ip not in net_dump.stdout"
   with_dict: "{{ vm_inv_info }}"
   become: "{{ libvirt_become }}"
+  changed_when: true
 
 - name: Use local dnsmasq for name resolution
   community.general.ini_file:

@@ -5,11 +5,13 @@
     vbmc list | awk '/{{ item }}/ {print $4,$8}'
   register: vbmc_status
   with_items: "{{ vbmc_nodes }}"
+  changed_when: false
 
 - name: Check and run vbmc node if it is down
   ansible.builtin.command: "vbmc start {{ item.item }}"
   with_items: "{{ vbmc_status.results }}"
   when: item.stdout.split()[0]  == 'down'
+  changed_when: false
 
 - name: Create dictionary with vbmc port
   ansible.builtin.set_fact:

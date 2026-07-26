@@ -38,6 +38,7 @@
         "{{ mor_cache_dir }}/{{ mor_version }}/{{ mor_installer }}" coreos print-stream-json >
         "{{ mor_cache_dir }}/{{ mor_version }}/rhcos.json";
         }'
+      changed_when: false
 
     - name: "Download rhcos.json (< 4.8)"
       when:

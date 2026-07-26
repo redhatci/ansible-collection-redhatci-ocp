@@ -198,6 +198,8 @@
     - name: Ensure user specific systemd instance are persistent
       ansible.builtin.command: |
               /usr/bin/loginctl enable-linger {{ ansible_user }}
+      args:
+        creates: /var/lib/systemd/linger/{{ ansible_user }}
 
     - name: Create systemd user directory
       ansible.builtin.file:

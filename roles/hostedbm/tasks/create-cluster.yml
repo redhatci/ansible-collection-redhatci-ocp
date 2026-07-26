@@ -19,6 +19,7 @@
     --namespace={{ hostedbm_cluster_ns }}
     --render
   register: _hostedbm_hcp_output
+  changed_when: false
 
 - name: Save output to YAML file
   ansible.builtin.copy:

@@ -19,6 +19,7 @@
   retries: 6
   delay: 10
   until: rhcos is not failed
+  changed_when: false
 
 - name: "Set image facts"
   ansible.builtin.set_fact:

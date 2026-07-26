@@ -9,3 +9,4 @@
   until: (groups['day2_workers'] | difference(oc_nodes.stdout | default('{}') | from_json | json_query('items[].metadata.name') | list )) | length == 0
   retries: 60
   delay: 60
+  changed_when: false

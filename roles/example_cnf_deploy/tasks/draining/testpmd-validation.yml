@@ -14,6 +14,7 @@
   ansible.builtin.shell: |
     /usr/bin/date +%s
   register: _ecd_timestamp_pod_deletion
+  changed_when: false
 
 - name: "Wait until new testpmd-app pod is allocated in a new worker node"
   kubernetes.core.k8s_info:
@@ -39,10 +40,12 @@
     - ecd_container_ready | length > 0
     - ecd_container_ready[0] | bool
 
+  changed_when: false
 - name: "Get timestamp to save the time when testpmd-app was recreated"
   ansible.builtin.shell: |
     /usr/bin/date +%s
   register: _ecd_timestamp_pod_recreation
+  changed_when: false
 
 - name: "Retrieve context information from new testpmd pod"
   ansible.builtin.set_fact:
@@ -60,3 +63,4 @@
 - name: "Uncordon the node after finishing the draining and rescheduling process"
   ansible.builtin.shell: |
     {{ oc_tool_path }} adm uncordon {{ ecd_cnf_existing_node }}
+  changed_when: true

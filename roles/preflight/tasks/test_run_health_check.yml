@@ -28,6 +28,7 @@
   args:
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true
+  changed_when: false
 
 - name: Expanduser partner_creds
   ansible.builtin.set_fact:
@@ -47,6 +48,7 @@
   retries: 2
   delay: 10
   until: not health_check.failed
+  changed_when: false
 
 - name: Run health check
   ansible.builtin.command:
@@ -58,6 +60,7 @@
   args:
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true
+  changed_when: false
 
 - name: Remove the tested image
   containers.podman.podman_image:

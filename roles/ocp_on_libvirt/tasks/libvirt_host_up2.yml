@@ -13,9 +13,11 @@
   ansible.builtin.command: virsh change-media {{ host['name'] }} hda --eject --config
   become: "{{ libvirt_become }}"
   when: ool_node_not_exists
+  changed_when: false
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync
+  changed_when: false
 
 - name: "Start VM again"
   community.libvirt.virt:

@@ -13,3 +13,4 @@
   when:
     - vbmc_proc.rc == 0
     - vbmc_node is defined
+  changed_when: false

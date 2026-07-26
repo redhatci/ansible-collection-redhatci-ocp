@@ -53,3 +53,4 @@
       ansible.builtin.shell: |
         /usr/sbin/iptables-save > /etc/sysconfig/iptables
       become: true
+      changed_when: false

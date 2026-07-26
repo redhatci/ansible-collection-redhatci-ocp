@@ -102,6 +102,7 @@
   tags:
     - getoc
     - cache
+  changed_when: false
 
 - name: "Remove temporary oc client"
   ansible.builtin.file:

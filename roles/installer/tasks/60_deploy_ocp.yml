@@ -19,6 +19,7 @@
     - increase_install_timeout is not defined
   tags: install
   no_log: true
+  changed_when: false
 
 - name: Deploy OpenShift Cluster with extended timeouts
   when: increase_bootstrap_timeout is defined or increase_install_timeout is defined
@@ -30,6 +31,7 @@
       async: 3600
       poll: 0
       ignore_errors: true
+      changed_when: false
       register: installer_result
 
     - name: Wait for kubeconfig file
@@ -45,6 +47,7 @@
       until: wait_for_bootstrap_result is succeeded
       retries: "{{ increase_bootstrap_timeout|default(1)|int }}"
       delay: 1
+      changed_when: false
 
     - name: Wait for Install Complete
       ansible.builtin.shell: |
@@ -54,3 +57,4 @@
       retries: "{{ increase_install_timeout|default(1)|int }}"
       delay: 1
       no_log: true
+      changed_when: false

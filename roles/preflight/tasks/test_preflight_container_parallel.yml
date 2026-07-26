@@ -42,6 +42,7 @@
       loop: "{{ batched_images | zip(_preflight_batch_dirs.results) | zip(preflight_current_project_batch) | map('flatten') | list }}"
       async: 600
       poll: 0
+      changed_when: false
       register: _preflight_results
 
     - name: Check back on preflight tasks

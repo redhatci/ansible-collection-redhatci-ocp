@@ -13,6 +13,7 @@
     - not (dci_disconnected | default(false) | bool)
     - ts_ocp_version_maj|int == 4
     - ts_ocp_version_min|int >= 7
+  changed_when: false
 
 
 - name: "test_ redhat_tests: Run the openshift CNI tests (disconnected) only for OCP 4.8+"  # noqa: name[casing]
@@ -33,4 +34,5 @@
     - dci_disconnected | default(false) | bool
     - ts_ocp_version_maj|int == 4
     - ts_ocp_version_min|int >= 8
+  changed_when: false
 ...

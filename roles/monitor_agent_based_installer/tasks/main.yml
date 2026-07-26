@@ -24,6 +24,7 @@
         cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
         chdir: "{{ manifests_dir }}"
       when: not mabi_retry_install_complete_check|bool
+      changed_when: false
 
     - name: Wait for install complete - with retries
       ansible.builtin.command:
@@ -33,6 +34,7 @@
       register: _mabi_install_output
       retries: 10
       delay: 60
+      changed_when: false
       until:
         "'Attempted to gather ClusterOperator status after wait failure: Listing ClusterOperator objects' not in _mabi_install_output.stderr
         or

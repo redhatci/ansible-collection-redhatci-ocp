@@ -8,6 +8,7 @@
   retries: 2
   delay: 10
   until: rendered_bundle.rc == 0
+  changed_when: false
 
 - name: "Get inspected data"
   ansible.builtin.set_fact:
@@ -33,6 +34,7 @@
   retries: 2
   delay: 10
   until: bundle_inspect.rc == 0
+  changed_when: false
 
 - name: "Set default channel"
   vars:
@@ -48,6 +50,7 @@
     --output=yaml >> catalog/index.yml
   args:
     chdir: "{{ fbc_tmp_dir }}"
+  changed_when: false
 
 - name: "Render bundle for {{ fbc_short_name }}"
   ansible.builtin.shell: >
@@ -59,6 +62,7 @@
   retries: 3
   delay: 10
   until: render_result.rc == 0
+  changed_when: false
 
 - name: "Append operator channel"
   ansible.builtin.blockinfile:

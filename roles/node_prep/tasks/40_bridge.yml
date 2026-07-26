@@ -10,12 +10,14 @@
       register: prov_con_name
       when:
         - not enable_virtualmedia|bool
+      changed_when: false
 
     - name: Get the public connection name
       ansible.builtin.shell: |
         set -o pipefail
         nmcli device show {{ pub_nic }} | grep GENERAL.CONNECTION | awk '{sub(/[^ ]+[ ]+/,"")}1'
       register: pub_con_name
+      changed_when: false
 
     - name: Disconnect provisioning bridge connection
       ansible.builtin.command: |
@@ -23,6 +25,7 @@
       ignore_errors: true
       when:
         - not enable_virtualmedia|bool
+      changed_when: false
 
     - name: Delete connection due to modify nmcli bug - {{ prov_con_name.stdout }}
       redhatci.ocp.nmcli:
@@ -157,6 +160,7 @@
       with_items:
         - "{{ baremetal_bridge }}"
         - "{{ pub_nic }}"
+      changed_when: false
 
     - name: Reload provisioning bridge and slave interfaces
       ansible.builtin.shell: |
@@ -166,3 +170,4 @@
         - "{{ prov_nic }}"
       when:
         - not enable_virtualmedia|bool
+      changed_when: false

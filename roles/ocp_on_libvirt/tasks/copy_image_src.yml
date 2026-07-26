@@ -69,8 +69,10 @@
   ansible.builtin.command: "xz -d --keep --force {{ local_image_src }}"
   become: "{{ libvirt_become }}"
   when: lismt.stat.mimetype == "application/x-xz" and not (ismt.stat.exists | bool)
+  changed_when: false
 
 - name: "Copy img_src to match node name"
   ansible.builtin.command: "cp --sparse=always {{ img_src }} {{ local_image_path }}/{{ host['name'] }}.qcow2"
   become: "{{ libvirt_become }}"
+  changed_when: false
 ...

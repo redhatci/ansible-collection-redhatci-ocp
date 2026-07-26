@@ -5,6 +5,7 @@
       git branch --show-current
     chdir: "{{ preflight_source_dir }}"
   register: preflight_branch_name
+  changed_when: false
 
 - name: Set preflight_branch
   ansible.builtin.set_fact:
@@ -57,8 +58,10 @@
     chdir: "{{ preflight_tmp_dir.path }}/preflight-source"
   notify:
     - "Remove the local preflight image"
+  changed_when: false
 
 - name: Display Preflight version to ensure that the image build went fine
   ansible.builtin.command: >
     podman run --rm {{ preflight_image }} --version
+  changed_when: false
 ...

@@ -82,6 +82,7 @@
         {{ kbpc_container_command }}
       register: _kbpc_exec_output
       no_log: true
+      changed_when: false
 
   always:
     - name: Save output in a file

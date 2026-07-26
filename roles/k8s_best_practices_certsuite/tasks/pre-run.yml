@@ -89,6 +89,7 @@
           register: _kbpc_repo_info_branch
           args:
             chdir: "{{ kbpc_certsuite_dir }}"
+          changed_when: false
 
         - name: Create variable with certsuite version name
           ansible.builtin.set_fact:
@@ -106,6 +107,7 @@
         podman build -t {{ kbpc_certsuite_image }} .
       args:
         chdir: "{{ kbpc_certsuite_dir }}"
+      changed_when: false
 
 - name: Tasks when testing a certsuite stable version
   when:
@@ -179,6 +181,7 @@
       retries: 2
       delay: 10
       until: _kbpc_pull_result.rc == 0
+      changed_when: false
 
     # This is used to lately check if we are really testing the version we are
     # cloning from the certsuite repo, checking in certsuite logs if the
@@ -190,6 +193,7 @@
       register: _kbpc_commit_sha_cmd
       args:
         chdir: "{{ kbpc_certsuite_dir }}"
+      changed_when: false
 
     - name: Create variable with certsuite commit SHA
       ansible.builtin.set_fact:

@@ -5,12 +5,14 @@
     {{ vbmc_bin }} delete {{ item }}
   ignore_errors: true
   with_items: "{{ vbmc_nodes }}"
+  changed_when: false
 
 - name: Get current count of used vbmc ports
   ansible.builtin.shell: |
     set -o pipefail
     {{ vbmc_bin | quote }} list | grep -c 62 || true
   register: vbmc_used_ports
+  changed_when: false
 
 - name: Define vbmc_port for each VM
   ansible.builtin.set_fact:
@@ -40,6 +42,7 @@
       --password {{ vbmc_pass }}
       --address {% if not baremetal_net_ipv6 | bool %}::ffff:{% endif %}{{ vbmc_management_address }}
   with_dict: "{{ vbmc_ports }}"
+  changed_when: false
 
 - name: Start nodes using vbmc
   ansible.builtin.include_tasks: start_node.yml
@@ -61,6 +64,7 @@
   until: command_result.rc == 0
   retries: 5
   delay: 5
+  changed_when: false
 
 - name: Get vbmc VMs power status using ipmitool
   ansible.builtin.command: >
@@ -76,6 +80,7 @@
   until: ipmitool_results.rc == 0
   retries: 5
   delay: 5
+  changed_when: false
 
 - name: Validate_ that all VMs are powered on
   ansible.builtin.fail:
@@ -97,6 +102,7 @@
   until: command_result.rc == 0
   retries: 5
   delay: 5
+  changed_when: false
 
 - name: Get information about vm from hypervisor
   delegate_to: "{{ vbmc_host }}"
@@ -124,6 +130,7 @@
     }"
   with_items: "{{ vbmc_nodes | sort }}"
   register: nodes_info
+  changed_when: false
 
 - name: Generate file containing install-scripts vbmc details
   ansible.builtin.template:

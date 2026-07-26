@@ -81,6 +81,7 @@
     - name: Update the CA trust files
       ansible.builtin.command:
         cmd: update-ca-trust extract
+      changed_when: false
 
 - name: Fetch the domain cert from the registry host
   ansible.builtin.fetch:

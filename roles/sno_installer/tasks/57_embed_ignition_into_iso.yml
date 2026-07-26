@@ -18,6 +18,7 @@
         --output /data/embedded.iso
   register: rhcos_iso_live_info
   tags: embedded
+  changed_when: false
 
 - name: Set embedded iso in path fact
   ansible.builtin.set_fact:

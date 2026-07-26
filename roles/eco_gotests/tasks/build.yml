@@ -4,6 +4,7 @@
   ansible.builtin.command:
     cmd: "make build-docker-image"
     chdir: "{{ eco_gotests_path }}"
+  changed_when: false
 
 - name: "Overwrite image name"
   ansible.builtin.set_fact:

@@ -40,6 +40,7 @@
   when: item is search(host['name'])
   become: true
   tags: cleanup
+  changed_when: false
 
 - name: Delete old SNO VMs Storage
   ansible.builtin.file:
