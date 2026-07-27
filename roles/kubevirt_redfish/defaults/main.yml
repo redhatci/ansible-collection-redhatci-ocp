@@ -13,6 +13,7 @@ kr_config_file: ""
 
 kr_vm_configs: []
 kr_vm_username: admin
+kr_hashed: true
 
 # Options: legacy, enhanced
 kr_system_id_convention: "legacy"
