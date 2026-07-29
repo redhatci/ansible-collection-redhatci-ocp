@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        4.0.EPOCH
+Version:        5.0.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Aug  4 2026 Tony Garcia <tonyg@redhat.com> - 5.0.EPOCH-VERS
+- Remove setup_gitea role, superseded by forgejo_setup
+
 * Thu Jul 30 2026 Beto Rdz <josearod@redhat.com> - 4.0.EPOCH-VERS
 - Non-backward compatible changes to the image sources plays in acm utils
 

@@ -122,7 +122,6 @@ Name | Description
 [redhatci.ocp.remove_ztp_gitops_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/remove_ztp_gitops_resources/README.md) | Remove all GitOps related resources for a given spoke cluster, excepting the cluster namespace, which is not deleted because this will imply the spoke cluster is detached from the hub cluster.
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
 [redhatci.ocp.rhoai](roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
-[redhatci.ocp.setup_gitea](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitea/README.md) | Deployment of [Gitea](https://about.gitea.com)
 [redhatci.ocp.setup_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitops/README.md) | Configures GitOps to support Kustomize and PolicyGenerator
 [redhatci.ocp.setup_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_http_store/README.md) | Sets up a web host which can be used to distribute iso's for `boot_iso` role
 [redhatci.ocp.setup_lvms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_lvms/README.md) | Configures and cleans LVM Storage Operator
