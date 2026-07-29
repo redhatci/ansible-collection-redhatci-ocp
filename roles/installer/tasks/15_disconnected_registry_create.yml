@@ -1,4 +1,11 @@
 ---
+- name: Validate required registry credentials
+  ansible.builtin.assert:
+    that:
+      - disconnected_registry_user | length > 0
+      - disconnected_registry_password | length > 0
+    fail_msg: "disconnected_registry_user and disconnected_registry_password are required"
+
 - name: Find any old tmp dirs with OpenShift related binaries on registry host
   ansible.builtin.find:
     paths: /tmp
@@ -180,6 +187,7 @@
     - name: Generate htpasswd entry
       ansible.builtin.command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
       register: htpass_entry
+      no_log: true
 
     - name: Write htpasswd file
       ansible.builtin.copy:
@@ -194,6 +202,7 @@
     - name: Set disconnected_auth
       ansible.builtin.set_fact:
         disconnected_registry_up: "{{ disconnected_registry_user }}:{{ disconnected_registry_password }}"
+      no_log: true
 
     - name: Create registry auth for pullsecret
       ansible.builtin.set_fact:

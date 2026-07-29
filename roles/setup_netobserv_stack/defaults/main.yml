@@ -15,8 +15,8 @@ setup_netobserv_stack_console_limits_memory: 100Mi
 setup_netobserv_stack_console_cpu: 100m
 setup_netobserv_stack_console_memory: 50Mi
 setup_netobserv_stack_loki_tls_insecure_skip_verify: true
-setup_netobserv_stack_access_key_id: minioadmin
-setup_netobserv_stack_access_key_secret: minioadmin
+setup_netobserv_stack_access_key_id: ""
+setup_netobserv_stack_access_key_secret: ""
 setup_netobserv_stack_bucket: network
 setup_netobserv_stack_endpoint: http://minio-service.minio:9000
 setup_netobserv_stack_region: us-east-1
