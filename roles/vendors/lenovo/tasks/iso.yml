@@ -12,7 +12,7 @@
         body: {"ResetType": "On"}
         status_code: [200, 204]
         force_basic_auth: true
-        validate_certs: false
+        validate_certs: "{{ bmc_validate_certs }}"
         return_content: true
       register: redfish_reply
 
@@ -34,7 +34,7 @@
         body: {"Image":"{{ boot_iso_url }}", "Inserted": true}
         status_code: [200, 204]
         force_basic_auth: true
-        validate_certs: false
+        validate_certs: "{{ bmc_validate_certs }}"
         return_content: true
       register: redfish_reply
 
@@ -60,7 +60,7 @@
         }
         status_code: [200, 204]
         force_basic_auth: true
-        validate_certs: false
+        validate_certs: "{{ bmc_validate_certs }}"
         return_content: true
       register: redfish_reply
 
@@ -86,7 +86,7 @@
         }
         status_code: [200, 204]
         force_basic_auth: true
-        validate_certs: false
+        validate_certs: "{{ bmc_validate_certs }}"
         return_content: true
       register: redfish_reply
 
@@ -105,7 +105,7 @@
         body: {"ResetType": "ForceRestart"}
         status_code: [200, 204]
         force_basic_auth: true
-        validate_certs: false
+        validate_certs: "{{ bmc_validate_certs }}"
         return_content: true
       register: redfish_reply
 

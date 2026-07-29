@@ -17,7 +17,7 @@
     body: { "ResetType": "ForceOff" }
     status_code: [200, 204]
     force_basic_auth: false
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true
   register: redfish_poweroff
   failed_when: false
@@ -31,7 +31,7 @@
     body_format: json
     body: {}
     status_code: [200, 204]
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true
   register: redfish_reply
   failed_when: false
@@ -54,7 +54,7 @@
       }
     status_code: [200, 204]
     force_basic_auth: false
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true
   register: redfish_reply
 
@@ -68,6 +68,6 @@
     body: { "ResetType": "ForceOn" }
     status_code: [200, 204]
     force_basic_auth: false
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true
   register: redfish_poweron

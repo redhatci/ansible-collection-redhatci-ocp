@@ -11,7 +11,7 @@
     body_format: json
     body: {}
     status_code: [200, 204]
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true
   register: redfish_reply
   ignore_errors: true
