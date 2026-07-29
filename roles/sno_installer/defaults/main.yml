@@ -2,7 +2,7 @@
 # defaults file for sno_installer
 cache_enabled: true
 si_cache_dir: "/opt/cache"
-webserver_caching_image: "quay.io/fedora/httpd-24:latest"
+webserver_caching_image: "quay.io/fedora/httpd-24@sha256:23707ed98ca972e949ecd3da5bc47c7bd9036e5b1aedb5f404a42f819c73e948"  # tag: latest, date: 20260729
 webserver_caching_port_container: 8080
 webserver_caching_port: "{{ webserver_caching_port_container }}"
 url_passed: false
