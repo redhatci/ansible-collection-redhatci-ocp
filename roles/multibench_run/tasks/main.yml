@@ -27,7 +27,9 @@
       - multibench_target_nodes.client | length >= 1
       - multibench_target_nodes.server is defined
       - multibench_target_nodes.server | length >= 1
-    fail_msg: "multibench_target_nodes.client and multibench_target_nodes.server must be defined with at least 1 node each when multibench_uperf_num is defined and > 0"
+    fail_msg: >-
+      multibench_target_nodes.client and multibench_target_nodes.server must be
+      defined with at least 1 node each when multibench_uperf_num is defined and > 0
     success_msg: "multibench_target_nodes validated for uperf workload"
   when: multibench_uperf_num is defined and multibench_uperf_num | int > 0
 
