@@ -5,7 +5,7 @@
     user: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
     method: GET
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     force_basic_auth: true
     return_content: true
   register: cd1_contents
@@ -22,7 +22,7 @@
       Accept: application/json
     body: {}
     body_format: json
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     force_basic_auth: true
     return_content: true
   when:
@@ -40,7 +40,7 @@
       Accept: application/json
     body: {}
     body_format: json
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     force_basic_auth: true
     return_content: true
   when:

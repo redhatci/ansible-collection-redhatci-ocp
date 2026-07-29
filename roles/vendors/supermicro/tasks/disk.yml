@@ -17,7 +17,7 @@
             user: "{{ bmc_user }}"
             password: "{{ bmc_password }}"
             method: GET
-            validate_certs: false
+            validate_certs: "{{ bmc_validate_certs }}"
             force_basic_auth: true
             return_content: true
           register: cd1_contents
@@ -33,7 +33,7 @@
               Accept: application/json
             body: {}
             body_format: json
-            validate_certs: false
+            validate_certs: "{{ bmc_validate_certs }}"
             force_basic_auth: true
             return_content: true
           when: cd1_contents.json.Inserted | bool
@@ -49,7 +49,7 @@
               Accept: application/json
             body: {}
             body_format: json
-            validate_certs: false
+            validate_certs: "{{ bmc_validate_certs }}"
             force_basic_auth: true
             return_content: true
 
@@ -65,7 +65,7 @@
         body: '{"Boot":{"BootSourceOverrideEnabled":"Continuous","BootSourceOverrideTarget":"Hdd"}}' # Despite what the docs say HDD is not the correct value
         body_format: json
         force_basic_auth: true
-        validate_certs: false
+        validate_certs: "{{ bmc_validate_certs }}"
         return_content: true
 
     - name: Restart the SuperMicro
@@ -80,5 +80,5 @@
         body: '{"ResetType": "ForceRestart"}'
         body_format: json
         force_basic_auth: true
-        validate_certs: false
+        validate_certs: "{{ bmc_validate_certs }}"
         return_content: true

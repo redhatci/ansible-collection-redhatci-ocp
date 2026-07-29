@@ -31,7 +31,7 @@
     body: '{"Boot":{"BootSourceOverrideEnabled":"Once","BootSourceOverrideTarget": "{{ boot_source_override_target }}"}}'
     body_format: json
     force_basic_auth: true
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true
 
 - name: Restart the SuperMicro
@@ -46,5 +46,5 @@
     body: '{"ResetType": "ForceRestart"}'
     body_format: json
     force_basic_auth: true
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true

@@ -6,7 +6,7 @@
     password: "{{ bmc_password }}"
     method: GET
     status_code: [200, 201]
-    validate_certs: false
+    validate_certs: "{{ bmc_validate_certs }}"
     return_content: true
   register: redfish_reply
 
