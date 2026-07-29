@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        5.0.EPOCH
+Version:        6.0.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Aug 14 2026 Tony Garcia <tonyg@redhat.com> - 6.0.EPOCH-VERS
+- Remove setup_gitea role, superseded by forgejo_setup
+
 * Wed Aug 13 2026 Frederic Lepied <flepied@redhat.com> - 5.0.EPOCH-VERS
 - Remove monitor_agent_based_installer role (monitoring moved to dci-openshift-agent)
 

@@ -122,7 +122,6 @@ Name | Description
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
 [redhatci.ocp.resolve_must_gather_images](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resolve_must_gather_images/README.md) | Resolves version-independent must-gather image short names to full registry references using cluster CSVs.
 [redhatci.ocp.rhoai](roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
-[redhatci.ocp.setup_gitea](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitea/README.md) | Deployment of [Gitea](https://about.gitea.com)
 [redhatci.ocp.setup_gitops](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitops/README.md) | Configures GitOps to support Kustomize and PolicyGenerator
 [redhatci.ocp.setup_http_store](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_http_store/README.md) | Sets up a web host which can be used to distribute iso's for `boot_iso` role
 [redhatci.ocp.setup_lvms](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_lvms/README.md) | Configures and cleans LVM Storage Operator
