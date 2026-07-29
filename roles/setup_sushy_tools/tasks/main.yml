@@ -55,9 +55,12 @@
           no_log: true
 
         - name: Generate htpasswd entry
-          ansible.builtin.command: htpasswd -bBn {{ item.user }} {{ item.password }}
+          ansible.builtin.command:
+            cmd: htpasswd -iBn {{ item.user }}
+            stdin: "{{ item.password }}"
           register: htpass_entries
           changed_when: false
+          no_log: true
           loop: "{{ user_password_combinations | dict2items(key_name='user', value_name='password') }}"
 
         - name: Write htpasswd file
