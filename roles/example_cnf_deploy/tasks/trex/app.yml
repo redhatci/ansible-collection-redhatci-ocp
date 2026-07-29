@@ -13,7 +13,9 @@
   block:
     - name: Create network list for trex with hardcoded macs
       ansible.builtin.set_fact:
-        ecd_networks_trex: "{{ ecd_networks_trex + [ item | combine({'mac': ecd_trex_mac_list[idx:idx+item.count], 'ip': ecd_trex_ip_list[idx:idx+item.count]})] }}"
+        ecd_networks_trex: >-
+          {{ ecd_networks_trex + [item | combine({'mac': ecd_trex_mac_list[idx:idx+item.count],
+          'ip': ecd_trex_ip_list[idx:idx+item.count]})] }}
       loop: "{{ ecd_sriov_networks }}"
       loop_control:
         index_var: idx

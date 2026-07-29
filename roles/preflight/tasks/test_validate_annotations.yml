@@ -28,7 +28,12 @@
 # Unlimited pattern "v4.16" declares compatibility with version 4.16 and all later versions.
 - name: Extract max OCP version from annotations.yaml
   ansible.builtin.set_fact:
-    preflight_max_ocp: "{{ preflight_ocp_range | regex_replace('=v', 'v') | regex_search(preflight_max_pattern) | regex_replace('v', '') | regex_replace('.*-', '') }}"
+    preflight_max_ocp: >-
+      {{ preflight_ocp_range
+      | regex_replace('=v', 'v')
+      | regex_search(preflight_max_pattern)
+      | regex_replace('v', '')
+      | regex_replace('.*-', '') }}
   vars:
     preflight_max_pattern: "v[0-9]+\\.[0-9]+(-v[0-9]+\\.[0-9]+)?"
 

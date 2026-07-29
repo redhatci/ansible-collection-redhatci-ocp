@@ -2,7 +2,7 @@
   ansible.builtin.setup:
   delegate_to: "{{ entry_name }}"
   delegate_facts: true
-  when: 
+  when:
     - entry_extra_check | default(true)
     - hostvars[entry_name]['ansible_fqdn'] is not defined
 

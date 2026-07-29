@@ -69,7 +69,14 @@
     entry_name: "{{ item }}"
     entry_extra_check: "{{ hostvars[item]['sushy_fqdn']  is not defined }}"
   loop: "{{ groups['vm_hosts'] | default([]) }}"
-  when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] | ansible.utils.ipaddr('bool') and (not (hostvars[item]['dns_skip_record'] | default(False))) | bool
+  when:
+    - >-
+      hostvars[item][hostvars[item]['host_ip_keyword']
+      | default(host_ip_keyword)]
+      | ansible.utils.ipaddr('bool')
+    - >-
+      (not (hostvars[item]['dns_skip_record']
+      | default(False))) | bool
 
 - name: Configure firewall
   become: true
