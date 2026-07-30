@@ -1,4 +1,5 @@
 ---
+
 - name: "Extract TRexApp job duration"
   block:
     - name: Retrieve TRexApp information
@@ -95,7 +96,8 @@
 - name: "Create a file to save downtime value"
   ansible.builtin.copy:
     dest: "{{ ecd_job_logs_path }}/trex-downtime.log"
-    content: "Downtime is {{ ecd_trex_downtime_seconds }} seconds, representing the {{ ecd_trex_downtime_percentage }} % of TRex job duration, which is {{ ecd_trex_duration
-      }} seconds"
+    content: "Downtime is {{ ecd_trex_downtime_seconds }} seconds, \
+      representing the {{ ecd_trex_downtime_percentage }} % of TRex \
+      job duration, which is {{ ecd_trex_duration }} seconds"
     mode: "0755"
   ignore_errors: true

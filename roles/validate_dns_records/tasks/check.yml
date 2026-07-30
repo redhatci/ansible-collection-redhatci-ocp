@@ -1,4 +1,3 @@
----
 - name: Check required domain {item} exists
   ansible.builtin.command:
     cmd: "{{ required_binary }} {{ item.value }} A {{ item.value }} AAAA +short"
@@ -7,6 +6,11 @@
 
 - name: Check stdout for expected IP address
   ansible.builtin.set_fact:
-    failed_domains: "{{ (failed_domains | default({})) | combine(\n    {\n        item.value: {\n            'stdout': res.stdout,\n            'stderr': res.stderr,\n\
-      \            'expected': expected_answers[item.key],\n        }\n    }\n) }}"
+    failed_domains: "{{ (failed_domains | default({})) | combine(
+        {item.value: {
+          'stdout': res.stdout,
+          'stderr': res.stderr,
+          'expected': expected_answers[item.key],
+        }}
+      ) }}"
   when: expected_answers[item.key] not in res.stdout
