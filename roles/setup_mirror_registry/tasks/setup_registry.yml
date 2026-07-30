@@ -41,7 +41,7 @@
 
 - name: Write htpasswd file
   ansible.builtin.copy:
-    content: "{{ htpass_entry.stdout }}"
+    content: '{{ htpass_entry.stdout }}'
     dest: "{{ registry_dir_auth }}/htpasswd"
     owner: "{{ file_owner }}"
     group: "{{ file_group }}"
@@ -56,8 +56,14 @@
 
 - name: Update pull_secret variable
   ansible.builtin.set_fact:
-    pull_secret: "{{ pull_secret | combine({'auths': pull_secret['auths'] | combine({local_registry: {'auth': disconnected_registry_up | b64encode, 'email': registry_email}})})
-      }}"
+    pull_secret: "{{ pull_secret | combine({
+      'auths': pull_secret['auths'] | combine({
+        local_registry: {
+          'auth': disconnected_registry_up | b64encode,
+          'email': registry_email
+        }
+      })}
+      ) }}"
 
 - name: Write updated pull_secret
   ansible.builtin.copy:
