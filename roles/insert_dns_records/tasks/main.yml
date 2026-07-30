@@ -1,31 +1,19 @@
 ---
 - name: Get node_records for nodes
   ansible.builtin.set_fact:
-    node_dns_records: "{{ (node_dns_records | default({})) | combine(
-        {
-          item: {
-            'name': item,
-            'address': item + '.' + cluster_name + '.' + base_dns_domain,
-            'ip': hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)],
-            'mac': hostvars[item]['mac'] | default(False),
-            'use_dhcp': hostvars[item]['ip'] | default('dhcp') == 'dhcp',
-          }
-        }
-      ) }}"
+    node_dns_records: "{{ (node_dns_records | default({})) | combine({item: {'name': item,
+        'address': item + '.' + cluster_name + '.' + base_dns_domain,
+        'ip': hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)],
+        'mac': hostvars[item]['mac'] | default(False),
+        'use_dhcp': hostvars[item]['ip'] | default('dhcp') == 'dhcp'}}) }}"
   loop: "{{ groups['nodes'] }}"
   when: hostvars[item][hostvars[item]['host_ip_keyword'] | default(host_ip_keyword)] is defined
 
 - name: Get node_records for node bmc_addresses when it is an IP address
   ansible.builtin.set_fact:
-    bmc_dns_records: "{{ (bmc_dns_records | default({})) | combine(
-        {
-          item: {
-            'name': item,
-            'address': item + dns_bmc_address_suffix,
-            'ip': hostvars[item]['bmc_ip'],
-          }
-        }
-      ) }}"
+    bmc_dns_records: "{{ (bmc_dns_records | default({})) | combine({item: {'name': item,
+        'address': item + dns_bmc_address_suffix,
+        'ip': hostvars[item]['bmc_ip']}}) }}"
   loop: "{{ groups['nodes'] }}"
   when:
     - hostvars[item]['bmc_ip'] is defined

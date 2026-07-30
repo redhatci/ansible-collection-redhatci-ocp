@@ -36,9 +36,7 @@
 - name: Set kvm_network_interfaces
   ansible.builtin.set_fact:
     kvm_network_interfaces: "{{
-        hostvars[kvm_node_hostname]['network_interfaces'] | default(
-          {(hostvars[vm_hostname]['vm_bridge_name'] | default(cluster_name + '-br')): vm_mac}
-        )
+        hostvars[kvm_node_hostname]['network_interfaces'] | default({(hostvars[vm_hostname]['vm_bridge_name'] | default(cluster_name + '-br')): vm_mac})
       }}"
 
 - name: Build node
@@ -63,4 +61,4 @@
 
 - name: Update processed_kvm_nodes
   ansible.builtin.set_fact:
-    processed_kvm_nodes: "{{ processed_kvm_nodes | combine({kvm_node.vm_host: ((processed_kvm_nodes[kvm_node.vm_host] | default([])) +  [kvm_node])}) }}"
+    processed_kvm_nodes: "{{ processed_kvm_nodes | combine({kvm_node.vm_host: ((processed_kvm_nodes[kvm_node.vm_host] | default([])) + [kvm_node])}) }}"
