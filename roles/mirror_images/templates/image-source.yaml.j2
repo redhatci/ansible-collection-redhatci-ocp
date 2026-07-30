@@ -1,0 +1,45 @@
+{% if mi_is_type | lower == 'idms' %}
+apiVersion: config.openshift.io/v1
+kind: ImageDigestMirrorSet
+metadata:
+  name: {{ _mi_is_name }}
+spec:
+  imageDigestMirrors:
+{% for entry in mi_grouped_mirrors %}
+  - mirrors:
+{% for mirror in entry.mirrors %}
+    - {{ mirror }}
+{% endfor %}
+    source: {{ entry.source }}
+{% endfor %}
+{% if not (mi_random_tag | default(false) | bool) %}
+---
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: {{ _mi_is_name }}
+spec:
+  imageTagMirrors:
+{% for entry in mi_grouped_mirrors %}
+  - mirrors:
+{% for mirror in entry.mirrors %}
+    - {{ mirror }}
+{% endfor %}
+    source: {{ entry.source }}
+{% endfor %}
+{% endif %}
+{% else %}
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  name: {{ _mi_is_name }}
+spec:
+  repositoryDigestMirrors:
+{% for entry in mi_grouped_mirrors %}
+  - mirrors:
+{% for mirror in entry.mirrors %}
+    - {{ mirror }}
+{% endfor %}
+    source: {{ entry.source }}
+{% endfor %}
+{% endif %}

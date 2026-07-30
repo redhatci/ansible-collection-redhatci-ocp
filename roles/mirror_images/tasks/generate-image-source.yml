@@ -1,0 +1,43 @@
+---
+- name: Group mirrored images by source repository
+  ansible.builtin.set_fact:
+    mi_grouped_mirrors: >-
+      {{
+        mi_grouped_mirrors | default([]) + [{
+          'source': item,
+          'mirrors': mi_image_mirrors
+            | selectattr('source', 'equalto', item)
+            | map(attribute='mirror')
+            | list
+            | unique
+            | list
+        }]
+      }}
+  loop: "{{ mi_image_mirrors | map(attribute='source') | list | unique | list }}"
+
+- name: Create temporary Image Source file
+  ansible.builtin.tempfile:
+    state: file
+    prefix: "imagesource_mirror_images."
+  register: _mi_is_file
+
+- name: Write Image Source manifest
+  vars:
+    _mi_is_name: >-
+      {{
+        mi_is_name
+        if (mi_is_name | length > 0)
+        else (
+          'mirrored-images-' ~ (
+            lookup('community.general.random_string', length=8, special=false, upper=false) | lower
+          )
+        )
+      }}
+  ansible.builtin.template:
+    src: image-source.yaml.j2
+    dest: "{{ _mi_is_file.path }}"
+    mode: "0644"
+
+- name: Expose Image Source file path
+  ansible.builtin.set_fact:
+    mi_is_file: "{{ _mi_is_file }}"
