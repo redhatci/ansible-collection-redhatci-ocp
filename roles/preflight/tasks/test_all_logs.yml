@@ -1,16 +1,4 @@
 ---
-- name: Get Scorecard pods
-  kubernetes.core.k8s_info:
-    kind: Pod
-    namespace: "{{ preflight_namespace }}"
-  register: scorecard_pods
-
-- name: Get scorecard-related events
-  kubernetes.core.k8s_info:
-    kind: Event
-    namespace: "{{ preflight_namespace }}"
-  register: scorecard_events
-
 - name: "Retrieve installed Subscription for {{ operator.name }}"
   kubernetes.core.k8s_info:
     api_version: operators.coreos.com/v1alpha1
