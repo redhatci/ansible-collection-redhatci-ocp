@@ -28,13 +28,12 @@
     tasks_from: disconnect-agent
   vars:
     utils_registries: "{{ acm_user_registry }}"
-    utils_ca_bundle: "{{ acm_user_ca_bundle }}"
+    utils_ca_bundle: "{{ acm_user_ca_bundle | default('') }}"
     utils_cm_name: mirror-registry-sno
     utils_ocp_version: "{{ acm_ocp_version }}"
     utils_iso_url: "{{ acm_iso_url }}"
     utils_root_fs_url: "{{ acm_root_fs_url }}"
   when:
-    - acm_user_ca_bundle is defined
     - acm_disconnected | bool
 
 - name: "Set pull secret for Assisted installer and Cluster deployment"

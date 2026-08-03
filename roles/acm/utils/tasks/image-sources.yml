@@ -1,22 +1,15 @@
 ---
-- name: Combine and transform Image Source to registries.conf format
+- name: Merge and transform image mirrors to registries.conf format
   vars:
-    hub_query: "spec.*[*].{mirrors: mirrors, source: source}"
-    spoke_mirrors: >
-      {{ lookup('file', utils_imagesource_file) |
-         from_yaml |
-         json_query(hub_query) |
-         first
-      }}
     combined_mirrors: |-
       {%- set c = dict() %}
-      {%- for mirror in utils_hub_mirrors + spoke_mirrors %}
+      {%- for mirror in utils_image_mirrors %}
       {%- set s = mirror.source %}
       {%- set m = mirror.mirrors %}
       {%- if c.get(s) %}
-      {{ c.update({s: c[s] + m}) }}
+      {%- set _ = c.update({s: (c[s] + m) | unique | list}) %}
       {%- else %}
-      {{ c.update({s: m}) }}
+      {%- set _ = c.update({s: m | list}) %}
       {%- endif %}
       {%- endfor %}
       {{ c }}
@@ -37,11 +30,3 @@
 
       {% endfor %}
       {% endfor %}
-
-      [[registry]]
-        prefix = ""
-        location = "registry.redhat.io/multicluster-engine"
-        mirror-by-digest-only = true
-
-        [[registry.mirror]]
-          location = "{{ utils_registry | urlsplit('netloc') }}/multicluster-engine"

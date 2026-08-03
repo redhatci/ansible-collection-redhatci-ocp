@@ -1,7 +1,19 @@
 ---
 - name: Set config map with mirror registries, and CA bundle
   vars:
-    cm_def: |
+    cm_data: >-
+      {{
+        {'registries.conf': utils_registries}
+        | combine(
+            {'ca-bundle.crt': utils_ca_bundle}
+            if (utils_ca_bundle | length > 0)
+            else {}
+          )
+      }}
+  kubernetes.core.k8s:
+    state: present
+    force: true
+    definition:
       apiVersion: v1
       kind: ConfigMap
       metadata:
@@ -9,14 +21,7 @@
         namespace: multicluster-engine
         labels:
           app: assisted-service
-      data:
-        registries.conf: |
-          {{ utils_registries | indent(4) }}
-        ca-bundle.crt: |
-          {{ utils_ca_bundle | indent(4) }}
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ cm_def }}"
+      data: "{{ cm_data }}"
     namespace: multicluster-engine
 
 - name: Check the AgentServiceConfig instance
@@ -42,7 +47,7 @@
         name: agent
         namespace: multicluster-engine
       spec:
-        osImages: "{{ asg.resources[0].spec.osImages + [os_images] }}"
+        osImages: "{{ (asg.resources[0].spec.osImages | default([])) + [os_images] }}"
         mirrorRegistryRef:
           name: "{{ utils_cm_name }}"
   kubernetes.core.k8s:
