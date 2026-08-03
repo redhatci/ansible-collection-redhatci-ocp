@@ -55,7 +55,7 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
-* Thu Jul 30 2026 Beto Rdz <josearod@redhat.com> - 3.7.EPOCH-VERS
+* Thu Jul 30 2026 Beto Rdz <josearod@redhat.com> - 4.0.EPOCH-VERS
 - Non-backward compatible changes to the image sources plays in acm utils
 
 * Fri Jun 19 2026 Frederic Lepied <flepied@redhat.com> - 3.6.EPOCH-VERS
