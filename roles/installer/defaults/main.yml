@@ -9,7 +9,7 @@ install_config_appends_file: install-config-appends.yml
 registry_auth_file: registry-auths.json
 disconnected_registry_user: ""
 disconnected_registry_password: ""
-webserver_cache_image: "quay.io/fedora/httpd-24:latest"
+webserver_cache_image: "quay.io/fedora/httpd-24@sha256:23707ed98ca972e949ecd3da5bc47c7bd9036e5b1aedb5f404a42f819c73e948"  # tag: latest, date: 20260729
 webserver_caching_port: "{{ webserver_caching_port_container }}"
 webserver_caching_port_container: 8080
 registry_creation: false

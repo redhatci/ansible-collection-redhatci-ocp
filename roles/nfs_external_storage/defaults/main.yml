@@ -1,4 +1,6 @@
 ---
 nes_namespace: openshift-nfs-storage
-nes_provisioner_image: "registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2"
+# tag: v4.0.2, date: 20260729
+nes_provisioner_image: >-
+  registry.k8s.io/sig-storage/nfs-subdir-external-provisioner@sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9
 ...
