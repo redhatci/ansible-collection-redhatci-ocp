@@ -1,0 +1,100 @@
+[
+  {
+    "rule_id": "etcd|etcd_reachable",
+    "component": "in_cluster_checks.rules.etcd.etcd_validations.EtcdBasicCheck",
+    "key": "etcd_reachable",
+    "status": "pass",
+    "description": "Check etcd exists and is reachable",
+    "domain": "etcd",
+    "details": [
+      {
+        "node_ip": "127.0.0.1",
+        "node_name": "in-cluster-orchestrator",
+        "node_labels": "",
+        "status": "pass",
+        "bash_cmd_lines": [
+          "oc get pod -n openshift-etcd -l app=etcd",
+          "oc -n openshift-etcd rsh etcd-sno.samsung.ran.lab bash -c \"etcdctl version\""
+        ],
+        "rule_log": [],
+        "timestamp": "2026-06-09 16:51:50",
+        "system_info": {
+          "etcd_version": "etcdctl version: 3.5.14\nAPI version: 3.5"
+        }
+      }
+    ]
+  },
+  {
+    "rule_id": "etcd|etcd_health_check",
+    "component": "in_cluster_checks.rules.etcd.etcd_validations.EtcdEndpointHealthCheck",
+    "key": "etcd_health_check",
+    "status": "skip",
+    "description": "Check etcd health with curl :2379/health",
+    "domain": "etcd",
+    "details": [
+      {
+        "node_ip": "127.0.0.1",
+        "node_name": "in-cluster-orchestrator",
+        "node_labels": "",
+        "status": "skip",
+        "bash_cmd_lines": [
+          "oc get pod -n openshift-etcd -l app=etcd",
+          "oc -n openshift-etcd rsh etcd-sno.samsung.ran.lab bash -c \"etcdctl member list -w=json\"",
+          "oc get pod -n openshift-etcd -l app=etcd"
+        ],
+        "rule_log": [],
+        "timestamp": "2026-06-09 16:51:51",
+        "message": "Unexpected error (details in the .json file)",
+        "exception": "Error Type: ValueError\nError Message: Parameter 'url' contains invalid characters.\nAllowed patterns:\n  - Absolute paths: /path/to/file or /path/to/file.ext\n    (letters, digits, dashes, underscores; ONE dot in filename only)\n  - Identifiers: alphanumeric start, then letters/digits/underscores/dots/dashes/spaces\n    (e.g., 'eth0', 'br-ex', 'bond0.110', 'ovn-k8s-mp0', 'test_file')\n  - Etcd URLs: https://etcd-N.etcd.openshift-etcd.svc:2379/path\n  - PCI addresses: 01:00.0 or 0000:01:00.0\nGot: 'https://[2600:12:1::16]:2379/health'\n\nTraceback (most recent call last):\n  File \"/opt/app-root/lib/python3.12/site-packages/in_cluster_checks/core/parallel_runner.py\", line 356, in run_rule_on_one_host\n    result = hosted_rule_instance.run_rule()\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/app-root/lib/python3.12/site-packages/in_cluster_checks/rules/etcd/etcd_validations.py\", line 315, in run_rule\n    rc, health_out, health_err = self._run_curl_in_pod(f\"{endpoint}/health\", pod_name)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/app-root/lib/python3.12/site-packages/in_cluster_checks/rules/etcd/etcd_validations.py\", line 90, in _run_curl_in_pod\n    ).format(url=url)\n      ^^^^^^^^^^^^^^^\n  File \"/opt/app-root/lib/python3.12/site-packages/in_cluster_checks/utils/safe_cmd_string.py\", line 204, in format\n    validated = self._validate_value(value, f\"Parameter '{key}'\")\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/app-root/lib/python3.12/site-packages/in_cluster_checks/utils/safe_cmd_string.py\", line 151, in _validate_value\n    raise ValueError(\nValueError: Parameter 'url' contains invalid characters.\nAllowed patterns:\n  - Absolute paths: /path/to/file or /path/to/file.ext\n    (letters, digits, dashes, underscores; ONE dot in filename only)\n  - Identifiers: alphanumeric start, then letters/digits/underscores/dots/dashes/spaces\n    (e.g., 'eth0', 'br-ex', 'bond0.110', 'ovn-k8s-mp0', 'test_file')\n  - Etcd URLs: https://etcd-N.etcd.openshift-etcd.svc:2379/path\n  - PCI addresses: 01:00.0 or 0000:01:00.0\nGot: 'https://[2600:12:1::16]:2379/health'\n",
+        "problem_type": "NOT_PERFORMED"
+      }
+    ]
+  },
+  {
+    "rule_id": "k8s|verify_cluster_operators_available",
+    "component": "in_cluster_checks.rules.k8s.k8s_validations.VerifyClusterOperatorsAvailable",
+    "key": "verify_cluster_operators_available",
+    "status": "warning",
+    "description": "Verify all cluster operators are in available state",
+    "domain": "k8s",
+    "details": [
+      {
+        "node_ip": "127.0.0.1",
+        "node_name": "in-cluster-orchestrator",
+        "node_labels": "",
+        "status": "warning",
+        "bash_cmd_lines": [
+          "oc get clusteroperators -o json"
+        ],
+        "rule_log": [],
+        "timestamp": "2026-06-09 16:54:15",
+        "message": "Following cluster operators are not upgradeable:\n  kube-controller-manager - Reason: UnsupportedConfigOverrides_UnsupportedConfigOverridesSet, Message: UnsupportedConfigOverridesUpgradeable: setting: [extendedArguments.terminated-pod-gc-threshold.0]"
+      }
+    ],
+    "links": [
+      "https://github.com/RedHatInsights/incluster-checks/wiki/K8s-%E2%80%90-Verify-cluster-operators-available"
+    ]
+  },
+  {
+    "rule_id": "linux|clock_synchronized",
+    "component": "in_cluster_checks.rules.linux.linux_validations.ClockSynchronized",
+    "key": "clock_synchronized",
+    "status": "fail",
+    "description": "Verify system clock is synchronized",
+    "domain": "linux",
+    "details": [
+      {
+        "node_ip": "2600:12:1::16",
+        "node_name": "sno.samsung.ran.lab",
+        "node_labels": "control-plane,master,worker",
+        "status": "fail",
+        "bash_cmd_lines": [
+          "timedatectl"
+        ],
+        "rule_log": [],
+        "timestamp": "2026-06-09 16:54:19",
+        "message": "NTP wrong values: {'System clock synchronized': 'no'} at 2600:12:1::16"
+      }
+    ]
+  }
+]
