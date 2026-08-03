@@ -6,7 +6,7 @@
         {'registries.conf': utils_registries}
         | combine(
             {'ca-bundle.crt': utils_ca_bundle}
-            if (utils_ca_bundle | default('') | length > 0)
+            if (utils_ca_bundle | length > 0)
             else {}
           )
       }}
