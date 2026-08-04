@@ -18,7 +18,7 @@ jobs:
       - name: DCI Job
         run: |
           set -ex
-          export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           ./hack/dci-merge.sh ${{ github.event.merge_group.base_sha }} ${{ github.event.merge_group.head_sha }}
 
 ...
