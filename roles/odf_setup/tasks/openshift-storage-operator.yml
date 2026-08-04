@@ -44,13 +44,10 @@
     - name: Enable External OCS Storage Cluster
       kubernetes.core.k8s:
         definition: "{{ lookup('template', 'openshift-storage-cluster.yml.j2') }}"
-      register: extocsresult
+      notify: Pause for OCS pod deployment
 
-    - name: "Give a delay for OCS to deploy pods"
-      ansible.builtin.pause:
-        seconds: 60
-      when:
-        - extocsresult.changed | bool
+- name: Flush handlers to pause before checking OCS health
+  ansible.builtin.meta: flush_handlers
 
 - name: Get OCS health status
   kubernetes.core.k8s_info:
