@@ -1,19 +1,19 @@
 ---
 - name: Create namespace for Gitea
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'namespace.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'namespace.j2') | from_yaml }}"
 
 - name: Create Service Account
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'sa_anyuid.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'sa_anyuid.j2') | from_yaml }}"
 
 - name: Create Role
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'role_scc_anyuid.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'role_scc_anyuid.j2') | from_yaml }}"
 
 - name: Create RoleBinding
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'role_binding_sa_to_scc_anyuid.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'role_binding_sa_to_scc_anyuid.j2') | from_yaml }}"
 
 - name: Generate JWT secret
   containers.podman.podman_container:
@@ -73,20 +73,20 @@
 
 - name: Create Secret with the Gitea configuration
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'secret_gitea_app_ini.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'secret_gitea_app_ini.j2') | from_yaml }}"
   no_log: true
 
 - name: Create the Gitea deployment
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'deployment_gitea.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'deployment_gitea.j2') | from_yaml }}"
 
 - name: Create the gitea service
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'service_gitea.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'service_gitea.j2') | from_yaml }}"
 
 - name: Create the Gitea route
   kubernetes.core.k8s:
-    definition: "{{ lookup('template', 'route_gitea.j2') | from_yaml}}"
+    definition: "{{ lookup('template', 'route_gitea.j2') | from_yaml }}"
   register: _sg_gitea_route
 
 - name: Export Gitea service domain
@@ -185,5 +185,3 @@
       ansible.builtin.file:
         path: "{{ _sg_mirror_repo.path }}"
         state: absent
-
-...
