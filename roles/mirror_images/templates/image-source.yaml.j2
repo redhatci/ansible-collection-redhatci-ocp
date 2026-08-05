@@ -12,7 +12,7 @@ spec:
 {% endfor %}
     source: {{ entry.source }}
 {% endfor %}
-{% if not (mi_random_tag | default(false) | bool) %}
+{% if not (mi_random_tag | bool) %}
 ---
 apiVersion: config.openshift.io/v1
 kind: ImageTagMirrorSet
