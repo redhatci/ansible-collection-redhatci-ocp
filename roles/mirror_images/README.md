@@ -25,7 +25,7 @@ remapping is required.
 | mi_src_authfile  | undefined          | No       | An authfile with permissions to pull the source images
 | mi_dst_org       | ""                 | No       | The organization target where to copy the images
 | mi_random_tag    | false              | No       | Copy to a random destination tag to avoid overwriting existing mirror content
-| mi_is_type       | `icsp`             | No       | Image Source file type: `icsp` (ImageContentSourcePolicy) or `idms` (ImageDigestMirrorSet + ImageTagMirrorSet). See note above about ICSP and tags.
+| mi_is_type       | `idms`             | No       | Image Source file type: `icsp` (ImageContentSourcePolicy) or `idms` (ImageDigestMirrorSet + ImageTagMirrorSet). See note above about ICSP and tags.
 | mi_is_name       | auto-generated     | No       | Metadata name for the Image Source resource. Default: `mirrored-images-<8-char-random>` each role run. Set explicitly to pin the name across runs.
 
 ## Requirements
