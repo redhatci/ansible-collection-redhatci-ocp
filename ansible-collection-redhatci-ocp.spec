@@ -55,11 +55,11 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
-* Mon Aug  3 2026 Tony Garcia <tonyg@redhat.com> - 4.1.EPOCH-VERS
-- Remove DCI component creation from preflight role
-
 * Wed Aug  5 2026 Frederic Lepied <flepied@redhat.com> - 4.1.EPOCH-VERS
 - Add mabi_workarounds variable to monitor_agent_based_installer role
+
+* Mon Aug  3 2026 Tony Garcia <tonyg@redhat.com> - 4.1.EPOCH-VERS
+- Remove DCI component creation from preflight role
 
 * Thu Jul 30 2026 Beto Rdz <josearod@redhat.com> - 4.0.EPOCH-VERS
 - Non-backward compatible changes to the image sources plays in acm utils
