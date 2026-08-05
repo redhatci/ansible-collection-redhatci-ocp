@@ -8,7 +8,7 @@
       - mi_is_type | lower in ['idms', 'icsp']
     fail_msg: >-
       mi_registry and mi_images are required.
-      mi_is_type must be 'idms' or 'icsp' (got '{{ mi_is_type | default('') }}').
+      mi_is_type must be 'idms' or 'icsp' (got '{{ mi_is_type }}').
 
 - name: Initialize mirrored image mappings
   ansible.builtin.set_fact:
