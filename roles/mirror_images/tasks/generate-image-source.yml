@@ -3,7 +3,7 @@
   ansible.builtin.set_fact:
     mi_grouped_mirrors: >-
       {{
-        mi_grouped_mirrors | default([]) + [{
+        mi_grouped_mirrors + [{
           'source': item,
           'mirrors': mi_image_mirrors
             | selectattr('source', 'equalto', item)
