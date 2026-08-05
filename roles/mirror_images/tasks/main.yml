@@ -1,13 +1,25 @@
 ---
-- name: Validate_ inputs
+- name: Validate inputs
   ansible.builtin.assert:
     that:
       - mi_registry is defined
       - mi_images is defined
       - mi_images | length
+      - mi_is_type | lower in ['idms', 'icsp']
+    fail_msg: >-
+      mi_registry and mi_images are required.
+      mi_is_type must be 'idms' or 'icsp' (got '{{ mi_is_type }}').
+
+- name: Initialize mirrored image mappings
+  ansible.builtin.set_fact:
+    mi_image_mirrors: []
+    mi_grouped_mirrors: []
 
 - name: "Mirror images"
   ansible.builtin.include_tasks: mirror-images.yml
   loop: "{{ mi_images }}"
   loop_control:
     loop_var: image
+
+- name: Generate Image Source manifest
+  ansible.builtin.include_tasks: generate-image-source.yml
