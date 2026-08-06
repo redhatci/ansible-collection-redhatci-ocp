@@ -15,7 +15,6 @@ The role:
 | Variable | Type | Default | Description |
 |---|---|---|---|
 | `mabi_workarounds` | list(str) | `[]` | List of workaround identifiers to enable. Each identifier activates compensating behaviour for a known issue. Pass from the calling agent so that role behaviour is driven by the agent configuration. |
-| `mabi_retry_install_complete_check` | bool | `{{ 'retry_install_complete_check' in mabi_workarounds }}` | When `true`, retries the install-complete check up to 10 times (60 s delay) to work around transient API-VIP reachability failures. Automatically enabled when the `retry_install_complete_check` identifier is present in `mabi_workarounds`. |
 | `generated_dir` | str | `{{ repo_root_path }}/generated` | Base directory for generated manifests. |
 | `manifests_dir` | str | `{{ generated_dir }}/{{ cluster_name }}` | Directory containing the cluster manifests. |
 | `agent_based_installer_bootstrap_node` | str | `{{ groups['masters'][0] }}` | Inventory host name of the bootstrap / rendezvous node. |

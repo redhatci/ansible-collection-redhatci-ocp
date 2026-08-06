@@ -18,14 +18,6 @@ argument_specs:
           - Each identifier activates a specific compensating behaviour for a known issue.
           - Pass the list from the calling agent so that the role behaviour is driven by the
             agent configuration rather than hard-coded defaults.
-      mabi_retry_install_complete_check:
-        type: bool
-        description:
-          - When true, the "wait-for install-complete" command is retried up to 10 times
-            with a 60-second delay between attempts.
-          - Dynamically derived from C(mabi_workarounds) in vars/main.yml; true when
-            C(retry_install_complete_check) is present in the list.
-          - Can be overridden explicitly if needed.
       generated_dir:
         type: str
         default: "{{ repo_root_path }}/generated"
