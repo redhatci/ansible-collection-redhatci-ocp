@@ -22,6 +22,8 @@ All of the variables have sane defaults which you can override to force things, 
 | gm_image_sources              | (default block)                   | No        | Override the default ICSP block [^2] |
 | single_node_openshift_enabled | false                             | No        | Install OCP in single-node mode |
 | partitioning_enabled          | false                             | No        | Enable CPU partitioning mode for all Nodes |
+| gm_ocp_version                | ""                                | No        | OpenShift version, required for the enablement of some features in the manifest generation, such as Two-Node with Fencing mode (TNF) |
+
 
 ## Usage Examples
 

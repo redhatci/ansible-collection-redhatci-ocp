@@ -44,6 +44,25 @@ controlPlane:
   replicas: {{ nummasters }}
   platform:
     baremetal: {}
+{% if groups['masters'] | length == 2 and (groups['workers'] | default([])) | length == 0 and release_version is version('4.20', '>=') %}
+  fencing:
+    credentials:
+    {% for hostname in groups['masters'] | sort %}
+      - hostname: {{ hostname }}
+      {% if hostvars[hostname]['fencing_address'] is defined %}
+        address: {{ hostvars[hostname]['fencing_address'] }}
+      {% elif groups['dell_hosts_redfish'] is defined and hostname in groups['dell_hosts_redfish'] %}
+        address: idrac-redfish+https://{{ hostvars[hostname]['ipmi_address']|ipwrap }}/redfish/v1/Systems/System.Embedded.1
+      {% elif groups['hp_hosts_redfish'] is defined and hostname in groups['hp_hosts_redfish'] %}
+        address: ilo5-redfish+https://{{ hostvars[hostname]['ipmi_address']|ipwrap }}/redfish/v1/Systems/1
+      {% else %}
+        address: redfish+https://{{ hostvars[hostname]['ipmi_address']|ipwrap }}/redfish/v1/Systems/{{ hostvars[hostname]['fencing_system_id'] | default('1') }}
+      {% endif %}
+        username: {{ hostvars[hostname]['ipmi_user'] }}
+        password: {{ hostvars[hostname]['ipmi_password'] }}
+        certificateVerification: {{ hostvars[hostname]['fencing_certificate_verification'] | default('Disabled') }}
+    {% endfor %}
+{% endif %}
 platform:
   baremetal:
 {% if ((release_version.split('.')[0]|int == 4) and (release_version.split('.')[1]|int >= 12)) and dualstack_baremetal|bool and dualstack_vips|bool %}
