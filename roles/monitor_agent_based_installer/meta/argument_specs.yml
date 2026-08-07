@@ -1,0 +1,72 @@
+---
+argument_specs:
+  main:
+    short_description: Monitor an agent-based OpenShift installation
+    description:
+      - Tracks the progress of the agent-based installation via the openshift-install agent commands.
+      - Waits for the API to become available, for bootstrap to complete, and for the full
+        installation to complete.
+      - Supports a list of known workarounds that activate specific retry behaviours when
+        the corresponding identifier is present.
+    options:
+      mabi_workarounds:
+        type: list
+        elements: str
+        default: []
+        description:
+          - List of workaround identifiers to enable.
+          - Each identifier activates a specific compensating behaviour for a known issue.
+          - Pass the list from the calling agent so that the role behaviour is driven by the
+            agent configuration rather than hard-coded defaults.
+      mabi_generated_dir:
+        type: str
+        default: "{{ repo_root_path }}/generated"
+        description:
+          - Base directory where generated manifests are stored.
+      mabi_manifests_dir:
+        type: str
+        default: "{{ mabi_generated_dir }}/{{ cluster_name }}"
+        description:
+          - Directory containing the cluster manifests used by the agent-based installer.
+      mabi_bootstrap_node:
+        type: str
+        default: "{{ groups.get('masters', [''])[0] }}"
+        description:
+          - Inventory host name of the bootstrap / rendezvous node.
+          - Its IP address is used when gathering logs after an installation failure.
+      mabi_host_ip_keyword:
+        type: str
+        default: ansible_host
+        description:
+          - Host variable key used to retrieve the IP address of the bootstrap node.
+      agent_based_installer_path:
+        type: str
+        required: true
+        description:
+          - Full path to the openshift-install binary.
+          - Must be provided by the caller.
+      cluster:
+        type: str
+        required: true
+        description:
+          - Cluster name used to construct the API URL.
+          - Must be provided by the caller.
+      base_dns_domain:
+        type: str
+        required: true
+        description:
+          - Base DNS domain used to construct the API URL.
+          - Must be provided by the caller.
+      repo_root_path:
+        type: str
+        required: true
+        description:
+          - Root path of the repository; used to derive C(mabi_generated_dir) and to store
+            gathered logs on installation failure.
+          - Must be provided by the caller.
+      cluster_name:
+        type: str
+        required: true
+        description:
+          - Cluster name used to derive C(mabi_manifests_dir).
+          - Must be provided by the caller.

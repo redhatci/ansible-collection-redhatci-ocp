@@ -1,0 +1,4 @@
+---
+# Derived variable — not a user-configurable default.
+# Automatically true when 'retry_install_complete_check' is present in mabi_workarounds.
+mabi_retry_install_complete_check: "{{ 'retry_install_complete_check' in mabi_workarounds }}"

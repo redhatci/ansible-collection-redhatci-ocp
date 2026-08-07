@@ -14,7 +14,7 @@
 - name: Wait for bootstrap complete
   ansible.builtin.command:
     cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for bootstrap-complete"
-    chdir: "{{ manifests_dir }}"
+    chdir: "{{ mabi_manifests_dir }}"
   changed_when: false
 
 - name: Check installation and gather jobs if it fails
@@ -22,13 +22,13 @@
     - name: Wait for install complete - without retries
       ansible.builtin.command:
         cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
-        chdir: "{{ manifests_dir }}"
+        chdir: "{{ mabi_manifests_dir }}"
       when: not mabi_retry_install_complete_check|bool
 
     - name: Wait for install complete - with retries
       ansible.builtin.command:
         cmd: "{{ agent_based_installer_path }} --log-level=debug agent wait-for install-complete"
-        chdir: "{{ manifests_dir }}"
+        chdir: "{{ mabi_manifests_dir }}"
       when: mabi_retry_install_complete_check|bool
       register: _mabi_install_output
       retries: 10
@@ -45,7 +45,7 @@
     # Placing the logs in repo_root_path
     - name: Gather logs from installation
       vars:
-        rendezvous_ip_address: "{{ hostvars[agent_based_installer_bootstrap_node][host_ip_keyword] }}"
+        rendezvous_ip_address: "{{ hostvars[mabi_bootstrap_node][mabi_host_ip_keyword] }}"
       ansible.builtin.command:
         cmd: "{{ agent_based_installer_path }} --log-level=debug gather bootstrap --bootstrap {{ rendezvous_ip_address }}"
         chdir: "{{ repo_root_path }}"

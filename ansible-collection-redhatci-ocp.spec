@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        4.1.EPOCH
+Version:        5.0.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Wed Aug  5 2026 Frederic Lepied <flepied@redhat.com> - 5.0.EPOCH-VERS
+- Non-backward compatible: rename workarounds to mabi_workarounds in monitor_agent_based_installer role
+
 * Mon Aug  3 2026 Tony Garcia <tonyg@redhat.com> - 4.1.EPOCH-VERS
 - Remove DCI component creation from preflight role
 
