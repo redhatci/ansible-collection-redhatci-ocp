@@ -7,6 +7,27 @@ cpuPartitioningMode: AllNodes
 controlPlane:
   name: master
   replicas: {{ groups['masters'] | length }}
+{% if groups['masters'] | length == 2 and (groups['workers'] | default([])) | length == 0 and gm_ocp_version is version('4.20', '>=') %}
+  fencing:
+    credentials:
+    {% for hostname in groups['masters'] | sort %}
+      {% set vendor = hostvars[hostname]['vendor'] | lower %}
+      {% set bmc = hostvars[hostname]['bmc_address'] %}
+      - hostname: {{ hostname }}
+      {% if hostvars[hostname]['fencing_address'] is defined %}
+        address: {{ hostvars[hostname]['fencing_address'] }}
+      {% elif vendor == 'dell' %}
+        address: idrac-redfish+https://{{ bmc }}/redfish/v1/Systems/System.Embedded.1
+      {% elif vendor in ['hpe', 'hp'] %}
+        address: ilo5-redfish+https://{{ bmc }}/redfish/v1/Systems/1
+      {% else %}
+        address: redfish+https://{{ bmc }}/redfish/v1/Systems/{{ hostvars[hostname]['fencing_system_id'] | default('1') }}
+      {% endif %}
+        username: {{ hostvars[hostname]['bmc_user'] }}
+        password: {{ hostvars[hostname]['bmc_password'] }}
+        certificateVerification: {{ hostvars[hostname]['fencing_certificate_verification'] | default('Disabled') }}
+    {% endfor %}
+{% endif %}
 compute:
   - name: worker
     replicas: {{ (groups['workers'] | default([]))| length }}

@@ -32,3 +32,4 @@ ingress_vips: "{% if extra_ingress_vip is defined %}{{ [ingress_vip] + [extra_in
 
 ocp_version_major: "{{ openshift_version }}"
 gm_image_sources: ""
+gm_ocp_version: ""
