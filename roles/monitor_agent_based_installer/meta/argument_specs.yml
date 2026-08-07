@@ -18,23 +18,23 @@ argument_specs:
           - Each identifier activates a specific compensating behaviour for a known issue.
           - Pass the list from the calling agent so that the role behaviour is driven by the
             agent configuration rather than hard-coded defaults.
-      generated_dir:
+      mabi_generated_dir:
         type: str
         default: "{{ repo_root_path }}/generated"
         description:
           - Base directory where generated manifests are stored.
-      manifests_dir:
+      mabi_manifests_dir:
         type: str
-        default: "{{ generated_dir }}/{{ cluster_name }}"
+        default: "{{ mabi_generated_dir }}/{{ cluster_name }}"
         description:
           - Directory containing the cluster manifests used by the agent-based installer.
-      agent_based_installer_bootstrap_node:
+      mabi_bootstrap_node:
         type: str
-        default: "{{ groups['masters'][0] }}"
+        default: "{{ groups.get('masters', [''])[0] }}"
         description:
           - Inventory host name of the bootstrap / rendezvous node.
           - Its IP address is used when gathering logs after an installation failure.
-      host_ip_keyword:
+      mabi_host_ip_keyword:
         type: str
         default: ansible_host
         description:
@@ -61,12 +61,12 @@ argument_specs:
         type: str
         required: true
         description:
-          - Root path of the repository; used to derive C(generated_dir) and to store
+          - Root path of the repository; used to derive C(mabi_generated_dir) and to store
             gathered logs on installation failure.
           - Must be provided by the caller.
       cluster_name:
         type: str
         required: true
         description:
-          - Cluster name used to derive C(manifests_dir).
+          - Cluster name used to derive C(mabi_manifests_dir).
           - Must be provided by the caller.

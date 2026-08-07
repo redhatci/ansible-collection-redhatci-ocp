@@ -15,15 +15,15 @@ The role:
 | Variable | Type | Default | Description |
 |---|---|---|---|
 | `mabi_workarounds` | list(str) | `[]` | List of workaround identifiers to enable. Each identifier activates compensating behaviour for a known issue. Pass from the calling agent so that role behaviour is driven by the agent configuration. |
-| `generated_dir` | str | `{{ repo_root_path }}/generated` | Base directory for generated manifests. |
-| `manifests_dir` | str | `{{ generated_dir }}/{{ cluster_name }}` | Directory containing the cluster manifests. |
-| `agent_based_installer_bootstrap_node` | str | `{{ groups['masters'][0] }}` | Inventory host name of the bootstrap / rendezvous node. |
-| `host_ip_keyword` | str | `ansible_host` | Host variable key used to retrieve the bootstrap node IP. |
+| `mabi_generated_dir` | str | `{{ repo_root_path }}/generated` | Base directory for generated manifests. |
+| `mabi_manifests_dir` | str | `{{ mabi_generated_dir }}/{{ cluster_name }}` | Directory containing the cluster manifests. |
+| `mabi_bootstrap_node` | str | `{{ groups.get('masters', [''])[0] }}` | Inventory host name of the bootstrap / rendezvous node. |
+| `mabi_host_ip_keyword` | str | `ansible_host` | Host variable key used to retrieve the bootstrap node IP. |
 | `agent_based_installer_path` | str | _(required)_ | Full path to the `openshift-install` binary. |
 | `cluster` | str | _(required)_ | Cluster name used to construct the API URL. |
 | `base_dns_domain` | str | _(required)_ | Base DNS domain used to construct the API URL. |
-| `repo_root_path` | str | _(required)_ | Root path of the repository; used to derive `generated_dir` and to store gathered logs on failure. |
-| `cluster_name` | str | _(required)_ | Cluster name used to derive `manifests_dir`. |
+| `repo_root_path` | str | _(required)_ | Root path of the repository; used to derive `mabi_generated_dir` and to store gathered logs on failure. |
+| `cluster_name` | str | _(required)_ | Cluster name used to derive `mabi_manifests_dir`. |
 
 ## Usage
 

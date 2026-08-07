@@ -1,7 +1,7 @@
 mabi_workarounds: []
 
-generated_dir: "{{ repo_root_path }}/generated"
-manifests_dir: "{{ generated_dir}}/{{ cluster_name }}"
+mabi_generated_dir: "{{ repo_root_path }}/generated"
+mabi_manifests_dir: "{{ mabi_generated_dir }}/{{ cluster_name }}"
 
-agent_based_installer_bootstrap_node: "{{ groups['masters'][0] }}"
-host_ip_keyword: ansible_host
+mabi_bootstrap_node: "{{ groups.get('masters', [''])[0] }}"
+mabi_host_ip_keyword: ansible_host
