@@ -12,4 +12,5 @@ hub_img_volume_size: 80Gi
 hub_vm_external_network: true
 hub_img_svc_skip_tls_verify: false
 hub_use_configmap: false
+hub_network_policies: true
 ...

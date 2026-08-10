@@ -26,6 +26,7 @@ The configuration of the ACM hub can be customized by using the following variab
 | hub_img_volume_size          | 80Gi                     | No        | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS
 | hub_img_svc_skip_tls_verify  | false                    | No        | Skip TLS verification in the AgentServiceConfig for image service operations. Useful in environments with self-signed certificates or certificate issues.
 | hub_os_images                | <Undefined>              | No        | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images). It is mandatory for disconnected environments.
+| hub_supports_network_policies| true                     | No        | Enables/Disable multicluster engine network policies.
 
 ## Requirements
 1. An OpenShift Cluster with a subscription for the ACM operator.

@@ -4,6 +4,14 @@
 
 # Deploy Multicluster Hub. It will trigger the install of multicluster-engine
 # operator
+- name: "Get MultiClusterHub CRD"
+  kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: multiclusterhubs.operator.open-cluster-management.io
+  register: _as_mch_crd
+  no_log: true
+
 - name: "Deploy Multicluster Hub CR"
   vars:
     catalog_query: "resources[*].status.catalogSource"
@@ -15,6 +23,10 @@
       source: "{{ catalog_source }}"
       sourceNamespace: "openshift-marketplace"
       startingCSV: "{{ me_csv }}"
+    schema_query: >-
+      resources[0].spec.versions[?served].schema.openAPIV3Schema.properties.spec.properties
+    mch_spec_properties: "{{ _as_mch_crd | json_query(schema_query) | first | default({}) }}"
+    hub_supports_network_policies: "{{ 'networkPolicies' in mch_spec_properties }}"
   kubernetes.core.k8s:
     definition:
       apiVersion: operator.open-cluster-management.io/v1
@@ -25,6 +37,7 @@
       spec:
         availabilityConfig: "{{ hub_availability }}"
         disableHubSelfManagement: "{{ hub_disable_selfmanagement }}"
+        networkPolicies: "{{ {'enabled': hub_network_policies | bool} if hub_supports_network_policies | bool else omit }}"
 
 - name: "Wait for search-postgres deployment"
   kubernetes.core.k8s_info:
