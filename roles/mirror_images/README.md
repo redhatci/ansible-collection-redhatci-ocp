@@ -27,6 +27,7 @@ remapping is required.
 | mi_random_tag    | false              | No       | Copy to a random destination tag to avoid overwriting existing mirror content
 | mi_is_type       | `idms`             | No       | Image Source file type: `icsp` (ImageContentSourcePolicy) or `idms` (ImageDigestMirrorSet + ImageTagMirrorSet). See note above about ICSP and tags.
 | mi_is_name       | auto-generated     | No       | Metadata name for the Image Source resource. Default: `mirrored-images-<8-char-random>` each role run. Set explicitly to pin the name across runs.
+| mi_verify_digest | false              | No       | When `true`, verify that the source and destination image digests match after a failed copy. When `false` (default), only verify that the destination image exists. Set to `false` when mirroring may occur in a separate step or access to the source registry is limited.
 
 ## Requirements
 

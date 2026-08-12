@@ -70,8 +70,10 @@
       register: _mi_src_inspect
       failed_when: false
       changed_when: false
+      when:
+        - mi_verify_digest | bool
 
-    - name: Inspect destination image digest
+    - name: Inspect destination image
       ansible.builtin.command: >
         skopeo inspect
         --no-tags
@@ -84,22 +86,22 @@
         --format '{{ "{{" }} .Digest {{ "}}" }}'
         docker://{{ _tgt_image_location }}
       register: _mi_dst_inspect
-      failed_when: false
-      changed_when: false
+      failed_when: _mi_dst_inspect.rc != 0
 
     - name: Verify source and destination digests match
       ansible.builtin.assert:
         that:
           - _mi_src_inspect.rc == 0
-          - _mi_dst_inspect.rc == 0
           - (_mi_src_inspect.stdout | trim) is match('^sha[0-9]+:')
           - (_mi_src_inspect.stdout | trim) == (_mi_dst_inspect.stdout | trim)
         fail_msg: >-
           skopeo copy failed for {{ image }} and destination
-          {{ _tgt_image_location }} is missing or does not match the source
+          {{ _tgt_image_location }} does not match the source
           digest (source={{ _mi_src_inspect.stdout | default('') | trim }},
           destination={{ _mi_dst_inspect.stdout | default('') | trim }},
           copy_error={{ _mi_skopeo_copy.msg | default(_mi_skopeo_copy.stderr | default('')) }}).
+      when:
+        - mi_verify_digest | bool
 
     - name: Record mirrored image mapping
       ansible.builtin.set_fact:
