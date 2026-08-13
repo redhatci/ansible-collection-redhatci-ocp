@@ -23,19 +23,6 @@
     oo_index: "{{ operator.index_image }}"
   when: not dci_disconnected | default(false) | bool
 
-- name: Create preflight namespace
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      api_version: v1
-      kind: Namespace
-      metadata:
-        name: "{{ preflight_namespace }}"
-        labels:
-          security.openshift.io/scc.podSecurityLabelSync: "false"
-          pod-security.kubernetes.io/enforce: "baseline"
-          pod-security.kubernetes.io/warn: "baseline"
-
 - name: "Run preflight check operator on {{ operator.name }}"
   environment:
     OPENSHIFT_AUTH: "{{ partner_creds }}"
@@ -55,11 +42,6 @@
     {% endif %}
     -e KUBECONFIG=/kubeconfig
     -e PFLT_INDEXIMAGE={{ oo_index }}
-    -e PFLT_NAMESPACE={{ preflight_namespace }}
-    -e PFLT_SERVICEACCOUNT={{ preflight_sa }}
-    {% if preflight_assets_images | default('') | length %}
-    -e PFLT_SCORECARD_IMAGE={{ preflight_assets_images[0] }}
-    {% endif %}
     -v {{ preflight_tmp_dir.path }}/kubeconfig:/kubeconfig
     -v {{ preflight_operator_artifacts.path }}:/artifacts
     {% if partner_creds | length %}
@@ -104,32 +86,6 @@
 - name: Validate annotations.yaml
   ansible.builtin.include_tasks: test_validate_annotations.yml
   when: validate_annotations_yaml | default(true) | bool
-
-- name: Cleanup
-  block:
-    - name: Delete preflight namespace
-      kubernetes.core.k8s:
-        name: "{{ preflight_namespace }}"
-        api_version: v1
-        kind: Namespace
-        state: absent
-
-    - name: Wait for namespace to be destroyed
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Namespace
-        name: "{{ preflight_namespace }}"
-      register: preflight_namespace_presence
-      until: preflight_namespace_presence.resources | length == 0
-      retries: 30
-      delay: 20
-  rescue:
-    - name: Print hanging resources
-      ansible.builtin.command: "{{ oc_tool_path }} get all -n {{ preflight_namespace }}"
-
-    - name: Impossible to destroy namespace
-      ansible.builtin.fail:
-        msg: "Impossible to destroy namespace {{ preflight_namespace }}"
 
 - name: Check the presence of junit file with test results
   vars:
