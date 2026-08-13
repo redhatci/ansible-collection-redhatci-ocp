@@ -1,0 +1,45 @@
+---
+- name: Validate required role variables
+  ansible.builtin.assert:
+    that:
+      - rmgi_images is defined
+      - rmgi_images | type_debug == "list"
+      - rmgi_fallback_registry | length > 0
+    fail_msg: >
+      rmgi_images must be defined as a list and rmgi_fallback_registry must
+      not be empty.
+
+- name: Retrieve ClusterServiceVersion resources from the cluster
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    kubeconfig: "{{ rmgi_kubeconfig | default(omit) }}"
+  register: rmgi_csv_list
+  no_log: true
+
+- name: Collect related images from all CSVs
+  ansible.builtin.set_fact:
+    rmgi_related_images: >-
+      {{
+        rmgi_csv_list.resources
+        | json_query('[*].spec.relatedImages[*].image')  # noqa: jinja[invalid]
+        | flatten
+        | unique
+      }}
+
+- name: Resolve each must-gather short name to a full image reference
+  ansible.builtin.set_fact:
+    rmgi_resolved_images: >-
+      {{
+        rmgi_resolved_images | default([]) + [
+          (item | redhatci.ocp.resolve_must_gather(rmgi_related_images))
+          if (item | redhatci.ocp.resolve_must_gather(rmgi_related_images)) != ''
+          else rmgi_fallback_registry + '/' + item
+        ]
+      }}
+  loop: "{{ rmgi_images }}"
+
+- name: Expose resolved images as dci_must_gather_images  # noqa: redhat-ci[no-role-prefix]
+  ansible.builtin.set_fact:
+    dci_must_gather_images: "{{ rmgi_resolved_images }}"
+...

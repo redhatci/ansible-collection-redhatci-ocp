@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        4.2.EPOCH
+Version:        4.3.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Aug 13 2026 Frederic Lepied <flepied@redhat.com> - 4.3.EPOCH-VERS
+- Add resolve_must_gather_images role and resolve_must_gather filter plugin
+
 * Wed Aug  5 2026 Beto Rdz <josearod@redhat.com> - 4.2.EPOCH-VERS
 - Add image source generation capabilities to mirror_images role
 

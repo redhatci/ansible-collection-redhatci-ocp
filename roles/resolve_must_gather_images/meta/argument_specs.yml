@@ -1,0 +1,33 @@
+---
+argument_specs:
+  main:
+    short_description: Resolve must-gather short names to full image references
+    description:
+      - Queries ClusterServiceVersion resources from the target cluster to
+        collect related images, then resolves each short name in
+        I(rmgi_images) to a fully-qualified image reference.
+      - When a short name cannot be matched in the cluster's image list the
+        role falls back to I(rmgi_fallback_registry)/I(item).
+    options:
+      rmgi_images:
+        type: list
+        elements: str
+        required: true
+        description:
+          - List of must-gather short names to resolve.
+          - "Example: [\"must-gather\", \"ose-must-gather\"]"
+      rmgi_fallback_registry:
+        type: str
+        required: false
+        default: "registry.redhat.io/openshift4"
+        description:
+          - Registry and repository prefix used when a short name cannot be
+            resolved from the cluster's installed operators.
+      rmgi_kubeconfig:
+        type: str
+        required: false
+        default: ""
+        description:
+          - Path to a kubeconfig file.
+          - Leave empty to use the currently active kubeconfig context.
+...

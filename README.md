@@ -120,6 +120,7 @@ Name | Description
 [redhatci.ocp.pyxis](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/pyxis/README.md) | Interacts with Pyxis API to submit Preflight certification results
 [redhatci.ocp.redhat_tests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/redhat_tests/README.md) | [Openshift End to End tests](https://github.com/openshift/openshift-tests)
 [redhatci.ocp.remove_ztp_gitops_resources](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/remove_ztp_gitops_resources/README.md) | Remove all GitOps related resources for a given spoke cluster, excepting the cluster namespace, which is not deleted because this will imply the spoke cluster is detached from the hub cluster.
+[redhatci.ocp.resolve_must_gather_images](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resolve_must_gather_images/README.md) | Resolves must-gather short names to fully-qualified image references using installed operator metadata
 [redhatci.ocp.resources_to_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/resources_to_components/README.md) | Creates DCI components based on Kubernetes resources
 [redhatci.ocp.rhoai](roles/rhoai/README.md) | Install the Red Hat OpenShift AI operators
 [redhatci.ocp.setup_gitea](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/setup_gitea/README.md) | Deployment of [Gitea](https://about.gitea.com)
@@ -169,6 +170,7 @@ Name | Type | Description
 [redhatci.ocp.cmdline_to_json]() | Filter | Convert a kernel command line string to a JSON object
 [redhatci.ocp.redact]() | Filter | Redact sensitive values from a dictionary
 [redhatci.ocp.regex_diff]() | Filter | Obtain differences between two lists
+[redhatci.ocp.resolve_must_gather]() | Filter | Resolve a must-gather short name to a full image reference from a list of related images
 
 ## License
 

@@ -1,0 +1,11 @@
+---
+# List of must-gather short names to resolve (e.g. ["must-gather", "ose-must-gather"])
+rmgi_images: []
+
+# Fallback registry/repository prefix when a short name cannot be resolved from
+# the cluster's installed operators
+rmgi_fallback_registry: "registry.redhat.io/openshift4"
+
+# Path to a kubeconfig file.  Leave empty to use the current active context.
+rmgi_kubeconfig: ""
+...
