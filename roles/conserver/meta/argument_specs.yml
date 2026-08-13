@@ -1,0 +1,53 @@
+---
+argument_specs:
+  main:
+    short_description: Configure conserver for serial console access
+    description:
+      - Installs and configures the conserver daemon to provide serial console access
+        to cluster nodes via IPMI SOL, libvirt socket, Dell iDRAC SSH, or HP iLO SSH.
+    options:
+      cluster:
+        type: str
+        required: true
+        description:
+          - Name of the cluster. Used to namespace conserver configuration files
+            and log directories.
+      cluster_nodes:
+        type: list
+        elements: str
+        required: true
+        description:
+          - List of inventory hostnames belonging to the cluster. Each host is
+            inspected for its console type and BMC credentials.
+      conserver_sol_hosts:
+        type: list
+        elements: str
+        required: false
+        default: []
+        description:
+          - Accumulates the list of cluster nodes that use IPMI Serial-over-LAN (SOL).
+            Populated automatically during role execution.
+      conserver_socket_hosts:
+        type: list
+        elements: str
+        required: false
+        default: []
+        description:
+          - Accumulates the list of cluster nodes that use a libvirt socket console.
+            Populated automatically during role execution.
+      conserver_dell_idrac_ssh_hosts:
+        type: list
+        elements: str
+        required: false
+        default: []
+        description:
+          - Accumulates the list of cluster nodes that use a Dell iDRAC SSH console.
+            Populated automatically during role execution.
+      conserver_hp_ilo_ssh_hosts:
+        type: list
+        elements: str
+        required: false
+        default: []
+        description:
+          - Accumulates the list of cluster nodes that use an HP iLO SSH console.
+            Populated automatically during role execution.

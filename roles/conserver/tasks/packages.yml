@@ -7,5 +7,6 @@
       - conserver-client
       - ipmitool
       - socat
+      - sshpass
     state: present
 ...

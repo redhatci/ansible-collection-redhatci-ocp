@@ -9,7 +9,7 @@ default {{ cluster }} {
 console {{ cluster }}-{{ hostvars[host].name }} {
   include {{ cluster }};
   type exec;
-  exec "/usr/bin/ipmitool -I lanplus -H {{ hostvars[host].ipmi_address }} -U {{ hostvars[host].ipmi_user }} -P {{ hostvars[host].ipmi_password }}  sol deactivate && echo 'Disconnected' ; ulimit -v 31720 ; /usr/bin/ipmitool -I lanplus -H {{ hostvars[host].ipmi_address }} -U {{ hostvars[host].ipmi_user }} -P {{ hostvars[host].ipmi_password }}  sol activate";
+  exec "/usr/bin/ipmitool -I lanplus -H {{ hostvars[host].bmc_address | default(hostvars[host].ipmi_address) }} -U {{ hostvars[host].bmc_user | default(hostvars[host].ipmi_user) }} -P {{ hostvars[host].bmc_password | default(hostvars[host].ipmi_password) }}  sol deactivate && echo 'Disconnected' ; ulimit -v 31720 ; /usr/bin/ipmitool -I lanplus -H {{ hostvars[host].bmc_address | default(hostvars[host].ipmi_address) }} -U {{ hostvars[host].bmc_user | default(hostvars[host].ipmi_user) }} -P {{ hostvars[host].bmc_password | default(hostvars[host].ipmi_password) }}  sol activate";
 }
 {% endfor %}
 

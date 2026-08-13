@@ -1,0 +1,24 @@
+---
+- name: Copy dell-idrac-ssh.sh to /usr/local/bin
+  become: true
+  ansible.builtin.copy:
+    dest: /usr/local/bin/dell-idrac-ssh
+    src: dell-idrac-ssh.sh
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Create conserver-dell-idrac-{{ cluster }}.cf
+  become: true
+  ansible.builtin.template:
+    dest: "/etc/conserver-dell-idrac-{{ cluster }}.cf"
+    src: conserver-dell-idrac.cf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: Add conserver-dell-idrac-{{ cluster }}.cf to conserver.cf
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/conserver.cf
+    line: '#include /etc/conserver-dell-idrac-{{ cluster }}.cf'

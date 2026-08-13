@@ -1,4 +1,5 @@
 ---
 conserver_sol_hosts: []
 conserver_socket_hosts: []
-...
+conserver_dell_idrac_ssh_hosts: []
+conserver_hp_ilo_ssh_hosts: []

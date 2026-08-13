@@ -1,0 +1,18 @@
+default {{ cluster }}-idrac {
+	# The '&' character is substituted with the console name
+	logfile /var/consoles/{{ cluster }}/&;
+	timestamp 5mab;
+	master localhost;
+}
+
+{% for host in conserver_dell_idrac_ssh_hosts %}
+console {{ cluster }}-{{ hostvars[host].name }} {
+  include {{ cluster }}-idrac;
+  type exec;
+  exec "/usr/local/bin/dell-idrac-ssh {{ hostvars[host].bmc_address | default(hostvars[host].ipmi_address) }} {{ hostvars[host].bmc_user | default(hostvars[host].ipmi_user) }} {{ hostvars[host].bmc_password | default(hostvars[host].ipmi_password) }}";
+}
+{% endfor %}
+
+access * {
+        trusted 127.0.0.1;
+}
