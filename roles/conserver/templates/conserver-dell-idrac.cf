@@ -1,15 +1,15 @@
-default {{ cluster }}-idrac {
+default {{ conserver_cluster }}-idrac {
 	# The '&' character is substituted with the console name
-	logfile /var/consoles/{{ cluster }}/&;
+	logfile /var/consoles/{{ conserver_cluster }}/&;
 	timestamp 5mab;
 	master localhost;
 }
 
 {% for host in conserver_dell_idrac_ssh_hosts %}
-console {{ cluster }}-{{ hostvars[host].name }} {
-  include {{ cluster }}-idrac;
+console {{ conserver_cluster }}-{{ hostvars[host].name }} {
+  include {{ conserver_cluster }}-idrac;
   type exec;
-  exec "/usr/local/bin/dell-idrac-ssh {{ hostvars[host].bmc_address | default(hostvars[host].ipmi_address) }} {{ hostvars[host].bmc_user | default(hostvars[host].ipmi_user) }} {{ hostvars[host].bmc_password | default(hostvars[host].ipmi_password) }}";
+  exec "/usr/local/bin/dell-idrac-ssh {{ hostvars[host].bmc_address | default(hostvars[host].ipmi_address) | quote }} {{ hostvars[host].bmc_user | default(hostvars[host].ipmi_user) | quote }} {{ hostvars[host].bmc_password | default(hostvars[host].ipmi_password) | quote }}";
 }
 {% endfor %}
 

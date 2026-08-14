@@ -6,10 +6,10 @@
     conserver_dell_idrac_ssh_hosts: []
     conserver_hp_ilo_ssh_hosts: []
 
-- name: Create /var/consoles/{{ cluster }}
+- name: Create /var/consoles/{{ conserver_cluster }}
   become: true
   ansible.builtin.file:
-    path: /var/consoles/{{ cluster }}
+    path: /var/consoles/{{ conserver_cluster }}
     mode: "0755"
     state: directory
 
@@ -25,7 +25,7 @@
   register: _conserver_sol
   ignore_errors: true
   changed_when: true
-  loop: "{{ cluster_nodes }}"
+  loop: "{{ conserver_cluster_nodes }}"
   when: >
     hostvars[item].console_type | default('ipmi') == 'ipmi' and
     not (hostvars[item].socket_console | default(false) | bool)
@@ -46,7 +46,7 @@
   ansible.builtin.set_fact:
     conserver_socket_hosts: "{{ conserver_socket_hosts + [item] }}"
   when: hostvars[item].socket_console | default(false) | bool
-  loop: "{{ cluster_nodes }}"
+  loop: "{{ conserver_cluster_nodes }}"
 
 - name: Include libvirt console config
   ansible.builtin.include_tasks: config-libvirt.yml
@@ -55,8 +55,10 @@
 - name: Build list of Dell iDRAC SSH console hosts
   ansible.builtin.set_fact:
     conserver_dell_idrac_ssh_hosts: "{{ conserver_dell_idrac_ssh_hosts + [item] }}"
-  when: hostvars[item].console_type | default('') == 'dell_idrac_ssh'
-  loop: "{{ cluster_nodes }}"
+  when: >
+    hostvars[item].console_type | default('') == 'dell_idrac_ssh' and
+    not (hostvars[item].socket_console | default(false) | bool)
+  loop: "{{ conserver_cluster_nodes }}"
 
 - name: Include Dell iDRAC SSH console config
   ansible.builtin.include_tasks: config-dell-idrac.yml
@@ -65,8 +67,10 @@
 - name: Build list of HP iLO SSH console hosts
   ansible.builtin.set_fact:
     conserver_hp_ilo_ssh_hosts: "{{ conserver_hp_ilo_ssh_hosts + [item] }}"
-  when: hostvars[item].console_type | default('') == 'hp_ilo_ssh'
-  loop: "{{ cluster_nodes }}"
+  when: >
+    hostvars[item].console_type | default('') == 'hp_ilo_ssh' and
+    not (hostvars[item].socket_console | default(false) | bool)
+  loop: "{{ conserver_cluster_nodes }}"
 
 - name: Include HP iLO SSH console config
   ansible.builtin.include_tasks: config-hp-ilo.yml

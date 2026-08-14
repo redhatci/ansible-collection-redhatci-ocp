@@ -16,8 +16,8 @@ case "$HOST" in
 esac
 
 SSHPASS="$PASS" exec sshpass -e ssh \
-  -o StrictHostKeyChecking=no \
-  -o UserKnownHostsFile=/dev/null \
+  -o StrictHostKeyChecking=accept-new \
+  -o UserKnownHostsFile=/var/lib/conserver/.ssh/known_hosts \
   -o LogLevel=ERROR \
   -l "$USER" \
   "$SSH_HOST" \

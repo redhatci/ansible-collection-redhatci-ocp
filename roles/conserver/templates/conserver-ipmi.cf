@@ -1,13 +1,13 @@
-default {{ cluster }} {
+default {{ conserver_cluster }} {
 	# The '&' character is substituted with the console name
-	logfile /var/consoles/{{ cluster }}/&;
+	logfile /var/consoles/{{ conserver_cluster }}/&;
 	timestamp 5mab;
 	master localhost;
 }
 
 {% for host in conserver_sol_hosts %}
-console {{ cluster }}-{{ hostvars[host].name }} {
-  include {{ cluster }};
+console {{ conserver_cluster }}-{{ hostvars[host].name }} {
+  include {{ conserver_cluster }};
   type exec;
   exec "/usr/bin/ipmitool -I lanplus -H {{ hostvars[host].bmc_address | default(hostvars[host].ipmi_address) }} -U {{ hostvars[host].bmc_user | default(hostvars[host].ipmi_user) }} -P {{ hostvars[host].bmc_password | default(hostvars[host].ipmi_password) }}  sol deactivate && echo 'Disconnected' ; ulimit -v 31720 ; /usr/bin/ipmitool -I lanplus -H {{ hostvars[host].bmc_address | default(hostvars[host].ipmi_address) }} -U {{ hostvars[host].bmc_user | default(hostvars[host].ipmi_user) }} -P {{ hostvars[host].bmc_password | default(hostvars[host].ipmi_password) }}  sol activate";
 }

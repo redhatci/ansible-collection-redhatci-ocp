@@ -21,8 +21,8 @@ serial console access to cluster nodes. It supports four console types:
 
 | Variable      | Type         | Required | Description                                                                                    |
 |---------------|--------------|----------|------------------------------------------------------------------------------------------------|
-| `cluster`     | string       | yes      | Cluster name. Used to namespace log directories and conserver config file names.               |
-| `cluster_nodes` | list(str)  | yes      | List of inventory hostnames in the cluster to configure consoles for.                          |
+| `conserver_cluster` | string  | yes      | Cluster name. Used to namespace log directories and conserver config file names.               |
+| `conserver_cluster_nodes` | list(str) | yes | List of inventory hostnames in the cluster to configure consoles for.                       |
 
 ### Host variables (set per node in inventory)
 
@@ -101,8 +101,8 @@ all:
       ansible.builtin.include_role:
         name: redhatci.ocp.conserver
       vars:
-        cluster: mycluster
-        cluster_nodes: "{{ groups['mycluster'] }}"
+        conserver_cluster: mycluster
+        conserver_cluster_nodes: "{{ groups['mycluster'] }}"
 ```
 
 For multi-cluster setups, use the `playbooks/conserver-setup.yml` playbook

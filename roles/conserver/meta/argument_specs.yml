@@ -6,13 +6,13 @@ argument_specs:
       - Installs and configures the conserver daemon to provide serial console access
         to cluster nodes via IPMI SOL, libvirt socket, Dell iDRAC SSH, or HP iLO SSH.
     options:
-      cluster:
+      conserver_cluster:
         type: str
         required: true
         description:
           - Name of the cluster. Used to namespace conserver configuration files
             and log directories.
-      cluster_nodes:
+      conserver_cluster_nodes:
         type: list
         elements: str
         required: true

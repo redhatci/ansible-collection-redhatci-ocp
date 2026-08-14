@@ -2,7 +2,7 @@
 - name: Create conserver-libvirt.cf
   become: true
   ansible.builtin.template:
-    dest: "/etc/conserver-libvirt-{{ cluster }}.cf"
+    dest: "/etc/conserver-libvirt-{{ conserver_cluster }}.cf"
     src: conserver-libvirt.cf
     owner: "root"
     group: "root"
@@ -21,4 +21,4 @@
   become: true
   ansible.builtin.lineinfile:
     path: /etc/conserver.cf
-    line: '#include /etc/conserver-libvirt-{{ cluster }}.cf'
+    line: '#include /etc/conserver-libvirt-{{ conserver_cluster }}.cf'

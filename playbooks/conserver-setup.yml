@@ -13,12 +13,24 @@
   hosts: "{{ conserver_jumphost | default('localhost') }}"
   gather_facts: false
   tasks:
+    - name: Validate conserver_clusters entries exist in inventory groups
+      ansible.builtin.assert:
+        that:
+          - cluster_item in groups
+        fail_msg: >-
+          Cluster group '{{ cluster_item }}' is not defined in the inventory.
+          Ensure each entry in conserver_clusters corresponds to an
+          inventory group.
+      loop: "{{ conserver_clusters }}"
+      loop_control:
+        loop_var: cluster_item
+
     - name: Configure conserver role for each cluster
       ansible.builtin.include_role:
         name: redhatci.ocp.conserver
       loop: "{{ conserver_clusters }}"
       loop_control:
-        loop_var: item
+        loop_var: cluster_item
       vars:
-        cluster: "{{ item }}"
-        cluster_nodes: "{{ groups[item] | default([]) }}"
+        conserver_cluster: "{{ cluster_item }}"
+        conserver_cluster_nodes: "{{ groups[cluster_item] | default([]) }}"

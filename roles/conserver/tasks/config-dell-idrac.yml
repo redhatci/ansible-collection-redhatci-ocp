@@ -1,4 +1,13 @@
 ---
+- name: Create SSH known_hosts directory for conserver
+  become: true
+  ansible.builtin.file:
+    path: /var/lib/conserver/.ssh
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0700"
+
 - name: Copy dell-idrac-ssh.sh to /usr/local/bin
   become: true
   ansible.builtin.copy:
@@ -8,17 +17,17 @@
     group: "root"
     mode: "0755"
 
-- name: Create conserver-dell-idrac-{{ cluster }}.cf
+- name: Create Dell iDRAC conserver config for {{ conserver_cluster }}
   become: true
   ansible.builtin.template:
-    dest: "/etc/conserver-dell-idrac-{{ cluster }}.cf"
+    dest: "/etc/conserver-dell-idrac-{{ conserver_cluster }}.cf"
     src: conserver-dell-idrac.cf
     owner: "root"
     group: "root"
-    mode: "0644"
+    mode: "0600"
 
-- name: Add conserver-dell-idrac-{{ cluster }}.cf to conserver.cf
+- name: Add Dell iDRAC config include for {{ conserver_cluster }}
   become: true
   ansible.builtin.lineinfile:
     path: /etc/conserver.cf
-    line: '#include /etc/conserver-dell-idrac-{{ cluster }}.cf'
+    line: '#include /etc/conserver-dell-idrac-{{ conserver_cluster }}.cf'

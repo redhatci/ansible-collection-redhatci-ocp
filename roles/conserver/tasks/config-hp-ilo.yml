@@ -8,17 +8,17 @@
     group: "root"
     mode: "0755"
 
-- name: Create conserver-hp-ilo-{{ cluster }}.cf
+- name: Create HP iLO conserver config for {{ conserver_cluster }}
   become: true
   ansible.builtin.template:
-    dest: "/etc/conserver-hp-ilo-{{ cluster }}.cf"
+    dest: "/etc/conserver-hp-ilo-{{ conserver_cluster }}.cf"
     src: conserver-hp-ilo.cf
     owner: "root"
     group: "root"
-    mode: "0644"
+    mode: "0600"
 
-- name: Add conserver-hp-ilo-{{ cluster }}.cf to conserver.cf
+- name: Add HP iLO config include for {{ conserver_cluster }}
   become: true
   ansible.builtin.lineinfile:
     path: /etc/conserver.cf
-    line: '#include /etc/conserver-hp-ilo-{{ cluster }}.cf'
+    line: '#include /etc/conserver-hp-ilo-{{ conserver_cluster }}.cf'
