@@ -1,0 +1,40 @@
+---
+- name: Include requirements
+  ansible.builtin.include_tasks: requirements.yml
+
+- name: Find an available ephemeral port for oc-mirror
+  redhatci.ocp.find_available_port:
+  register: _om_ephemeral_port
+
+- name: Set ImageSetConfiguration path for mirror-to-disk  # noqa: redhat-ci[no-role-prefix]
+  ansible.builtin.set_fact:
+    _om_m2d_isc_path: "{{ om_custom_config }}"
+  when: om_custom_config is defined
+
+- name: Run oc-mirror in mirror-to-disk mode
+  ansible.builtin.shell:
+    cmd: >
+      umask 0022 &&
+      {{ _om_tmp_dir.path }}/oc-mirror --v2
+      --config={{ _om_m2d_isc_path }}
+      --workspace file://{{ om_workspace_dir }}
+      --port {{ _om_ephemeral_port.port }}
+      {% if om_allow_insecure_registries | bool %}
+      --src-tls-verify=false
+      {% endif %}
+      {% if om_auths_file is defined %}
+      --authfile {{ om_auths_file }}
+      {% endif %}
+      {% if om_remove_signatures | bool %}
+      --remove-signatures
+      {% endif %}
+  register: _om_cmd_output
+  retries: 3
+  delay: 10
+  until: _om_cmd_output.rc == 0
+  ignore_errors: "{{ om_ignore_errors }}"
+  changed_when: _om_cmd_output.rc == 0
+
+- name: Expose workspace directory as output fact  # noqa: redhat-ci[no-role-prefix]
+  ansible.builtin.set_fact:
+    om_output_dir: "{{ om_workspace_dir }}"

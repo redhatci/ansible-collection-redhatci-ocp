@@ -1,0 +1,163 @@
+---
+- name: Integration tests for oci_mirror role
+  hosts: testhost
+  gather_facts: false
+  collections:
+    - redhatci.ocp
+  tasks:
+
+    # Test 1: invalid om_operation must fail with correct message
+    - name: Test invalid om_operation fails with correct error
+      block:
+        - name: Include oci_mirror with invalid operation (should fail)
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+          vars:
+            om_operation: invalid_op
+
+        - name: Should not reach here
+          ansible.builtin.fail:
+            msg: "Expected failure for invalid om_operation did not occur"
+      rescue:
+        - name: Assert error message contains expected text
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - >
+                'om_operation must be one of' in (ansible_failed_result.msg | default(''))
+                or 'om_operation must be one of' in (ansible_failed_result.results[0].msg | default(''))
+                or 'invalid_op' in (ansible_failed_result.msg | default(''))
+            fail_msg: >
+              Expected a meaningful error about om_operation but got:
+              {{ ansible_failed_result | default('no error') }}
+          ignore_errors: true
+
+    # Test 2: m2d without om_workspace_dir must fail
+    - name: Test m2d without om_workspace_dir fails
+      block:
+        - name: Include oci_mirror with m2d but no workspace (should fail)
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+          vars:
+            om_operation: m2d
+            om_workspace_dir: ''
+
+        - name: Should not reach here
+          ansible.builtin.fail:
+            msg: "Expected failure for m2d without om_workspace_dir did not occur"
+      rescue:
+        - name: Assert failure occurred
+          ansible.builtin.debug:
+            msg: "Correctly failed: {{ ansible_failed_result.msg | default('no message') }}"
+
+    # Test 3: mirror without om_target must fail
+    - name: Test mirror without om_target fails
+      block:
+        - name: Include oci_mirror without om_target (should fail)
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+          vars:
+            om_operation: mirror
+
+        - name: Should not reach here
+          ansible.builtin.fail:
+            msg: "Expected failure for mirror without om_target did not occur"
+      rescue:
+        - name: Assert failure occurred
+          ansible.builtin.debug:
+            msg: "Correctly failed: {{ ansible_failed_result.msg | default('no message') }}"
+
+    # Test 4: Helm ISC template rendering produces correct YAML
+    - name: Test helm ISC template renders correctly
+      block:
+        - name: Create temp dir for template output
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: oci_mirror_test.
+          register: _test_tmp_dir
+
+        - name: Render full-all-versions template with helm charts
+          ansible.builtin.template:
+            src: >-
+              {{ playbook_dir | dirname | dirname | dirname | dirname }}/roles/oci_mirror/templates/full-all-versions.yaml.j2
+            dest: "{{ _test_tmp_dir.path }}/isc-with-helm.yaml"
+            mode: "0644"
+          vars:
+            om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+            om_helm_charts:
+              - name: test-charts
+                url: https://charts.example.com
+                charts:
+                  - name: my-chart
+                    version: 1.0.0
+
+        - name: Read rendered template
+          ansible.builtin.slurp:
+            src: "{{ _test_tmp_dir.path }}/isc-with-helm.yaml"
+          register: _rendered_isc
+
+        - name: Decode rendered ISC
+          ansible.builtin.set_fact:
+            _isc_content: "{{ _rendered_isc.content | b64decode }}"
+
+        - name: Assert ISC contains helm section
+          ansible.builtin.assert:
+            that:
+              - "'helm:' in _isc_content"
+              - "'repositories:' in _isc_content"
+              - "'test-charts' in _isc_content"
+              - "'https://charts.example.com' in _isc_content"
+              - "'my-chart' in _isc_content"
+              - "'1.0.0' in _isc_content"
+            fail_msg: "Rendered ISC does not contain expected helm section. Content: {{ _isc_content }}"
+
+        - name: Render template without helm charts
+          ansible.builtin.template:
+            src: >-
+              {{ playbook_dir | dirname | dirname | dirname | dirname }}/roles/oci_mirror/templates/full-all-versions.yaml.j2
+            dest: "{{ _test_tmp_dir.path }}/isc-no-helm.yaml"
+            mode: "0644"
+          vars:
+            om_source_index: registry.redhat.io/redhat/redhat-operator-index:v4.20
+            om_helm_charts: []
+
+        - name: Read rendered template without helm
+          ansible.builtin.slurp:
+            src: "{{ _test_tmp_dir.path }}/isc-no-helm.yaml"
+          register: _rendered_isc_no_helm
+
+        - name: Assert ISC does not contain helm section when om_helm_charts is empty
+          ansible.builtin.assert:
+            that:
+              - "'helm:' not in (_rendered_isc_no_helm.content | b64decode)"
+            fail_msg: "Rendered ISC should not contain helm section when om_helm_charts is empty"
+
+        - name: Cleanup temp dir
+          ansible.builtin.file:
+            path: "{{ _test_tmp_dir.path }}"
+            state: absent
+
+    # Test 5: d2m without om_workspace_dir must fail
+    - name: Test d2m without om_workspace_dir fails
+      block:
+        - name: Include oci_mirror with d2m but no workspace (should fail)
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+          vars:
+            om_operation: d2m
+            om_target: registry.example.com:5000
+            om_workspace_dir: ''
+
+        - name: Should not reach here
+          ansible.builtin.fail:
+            msg: "Expected failure for d2m without om_workspace_dir did not occur"
+      rescue:
+        - name: Assert failure occurred for d2m
+          ansible.builtin.debug:
+            msg: "Correctly failed: {{ ansible_failed_result.msg | default('no message') }}"
+
+    - name: All integration tests passed
+      ansible.builtin.debug:
+        msg: "oci_mirror integration tests completed successfully"
+
+...

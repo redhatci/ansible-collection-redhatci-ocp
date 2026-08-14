@@ -134,6 +134,31 @@ jobs:
           ./hack/run_ansible_test.sh
         working-directory: ${{ matrix.ansible }}/ansible_collections/redhatci/ocp
 
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Install dependent PRs if needed
+        uses: depends-on/depends-on-action@c7ac9a6932a7069e83aef80c202d9f60f91e43fd # 0.17.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: 3.12
+
+      - name: Install ansible-core
+        run: pip install ansible-core
+
+      - name: Run oci_mirror integration tests
+        run: bash tests/integration/targets/oci_mirror/runme.sh -i tests/integration/inventory
+
   check-all-dependencies-are-merged:
     name: "Check all dependencies are merged"
     runs-on: ubuntu-24.04
