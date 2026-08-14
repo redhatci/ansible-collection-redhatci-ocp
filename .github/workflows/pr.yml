@@ -156,6 +156,11 @@ jobs:
       - name: Install ansible-core
         run: pip install ansible-core
 
+      - name: Install redhatci.ocp collection for integration tests
+        run: |
+          mkdir -p ~/.ansible/collections/ansible_collections/redhatci
+          ln -s "${GITHUB_WORKSPACE}" ~/.ansible/collections/ansible_collections/redhatci/ocp
+
       - name: Run oci_mirror integration tests
         run: bash tests/integration/targets/oci_mirror/runme.sh -i tests/integration/inventory
 

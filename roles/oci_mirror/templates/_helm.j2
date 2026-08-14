@@ -2,14 +2,14 @@
   helm:
     repositories:
 {% for chart in om_helm_charts %}
-      - name: '{{ chart.name }}'
-        url: '{{ chart.url }}'
+      - name: '{{ chart.name | replace("'", "''") }}'
+        url: '{{ chart.url | replace("'", "''") }}'
 {% if chart.charts is defined and chart.charts | length > 0 %}
         charts:
 {% for c in chart.charts %}
-          - name: '{{ c.name }}'
+          - name: '{{ c.name | replace("'", "''") }}'
 {% if c.version is defined %}
-            version: '{{ c.version }}'
+            version: '{{ c.version | replace("'", "''") }}'
 {% endif %}
 {% endfor %}
 {% endif %}

@@ -11,23 +11,31 @@
     _om_m2d_isc_path: "{{ om_custom_config }}"
   when: om_custom_config is defined
 
+- name: Assert om_custom_config is defined for m2d mode
+  ansible.builtin.assert:
+    that:
+      - om_custom_config | default('') | trim | length > 0
+    fail_msg: >
+      om_custom_config must be defined when om_operation is 'm2d'.
+      Provide an ImageSetConfiguration file path.
+  when: _om_m2d_isc_path is not defined
+
+- name: Build oc-mirror m2d command arguments  # noqa: redhat-ci[no-role-prefix]
+  ansible.builtin.set_fact:
+    _om_m2d_argv: >-
+      {{
+        [_om_tmp_dir.path ~ '/oc-mirror', '--v2',
+         '--config=' ~ _om_m2d_isc_path,
+         'file://' ~ om_workspace_dir,
+         '--port', _om_ephemeral_port.port | string]
+        + ((om_allow_insecure_registries | bool) | ternary(['--src-tls-verify=false'], []))
+        + ((om_auths_file is defined) | ternary(['--authfile', om_auths_file], []))
+        + ((om_remove_signatures | bool) | ternary(['--remove-signatures'], []))
+      }}
+
 - name: Run oc-mirror in mirror-to-disk mode
-  ansible.builtin.shell:
-    cmd: >
-      umask 0022 &&
-      {{ _om_tmp_dir.path }}/oc-mirror --v2
-      --config={{ _om_m2d_isc_path }}
-      --workspace file://{{ om_workspace_dir }}
-      --port {{ _om_ephemeral_port.port }}
-      {% if om_allow_insecure_registries | bool %}
-      --src-tls-verify=false
-      {% endif %}
-      {% if om_auths_file is defined %}
-      --authfile {{ om_auths_file }}
-      {% endif %}
-      {% if om_remove_signatures | bool %}
-      --remove-signatures
-      {% endif %}
+  ansible.builtin.command:
+    argv: "{{ _om_m2d_argv }}"
   register: _om_cmd_output
   retries: 3
   delay: 10

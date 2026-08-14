@@ -30,7 +30,6 @@
             fail_msg: >
               Expected a meaningful error about om_operation but got:
               {{ ansible_failed_result | default('no error') }}
-          ignore_errors: true
 
     # Test 2: m2d without om_workspace_dir must fail
     - name: Test m2d without om_workspace_dir fails
@@ -46,9 +45,14 @@
           ansible.builtin.fail:
             msg: "Expected failure for m2d without om_workspace_dir did not occur"
       rescue:
-        - name: Assert failure occurred
-          ansible.builtin.debug:
-            msg: "Correctly failed: {{ ansible_failed_result.msg | default('no message') }}"
+        - name: Assert failure message mentions workspace
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'om_workspace_dir' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >
+              Expected error about om_workspace_dir but got:
+              {{ ansible_failed_result | default('no error') }}
 
     # Test 3: mirror without om_target must fail
     - name: Test mirror without om_target fails
@@ -63,9 +67,14 @@
           ansible.builtin.fail:
             msg: "Expected failure for mirror without om_target did not occur"
       rescue:
-        - name: Assert failure occurred
-          ansible.builtin.debug:
-            msg: "Correctly failed: {{ ansible_failed_result.msg | default('no message') }}"
+        - name: Assert failure message mentions om_target
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'om_target' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >
+              Expected error about om_target but got:
+              {{ ansible_failed_result | default('no error') }}
 
     # Test 4: Helm ISC template rendering produces correct YAML
     - name: Test helm ISC template renders correctly
@@ -96,20 +105,20 @@
             src: "{{ _test_tmp_dir.path }}/isc-with-helm.yaml"
           register: _rendered_isc
 
-        - name: Decode rendered ISC
+        - name: Parse rendered ISC as YAML
           ansible.builtin.set_fact:
-            _isc_content: "{{ _rendered_isc.content | b64decode }}"
+            _isc_parsed: "{{ _rendered_isc.content | b64decode | from_yaml }}"
 
-        - name: Assert ISC contains helm section
+        - name: Assert ISC contains expected helm structure
           ansible.builtin.assert:
             that:
-              - "'helm:' in _isc_content"
-              - "'repositories:' in _isc_content"
-              - "'test-charts' in _isc_content"
-              - "'https://charts.example.com' in _isc_content"
-              - "'my-chart' in _isc_content"
-              - "'1.0.0' in _isc_content"
-            fail_msg: "Rendered ISC does not contain expected helm section. Content: {{ _isc_content }}"
+              - _isc_parsed.mirror.helm is defined
+              - _isc_parsed.mirror.helm.repositories | length > 0
+              - _isc_parsed.mirror.helm.repositories[0].name == 'test-charts'
+              - _isc_parsed.mirror.helm.repositories[0].url == 'https://charts.example.com'
+              - _isc_parsed.mirror.helm.repositories[0].charts[0].name == 'my-chart'
+              - _isc_parsed.mirror.helm.repositories[0].charts[0].version == '1.0.0'
+            fail_msg: "Rendered ISC does not contain expected helm structure: {{ _isc_parsed }}"
 
         - name: Render template without helm charts
           ansible.builtin.template:
@@ -126,10 +135,14 @@
             src: "{{ _test_tmp_dir.path }}/isc-no-helm.yaml"
           register: _rendered_isc_no_helm
 
+        - name: Parse rendered ISC without helm as YAML
+          ansible.builtin.set_fact:
+            _isc_no_helm_parsed: "{{ _rendered_isc_no_helm.content | b64decode | from_yaml }}"
+
         - name: Assert ISC does not contain helm section when om_helm_charts is empty
           ansible.builtin.assert:
             that:
-              - "'helm:' not in (_rendered_isc_no_helm.content | b64decode)"
+              - _isc_no_helm_parsed.mirror.helm is not defined
             fail_msg: "Rendered ISC should not contain helm section when om_helm_charts is empty"
 
         - name: Cleanup temp dir
@@ -152,9 +165,14 @@
           ansible.builtin.fail:
             msg: "Expected failure for d2m without om_workspace_dir did not occur"
       rescue:
-        - name: Assert failure occurred for d2m
-          ansible.builtin.debug:
-            msg: "Correctly failed: {{ ansible_failed_result.msg | default('no message') }}"
+        - name: Assert failure message mentions workspace for d2m
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'om_workspace_dir' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >
+              Expected error about om_workspace_dir but got:
+              {{ ansible_failed_result | default('no error') }}
 
     - name: All integration tests passed
       ansible.builtin.debug:

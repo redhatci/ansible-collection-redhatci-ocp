@@ -16,8 +16,7 @@
 - name: Assert om_target is set for operations that push to a registry
   ansible.builtin.assert:
     that:
-      - om_target is defined
-      - om_target | length > 0
+      - om_target | default('') | trim | length > 0
     fail_msg: >
       om_target must be defined when om_operation is '{{ om_operation }}'.
   when: om_operation in ['mirror', 'd2m']
@@ -25,8 +24,7 @@
 - name: Assert om_workspace_dir is set for workspace-based operations
   ansible.builtin.assert:
     that:
-      - om_workspace_dir is defined
-      - om_workspace_dir | length > 0
+      - om_workspace_dir | default('') | trim | length > 0
     fail_msg: >
       om_workspace_dir must be defined when om_operation is '{{ om_operation }}'.
   when: om_operation in ['m2d', 'd2m']
