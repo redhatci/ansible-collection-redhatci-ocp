@@ -6,9 +6,10 @@
     src: conserver-ipmi.cf
     owner: "root"
     group: "root"
-    mode: "0644"
+    mode: "0600"
 
 - name: Add conserver-ipmi.cf to conserver.cf
+  become: true
   ansible.builtin.lineinfile:
     path: /etc/conserver.cf
     line: '#include /etc/conserver-ipmi-{{ conserver_cluster }}.cf'

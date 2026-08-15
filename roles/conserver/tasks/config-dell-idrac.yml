@@ -19,6 +19,7 @@
 
 - name: Create Dell iDRAC conserver config for {{ conserver_cluster }}
   become: true
+  diff: false
   ansible.builtin.template:
     dest: "/etc/conserver-dell-idrac-{{ conserver_cluster }}.cf"
     src: conserver-dell-idrac.cf

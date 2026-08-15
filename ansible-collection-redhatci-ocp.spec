@@ -58,12 +58,14 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 * Mon Aug 17 2026 Ramon Perez <raperez@redhat.com> - 6.1.EPOCH-VERS
 - Include Two-Node with Fencing (TNF) OCP support in generate_manifests and installer roles
 
+* Sat Aug 15 2026 Frederic Lepied <flepied@redhat.com> - 6.1.EPOCH-VERS
+- Add SSH console support for Dell iDRAC and HP iLO in conserver role
+
 * Fri Aug 14 2026 Tony Garcia <tonyg@redhat.com> - 6.0.EPOCH-VERS
 - Remove setup_gitea role, superseded by forgejo_setup
 
 * Wed Aug 13 2026 Frederic Lepied <flepied@redhat.com> - 5.0.EPOCH-VERS
 - Remove monitor_agent_based_installer role (monitoring moved to dci-openshift-agent)
-- Add SSH console support for Dell iDRAC and HP iLO in conserver role
 
 * Tue Aug 12 2026 Frederic Lepied <flepied@redhat.com> - 4.3.EPOCH-VERS
 - Add resolve_must_gather_images role and filter plugin
