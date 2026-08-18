@@ -61,17 +61,14 @@
     oo_index: "{{ mc_catalog_digest }}"
 
 - name: Append operator-sdk images to Image Sources
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_catalog
+    tasks_from: append_image_source_mirrors
   vars:
     scorecard_basic_images: "{{ [scorecard_test_img, scorecard_storage_img, scorecard_untar_img] }}"
-  ansible.builtin.blockinfile:
-    block: |
-      # Scorecard container
-        - mirrors:
-          - {{ scorecard_dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
-          source: {{ item.split('@')[0] }}
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
-    path: "{{ scorecard_is_file }}"
-  loop: "{{ scorecard_basic_images }}"
+    ais_file: "{{ scorecard_is_file }}"
+    ais_images: "{{ scorecard_basic_images }}"
+    ais_registry: "{{ scorecard_dci_local_registry }}"
 
 - name: Display new Image Source file to be applied
   ansible.builtin.debug:
@@ -79,7 +76,7 @@
 
 - name: Apply Image Source File
   kubernetes.core.k8s:
-    definition: "{{ lookup('file', scorecard_is_file) }}"
+    definition: "{{ lookup('file', scorecard_is_file) | from_yaml_all | list }}"
 
 - name: Wait for MCP status
   ansible.builtin.include_role:

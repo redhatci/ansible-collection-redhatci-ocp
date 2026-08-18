@@ -5,7 +5,7 @@
     - name: Delete Image Source from cluster
       kubernetes.core.k8s:
         state: absent
-        definition: "{{ lookup('file', preflight_is_file) }}"
+        definition: "{{ lookup('file', preflight_is_file) | from_yaml_all | list }}"
 
     - name: Wait for MCP status
       ansible.builtin.include_role:

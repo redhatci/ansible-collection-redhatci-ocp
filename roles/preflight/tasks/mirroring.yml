@@ -63,18 +63,17 @@
     oo_index: "{{ mc_catalog_digest }}"
 
 - name: Append pre-flight images to Image Sources
-  ansible.builtin.blockinfile:
-    block: |
-        - mirrors:
-          - {{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
-          source: {{ item.split('@')[0] }}
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.split('@')[0] }}"
-    path: "{{ preflight_is_file }}"
-  loop: "{{ preflight_images }}"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_catalog
+    tasks_from: append_image_source_mirrors
+  vars:
+    ais_file: "{{ preflight_is_file }}"
+    ais_images: "{{ preflight_images }}"
+    ais_registry: "{{ dci_local_registry }}"
 
 - name: Apply Image Source file
   kubernetes.core.k8s:
-    definition: "{{ lookup('file', preflight_is_file) }}"
+    definition: "{{ lookup('file', preflight_is_file) | from_yaml_all | list }}"
 
 - name: Wait for MCP status
   ansible.builtin.include_role:

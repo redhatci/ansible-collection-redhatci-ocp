@@ -1,0 +1,50 @@
+---
+- name: Validate append Image Source inputs
+  ansible.builtin.assert:
+    that:
+      - ais_file is defined
+      - ais_file | length
+      - ais_images is defined
+      - ais_images | length
+      - ais_registry is defined
+      - ais_registry | length
+
+- name: Load Image Source manifest documents
+  ansible.builtin.set_fact:
+    _ais_documents: "{{ lookup('file', ais_file) | from_yaml_all | list }}"
+
+- name: Build mirror entries for Image Source append
+  ansible.builtin.set_fact:
+    _ais_new_entries: "{{ _ais_new_entries | default([]) + [_ais_entry] }}"
+  vars:
+    _ais_entry:
+      mirrors:
+        - "{{ ais_registry }}/{{ (item.split('@')[0].split('/')[1:]) | join('/') }}"
+      source: "{{ item.split('@')[0] }}"
+  loop: "{{ ais_images }}"
+
+- name: Merge mirror entries into Image Source documents
+  ansible.builtin.set_fact:
+    _ais_updated_documents: "{{ _ais_updated_documents | default([]) + [_ais_updated_doc] }}"
+  vars:
+    _ais_mirror_key: >-
+      {{
+        'imageDigestMirrors' if item.kind == 'ImageDigestMirrorSet'
+        else 'imageTagMirrors' if item.kind == 'ImageTagMirrorSet'
+        else 'repositoryDigestMirrors'
+      }}
+    _ais_existing: "{{ item.spec[_ais_mirror_key] | default([]) }}"
+    _ais_merged: "{{ (_ais_existing + _ais_new_entries) | unique(attribute='source') }}"
+    _ais_updated_doc: >-
+      {{
+        item | combine({'spec': item.spec | combine({_ais_mirror_key: _ais_merged})}, recursive=True)
+        if item.kind in ['ImageDigestMirrorSet', 'ImageTagMirrorSet', 'ImageContentSourcePolicy']
+        else item
+      }}
+  loop: "{{ _ais_documents }}"
+
+- name: Write updated Image Source file
+  ansible.builtin.copy:
+    dest: "{{ ais_file }}"
+    content: "{{ _ais_updated_documents | map('to_yaml') | join('\n---\n') }}"  # noqa: jinja[invalid]
+    mode: "0644"
