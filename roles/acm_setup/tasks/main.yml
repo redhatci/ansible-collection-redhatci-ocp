@@ -108,6 +108,15 @@
     - "'phase' in mch.resources[0].status"
     - mch.resources[0].status.phase == 'Running'
 
+- name: "Allow assisted-image-service egress to OS image webserver"
+  when:
+    - hub_os_images is defined
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: allow-ais-http-egress
+  vars:
+    utils_os_image_url: "{{ hub_os_images[0].url }}"
+
 - name: "Disable ClusterImageSets and AppSubs when disconnected"
   when:
     - hub_disconnected | bool

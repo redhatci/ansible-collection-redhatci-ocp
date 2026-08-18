@@ -32,6 +32,11 @@
     namespace: multicluster-engine
   register: asg
 
+- name: Allow assisted-image-service egress to OS image webserver
+  ansible.builtin.include_tasks: allow-ais-http-egress.yml
+  vars:
+    utils_os_image_url: "{{ utils_iso_url }}"
+
 - name: Patch the Agent Service Config
   vars:
     os_images:

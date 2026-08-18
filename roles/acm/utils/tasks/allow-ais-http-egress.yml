@@ -1,0 +1,67 @@
+---
+# Allow HTTP(S) egress to the port used by the OS image URL (e.g. http://host:8080/...).
+# Only applies when MultiClusterEngine has networkPolicies present and enabled.
+#
+# Required vars:
+#   utils_os_image_url: URL of the RHCOS live ISO (or other OS image) hosted for Assisted Service
+
+- name: "Validate OS image URL scheme for AIS HTTP egress"
+  when:
+    - utils_os_image_url is defined
+    - utils_os_image_url | length > 0
+  vars:
+    _utils_img_parts: "{{ utils_os_image_url | urlsplit }}"
+  ansible.builtin.assert:
+    that:
+      - _utils_img_parts.scheme in ['http', 'https']
+    fail_msg: >-
+      utils_os_image_url must use http or https scheme
+      (got scheme '{{ _utils_img_parts.scheme | default('') }}').
+
+- name: "Get MultiClusterEngine"
+  kubernetes.core.k8s_info:
+    api_version: multicluster.openshift.io/v1
+    kind: MultiClusterEngine
+  register: _utils_mce
+  failed_when: false
+
+- name: "Create NetworkPolicy for assisted-image-service OS image HTTP egress"
+  when:
+    - utils_os_image_url is defined
+    - utils_os_image_url | length > 0
+    - (_utils_mce.resources | default([]) | length) > 0
+    - ((_utils_mce.resources | first).spec | default({})).networkPolicies is defined
+    - ((_utils_mce.resources | first).spec.networkPolicies.enabled | default(false)) | bool
+  vars:
+    _utils_img_parts: "{{ utils_os_image_url | urlsplit }}"
+    _utils_default_port: "{{ (_utils_img_parts.scheme == 'https') | ternary(443, 80) }}"
+    _utils_port: >-
+      {{
+        (_utils_img_parts.port | default(0) | int)
+        if (_utils_img_parts.port | default(0) | int) > 0
+        else (_utils_default_port | int)
+      }}
+    _utils_np_yaml: |
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: assisted-image-service-allow-http-{{ _utils_port | int }}
+        namespace: multicluster-engine
+        labels:
+          app: assisted-image-service
+      spec:
+        podSelector:
+          matchLabels:
+            app: assisted-image-service
+        policyTypes:
+          - Egress
+        egress:
+          - to:
+              - ipBlock:
+                  cidr: 0.0.0.0/0
+            ports:
+              - protocol: TCP
+                port: {{ _utils_port | int }}
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ _utils_np_yaml | from_yaml }}"
