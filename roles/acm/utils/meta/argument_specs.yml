@@ -100,6 +100,17 @@ argument_specs:
         required: true
         description: >
           The URL of the root filesystem image to use for the spoke cluster. This is used to determine the image versions.
+  allow-ais-http-egress:
+    short_description: Allow assisted-image-service egress to an OS image HTTP(S) URL
+    description: >
+      Create a NetworkPolicy that allows assisted-image-service pods to reach the port
+      used by an OS image URL.
+    options:
+      utils_os_image_url:
+        type: str
+        required: true
+        description: >
+          URL of the OS/RHCOS image hosted for Assisted Service (e.g. http://webserver:8080/rhcos.iso).
   validate-policies:
     short_description: Validate ACM policies compliance
     description: >
