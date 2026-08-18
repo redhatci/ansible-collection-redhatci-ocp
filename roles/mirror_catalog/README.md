@@ -16,7 +16,7 @@ mc_manifest_only           | No       | boolean | false   | Calculate the manife
 mc_allow_unsecure_registry | No       | boolean | true    | Allow mirror from/to insecure registries
 mc_max_components          | No       | int     | 3       | The maximum number of path components allowed in a destination mapping, `quay.io/org/repo` has two components.
 
-<sup>1</sup> It's recommended to use a [stable version of oc](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/)
+<sup>1</sup> It's recommended to use a [stable version of oc](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/) (replace `openshift-v4` with `openshift-v5` etc. for other majors)
 
 ## Dependencies
 
