@@ -54,6 +54,7 @@
       until: _preflight_async_results.finished
       retries: 120
       delay: 10
+      no_log: true
   rescue:
     - name: Handle errors from preflight check container
       ansible.builtin.debug:
