@@ -21,22 +21,10 @@
   ansible.builtin.set_fact:
     fbc_opm_cmd: "{{ fbc_tmp_dir }}/opm-rhel{{ ansible_distribution_major_version }} {{ fbc_opm_args }}"
 
-- name: Get ClusterVersion for opm download
-  kubernetes.core.k8s_info:
-    api_version: config.openshift.io/v1
-    kind: ClusterVersion
-    name: version
-  register: _fbc_cluster_version
-  failed_when: false
-
 - name: "Download stable opm client"
   vars:
-    _fbc_ver_query: "history[?state=='Completed'] | [0].version"
-    _fbc_cv_status: "{{ (_fbc_cluster_version.resources | default([]) | first | default({})).status | default({}) }}"
-    _fbc_full_ver: "{{ _fbc_cv_status | json_query(_fbc_ver_query) | default('', true) }}"
-    _fbc_ocp_major: "{{ (_fbc_full_ver | default('4', true)).split('.')[0] }}"
     ocp_clients_url:
-      "https://mirror.openshift.com/pub/openshift-v{{ _fbc_ocp_major }}/x86_64/clients/ocp/stable/\
+      "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/\
       opm-linux{{ ansible_distribution_major_version is version('9', '==') | ternary('-rhel9', '') }}.tar.gz"
   ansible.builtin.unarchive:
     src: "{{ ocp_clients_url }}"

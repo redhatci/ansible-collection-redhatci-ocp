@@ -1,20 +1,8 @@
 ---
-- name: Get ClusterVersion for client download
-  kubernetes.core.k8s_info:
-    api_version: config.openshift.io/v1
-    kind: ClusterVersion
-    name: version
-  register: _ah_cluster_version
-  failed_when: false
-
 - name: Download stable openshift client
   vars:
-    _ah_ver_query: "history[?state=='Completed'] | [0].version"
-    _ah_cv_status: "{{ (_ah_cluster_version.resources | default([]) | first | default({})).status | default({}) }}"
-    _ah_full_ver: "{{ _ah_cv_status | json_query(_ah_ver_query) | default('', true) }}"
-    _ah_ocp_major: "{{ (_ah_full_ver | default('4', true)).split('.')[0] }}"
     ocp_client_url:
-      "https://mirror.openshift.com/pub/openshift-v{{ _ah_ocp_major }}/\
+      "https://mirror.openshift.com/pub/openshift-v4/\
       x86_64/clients/ocp/stable/openshift-client-linux-amd64-rhel\
       {{ ansible_distribution_major_version }}.tar.gz"
   ansible.builtin.unarchive:
@@ -72,3 +60,4 @@
 - name: Set oc cli path
   ansible.builtin.set_fact:
     ah_oc_cli_path: "{{ ah_tmp_dir }}/oc"
+...

@@ -12,21 +12,9 @@
   ansible.builtin.debug:
     msg: "Manifest directory {{ image_dir }}"
 
-- name: Get ClusterVersion for oc-mirror download
-  kubernetes.core.k8s_info:
-    api_version: config.openshift.io/v1
-    kind: ClusterVersion
-    name: version
-  register: _mfd_cluster_version
-  failed_when: false
-
 - name: "Download stable oc-mirror plugin"
   vars:
-    _mfd_ver_query: "history[?state=='Completed'] | [0].version"
-    _mfd_cv_status: "{{ (_mfd_cluster_version.resources | default([]) | first | default({})).status | default({}) }}"
-    _mfd_ocp_version: "{{ _mfd_cv_status | json_query(_mfd_ver_query) | default('', true) }}"
-    _mfd_ocp_major: "{{ (_mfd_ocp_version | default('4', true)).split('.')[0] }}"
-    ocp_mirror_url: "https://mirror.openshift.com/pub/openshift-v{{ _mfd_ocp_major }}/x86_64/clients/ocp/stable/oc-mirror.tar.gz"
+    ocp_mirror_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.14/oc-mirror.tar.gz"
   ansible.builtin.unarchive:
     src: "{{ ocp_mirror_url }}"
     dest: "{{ image_dir }}"
