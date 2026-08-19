@@ -20,6 +20,7 @@ Brings functionality that is commonly used among those roles.
 | utils_iso_url                       | None                                | disconnect-agent                 | The URL to the ISO image to use in the Assisted Images service.
 | utils_root_fs_url                   | None                                | disconnect-agent                 | The URL to the rootfs image to use in the Assisted Images service.
 | utils_os_image_url                  | None                                | allow-ais-http-egress            | OS/RHCOS image URL used to derive the egress port for assisted-image-service.
+| utils_os_image_host_ips             | []                                  | allow-ais-http-egress            | Optional IPv4/IPv6 list for egress. When empty, resolve in-cluster via openshift-dns.
 | utils_policy_retries                | 30                                  | validate-policies                | Number of retries for policy validation.
 | utils_policy_delay                  | 10                                  | validate-policies                | Delay in seconds between retries for policy validation.
 | utils_policy_namespace              | default                             | validate-policies                | The namespace where the ACM policies are deployed.
@@ -133,12 +134,18 @@ This task generates the `utils_acm_registries` variable containing the transform
 
 Creates a NetworkPolicy so assisted-image-service can reach an OS image URL on ports
 other than 443. Runs only when the MultiClusterEngine CR has
-`spec.networkPolicies` set and `enabled: true`.
+`spec.networkPolicies` set and `enabled: true`. Host addresses come from
+`utils_os_image_host_ips` when set; otherwise they are resolved in-cluster via an
+openshift-dns pod. Egress is limited to those IPv4 (/32) and IPv6 (/128) addresses.
 
 ```yaml
 - name: Allow AIS egress to OS image webserver
   vars:
     utils_os_image_url: http://webserver.local:8080/rhcos-live.x86_64.iso
+    # Optional: skip DNS and pin egress to these addresses
+    # utils_os_image_host_ips:
+    #   - 192.0.2.10
+    #   - 2001:db8::10
   ansible.builtin.include_role:
     name: redhatci.ocp.acm.utils
     tasks_from: allow-ais-http-egress

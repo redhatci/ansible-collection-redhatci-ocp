@@ -104,13 +104,24 @@ argument_specs:
     short_description: Allow assisted-image-service egress to an OS image HTTP(S) URL
     description: >
       Create a NetworkPolicy that allows assisted-image-service pods to reach the port
-      used by an OS image URL.
+      used by an OS image URL. Host IPs are resolved in-cluster via openshift-dns;
+      egress is limited to those IPv4 (/32) and IPv6 (/128) addresses. Skipped unless
+      the MultiClusterEngine CR has spec.networkPolicies.enabled set to true.
     options:
       utils_os_image_url:
         type: str
         required: true
         description: >
           URL of the OS/RHCOS image hosted for Assisted Service (e.g. http://webserver:8080/rhcos.iso).
+      utils_os_image_host_ips:
+        type: list
+        required: false
+        elements: str
+        default: []
+        description: >
+          Optional list of IPv4/IPv6 addresses to allow in the NetworkPolicy. When set,
+          in-cluster DNS resolution is skipped. When empty, addresses are resolved via
+          openshift-dns from the URL hostname.
   validate-policies:
     short_description: Validate ACM policies compliance
     description: >
