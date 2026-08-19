@@ -65,6 +65,7 @@
 - name: Append pre-flight images to Image Sources
   ansible.builtin.blockinfile:
     block: |
+      # Mirrors (keep this comment to keep mirrors correctly indented)
         - mirrors:
           - {{ dci_local_registry }}/{{ '/'.join(item.split('@')[0].split('/')[1:]) }}
           source: {{ item.split('@')[0] }}
