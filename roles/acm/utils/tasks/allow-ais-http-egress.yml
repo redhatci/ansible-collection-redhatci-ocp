@@ -13,8 +13,8 @@
   ansible.builtin.assert:
     that:
       - utils_os_image_url is defined
-      - utils_os_image_url | default('') | length > 0
-      - (utils_os_image_url | default('') | urlsplit).scheme in ['http', 'https']
+      - utils_os_image_url | length > 0
+      - (utils_os_image_url | urlsplit).scheme in ['http', 'https']
     fail_msg: >-
       utils_os_image_url must be a non-empty http or https URL
       (got '{{ utils_os_image_url | default('') }}').
