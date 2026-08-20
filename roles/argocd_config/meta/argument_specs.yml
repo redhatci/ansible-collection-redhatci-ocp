@@ -13,12 +13,28 @@ argument_specs:
       ac_project_def:
         type: dict
         required: false
-        description: The definition of an ArgoCD project to create.
+        description: >
+          The definition of an ArgoCD project to create.
+          Default scopes to ac_app_namespace, ac_server_api, and ac_repo.
+      ac_app_namespace:
+        type: str
+        required: false
+        description: The target namespace for the project destinations. Required by the default ac_project_def.
+      ac_repo:
+        type: str
+        required: false
+        description: The source repository for the project. Required by the default ac_project_def.
   config-permissions:
     short_description: Configure ArgoCD permissions
     description: >
       Configure permissions for ArgoCD applications and projects.
     options:
+      ac_cluster_role:
+        type: str
+        required: false
+        description: >
+          ClusterRole to bind to the ArgoCD application controller.
+          Defaults to the operator-managed ClusterRole.
       ac_permissions_def:
         type: dict
         required: false
