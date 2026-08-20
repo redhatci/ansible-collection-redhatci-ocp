@@ -20,7 +20,7 @@ Brings functionality that is commonly used among those roles.
 | utils_iso_url                       | None                                | disconnect-agent                 | The URL to the ISO image to use in the Assisted Images service.
 | utils_root_fs_url                   | None                                | disconnect-agent                 | The URL to the rootfs image to use in the Assisted Images service.
 | utils_os_image_url                  | None                                | allow-ais-http-egress            | OS/RHCOS image URL used to derive the egress port for assisted-image-service.
-| utils_os_image_host_ips             | []                                  | allow-ais-http-egress            | Optional IPv4/IPv6 list for egress. When empty, resolve in-cluster via openshift-dns.
+| utils_os_image_host_ips             | []                                  | allow-ais-http-egress            | Optional IPv4/IPv6 addresses or CIDRs for egress (e.g. `192.0.2.10/32`). When empty, resolve in-cluster via openshift-dns.
 | utils_policy_retries                | 30                                  | validate-policies                | Number of retries for policy validation.
 | utils_policy_delay                  | 10                                  | validate-policies                | Delay in seconds between retries for policy validation.
 | utils_policy_namespace              | default                             | validate-policies                | The namespace where the ACM policies are deployed.
@@ -136,16 +136,30 @@ Creates a NetworkPolicy so assisted-image-service can reach an OS image URL on p
 other than 443. Runs only when the MultiClusterEngine CR has
 `spec.networkPolicies` set and `enabled: true`. Host addresses come from
 `utils_os_image_host_ips` when set; otherwise they are resolved in-cluster via an
-openshift-dns pod. Egress is limited to those IPv4 (/32) and IPv6 (/128) addresses.
+openshift-dns pod. Egress uses each entry as a CIDR when a prefix is given; otherwise
+DNS-resolved addresses default to /32 (IPv4) or /128 (IPv6).
+
+Resolve the URL hostname in-cluster (default):
 
 ```yaml
 - name: Allow AIS egress to OS image webserver
   vars:
     utils_os_image_url: http://webserver.local:8080/rhcos-live.x86_64.iso
-    # Optional: skip DNS and pin egress to these addresses
-    # utils_os_image_host_ips:
-    #   - 192.0.2.10
-    #   - 2001:db8::10
+  ansible.builtin.include_role:
+    name: redhatci.ocp.acm.utils
+    tasks_from: allow-ais-http-egress
+```
+
+Skip DNS and pin egress to explicit addresses or CIDRs:
+
+```yaml
+- name: Allow AIS egress to OS image webserver with fixed CIDRs
+  vars:
+    utils_os_image_url: http://webserver.local:8080/rhcos-live.x86_64.iso
+    utils_os_image_host_ips:
+      - 192.0.2.10/32
+      - 2600:12:1::10/128
+      - 192.0.2.0/24
   ansible.builtin.include_role:
     name: redhatci.ocp.acm.utils
     tasks_from: allow-ais-http-egress
