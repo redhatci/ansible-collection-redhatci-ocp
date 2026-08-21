@@ -100,8 +100,9 @@
         pod: "{{ _utils_dns_pods.resources[0].metadata.name }}"
         container: dns
         command: >-
-          /bin/sh -c "dig +short +time=5 +tries=2 A {{ _utils_host | to_json }};
-          dig +short +time=5 +tries=2 AAAA {{ _utils_host | to_json }}"
+          /bin/sh -c 'dig +short +time=5 +tries=2 A "$1";
+          dig +short +time=5 +tries=2 AAAA "$1"'
+          -- {{ _utils_host | quote }}
       register: _utils_host_ips
       changed_when: false
       failed_when: >-
@@ -122,10 +123,7 @@
       {{
         utils_os_image_host_ips
         if (utils_os_image_host_ips | length) > 0
-        else (
-          (_utils_host_ips.stdout_lines | default([]) | select('ansible.utils.ipv4') | list)[-1:]
-          + (_utils_host_ips.stdout_lines | default([]) | select('ansible.utils.ipv6') | list)[-1:]
-        )
+        else (_utils_host_ips.stdout_lines | default([]))
       }}
     _utils_img_parts: "{{ utils_os_image_url | urlsplit }}"
     _utils_default_port: "{{ (_utils_img_parts.scheme == 'https') | ternary(443, 80) }}"
