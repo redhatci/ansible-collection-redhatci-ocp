@@ -12,19 +12,19 @@ Also, openshift-gitops operator must be installed in the clusters via OLM.
 
 | Variable                            | Default                             | Description
 | ----------------------------------- | ----------------------------------- | -----------
-| sg_ztp_tag                          | v4.19.0                             | Tag for ZTP site generator image
-| sg_mce_tag                          | v2.13                               | Tag for Multicluster Engine subscription image
+| sg_ztp_tag                          | v4.22                               | Tag for ZTP site generator image
+| sg_mce_tag                          | v2.17                               | Tag for Multicluster Engine subscription image
 | sg_local_registry                   | ""                                  | Local registry \<address\>[:\<port\>]  if the images need to be mirrored to a local registry
 | sg_pullsecret_file                  | None                                | Registry pull/push secret file. Required if `sg_local_registry` is set
-| sg_namespace                 | openshift-gitops                    | Namespace where ArgoCD is installed
+| sg_namespace                        | openshift-gitops                    | Namespace where ArgoCD is installed
 
 ## Usage example
 
 ```yaml
 - name: Configure ArgoCD for Kustomize and Policy Generator
   vars:
-    sg_ztp_tag: v4.19.0
-    sg_mce_tag: v2.13
+    sg_ztp_tag: v4.22
+    sg_mce_tag: v2.17
     sg_namespace: openshift-gitops
     sg_local_registry: local-registry.lab
     sg_pullsecret_file: .docker/auths.json
