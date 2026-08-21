@@ -1,5 +1,5 @@
 ---
-preflight_image: "quay.io/opdev/preflight:1.20.0"
+preflight_image: "quay.io/opdev/preflight:1.21.0"
 preflight_repo_https: "https://github.com/redhat-openshift-ecosystem/openshift-preflight"
 preflight_custom_ca: ""
 preflight_podman_ca: ""
