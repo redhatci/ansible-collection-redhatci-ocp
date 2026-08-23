@@ -1,22 +1,38 @@
 ---
-# Allow HTTP(S) egress to the port used by the OS image URL (e.g. http://host:8080/...).
-# Only applies when MultiClusterEngine has networkPolicies present and enabled.
+# Allow assisted-image-service egress when MultiClusterEngine has networkPolicies enabled:
+#   1. Same-namespace TCP 8090 to assisted-service (discovery.ign when serving ISOs).
+#      MCE's default AIS policy only allows DNS, kube API 6443, and HTTPS 443.
+#   2. HTTP(S) to the OS image URL port (e.g. http://host:8080/...).
+#      Egress is limited to IPv4 and IPv6 addresses of the URL host (default /32 and /128).
+#      IPs come from utils_os_image_host_ips when set; otherwise resolved in-cluster via
+#      openshift-dns
 #
 # Required vars:
 #   utils_os_image_url: URL of the RHCOS live ISO (or other OS image) hosted for Assisted Service
+# Optional vars:
+#   utils_os_image_host_ips: list of IPv4/IPv6 addresses or CIDRs (skips in-cluster DNS when set)
 
-- name: "Validate OS image URL scheme for AIS HTTP egress"
-  when:
-    - utils_os_image_url is defined
-    - utils_os_image_url | length > 0
-  vars:
-    _utils_img_parts: "{{ utils_os_image_url | urlsplit }}"
+- name: "Validate OS image URL for AIS HTTP egress"
   ansible.builtin.assert:
     that:
-      - _utils_img_parts.scheme in ['http', 'https']
+      - utils_os_image_url is defined
+      - utils_os_image_url | length > 0
+      - (utils_os_image_url | urlsplit).scheme in ['http', 'https']
     fail_msg: >-
-      utils_os_image_url must use http or https scheme
-      (got scheme '{{ _utils_img_parts.scheme | default('') }}').
+      utils_os_image_url must be a non-empty http or https URL
+      (got '{{ utils_os_image_url | default('') }}').
+
+- name: "Validate utils_os_image_host_ips when provided"
+  when: (utils_os_image_host_ips | default([]) | length) > 0
+  ansible.builtin.assert:
+    that:
+      - utils_os_image_host_ips is sequence
+      - >-
+          (utils_os_image_host_ips | select('ansible.utils.ipaddr') | list | length)
+          == (utils_os_image_host_ips | length)
+    fail_msg: >-
+      utils_os_image_host_ips must be a list of IPv4/IPv6 addresses or CIDR blocks
+      (e.g. 192.0.2.10/32, 2600:12:1::10/128; got {{ utils_os_image_host_ips | default([]) }}).
 
 - name: "Get MultiClusterEngine"
   kubernetes.core.k8s_info:
@@ -25,14 +41,90 @@
   register: _utils_mce
   failed_when: false
 
-- name: "Create NetworkPolicy for assisted-image-service OS image HTTP egress"
+- name: "Create NetworkPolicy for assisted-image-service to assisted-service"
   when:
-    - utils_os_image_url is defined
-    - utils_os_image_url | length > 0
     - (_utils_mce.resources | default([]) | length) > 0
     - ((_utils_mce.resources | first).spec | default({})).networkPolicies is defined
     - ((_utils_mce.resources | first).spec.networkPolicies.enabled | default(false)) | bool
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: assisted-image-service-allow-assisted-service
+        namespace: multicluster-engine
+        labels:
+          app: assisted-image-service
+      spec:
+        podSelector:
+          matchLabels:
+            app: assisted-image-service
+        policyTypes:
+          - Egress
+        egress:
+          - to:
+              - podSelector:
+                  matchLabels:
+                    app: assisted-service
+            ports:
+              - protocol: TCP
+                port: 8090
+
+- name: "Resolve OS image host addresses in-cluster for AIS HTTP egress"
+  when:
+    - (_utils_mce.resources | default([]) | length) > 0
+    - ((_utils_mce.resources | first).spec | default({})).networkPolicies is defined
+    - ((_utils_mce.resources | first).spec.networkPolicies.enabled | default(false)) | bool
+    - (utils_os_image_host_ips | default([]) | length) == 0
   vars:
+    _utils_host: "{{ (utils_os_image_url | urlsplit).hostname }}"
+  block:
+    - name: "Get openshift-dns pod for in-cluster DNS resolution"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: openshift-dns
+        label_selectors:
+          - dns.operator.openshift.io/daemonset-dns=default
+        field_selectors:
+          - status.phase=Running
+      register: _utils_dns_pods
+      until: (_utils_dns_pods.resources | default([]) | length) > 0
+      retries: 10
+      delay: 5
+
+    - name: "Resolve OS image host A/AAAA via openshift-dns"
+      kubernetes.core.k8s_exec:
+        namespace: openshift-dns
+        pod: "{{ _utils_dns_pods.resources[0].metadata.name }}"
+        container: dns
+        command: >-
+          /bin/sh -c 'dig +short +time=5 +tries=2 A "$1";
+          dig +short +time=5 +tries=2 AAAA "$1"'
+          -- {{ _utils_host | quote }}
+      register: _utils_host_ips
+      changed_when: false
+      failed_when: >-
+        (
+          (_utils_host_ips.stdout_lines | default([]) | select('ansible.utils.ipv4') | list | length)
+          + (_utils_host_ips.stdout_lines | default([]) | select('ansible.utils.ipv6') | list | length)
+        ) == 0
+      no_log: true
+
+- name: "Create NetworkPolicy for assisted-image-service OS image HTTP egress"
+  when:
+    - (_utils_mce.resources | default([]) | length) > 0
+    - ((_utils_mce.resources | first).spec | default({})).networkPolicies is defined
+    - ((_utils_mce.resources | first).spec.networkPolicies.enabled | default(false)) | bool
+    - (_utils_egress_ips | length) > 0
+  vars:
+    _utils_egress_ips: >-
+      {{
+        utils_os_image_host_ips
+        if (utils_os_image_host_ips | length) > 0
+        else (_utils_host_ips.stdout_lines | default([]))
+      }}
     _utils_img_parts: "{{ utils_os_image_url | urlsplit }}"
     _utils_default_port: "{{ (_utils_img_parts.scheme == 'https') | ternary(443, 80) }}"
     _utils_port: >-
@@ -41,6 +133,17 @@
         if (_utils_img_parts.port | default(0) | int) > 0
         else (_utils_default_port | int)
       }}
+    _utils_ip_blocks: >-
+      {%- set ns = namespace(items=[]) -%}
+      {%- for entry in _utils_egress_ips -%}
+      {%- if '/' in (entry | string) -%}
+      {%- set cidr = entry -%}
+      {%- else -%}
+      {%- set cidr = entry ~ ('/128' if (entry is ansible.utils.ipv6) else '/32') -%}
+      {%- endif -%}
+      {%- set _ = ns.items.append({'ipBlock': {'cidr': cidr}}) -%}
+      {%- endfor -%}
+      {{ ns.items }}
     _utils_np_yaml: |
       apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
@@ -56,9 +159,7 @@
         policyTypes:
           - Egress
         egress:
-          - to:
-              - ipBlock:
-                  cidr: 0.0.0.0/0
+          - to: {{ _utils_ip_blocks | to_json }}
             ports:
               - protocol: TCP
                 port: {{ _utils_port | int }}
