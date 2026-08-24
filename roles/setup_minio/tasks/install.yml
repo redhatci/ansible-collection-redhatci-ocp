@@ -1,4 +1,13 @@
 ---
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - sm_storage_class is defined
+      - sm_storage_class | trim | length > 0
+      - sm_access_key_id | trim | length > 0
+      - sm_access_key_secret | trim | length > 0
+    fail_msg: "sm_storage_class, sm_access_key_id, and sm_access_key_secret are required"
+
 - name: Create namespace for Minio
   kubernetes.core.k8s:
     definition:

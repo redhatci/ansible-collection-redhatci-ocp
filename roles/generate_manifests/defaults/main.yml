@@ -6,8 +6,6 @@ mac_interface_default_mapping: "interfaces[?(name != null && mac != null)].{logi
 static_network_config: {}
 root_device_hints: {}
 arch: x86_64
-version_filter: "[?(openshift_version == '{{ openshift_version }}') && (cpu_architecture == '{{ arch }}')]"
-release_image: "{{ (assisted_installer_release_images | json_query(version_filter))[0].url }}"
 
 mirror_registry_fqdn: "{{ hostvars['registry_host']['registry_fqdn'] | default(hostvars['registry_host']['ansible_fqdn']) }}"
 mirror_registry_port: "{{ hostvars['registry_host']['registry_port'] | default(5000) }}"
@@ -30,5 +28,4 @@ fetched_dest: "{{ repo_root_path }}/fetched"
 api_vips: "{% if extra_api_vip is defined %}{{ [api_vip] + [extra_api_vip] }}{% else %}{{ [api_vip] }}{% endif %}"
 ingress_vips: "{% if extra_ingress_vip is defined %}{{ [ingress_vip] + [extra_ingress_vip] }}{% else %}{{ [ingress_vip] }}{% endif %}"
 
-ocp_version_major: "{{ openshift_version }}"
 gm_image_sources: ""

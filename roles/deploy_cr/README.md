@@ -92,3 +92,5 @@ This Ansible role is used to deploy a Kubernetes Custom Resource (CR) to a speci
         dc_name: "{{ kubelet_config_cr.name }}"
         dc_spec: "{{ kubelet_config_cr.spec }}"
         dc_wait_condition: "{{ kubelet_config_cr.wait_condition }}"
+
+NOTE: The role detects whether the cluster is an SNO and defines the timeout values for the check_mcp tasks and consider a possible node restart.

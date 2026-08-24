@@ -43,6 +43,9 @@ Always, Halted, Manual, RerunOnFailure.
 | interfaces                    | virtio/masquerade             | no          | Network interface definitions
 | labels                        |                               | no          | A dictionary with labels for the VM
 | networks                      | Pod network                   | no          | VM network definitions
+| annotations                   |                               | no          | A dictionary with annotations for the VM
+| affinity_group                |                               | no          | Name of affinity group to schedule VMs. Currently the template only defines Anti-affinity to deploy VMs in different nodes.
+| readiness_probe               |                               | no          | A dictionary with settings for the readiness probe
 
 ## Usage examples
 

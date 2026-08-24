@@ -1,8 +1,0 @@
----
-# TODO: Open an issue to Operator-SDK because 1.30.0 release still requires docker.io/busybox:1.33.0
-# to start scorecard pod
-images:
-  - registry.access.redhat.com/ubi8@sha256:910f6bc0b5ae9b555eb91b88d28d568099b060088616eba2867b07ab6ea457c7
-  - mirror.gcr.io/busybox@sha256:eccadc4fb09194c8163cfb7edcd9727933104e86da2ba8ad076732e5e3702a6a
-  - quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:bf657092557cf90be41f7d5a382c9734759afe0feab480732d70ad960b2a407d
-...

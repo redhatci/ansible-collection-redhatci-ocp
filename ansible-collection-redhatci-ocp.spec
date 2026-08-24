@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        3.6.EPOCH
+Version:        6.1.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,27 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Mon Aug 17 2026 Ramon Perez <raperez@redhat.com> - 6.1.EPOCH-VERS
+- Include Two-Node with Fencing (TNF) OCP support in generate_manifests and installer roles
+
+* Fri Aug 14 2026 Tony Garcia <tonyg@redhat.com> - 6.0.EPOCH-VERS
+- Remove setup_gitea role, superseded by forgejo_setup
+
+* Wed Aug 13 2026 Frederic Lepied <flepied@redhat.com> - 5.0.EPOCH-VERS
+- Remove monitor_agent_based_installer role (monitoring moved to dci-openshift-agent)
+
+* Tue Aug 12 2026 Frederic Lepied <flepied@redhat.com> - 4.3.EPOCH-VERS
+- Add resolve_must_gather_images role and filter plugin
+
+* Wed Aug  5 2026 Beto Rdz <josearod@redhat.com> - 4.2.EPOCH-VERS
+- Add image source generation capabilities to mirror_images role
+
+* Mon Aug  3 2026 Tony Garcia <tonyg@redhat.com> - 4.1.EPOCH-VERS
+- Remove DCI component creation from preflight role
+
+* Thu Jul 30 2026 Beto Rdz <josearod@redhat.com> - 4.0.EPOCH-VERS
+- Non-backward compatible changes to the image sources plays in acm utils
+
 * Fri Jun 19 2026 Frederic Lepied <flepied@redhat.com> - 3.6.EPOCH-VERS
 - Add generic test runner for eco_gotests role
 

@@ -62,7 +62,10 @@
     - name: Download ZTP cluster and policies applications from ztp site generator
       ansible.builtin.shell: |
         set -o pipefail
-        podman run --authfile "{{ temp_dir.path }}"/temp-pull-secret.json --rm --log-driver=none "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}" extract /home/ztp --tar | tar x -C "{{ temp_dir.path }}"/ztp/
+        podman run --authfile "{{ temp_dir.path }}"/temp-pull-secret.json \
+          --rm --log-driver=none \
+          "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}" \
+          extract /home/ztp --tar | tar x -C "{{ temp_dir.path }}"/ztp/
 
     - name: Set the proper permissions
       ansible.builtin.shell: |
@@ -190,7 +193,12 @@
 
     - name: Patch the ArgoCD instance to install the GitOps ZTP plugin
       ansible.builtin.shell: |
-        {{ czga_oc_tool_path }} --kubeconfig="{{ temp_dir.path }}/kubeconfig" patch argocd openshift-gitops -n openshift-gitops --patch-file "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json" --type=merge
+        {{ czga_oc_tool_path }} \
+          --kubeconfig="{{ temp_dir.path }}/kubeconfig" \
+          patch argocd openshift-gitops \
+          -n openshift-gitops \
+          --patch-file "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json" \
+          --type=merge
 
     - name: Disable proxy addon
       kubernetes.core.k8s:

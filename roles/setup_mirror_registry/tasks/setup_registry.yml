@@ -15,14 +15,14 @@
         state: enabled
         zone: "{{ item }}"
       with_items:
-      - internal
-      - public
+        - internal
+        - public
 
     - name: Create directory to hold the registry files
       ansible.builtin.file:
         path: "{{ item }}"
-        owner:  "{{ file_owner }}"
-        group:  "{{ file_group }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
         mode: "0775"
         state: directory
         recurse: true
@@ -32,16 +32,19 @@
         - "{{ registry_dir_data }}"
 
 - name: Generate htpasswd entry
-  ansible.builtin.command: htpasswd -bBn {{ disconnected_registry_user }} {{ disconnected_registry_password }}
+  ansible.builtin.command:
+    cmd: htpasswd -iBn {{ disconnected_registry_user }}
+    stdin: "{{ disconnected_registry_password }}"
   register: htpass_entry
   changed_when: false
+  no_log: true
 
 - name: Write htpasswd file
   ansible.builtin.copy:
     content: '{{ htpass_entry.stdout }}'
     dest: "{{ registry_dir_auth }}/htpasswd"
-    owner:  "{{ file_owner }}"
-    group:  "{{ file_group }}"
+    owner: "{{ file_owner }}"
+    group: "{{ file_group }}"
     mode: "0660"
     backup: true
     force: true

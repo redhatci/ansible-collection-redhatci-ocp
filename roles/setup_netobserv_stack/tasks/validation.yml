@@ -1,4 +1,11 @@
 ---
+- name: Validate required credentials
+  ansible.builtin.assert:
+    that:
+      - setup_netobserv_stack_access_key_id | length > 0
+      - setup_netobserv_stack_access_key_secret | length > 0
+    fail_msg: "setup_netobserv_stack_access_key_id and setup_netobserv_stack_access_key_secret are required"
+
 - name: Check for config file
   ansible.builtin.stat:
     path: "{{ setup_netobserv_stack_conf_file }}"

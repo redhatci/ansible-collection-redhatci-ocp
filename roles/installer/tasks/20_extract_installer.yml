@@ -16,7 +16,7 @@
     dest: "{{ pullsecret_file }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0644'
+    mode: '0600'
     force: true
   tags:
     - pullsecret
@@ -53,7 +53,7 @@
     dest: "{{ dir }}/pull-secret.txt"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: "0755"
+    mode: "0600"
   become: true
   when:
     - registry_creation|bool

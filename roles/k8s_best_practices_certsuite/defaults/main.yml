@@ -1,6 +1,6 @@
 ---
 kbpc_check_commit_sha: false
-kbpc_version: v5.5.22
+kbpc_version: v5.5.24
 kbpc_repo_org_name: redhat-best-practices-for-k8s
 kbpc_project_name: certsuite
 kbpc_repository: "https://github.com/{{ kbpc_repo_org_name }}/{{ kbpc_project_name }}"
@@ -41,6 +41,8 @@ kbpc_feedback:
   access-control-cluster-role-bindings: ""
   access-control-container-host-port: ""
   access-control-crd-roles: ""
+  access-control-dac-override-capability-check: ""
+  access-control-dac-read-search-capability-check: ""
   access-control-ipc-lock-capability-check: ""
   access-control-namespace: ""
   access-control-namespace-resource-quota: ""
@@ -59,10 +61,11 @@ kbpc_feedback:
   access-control-security-context: ""
   access-control-security-context-non-root-user-check: ""
   access-control-security-context-privilege-escalation: ""
-  access-control-security-context-read-only-file-system: ""
+  access-control-security-context-read-only-root-file-system: ""
   access-control-service-type: ""
   access-control-ssh-daemons: ""
   access-control-sys-admin-capability-check: ""
+  access-control-sys-module-capability-check: ""
   access-control-sys-nice-realtime-capability: ""
   access-control-sys-ptrace-capability: ""
   affiliated-certification-container-is-certified-digest: ""

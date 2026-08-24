@@ -72,12 +72,8 @@ echo
 
 echo "> App"
 echo
-INTERMEDIATE_FILE_NAME=trexapp_logs.txt
-$OC_BINARY logs -n "$APP_NAMESPACE" "$TREXAPP_POD" | tail -n60 > "$INTERMEDIATE_FILE_NAME"
-START_LINE=$(cat -n "$INTERMEDIATE_FILE_NAME" | grep "Packets lost from 0 to 1" | awk '{print $1}')
-## This is the only command that prints something
-tail -n+"$START_LINE" $INTERMEDIATE_FILE_NAME
-rm $INTERMEDIATE_FILE_NAME
+$OC_BINARY logs -n "$APP_NAMESPACE" "$TREXAPP_POD" \
+    | grep -oE '(Packets lost from|Total packets lost).*'
 
 echo
 echo

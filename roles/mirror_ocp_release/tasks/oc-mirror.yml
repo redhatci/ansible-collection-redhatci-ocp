@@ -110,15 +110,22 @@
       until: _mor_cmd_output.rc == 0
       changed_when: _mor_cmd_output.rc == 0
 
+    - name: Rename IDMS manifest to match the release version
+      ansible.builtin.shell: >
+        set -o pipefail;
+        sed -e 's/name:.*/name: release-{{ mor_version }}/'
+        "{{ _mor_tmp_dir.path }}/working-dir/cluster-resources/idms-oc-mirror.yaml"
+      register: _mor_is_release
+      changed_when: false
+
     - name: Write Image Source manifest
       ansible.builtin.copy:
-        src: "{{ _mor_tmp_dir.path }}/working-dir/cluster-resources/idms-oc-mirror.yaml"
         dest: "{{ mor_cache_dir }}/{{ mor_version }}/imagesource.yaml"
-        remote_src: true
         owner: "{{ mor_owner }}"
         group: "{{ mor_group }}"
         mode: "0644"
         setype: httpd_sys_content_t
+        content: "{{ _mor_is_release.stdout }}"
       become: true
 
   always:

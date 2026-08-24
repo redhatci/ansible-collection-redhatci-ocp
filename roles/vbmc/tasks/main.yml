@@ -1,4 +1,11 @@
 ---
+- name: Validate required credentials
+  ansible.builtin.assert:
+    that:
+      - vbmc_user | length > 0
+      - vbmc_pass | length > 0
+    fail_msg: "vbmc_user and vbmc_pass are required"
+
 - name: Install hook
   when: hook_action == 'install'
   become: true

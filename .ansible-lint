@@ -27,5 +27,4 @@ warn_list:
   - ignore-errors
   - jinja[spacing]   # multiline is not working https://github.com/ansible/ansible-lint/discussions/3015
   - no-changed-when
-  - yaml[line-length]
 ...

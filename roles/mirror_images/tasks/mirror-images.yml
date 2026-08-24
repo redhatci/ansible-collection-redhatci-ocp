@@ -13,6 +13,9 @@
       {{ _image_name }}{%- if _image_tag | length %}{{ _image_tag }}{%- endif -%}
       {%- endif -%}
     _tgt_image_location: "{{ mi_registry }}{% if _image_org_path | length %}/{{ _image_org_path }}{% endif %}/{{ _image_img_path }}"
+    _src_ref: "{{ image.split('@')[0] }}"
+    _source_repo: "{{ (_src_ref.split('/')[:-1] + [_src_ref.split('/')[-1].split(':')[0]]) | join('/') }}"
+    _mirror_repo: "{{ (_tgt_image_location.split('/')[:-1] + [_tgt_image_location.split('/')[-1].split(':')[0]]) | join('/') }}"
   block:
     - name: "Mirror image"
       ansible.builtin.command:
@@ -40,18 +43,74 @@
       delay: 5
       until: _mi_skopeo_copy is not failed
 
+    - name: Record mirrored image mapping
+      ansible.builtin.set_fact:
+        mi_image_mirrors: >-
+          {{
+            mi_image_mirrors + [{
+              'source': _source_repo,
+              'mirror': _mirror_repo,
+              'target': _tgt_image_location,
+              'tag_preserved': not (mi_random_tag | bool)
+            }]
+          }}
+
   rescue:
-    - name: "Image already mirrored"
+    - name: Inspect source image digest
       ansible.builtin.command: >
         skopeo inspect
-        {% if mi_authfile is defined %}
+        --no-tags
+        {% if mi_src_authfile is defined %}
+        --authfile {{ mi_src_authfile }}
+        {% elif mi_authfile is defined %}
         --authfile {{ mi_authfile }}
         {% endif %}
+        --format '{{ "{{" }} .Digest {{ "}}" }}'
+        docker://{{ image }}
+      register: _mi_src_inspect
+      failed_when: false
+      changed_when: false
+      when:
+        - mi_verify_digest | bool
+
+    - name: Inspect destination image
+      ansible.builtin.command: >
+        skopeo inspect
+        --no-tags
         {% if mi_dst_authfile is defined %}
         --authfile {{ mi_dst_authfile }}
+        {% elif mi_authfile is defined %}
+        --authfile {{ mi_authfile }}
         {% endif %}
         --tls-verify=false
+        --format '{{ "{{" }} .Digest {{ "}}" }}'
         docker://{{ _tgt_image_location }}
-      register: _mi_inspect
-      failed_when: _mi_inspect.rc != 0
-...
+      register: _mi_dst_inspect
+      failed_when: _mi_dst_inspect.rc != 0
+
+    - name: Verify source and destination digests match
+      ansible.builtin.assert:
+        that:
+          - _mi_src_inspect.rc == 0
+          - (_mi_src_inspect.stdout | trim) is match('^sha[0-9]+:')
+          - (_mi_src_inspect.stdout | trim) == (_mi_dst_inspect.stdout | trim)
+        fail_msg: >-
+          skopeo copy failed for {{ image }} and destination
+          {{ _tgt_image_location }} does not match the source
+          digest (source={{ _mi_src_inspect.stdout | default('') | trim }},
+          destination={{ _mi_dst_inspect.stdout | default('') | trim }},
+          copy_error={{ _mi_skopeo_copy.msg | default(_mi_skopeo_copy.stderr | default('')) }}).
+      when:
+        - mi_verify_digest | bool
+
+    - name: Record mirrored image mapping
+      ansible.builtin.set_fact:
+        mi_image_mirrors: >-
+          {{
+            mi_image_mirrors + [{
+              'source': _source_repo,
+              'mirror': _mirror_repo,
+              'target': _tgt_image_location,
+              'tag_preserved': not (mi_random_tag | bool)
+            }]
+          }}

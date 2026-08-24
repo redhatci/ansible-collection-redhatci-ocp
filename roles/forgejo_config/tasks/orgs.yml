@@ -127,7 +127,10 @@
         password: "{{ fc_admin_password }}"
         force_basic_auth: true
         status_code: [204]
-      loop: "{{ org.members | rejectattr('role', 'defined') | list + org.members | selectattr('role', 'defined') | selectattr('role', 'equalto', 'member') | list }}"
+      loop: >-
+        {{ org.members | rejectattr('role', 'defined') | list +
+        org.members | selectattr('role', 'defined') |
+        selectattr('role', 'equalto', 'member') | list }}
       loop_control:
         loop_var: member
         label: "{{ member.username }}"

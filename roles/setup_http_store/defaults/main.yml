@@ -4,7 +4,7 @@ http_dir: /opt/http_store
 http_data_dir: "{{ http_dir }}/data"
 http_port: 80
 # Note if you change this you might have to change the env vars and volumes for podman task
-container_image: quay.io/fedora/httpd-24:latest
+container_image: quay.io/fedora/httpd-24@sha256:23707ed98ca972e949ecd3da5bc47c7bd9036e5b1aedb5f404a42f819c73e948  # tag: latest, date: 20260729
 file_owner: "{{ ansible_env.USER }}"
 file_group: "{{ file_owner }}"
 http_store_ephemeral: false

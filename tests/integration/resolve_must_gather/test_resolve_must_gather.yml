@@ -1,0 +1,32 @@
+---
+- name: Test resolve_must_gather_images role against a live cluster
+  hosts: localhost
+  gather_facts: false
+  environment:
+    KUBECONFIG: "{{ kubeconfig | default('/tmp/kubeconfig') }}"
+  vars:
+    rmgi_images:
+      - ose-must-gather
+      - ptp-must-gather
+  tasks:
+    - name: Display input images
+      ansible.builtin.debug:
+        msg: "Input images: {{ rmgi_images }}"
+
+    - name: Resolve must-gather images
+      ansible.builtin.include_role:
+        name: redhatci.ocp.resolve_must_gather_images
+      vars:
+        rmgi_images: "{{ rmgi_images }}"
+
+    - name: Display resolved images
+      ansible.builtin.debug:
+        msg: "Resolved images: {{ rmgi_resolved_images }}"
+
+    - name: Verify all images were resolved to full references
+      ansible.builtin.assert:
+        that:
+          - rmgi_resolved_images | length == rmgi_images | length
+          - rmgi_resolved_images | select('match', '.*@sha256:.*') | list | length == rmgi_resolved_images | length
+        fail_msg: "Not all images were resolved to digest references"
+        success_msg: "All {{ rmgi_resolved_images | length }} images resolved successfully"

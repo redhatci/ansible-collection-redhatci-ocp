@@ -12,7 +12,7 @@
     mc_catalog_digest: "{{ mc_catalog }}"
 
 - name: Set Digest in catalog
-  when: not mc_catalog | regex_search('@sha256sum:')
+  when: not mc_catalog | regex_search('@sha256(sum)?:')
   block:
     - name: Get catalog Digest
       ansible.builtin.shell:

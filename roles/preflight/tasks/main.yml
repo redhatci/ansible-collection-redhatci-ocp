@@ -46,36 +46,28 @@
       # this variable is set in test-runner
       when: preflight_source_dir is defined
 
-    # $ podman run --rm quay.io/opdev/preflight:tag --version
-    # preflight version tag <commit: b6bcc3506c0d84baa0c020f6b776a181b931f57a>
-    - name: Extract commit_id from Preflight image
-      ansible.builtin.shell:
-        cmd: >
-          set -o pipefail;
-          podman run --rm {{ preflight_image }} --version |
-          awk '/commit:/ {gsub(">", "", $NF); print $NF}'
-      register: preflight_commit_id
-      changed_when: false
+    - name: Extract preflight version info
+      when: preflight_source_dir is not defined
+      block:
+        - name: Get preflight version
+          containers.podman.podman_container:
+            name: preflight-version
+            image: "{{ preflight_image }}"
+            command: "--version"
+            detach: false
+            rm: true
+          register: _preflight_version_output
 
-    - name: Create a DCI component from Preflight image
-      ansible.builtin.include_role:
-        name: redhatci.ocp.include_components
-        apply:
-          delegate_to: localhost
-      vars:
-        ic_commit_urls:
-          - "{{ preflight_repo_https }}/commit/{{ preflight_commit_id.stdout }}"
-        ic_gits: []
-        ic_dev_gits: []
-      # TODO: replace ic_* prefix with include_components prefix
-      tags:
-        - skip_ansible_lint
-
-    # Retrieve scorecard-test image in advance,
-    # to allow its mirroring in the disconnected cluster.
-    - name: Run preflight runtime-assets to get scorecard-test image
-      ansible.builtin.include_tasks: prepare_runtime_assets.yml
-      when: dci_disconnected | default(false) | bool
+        - name: Set preflight version facts
+          vars:
+            _preflight_commit_id: >-
+              {{ _preflight_version_output.stdout |
+                 regex_search('commit:\s*(\w+)', '\1') | first }}
+          ansible.builtin.set_fact:
+            preflight_version_info:
+              commit_id: "{{ _preflight_commit_id }}"
+              commit_url: "{{ preflight_repo_https }}/commit/{{ _preflight_commit_id }}"
+              image: "{{ preflight_image }}"
 
     - name: Manage images mirroring for Preflight cert suite
       ansible.builtin.include_tasks: mirroring.yml
