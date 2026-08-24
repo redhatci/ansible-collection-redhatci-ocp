@@ -27,7 +27,7 @@
 
     - name: Logs path
       ansible.builtin.debug:
-        msg: "{{ job_logs.path }}"
+        msg: "{{ glfn_dir }}"
 
 - name: Display the logs directory path
   ansible.builtin.debug:
@@ -52,9 +52,12 @@
     --namespace={{ glfn_ns }}
     --all-containers=true
     {{ item }}
-    > {{ glfn_dir }}/{{ item }}.log ;
-    [ -s {{ glfn_dir }}/{{ item }}.log ] || rm -f {{ glfn_dir }}/{{ item }}.log
+    &> {{ glfn_dir }}/{{ item }}.log ;
+    [ -s {{ glfn_dir }}/{{ item }}.log ] ||
+    rm -f {{ glfn_dir }}/{{ item }}.log
   loop: "{{ pod_list | json_query('resources[*].metadata.name') }}"
+  when: pod_list.resources | length > 0
+  changed_when: false
 
 - name: "Get pods status from namespace"
   ansible.builtin.shell: >
@@ -62,13 +65,17 @@
     --namespace={{ glfn_ns }}
     --show-labels
     --output=wide
-    > {{ glfn_dir }}/{{ glfn_ns }}_status.log ;
-    [ -s {{ glfn_dir }}/{{ glfn_ns }}_status.log ] || rm -f {{ glfn_dir }}/{{ glfn_ns }}_status.log
+    &> {{ glfn_dir }}/{{ glfn_ns }}_status.log ;
+    [ -s {{ glfn_dir }}/{{ glfn_ns }}_status.log ] ||
+    rm -f {{ glfn_dir }}/{{ glfn_ns }}_status.log
+  changed_when: false
 
 - name: "Get events from namespace"
   ansible.builtin.shell: >
     {{ glfn_oc }} get events
     --namespace={{ glfn_ns }}
-    > {{ glfn_dir }}/{{ glfn_ns }}_events.log ;
-    [ -s {{ glfn_dir }}/{{ glfn_ns }}_events.log ] || rm -f {{ glfn_dir }}/{{ glfn_ns }}_events.log
+    &> {{ glfn_dir }}/{{ glfn_ns }}_events.log ;
+    [ -s {{ glfn_dir }}/{{ glfn_ns }}_events.log ] ||
+    rm -f {{ glfn_dir }}/{{ glfn_ns }}_events.log
+  changed_when: false
 ...
