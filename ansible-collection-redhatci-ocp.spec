@@ -59,6 +59,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 * Wed Sep  9 2026 Beto Rdz <josearod@redhat.com> - 6.3.EPOCH-VERS
 - Resolve must-gather images from CSV annotations; omit unresolved hints
 
+* Tue Aug 25 2026 Frederic Lepied <flepied@redhat.com> - 6.3.EPOCH-VERS
+- Replace ignore_errors: true with failed_when: false across roles
+
 * Fri Aug 21 2026 Tony Garcia <tonyg@redhat.com> - 6.2.EPOCH-VERS
 - Default ArgoCD to operator-managed ClusterRole, require explicit AppProject
 

@@ -30,7 +30,7 @@
         namespace: "{{ acm_cluster_name }}"
         finalizers: null
         ownerReferences: null
-  ignore_errors: true
+  failed_when: false
 
 - name: "Disable BMC credentials finalizers"
   kubernetes.core.k8s:
@@ -42,7 +42,7 @@
         namespace: "{{ acm_cluster_name }}"
         finalizers: null
         ownerReferences: null
-  ignore_errors: true
+  failed_when: false
 
 - name: "Delete BMC credentials for BareMetalHost"
   kubernetes.core.k8s:
@@ -51,7 +51,7 @@
     kind: Secret
     name: "bmh-{{ acm_cluster_name }}"
     namespace: "{{ acm_cluster_name }}"
-  ignore_errors: true
+  failed_when: false
 
 - name: "Disable BMH finalizers"
   kubernetes.core.k8s:
@@ -62,7 +62,7 @@
         name: "{{ acm_cluster_name }}"
         namespace: "{{ acm_cluster_name }}"
         finalizers: []
-  ignore_errors: true
+  failed_when: false
 
 - name: "Delete bare-metal host"
   kubernetes.core.k8s:
@@ -92,7 +92,7 @@
     kind: InfraEnv
     name: "{{ acm_cluster_name }}-infra"
     namespace: "{{ acm_cluster_name }}"
-  ignore_errors: true
+  failed_when: false
 
 - name: "Delete agent cluster install"
   kubernetes.core.k8s:
