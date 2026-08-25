@@ -12,6 +12,7 @@
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
     -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
     raw 0x00 0x08 0x03 0x08
+  changed_when: true
   tags: install_bm
 
 - name: "Set PXE - UEFI Temporally on next boot"
@@ -21,6 +22,7 @@
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
     -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
     raw 0x00 0x08 0x05 0xa0 0x04 0x00 0x00 0x00
+  changed_when: true
   when:
     - (bootmode is not defined or bootmode != "legacy")
   tags: install_bm
@@ -32,6 +34,7 @@
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
     -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
     raw 0x00 0x08 0x05 0x80 0x04 0x00 0x00 0x00
+  changed_when: true
   when:
     - bootmode is defined
     - bootmode == "legacy"
@@ -44,6 +47,7 @@
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
     -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
     power status
+  changed_when: true
   register: node_power
   tags: install_bm
 
@@ -54,6 +58,7 @@
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
     -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
     power on
+  changed_when: true
   when:
     - "'Chassis Power is off' in node_power.stdout"
   tags: install_bm
@@ -65,6 +70,7 @@
     -R7 -N 5 -P {{ hostvars[groups['masters'][0]]['ipmi_password'] }}
     -p {{ hostvars[groups['masters'][0]]['ipmi_port'] }}
     power reset
+  changed_when: true
   when:
     - "'Chassis Power is on' in node_power.stdout"
   tags: install_bm

@@ -3,6 +3,7 @@
   community.general.redfish_command:
     category: Systems
     command: PowerOn
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -11,6 +12,7 @@
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaEject
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -23,6 +25,7 @@
   community.general.redfish_command:
     category: Systems
     command: SetOneTimeBoot
+    changed_when: true
     bootdevice: Hdd
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
@@ -32,6 +35,7 @@
   community.general.redfish_command:
     category: Systems
     command: PowerGracefulRestart
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"

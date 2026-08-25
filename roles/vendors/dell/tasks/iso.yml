@@ -16,6 +16,7 @@
         "-i",
         "{{ boot_iso_url }}",
       ]
+    changed_when: true
   register: drac_version
   no_log: true
 

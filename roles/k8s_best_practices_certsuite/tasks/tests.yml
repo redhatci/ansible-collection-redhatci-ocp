@@ -80,6 +80,7 @@
         -v {{ kbpc_certsuite_dir }}/result_files:/usr/certsuite/results:Z \
         {{ kbpc_certsuite_image }} \
         {{ kbpc_container_command }}
+      changed_when: true
       register: _kbpc_exec_output
       no_log: true
 

@@ -16,6 +16,7 @@
       {{ ecd_opm_path }} render
       {{ ecd_catalog_image }} |
       jq -rn 'inputs | select(.schema == "olm.bundle").relatedImages[].image'
+  changed_when: true
   args:
     executable: /bin/bash
   register: _ecd_catalog_data_cmd

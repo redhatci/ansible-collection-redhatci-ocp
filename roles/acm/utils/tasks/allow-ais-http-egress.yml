@@ -103,6 +103,7 @@
           /bin/sh -c 'dig +short +time=5 +tries=2 A "$1";
           dig +short +time=5 +tries=2 AAAA "$1"'
           -- {{ _utils_host | quote }}
+        changed_when: true
       register: _utils_host_ips
       changed_when: false
       failed_when: >-

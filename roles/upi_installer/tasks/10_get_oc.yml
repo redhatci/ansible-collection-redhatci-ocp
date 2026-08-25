@@ -134,6 +134,7 @@
       --tools
       --from {{ pull_url }}
       --to "{{ cache_dir }}/{{ version }}"
+  changed_when: true
   delegate_to: "{{ cache_server }}"
   notify:
     - "Delete tmp file"

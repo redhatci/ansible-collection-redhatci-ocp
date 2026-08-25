@@ -3,6 +3,7 @@
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: define
+    changed_when: true
     xml: "{{ lookup('template', 'libvirt_network.xml.j2') }}"
 
 - name: "Start network"

@@ -16,6 +16,7 @@
         "-i",
         "{{ boot_iso_url }}",
       ]
+    changed_when: true
   register: drac_version
 
 - name: "Using iDrac ISO method | Found iDrac {{ drac_version.stdout }}"

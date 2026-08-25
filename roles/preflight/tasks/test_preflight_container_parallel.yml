@@ -39,6 +39,7 @@
         {% if item.0.pyxis_container_identifier | default('') | length or item.2.pyxis_container_identifier | default('') | length %}
         --submit
         {% endif %}
+      changed_when: true
       loop: "{{ batched_images | zip(_preflight_batch_dirs.results) | zip(preflight_current_project_batch) | map('flatten') | list }}"
       async: 600
       poll: 0

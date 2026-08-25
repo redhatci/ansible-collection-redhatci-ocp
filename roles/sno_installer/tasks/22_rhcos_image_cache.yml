@@ -62,9 +62,9 @@
   tags: cache
   block:
     - name: "Ensure user specific systemd instance are persistent"
-      ansible.builtin.command: |
-        /usr/bin/loginctl enable-linger {{ si_cache_server_user_id }}
-
+      ansible.builtin.command: /usr/bin/loginctl enable-linger {{ si_cache_server_user_id }}
+      args:
+        creates: /var/lib/systemd/linger/{{ si_cache_server_user_id }}
     - name: "Create systemd user directory"
       ansible.builtin.file:
         path: "{{ si_cache_server_user_dir }}/.config/systemd/user"

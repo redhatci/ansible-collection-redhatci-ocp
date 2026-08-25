@@ -74,6 +74,7 @@
   community.general.redfish_command:
     category: Systems
     command: PowerGracefulShutdown
+    changed_when: true
     baseuri: "{{ _baseuri }}"
     username: "{{ hostvars[item]['ipmi_user'] }}"
     password: "{{ hostvars[item]['ipmi_password'] }}"

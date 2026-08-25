@@ -20,6 +20,7 @@
   ansible.builtin.shell:
     cmd: >
       skopeo inspect docker://{{ ecd_catalog_image }}
+  changed_when: false
   register: _ecd_skopeo_inspect
   until: _ecd_skopeo_inspect.rc == 0
   retries: 5

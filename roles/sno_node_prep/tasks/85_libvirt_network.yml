@@ -6,6 +6,7 @@
     - name: Define network
       community.libvirt.virt_net:
         command: define
+        changed_when: true
         name: "{{ network['name'] }}"
         xml: '{{ lookup("template", "network.xml.j2") }}'
 

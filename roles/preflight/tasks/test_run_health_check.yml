@@ -25,6 +25,7 @@
     cmd: >
       bzip2 --decompress
       {{ preflight_container_artifacts.path }}/rhel-{{ ansible_distribution_major_version }}.oval.xml.bz2
+  changed_when: true
   args:
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true
@@ -42,6 +43,7 @@
       --authfile {{ preflight_partner_creds }}
       {% endif %}
       {{ current_operator_image }}
+  changed_when: true
   become: true
   register: health_check
   retries: 2
@@ -55,6 +57,7 @@
       --results oval-report.xml
       --report oval-report.html
       rhel-{{ ansible_distribution_major_version }}.oval.xml
+  changed_when: true
   args:
     chdir: "{{ preflight_container_artifacts.path }}"
   become: true

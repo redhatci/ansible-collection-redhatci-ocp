@@ -3,12 +3,14 @@
   ansible.builtin.shell: |
     set -o pipefail
     virsh domiflist {{ item }} | awk '/{{ net }}/ {print $5}'
+  changed_when: false
   with_items: "{{ resources }}"
   register: mac_list
   become: "{{ libvirt_become }}"
 
 - name: Register net information
   ansible.builtin.command: "virsh net-dumpxml {{ net }}"
+  changed_when: false
   register: net_dump
   become: "{{ libvirt_become }}"
 
@@ -22,6 +24,7 @@
     set -o pipefail ;
     virsh net-dhcp-leases {{ net }} |
     awk '($4 == "ipv4") && ($3 == "{{ item.value.mac }}") {print $5}'
+  changed_when: false
   register: ip_list
   until: "ip_list.stdout != ''"
   retries: 40
@@ -46,6 +49,7 @@
     name='{{ item.key }}.{{ cluster_domain }}'
     ip='{{ item.value.ip }}' />"
     --live --config
+  changed_when: true
   when:
     - item.value.ip is defined
     - "item.value.ip not in net_dump.stdout"

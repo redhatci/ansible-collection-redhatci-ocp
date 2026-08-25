@@ -54,6 +54,7 @@
             name: preflight-version
             image: "{{ preflight_image }}"
             command: "--version"
+            changed_when: true
             detach: false
             rm: true
           register: _preflight_version_output

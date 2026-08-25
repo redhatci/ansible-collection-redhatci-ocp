@@ -2,6 +2,7 @@
 - name: "List nodes for {{ host['name'] }}"
   community.libvirt.virt:
     command: list_vms
+    changed_when: false
   register: _ool_vms_list
 
 - name: "Set ool_node_exists"
@@ -12,6 +13,7 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
+    changed_when: true
   register: _ool_node_status
   when: ool_node_exists
 
@@ -19,6 +21,7 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: destroy
+    changed_when: true
   when: _ool_node_status['status'] is defined and _ool_node_status['status'] == 'running'
 
 - name: "Undefine {{ host.name }}"
@@ -26,6 +29,7 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: undefine
+    changed_when: true
     flags: nvram
   when: ool_node_exists
 ...

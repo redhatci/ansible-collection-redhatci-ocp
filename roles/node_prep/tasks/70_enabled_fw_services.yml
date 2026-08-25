@@ -52,4 +52,5 @@
     - name: Save iptables configuration
       ansible.builtin.shell: |
         /usr/sbin/iptables-save > /etc/sysconfig/iptables
+      changed_when: true
       become: true

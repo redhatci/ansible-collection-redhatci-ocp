@@ -3,6 +3,7 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: list_vms
+    changed_when: false
   register: _ool_vms_list
 
 - name: "Set ool_node_not_exists"
@@ -19,11 +20,13 @@
 
 - name: "Resize OS disk"
   ansible.builtin.command: "qemu-img resize {{ libvirt_image_path }}/{{ host['name'] }}.qcow2 +{{ host['disk_size'] }}"
+  changed_when: true
   become: "{{ libvirt_become }}"
   when: host['disk_size'] is defined and ool_node_not_exists
 
 - name: "Create an additional disk"
   ansible.builtin.command: "qemu-img create -f qcow2 {{ libvirt_image_path }}/{{ host['name'] }}-disk2.qcow2 {{ host['disk2_size'] }} "
+  changed_when: true
   become: "{{ libvirt_become }}"
   when:
     - host['disk2_size'] is defined and ool_node_not_exists
@@ -55,6 +58,7 @@
     mkisofs -o /tmp/vm-{{ host['name'] }}.iso -V cidata -r -J
       --quiet /tmp/vm-{{ host['name'] }}/user-data
       /tmp/vm-{{ host['name'] }}/meta-data
+  changed_when: true
   become: "{{ libvirt_become }}"
   when: ool_node_not_exists
 
@@ -62,12 +66,14 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: define
+    changed_when: true
     xml: "{{ lookup('template', 'libvirt_node.xml.j2') }}"
   when: ool_node_not_exists
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync
 
+  changed_when: true
 - name: "Start VM"
   community.libvirt.virt:
     name: "{{ host['name'] }}"

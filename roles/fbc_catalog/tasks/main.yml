@@ -52,6 +52,7 @@
 - name: "Validate_ catalog"
   ansible.builtin.command: |
     {{ fbc_opm_cmd }} validate catalog
+  changed_when: false
   args:
     chdir: "{{ fbc_tmp_dir }}"
   register: catalog_validation
@@ -71,6 +72,7 @@
     --no-cache
     -f catalog.Dockerfile
     -t {{ fbc_index_image }}
+  changed_when: true
   args:
     chdir: "{{ fbc_tmp_dir }}"
 

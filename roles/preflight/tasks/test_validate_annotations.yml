@@ -6,6 +6,7 @@
       $(podman create --rm {{ operator.bundle_image }} bash):/metadata/annotations.yaml .
     chdir: "{{ preflight_operator_artifacts.path }}"
 
+  changed_when: true
 - name: Read annotations.yaml file
   ansible.builtin.slurp:
     src: "{{ preflight_operator_artifacts.path }}/annotations.yaml"

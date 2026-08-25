@@ -3,6 +3,7 @@
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: status
+    changed_when: true
   ignore_errors: true
   register: node_exists
 
@@ -10,10 +11,12 @@
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: destroy
+    changed_when: true
   when: not node_exists.failed
 
 - name: "Undefine network"
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: undefine
+    changed_when: true
   when: not node_exists.failed

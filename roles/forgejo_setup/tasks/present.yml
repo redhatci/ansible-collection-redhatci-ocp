@@ -56,6 +56,7 @@
   containers.podman.podman_container_exec:
     name: "{{ fs_db_container_name }}"
     command: pg_isready -U {{ fs_db_user }} -d {{ fs_db_name }}
+    changed_when: true
   register: _fs_pg_ready
   until: _fs_pg_ready.rc == 0
   retries: "{{ fs_wait_retries }}"

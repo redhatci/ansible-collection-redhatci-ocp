@@ -1,11 +1,13 @@
 - name: List vm storage pools
   community.libvirt.virt_pool:
     command: list_pools
+    changed_when: true
   register: pools
 
 - name: Get pool info
   community.libvirt.virt_pool:
     command: info
+    changed_when: true
     name: "{{ item }}"
   loop: "{{ pools.list_pools }}"
   register: pool_info

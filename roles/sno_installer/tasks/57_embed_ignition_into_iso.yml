@@ -16,6 +16,7 @@
         --force \
         --ignition-file /data/bootstrap-in-place-for-live-iso.ign \
         --output /data/embedded.iso
+  changed_when: true
   register: rhcos_iso_live_info
   tags: embedded
 

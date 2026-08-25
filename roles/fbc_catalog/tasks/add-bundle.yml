@@ -2,6 +2,7 @@
 - name: "Render bundle operator image"
   ansible.builtin.shell: >
     {{ fbc_opm_cmd }} render {{ bundle }}
+  changed_when: true
   args:
     chdir: "{{ fbc_tmp_dir }}"
   register: rendered_bundle
@@ -29,6 +30,7 @@
     else
       skopeo inspect --tls-verify=false docker://{{ bundle }};
     fi
+  changed_when: false
   register: bundle_inspect
   retries: 2
   delay: 10
@@ -46,6 +48,7 @@
     {{ fbc_opm_cmd }} init {{ fbc_short_name }}
     --default-channel={{ fbc_default_channel }}
     --output=yaml >> catalog/index.yml
+  changed_when: true
   args:
     chdir: "{{ fbc_tmp_dir }}"
 
@@ -53,6 +56,7 @@
   ansible.builtin.shell: >
     {{ fbc_opm_cmd }} render {{ bundle }}
     --output=yaml >> {{ fbc_tmp_dir }}/catalog/index.yml
+  changed_when: true
   args:
     chdir: "{{ fbc_tmp_dir }}"
   register: render_result

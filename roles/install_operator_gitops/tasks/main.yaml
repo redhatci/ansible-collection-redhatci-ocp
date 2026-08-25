@@ -9,10 +9,12 @@
             "featureGates":{"custom":{"enabled":["AlphaAgentInstallStrategy"]},
                                  "featureSet":"Custom"}}}'
 
+  changed_when: true
 - name: Modify the Provisioning resource to allow the Bare Metal Operator to watch all namespaces
   ansible.builtin.shell: |
     {{ iog_oc_tool_path }} patch provisioning provisioning-configuration \
        --type merge -p '{"spec":{"watchAllNamespaces": true }}'
+  changed_when: true
   when: metallb
 
 - name: Create Agent Service config

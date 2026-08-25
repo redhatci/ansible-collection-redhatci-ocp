@@ -9,6 +9,7 @@
   community.general.redfish_command:
     category: Systems
     command: PowerOn
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"

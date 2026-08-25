@@ -454,6 +454,7 @@
   community.general.redfish_info:
     category: Chassis
     command: GetChassisInventory
+    changed_when: true
     baseuri: "{{ hostvars[item]['ipmi_address']|ipwrap }}"
     username: "{{ hostvars[item]['ipmi_user'] }}"
     password: "{{ hostvars[item]['ipmi_password'] }}"
@@ -472,6 +473,7 @@
   community.general.redfish_info:
     category: Update
     command: GetFirmwareInventory
+    changed_when: true
     baseuri: "{{ hostvars[item]['ipmi_address']|ipwrap }}"
     username: "{{ hostvars[item]['ipmi_user'] }}"
     password: "{{ hostvars[item]['ipmi_password'] }}"

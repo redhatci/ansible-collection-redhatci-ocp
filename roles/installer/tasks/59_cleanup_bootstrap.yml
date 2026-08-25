@@ -2,6 +2,7 @@
 - name: Get list of all VMs
   community.libvirt.virt:
     command: list_vms
+    changed_when: false
   register: all_vms
   become: true
   tags: cleanup
@@ -9,6 +10,7 @@
 - name: Get list of all running VMs
   community.libvirt.virt:
     command: list_vms
+    changed_when: false
     state: running
   register: running_vms
   become: true
@@ -17,6 +19,7 @@
 - name: Get list of all paused VMs
   community.libvirt.virt:
     command: list_vms
+    changed_when: false
     state: paused
   register: paused_vms
   become: true
@@ -26,6 +29,7 @@
   community.libvirt.virt:
     name: "{{ item }}"
     command: destroy
+    changed_when: true
   with_items:
     - "{{ running_vms.list_vms }}"
     - "{{ paused_vms.list_vms }}"
@@ -37,6 +41,7 @@
   community.libvirt.virt:
     name: "{{ item }}"
     command: undefine
+    changed_when: true
     flags:
       - nvram
   with_items: "{{ all_vms.list_vms }}"

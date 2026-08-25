@@ -1,11 +1,13 @@
 ---
 - name: Get last commit id  # noqa: command-instead-of-module
   ansible.builtin.command: "git -C {{ item }} rev-parse HEAD"
+  changed_when: false
   register: last_commit_id
   ignore_errors: true
 
 - name: Get repo url  # noqa: command-instead-of-module
   ansible.builtin.command: "git -C {{ item }} config --get remote.origin.url"
+  changed_when: false
   register: repo_url
   when: last_commit_id.rc == 0
 

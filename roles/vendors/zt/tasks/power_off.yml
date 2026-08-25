@@ -2,6 +2,7 @@
   community.general.redfish_command:
     category: Systems
     command: PowerGracefulShutdown
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -25,6 +26,7 @@
       community.general.redfish_command:
         category: Systems
         command: PowerForceOff
+        changed_when: true
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"

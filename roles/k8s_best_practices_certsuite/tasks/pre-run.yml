@@ -86,6 +86,7 @@
       block:
         - name: Retrieve commit SHA from the downloaded repo - from refs
           ansible.builtin.shell: cat .git/refs/heads/$(git rev-parse --abbrev-ref HEAD)
+          changed_when: false
           register: _kbpc_repo_info_branch
           args:
             chdir: "{{ kbpc_certsuite_dir }}"
@@ -104,6 +105,7 @@
       ansible.builtin.shell: |
         set -x
         podman build -t {{ kbpc_certsuite_image }} .
+      changed_when: true
       args:
         chdir: "{{ kbpc_certsuite_dir }}"
 
@@ -175,6 +177,7 @@
         podman tag quay.io/{{ kbpc_repo_org_name }}/{{ kbpc_image_name }}:{{ kbpc_version_image }} \
         {{ kbpc_certsuite_image }}
         podman image rm {{ kbpc_image_name }}:{{ kbpc_version_image }}
+      changed_when: true
       register: _kbpc_pull_result
       retries: 2
       delay: 10
@@ -187,6 +190,7 @@
     # meant to be used with images built from a PR
     - name: Retrieve last commit SHA
       ansible.builtin.command: git rev-parse HEAD  # noqa: command-instead-of-module
+      changed_when: false
       register: _kbpc_commit_sha_cmd
       args:
         chdir: "{{ kbpc_certsuite_dir }}"

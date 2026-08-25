@@ -82,6 +82,7 @@
             --from  "{{ release_image_item.remote | quote }}"
             --to "{{ downloads_path }}/{{ openshift_full_version }}"
 
+      changed_when: true
     - name: Remove temporary oc stable client
       ansible.builtin.file:
         path: "{{ oc_tmp_dir.path }}"
@@ -146,6 +147,7 @@
     - name: Check binary installed
       ansible.builtin.command:
         cmd: "{{ binaries_tool_path }}/{{ item }} help"
+      changed_when: false
       with_items:
         - kubectl
         - oc
@@ -167,6 +169,7 @@
     - name: Check binary installed
       ansible.builtin.command:
         cmd: "/usr/local/bin/{{ item }} help"
+      changed_when: false
       with_items:
         - kubectl
         - oc
@@ -219,3 +222,4 @@
     - name: Check opm installed
       ansible.builtin.command:
         cmd: "{{ binaries_tool_path }}/opm version"
+      changed_when: false

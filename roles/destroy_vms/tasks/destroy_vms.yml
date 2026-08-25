@@ -21,6 +21,7 @@
 - name: Undefine VM  # noqa: command-instead-of-shell
   ansible.builtin.shell:
     cmd: "virsh undefine --remove-all-storage --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
+  changed_when: true
   loop: "{{ vms_to_remove | default([]) }}"
 
 # In some cases the disks removed through the "Undefine" task does not correspond to the disks that
@@ -33,6 +34,7 @@
       {% for disk_name, _ in item.disks.items() %}
       {{ images_dir }}/{{ item.name }}_{{ disk_name }}.qcow2
       {% endfor %}
+  changed_when: true
   loop: "{{ kvm_nodes | default([]) }}"
   loop_control:
     label: item.name

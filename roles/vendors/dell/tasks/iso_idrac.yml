@@ -13,4 +13,5 @@
           "-u", "{{ bmc_user }}",
           "-p", "{{ bmc_password }}",
           "-i", "{{ boot_iso_url }}"
+        changed_when: true
         ]

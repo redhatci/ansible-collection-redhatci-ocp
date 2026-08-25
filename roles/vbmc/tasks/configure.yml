@@ -3,6 +3,7 @@
   ansible.builtin.shell: |
     {{ vbmc_bin }} stop {{ item }}
     {{ vbmc_bin }} delete {{ item }}
+  changed_when: true
   ignore_errors: true
   with_items: "{{ vbmc_nodes }}"
 
@@ -10,6 +11,7 @@
   ansible.builtin.shell: |
     set -o pipefail
     {{ vbmc_bin | quote }} list | grep -c 62 || true
+  changed_when: false
   register: vbmc_used_ports
 
 - name: Define vbmc_port for each VM
@@ -39,6 +41,7 @@
       --username {{ vbmc_user }}
       --password {{ vbmc_pass }}
       --address {% if not baremetal_net_ipv6 | bool %}::ffff:{% endif %}{{ vbmc_management_address }}
+  changed_when: true
   with_dict: "{{ vbmc_ports }}"
 
 - name: Start nodes using vbmc
@@ -56,6 +59,7 @@
       -H {{ vbmc_management_address }}
       -p {{ item.value }}
       chassis power on
+  changed_when: true
   with_dict: "{{ vbmc_ports }}"
   register: command_result
   until: command_result.rc == 0
@@ -71,6 +75,7 @@
       -H {{ vbmc_management_address }}
       -p {{ item.value }}
       power status
+  changed_when: true
   register: ipmitool_results
   with_dict: "{{ vbmc_ports }}"
   until: ipmitool_results.rc == 0
@@ -92,6 +97,7 @@
       -H {{ vbmc_management_address }}
       -p {{ item.value }}
       chassis power off
+  changed_when: true
   with_dict: "{{ vbmc_ports }}"
   register: command_result
   until: command_result.rc == 0
@@ -122,6 +128,7 @@
         'disks': ${disks_list},
         'disk_bytes': ${disks_info}
     }"
+  changed_when: false
   with_items: "{{ vbmc_nodes | sort }}"
   register: nodes_info
 

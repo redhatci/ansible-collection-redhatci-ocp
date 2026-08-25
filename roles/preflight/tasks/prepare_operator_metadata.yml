@@ -5,6 +5,7 @@
     DOCKER_CONFIG={{ preflight_tmp_dir.path }}
     {% endif %}
     {{ opm_tool_path }} render {{ operator.bundle_image }}
+  changed_when: true
   register: rendered_bundle
   retries: 2
   delay: 10

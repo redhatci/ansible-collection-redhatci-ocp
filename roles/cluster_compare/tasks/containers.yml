@@ -9,6 +9,7 @@
         podman rm -fi ofe-cc-kca
         podman cp $(podman create --name ofe-cc-kca {{ cc_compare_container_source }}):{{ cc_compare_container_executable }} kubectl-cluster_compare
         podman rm ofe-cc-kca
+      changed_when: true
       args:
         chdir: "{{ cc_work_dir }}"
 
@@ -16,6 +17,7 @@
       ansible.builtin.command:
         cmd: "podman rm -fi ofe-cc-kca"
 
+      changed_when: true
 - name: Extract reference metadata from container
   when: cc_reference_container_source | length > 0
   block:
@@ -27,4 +29,5 @@
       ansible.builtin.shell: |
         podman rm -f ofe-cc-ref
         podman cp $(podman create --name ofe-cc-ref {{ cc_reference_container_source }}):{{ cc_reference_metadata_yaml_location }} {{ cc_work_dir }}/bin/
+      changed_when: true
 ...

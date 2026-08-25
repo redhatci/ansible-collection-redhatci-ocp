@@ -11,6 +11,7 @@
     --entrypoint cat
     {{ preflight_image }}
     /etc/pki/tls/certs/ca-bundle.trust.crt
+  changed_when: false
   register: cabundle
   no_log: true
 
@@ -29,6 +30,7 @@
 
 - name: Update trusted ca
   ansible.builtin.command: /bin/update-ca-trust
+  changed_when: true
   become: true
 
 - name: Merge the ca trust with the custom ca

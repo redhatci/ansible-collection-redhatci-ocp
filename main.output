@@ -1,0 +1,1161 @@
++ for version in $PY_VERS
++ run_tests 3.9
++ local version=3.9
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test sanity --exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py --verbose --docker --python 3.9 --color --coverage --failure-ok --lint
+[32mConfigured locale: en_US.UTF-8[0m
+[32mRun command: docker -v[0m
+[32mRun command: podman -v[0m
+[32mDetected "podman" container runtime version: podman version 5.8.4[0m
+[32mRun command: podman system connection list --format=json[0m
+[32mRun command: podman info --format '{{ json . }}'[0m
+[32mRun command: podman version --format '{{ json . }}'[0m
+[32mContainer runtime: podman client=5.8.4 server=5.8.4 cgroup=v2[0m
+[32mAssuming Docker is available on localhost.[0m
+[32mRun command: podman image inspect quay.io/ansible/ansible-test-utility-container:3.5.0[0m
+[32mRun command: podman run --volume /sys/fs/cgroup:/probe:ro --name ansible-test-probe-yP0hCUH2 --rm quay.io/ansible/ansible-test-utility-container:3.5.0 sh -c 'audit-status && cat /proc/ ...[0m
+[32mContainer host audit status: EBADF (-9)[0m
+[32mContainer host max open files: 524288[0m
+[32mContainer loginuid: 0[0m
+Starting new "ansible-test-controller-yP0hCUH2" container.
+[32mRun command: podman image inspect quay.io/ansible/default-test-container:v2.21-4[0m
+[32mRun command: podman network inspect podman[0m
+[32mRun command: podman run --tmpfs /tmp:exec --tmpfs /run:exec --tmpfs /run/lock --volume /var/run/docker.sock:/var/run/docker.sock --cap-add SYS_CHROOT --systemd always --cgroupns privat ...[0m
+Adding "ansible-test-controller-yP0hCUH2" to container database.
+[32mRun command: podman container inspect ansible-test-controller-yP0hCUH2[0m
+[32mStream command with data: podman exec -i ansible-test-controller-yP0hCUH2 /bin/sh[0m
+Bootstrapping Python 3.9 at: /usr/bin/python3.9
+Bootstrapping Python 3.14 at: /usr/bin/python3.14
+Detected PowerShell 7.6 at: /usr/local/bin/pwsh7.6
+[32mLoaded configuration: tests/config.yml[0m
+[32mScanning collection root: /home/flepied/ai-assist/workspace/ansible_collections[0m
+[32mIncluding collection: redhatci.ocp (969 files)[0m
+[32mCreating a payload archive containing 2014 files...[0m
+[32mCreated a 2417168 byte payload archive containing 2014 files in 0 seconds.[0m
+[32mRun command with stdin: podman exec -i ansible-test-controller-yP0hCUH2 tar oxzf - -C /root[0m
+[32mCreating container database.[0m
+[32mStream command: podman exec ansible-test-controller-yP0hCUH2 /usr/bin/env ANSIBLE_TEST_CONTENT_ROOT=/root/ansible_collections/redhatci/ocp LC_ALL=en_US.UTF-8 /usr/bin/python3.14 /root/ ...[0m
+[32mConfigured locale: en_US.UTF-8[0m
+[32mParsing container database.[0m
+[32mRead 0 sanity test ignore line(s) for Ansible 2.21 from: tests/sanity/ignore-2.21.txt[0m
+Running sanity test "action-plugin-docs"
+[32mInitializing "/tmp/ansible-test-s7_fhnvf-injector" as the temporary injector directory.[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/action-plugin-docs.py[0m
+Running sanity test "ansible-doc"
+[32mRun command: ansible-doc -l --json -t filter redhatci.ocp[0m
+[32mRun command: ansible-doc -t filter redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t filter --json redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t module redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+[32mRun command: ansible-doc -t module --json redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+Running sanity test "changelog"
+[32mNo tests applicable.[0m
+Running sanity test "compile" on Python 3.9
+[32mRun command with data: /usr/bin/python3.9 /root/ansible/test/lib/ansible_test/_util/target/sanity/compile/compile.py[0m
+Running sanity test "empty-init"
+[32mNo tests applicable.[0m
+Running sanity test "ignores"
+Running sanity test "import" on Python 3.9
+[32mRun command with data: importer.py[0m
+Running sanity test "line-endings"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/line-endings.py[0m
+Running sanity test "no-assert"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-assert.py[0m
+Running sanity test "no-get-exception"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-get-exception.py[0m
+Running sanity test "no-illegal-filenames"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-illegal-filenames.py[0m
+Running sanity test "no-smart-quotes"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-smart-quotes.py[0m
+Running sanity test "pep8"
+[32mRun command: /root/.ansible/test/venv/sanity.pep8/3.14/84e10cff/bin/python -m pycodestyle --max-line-length 160 --config /dev/null --ignore E203,E402,E701,E704,E741,W503,W504 plugins/f ...[0m
+Running sanity test "pslint"
+[32mNo tests applicable.[0m
+Running sanity test "pylint"
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_collections/r ...[0m
+[32mChecking 8 file(s) in context 'collection' (controller) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.12 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_forma ...[0m
+[32mChecking 4 file(s) in context 'modules' (target) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.9 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_format ...[0m
+[31mERROR: Found 2 pylint issue(s) which need to be resolved:[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:64:73: ansible-bad-function: Call run_command instead of subprocess.check_output[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:66:12: ansible-bad-function: Call run_command instead of subprocess.run[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/pylint.html
+Running sanity test "replace-urlopen"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/replace-urlopen.py[0m
+Running sanity test "runtime-metadata"
+[32mRun command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.14/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/runtime-metadata.py[0m
+Running sanity test "shebang"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/shebang.py[0m
+[31mERROR: Found 3 shebang issue(s) which need to be resolved:[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-ROX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWO.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/shebang.html
+Running sanity test "shellcheck"
+[32mRun command: shellcheck -e SC1090,SC1091,SC2028 --format checkstyle roles/conserver/files/socat_retry.sh roles/example_cnf_deploy/scripts/get-example-cnf-results.sh roles/example_cnf_d ...[0m
+Running sanity test "symlinks"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/symlinks.py[0m
+Running sanity test "use-argspec-type-path"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-argspec-type-path.py[0m
+Running sanity test "use-compat-six"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-compat-six.py[0m
+Running sanity test "validate-modules"
+[32mInjecting "/tmp/pwsh-5bmax7s0-ansible/pwsh" as a execv wrapper for the "/usr/local/bin/pwsh7.6" interpreter.[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_col ...[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/validate-modules/validate.py --format ...[0m
+Running sanity test "yamllint"
+[32mRun command with data: /root/.ansible/test/venv/sanity.yamllint/3.14/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/yamllint/yamllinter.py[0m
+[31mERROR: Found 2 yamllint issue(s) which need to be resolved:[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: error: syntax error: found character '%' that cannot start any token (syntax)[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: unparsable-with-libyaml: while scanning for the next token found character that cannot start any token[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/yamllint.html
+[31mERROR: The 3 sanity test(s) listed below (out of 24) failed. See error output above for details.
+pylint
+shebang
+yamllint[0m
+[32mRun command with stdout: podman exec -i ansible-test-controller-yP0hCUH2 sh -c 'tar cf - -C /root/ansible_collections/redhatci/ocp/tests --exclude .tmp output | gzip'[0m
+[32mRun command with stdin: tar oxzf - -C /home/flepied/ai-assist/workspace/ansible_collections/redhatci/ocp/tests[0m
+[32mRun command: podman stop -t 0 ansible-test-controller-yP0hCUH2[0m
+[32mRun command: podman rm -v ansible-test-controller-yP0hCUH2[0m
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test units --verbose --docker --python 3.9 --color --coverage
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test integration --verbose --docker --python 3.9 --color --coverage
+WARNING: Using `--controller docker:default` since `--docker default --python 3.9` does not support the controller.
++ for version in $PY_VERS
++ run_tests 3.10
++ local version=3.10
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test sanity --exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py --verbose --docker --python 3.10 --color --coverage --failure-ok --lint
+[32mConfigured locale: en_US.UTF-8[0m
+[32mRun command: docker -v[0m
+[32mRun command: podman -v[0m
+[32mDetected "podman" container runtime version: podman version 5.8.4[0m
+[32mRun command: podman system connection list --format=json[0m
+[32mRun command: podman info --format '{{ json . }}'[0m
+[32mRun command: podman version --format '{{ json . }}'[0m
+[32mContainer runtime: podman client=5.8.4 server=5.8.4 cgroup=v2[0m
+[32mAssuming Docker is available on localhost.[0m
+[32mRun command: podman image inspect quay.io/ansible/ansible-test-utility-container:3.5.0[0m
+[32mRun command: podman run --volume /sys/fs/cgroup:/probe:ro --name ansible-test-probe-V5wXSxwf --rm quay.io/ansible/ansible-test-utility-container:3.5.0 sh -c 'audit-status && cat /proc/ ...[0m
+[32mContainer host audit status: EBADF (-9)[0m
+[32mContainer host max open files: 524288[0m
+[32mContainer loginuid: 0[0m
+Starting new "ansible-test-controller-V5wXSxwf" container.
+[32mRun command: podman image inspect quay.io/ansible/default-test-container:v2.21-4[0m
+[32mRun command: podman network inspect podman[0m
+[32mRun command: podman run --tmpfs /tmp:exec --tmpfs /run:exec --tmpfs /run/lock --volume /var/run/docker.sock:/var/run/docker.sock --cap-add SYS_CHROOT --systemd always --cgroupns privat ...[0m
+Adding "ansible-test-controller-V5wXSxwf" to container database.
+[32mRun command: podman container inspect ansible-test-controller-V5wXSxwf[0m
+[32mStream command with data: podman exec -i ansible-test-controller-V5wXSxwf /bin/sh[0m
+Bootstrapping Python 3.10 at: /usr/bin/python3.10
+Bootstrapping Python 3.14 at: /usr/bin/python3.14
+Detected PowerShell 7.6 at: /usr/local/bin/pwsh7.6
+[32mLoaded configuration: tests/config.yml[0m
+[32mScanning collection root: /home/flepied/ai-assist/workspace/ansible_collections[0m
+[32mIncluding collection: redhatci.ocp (969 files)[0m
+[32mCreating a payload archive containing 2014 files...[0m
+[32mCreated a 2418815 byte payload archive containing 2014 files in 0 seconds.[0m
+[32mRun command with stdin: podman exec -i ansible-test-controller-V5wXSxwf tar oxzf - -C /root[0m
+[32mCreating container database.[0m
+[32mStream command: podman exec ansible-test-controller-V5wXSxwf /usr/bin/env ANSIBLE_TEST_CONTENT_ROOT=/root/ansible_collections/redhatci/ocp LC_ALL=en_US.UTF-8 /usr/bin/python3.14 /root/ ...[0m
+[32mConfigured locale: en_US.UTF-8[0m
+[32mParsing container database.[0m
+[32mRead 0 sanity test ignore line(s) for Ansible 2.21 from: tests/sanity/ignore-2.21.txt[0m
+Running sanity test "action-plugin-docs"
+[32mInitializing "/tmp/ansible-test-71bsujsq-injector" as the temporary injector directory.[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/action-plugin-docs.py[0m
+Running sanity test "ansible-doc"
+[32mRun command: ansible-doc -l --json -t filter redhatci.ocp[0m
+[32mRun command: ansible-doc -t filter redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t filter --json redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t module redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+[32mRun command: ansible-doc -t module --json redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+Running sanity test "changelog"
+[32mNo tests applicable.[0m
+Running sanity test "compile" on Python 3.10
+[32mRun command with data: /usr/bin/python3.10 /root/ansible/test/lib/ansible_test/_util/target/sanity/compile/compile.py[0m
+Running sanity test "empty-init"
+[32mNo tests applicable.[0m
+Running sanity test "ignores"
+Running sanity test "import" on Python 3.10
+[32mRun command with data: importer.py[0m
+Running sanity test "line-endings"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/line-endings.py[0m
+Running sanity test "no-assert"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-assert.py[0m
+Running sanity test "no-get-exception"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-get-exception.py[0m
+Running sanity test "no-illegal-filenames"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-illegal-filenames.py[0m
+Running sanity test "no-smart-quotes"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-smart-quotes.py[0m
+Running sanity test "pep8"
+[32mRun command: /root/.ansible/test/venv/sanity.pep8/3.14/84e10cff/bin/python -m pycodestyle --max-line-length 160 --config /dev/null --ignore E203,E402,E701,E704,E741,W503,W504 plugins/f ...[0m
+Running sanity test "pslint"
+[32mNo tests applicable.[0m
+Running sanity test "pylint"
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_collections/r ...[0m
+[32mChecking 8 file(s) in context 'collection' (controller) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.12 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_forma ...[0m
+[32mChecking 4 file(s) in context 'modules' (target) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.9 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_format ...[0m
+[31mERROR: Found 2 pylint issue(s) which need to be resolved:[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:64:73: ansible-bad-function: Call run_command instead of subprocess.check_output[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:66:12: ansible-bad-function: Call run_command instead of subprocess.run[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/pylint.html
+Running sanity test "replace-urlopen"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/replace-urlopen.py[0m
+Running sanity test "runtime-metadata"
+[32mRun command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.14/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/runtime-metadata.py[0m
+Running sanity test "shebang"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/shebang.py[0m
+[31mERROR: Found 3 shebang issue(s) which need to be resolved:[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-ROX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWO.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/shebang.html
+Running sanity test "shellcheck"
+[32mRun command: shellcheck -e SC1090,SC1091,SC2028 --format checkstyle roles/conserver/files/socat_retry.sh roles/example_cnf_deploy/scripts/get-example-cnf-results.sh roles/example_cnf_d ...[0m
+Running sanity test "symlinks"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/symlinks.py[0m
+Running sanity test "use-argspec-type-path"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-argspec-type-path.py[0m
+Running sanity test "use-compat-six"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-compat-six.py[0m
+Running sanity test "validate-modules"
+[32mInjecting "/tmp/pwsh-jna7p5_7-ansible/pwsh" as a execv wrapper for the "/usr/local/bin/pwsh7.6" interpreter.[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_col ...[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/validate-modules/validate.py --format ...[0m
+Running sanity test "yamllint"
+[32mRun command with data: /root/.ansible/test/venv/sanity.yamllint/3.14/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/yamllint/yamllinter.py[0m
+[31mERROR: Found 2 yamllint issue(s) which need to be resolved:[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: error: syntax error: found character '%' that cannot start any token (syntax)[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: unparsable-with-libyaml: while scanning for the next token found character that cannot start any token[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/yamllint.html
+[31mERROR: The 3 sanity test(s) listed below (out of 24) failed. See error output above for details.
+pylint
+shebang
+yamllint[0m
+[32mRun command with stdout: podman exec -i ansible-test-controller-V5wXSxwf sh -c 'tar cf - -C /root/ansible_collections/redhatci/ocp/tests --exclude .tmp output | gzip'[0m
+[32mRun command with stdin: tar oxzf - -C /home/flepied/ai-assist/workspace/ansible_collections/redhatci/ocp/tests[0m
+[32mRun command: podman stop -t 0 ansible-test-controller-V5wXSxwf[0m
+[32mRun command: podman rm -v ansible-test-controller-V5wXSxwf[0m
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test units --verbose --docker --python 3.10 --color --coverage
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test integration --verbose --docker --python 3.10 --color --coverage
+WARNING: Using `--controller docker:default` since `--docker default --python 3.10` does not support the controller.
++ for version in $PY_VERS
++ run_tests 3.11
++ local version=3.11
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test sanity --exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py --verbose --docker --python 3.11 --color --coverage --failure-ok --lint
+[32mConfigured locale: en_US.UTF-8[0m
+[32mRun command: docker -v[0m
+[32mRun command: podman -v[0m
+[32mDetected "podman" container runtime version: podman version 5.8.4[0m
+[32mRun command: podman system connection list --format=json[0m
+[32mRun command: podman info --format '{{ json . }}'[0m
+[32mRun command: podman version --format '{{ json . }}'[0m
+[32mContainer runtime: podman client=5.8.4 server=5.8.4 cgroup=v2[0m
+[32mAssuming Docker is available on localhost.[0m
+[32mRun command: podman image inspect quay.io/ansible/ansible-test-utility-container:3.5.0[0m
+[32mRun command: podman run --volume /sys/fs/cgroup:/probe:ro --name ansible-test-probe-I7gdJOTD --rm quay.io/ansible/ansible-test-utility-container:3.5.0 sh -c 'audit-status && cat /proc/ ...[0m
+[32mContainer host audit status: EBADF (-9)[0m
+[32mContainer host max open files: 524288[0m
+[32mContainer loginuid: 0[0m
+Starting new "ansible-test-controller-I7gdJOTD" container.
+[32mRun command: podman image inspect quay.io/ansible/default-test-container:v2.21-4[0m
+[32mRun command: podman network inspect podman[0m
+[32mRun command: podman run --tmpfs /tmp:exec --tmpfs /run:exec --tmpfs /run/lock --volume /var/run/docker.sock:/var/run/docker.sock --cap-add SYS_CHROOT --systemd always --cgroupns privat ...[0m
+Adding "ansible-test-controller-I7gdJOTD" to container database.
+[32mRun command: podman container inspect ansible-test-controller-I7gdJOTD[0m
+[32mStream command with data: podman exec -i ansible-test-controller-I7gdJOTD /bin/sh[0m
+Bootstrapping Python 3.11 at: /usr/bin/python3.11
+Bootstrapping Python 3.14 at: /usr/bin/python3.14
+Detected PowerShell 7.6 at: /usr/local/bin/pwsh7.6
+[32mLoaded configuration: tests/config.yml[0m
+[32mScanning collection root: /home/flepied/ai-assist/workspace/ansible_collections[0m
+[32mIncluding collection: redhatci.ocp (969 files)[0m
+[32mCreating a payload archive containing 2014 files...[0m
+[32mCreated a 2419266 byte payload archive containing 2014 files in 0 seconds.[0m
+[32mRun command with stdin: podman exec -i ansible-test-controller-I7gdJOTD tar oxzf - -C /root[0m
+[32mCreating container database.[0m
+[32mStream command: podman exec ansible-test-controller-I7gdJOTD /usr/bin/env ANSIBLE_TEST_CONTENT_ROOT=/root/ansible_collections/redhatci/ocp LC_ALL=en_US.UTF-8 /usr/bin/python3.14 /root/ ...[0m
+[32mConfigured locale: en_US.UTF-8[0m
+[32mParsing container database.[0m
+[32mRead 0 sanity test ignore line(s) for Ansible 2.21 from: tests/sanity/ignore-2.21.txt[0m
+Running sanity test "action-plugin-docs"
+[32mInitializing "/tmp/ansible-test-79i22wqw-injector" as the temporary injector directory.[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/action-plugin-docs.py[0m
+Running sanity test "ansible-doc"
+[32mRun command: ansible-doc -l --json -t filter redhatci.ocp[0m
+[32mRun command: ansible-doc -t filter redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t filter --json redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t module redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+[32mRun command: ansible-doc -t module --json redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+Running sanity test "changelog"
+[32mNo tests applicable.[0m
+Running sanity test "compile" on Python 3.11
+[32mRun command with data: /usr/bin/python3.11 /root/ansible/test/lib/ansible_test/_util/target/sanity/compile/compile.py[0m
+Running sanity test "empty-init"
+[32mNo tests applicable.[0m
+Running sanity test "ignores"
+Running sanity test "import" on Python 3.11
+[32mRun command with data: importer.py[0m
+Running sanity test "line-endings"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/line-endings.py[0m
+Running sanity test "no-assert"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-assert.py[0m
+Running sanity test "no-get-exception"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-get-exception.py[0m
+Running sanity test "no-illegal-filenames"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-illegal-filenames.py[0m
+Running sanity test "no-smart-quotes"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-smart-quotes.py[0m
+Running sanity test "pep8"
+[32mRun command: /root/.ansible/test/venv/sanity.pep8/3.14/84e10cff/bin/python -m pycodestyle --max-line-length 160 --config /dev/null --ignore E203,E402,E701,E704,E741,W503,W504 plugins/f ...[0m
+Running sanity test "pslint"
+[32mNo tests applicable.[0m
+Running sanity test "pylint"
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_collections/r ...[0m
+[32mChecking 8 file(s) in context 'collection' (controller) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.12 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_forma ...[0m
+[32mChecking 4 file(s) in context 'modules' (target) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.9 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_format ...[0m
+[31mERROR: Found 2 pylint issue(s) which need to be resolved:[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:64:73: ansible-bad-function: Call run_command instead of subprocess.check_output[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:66:12: ansible-bad-function: Call run_command instead of subprocess.run[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/pylint.html
+Running sanity test "replace-urlopen"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/replace-urlopen.py[0m
+Running sanity test "runtime-metadata"
+[32mRun command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.14/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/runtime-metadata.py[0m
+Running sanity test "shebang"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/shebang.py[0m
+[31mERROR: Found 3 shebang issue(s) which need to be resolved:[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-ROX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWO.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/shebang.html
+Running sanity test "shellcheck"
+[32mRun command: shellcheck -e SC1090,SC1091,SC2028 --format checkstyle roles/conserver/files/socat_retry.sh roles/example_cnf_deploy/scripts/get-example-cnf-results.sh roles/example_cnf_d ...[0m
+Running sanity test "symlinks"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/symlinks.py[0m
+Running sanity test "use-argspec-type-path"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-argspec-type-path.py[0m
+Running sanity test "use-compat-six"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-compat-six.py[0m
+Running sanity test "validate-modules"
+[32mInjecting "/tmp/pwsh-fqtf2clw-ansible/pwsh" as a execv wrapper for the "/usr/local/bin/pwsh7.6" interpreter.[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_col ...[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/validate-modules/validate.py --format ...[0m
+Running sanity test "yamllint"
+[32mRun command with data: /root/.ansible/test/venv/sanity.yamllint/3.14/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/yamllint/yamllinter.py[0m
+[31mERROR: Found 2 yamllint issue(s) which need to be resolved:[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: error: syntax error: found character '%' that cannot start any token (syntax)[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: unparsable-with-libyaml: while scanning for the next token found character that cannot start any token[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/yamllint.html
+[31mERROR: The 3 sanity test(s) listed below (out of 24) failed. See error output above for details.
+pylint
+shebang
+yamllint[0m
+[32mRun command with stdout: podman exec -i ansible-test-controller-I7gdJOTD sh -c 'tar cf - -C /root/ansible_collections/redhatci/ocp/tests --exclude .tmp output | gzip'[0m
+[32mRun command with stdin: tar oxzf - -C /home/flepied/ai-assist/workspace/ansible_collections/redhatci/ocp/tests[0m
+[32mRun command: podman stop -t 0 ansible-test-controller-I7gdJOTD[0m
+[32mRun command: podman rm -v ansible-test-controller-I7gdJOTD[0m
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test units --verbose --docker --python 3.11 --color --coverage
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test integration --verbose --docker --python 3.11 --color --coverage
+WARNING: Using `--controller docker:default` since `--docker default --python 3.11` does not support the controller.
++ for version in $PY_VERS
++ run_tests 3.12
++ local version=3.12
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test sanity --exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py --verbose --docker --python 3.12 --color --coverage --failure-ok --lint
+[32mConfigured locale: en_US.UTF-8[0m
+[32mRun command: docker -v[0m
+[32mRun command: podman -v[0m
+[32mDetected "podman" container runtime version: podman version 5.8.4[0m
+[32mRun command: podman system connection list --format=json[0m
+[32mRun command: podman info --format '{{ json . }}'[0m
+[32mRun command: podman version --format '{{ json . }}'[0m
+[32mContainer runtime: podman client=5.8.4 server=5.8.4 cgroup=v2[0m
+[32mAssuming Docker is available on localhost.[0m
+[32mRun command: podman image inspect quay.io/ansible/ansible-test-utility-container:3.5.0[0m
+[32mRun command: podman run --volume /sys/fs/cgroup:/probe:ro --name ansible-test-probe-4XCNSmwu --rm quay.io/ansible/ansible-test-utility-container:3.5.0 sh -c 'audit-status && cat /proc/ ...[0m
+[32mContainer host audit status: EBADF (-9)[0m
+[32mContainer host max open files: 524288[0m
+[32mContainer loginuid: 0[0m
+Starting new "ansible-test-controller-4XCNSmwu" container.
+[32mRun command: podman image inspect quay.io/ansible/default-test-container:v2.21-4[0m
+[32mRun command: podman network inspect podman[0m
+[32mRun command: podman run --tmpfs /tmp:exec --tmpfs /run:exec --tmpfs /run/lock --volume /var/run/docker.sock:/var/run/docker.sock --cap-add SYS_CHROOT --systemd always --cgroupns privat ...[0m
+Adding "ansible-test-controller-4XCNSmwu" to container database.
+[32mRun command: podman container inspect ansible-test-controller-4XCNSmwu[0m
+[32mStream command with data: podman exec -i ansible-test-controller-4XCNSmwu /bin/sh[0m
+Bootstrapping Python 3.12 at: /usr/bin/python3.12
+Detected PowerShell 7.6 at: /usr/local/bin/pwsh7.6
+[32mLoaded configuration: tests/config.yml[0m
+[32mScanning collection root: /home/flepied/ai-assist/workspace/ansible_collections[0m
+[32mIncluding collection: redhatci.ocp (969 files)[0m
+[32mCreating a payload archive containing 2014 files...[0m
+[32mCreated a 2419548 byte payload archive containing 2014 files in 0 seconds.[0m
+[32mRun command with stdin: podman exec -i ansible-test-controller-4XCNSmwu tar oxzf - -C /root[0m
+[32mCreating container database.[0m
+[32mStream command: podman exec ansible-test-controller-4XCNSmwu /usr/bin/env ANSIBLE_TEST_CONTENT_ROOT=/root/ansible_collections/redhatci/ocp LC_ALL=en_US.UTF-8 /usr/bin/python3.12 /root/ ...[0m
+[32mConfigured locale: en_US.UTF-8[0m
+[32mParsing container database.[0m
+[32mRead 0 sanity test ignore line(s) for Ansible 2.21 from: tests/sanity/ignore-2.21.txt[0m
+Running sanity test "action-plugin-docs"
+[32mInitializing "/tmp/ansible-test-r81mj6qq-injector" as the temporary injector directory.[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/action-plugin-docs.py[0m
+Running sanity test "ansible-doc"
+[32mRun command: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.12 -m venv --without-pip /root/.ansible/test/venv/sanity.ansible-doc/3.12/280c01e2[0m
+[32mCreated Python 3.12 virtual environment using "venv": /root/.ansible/test/venv/sanity.ansible-doc/3.12/280c01e2[0m
+Installing requirements for Python 3.12 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.ansible-doc/3.12/280c01e2/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.ansible-doc/3.12/280c01e2/bin/python /tmp/ansible-test-hhzefsgx-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Downloading pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Downloading pip-25.2-py3-none-any.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 17.6 MB/s  0:00:00
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.ansible-doc/3.12/280c01e2/bin/python /tmp/ansible-test-hhzefsgx-pip.py install --disable-pip-version-check -r requirements/sanity.ansible-doc.txt
+Collecting Jinja2==3.1.6 (from -r requirements/sanity.ansible-doc.txt (line 2))
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting MarkupSafe==3.0.3 (from -r requirements/sanity.ansible-doc.txt (line 3))
+  Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting packaging==26.0 (from -r requirements/sanity.ansible-doc.txt (line 4))
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.ansible-doc.txt (line 5))
+  Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 30.0 MB/s  0:00:00
+Installing collected packages: PyYAML, packaging, MarkupSafe, Jinja2
+
+Successfully installed Jinja2-3.1.6 MarkupSafe-3.0.3 PyYAML-6.0.3 packaging-26.0
+Execute command: /root/.ansible/test/venv/sanity.ansible-doc/3.12/280c01e2/bin/python /tmp/ansible-test-hhzefsgx-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.ansible-doc/3.12/280c01e2/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command: ansible-doc -l --json -t filter redhatci.ocp[0m
+[32mRun command: ansible-doc -t filter redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t filter --json redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t module redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+[32mRun command: ansible-doc -t module --json redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+Running sanity test "changelog"
+[32mNo tests applicable.[0m
+Running sanity test "compile" on Python 3.12
+[32mRun command with data: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/sanity/compile/compile.py[0m
+Running sanity test "empty-init"
+[32mNo tests applicable.[0m
+Running sanity test "ignores"
+Running sanity test "import" on Python 3.12
+[32mRun command: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.12 -m venv --without-pip /root/.ansible/test/venv/sanity.import/3.12/aeaf9a95[0m
+[32mCreated Python 3.12 virtual environment using "venv": /root/.ansible/test/venv/sanity.import/3.12/aeaf9a95[0m
+Installing requirements for Python 3.12 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.import/3.12/aeaf9a95/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.import/3.12/aeaf9a95/bin/python /tmp/ansible-test-0uy462tk-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.import/3.12/aeaf9a95/bin/python /tmp/ansible-test-0uy462tk-pip.py install --disable-pip-version-check -r requirements/sanity.import.txt
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.import.txt (line 2))
+  Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+Installing collected packages: PyYAML
+Successfully installed PyYAML-6.0.3
+Execute command: /root/.ansible/test/venv/sanity.import/3.12/aeaf9a95/bin/python /tmp/ansible-test-0uy462tk-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.import/3.12/aeaf9a95/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command with data: importer.py[0m
+[32mRun command with data: importer.py[0m
+Running sanity test "line-endings"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/line-endings.py[0m
+Running sanity test "no-assert"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-assert.py[0m
+Running sanity test "no-get-exception"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-get-exception.py[0m
+Running sanity test "no-illegal-filenames"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-illegal-filenames.py[0m
+Running sanity test "no-smart-quotes"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-smart-quotes.py[0m
+Running sanity test "pep8"
+[32mRun command: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.12 -m venv --without-pip /root/.ansible/test/venv/sanity.pep8/3.12/84e10cff[0m
+[32mCreated Python 3.12 virtual environment using "venv": /root/.ansible/test/venv/sanity.pep8/3.12/84e10cff[0m
+Installing requirements for Python 3.12 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.pep8/3.12/84e10cff/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.pep8/3.12/84e10cff/bin/python /tmp/ansible-test-1guucu1j-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.pep8/3.12/84e10cff/bin/python /tmp/ansible-test-1guucu1j-pip.py install --disable-pip-version-check -r requirements/sanity.pep8.txt
+Collecting pycodestyle==2.14.0 (from -r requirements/sanity.pep8.txt (line 2))
+  Downloading pycodestyle-2.14.0-py2.py3-none-any.whl.metadata (4.5 kB)
+Downloading pycodestyle-2.14.0-py2.py3-none-any.whl (31 kB)
+Installing collected packages: pycodestyle
+Successfully installed pycodestyle-2.14.0
+Execute command: /root/.ansible/test/venv/sanity.pep8/3.12/84e10cff/bin/python /tmp/ansible-test-1guucu1j-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.pep8/3.12/84e10cff/bin/python -m pycodestyle --max-line-length 160 --config /dev/null --ignore E203,E402,E701,E704,E741,W503,W504 plugins/f ...[0m
+Running sanity test "pslint"
+[32mNo tests applicable.[0m
+Running sanity test "pylint"
+[32mRun command: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.12 -m venv --without-pip /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d[0m
+[32mCreated Python 3.12 virtual environment using "venv": /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d[0m
+Installing requirements for Python 3.12 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python /tmp/ansible-test-x90np__d-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python /tmp/ansible-test-x90np__d-pip.py install --disable-pip-version-check -r requirements/sanity.pylint.txt
+Collecting astroid==4.0.4 (from -r requirements/sanity.pylint.txt (line 2))
+  Downloading astroid-4.0.4-py3-none-any.whl.metadata (4.4 kB)
+Collecting dill==0.4.1 (from -r requirements/sanity.pylint.txt (line 3))
+  Downloading dill-0.4.1-py3-none-any.whl.metadata (10 kB)
+Collecting isort==8.0.1 (from -r requirements/sanity.pylint.txt (line 4))
+  Downloading isort-8.0.1-py3-none-any.whl.metadata (11 kB)
+Collecting mccabe==0.7.0 (from -r requirements/sanity.pylint.txt (line 5))
+  Downloading mccabe-0.7.0-py2.py3-none-any.whl.metadata (5.0 kB)
+Collecting platformdirs==4.9.4 (from -r requirements/sanity.pylint.txt (line 6))
+  Downloading platformdirs-4.9.4-py3-none-any.whl.metadata (4.7 kB)
+Collecting pylint==4.0.5 (from -r requirements/sanity.pylint.txt (line 7))
+  Downloading pylint-4.0.5-py3-none-any.whl.metadata (12 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.pylint.txt (line 8))
+  Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting tomlkit==0.14.0 (from -r requirements/sanity.pylint.txt (line 9))
+  Downloading tomlkit-0.14.0-py3-none-any.whl.metadata (2.8 kB)
+Downloading astroid-4.0.4-py3-none-any.whl (276 kB)
+Downloading dill-0.4.1-py3-none-any.whl (120 kB)
+Downloading isort-8.0.1-py3-none-any.whl (89 kB)
+Downloading mccabe-0.7.0-py2.py3-none-any.whl (7.3 kB)
+Downloading platformdirs-4.9.4-py3-none-any.whl (21 kB)
+Downloading pylint-4.0.5-py3-none-any.whl (536 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.7/536.7 kB 30.5 MB/s  0:00:00
+Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+Downloading tomlkit-0.14.0-py3-none-any.whl (39 kB)
+Installing collected packages: tomlkit, PyYAML, platformdirs, mccabe, isort, dill, astroid, pylint
+
+Successfully installed PyYAML-6.0.3 astroid-4.0.4 dill-0.4.1 isort-8.0.1 mccabe-0.7.0 platformdirs-4.9.4 pylint-4.0.5 tomlkit-0.14.0
+Execute command: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python /tmp/ansible-test-x90np__d-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_collections/r ...[0m
+[32mChecking 8 file(s) in context 'collection' (controller) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python -m pylint --py-version 3.12 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_forma ...[0m
+[32mChecking 4 file(s) in context 'modules' (target) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.12/eb0a144d/bin/python -m pylint --py-version 3.9 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_format ...[0m
+[31mERROR: Found 2 pylint issue(s) which need to be resolved:[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:64:73: ansible-bad-function: Call run_command instead of subprocess.check_output[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:66:12: ansible-bad-function: Call run_command instead of subprocess.run[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/pylint.html
+Running sanity test "replace-urlopen"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/replace-urlopen.py[0m
+Running sanity test "runtime-metadata"
+[32mRun command: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.12 -m venv --without-pip /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471[0m
+[32mCreated Python 3.12 virtual environment using "venv": /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471[0m
+Installing requirements for Python 3.12 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471/bin/python /tmp/ansible-test-l1cccak7-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471/bin/python /tmp/ansible-test-l1cccak7-pip.py install --disable-pip-version-check -r requirements/sanity.runtime-metadata.txt
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.runtime-metadata.txt (line 2))
+  Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting voluptuous==0.16.0 (from -r requirements/sanity.runtime-metadata.txt (line 3))
+  Downloading voluptuous-0.16.0-py3-none-any.whl.metadata (20 kB)
+Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+Downloading voluptuous-0.16.0-py3-none-any.whl (31 kB)
+Installing collected packages: voluptuous, PyYAML
+
+Successfully installed PyYAML-6.0.3 voluptuous-0.16.0
+Execute command: /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471/bin/python /tmp/ansible-test-l1cccak7-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.12/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/runtime-metadata.py[0m
+Running sanity test "shebang"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/shebang.py[0m
+[31mERROR: Found 3 shebang issue(s) which need to be resolved:[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-ROX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWO.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/shebang.html
+Running sanity test "shellcheck"
+[32mRun command: shellcheck -e SC1090,SC1091,SC2028 --format checkstyle roles/conserver/files/socat_retry.sh roles/example_cnf_deploy/scripts/get-example-cnf-results.sh roles/example_cnf_d ...[0m
+Running sanity test "symlinks"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/symlinks.py[0m
+Running sanity test "use-argspec-type-path"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-argspec-type-path.py[0m
+Running sanity test "use-compat-six"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.12/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-compat-six.py[0m
+Running sanity test "validate-modules"
+[32mRun command: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.12 -m venv --without-pip /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece[0m
+[32mCreated Python 3.12 virtual environment using "venv": /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece[0m
+Installing requirements for Python 3.12 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece/bin/python /tmp/ansible-test-sshbcgbd-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece/bin/python /tmp/ansible-test-sshbcgbd-pip.py install --disable-pip-version-check -r requirements/sanity.validate-modules.txt
+Collecting antsibull-docs-parser==1.0.0 (from -r requirements/sanity.validate-modules.txt (line 2))
+  Downloading antsibull_docs_parser-1.0.0-py3-none-any.whl.metadata (4.7 kB)
+Collecting Jinja2==3.1.6 (from -r requirements/sanity.validate-modules.txt (line 3))
+  Using cached jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting MarkupSafe==3.0.3 (from -r requirements/sanity.validate-modules.txt (line 4))
+  Using cached markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.validate-modules.txt (line 5))
+  Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting voluptuous==0.16.0 (from -r requirements/sanity.validate-modules.txt (line 6))
+  Using cached voluptuous-0.16.0-py3-none-any.whl.metadata (20 kB)
+Downloading antsibull_docs_parser-1.0.0-py3-none-any.whl (31 kB)
+Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
+Using cached markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+Using cached voluptuous-0.16.0-py3-none-any.whl (31 kB)
+Installing collected packages: voluptuous, PyYAML, MarkupSafe, antsibull-docs-parser, Jinja2
+
+Successfully installed Jinja2-3.1.6 MarkupSafe-3.0.3 PyYAML-6.0.3 antsibull-docs-parser-1.0.0 voluptuous-0.16.0
+Execute command: /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece/bin/python /tmp/ansible-test-sshbcgbd-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mInjecting "/tmp/pwsh-pp1glfru-ansible/pwsh" as a execv wrapper for the "/usr/local/bin/pwsh7.6" interpreter.[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_col ...[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.12/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/validate-modules/validate.py --format ...[0m
+Running sanity test "yamllint"
+[32mRun command: /usr/bin/python3.12 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.12 -m venv --without-pip /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458[0m
+[32mCreated Python 3.12 virtual environment using "venv": /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458[0m
+Installing requirements for Python 3.12 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458/bin/python /tmp/ansible-test-w7h9klwo-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458/bin/python /tmp/ansible-test-w7h9klwo-pip.py install --disable-pip-version-check -r requirements/sanity.yamllint.txt
+Collecting pathspec==1.0.4 (from -r requirements/sanity.yamllint.txt (line 2))
+  Downloading pathspec-1.0.4-py3-none-any.whl.metadata (13 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.yamllint.txt (line 3))
+  Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting yamllint==1.38.0 (from -r requirements/sanity.yamllint.txt (line 4))
+  Downloading yamllint-1.38.0-py3-none-any.whl.metadata (4.2 kB)
+Downloading pathspec-1.0.4-py3-none-any.whl (55 kB)
+Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+Downloading yamllint-1.38.0-py3-none-any.whl (68 kB)
+Installing collected packages: PyYAML, pathspec, yamllint
+
+Successfully installed PyYAML-6.0.3 pathspec-1.0.4 yamllint-1.38.0
+Execute command: /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458/bin/python /tmp/ansible-test-w7h9klwo-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity.yamllint/3.12/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/yamllint/yamllinter.py[0m
+[31mERROR: Found 2 yamllint issue(s) which need to be resolved:[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: error: syntax error: found character '%' that cannot start any token (syntax)[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: unparsable-with-libyaml: while scanning for the next token found character that cannot start any token[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/yamllint.html
+[35mWARNING: The following sanity test virtual environments are out-of-date in the "default" container: sanity.ansible-doc-3.12, sanity.import-3.12, sanity.pep8-3.12, sanity.pylint-3.12, sanity.runtime-metadata-3.12, sanity.validate-modules-3.12, sanity.yamllint-3.12[0m
+[31mERROR: The 3 sanity test(s) listed below (out of 24) failed. See error output above for details.
+pylint
+shebang
+yamllint[0m
+[35mWARNING: Reviewing previous 1 warning(s):[0m
+[35mWARNING: The following sanity test virtual environments are out-of-date in the "default" container: sanity.ansible-doc-3.12, sanity.import-3.12, sanity.pep8-3.12, sanity.pylint-3.12, sanity.runtime-metadata-3.12, sanity.validate-modules-3.12, sanity.yamllint-3.12[0m
+[32mRun command with stdout: podman exec -i ansible-test-controller-4XCNSmwu sh -c 'tar cf - -C /root/ansible_collections/redhatci/ocp/tests --exclude .tmp output | gzip'[0m
+[32mRun command with stdin: tar oxzf - -C /home/flepied/ai-assist/workspace/ansible_collections/redhatci/ocp/tests[0m
+[32mRun command: podman stop -t 0 ansible-test-controller-4XCNSmwu[0m
+[32mRun command: podman rm -v ansible-test-controller-4XCNSmwu[0m
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test units --verbose --docker --python 3.12 --color --coverage
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test integration --verbose --docker --python 3.12 --color --coverage
++ for version in $PY_VERS
++ run_tests 3.13
++ local version=3.13
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test sanity --exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py --verbose --docker --python 3.13 --color --coverage --failure-ok --lint
+[32mConfigured locale: en_US.UTF-8[0m
+[32mRun command: docker -v[0m
+[32mRun command: podman -v[0m
+[32mDetected "podman" container runtime version: podman version 5.8.4[0m
+[32mRun command: podman system connection list --format=json[0m
+[32mRun command: podman info --format '{{ json . }}'[0m
+[32mRun command: podman version --format '{{ json . }}'[0m
+[32mContainer runtime: podman client=5.8.4 server=5.8.4 cgroup=v2[0m
+[32mAssuming Docker is available on localhost.[0m
+[32mRun command: podman image inspect quay.io/ansible/ansible-test-utility-container:3.5.0[0m
+[32mRun command: podman run --volume /sys/fs/cgroup:/probe:ro --name ansible-test-probe-vNadw6tH --rm quay.io/ansible/ansible-test-utility-container:3.5.0 sh -c 'audit-status && cat /proc/ ...[0m
+[32mContainer host audit status: EBADF (-9)[0m
+[32mContainer host max open files: 524288[0m
+[32mContainer loginuid: 0[0m
+Starting new "ansible-test-controller-vNadw6tH" container.
+[32mRun command: podman image inspect quay.io/ansible/default-test-container:v2.21-4[0m
+[32mRun command: podman network inspect podman[0m
+[32mRun command: podman run --tmpfs /tmp:exec --tmpfs /run:exec --tmpfs /run/lock --volume /var/run/docker.sock:/var/run/docker.sock --cap-add SYS_CHROOT --systemd always --cgroupns privat ...[0m
+Adding "ansible-test-controller-vNadw6tH" to container database.
+[32mRun command: podman container inspect ansible-test-controller-vNadw6tH[0m
+[32mStream command with data: podman exec -i ansible-test-controller-vNadw6tH /bin/sh[0m
+Bootstrapping Python 3.13 at: /usr/bin/python3.13
+Detected PowerShell 7.6 at: /usr/local/bin/pwsh7.6
+[32mLoaded configuration: tests/config.yml[0m
+[32mScanning collection root: /home/flepied/ai-assist/workspace/ansible_collections[0m
+[32mIncluding collection: redhatci.ocp (969 files)[0m
+[32mCreating a payload archive containing 2014 files...[0m
+[32mCreated a 2422173 byte payload archive containing 2014 files in 0 seconds.[0m
+[32mRun command with stdin: podman exec -i ansible-test-controller-vNadw6tH tar oxzf - -C /root[0m
+[32mCreating container database.[0m
+[32mStream command: podman exec ansible-test-controller-vNadw6tH /usr/bin/env ANSIBLE_TEST_CONTENT_ROOT=/root/ansible_collections/redhatci/ocp LC_ALL=en_US.UTF-8 /usr/bin/python3.13 /root/ ...[0m
+[32mConfigured locale: en_US.UTF-8[0m
+[32mParsing container database.[0m
+[32mRead 0 sanity test ignore line(s) for Ansible 2.21 from: tests/sanity/ignore-2.21.txt[0m
+Running sanity test "action-plugin-docs"
+[32mInitializing "/tmp/ansible-test-2sjhr1l5-injector" as the temporary injector directory.[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/action-plugin-docs.py[0m
+Running sanity test "ansible-doc"
+[32mRun command: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.13 -m venv --without-pip /root/.ansible/test/venv/sanity.ansible-doc/3.13/280c01e2[0m
+[32mCreated Python 3.13 virtual environment using "venv": /root/.ansible/test/venv/sanity.ansible-doc/3.13/280c01e2[0m
+Installing requirements for Python 3.13 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.ansible-doc/3.13/280c01e2/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.ansible-doc/3.13/280c01e2/bin/python /tmp/ansible-test-7xjp6vfu-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Downloading pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Downloading pip-25.2-py3-none-any.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 51.8 MB/s  0:00:00
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.ansible-doc/3.13/280c01e2/bin/python /tmp/ansible-test-7xjp6vfu-pip.py install --disable-pip-version-check -r requirements/sanity.ansible-doc.txt
+Collecting Jinja2==3.1.6 (from -r requirements/sanity.ansible-doc.txt (line 2))
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting MarkupSafe==3.0.3 (from -r requirements/sanity.ansible-doc.txt (line 3))
+  Downloading markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting packaging==26.0 (from -r requirements/sanity.ansible-doc.txt (line 4))
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.ansible-doc.txt (line 5))
+  Downloading pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Downloading markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+Downloading pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 801.6/801.6 kB 40.3 MB/s  0:00:00
+Installing collected packages: PyYAML, packaging, MarkupSafe, Jinja2
+
+Successfully installed Jinja2-3.1.6 MarkupSafe-3.0.3 PyYAML-6.0.3 packaging-26.0
+Execute command: /root/.ansible/test/venv/sanity.ansible-doc/3.13/280c01e2/bin/python /tmp/ansible-test-7xjp6vfu-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.ansible-doc/3.13/280c01e2/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command: ansible-doc -l --json -t filter redhatci.ocp[0m
+[32mRun command: ansible-doc -t filter redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t filter --json redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t module redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+[32mRun command: ansible-doc -t module --json redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+Running sanity test "changelog"
+[32mNo tests applicable.[0m
+Running sanity test "compile" on Python 3.13
+[32mRun command with data: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/sanity/compile/compile.py[0m
+Running sanity test "empty-init"
+[32mNo tests applicable.[0m
+Running sanity test "ignores"
+Running sanity test "import" on Python 3.13
+[32mRun command: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.13 -m venv --without-pip /root/.ansible/test/venv/sanity.import/3.13/aeaf9a95[0m
+[32mCreated Python 3.13 virtual environment using "venv": /root/.ansible/test/venv/sanity.import/3.13/aeaf9a95[0m
+Installing requirements for Python 3.13 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.import/3.13/aeaf9a95/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.import/3.13/aeaf9a95/bin/python /tmp/ansible-test-sp75tnlz-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.import/3.13/aeaf9a95/bin/python /tmp/ansible-test-sp75tnlz-pip.py install --disable-pip-version-check -r requirements/sanity.import.txt
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.import.txt (line 2))
+  Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+Installing collected packages: PyYAML
+Successfully installed PyYAML-6.0.3
+Execute command: /root/.ansible/test/venv/sanity.import/3.13/aeaf9a95/bin/python /tmp/ansible-test-sp75tnlz-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.import/3.13/aeaf9a95/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command with data: importer.py[0m
+[32mRun command with data: importer.py[0m
+Running sanity test "line-endings"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/line-endings.py[0m
+Running sanity test "no-assert"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-assert.py[0m
+Running sanity test "no-get-exception"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-get-exception.py[0m
+Running sanity test "no-illegal-filenames"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-illegal-filenames.py[0m
+Running sanity test "no-smart-quotes"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-smart-quotes.py[0m
+Running sanity test "pep8"
+[32mRun command: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.13 -m venv --without-pip /root/.ansible/test/venv/sanity.pep8/3.13/84e10cff[0m
+[32mCreated Python 3.13 virtual environment using "venv": /root/.ansible/test/venv/sanity.pep8/3.13/84e10cff[0m
+Installing requirements for Python 3.13 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.pep8/3.13/84e10cff/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.pep8/3.13/84e10cff/bin/python /tmp/ansible-test-ujwdi9du-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.pep8/3.13/84e10cff/bin/python /tmp/ansible-test-ujwdi9du-pip.py install --disable-pip-version-check -r requirements/sanity.pep8.txt
+Collecting pycodestyle==2.14.0 (from -r requirements/sanity.pep8.txt (line 2))
+  Downloading pycodestyle-2.14.0-py2.py3-none-any.whl.metadata (4.5 kB)
+Downloading pycodestyle-2.14.0-py2.py3-none-any.whl (31 kB)
+Installing collected packages: pycodestyle
+Successfully installed pycodestyle-2.14.0
+Execute command: /root/.ansible/test/venv/sanity.pep8/3.13/84e10cff/bin/python /tmp/ansible-test-ujwdi9du-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.pep8/3.13/84e10cff/bin/python -m pycodestyle --max-line-length 160 --config /dev/null --ignore E203,E402,E701,E704,E741,W503,W504 plugins/f ...[0m
+Running sanity test "pslint"
+[32mNo tests applicable.[0m
+Running sanity test "pylint"
+[32mRun command: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.13 -m venv --without-pip /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d[0m
+[32mCreated Python 3.13 virtual environment using "venv": /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d[0m
+Installing requirements for Python 3.13 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python /tmp/ansible-test-qh47_jhn-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python /tmp/ansible-test-qh47_jhn-pip.py install --disable-pip-version-check -r requirements/sanity.pylint.txt
+Collecting astroid==4.0.4 (from -r requirements/sanity.pylint.txt (line 2))
+  Downloading astroid-4.0.4-py3-none-any.whl.metadata (4.4 kB)
+Collecting dill==0.4.1 (from -r requirements/sanity.pylint.txt (line 3))
+  Downloading dill-0.4.1-py3-none-any.whl.metadata (10 kB)
+Collecting isort==8.0.1 (from -r requirements/sanity.pylint.txt (line 4))
+  Downloading isort-8.0.1-py3-none-any.whl.metadata (11 kB)
+Collecting mccabe==0.7.0 (from -r requirements/sanity.pylint.txt (line 5))
+  Downloading mccabe-0.7.0-py2.py3-none-any.whl.metadata (5.0 kB)
+Collecting platformdirs==4.9.4 (from -r requirements/sanity.pylint.txt (line 6))
+  Downloading platformdirs-4.9.4-py3-none-any.whl.metadata (4.7 kB)
+Collecting pylint==4.0.5 (from -r requirements/sanity.pylint.txt (line 7))
+  Downloading pylint-4.0.5-py3-none-any.whl.metadata (12 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.pylint.txt (line 8))
+  Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting tomlkit==0.14.0 (from -r requirements/sanity.pylint.txt (line 9))
+  Downloading tomlkit-0.14.0-py3-none-any.whl.metadata (2.8 kB)
+Downloading astroid-4.0.4-py3-none-any.whl (276 kB)
+Downloading dill-0.4.1-py3-none-any.whl (120 kB)
+Downloading isort-8.0.1-py3-none-any.whl (89 kB)
+Downloading mccabe-0.7.0-py2.py3-none-any.whl (7.3 kB)
+Downloading platformdirs-4.9.4-py3-none-any.whl (21 kB)
+Downloading pylint-4.0.5-py3-none-any.whl (536 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.7/536.7 kB 31.8 MB/s  0:00:00
+Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+Downloading tomlkit-0.14.0-py3-none-any.whl (39 kB)
+Installing collected packages: tomlkit, PyYAML, platformdirs, mccabe, isort, dill, astroid, pylint
+
+Successfully installed PyYAML-6.0.3 astroid-4.0.4 dill-0.4.1 isort-8.0.1 mccabe-0.7.0 platformdirs-4.9.4 pylint-4.0.5 tomlkit-0.14.0
+Execute command: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python /tmp/ansible-test-qh47_jhn-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_collections/r ...[0m
+[32mChecking 8 file(s) in context 'collection' (controller) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python -m pylint --py-version 3.12 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_forma ...[0m
+[32mChecking 4 file(s) in context 'modules' (target) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.13/eb0a144d/bin/python -m pylint --py-version 3.9 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_format ...[0m
+[31mERROR: Found 2 pylint issue(s) which need to be resolved:[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:64:73: ansible-bad-function: Call run_command instead of subprocess.check_output[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:66:12: ansible-bad-function: Call run_command instead of subprocess.run[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/pylint.html
+Running sanity test "replace-urlopen"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/replace-urlopen.py[0m
+Running sanity test "runtime-metadata"
+[32mRun command: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.13 -m venv --without-pip /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471[0m
+[32mCreated Python 3.13 virtual environment using "venv": /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471[0m
+Installing requirements for Python 3.13 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471/bin/python /tmp/ansible-test-rujqhbxk-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471/bin/python /tmp/ansible-test-rujqhbxk-pip.py install --disable-pip-version-check -r requirements/sanity.runtime-metadata.txt
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.runtime-metadata.txt (line 2))
+  Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting voluptuous==0.16.0 (from -r requirements/sanity.runtime-metadata.txt (line 3))
+  Downloading voluptuous-0.16.0-py3-none-any.whl.metadata (20 kB)
+Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+Downloading voluptuous-0.16.0-py3-none-any.whl (31 kB)
+Installing collected packages: voluptuous, PyYAML
+
+Successfully installed PyYAML-6.0.3 voluptuous-0.16.0
+Execute command: /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471/bin/python /tmp/ansible-test-rujqhbxk-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.13/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/runtime-metadata.py[0m
+Running sanity test "shebang"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/shebang.py[0m
+[31mERROR: Found 3 shebang issue(s) which need to be resolved:[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-ROX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWO.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/shebang.html
+Running sanity test "shellcheck"
+[32mRun command: shellcheck -e SC1090,SC1091,SC2028 --format checkstyle roles/conserver/files/socat_retry.sh roles/example_cnf_deploy/scripts/get-example-cnf-results.sh roles/example_cnf_d ...[0m
+Running sanity test "symlinks"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/symlinks.py[0m
+Running sanity test "use-argspec-type-path"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-argspec-type-path.py[0m
+Running sanity test "use-compat-six"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.13/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-compat-six.py[0m
+Running sanity test "validate-modules"
+[32mRun command: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.13 -m venv --without-pip /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece[0m
+[32mCreated Python 3.13 virtual environment using "venv": /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece[0m
+Installing requirements for Python 3.13 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece/bin/python /tmp/ansible-test-anpmjn59-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece/bin/python /tmp/ansible-test-anpmjn59-pip.py install --disable-pip-version-check -r requirements/sanity.validate-modules.txt
+Collecting antsibull-docs-parser==1.0.0 (from -r requirements/sanity.validate-modules.txt (line 2))
+  Downloading antsibull_docs_parser-1.0.0-py3-none-any.whl.metadata (4.7 kB)
+Collecting Jinja2==3.1.6 (from -r requirements/sanity.validate-modules.txt (line 3))
+  Using cached jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting MarkupSafe==3.0.3 (from -r requirements/sanity.validate-modules.txt (line 4))
+  Using cached markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.validate-modules.txt (line 5))
+  Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting voluptuous==0.16.0 (from -r requirements/sanity.validate-modules.txt (line 6))
+  Using cached voluptuous-0.16.0-py3-none-any.whl.metadata (20 kB)
+Downloading antsibull_docs_parser-1.0.0-py3-none-any.whl (31 kB)
+Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
+Using cached markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+Using cached voluptuous-0.16.0-py3-none-any.whl (31 kB)
+Installing collected packages: voluptuous, PyYAML, MarkupSafe, antsibull-docs-parser, Jinja2
+
+Successfully installed Jinja2-3.1.6 MarkupSafe-3.0.3 PyYAML-6.0.3 antsibull-docs-parser-1.0.0 voluptuous-0.16.0
+Execute command: /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece/bin/python /tmp/ansible-test-anpmjn59-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mInjecting "/tmp/pwsh-ku2gaenn-ansible/pwsh" as a execv wrapper for the "/usr/local/bin/pwsh7.6" interpreter.[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_col ...[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.13/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/validate-modules/validate.py --format ...[0m
+Running sanity test "yamllint"
+[32mRun command: /usr/bin/python3.13 /root/ansible/test/lib/ansible_test/_util/target/tools/virtualenvcheck.py[0m
+[32mRun command: /usr/bin/python3.13 -m venv --without-pip /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458[0m
+[32mCreated Python 3.13 virtual environment using "venv": /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458[0m
+Installing requirements for Python 3.13 [venv]
+[32mStream command with data: /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458/bin/python[0m
+Using cached pip 25.2 bootstrap script: /root/.ansible/test/cache/get_pip_25_2.py
+Execute command: /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458/bin/python /tmp/ansible-test-celsj06p-pip.py --disable-pip-version-check pip==25.2 --no-setuptools --no-wheel
+Collecting pip==25.2
+  Using cached pip-25.2-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.2-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+Successfully installed pip-25.2
+Execute command: /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458/bin/python /tmp/ansible-test-celsj06p-pip.py install --disable-pip-version-check -r requirements/sanity.yamllint.txt
+Collecting pathspec==1.0.4 (from -r requirements/sanity.yamllint.txt (line 2))
+  Downloading pathspec-1.0.4-py3-none-any.whl.metadata (13 kB)
+Collecting PyYAML==6.0.3 (from -r requirements/sanity.yamllint.txt (line 3))
+  Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting yamllint==1.38.0 (from -r requirements/sanity.yamllint.txt (line 4))
+  Downloading yamllint-1.38.0-py3-none-any.whl.metadata (4.2 kB)
+Downloading pathspec-1.0.4-py3-none-any.whl (55 kB)
+Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+Downloading yamllint-1.38.0-py3-none-any.whl (68 kB)
+Installing collected packages: PyYAML, pathspec, yamllint
+
+Successfully installed PyYAML-6.0.3 pathspec-1.0.4 yamllint-1.38.0
+Execute command: /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458/bin/python /tmp/ansible-test-celsj06p-pip.py uninstall -y --disable-pip-version-check pip
+[32mRun command: /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/target/tools/yamlcheck.py[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity.yamllint/3.13/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/yamllint/yamllinter.py[0m
+[31mERROR: Found 2 yamllint issue(s) which need to be resolved:[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: error: syntax error: found character '%' that cannot start any token (syntax)[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: unparsable-with-libyaml: while scanning for the next token found character that cannot start any token[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/yamllint.html
+[35mWARNING: The following sanity test virtual environments are out-of-date in the "default" container: sanity.ansible-doc-3.13, sanity.import-3.13, sanity.pep8-3.13, sanity.pylint-3.13, sanity.runtime-metadata-3.13, sanity.validate-modules-3.13, sanity.yamllint-3.13[0m
+[31mERROR: The 3 sanity test(s) listed below (out of 24) failed. See error output above for details.
+pylint
+shebang
+yamllint[0m
+[35mWARNING: Reviewing previous 1 warning(s):[0m
+[35mWARNING: The following sanity test virtual environments are out-of-date in the "default" container: sanity.ansible-doc-3.13, sanity.import-3.13, sanity.pep8-3.13, sanity.pylint-3.13, sanity.runtime-metadata-3.13, sanity.validate-modules-3.13, sanity.yamllint-3.13[0m
+[32mRun command with stdout: podman exec -i ansible-test-controller-vNadw6tH sh -c 'tar cf - -C /root/ansible_collections/redhatci/ocp/tests --exclude .tmp output | gzip'[0m
+[32mRun command with stdin: tar oxzf - -C /home/flepied/ai-assist/workspace/ansible_collections/redhatci/ocp/tests[0m
+[32mRun command: podman stop -t 0 ansible-test-controller-vNadw6tH[0m
+[32mRun command: podman rm -v ansible-test-controller-vNadw6tH[0m
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test units --verbose --docker --python 3.13 --color --coverage
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test integration --verbose --docker --python 3.13 --color --coverage
++ for version in $PY_VERS
++ run_tests 3.14
++ local version=3.14
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test sanity --exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py --verbose --docker --python 3.14 --color --coverage --failure-ok --lint
+[32mConfigured locale: en_US.UTF-8[0m
+[32mRun command: docker -v[0m
+[32mRun command: podman -v[0m
+[32mDetected "podman" container runtime version: podman version 5.8.4[0m
+[32mRun command: podman system connection list --format=json[0m
+[32mRun command: podman info --format '{{ json . }}'[0m
+[32mRun command: podman version --format '{{ json . }}'[0m
+[32mContainer runtime: podman client=5.8.4 server=5.8.4 cgroup=v2[0m
+[32mAssuming Docker is available on localhost.[0m
+[32mRun command: podman image inspect quay.io/ansible/ansible-test-utility-container:3.5.0[0m
+[32mRun command: podman run --volume /sys/fs/cgroup:/probe:ro --name ansible-test-probe-AKSVrxSR --rm quay.io/ansible/ansible-test-utility-container:3.5.0 sh -c 'audit-status && cat /proc/ ...[0m
+[32mContainer host audit status: EBADF (-9)[0m
+[32mContainer host max open files: 524288[0m
+[32mContainer loginuid: 0[0m
+Starting new "ansible-test-controller-AKSVrxSR" container.
+[32mRun command: podman image inspect quay.io/ansible/default-test-container:v2.21-4[0m
+[32mRun command: podman network inspect podman[0m
+[32mRun command: podman run --tmpfs /tmp:exec --tmpfs /run:exec --tmpfs /run/lock --volume /var/run/docker.sock:/var/run/docker.sock --cap-add SYS_CHROOT --systemd always --cgroupns privat ...[0m
+Adding "ansible-test-controller-AKSVrxSR" to container database.
+[32mRun command: podman container inspect ansible-test-controller-AKSVrxSR[0m
+[32mStream command with data: podman exec -i ansible-test-controller-AKSVrxSR /bin/sh[0m
+Bootstrapping Python 3.14 at: /usr/bin/python3.14
+Detected PowerShell 7.6 at: /usr/local/bin/pwsh7.6
+[32mLoaded configuration: tests/config.yml[0m
+[32mScanning collection root: /home/flepied/ai-assist/workspace/ansible_collections[0m
+[32mIncluding collection: redhatci.ocp (969 files)[0m
+[32mCreating a payload archive containing 2014 files...[0m
+[32mCreated a 2423456 byte payload archive containing 2014 files in 0 seconds.[0m
+[32mRun command with stdin: podman exec -i ansible-test-controller-AKSVrxSR tar oxzf - -C /root[0m
+[32mCreating container database.[0m
+[32mStream command: podman exec ansible-test-controller-AKSVrxSR /usr/bin/env ANSIBLE_TEST_CONTENT_ROOT=/root/ansible_collections/redhatci/ocp LC_ALL=en_US.UTF-8 /usr/bin/python3.14 /root/ ...[0m
+[32mConfigured locale: en_US.UTF-8[0m
+[32mParsing container database.[0m
+[32mRead 0 sanity test ignore line(s) for Ansible 2.21 from: tests/sanity/ignore-2.21.txt[0m
+Running sanity test "action-plugin-docs"
+[32mInitializing "/tmp/ansible-test-08xm52hp-injector" as the temporary injector directory.[0m
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/action-plugin-docs.py[0m
+Running sanity test "ansible-doc"
+[32mRun command: ansible-doc -l --json -t filter redhatci.ocp[0m
+[32mRun command: ansible-doc -t filter redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t filter --json redhatci.ocp.cmdline_to_json redhatci.ocp.junit2dict redhatci.ocp.junit2obj redhatci.ocp.redact redhatci.ocp.resolve_must_gather[0m
+[32mRun command: ansible-doc -t module redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+[32mRun command: ansible-doc -t module --json redhatci.ocp.cleanup_stuck_resources redhatci.ocp.find_available_port redhatci.ocp.get_compatible_rhocp_repo redhatci.ocp.packet_missing[0m
+Running sanity test "changelog"
+[32mNo tests applicable.[0m
+Running sanity test "compile" on Python 3.14
+[32mRun command with data: /usr/bin/python3.14 /root/ansible/test/lib/ansible_test/_util/target/sanity/compile/compile.py[0m
+Running sanity test "empty-init"
+[32mNo tests applicable.[0m
+Running sanity test "ignores"
+Running sanity test "import" on Python 3.14
+[32mRun command with data: importer.py[0m
+[32mRun command with data: importer.py[0m
+Running sanity test "line-endings"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/line-endings.py[0m
+Running sanity test "no-assert"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-assert.py[0m
+Running sanity test "no-get-exception"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-get-exception.py[0m
+Running sanity test "no-illegal-filenames"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-illegal-filenames.py[0m
+Running sanity test "no-smart-quotes"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/no-smart-quotes.py[0m
+Running sanity test "pep8"
+[32mRun command: /root/.ansible/test/venv/sanity.pep8/3.14/84e10cff/bin/python -m pycodestyle --max-line-length 160 --config /dev/null --ignore E203,E402,E701,E704,E741,W503,W504 plugins/f ...[0m
+Running sanity test "pslint"
+[32mNo tests applicable.[0m
+Running sanity test "pylint"
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_collections/r ...[0m
+[32mChecking 8 file(s) in context 'collection' (controller) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.12 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_forma ...[0m
+[32mChecking 4 file(s) in context 'modules' (target) with config: /root/ansible/test/lib/ansible_test/_util/controller/sanity/pylint/config/collection.cfg[0m
+[32mRun command: /root/.ansible/test/venv/sanity.pylint/3.14/eb0a144d/bin/python -m pylint --py-version 3.9 --load-plugins deprecated_calls,deprecated_comment,hide_unraisable,string_format ...[0m
+[31mERROR: Found 2 pylint issue(s) which need to be resolved:[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:64:73: ansible-bad-function: Call run_command instead of subprocess.check_output[0m
+[31mERROR: plugins/modules/get_compatible_rhocp_repo.py:66:12: ansible-bad-function: Call run_command instead of subprocess.run[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/pylint.html
+Running sanity test "replace-urlopen"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/replace-urlopen.py[0m
+Running sanity test "runtime-metadata"
+[32mRun command with data: /root/.ansible/test/venv/sanity.runtime-metadata/3.14/5110e471/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/runtime-metadata.py[0m
+Running sanity test "shebang"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/shebang.py[0m
+[31mERROR: Found 3 shebang issue(s) which need to be resolved:[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-ROX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWO.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+[31mERROR: roles/storage_tester/scripts/storage-tester-RWX.sh:1:1: unexpected non-module shebang: b'#!/bin/bash'[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/shebang.html
+Running sanity test "shellcheck"
+[32mRun command: shellcheck -e SC1090,SC1091,SC2028 --format checkstyle roles/conserver/files/socat_retry.sh roles/example_cnf_deploy/scripts/get-example-cnf-results.sh roles/example_cnf_d ...[0m
+Running sanity test "symlinks"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/symlinks.py[0m
+Running sanity test "use-argspec-type-path"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-argspec-type-path.py[0m
+Running sanity test "use-compat-six"
+[32mRun command with data: /root/.ansible/test/venv/sanity/3.14/4f53cda1/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/code-smell/use-compat-six.py[0m
+Running sanity test "validate-modules"
+[32mInjecting "/tmp/pwsh-jelcqytc-ansible/pwsh" as a execv wrapper for the "/usr/local/bin/pwsh7.6" interpreter.[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/tools/collection_detail.py /root/ansible_col ...[0m
+[32mRun command: /root/.ansible/test/venv/sanity.validate-modules/3.14/3b8c6ece/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/validate-modules/validate.py --format ...[0m
+Running sanity test "yamllint"
+[32mRun command with data: /root/.ansible/test/venv/sanity.yamllint/3.14/683fc458/bin/python /root/ansible/test/lib/ansible_test/_util/controller/sanity/yamllint/yamllinter.py[0m
+[31mERROR: Found 2 yamllint issue(s) which need to be resolved:[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: error: syntax error: found character '%' that cannot start any token (syntax)[0m
+[31mERROR: roles/label_nodes/templates/node_label.yml:6:4: unparsable-with-libyaml: while scanning for the next token found character that cannot start any token[0m
+See documentation for help: https://docs.ansible.com/ansible-core/2.21/dev_guide/testing/sanity/yamllint.html
+[31mERROR: The 3 sanity test(s) listed below (out of 24) failed. See error output above for details.
+pylint
+shebang
+yamllint[0m
+[32mRun command with stdout: podman exec -i ansible-test-controller-AKSVrxSR sh -c 'tar cf - -C /root/ansible_collections/redhatci/ocp/tests --exclude .tmp output | gzip'[0m
+[32mRun command with stdin: tar oxzf - -C /home/flepied/ai-assist/workspace/ansible_collections/redhatci/ocp/tests[0m
+[32mRun command: podman stop -t 0 ansible-test-controller-AKSVrxSR[0m
+[32mRun command: podman rm -v ansible-test-controller-AKSVrxSR[0m
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test units --verbose --docker --python 3.14 --color --coverage
++ for test_type in "${TEST_TYPES[@]}"
++ case "$test_type" in
++ ansible-test integration --verbose --docker --python 3.14 --color --coverage

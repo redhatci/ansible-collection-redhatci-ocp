@@ -155,6 +155,7 @@
                     mc --config-dir /tmp/
                     mb --ignore-existing
                     local/{{ sm_bucket_name }}
+                changed_when: true
             restartPolicy: Never
     wait: true
     wait_sleep: 10

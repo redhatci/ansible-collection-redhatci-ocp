@@ -23,6 +23,7 @@
 # Create a fork of the project {{ target_repository }}
 - name: "Login to Github"
   ansible.builtin.shell: "{{ gh_tool_path }} auth login --with-token < {{ github_token_path }}"
+  changed_when: true
   args:
     chdir: "{{ work_dir }}"
   register: gh_login
@@ -31,9 +32,11 @@
 - name: "Configure Git protocol"
   ansible.builtin.command: "{{ gh_tool_path }} config set git_protocol ssh"
 
+  changed_when: true
 - name: "Get GitHub status details"
   ansible.builtin.command:
     cmd: "{{ gh_tool_path }} api user --jq .login"
+  changed_when: true
   register: github_status
 
 - name: "Get the GitHub username"
@@ -64,6 +67,7 @@
 
 - name: "Add ssh-key to Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X POST user/keys -f key='{{ public_key }}'"
+  changed_when: true
   register: gh_add_response
   args:
     chdir: "{{ work_dir }}"
@@ -74,6 +78,7 @@
 
 - name: Fork the git repo for product
   ansible.builtin.command: "{{ gh_tool_path }} repo fork {{ target_repository }} --fork-name {{ fork_name }} "
+  changed_when: true
   args:
     chdir: "{{ work_dir }}"
   register: gh_fork
@@ -81,6 +86,7 @@
 
 - name: Sync the git fork
   ansible.builtin.command: "{{ gh_tool_path }} repo sync {{ github_username }}/{{ fork_name }} --force"
+  changed_when: true
   args:
     chdir: "{{ work_dir }}"
   register: gh_fork_sync
@@ -89,6 +95,7 @@
 - name: Clone the git repository
   ansible.builtin.command:
     cmd: "{{ gh_tool_path }} repo clone {{ github_username }}/{{ fork_name }}"
+  changed_when: true
   args:
     chdir: "{{ work_dir }}"
 
@@ -102,9 +109,11 @@
 
 - name: "Delete the one time use key from Github"
   ansible.builtin.command: "{{ gh_tool_path }} api -X DELETE user/keys/{{ key_id }}"
+  changed_when: true
   ignore_errors: true
 
 - name: "GH logout"
   ansible.builtin.command: "{{ gh_tool_path }} auth logout --hostname github.com"
+  changed_when: true
   failed_when: false
 ...

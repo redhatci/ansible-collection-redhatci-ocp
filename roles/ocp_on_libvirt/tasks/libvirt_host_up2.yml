@@ -3,6 +3,7 @@
   community.libvirt.virt:
     name: "{{ host['name'] }}"
     command: status
+    changed_when: true
   register: vmstatus
   until: vmstatus.status == 'shutdown'
   retries: 150
@@ -11,12 +12,14 @@
 
 - name: "Remove cdrom (cloud-init)"
   ansible.builtin.command: virsh change-media {{ host['name'] }} hda --eject --config
+  changed_when: true
   become: "{{ libvirt_become }}"
   when: ool_node_not_exists
 
 - name: Sync memory data to disk
   ansible.builtin.command: sync
 
+  changed_when: true
 - name: "Start VM again"
   community.libvirt.virt:
     name: "{{ host['name'] }}"

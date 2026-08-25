@@ -5,6 +5,7 @@
     cmd: "make build-docker-image"
     chdir: "{{ eco_gotests_path }}"
 
+  changed_when: true
 - name: "Overwrite image name"
   ansible.builtin.set_fact:
     eco_gotests_image: "eco-gotests:latest"

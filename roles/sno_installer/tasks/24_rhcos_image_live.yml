@@ -45,6 +45,7 @@
 - name: "Apply new SELinux file context"
   ansible.builtin.command: >
     /usr/sbin/restorecon -R "{{ si_cache_dir }}/{{ rhcos_live_iso_name }}"
+  changed_when: true
   become: true
   tags: rhcos_live
 ...

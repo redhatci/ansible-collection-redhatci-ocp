@@ -18,6 +18,7 @@
     --annotations hypershift.openshift.io/control-plane-operator-image={{ hostedbm_bm_cpo_override_image }}{% endif %}
     --namespace={{ hostedbm_cluster_ns }}
     --render
+  changed_when: true
   register: _hostedbm_hcp_output
 
 - name: Save output to YAML file

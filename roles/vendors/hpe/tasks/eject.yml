@@ -3,6 +3,7 @@
   community.general.redfish_info:
     category: Manager
     command: GetVirtualMedia
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -32,6 +33,7 @@
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaEject
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
