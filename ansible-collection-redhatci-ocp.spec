@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Aug 25 2026 Frederic Lepied <flepied@redhat.com> - 6.3.EPOCH-VERS
+- Replace ignore_errors: true with failed_when: false across roles
+
 * Fri Aug 21 2026 Tony Garcia <tonyg@redhat.com> - 6.2.EPOCH-VERS
 - Default ArgoCD to operator-managed ClusterRole, require explicit AppProject
 
