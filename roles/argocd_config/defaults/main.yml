@@ -3,6 +3,7 @@ ac_server_api: https://kubernetes.default.svc
 ac_namespace: openshift-gitops
 ac_app_dir_recurse: false
 ac_hide_secrets: true
+ac_cluster_role: "openshift-gitops-{{ ac_namespace }}-argocd-application-controller"
 ac_permissions_def:
   apiVersion: rbac.authorization.k8s.io/v1
   kind: ClusterRoleBinding
@@ -11,7 +12,7 @@ ac_permissions_def:
   roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: ClusterRole
-    name: cluster-admin
+    name: "{{ ac_cluster_role }}"
   subjects:
     - kind: ServiceAccount
       name: openshift-gitops-argocd-application-controller
@@ -25,16 +26,16 @@ ac_project_def:
     namespace: "{{ ac_namespace }}"
   spec:
     clusterResourceWhitelist:
-      - group: '*'
-        kind: '*'
+      - group: ''
+        kind: Namespace
     namespaceResourceWhitelist:
       - group: '*'
         kind: '*'
     destinations:
-      - namespace: '*'
-        server: '*'
+      - namespace: "{{ ac_app_namespace }}"
+        server: "{{ ac_server_api }}"
     sourceRepos:
-      - '*'
+      - "{{ ac_repo }}"
 ac_repo_revision: main
 ac_ssh_port: 22
 ac_wait_retries: 30

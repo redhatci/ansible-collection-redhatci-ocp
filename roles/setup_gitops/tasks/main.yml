@@ -72,7 +72,7 @@
             - name: KUSTOMIZE_PLUGIN_HOME
               value: "/.config/kustomize/plugin"
 
-- name: Bind GitOps controller to cluster-admin role
+- name: Bind GitOps controller to ClusterRole {{ sg_cluster_role }}
   kubernetes.core.k8s:
     definition:
       apiVersion: rbac.authorization.k8s.io/v1
@@ -82,7 +82,7 @@
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: ClusterRole
-        name: cluster-admin
+        name: "{{ sg_cluster_role }}"
       subjects:
         - kind: ServiceAccount
           name: openshift-gitops-argocd-application-controller

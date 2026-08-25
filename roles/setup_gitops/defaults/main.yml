@@ -3,4 +3,5 @@ sg_ztp_tag: v4.22
 sg_mce_tag: v2.17
 sg_local_registry: ""
 sg_namespace: openshift-gitops
+sg_cluster_role: "openshift-gitops-{{ sg_namespace }}-argocd-application-controller"
 ...

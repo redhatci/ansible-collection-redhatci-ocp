@@ -1,4 +1,11 @@
 ---
+- name: Remove existing ArgoCD ClusterRoleBinding
+  kubernetes.core.k8s:
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    name: "{{ ac_permissions_def.metadata.name }}"
+    state: absent
+
 - name: Grant ArgoCD Default Permissions
   kubernetes.core.k8s:
     definition: "{{ ac_permissions_def }}"

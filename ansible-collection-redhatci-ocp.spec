@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.1.EPOCH
+Version:        6.2.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Aug 21 2026 Tony Garcia <tonyg@redhat.com> - 6.2.EPOCH-VERS
+- Default ArgoCD to operator-managed ClusterRole, require explicit AppProject
+
 * Mon Aug 17 2026 Ramon Perez <raperez@redhat.com> - 6.1.EPOCH-VERS
 - Include Two-Node with Fencing (TNF) OCP support in generate_manifests and installer roles
 
