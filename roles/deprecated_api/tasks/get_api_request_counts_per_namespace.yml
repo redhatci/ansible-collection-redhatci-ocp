@@ -9,14 +9,14 @@
 
 - name: "Extract deprecated and to-be-deprecated API for {{ da_ns }}"
   vars:
-    query: >
+    da_query: >
       resources[?status.removedInRelease != null].{
         name: metadata.name,
         removedInRelease: status.removedInRelease,
         serviceAccounts: status.last24h[].byNode[].byUser[].username
       }
   ansible.builtin.set_fact:
-    da_removed_api_dupes: "{{ deprecated_api_apirequestcount | json_query(query) }}"
+    da_removed_api_dupes: "{{ deprecated_api_apirequestcount | json_query(da_query) }}"
 
 - name: "Reset da_removed_api before processing new namespace {{ da_ns }}"
   ansible.builtin.set_fact:
