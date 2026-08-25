@@ -1,4 +1,35 @@
 ---
+- name: Get existing ArgoCD permissions binding
+  kubernetes.core.k8s_info:
+    api_version: "{{ ac_permissions_def.apiVersion }}"
+    kind: "{{ ac_permissions_def.kind }}"
+    name: "{{ ac_permissions_def.metadata.name }}"
+  register: _ac_existing_binding
+
+- name: Recreate ArgoCD permissions binding when roleRef differs
+  when:
+    - _ac_existing_binding.resources | length > 0
+    - _ac_existing_binding.resources[0].roleRef.apiGroup | default('') != ac_permissions_def.roleRef.apiGroup | default('') or
+      _ac_existing_binding.resources[0].roleRef.kind | default('') != ac_permissions_def.roleRef.kind | default('') or
+      _ac_existing_binding.resources[0].roleRef.name | default('') != ac_permissions_def.roleRef.name | default('')
+  block:
+    - name: Delete existing ArgoCD permissions binding
+      kubernetes.core.k8s:
+        state: absent
+        api_version: "{{ ac_permissions_def.apiVersion }}"
+        kind: "{{ ac_permissions_def.kind }}"
+        name: "{{ ac_permissions_def.metadata.name }}"
+
+    - name: Wait for ArgoCD permissions binding deletion
+      kubernetes.core.k8s_info:
+        api_version: "{{ ac_permissions_def.apiVersion }}"
+        kind: "{{ ac_permissions_def.kind }}"
+        name: "{{ ac_permissions_def.metadata.name }}"
+      register: _ac_deleted_binding
+      until: _ac_deleted_binding.resources | length == 0
+      retries: 30
+      delay: 2
+
 - name: Grant ArgoCD Default Permissions
   kubernetes.core.k8s:
     definition: "{{ ac_permissions_def }}"
