@@ -17,7 +17,7 @@
     - ts_ocp_version_maj|int == 4
     - ts_ocp_version_min|int >= 7
 
-- name: "test_ redhat_tests: Run the openshift conformance test suite (disconnected) only for OCP 4.8+"  # noqa: name[casing]
+- name: "test_ redhat_tests: Run the openshift conformance test suite (disconnected) only for OCP 4.8+"  # noqa: name[casing] risky-shell-pipe
   ansible.builtin.shell:
     cmd: >
      podman run --pull=always --rm

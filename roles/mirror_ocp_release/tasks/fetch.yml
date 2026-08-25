@@ -27,7 +27,7 @@
 
 - name: "Figure out status of SELinux"
   ansible.builtin.command: /usr/sbin/selinuxenabled
-  failed_when: false
+  failed_when: _mor_selinux.rc not in [0, 1]
   register: _mor_selinux
   changed_when: false
 

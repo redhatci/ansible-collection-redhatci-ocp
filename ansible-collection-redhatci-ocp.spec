@@ -56,7 +56,7 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 %changelog
 * Tue Aug 25 2026 Frederic Lepied <flepied@redhat.com> - 6.3.EPOCH-VERS
-- Replace ignore_errors: true with failed_when: false across roles
+- Replace ignore_errors: true with failed_when: false across roles; add block/rescue patterns in destroy_vms, node_info, preflight, and ocp_on_libvirt roles; remove ignore-errors from ansible-lint warn_list
 
 * Fri Aug 21 2026 Tony Garcia <tonyg@redhat.com> - 6.2.EPOCH-VERS
 - Default ArgoCD to operator-managed ClusterRole, require explicit AppProject
