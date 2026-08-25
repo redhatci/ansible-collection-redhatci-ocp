@@ -1,10 +1,16 @@
 ---
-- name: "Does node exist"
-  community.libvirt.virt_net:
-    name: "{{ network['name'] }}"
-    command: status
-  failed_when: false
-  register: node_exists
+- name: "Check if network is defined"
+  block:
+    - name: "Get network status"
+      community.libvirt.virt_net:
+        name: "{{ network['name'] }}"
+        command: status
+      register: node_exists
+  rescue:
+    - name: "Network not found — mark as absent"
+      ansible.builtin.set_fact:
+        node_exists:
+          failed: true
 
 - name: "Destroy network"
   community.libvirt.virt_net:
