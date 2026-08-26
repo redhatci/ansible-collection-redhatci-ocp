@@ -20,7 +20,7 @@ Role Variables
 | local_storage_operator           | local-storage-operator        | String       | No          | LSO operator name                                                        |
 | openshift-local-storage          | openshift-local-storage       | String       | No          | LSO namespace                                                            |
 | local_storage_class              | localblock                    | String       | No          | Type of LSO Volume Mode, either filesystem or block                      |
-| local_volume_mode                | localblock                    | String       | No          | Type of LSO Volume Mode, either filesystem or block                      |
+| local_volume_mode                | block                         | String       | No          | Type of LSO Volume Mode, either filesystem or block                      |
 | replica_size                     | 3                             | String       | No          | Replica size                                                             |
 | ocs_storage_operator             | ocs-operator                  | String       | No          | OCS operator name                                                        |
 | ocs_storage_namespace            | openshift-storage             | String       | No          | OCS namespace                                                            |
@@ -35,7 +35,9 @@ Role Variables
 | odf_setup_enable_encryption      | false | Boolean | No          | Whether enable disk cluster-wide encryption for ODF |
 | odf_setup_key_rotation_period    | weekly | String | No          | Period of key rotation: daily, weekly, monthly, etc. |
 | odf_setup_ocs_on_control_plane   | false | Boolean | No          | Set true when ODF storage runs on dedicated control-plane nodes (e.g. MNO masters). Adds master/control-plane tolerations to LSO and StorageCluster storageDeviceSets. |
-
+| odf_setup_deviceset_storage_request | "1" | String | No          | Storage request size for each deviceset in the StorageCluster |
+| odf_setup_storagecluster_resources |                               | Dict         | No          | Resource limits and requests for the StorageCluster components |
+| odf_setup_storagecluster_deviceset_resources |                               | Dict         | No          | Resource limits and requests for the StorageCluster devicesets |
 
 Inventory Groups and Variables
 --------------
