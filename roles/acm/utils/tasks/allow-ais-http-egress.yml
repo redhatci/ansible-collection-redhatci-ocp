@@ -41,35 +41,66 @@
   register: _utils_mce
   failed_when: false
 
-- name: "Create NetworkPolicy for assisted-image-service to assisted-service"
+# The following block can be removed if the enforcement of NetworkPolicies
+# is abandoned in the future ACM-5 releases. See: ACM-42573
+- name: "Create NetworkPolicies when MCE networkPolicies are enabled"
   when:
     - (_utils_mce.resources | default([]) | length) > 0
     - ((_utils_mce.resources | first).spec | default({})).networkPolicies is defined
     - ((_utils_mce.resources | first).spec.networkPolicies.enabled | default(false)) | bool
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: networking.k8s.io/v1
-      kind: NetworkPolicy
-      metadata:
-        name: assisted-image-service-allow-assisted-service
-        namespace: multicluster-engine
-        labels:
-          app: assisted-image-service
-      spec:
-        podSelector:
-          matchLabels:
-            app: assisted-image-service
-        policyTypes:
-          - Egress
-        egress:
-          - to:
-              - podSelector:
-                  matchLabels:
-                    app: assisted-service
-            ports:
-              - protocol: TCP
-                port: 8090
+  block:
+    - name: "Create NetworkPolicy for assisted-image-service to assisted-service"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: assisted-image-service-allow-assisted-service
+            namespace: multicluster-engine
+            labels:
+              app: assisted-image-service
+          spec:
+            podSelector:
+              matchLabels:
+                app: assisted-image-service
+            policyTypes:
+              - Egress
+            egress:
+              - to:
+                  - podSelector:
+                      matchLabels:
+                        app: assisted-service
+                ports:
+                  - protocol: TCP
+                    port: 8090
+
+    - name: "Create NetworkPolicy for assisted-service registry egress"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: assisted-service-registry
+            namespace: multicluster-engine
+            labels:
+              app: assisted-service
+          spec:
+            podSelector:
+              matchLabels:
+                app: assisted-service
+            policyTypes:
+              - Egress
+            egress:
+              - to:
+                  - ipBlock:
+                      cidr: 0.0.0.0/0
+                  - ipBlock:
+                      cidr: ::/0
+                ports:
+                  - protocol: TCP
+                    port: 4443
 
 - name: "Resolve OS image host addresses in-cluster for AIS HTTP egress"
   when:
