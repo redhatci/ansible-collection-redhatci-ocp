@@ -17,7 +17,7 @@
   async: 120
   poll: 0
   register: _ebm_rm
-  loop: "{{ ebm_nodes }}"
+  loop: "{{ ebm_nodes | unique | list }}"
   loop_control:
     loop_var: node_name
   changed_when: true
