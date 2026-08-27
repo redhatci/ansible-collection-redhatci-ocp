@@ -27,13 +27,15 @@
 - name: Gathering result from DaemonSet
   ansible.builtin.shell:
     cmd: >
-      sleep 90;
       {{ odf_setup_oc_tool_path }} logs
       --selector name=ocs-disk-gatherer
       --tail=-1
       --since=10m
       --namespace ocs-disk-gatherer
   register: disk_id
+  retries: 10
+  delay: 30
+  until: disk_id.rc == 0
 
 - name: Configure Local Storage Volumes
   kubernetes.core.k8s:
