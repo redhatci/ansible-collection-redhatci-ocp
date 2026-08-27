@@ -5,23 +5,23 @@
       community.libvirt.virt_net:
         name: "{{ network['name'] }}"
         command: status
-      register: node_exists
+      register: _ool_node_exists
   rescue:
     - name: "Network not found — mark as absent"
       ansible.builtin.set_fact:
-        node_exists:
+        _ool_node_exists:
           failed: true
 
 - name: "Destroy network"
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: destroy
-  when: not node_exists.failed
+  when: not _ool_node_exists.failed
   failed_when: false
 
 - name: "Undefine network"
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: undefine
-  when: not node_exists.failed
+  when: not _ool_node_exists.failed
   failed_when: false

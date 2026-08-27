@@ -5,14 +5,14 @@
       community.libvirt.virt_net:
         name: "{{ network['name'] }}"
         command: status
-      register: network_exists
+      register: _snp_network_exists
       become: true
       tags:
         - cleanup
   rescue:
     - name: "Network not found — mark as absent"
       ansible.builtin.set_fact:
-        network_exists:
+        _snp_network_exists:
           failed: true
 
 - name: Stop SNO network
@@ -22,7 +22,7 @@
   become: true
   failed_when: false
   when:
-    - not network_exists.failed
+    - not _snp_network_exists.failed
   tags:
     - cleanup
 
@@ -33,7 +33,7 @@
   become: true
   failed_when: false
   when:
-    - not network_exists.failed
+    - not _snp_network_exists.failed
   tags:
     - cleanup
 ...
