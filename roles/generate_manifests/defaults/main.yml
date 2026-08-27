@@ -29,3 +29,8 @@ api_vips: "{% if extra_api_vip is defined %}{{ [api_vip] + [extra_api_vip] }}{% 
 ingress_vips: "{% if extra_ingress_vip is defined %}{{ [ingress_vip] + [extra_ingress_vip] }}{% else %}{{ [ingress_vip] }}{% endif %}"
 
 gm_image_sources: ""
+# Extra CA certificates for install-config additionalTrustBundle.
+# These are independent of use_local_mirror_registry. When a local
+# mirror is enabled, they are concatenated after mirror_certificate.
+gm_additional_trust_bundle: ""
+gm_additional_trust_bundle_files: []

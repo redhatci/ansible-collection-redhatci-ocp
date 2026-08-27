@@ -20,6 +20,8 @@ All of the variables have sane defaults which you can override to force things, 
 | ocp_registry_namespace        | ocp4                              | No        | Namespace for image mirror |
 | ocp_registry_image            | openshift4                        | No        | Name for image in the image mirror |
 | gm_image_sources              | (default block)                   | No        | Override the default ICSP block [^2] |
+| gm_additional_trust_bundle    | ""                                | No        | Extra PEM CA certificate(s) for `additionalTrustBundle` [^3] |
+| gm_additional_trust_bundle_files | []                             | No        | Paths to PEM CA files (on the target host) to include in `additionalTrustBundle` [^3] |
 | single_node_openshift_enabled | false                             | No        | Install OCP in single-node mode |
 | partitioning_enabled          | false                             | No        | Enable CPU partitioning mode for all Nodes |
 | gm_ocp_version                |                                   | No        | OpenShift version, required for the enablement of some features in the manifest generation, such as Two-Node with Fencing mode (TNF) |
@@ -47,6 +49,8 @@ All of the variables have sane defaults which you can override to force things, 
         - source: registry.example.com/ocp/release
           mirrors:
             - my-custom-registry.example.com:5000/my-repo
+    gm_additional_trust_bundle_files:  # extra CAs even without a local mirror
+      - /opt/quay/certs/cert.crt
     partitioning_enabled: false
   ansible.builtin.include_role:
     name: redhatci.ocp.generate_manifests
@@ -55,3 +59,5 @@ All of the variables have sane defaults which you can override to force things, 
 [^1]: As per the [OCP 4.17 docs](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html-single/installing_an_on-premise_cluster_with_the_agent-based_installer/index#root-device-hints_preparing-to-install-with-agent-based-installer)
 
 [^2]: When `gm_image_sources` is defined, it completely replaces the default `imageContentSources` block in the registry configuration. The value should be a YAML string containing the full `ICSP/IDMS` block with proper indentation. If not defined, the default block with standard OpenShift release sources and mirrors is used.
+
+[^3]: `additionalTrustBundle` is written whenever there is at least one certificate to include. Sources are concatenated in this order: `mirror_certificate` (only when `use_local_mirror_registry` is true, preserving the existing disconnected workflow), then `gm_additional_trust_bundle`, then each file in `gm_additional_trust_bundle_files`. Extra CAs do not require a local mirror and do not emit `imageContentSources`.

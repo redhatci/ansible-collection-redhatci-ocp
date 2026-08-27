@@ -84,3 +84,7 @@ proxy:
 {% if (use_local_mirror_registry | bool) %}
 {{ lookup('template', 'registry-config.j2') }}
 {% endif %}
+{% if gm_trust_bundle | default('') | length > 0 %}
+additionalTrustBundle: |
+  {{ gm_trust_bundle | indent(2) }}
+{% endif %}

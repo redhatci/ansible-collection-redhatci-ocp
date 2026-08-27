@@ -28,6 +28,33 @@
   when: use_local_mirror_registry  | bool
   no_log: true
 
+- name: Initialize additional trust bundle file contents
+  ansible.builtin.set_fact:
+    _gm_file_certs: []
+
+- name: Load additional trust bundle files
+  when: gm_additional_trust_bundle_files | length > 0
+  block:
+    - name: Slurp additional trust bundle files
+      ansible.builtin.slurp:
+        src: "{{ trust_bundle_file }}"
+      loop: "{{ gm_additional_trust_bundle_files }}"
+      loop_control:
+        loop_var: trust_bundle_file
+      register: _gm_trust_bundle_files
+
+    - name: Decode additional trust bundle files
+      ansible.builtin.set_fact:
+        _gm_file_certs: "{{ _gm_trust_bundle_files.results | map(attribute='content') | map('b64decode') | list }}"
+
+- name: Assemble additionalTrustBundle content
+  ansible.builtin.set_fact:
+    gm_trust_bundle: "{{ _gm_trust_parts | map('trim') | select('ne', '') | join('\n') }}"
+  vars:
+    _gm_mirror_certs: "{{ [mirror_certificate | default('')] if (use_local_mirror_registry | bool) else [] }}"
+    _gm_inline_certs: "{{ [gm_additional_trust_bundle] if (gm_additional_trust_bundle | default('') | trim | length > 0) else [] }}"
+    _gm_trust_parts: "{{ _gm_mirror_certs + _gm_inline_certs + _gm_file_certs }}"
+
 - name: Render agent-config templates
   ansible.builtin.template:
     src: "{{ item }}"
