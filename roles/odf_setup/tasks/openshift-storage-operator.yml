@@ -63,9 +63,13 @@
   until:
     - ocs_health_status.resources is defined
     - ocs_health_status.resources[0].status is defined
-    - ("'Connected' in ocs_health_status.resources[0].status.state") or ("'Ready' in ocs_health_status.resources[0].status.state")
+    - ocs_health_status.resources[0].status.phase is defined
+    - ocs_health_status.resources[0].status.phase in ['Ready', 'Connected']
+    - ocs_health_status.resources[0].status.state is defined
+    - ocs_health_status.resources[0].status.state in ['Created', 'Connected']
     - ocs_health_status.resources[0].status.ceph is defined
-    - "'HEALTH_ERR' not in ocs_health_status.resources[0].status.ceph.health"
+    - ocs_health_status.resources[0].status.ceph.health is defined
+    - ocs_health_status.resources[0].status.ceph.health != 'HEALTH_ERR'
 
 - name: Deploy the Rook-Ceph toolbox pod
   kubernetes.core.k8s:
