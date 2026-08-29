@@ -5,7 +5,11 @@
       community.libvirt.virt_net:
         name: "{{ network['name'] }}"
         command: status
-      register: ool_node_exists
+      register: _ool_net_status
+    - name: "Network found — mark as present"
+      ansible.builtin.set_fact:
+        ool_node_exists:
+          failed: false
   rescue:
     - name: "Network not found — mark as absent"
       ansible.builtin.set_fact:
