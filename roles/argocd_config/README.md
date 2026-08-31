@@ -28,6 +28,7 @@ A role to manage ArgoCD projects, repositories and applications.
 | ac_wait_delay      | 10                                                                | wait-for-healthy                                 | The time to wait between retries for the application to become healthy.
 
 <sup>1</sup> See [defaults](defaults/main.yml) for the default permissions definition.
+
 <sup>2</sup> See [defaults](defaults/main.yml) for the default project definition.
 
 > [!IMPORTANT]
@@ -54,8 +55,47 @@ A role to manage ArgoCD projects, repositories and applications.
 
 > [!NOTE]
 > The default `ac_project_def` scopes the project to `ac_app_namespace`,
-> `ac_server_api`, and `ac_repo`, so `ac_app_namespace` and `ac_repo` must be
-> provided (or a custom `ac_project_def` supplied).
+> `ac_server_api`, and `ac_repo`, so those must be provided unless you
+> supply a custom `ac_project_def`. Override `ac_project_def` when the
+> application needs extra cluster-scoped kinds, destinations, or source
+> repositories. Setting `ac_project_def` replaces the entire AppProject
+> spec; copy the default and extend it.
+
+### Create a custom Project
+
+```yaml
+- name: Create a custom ArgoCD project
+  ansible.builtin.include_role:
+    name: redhatci.ocp.argocd_config
+    tasks_from: config-project
+  vars:
+    ac_app_namespace: my-namespace
+    ac_repo: git@git.example.com/org/repo.git
+    ac_project_def:
+      apiVersion: argoproj.io/v1alpha1
+      kind: AppProject
+      metadata:
+        name: "{{ ac_project }}"
+        namespace: "{{ ac_namespace }}"
+      spec:
+        clusterResourceWhitelist:
+          - group: ''
+            kind: Namespace
+          - group: rbac.authorization.k8s.io
+            kind: ClusterRole
+          - group: rbac.authorization.k8s.io
+            kind: ClusterRoleBinding
+          - group: storage.k8s.io
+            kind: StorageClass
+        namespaceResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        destinations:
+          - namespace: "{{ ac_app_namespace }}"
+            server: "{{ ac_server_api }}"
+        sourceRepos:
+          - "{{ ac_repo }}"
+```
 
 ### Set Permissions
 
