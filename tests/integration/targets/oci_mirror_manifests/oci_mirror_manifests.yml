@@ -145,3 +145,129 @@
           ansible.builtin.file:
             path: "{{ _test_bad_us_dir.path }}"
             state: absent
+
+    - name: Create temp directory for bad ITMS manifest
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: om_test_bad_itms.
+      register: _test_bad_itms_dir
+
+    - name: Validate bad ITMS manifest — should fail
+      block:
+        - name: Copy bad ITMS fixture to temp directory
+          ansible.builtin.copy:
+            src: "files/bad/itms-empty-imageTagMirrors.yaml"
+            dest: "{{ _test_bad_itms_dir.path }}/itms-oc-mirror.yaml"
+            mode: "0644"
+
+        - name: Run validation on bad ITMS manifest (expected to fail)
+          vars:
+            _om_output_dir:
+              path: "{{ _test_bad_itms_dir.path }}"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: validate-manifests.yml
+
+        - name: Fail if ITMS validation did not raise an error
+          ansible.builtin.fail:
+            msg: "Validation should have failed for ITMS with empty imageTagMirrors but did not."
+
+      rescue:
+        - name: Confirm that the ITMS validation failure mentions empty
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'empty' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >-
+              ITMS validation failed but the error message did not mention 'empty'.
+              Got: {{ ansible_failed_result.msg | default('no message') }}
+
+      always:
+        - name: Clean up bad ITMS temp directory
+          ansible.builtin.file:
+            path: "{{ _test_bad_itms_dir.path }}"
+            state: absent
+
+    - name: Create temp directory for bad CatalogSource manifest
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: om_test_bad_cs.
+      register: _test_bad_cs_dir
+
+    - name: Validate bad CatalogSource manifest — should fail
+      block:
+        - name: Copy bad CatalogSource fixture to temp directory
+          ansible.builtin.copy:
+            src: "files/bad/cs-empty-image.yaml"
+            dest: "{{ _test_bad_cs_dir.path }}/cs-redhat-operators.yaml"
+            mode: "0644"
+
+        - name: Run validation on bad CatalogSource manifest (expected to fail)
+          vars:
+            _om_output_dir:
+              path: "{{ _test_bad_cs_dir.path }}"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: validate-manifests.yml
+
+        - name: Fail if CatalogSource validation did not raise an error
+          ansible.builtin.fail:
+            msg: "Validation should have failed for CatalogSource with empty image but did not."
+
+      rescue:
+        - name: Confirm that the CatalogSource validation failure mentions empty
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'empty' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >-
+              CatalogSource validation failed but the error message did not mention 'empty'.
+              Got: {{ ansible_failed_result.msg | default('no message') }}
+
+      always:
+        - name: Clean up bad CatalogSource temp directory
+          ansible.builtin.file:
+            path: "{{ _test_bad_cs_dir.path }}"
+            state: absent
+
+    - name: Create temp directory for bad ClusterCatalog manifest
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: om_test_bad_cc.
+      register: _test_bad_cc_dir
+
+    - name: Validate bad ClusterCatalog manifest — should fail
+      block:
+        - name: Copy bad ClusterCatalog fixture to temp directory
+          ansible.builtin.copy:
+            src: "files/bad/cc-empty-source.yaml"
+            dest: "{{ _test_bad_cc_dir.path }}/cc-redhat-operators.yaml"
+            mode: "0644"
+
+        - name: Run validation on bad ClusterCatalog manifest (expected to fail)
+          vars:
+            _om_output_dir:
+              path: "{{ _test_bad_cc_dir.path }}"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: validate-manifests.yml
+
+        - name: Fail if ClusterCatalog validation did not raise an error
+          ansible.builtin.fail:
+            msg: "Validation should have failed for ClusterCatalog with empty source but did not."
+
+      rescue:
+        - name: Confirm that the ClusterCatalog validation failure mentions empty
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_result is defined
+              - "'empty' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >-
+              ClusterCatalog validation failed but the error message did not mention 'empty'.
+              Got: {{ ansible_failed_result.msg | default('no message') }}
+
+      always:
+        - name: Clean up bad ClusterCatalog temp directory
+          ansible.builtin.file:
+            path: "{{ _test_bad_cc_dir.path }}"
+            state: absent

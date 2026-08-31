@@ -1,0 +1,6 @@
+---
+apiVersion: catalogd.operatorframework.io/v1
+kind: ClusterCatalog
+metadata:
+  name: cc-redhat-operators
+spec: {}
