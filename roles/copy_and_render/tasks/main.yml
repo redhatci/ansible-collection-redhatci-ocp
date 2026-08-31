@@ -15,8 +15,10 @@
 
 - name: Render Jinja2 templates to target directory
   vars:
-    # Relative paths starting with "./path/" are handled as "path/"
-    src_dir: "{{ car_source_dir | regex_replace('^./', '') }}"
+    # Match the normalization that "find" applies to the paths it returns:
+    # it expands "~" and strips a leading "./". The dot is escaped so only a
+    # literal "./" prefix is removed (not any character, as "^./" would).
+    src_dir: "{{ car_source_dir | expanduser | regex_replace('^\\./', '') }}"
     target_path: "{{ item.path | replace(src_dir, car_target_dir) | regex_replace('\\.j2$', '') }}"
   ansible.builtin.template:
     src: "{{ item.path }}"
@@ -26,8 +28,10 @@
 
 - name: Remove original .j2 template files from target directory
   vars:
-    # Relative paths starting with "./path/" are handled as "path/"
-    src_dir: "{{ car_source_dir | regex_replace('^./', '') }}"
+    # Match the normalization that "find" applies to the paths it returns:
+    # it expands "~" and strips a leading "./". The dot is escaped so only a
+    # literal "./" prefix is removed (not any character, as "^./" would).
+    src_dir: "{{ car_source_dir | expanduser | regex_replace('^\\./', '') }}"
     target_template: "{{ item.path | replace(src_dir, car_target_dir) }}"
   ansible.builtin.file:
     path: "{{ target_template }}"
