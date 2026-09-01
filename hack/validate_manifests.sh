@@ -68,6 +68,21 @@ def validate_manifest(path):
     kind = doc.get("kind", "")
     spec = doc.get("spec", {}) or {}
 
+    # --- kind-to-apiVersion enforcement ---
+    _API_VERSION_MAP = {
+        "ImageDigestMirrorSet": "config.openshift.io/v1",
+        "ImageTagMirrorSet": "config.openshift.io/v1",
+        "CatalogSource": "operators.coreos.com/v1alpha1",
+        "ClusterCatalog": "catalogd.operatorframework.io/v1",
+        "UpdateService": "updateservice.operator.openshift.io/v1",
+    }
+    actual_api = doc.get("apiVersion", "")
+    if kind in _API_VERSION_MAP and actual_api != _API_VERSION_MAP[kind]:
+        errors.append(
+            f"{basename}: 'apiVersion' is '{actual_api}' but expected "
+            f"'{_API_VERSION_MAP[kind]}' for kind '{kind}'"
+        )
+
     # --- Kind-specific checks ---
     if kind == "ImageDigestMirrorSet":
         mirrors = spec.get("imageDigestMirrors")

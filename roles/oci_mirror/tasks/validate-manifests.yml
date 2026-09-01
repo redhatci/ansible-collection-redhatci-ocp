@@ -6,34 +6,60 @@
     recurse: false
   register: _om_manifest_files
 
+- name: "Slurp each manifest from the managed host"
+  ansible.builtin.slurp:
+    src: "{{ item.path }}"
+  loop: "{{ _om_manifest_files.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  register: _om_slurped_manifests
+
 - name: "Parse and validate each manifest"
   vars:
-    _manifest: "{{ lookup('file', item.path) | from_yaml }}"
-    _path: "{{ item.path }}"
-    _basename: "{{ item.path | basename }}"
+    _manifest: "{{ item.content | b64decode | from_yaml }}"
+    _basename: "{{ item.source | basename }}"
   ansible.builtin.assert:
     that:
-      - _manifest.apiVersion is defined and _manifest.apiVersion | length > 0
-      - _manifest.kind is defined and _manifest.kind | length > 0
+      - _manifest.apiVersion is defined and _manifest.apiVersion is string and _manifest.apiVersion | length > 0
+      - _manifest.kind is defined and _manifest.kind is string and _manifest.kind | length > 0
       - _manifest.metadata is defined
-      - _manifest.metadata.name is defined and _manifest.metadata.name | length > 0
+      - _manifest.metadata.name is defined and _manifest.metadata.name is string and _manifest.metadata.name | length > 0
       - not (_manifest.status is defined and _manifest.status == {})
+      - >-
+        not _basename.startswith('idms-')
+        or _manifest.apiVersion == 'config.openshift.io/v1'
+      - >-
+        not _basename.startswith('itms-')
+        or _manifest.apiVersion == 'config.openshift.io/v1'
+      - >-
+        not _basename.startswith('cs-')
+        or _manifest.apiVersion == 'operators.coreos.com/v1alpha1'
+      - >-
+        not _basename.startswith('cc-')
+        or _manifest.apiVersion == 'catalogd.operatorframework.io/v1'
+      - >-
+        not _basename.startswith('update-service-')
+        or _manifest.apiVersion == 'updateservice.operator.openshift.io/v1'
       - >-
         not _basename.startswith('idms-')
         or (_manifest.spec is defined
             and _manifest.spec.imageDigestMirrors is defined
+            and _manifest.spec.imageDigestMirrors is list
             and _manifest.spec.imageDigestMirrors | length > 0)
       - >-
         not _basename.startswith('itms-')
         or (_manifest.spec is defined
             and _manifest.spec.imageTagMirrors is defined
+            and _manifest.spec.imageTagMirrors is list
             and _manifest.spec.imageTagMirrors | length > 0)
       - >-
         not _basename.startswith('cs-')
         or (_manifest.spec is defined
             and _manifest.spec.sourceType is defined
+            and _manifest.spec.sourceType is string
             and _manifest.spec.sourceType | length > 0
             and _manifest.spec.image is defined
+            and _manifest.spec.image is string
             and _manifest.spec.image | length > 0)
       - >-
         not _basename.startswith('cc-')
@@ -42,8 +68,10 @@
       - >-
         not _basename.startswith('update-service-')
         or ((_manifest.spec | default({})).graphDataImage is defined
+            and (_manifest.spec | default({})).graphDataImage is string
             and (_manifest.spec | default({})).graphDataImage | length > 0
             and (_manifest.spec | default({})).releases is defined
+            and (_manifest.spec | default({})).releases is string
             and (_manifest.spec | default({})).releases | length > 0)
     fail_msg: >-
       Manifest validation failed for {{ _basename }}:
@@ -53,6 +81,6 @@
       status={{ _manifest.status | default('not set') }}.
       Check that the manifest is complete and non-empty.
     success_msg: "Manifest {{ _basename }} passed validation."
-  loop: "{{ _om_manifest_files.files }}"
+  loop: "{{ _om_slurped_manifests.results }}"
   loop_control:
-    label: "{{ item.path | basename }}"
+    label: "{{ item.source | basename }}"

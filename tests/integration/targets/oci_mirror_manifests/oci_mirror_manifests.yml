@@ -71,6 +71,10 @@
 
     - name: Validate bad manifests — should fail
       block:
+        - name: Reset sentinel before validation
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: false
+
         - name: Run validation on bad manifest (expected to fail)
           vars:
             _om_output_dir:
@@ -79,18 +83,23 @@
             name: redhatci.ocp.oci_mirror
             tasks_from: validate-manifests.yml
 
+        - name: Mark that validation unexpectedly passed
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: true
+
         - name: Fail if validation did not raise an error
           ansible.builtin.fail:
             msg: "Validation should have failed for manifest with empty status but did not."
 
       rescue:
-        - name: Confirm that the validation failure mentions empty status
+        - name: Confirm it was a validation failure, not the sentinel fallback
           ansible.builtin.assert:
             that:
+              - not (_om_validation_unexpectedly_passed | default(false))
               - ansible_failed_result is defined
-              - "'empty' in (ansible_failed_result.msg | default(''))"
+              - "'Manifest validation failed' in (ansible_failed_result.msg | default(''))"
             fail_msg: >-
-              Validation failed but the error message did not mention 'empty'.
+              Expected a validation failure but got an unexpected error.
               Got: {{ ansible_failed_result.msg | default('no message') }}
 
       always:
@@ -112,6 +121,10 @@
 
     - name: Validate bad UpdateService manifest — should fail
       block:
+        - name: Reset sentinel before UpdateService validation
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: false
+
         - name: Copy bad UpdateService fixture to temp directory
           ansible.builtin.copy:
             src: "files/bad/update-service-empty-spec.yaml"
@@ -126,18 +139,23 @@
             name: redhatci.ocp.oci_mirror
             tasks_from: validate-manifests.yml
 
+        - name: Mark that UpdateService validation unexpectedly passed
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: true
+
         - name: Fail if UpdateService validation did not raise an error
           ansible.builtin.fail:
             msg: "Validation should have failed for UpdateService with empty spec but did not."
 
       rescue:
-        - name: Confirm that the UpdateService validation failure mentions empty
+        - name: Confirm it was a validation failure, not the sentinel fallback (UpdateService)
           ansible.builtin.assert:
             that:
+              - not (_om_validation_unexpectedly_passed | default(false))
               - ansible_failed_result is defined
-              - "'empty' in (ansible_failed_result.msg | default(''))"
+              - "'Manifest validation failed' in (ansible_failed_result.msg | default(''))"
             fail_msg: >-
-              UpdateService validation failed but the error message did not mention 'empty'.
+              Expected an UpdateService validation failure but got an unexpected error.
               Got: {{ ansible_failed_result.msg | default('no message') }}
 
       always:
@@ -154,6 +172,10 @@
 
     - name: Validate bad ITMS manifest — should fail
       block:
+        - name: Reset sentinel before ITMS validation
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: false
+
         - name: Copy bad ITMS fixture to temp directory
           ansible.builtin.copy:
             src: "files/bad/itms-empty-imageTagMirrors.yaml"
@@ -168,18 +190,23 @@
             name: redhatci.ocp.oci_mirror
             tasks_from: validate-manifests.yml
 
+        - name: Mark that ITMS validation unexpectedly passed
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: true
+
         - name: Fail if ITMS validation did not raise an error
           ansible.builtin.fail:
             msg: "Validation should have failed for ITMS with empty imageTagMirrors but did not."
 
       rescue:
-        - name: Confirm that the ITMS validation failure mentions empty
+        - name: Confirm it was a validation failure, not the sentinel fallback (ITMS)
           ansible.builtin.assert:
             that:
+              - not (_om_validation_unexpectedly_passed | default(false))
               - ansible_failed_result is defined
-              - "'empty' in (ansible_failed_result.msg | default(''))"
+              - "'Manifest validation failed' in (ansible_failed_result.msg | default(''))"
             fail_msg: >-
-              ITMS validation failed but the error message did not mention 'empty'.
+              Expected an ITMS validation failure but got an unexpected error.
               Got: {{ ansible_failed_result.msg | default('no message') }}
 
       always:
@@ -196,6 +223,10 @@
 
     - name: Validate bad CatalogSource manifest — should fail
       block:
+        - name: Reset sentinel before CatalogSource validation
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: false
+
         - name: Copy bad CatalogSource fixture to temp directory
           ansible.builtin.copy:
             src: "files/bad/cs-empty-image.yaml"
@@ -210,18 +241,23 @@
             name: redhatci.ocp.oci_mirror
             tasks_from: validate-manifests.yml
 
+        - name: Mark that CatalogSource validation unexpectedly passed
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: true
+
         - name: Fail if CatalogSource validation did not raise an error
           ansible.builtin.fail:
             msg: "Validation should have failed for CatalogSource with empty image but did not."
 
       rescue:
-        - name: Confirm that the CatalogSource validation failure mentions empty
+        - name: Confirm it was a validation failure, not the sentinel fallback (CatalogSource)
           ansible.builtin.assert:
             that:
+              - not (_om_validation_unexpectedly_passed | default(false))
               - ansible_failed_result is defined
-              - "'empty' in (ansible_failed_result.msg | default(''))"
+              - "'Manifest validation failed' in (ansible_failed_result.msg | default(''))"
             fail_msg: >-
-              CatalogSource validation failed but the error message did not mention 'empty'.
+              Expected a CatalogSource validation failure but got an unexpected error.
               Got: {{ ansible_failed_result.msg | default('no message') }}
 
       always:
@@ -238,6 +274,10 @@
 
     - name: Validate bad ClusterCatalog manifest — should fail
       block:
+        - name: Reset sentinel before ClusterCatalog validation
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: false
+
         - name: Copy bad ClusterCatalog fixture to temp directory
           ansible.builtin.copy:
             src: "files/bad/cc-empty-source.yaml"
@@ -252,18 +292,23 @@
             name: redhatci.ocp.oci_mirror
             tasks_from: validate-manifests.yml
 
+        - name: Mark that ClusterCatalog validation unexpectedly passed
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: true
+
         - name: Fail if ClusterCatalog validation did not raise an error
           ansible.builtin.fail:
             msg: "Validation should have failed for ClusterCatalog with empty source but did not."
 
       rescue:
-        - name: Confirm that the ClusterCatalog validation failure mentions empty
+        - name: Confirm it was a validation failure, not the sentinel fallback (ClusterCatalog)
           ansible.builtin.assert:
             that:
+              - not (_om_validation_unexpectedly_passed | default(false))
               - ansible_failed_result is defined
-              - "'empty' in (ansible_failed_result.msg | default(''))"
+              - "'Manifest validation failed' in (ansible_failed_result.msg | default(''))"
             fail_msg: >-
-              ClusterCatalog validation failed but the error message did not mention 'empty'.
+              Expected a ClusterCatalog validation failure but got an unexpected error.
               Got: {{ ansible_failed_result.msg | default('no message') }}
 
       always:
