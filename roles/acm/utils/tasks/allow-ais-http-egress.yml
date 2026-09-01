@@ -28,7 +28,7 @@
     that:
       - utils_os_image_host_ips is sequence
       - >-
-          (utils_os_image_host_ips | select('ansible.utils.ipaddr') | list | length)
+          (utils_os_image_host_ips | select('ansible.utils.ip') | list | length)
           == (utils_os_image_host_ips | length)
     fail_msg: >-
       utils_os_image_host_ips must be a list of IPv4/IPv6 addresses or CIDR blocks
@@ -152,9 +152,15 @@
   vars:
     _utils_egress_ips: >-
       {{
-        utils_os_image_host_ips
-        if (utils_os_image_host_ips | length) > 0
-        else (_utils_host_ips.stdout_lines | default([]))
+        (
+          utils_os_image_host_ips
+          if (utils_os_image_host_ips | length) > 0
+          else (_utils_host_ips.stdout_lines | default([]))
+        )
+        | map('trim')
+        | select('ansible.utils.ip')
+        | unique
+        | list
       }}
     _utils_img_parts: "{{ utils_os_image_url | urlsplit }}"
     _utils_default_port: "{{ (_utils_img_parts.scheme == 'https') | ternary(443, 80) }}"
