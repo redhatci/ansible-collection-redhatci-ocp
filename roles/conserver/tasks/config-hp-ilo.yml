@@ -1,0 +1,34 @@
+---
+- name: Create SSH known_hosts directory for conserver
+  become: true
+  ansible.builtin.file:
+    path: /var/lib/conserver/.ssh
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0700"
+
+- name: Copy hp-ilo-ssh.sh to /usr/local/bin
+  become: true
+  ansible.builtin.copy:
+    dest: /usr/local/bin/hp-ilo-ssh
+    src: hp-ilo-ssh.sh
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Create HP iLO conserver config for {{ conserver_cluster }}
+  become: true
+  diff: false
+  ansible.builtin.template:
+    dest: "/etc/conserver-hp-ilo-{{ conserver_cluster }}.cf"
+    src: conserver-hp-ilo.cf
+    owner: "root"
+    group: "root"
+    mode: "0600"
+
+- name: Add HP iLO config include for {{ conserver_cluster }}
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/conserver.cf
+    line: '#include /etc/conserver-hp-ilo-{{ conserver_cluster }}.cf'

@@ -1,0 +1,36 @@
+---
+# Configure conserver for one or more clusters.
+#
+# Variables:
+#   conserver_jumphost   - inventory hostname of the conserver host (default: localhost)
+#   conserver_clusters   - list of cluster group names to configure (required)
+#
+# Example:
+#   ansible-playbook playbooks/conserver-setup.yml \
+#     -e conserver_jumphost=jumphost.example.com \
+#     -e '{"conserver_clusters": ["cluster1", "cluster2"]}'
+- name: Configure conserver for all clusters
+  hosts: "{{ conserver_jumphost | default('localhost') }}"
+  gather_facts: false
+  tasks:
+    - name: Validate conserver_clusters entries exist in inventory groups
+      ansible.builtin.assert:
+        that:
+          - cluster_item in groups
+        fail_msg: >-
+          Cluster group '{{ cluster_item }}' is not defined in the inventory.
+          Ensure each entry in conserver_clusters corresponds to an
+          inventory group.
+      loop: "{{ conserver_clusters }}"
+      loop_control:
+        loop_var: cluster_item
+
+    - name: Configure conserver role for each cluster
+      ansible.builtin.include_role:
+        name: redhatci.ocp.conserver
+      loop: "{{ conserver_clusters }}"
+      loop_control:
+        loop_var: cluster_item
+      vars:
+        conserver_cluster: "{{ cluster_item }}"
+        conserver_cluster_nodes: "{{ groups[cluster_item] | default([]) }}"
