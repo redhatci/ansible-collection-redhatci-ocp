@@ -140,7 +140,10 @@
 
 - name: Set release_url for development envs
   ansible.builtin.set_fact:
-    release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview') }}"
+    release_url: >-
+      {{ (webserver_url | length) |
+         ternary(webserver_url,
+                 'https://mirror.openshift.com/pub/openshift-v' ~ version.split('.')[0] ~ '/clients/ocp-dev-preview') }}
   when:
     - build == 'dev'
     - release_url is undefined
@@ -150,7 +153,10 @@
 
 - name: Set release_url for GA envs
   ansible.builtin.set_fact:
-    release_url: "{{ (webserver_url|length) | ternary(webserver_url, 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp') }}"
+    release_url: >-
+      {{ (webserver_url | length) |
+         ternary(webserver_url,
+                 'https://mirror.openshift.com/pub/openshift-v' ~ version.split('.')[0] ~ '/clients/ocp') }}
   when:
     - build == 'ga'
     - release_url is undefined
