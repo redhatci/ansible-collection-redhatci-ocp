@@ -63,7 +63,8 @@
       ansible.builtin.include_role:
         name: redhatci.ocp.conserver
       vars:
-        cluster_nodes: "{{ groups['masters'] + ('workers' in groups) | ternary(groups['workers'], []) }}"
+        conserver_cluster: "{{ cluster }}"
+        conserver_cluster_nodes: "{{ groups['masters'] + (('workers' in groups) | ternary(groups['workers'], [])) }}"
       when: enable_conserver
 
 - name: Cleanup
