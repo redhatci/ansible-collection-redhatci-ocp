@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.2.EPOCH
+Version:        6.3.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Tue Aug 25 2026 Frederic Lepied <flepied@redhat.com> - 6.3.EPOCH-VERS
+- Replace ignore_errors: true with failed_when: false (71 occurrences), block/rescue patterns (destroy_vms, node_info, preflight, ocp_on_libvirt), and precise failed_when conditions (configure_ztp_gitops_repo, sno_node_prep) to satisfy ansible-lint; remove ignore-errors from warn_list; add role-prefix to set_fact vars in ocp_on_libvirt and sno_node_prep; add cleanup tag to rescue task in sno_node_prep
+
 * Fri Aug 21 2026 Tony Garcia <tonyg@redhat.com> - 6.2.EPOCH-VERS
 - Default ArgoCD to operator-managed ClusterRole, require explicit AppProject
 
