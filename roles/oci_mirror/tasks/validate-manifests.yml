@@ -26,34 +26,34 @@
       - _manifest.metadata.name is defined and _manifest.metadata.name is string and _manifest.metadata.name | length > 0
       - not (_manifest.status is defined and _manifest.status == {})
       - >-
-        not _basename.startswith('idms-')
+        _manifest.kind | default('') != 'ImageDigestMirrorSet'
         or _manifest.apiVersion == 'config.openshift.io/v1'
       - >-
-        not _basename.startswith('itms-')
+        _manifest.kind | default('') != 'ImageTagMirrorSet'
         or _manifest.apiVersion == 'config.openshift.io/v1'
       - >-
-        not _basename.startswith('cs-')
+        _manifest.kind | default('') != 'CatalogSource'
         or _manifest.apiVersion == 'operators.coreos.com/v1alpha1'
       - >-
-        not _basename.startswith('cc-')
+        _manifest.kind | default('') != 'ClusterCatalog'
         or _manifest.apiVersion == 'catalogd.operatorframework.io/v1'
       - >-
-        not _basename.startswith('update-service-')
+        _manifest.kind | default('') != 'UpdateService'
         or _manifest.apiVersion == 'updateservice.operator.openshift.io/v1'
       - >-
-        not _basename.startswith('idms-')
+        _manifest.kind | default('') != 'ImageDigestMirrorSet'
         or (_manifest.spec is defined
             and _manifest.spec.imageDigestMirrors is defined
             and _manifest.spec.imageDigestMirrors is list
             and _manifest.spec.imageDigestMirrors | length > 0)
       - >-
-        not _basename.startswith('itms-')
+        _manifest.kind | default('') != 'ImageTagMirrorSet'
         or (_manifest.spec is defined
             and _manifest.spec.imageTagMirrors is defined
             and _manifest.spec.imageTagMirrors is list
             and _manifest.spec.imageTagMirrors | length > 0)
       - >-
-        not _basename.startswith('cs-')
+        _manifest.kind | default('') != 'CatalogSource'
         or (_manifest.spec is defined
             and _manifest.spec.sourceType is defined
             and _manifest.spec.sourceType is string
@@ -62,11 +62,11 @@
             and _manifest.spec.image is string
             and _manifest.spec.image | length > 0)
       - >-
-        not _basename.startswith('cc-')
+        _manifest.kind | default('') != 'ClusterCatalog'
         or (_manifest.spec is defined
             and _manifest.spec.source is defined)
       - >-
-        not _basename.startswith('update-service-')
+        _manifest.kind | default('') != 'UpdateService'
         or ((_manifest.spec | default({})).graphDataImage is defined
             and (_manifest.spec | default({})).graphDataImage is string
             and (_manifest.spec | default({})).graphDataImage | length > 0
@@ -74,13 +74,14 @@
             and (_manifest.spec | default({})).releases is string
             and (_manifest.spec | default({})).releases | length > 0)
     fail_msg: >-
-      Manifest validation failed for {{ _basename }}:
+      Manifest validation failed for {{ _basename }}
+      (kind={{ _manifest.kind | default('empty') }}):
       apiVersion={{ _manifest.apiVersion | default('empty') }},
-      kind={{ _manifest.kind | default('empty') }},
       name={{ _manifest.metadata.name | default('empty') }},
       status={{ _manifest.status | default('not set') }}.
       Check that the manifest is complete and non-empty.
-    success_msg: "Manifest {{ _basename }} passed validation."
+    success_msg: >-
+      Manifest {{ _basename }} (kind={{ _manifest.kind | default('empty') }}) passed validation.
   loop: "{{ _om_slurped_manifests.results }}"
   loop_control:
     label: "{{ item.source | basename }}"

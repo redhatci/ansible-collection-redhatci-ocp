@@ -51,12 +51,13 @@ def validate_manifest(path):
     # --- Common required fields ---
     for field in ("apiVersion", "kind"):
         val = doc.get(field)
-        if not val or not str(val).strip():
-            errors.append(f"{basename}: '{field}' is missing or empty")
+        if not isinstance(val, str) or not val.strip():
+            errors.append(f"{basename}: '{field}' is missing or empty (must be a non-empty string)")
 
     metadata = doc.get("metadata")
-    if not isinstance(metadata, dict) or not metadata.get("name", "").strip():
-        errors.append(f"{basename}: 'metadata.name' is missing or empty")
+    name = metadata.get("name", "") if isinstance(metadata, dict) else None
+    if not isinstance(name, str) or not name.strip():
+        errors.append(f"{basename}: 'metadata.name' is missing or empty (must be a non-empty string)")
 
     # --- status must not be an empty dict ---
     if "status" in doc and doc["status"] == {}:
@@ -66,7 +67,12 @@ def validate_manifest(path):
         )
 
     kind = doc.get("kind", "")
-    spec = doc.get("spec", {}) or {}
+    if not isinstance(kind, str):
+        kind = ""
+    spec = doc.get("spec", {})
+    if not isinstance(spec, dict):
+        errors.append(f"{basename}: 'spec' is not a mapping (got {type(spec).__name__})")
+        spec = {}
 
     # --- kind-to-apiVersion enforcement ---
     _API_VERSION_MAP = {

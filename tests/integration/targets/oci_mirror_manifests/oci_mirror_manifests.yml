@@ -36,7 +36,7 @@
         name: redhatci.ocp.oci_mirror
         tasks_from: validate-manifests.yml
 
-    - name: "AC4 — Verify apiVersion matches expected schema per kind (GitOps/ACM compliance)"
+    - name: "AC4 — Verify apiVersion matches expected schema per kind"
       vars:
         _api_version_map:
           ImageDigestMirrorSet: "config.openshift.io/v1"
@@ -44,24 +44,24 @@
           CatalogSource: "operators.coreos.com/v1alpha1"
           ClusterCatalog: "catalogd.operatorframework.io/v1"
           UpdateService: "updateservice.operator.openshift.io/v1"
-        _manifest: "{{ lookup('file', item.path) | from_yaml }}"
+        _manifest: "{{ item.content | b64decode | from_yaml }}"
         _kind: "{{ _manifest.kind | default('') }}"
         _expected_api: "{{ _api_version_map[_kind] | default('') }}"
       ansible.builtin.assert:
         that:
           - _kind not in _api_version_map or _manifest.apiVersion == _expected_api
         fail_msg: >-
-          AC4 apiVersion mismatch in {{ item.path | basename }}:
+          AC4 apiVersion mismatch in {{ item.source | basename }}:
           kind={{ _kind }},
           expected apiVersion={{ _expected_api }},
           got={{ _manifest.apiVersion | default('empty') }}.
         success_msg: >-
-          AC4 passed for {{ item.path | basename }}:
+          AC4 passed for {{ item.source | basename }}:
           kind={{ _kind }}, apiVersion={{ _manifest.apiVersion | default('empty') }}.
-      loop: "{{ _om_manifest_files.files }}"
+      loop: "{{ _om_slurped_manifests.results }}"
       loop_control:
-        label: "{{ item.path | basename }}"
-      when: _om_manifest_files.files | length > 0
+        label: "{{ item.source | basename }}"
+      when: _om_slurped_manifests.results | length > 0
 
     - name: Copy bad manifest fixture to temp directory
       ansible.builtin.copy:
@@ -315,4 +315,56 @@
         - name: Clean up bad ClusterCatalog temp directory
           ansible.builtin.file:
             path: "{{ _test_bad_cc_dir.path }}"
+            state: absent
+
+    - name: Create temp directory for bad UpdateService wrong-apiVersion manifest
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: om_test_bad_us_api.
+      register: _test_bad_us_api_dir
+
+    - name: Validate bad UpdateService wrong-apiVersion manifest — should fail
+      block:
+        - name: Reset sentinel before wrong-apiVersion validation
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: false
+
+        - name: Copy bad UpdateService wrong-apiVersion fixture to temp directory
+          ansible.builtin.copy:
+            src: "files/bad/update-service-wrong-apiversion.yaml"
+            dest: "{{ _test_bad_us_api_dir.path }}/update-service-oc-mirror.yaml"
+            mode: "0644"
+
+        - name: Run validation on bad UpdateService wrong-apiVersion manifest (expected to fail)
+          vars:
+            _om_output_dir:
+              path: "{{ _test_bad_us_api_dir.path }}"
+          ansible.builtin.include_role:
+            name: redhatci.ocp.oci_mirror
+            tasks_from: validate-manifests.yml
+
+        - name: Mark that wrong-apiVersion validation unexpectedly passed
+          ansible.builtin.set_fact:
+            _om_validation_unexpectedly_passed: true
+
+        - name: Fail if wrong-apiVersion validation did not raise an error
+          ansible.builtin.fail:
+            msg: >-
+              Validation should have failed for UpdateService with wrong apiVersion but did not.
+
+      rescue:
+        - name: Confirm it was a validation failure, not the sentinel fallback (wrong apiVersion)
+          ansible.builtin.assert:
+            that:
+              - not (_om_validation_unexpectedly_passed | default(false))
+              - ansible_failed_result is defined
+              - "'Manifest validation failed' in (ansible_failed_result.msg | default(''))"
+            fail_msg: >-
+              Expected a wrong-apiVersion validation failure but got an unexpected error.
+              Got: {{ ansible_failed_result.msg | default('no message') }}
+
+      always:
+        - name: Clean up bad UpdateService wrong-apiVersion temp directory
+          ansible.builtin.file:
+            path: "{{ _test_bad_us_api_dir.path }}"
             state: absent
