@@ -18,3 +18,5 @@ imageContentSources:
     mirrors:
       - {{ mirror_registry }}/edge-infrastructure
 {% endif %}
+additionalTrustBundle: |
+  {{ mirror_certificate | indent(2) }}
