@@ -3,6 +3,7 @@
   become: true
   community.libvirt.virt:
     command: info
+    changed_when: true
   register: rhde_builder_vms_list
 
 - name: Remove the domain completely {{ rhde_builder_vm_name }}
@@ -23,6 +24,7 @@
       community.libvirt.virt:
         name: "{{ rhde_builder_vm_name }}"
         command: destroy
+        changed_when: true
       when: "rhde_builder_vms_list[rhde_builder_vm_name]['state'] == 'running'"
 
     - name: Undefine the domain
@@ -31,6 +33,7 @@
         name: "{{ rhde_builder_vm_name }}"
         command: undefine
 
+        changed_when: true
 - name: Remove the base RHEL image
   become: true
   ansible.builtin.file:

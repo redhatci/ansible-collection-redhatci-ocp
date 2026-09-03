@@ -5,12 +5,14 @@
 # the real commit SHA.
 - name: Retrieve the commit id of the git repo from .original-commit-id or HEAD
   ansible.builtin.shell: cat .original-commit-id || git rev-parse HEAD
+  changed_when: false
   register: _ic_last_commit_id
   args:
     chdir: "{{ item }}"
 
 - name: Get repo url  # noqa: command-instead-of-module
   ansible.builtin.command: git -C {{ item }} config --get remote.origin.url
+  changed_when: false
   register: repo_url
   when: _ic_last_commit_id.rc == 0
   no_log: true

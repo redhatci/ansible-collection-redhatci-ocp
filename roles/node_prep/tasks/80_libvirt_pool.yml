@@ -6,6 +6,7 @@
     - name: Define Storage Pool for default
       community.libvirt.virt_pool:
         command: define
+        changed_when: true
         name: default
         xml: '{{ lookup("template", "dir.xml.j2") }}'
 

@@ -26,12 +26,14 @@
   community.libvirt.virt:
     command: list_vms
 
+    changed_when: false
 - name: Get KVM hosts xml
   become: true
   register: _ool_vms_xml
   loop: "{{ _ool_vms.list_vms }}"
   community.libvirt.virt:
     command: get_xml
+    changed_when: true
     name: "{{ item }}"
 
 - name: Extract UUID from xmls

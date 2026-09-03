@@ -36,6 +36,7 @@
             -a "{{ config_file_path }}/{{ pull_secret_file_name }}"
             {{ item.remote }}
             {{ item.local }}:{{ item.local_tag }}
+      changed_when: true
       loop: "{{ ocpmetal_images }}"
 
     - name: Mirror release image to local (x86_64)
@@ -47,6 +48,7 @@
             --to-release-image="{{ release_image_item.local | quote }}:{{ release_image_item.local_tag | quote }}"
             --to="{{ release_image_item.local | quote }}"
 
+      changed_when: true
     - name: Mirror release image to local (arm64)
       ansible.builtin.command:
         cmd: >
@@ -55,6 +57,7 @@
             --from="{{ release_image_item_arm.remote | quote }}"
             --to-release-image="{{ release_image_item_arm.local | quote }}:{{ release_image_item_arm.local_tag | quote }}"
             --to="{{ release_image_item_arm.local | quote }}"
+      changed_when: true
       when: arm_release_image_key in image_hashes
 
 - name: Populate Mirror  with operators
@@ -88,6 +91,7 @@
     - name: Runfilter
       ansible.builtin.command:
         cmd: "bash {{ temp_dir.path }}/filter.sh"
+      changed_when: true
       environment:
         XDG_RUNTIME_DIR: "{{ config_file_path }}"
 
@@ -96,6 +100,7 @@
         cmd: >
           {{ downloads_path }}/{{ openshift_full_version }}/opm
             generate dockerfile {{ temp_dir.path }}/configs
+      changed_when: true
       environment:
         XDG_RUNTIME_DIR: "{{ config_file_path }}"
 
@@ -108,11 +113,13 @@
             .
         chdir: "{{ temp_dir.path }}"
 
+      changed_when: true
     - name: "Validate pruned index"
       ansible.builtin.command:
         cmd: >
           {{ downloads_path }}/{{ openshift_full_version }}/opm
             validate configs/
+      changed_when: false
       args:
         chdir: "{{ temp_dir.path }}"
 
@@ -124,6 +131,7 @@
             {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
             --authfile "{{ config_file_path }}/{{ pull_secret_file_name }}"
 
+      changed_when: true
     - name: Mirror Catalog to local registry
       ansible.builtin.command:
         cmd: >
@@ -131,3 +139,4 @@
             {{ olm_index_item.local }}:{{ olm_index_item.local_tag }}
             {{ olm_item.local }}:{{ olm_item.local_tag }}
             --registry-config="{{ config_file_path }}/{{ pull_secret_file_name }}"
+      changed_when: true

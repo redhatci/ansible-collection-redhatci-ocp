@@ -24,6 +24,7 @@
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} create ignition-configs
 
+      changed_when: true
     - name: Copy Ignition Config Files
       ansible.builtin.copy:
         src: "{{ dir }}/{{ item }}.ign"

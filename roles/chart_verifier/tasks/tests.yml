@@ -133,6 +133,7 @@
       set -o pipefail ;
       {{ helm_tool_path }} show chart {{ work_chart_dir }}/{{ chart.chart_file | basename }} |
       {{ yq_tool_path }} e -o json -
+  changed_when: false
   register: chart_show
 
 - name: "Set charts details"
@@ -164,6 +165,7 @@
       --openshift-version {{ ocp_version_full }}
       /app/chartverifier/{{ chart.chart_file | basename }}
       --write-to-file
+  changed_when: false
   args:
     chdir: "{{ work_chart_dir }}"
   ignore_errors: true
@@ -181,6 +183,7 @@
     cmd: >
       set -o pipefail ;
       {{ yq_tool_path }} e '[.results[] | select(.outcome == "FAIL" and .type != "Optional")] | length' report.yaml
+  changed_when: true
   register: cv_fail_count
   args:
     chdir: "{{ work_chart_dir }}"

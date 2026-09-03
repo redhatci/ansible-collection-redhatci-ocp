@@ -51,6 +51,7 @@
     {{ preflight_image }}
     check operator
     {{ operator.bundle_image }}
+  changed_when: true
   async: 600
   poll: 0
   register: preflight_exec

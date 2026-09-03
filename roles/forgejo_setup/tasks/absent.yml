@@ -5,6 +5,7 @@
     - name: Disable linger for user
       ansible.builtin.command:
         cmd: "loginctl disable-linger {{ fs_user }}"
+      changed_when: true
       become: true
       args:
         removes: "/var/lib/systemd/linger/{{ fs_user }}"

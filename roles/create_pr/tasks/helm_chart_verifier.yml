@@ -17,6 +17,7 @@
 
 - name: "Git create a local branch"
   ansible.builtin.command: "git checkout -b {{ local_branch }}"  # noqa: command-instead-of-module
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
 
@@ -52,6 +53,7 @@
       git config user.name {{ github_username }}
       git add {{ work_dir }}/{{ fork_name }}/charts/partners/{{ partner }}/
       git commit -m 'Added files for {{ chart_name }}_{{ chart_version }}'
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
 
@@ -61,6 +63,7 @@
       eval "$(ssh-agent)"
       ssh-add {{ work_dir }}/ssh_key
       git push origin --delete {{ local_branch }}
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
   ignore_errors: true
@@ -75,6 +78,7 @@
       --title "Adding chart {{ chart_name }} from {{ partner_name }}" \
       --body "Adding chart {{ chart_name }} from {{ partner_name }} - DCI Job: {{ job_id }}" \
       --repo {{ target_repository }}
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
   register: pr_details

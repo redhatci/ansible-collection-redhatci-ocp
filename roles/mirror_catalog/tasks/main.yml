@@ -27,6 +27,7 @@
           {% endif %}
           docker://{{ mc_catalog }} |
           jq -r '.Digest'
+      changed_when: false
       register: image_digest
       retries: 5
       delay: 5
@@ -64,6 +65,7 @@
       --registry-config {{ mc_pullsecret }}
       {% endif %}
       --to-manifests={{ mc_tmp.path }}/manifests
+  changed_when: true
   register: catalog_manifests_output
   retries: 3
   delay: 10
@@ -85,6 +87,7 @@
           {{ mc_oc_tool_path }} adm migrate icsp
           {{ mc_tmp.path }}/manifests/imageContentSourcePolicy.yaml
           --dest-dir {{ mc_tmp.path }}
+      changed_when: true
       register: migrate_result
 
     - name: Set new image source file

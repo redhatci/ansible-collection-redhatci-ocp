@@ -42,6 +42,7 @@
         ./kubectl-cluster_compare -v
         -r {{ cc_reference }}
         -o json > {{ cc_reports_dir }}/{{ cc_compare_output_file }}
+      changed_when: true
       args:
         chdir: "{{ cc_work_dir }}"
       register: _cc_cc_output
@@ -60,6 +61,7 @@
         -r {{ cc_reference }}
         > {{ cc_reports_dir }}/{{ cc_compare_human_file }}
         2>/dev/null || true
+      changed_when: true
       args:
         chdir: "{{ cc_work_dir }}"
       ignore_errors: true
@@ -72,6 +74,7 @@
       ansible.builtin.shell: >
         ./report-creator -j {{ cc_reports_dir }}/{{ cc_compare_output_file }}
         -o {{ cc_reports_dir }}/{{ cc_report_name }}
+      changed_when: true
       args:
         chdir: "{{ cc_work_dir }}"
       ignore_errors: true

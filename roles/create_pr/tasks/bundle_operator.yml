@@ -16,12 +16,14 @@
 
 - name: "Git create a local branch"
   ansible.builtin.command: "git checkout -b {{ local_branch }}"  # noqa: command-instead-of-module
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}"
 
 - name: "Render bundle operator image"
   ansible.builtin.command: >
     {{ opm_tool_path }} render {{ operator.bundle_image }}
+  changed_when: true
   register: rendered_bundle
   retries: 2
   delay: 10
@@ -47,6 +49,7 @@
       $(podman create --rm {{ operator.bundle_image }} bash):/manifests/. .
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/manifests"
 
+  changed_when: true
 - name: Retrieve annotations.yaml file from bundle image
   ansible.builtin.shell:
     cmd: >
@@ -54,6 +57,7 @@
       $(podman create --rm {{ operator.bundle_image }} bash):/metadata/annotations.yaml .
     chdir: "{{ work_dir }}/{{ fork_name }}/operators/{{ product_name }}/{{ product_version }}/metadata"
 
+  changed_when: true
 - name: "Render CI.yaml file"
   ansible.builtin.template:
     src: ci.yaml.j2
@@ -67,6 +71,7 @@
       git config user.name {{ github_username }}
       git add operators/{{ product_name }}
       git commit -m 'Added {{ product_name }} version {{ product_version }}'
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
 
@@ -76,6 +81,7 @@
       eval "$(ssh-agent)"
       ssh-add {{ work_dir }}/ssh_key
       git push origin --delete {{ local_branch }}
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
   ignore_errors: true
@@ -90,6 +96,7 @@
       --title "operator {{ product_name }} ({{ product_version }})" \
       --body "Adding Operator {{ product_name }} version {{ product_version }} - DCI Job: {{ job_id }}" \
       --repo {{ target_repository }}
+  changed_when: true
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
   register: pr_details

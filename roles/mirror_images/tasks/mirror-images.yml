@@ -38,6 +38,7 @@
           --dest-tls-verify=false
           docker://{{ image }}
           docker://{{ _tgt_image_location }}
+      changed_when: true
       register: _mi_skopeo_copy
       retries: 5
       delay: 5
@@ -85,6 +86,7 @@
         --tls-verify=false
         --format '{{ "{{" }} .Digest {{ "}}" }}'
         docker://{{ _tgt_image_location }}
+      changed_when: false
       register: _mi_dst_inspect
       failed_when: _mi_dst_inspect.rc != 0
 

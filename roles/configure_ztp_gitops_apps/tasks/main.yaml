@@ -67,10 +67,12 @@
           "{{ czga_site_generator_image }}:{{ czga_site_generator_version }}" \
           extract /home/ztp --tar | tar x -C "{{ temp_dir.path }}"/ztp/
 
+      changed_when: false
     - name: Set the proper permissions
       ansible.builtin.shell: |
         sudo chown "{{ ansible_user }}":"{{ ansible_user }}" -R "{{ temp_dir.path }}"/ztp/
 
+      changed_when: true
     ## Configure clusters
     - name: Replace namespace in clusters-app.yaml
       ansible.builtin.replace:
@@ -200,6 +202,7 @@
           --patch-file "{{ temp_dir.path }}/ztp/argocd/deployment/argocd-openshift-gitops-patch.json" \
           --type=merge
 
+      changed_when: true
     - name: Disable proxy addon
       kubernetes.core.k8s:
         api_version: multicluster.openshift.io/v1
@@ -261,6 +264,7 @@
       ansible.builtin.shell: |
         {{ czga_oc_tool_path }} --kubeconfig="{{ temp_dir.path }}/kubeconfig" apply -k "{{ temp_dir.path }}/ztp/argocd/deployment"
 
+      changed_when: true
     - name: Remove the temporary directories
       ansible.builtin.file:
         path: "{{ temp_dir.path }}"

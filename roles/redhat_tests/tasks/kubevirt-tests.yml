@@ -37,6 +37,7 @@
           --skip-preflight
           --plugin kubevirt-conformance.yaml
         chdir: "{{ tmp_vct_dir.path }}"
+      changed_when: true
       ignore_errors: true
       when:
         - not (dci_disconnected | default(false) | bool)
@@ -75,6 +76,7 @@
               --plugin-env kubevirt-conformance.CONTAINER_TAG={{ ts_kubevirt_conformance_version }}
               --plugin kubevirt-conformance.yaml
             chdir: "{{ tmp_vct_dir.path }}"
+          changed_when: true
           ignore_errors: true
 
     - name: "Pause for Logs collection to be completed"
@@ -90,6 +92,7 @@
           retrieve
           -f virtualization_conformance_results.tar.gz
         chdir: "{{ tmp_vct_dir.path }}"
+      changed_when: true
       register: retrieve_result
       until: retrieve_result.rc == 0
       retries: 3
@@ -112,6 +115,7 @@
           results
           virtualization_conformance_results.tar.gz > {{ ts_log_dir }}/virtualization_conformance_summary.txt
         chdir: "{{ tmp_vct_dir.path }}"
+      changed_when: true
       register: get_summary
       until: get_summary.rc == 0
       retries: 3
@@ -128,6 +132,7 @@
           delete
         chdir: "{{ tmp_vct_dir.path }}"
 
+      changed_when: true
     - name: "Removing tmp directory"
       ansible.builtin.file:
         path: "{{ tmp_vct_dir.path }}"

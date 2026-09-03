@@ -4,11 +4,13 @@
   ansible.builtin.shell: |
     {{ ecd_oc_path }} adm cordon {{ ecd_cnf_existing_node }}
 
+  changed_when: true
 - name: "Wait until node changes to SchedulingDisabled status"
   ansible.builtin.shell: >
     set -eo pipefail;
     {{ ecd_oc_path }} get nodes --no-headers=true |
     grep {{ ecd_cnf_existing_node }}
+  changed_when: false
   register: _ecd_nodes
   until: '"SchedulingDisabled" in _ecd_nodes.stdout'
   retries: 6
@@ -19,5 +21,6 @@
 - name: "Drain the node to remove testpmd-app pod"
   ansible.builtin.shell: |
     {{ oc_tool_path }} adm drain {{ ecd_cnf_existing_node }} --pod-selector example-cnf-type=cnf-app --delete-emptydir-data
+  changed_when: true
   async: 60
   poll: 0

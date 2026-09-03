@@ -7,6 +7,7 @@
       community.general.redfish_command:
         category: Systems
         command: PowerGracefulShutdown
+        changed_when: true
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -27,6 +28,7 @@
       community.general.redfish_command:
         category: Systems
         command: PowerForceOff
+        changed_when: true
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
         password: "{{ bmc_password }}"
@@ -49,6 +51,7 @@
       community.general.redfish_command:
         category: Systems
         command: SetOneTimeBoot
+        changed_when: true
         bootdevice: VCD-DVD
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
@@ -58,6 +61,7 @@
       community.general.redfish_command:
         category: Systems
         command: SetOneTimeBoot
+        changed_when: true
         bootdevice: Cd
         baseuri: "{{ bmc_address }}"
         username: "{{ bmc_user }}"
@@ -70,6 +74,7 @@
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaInsert
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"
@@ -84,6 +89,7 @@
   community.general.redfish_command:
     category: Systems
     command: PowerOn
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"

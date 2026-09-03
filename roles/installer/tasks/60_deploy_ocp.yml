@@ -14,6 +14,7 @@
 - name: Deploy OpenShift Cluster
   ansible.builtin.shell: |
     /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug create cluster
+  changed_when: true
   when:
     - increase_bootstrap_timeout is not defined
     - increase_install_timeout is not defined
@@ -27,6 +28,7 @@
     - name: Run OpenShift Cluster install as async task
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug create cluster
+      changed_when: true
       async: 3600
       poll: 0
       ignore_errors: true
@@ -41,6 +43,7 @@
     - name: Wait for Bootstrap Complete
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for bootstrap-complete
+      changed_when: true
       register: wait_for_bootstrap_result
       until: wait_for_bootstrap_result is succeeded
       retries: "{{ increase_bootstrap_timeout|default(1)|int }}"
@@ -49,6 +52,7 @@
     - name: Wait for Install Complete
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for install-complete
+      changed_when: true
       register: wait_for_install_result
       until: wait_for_install_result is succeeded
       retries: "{{ increase_install_timeout|default(1)|int }}"

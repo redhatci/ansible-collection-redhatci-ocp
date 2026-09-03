@@ -17,6 +17,7 @@
   community.libvirt.virt:
     name: "{{ rhde_builder_vm_name }}"
     command: status
+    changed_when: true
   register: rhde_builder_vm_status
   until: "rhde_builder_vm_status.status == 'running'"
   retries: 30

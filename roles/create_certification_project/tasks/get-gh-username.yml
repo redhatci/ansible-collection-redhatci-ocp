@@ -14,11 +14,13 @@
   ansible.builtin.shell:
     cmd: >
       {{ gh_tool_path }} auth login --with-token < {{ github_token_path }}
+  changed_when: true
   register: gh_login
   failed_when: gh_login.rc != 0
 
 - name: "Get GitHub status details"
   ansible.builtin.command: "{{ gh_tool_path }} api user --jq .login"
+  changed_when: true
   register: github_status
 
 - name: "Set the GitHub username"

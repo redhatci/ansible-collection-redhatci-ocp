@@ -3,6 +3,7 @@
   block:
     - name: Trying to start the node
       ansible.builtin.command: "{{ vbmc_bin }} start {{ node.key }}"
+      changed_when: true
       register: command_result
       until: command_result.rc == 0
       retries: 5

@@ -78,6 +78,7 @@
     - name: Wait for TRex app CR to be created
       ansible.builtin.shell: |
         {{ ecd_oc_path }} get trexapp.examplecnf.openshift.io -o yaml -n {{ ecd_cnf_namespace }} {{ ecd_trex_app_cr_name }}
+      changed_when: true
       register: _ecd_trex_app_cr_installation
       retries: 30
       delay: 10

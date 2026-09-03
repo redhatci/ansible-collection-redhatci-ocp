@@ -4,6 +4,7 @@
     cmd: >
       git branch --show-current
     chdir: "{{ operator_sdk_source_dir }}"
+  changed_when: false
   register: operator_sdk_branch_name
 
 - name: Set scorecard_branch
@@ -39,6 +40,8 @@
       {{ operator_sdk_img }}
     chdir: "{{ scorecard_tmp_dir.path }}/operator-sdk-source/"
 
+  changed_when: true
 - name: Display Operator-SDK version to ensure that the image build went fine
   ansible.builtin.command: podman run --rm {{ operator_sdk_img }} version
+  changed_when: false
 ...

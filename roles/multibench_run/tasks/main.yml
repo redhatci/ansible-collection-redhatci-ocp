@@ -2,6 +2,7 @@
 - name: Check if multibench host has the crucible binaries
   ansible.builtin.shell: >
     crucible help
+  changed_when: false
   delegate_to: "{{ multibench_host }}"
   register: _multibench_run_binaries
   ignore_errors: true
@@ -167,6 +168,7 @@
           "{{ multibench_run_output_dir.path }}/result-summary.txt" |
           sed -nE \
           's/.*primary period-id:[[:space:]]*([0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}).*/\1/ip'
+      changed_when: false
       register: _multibench_run_period_ids_result
 
     - name: Set list of primary period-ids
@@ -192,6 +194,7 @@
           --breakout "{{ multibench_crucible_metric_breakout }}" \
           >> "{{ _multibench_run_crucible_metric_outfile }}"
         {% endif %}
+      changed_when: true
       vars:
         _multibench_run_crucible_metric_outfile: "/tmp/crucible-metric-{{ multibench_crucible_metric_source }}-{{ multibench_crucible_metric_type }}.txt"
       loop: "{{ multibench_run_crucible_primary_period_ids }}"

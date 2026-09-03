@@ -167,6 +167,7 @@
     - name: Save iptables configuration
       ansible.builtin.shell: |
         /usr/sbin/iptables-save > /etc/sysconfig/iptables
+      changed_when: true
       become: true
       when: firewall == "iptables"
 
@@ -188,6 +189,7 @@
       ansible.builtin.command:
         cmd: htpasswd -iBn {{ disconnected_registry_user }}
         stdin: "{{ disconnected_registry_password }}"
+      changed_when: true
       register: htpass_entry
       no_log: true
 
@@ -232,6 +234,7 @@
         set -o pipefail
         echo '{{ pullsecret }}' | jq -c \
           '.auths += {{ disconnected_auth }}'
+      changed_when: true
       register: new_pullsecret
 
     - name: Set pullsecret with new auth
@@ -286,6 +289,7 @@
 
     - name: Update the CA trust files
       ansible.builtin.command: update-ca-trust extract
+      changed_when: true
       become: true
 
     - name: Create container to serve the registry
@@ -313,9 +317,9 @@
         container_registry_pidfile: "{{ registry_container_info.container.ConmonPidFile }}"
 
     - name: Ensure user specific systemd instance are persistent
-      ansible.builtin.command: |
-              /usr/bin/loginctl enable-linger {{ ansible_user }}
-
+      ansible.builtin.command: /usr/bin/loginctl enable-linger {{ ansible_user }}
+      args:
+        creates: /var/lib/systemd/linger/{{ ansible_user }}
     - name: Create systemd user directory
       ansible.builtin.file:
         path: "{{ ansible_user_dir }}/.config/systemd/user"
@@ -423,6 +427,7 @@
           --to="{{ local_registry | quote }}/{{ local_repo | quote }}"
           '
 
+      changed_when: true
     - name: Remove temporary pullsecret file
       ansible.builtin.file:
         path: "{{ ansible_env.HOME }}/pullsecret.txt"
@@ -456,6 +461,7 @@
 
 - name: Update the CA trust files on the provisioner host
   ansible.builtin.command: update-ca-trust extract
+  changed_when: true
   become: true
   tags:
     - create_registry

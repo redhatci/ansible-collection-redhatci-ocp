@@ -3,6 +3,7 @@
   community.libvirt.virt_net:
     name: "{{ network['name'] }}"
     command: status
+    changed_when: true
   register: network_exists
   become: true
   ignore_errors: true
@@ -12,6 +13,7 @@
 - name: Stop SNO network
   community.libvirt.virt_net:
     command: destroy
+    changed_when: true
     name: "{{ network['name'] }}"
   become: true
   when:
@@ -22,6 +24,7 @@
 - name: Undefine SNO network
   community.libvirt.virt_net:
     command: undefine
+    changed_when: true
     name: "{{ network['name'] }}"
   become: true
   when:

@@ -82,6 +82,7 @@
       ansible.builtin.command:
         cmd: update-ca-trust extract
 
+      changed_when: true
 - name: Fetch the domain cert from the registry host
   ansible.builtin.fetch:
     src: "{{ cert_path }}"

@@ -13,6 +13,7 @@
     --no-creds
     {% endif %}
     docker://{{ current_operator_image }} | jq -r '.Digest'
+  changed_when: false
   register: sha
   retries: 2
   delay: 30

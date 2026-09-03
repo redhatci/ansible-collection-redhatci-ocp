@@ -196,9 +196,9 @@
   delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   block:
     - name: Ensure user specific systemd instance are persistent
-      ansible.builtin.command: |
-              /usr/bin/loginctl enable-linger {{ ansible_user }}
-
+      ansible.builtin.command: /usr/bin/loginctl enable-linger {{ ansible_user }}
+      args:
+        creates: /var/lib/systemd/linger/{{ ansible_user }}
     - name: Create systemd user directory
       ansible.builtin.file:
         path: "{{ ansible_user_dir }}/.config/systemd/user"

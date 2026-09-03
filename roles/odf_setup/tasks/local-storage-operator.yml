@@ -32,6 +32,7 @@
       --tail=-1
       --since=10m
       --namespace ocs-disk-gatherer
+  changed_when: true
   register: disk_id
   retries: 10
   delay: 30

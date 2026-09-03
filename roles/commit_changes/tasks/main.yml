@@ -10,6 +10,7 @@
 
 - name: Set git author name
   ansible.builtin.command: git config user.name "{{ cc_author_name }}"  # noqa: command-instead-of-module
+  changed_when: true
   args:
     chdir: "{{ cc_directory }}"
   when:
@@ -18,6 +19,7 @@
 
 - name: Set git author email
   ansible.builtin.command: git config user.email "{{ cc_author_email }}"  # noqa: command-instead-of-module
+  changed_when: true
   args:
     chdir: "{{ cc_directory }}"
   when:
@@ -26,6 +28,7 @@
 
 - name: Stage changes in directory
   ansible.builtin.command: git add --all .  # noqa: command-instead-of-module
+  changed_when: true
   args:
     chdir: "{{ cc_directory }}"
 

@@ -94,6 +94,7 @@
       --tools
       --from {{ pull_url }}
       --to "{{ si_cache_dir }}/{{ version }}"
+  changed_when: true
   delegate_to: "{{ si_cache_server }}"
   register: _si_result_extract
   retries: 5

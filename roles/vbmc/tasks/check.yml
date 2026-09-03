@@ -3,11 +3,13 @@
   ansible.builtin.shell: |
     set -eo pipefail
     vbmc list | awk '/{{ item }}/ {print $4,$8}'
+  changed_when: false
   register: vbmc_status
   with_items: "{{ vbmc_nodes }}"
 
 - name: Check and run vbmc node if it is down
   ansible.builtin.command: "vbmc start {{ item.item }}"
+  changed_when: true
   with_items: "{{ vbmc_status.results }}"
   when: item.stdout.split()[0]  == 'down'
 

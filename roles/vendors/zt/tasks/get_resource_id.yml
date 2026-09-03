@@ -2,6 +2,7 @@
   community.general.redfish_info:
     category: Manager
     command: GetVirtualMedia
+    changed_when: true
     baseuri: "{{ bmc_address }}"
     username: "{{ bmc_user }}"
     password: "{{ bmc_password }}"

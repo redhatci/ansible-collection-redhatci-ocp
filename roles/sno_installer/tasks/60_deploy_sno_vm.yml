@@ -34,5 +34,6 @@
     --boot hd,cdrom \
     --noautoconsole \
     --wait -1
+  changed_when: true
   become: true
   tags: install

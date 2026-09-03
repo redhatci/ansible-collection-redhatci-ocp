@@ -49,6 +49,7 @@
     detach: false
     remove: true
     command: ["--timeout={{ eco_gotests_generic_timeout }}", "--keep-going"]
+    changed_when: true
   failed_when: false
 
 - name: "Stat failed suite dump directory: {{ eco_gotests_generic_features }}"

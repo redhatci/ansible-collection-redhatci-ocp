@@ -6,6 +6,7 @@
       ansible.builtin.shell: |
         set -o pipefail
         /usr/local/bin/{{ installer_cmd }} version | grep '^built from commit' | awk '{print $4}'
+      changed_when: false
       register: commit_id
       tags: rhcospath
 
@@ -43,6 +44,7 @@
     - name: Extract rhcos.json
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} coreos print-stream-json
+      changed_when: false
       register: rhcos_json_stream
       retries: 3
       delay: 10

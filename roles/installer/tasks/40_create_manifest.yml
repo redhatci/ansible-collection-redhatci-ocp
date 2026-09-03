@@ -2,6 +2,7 @@
 - name: Create OpenShift Manifest
   ansible.builtin.shell: |
     /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} create manifests
+  changed_when: true
   tags: manifests
 
 - name: Ensure the manifests dir is owned by {{ ansible_user }}

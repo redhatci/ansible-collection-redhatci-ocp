@@ -30,6 +30,7 @@
     - name: List vms
       community.libvirt.virt:
         command: list_vms
+        changed_when: false
       register: vms_list
       become: true
 

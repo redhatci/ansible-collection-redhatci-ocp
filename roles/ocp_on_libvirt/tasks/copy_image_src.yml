@@ -67,10 +67,12 @@
 
 - name: "Uncompress xz local_image_src"
   ansible.builtin.command: "xz -d --keep --force {{ local_image_src }}"
+  changed_when: true
   become: "{{ libvirt_become }}"
   when: lismt.stat.mimetype == "application/x-xz" and not (ismt.stat.exists | bool)
 
 - name: "Copy img_src to match node name"
   ansible.builtin.command: "cp --sparse=always {{ img_src }} {{ local_image_path }}/{{ host['name'] }}.qcow2"
+  changed_when: true
   become: "{{ libvirt_become }}"
 ...

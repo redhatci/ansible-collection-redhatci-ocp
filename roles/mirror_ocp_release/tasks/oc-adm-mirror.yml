@@ -8,6 +8,7 @@
     --tls-verify=false
     {%- endif %}
     docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
+  changed_when: false
   register: _mor_release_image
   failed_when: false
   when: not mor_force | bool

@@ -12,6 +12,7 @@
           --dest-tls-verify=false
           docker://{{ hs_test_vm_image }}
           docker://{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}
+      changed_when: true
       register: copy
       retries: 5
       delay: 5

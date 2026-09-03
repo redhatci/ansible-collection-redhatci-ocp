@@ -41,6 +41,7 @@
               imagePullPolicy: Always
               command:
                 - "/exportkustomize.sh"
+              changed_when: true
               args:
                 - "/.config"
               volumeMounts:
@@ -54,6 +55,7 @@
               imagePullPolicy: Always
               command:
                 - "/bin/bash"
+              changed_when: true
               args:
                 - "-c"
                 - >
