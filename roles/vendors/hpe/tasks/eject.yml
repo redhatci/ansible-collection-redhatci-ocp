@@ -26,8 +26,7 @@
               || contains(MediaTypes, `USBStick`)
               || contains(MediaTypes, `DVD`)
             )
-          )]'
-        ) | from_yaml
+          )]') | from_yaml
       }}"
   community.general.redfish_command:
     category: Manager
