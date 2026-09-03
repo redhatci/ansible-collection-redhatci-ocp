@@ -107,11 +107,13 @@ def validate_manifest(path):
             )
 
     elif kind == "CatalogSource":
-        if not spec.get("sourceType", "").strip():
+        _st = spec.get("sourceType", "")
+        if not isinstance(_st, str) or not _st.strip():
             errors.append(
                 f"{basename}: 'spec.sourceType' is missing or empty (CatalogSource)"
             )
-        if not spec.get("image", "").strip():
+        _img = spec.get("image", "")
+        if not isinstance(_img, str) or not _img.strip():
             errors.append(
                 f"{basename}: 'spec.image' is missing or empty (CatalogSource)"
             )
@@ -123,12 +125,14 @@ def validate_manifest(path):
             )
 
     elif kind == "UpdateService":
-        if not spec.get("graphDataImage", "").strip():
+        _gdi = spec.get("graphDataImage", "")
+        if not isinstance(_gdi, str) or not _gdi.strip():
             errors.append(
                 f"{basename}: 'spec.graphDataImage' is missing or empty "
                 "(UpdateService)"
             )
-        if not spec.get("releases", "").strip():
+        _rel = spec.get("releases", "")
+        if not isinstance(_rel, str) or not _rel.strip():
             errors.append(
                 f"{basename}: 'spec.releases' is missing or empty "
                 "(UpdateService)"
