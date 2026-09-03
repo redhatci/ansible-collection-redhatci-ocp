@@ -4,3 +4,9 @@ tests/integration/inventory
 tests/output
 __pycache__
 .ansible/
+# artifacts produced by hack/run_ansible_test.sh
+/branch.output
+/main.output
+/branch.errors
+/main.errors
+/.main.sha
