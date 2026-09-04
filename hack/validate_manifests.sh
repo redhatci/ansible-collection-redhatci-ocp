@@ -10,7 +10,7 @@
 #       ImageDigestMirrorSet  : spec.imageDigestMirrors non-empty list
 #       ImageTagMirrorSet     : spec.imageTagMirrors non-empty list
 #       CatalogSource         : spec.sourceType and spec.image non-empty strings
-#       ClusterCatalog        : spec.source must be defined
+#       ClusterCatalog        : spec.source must be a non-empty mapping
 #       UpdateService         : spec.graphDataImage and spec.releases non-empty strings
 #
 # Exit 0 on success, exit 1 with ERROR lines on stderr on any failure.
@@ -39,11 +39,14 @@ def validate_manifest(path):
     errors = []
     basename = os.path.basename(path)
 
-    with open(path, "r", encoding="utf-8") as fh:
-        try:
-            doc = yaml.safe_load(fh)
-        except yaml.YAMLError as exc:
-            return [f"{basename}: YAML parse error: {exc}"]
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            try:
+                doc = yaml.safe_load(fh)
+            except yaml.YAMLError as exc:
+                return [f"{basename}: YAML parse error: {exc}"]
+    except OSError as exc:
+        return [f"{basename}: ERROR: cannot open file: {exc}"]
 
     if not isinstance(doc, dict):
         return [f"{basename}: top-level document is not a mapping"]
@@ -119,9 +122,10 @@ def validate_manifest(path):
             )
 
     elif kind == "ClusterCatalog":
-        if "source" not in spec:
+        _src = spec.get("source")
+        if not isinstance(_src, dict) or not _src:
             errors.append(
-                f"{basename}: 'spec.source' is missing (ClusterCatalog)"
+                f"{basename}: 'spec.source' is missing or not a non-empty mapping (ClusterCatalog)"
             )
 
     elif kind == "UpdateService":
