@@ -31,13 +31,13 @@
 - name: Render agent-config templates
   ansible.builtin.template:
     src: "{{ item }}"
-    dest: "{{ manifests_dir }}/{{ item.rsplit('.', 1)[0] }}"
+    dest: "{{ manifests_dir }}/{{ (item | basename) | regex_replace('\\.j2$', '') }}"
     mode: "0644"
     trim_blocks: true
     lstrip_blocks: true
   loop:
-    - agent-config.yaml.j2
-    - install-config.yaml.j2
+    - "{{ gm_agent_config_template }}"
+    - "{{ gm_install_config_template }}"
 
 # The agent-config files are eventually deleted after its usage, just
 # save them in a safe place in case of needing to check them
@@ -47,8 +47,8 @@
     dest: "{{ fetched_dest }}/{{ item }}"
     flat: true
   loop:
-    - agent-config.yaml
-    - install-config.yaml
+    - "{{ (gm_agent_config_template | basename) | regex_replace('\\.j2$', '') }}"
+    - "{{ (gm_install_config_template | basename) | regex_replace('\\.j2$', '') }}"
 
 - name: Create extra_manifest_dir dir
   ansible.builtin.file:

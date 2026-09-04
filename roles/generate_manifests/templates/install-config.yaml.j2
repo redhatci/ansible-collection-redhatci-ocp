@@ -82,5 +82,5 @@ proxy:
     {% endif %}
 {% endif %}
 {% if (use_local_mirror_registry | bool) %}
-{{ lookup('template', 'registry-config.j2') }}
+{{ lookup('template', gm_registry_config_template) }}
 {% endif %}

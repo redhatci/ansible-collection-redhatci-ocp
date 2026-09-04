@@ -20,6 +20,9 @@ All of the variables have sane defaults which you can override to force things, 
 | ocp_registry_namespace        | ocp4                              | No        | Namespace for image mirror |
 | ocp_registry_image            | openshift4                        | No        | Name for image in the image mirror |
 | gm_image_sources              | (default block)                   | No        | Override the default ICSP block [^2] |
+| gm_agent_config_template      | agent-config.yaml.j2              | No        | Template path for `agent-config.yaml` [^3] |
+| gm_install_config_template    | install-config.yaml.j2            | No        | Template path for `install-config.yaml` [^3] |
+| gm_registry_config_template   | registry-config.j2                | No        | Template included in install-config when `use_local_mirror_registry` is true [^3] |
 | single_node_openshift_enabled | false                             | No        | Install OCP in single-node mode |
 | partitioning_enabled          | false                             | No        | Enable CPU partitioning mode for all Nodes |
 | gm_ocp_version                |                                   | No        | OpenShift version, required for the enablement of some features in the manifest generation, such as Two-Node with Fencing mode (TNF) |
@@ -47,6 +50,9 @@ All of the variables have sane defaults which you can override to force things, 
         - source: registry.example.com/ocp/release
           mirrors:
             - my-custom-registry.example.com:5000/my-repo
+    gm_agent_config_template: /path/to/custom/agent-config.yaml.j2
+    gm_install_config_template: /path/to/custom/install-config.yaml.j2
+    gm_registry_config_template: /path/to/custom/registry-config.j2
     partitioning_enabled: false
   ansible.builtin.include_role:
     name: redhatci.ocp.generate_manifests
@@ -55,3 +61,5 @@ All of the variables have sane defaults which you can override to force things, 
 [^1]: As per the [OCP 4.17 docs](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html-single/installing_an_on-premise_cluster_with_the_agent-based_installer/index#root-device-hints_preparing-to-install-with-agent-based-installer)
 
 [^2]: When `gm_image_sources` is defined, it completely replaces the default `imageContentSources` block in the registry configuration. The value should be a YAML string containing the full `ICSP/IDMS` block with proper indentation. If not defined, the default block with standard OpenShift release sources and mirrors is used.
+
+[^3]: Template paths are resolved by Ansible's `template` lookup and module. Use the role-relative filename (for example `agent-config.yaml.j2`) to keep the bundled templates, or pass an absolute path to a custom template on the control node.
