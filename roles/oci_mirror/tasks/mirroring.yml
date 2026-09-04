@@ -49,6 +49,14 @@
       - "idms-oc-mirror.yaml"
   register: _om_image_source_manifest
 
+- name: "Find generated ITMS manifests"
+  ansible.builtin.find:
+    paths: "{{ _om_tmp_dir.path }}"
+    recurse: true
+    patterns:
+      - "itms-oc-mirror.yaml"
+  register: _om_itms_manifest
+
 - name: "Create output directory for manifests"
   ansible.builtin.tempfile:
     state: directory
@@ -76,7 +84,20 @@
   when:
     - _om_catalog_manifest.matched > 0
 
+- name: "Copy ITMS to output directory"
+  ansible.builtin.copy:
+    src: "{{ _om_itms_manifest.files[0].path }}"
+    dest: "{{ _om_output_dir.path }}/{{ _om_itms_manifest.files[0].path | basename }}"
+    mode: "0644"
+    remote_src: true
+  when:
+    - _om_itms_manifest.matched > 0
+
 - name: Expose manifests output directory
   ansible.builtin.set_fact:
     om_output_dir: "{{ _om_output_dir.path }}"
   when: _om_output_dir is defined
+
+- name: Validate generated manifests
+  ansible.builtin.include_tasks: validate-manifests.yml
+  when: om_validate_manifests | bool

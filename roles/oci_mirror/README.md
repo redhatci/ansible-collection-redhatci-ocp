@@ -22,6 +22,7 @@ Either you point the role at an existing **ImageSetConfiguration**, or you let i
 | `om_keep_working_dir` | bool | `false` | Keep the temp workspace after the role finishes (useful for debugging). |
 | `om_remove_signatures` | bool | `false` | Pass `--remove-signatures` to `oc-mirror` (needed for some unsigned images). |
 | `om_ignore_errors` | bool | `false` | Sets Ansible `ignore_errors` on the mirror task. |
+| `om_validate_manifests` | bool | `true` | Validate all generated manifests after mirroring. See [Manifest Validation](#manifest-validation). |
 
 ### Standard path only (`om_custom_config` not set)
 
@@ -130,6 +131,33 @@ Some operators stay on `om_source_index`; others use another index via `catalog`
       local-storage-operator:
     om_keep_working_dir: true
 ```
+
+## Manifest Validation
+
+When `om_validate_manifests` is `true` (the default), the role runs
+`tasks/validate-manifests.yml` after copying manifests to `_om_output_dir`.
+Each YAML file in that directory is parsed and checked for:
+
+- `apiVersion`, `kind`, and `metadata.name` must be non-empty strings.
+- `status` must not be an empty dict (`{}`). An empty status field can
+  indicate a serialization defect in the mirroring tool output.
+- **IDMS** (`idms-*.yaml`): `spec.imageDigestMirrors` must be a non-empty list.
+- **ITMS** (`itms-*.yaml`): `spec.imageTagMirrors` must be a non-empty list.
+- **CatalogSource** (`cs-*.yaml`): `spec.sourceType` and `spec.image` must be
+  non-empty strings.
+- **ClusterCatalog** (`cc-*.yaml`): `spec.source` must be defined.
+- **UpdateService** (`update-service-*.yaml`): `spec.graphDataImage` and
+  `spec.releases` must be non-empty strings.
+
+Set `om_validate_manifests: false` to skip validation (e.g. when you know the
+mirroring tool produces partial output intentionally).
+
+### GitOps and ACM Policy Compliance
+
+When using the generated manifests in a GitOps workflow or as ACM policy
+sources, validation failures indicate that one or more manifests are incomplete
+and must not be committed to the policy repository. Resolve the root cause
+before propagating the manifests downstream.
 
 ## Output / facts
 
