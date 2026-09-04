@@ -32,9 +32,8 @@ full sanity/units/integration matrix across every Python version, twice
 (branch vs. `main`), and takes 10+ minutes — and it hard-requires a real
 Docker daemon (a Podman symlink makes it fail). You do **not** need to
 replicate that matrix to reproduce one failing check. Map the failing CI
-test to the single `--local` command below and iterate in seconds. Reserve
-`run_ansible_test.sh` for CI, or for when you specifically want the
-branch-vs-`main` regression diff *and* Docker is available.
+test to the single `--local` command below and iterate in seconds.
+`run_ansible_test.sh` is the CI harness — let CI run it.
 
 `./hack/run_ansible_test.sh` runs the full sanity/units/integration matrix
 in containers with `ansible-test --docker`. That is what CI does on Ubuntu
@@ -64,5 +63,5 @@ Notes:
 - `--docker` requires a real Docker daemon. When `docker` is a symlink to
   Podman, the JSON output format differs and ansible-test fails with
   "Unable to get container host server information." Use `--local` there.
-- Docker via `run_ansible_test.sh` remains the way to reproduce CI results
-  and catch regressions against `main`; prefer it before opening a PR.
+- The branch-vs-`main` regression diff is produced by CI when you open a
+  PR; you do not need to run `run_ansible_test.sh` locally to get it.

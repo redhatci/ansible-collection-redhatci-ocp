@@ -109,12 +109,12 @@ done 2> >(tee -a branch.output >&2)
 # Tests in main branch. Cache the results by commit SHA so repeated local runs
 # (e.g. iterating on a branch) skip re-running the whole main suite when
 # origin/main has not moved.
-git fetch origin main
+git fetch origin main:refs/remotes/origin/main
 main_sha=$(git rev-parse origin/main)
 if [ -s main.output ] && [ -f .main.sha ] && [ "$(cat .main.sha)" = "$main_sha" ]; then
   echo "Reusing cached main-branch results for ${main_sha}"
 else
-  git checkout main
+  git checkout --detach "$main_sha"
   echo "Running tests in main branch, this may take a while as no output is displayed..."
   for version in $PY_VERS; do
     run_tests "${version}"
