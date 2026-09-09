@@ -78,7 +78,7 @@
 
 - name: "Use reportxml testrun as the JUnit result (replace Ginkgo-native): {{ eco_gotests_generic_features }}"
   ansible.builtin.shell: |
-    set -eo pipefail
+    set -e
     dir="{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}"
     report="$dir/report_testrun.xml"
     if [ -f "$report" ]; then
@@ -87,7 +87,7 @@
         rm -f "$ginkgo"
         mv "$report" "$ginkgo"
       else
-        mv "$report" "$dir/{{ eco_gotests_generic_features }}_suite_test_junit.xml"
+        mv "$report" "$dir/suite_test_junit.xml"
       fi
     fi
   changed_when: true
