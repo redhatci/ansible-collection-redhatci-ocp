@@ -29,3 +29,6 @@ api_vips: "{% if extra_api_vip is defined %}{{ [api_vip] + [extra_api_vip] }}{% 
 ingress_vips: "{% if extra_ingress_vip is defined %}{{ [ingress_vip] + [extra_ingress_vip] }}{% else %}{{ [ingress_vip] }}{% endif %}"
 
 gm_image_sources: ""
+gm_agent_config_template: agent-config.yaml.j2
+gm_install_config_template: install-config.yaml.j2
+gm_registry_config_template: registry-config.j2
