@@ -76,7 +76,18 @@
     - _eco_gotests_generic_failed_dump_stat.stat.exists | default(false)
     - _eco_gotests_generic_failed_dump_stat.stat.isdir | default(false)
 
-- name: "Remove temporary testrun report file: {{ eco_gotests_generic_features }}"
-  ansible.builtin.file:
-    path: "{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}/report_testrun.xml"
-    state: absent
+- name: "Use reportxml testrun as the JUnit result (replace Ginkgo-native): {{ eco_gotests_generic_features }}"
+  ansible.builtin.shell: |
+    set -e
+    dir="{{ eco_gotests_log_dir }}/eco_gotests/{{ eco_gotests_generic_features }}"
+    report="$dir/report_testrun.xml"
+    if [ -f "$report" ]; then
+      ginkgo=$(find "$dir" -maxdepth 1 -type f -name '*_junit.xml' ! -name 'report_testrun.xml' | head -n1)
+      if [ -n "$ginkgo" ]; then
+        rm -f "$ginkgo"
+        mv "$report" "$ginkgo"
+      else
+        mv "$report" "$dir/{{ eco_gotests_generic_features }}_suite_test_junit.xml"
+      fi
+    fi
+  changed_when: true
