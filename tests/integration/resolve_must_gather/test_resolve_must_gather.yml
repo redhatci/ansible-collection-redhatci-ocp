@@ -6,8 +6,8 @@
     KUBECONFIG: "{{ kubeconfig | default('/tmp/kubeconfig') }}"
   vars:
     rmgi_images:
-      - ose-must-gather
-      - ptp-must-gather
+      - ptp
+      - this-operator-is-not-installed
   tasks:
     - name: Display input images
       ansible.builtin.debug:
@@ -23,10 +23,10 @@
       ansible.builtin.debug:
         msg: "Resolved images: {{ rmgi_resolved_images }}"
 
-    - name: Verify all images were resolved to full references
+    - name: Verify unresolved hints were omitted and resolved refs are full images
       ansible.builtin.assert:
         that:
-          - rmgi_resolved_images | length == rmgi_images | length
-          - rmgi_resolved_images | select('match', '.*@sha256:.*') | list | length == rmgi_resolved_images | length
-        fail_msg: "Not all images were resolved to digest references"
-        success_msg: "All {{ rmgi_resolved_images | length }} images resolved successfully"
+          - "'this-operator-is-not-installed' not in rmgi_resolved_images"
+          - rmgi_resolved_images | reject('search', '/') | list | length == 0
+        fail_msg: "Unresolved hints must be omitted; resolved entries must be full image refs"
+        success_msg: "Resolved {{ rmgi_resolved_images | length }} image(s); unresolved hints omitted"

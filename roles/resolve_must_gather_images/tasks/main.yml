@@ -8,20 +8,23 @@
   register: _rmgi_csvs
   no_log: true
 
-- name: Build relatedImages list from all CSVs
+- name: Build CSV lookup data
   ansible.builtin.set_fact:
-    rmgi_related_images: >-
-      {{ _rmgi_csvs.resources
-         | json_query('[*].spec.relatedImages[*]')
-         | flatten }}
+    rmgi_csvs: >-
+      {{ _rmgi_csvs.resources | default([]) | json_query('[].{
+           name: metadata.name,
+           display_name: spec.displayName,
+           annotations: metadata.annotations,
+           related_images: spec.relatedImages
+         }') }}
+  no_log: true
 
 - name: Resolve must-gather image names
   ansible.builtin.set_fact:
     rmgi_resolved_images: >-
-      {{ rmgi_images
-         | redhatci.ocp.resolve_must_gather(rmgi_related_images, rmgi_fallback_registry) }}
+      {{ rmgi_images | redhatci.ocp.resolve_must_gather(rmgi_csvs) | unique | list }}
+  no_log: true
 
 - name: Display resolved must-gather images
   ansible.builtin.debug:
     msg: "Resolved must-gather images: {{ rmgi_resolved_images }}"
-...
