@@ -13,7 +13,7 @@ mounted_iso_files:
   - "{{ mount_efiboot_directory }}/EFI/BOOT/grubx64.efi"
   - "{{ mount_efiboot_directory }}/EFI/BOOT/BOOTX64.EFI"
 
-mounted_tftp_files: "http://{{ HTTPD_PXE_HOST }}/{{ pxe_directory }}"
+mounted_tftp_files: "http://{{ httpd_pxe_host }}/{{ pxe_directory }}"
 tftp_files_to_download:
   - "{{ mounted_tftp_files }}/ignition.img"
   - "{{ mounted_tftp_files }}/efiboot.img"
@@ -33,10 +33,10 @@ system_files:
   - "{{ system_files_directory }}/ldlinux.c32"
   - "{{ system_files_directory }}/menu.c32"
 
-ASSISTED_INSTALLER_BASE_URL: "{{ secure | ternary('https', 'http') }}://{{ ASSISTED_INSTALLER_HOST }}:{{ ASSISTED_INSTALLER_PORT }}/api/assisted-install/v1"
-URL_ASSISTED_INSTALLER_CLUSTERS_DOWNLOAD_IMAGE: "{{ ASSISTED_INSTALLER_BASE_URL }}/clusters/{{ CLUSTER_ID }}/downloads/image"
+assisted_installer_base_url: "{{ secure | ternary('https', 'http') }}://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1"
+url_assisted_installer_clusters_download_image: "{{ assisted_installer_base_url }}/clusters/{{ cluster_id }}/downloads/image"
 
-DOWNLOAD_DEST_FILE: "{{ discovery_iso_name }}"
-DOWNLOAD_DEST_PATH: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
-HTTPD_PXE_HOST: "{{ hostvars['http_store']['ansible_host'] }}"
-HTTPD_PORT_FOR_PXE: "{{ hostvars['httpd_pxe_host']['httpd_port_for_pxe'] }}"
+download_dest_file: "{{ discovery_iso_name }}"
+download_dest_path: "{{ iso_download_dest_path | default('/opt/http_store/data') }}"
+httpd_pxe_host: "{{ hostvars['http_store']['ansible_host'] }}"
+httpd_port_for_pxe: "{{ hostvars['httpd_pxe_host']['httpd_port_for_pxe'] }}"

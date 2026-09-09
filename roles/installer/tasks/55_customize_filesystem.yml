@@ -8,7 +8,7 @@
     paths: "{{ custom_path }}/{{ item }}"
     recurse: true
     follow: true
-  register: filesFound
+  register: _installer_files_found
   with_items:
     - "master"
     - "worker"
@@ -16,7 +16,7 @@
   tags: customfs
 
 - name: Modify Ignition Configs
-  when: (filesFound | json_query('results[*].matched') | sum) > 0
+  when: (_installer_files_found | json_query('results[*].matched') | sum) > 0
   tags: customfs
   block:
 

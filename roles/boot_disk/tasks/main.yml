@@ -3,8 +3,8 @@
 
 - name: Join list for workers and masters
   ansible.builtin.set_fact:
-    hosts: "{{ groups['masters'] + groups['workers'] | default([]) }}"
-  when: hosts is not defined
+    boot_disk_hosts: "{{ groups['masters'] + groups['workers'] | default([]) }}"
+  when: boot_disk_hosts is not defined
 
 - name: Boot from disk for "{{ hostvars[item]['vendor'] }}"
   ansible.builtin.include_role:
@@ -12,4 +12,4 @@
     tasks_from: disk.yml
   vars:
     target_host: "{{ item }}"
-  loop: "{{ hosts }}"
+  loop: "{{ boot_disk_hosts }}"
