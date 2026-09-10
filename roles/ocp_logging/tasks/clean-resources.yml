@@ -6,7 +6,7 @@
     kind: "{{ item.kind }}"
     name: "{{ item.name }}"
     namespace: "{{ ol_namespace }}"
-  ignore_errors: true
+  failed_when: false
   loop: "{{ ol_resources }}"
 
 - name: "Get PVCs in the namespace"

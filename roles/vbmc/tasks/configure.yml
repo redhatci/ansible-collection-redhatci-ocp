@@ -3,7 +3,7 @@
   ansible.builtin.shell: |
     {{ vbmc_bin }} stop {{ item }}
     {{ vbmc_bin }} delete {{ item }}
-  ignore_errors: true
+  failed_when: false
   with_items: "{{ vbmc_nodes }}"
 
 - name: Get current count of used vbmc ports
