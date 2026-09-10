@@ -17,10 +17,34 @@
 set -ex
 
 # when run outside of a GitHub action
+LOCAL_RUN=
 if [ -z "$GITHUB_STEP_SUMMARY" ]; then
     GITHUB_STEP_SUMMARY=/dev/null
+    LOCAL_RUN=1
     > branch.output
-    > main.output
+fi
+
+# Every ansible-test call below uses --docker, mirroring the GitHub Actions
+# run. When invoked locally (not in CI), fail fast if there is no usable
+# Docker daemon instead of hanging on it. You do NOT need to replicate the
+# full CI matrix to reproduce a single CI failure -- run the equivalent
+# --local check instead (see AGENTS.md > "Running tests locally").
+if [ -n "$LOCAL_RUN" ]; then
+    if ! docker info >/dev/null 2>&1 || docker --version 2>/dev/null | grep -qi podman; then
+        cat >&2 <<'EOF'
+ERROR: run_ansible_test.sh mirrors the GitHub Actions run and needs a real
+Docker daemon. None was found, or 'docker' is a Podman symlink (which
+ansible-test --docker rejects).
+
+To reproduce a CI failure you do NOT need the full docker matrix. Run the
+equivalent check locally, in seconds, e.g.:
+
+    ansible-test sanity --local --requirements plugins/modules/<name>.py
+
+See AGENTS.md > "Running tests locally (without docker)" for details.
+EOF
+        exit 1
+    fi
 fi
 
 branch=$(git rev-parse --abbrev-ref HEAD)
@@ -67,9 +91,12 @@ run_tests() {
   done
 }
 
-# extract all the supported python versions from the error message, excluding 3.5
 EXCLUDE="--exclude tests/ --exclude hack/ --exclude plugins/modules/nmcli.py"
-PY_VERS=$(ansible-test sanity $EXCLUDE --verbose --docker --python 1.0 --color --coverage --failure-ok 2>&1 |
+
+# Extract the supported python versions (excluding 3.5) from the argparse
+# error triggered by an invalid --python value. This is instant and needs no
+# docker, so no docker/coverage flags are passed here.
+PY_VERS=$(ansible-test sanity --python 1.0 2>&1 |
   grep -Po "invalid.*?\K'3.*\d'" |
   tr -d ,\' |
   sed -e 's/3.5 //g')
@@ -79,13 +106,21 @@ for version in $PY_VERS; do
   run_tests "${version}"
 done 2> >(tee -a branch.output >&2)
 
-# Tests in main branch
-git fetch origin main
-git checkout main
-echo "Running tests in main branch, this may take a while as no output is displayed..."
-for version in $PY_VERS; do
-  run_tests "${version}"
-done 2> main.output 1>/dev/null
+# Tests in main branch. Cache the results by commit SHA so repeated local runs
+# (e.g. iterating on a branch) skip re-running the whole main suite when
+# origin/main has not moved.
+git fetch origin main:refs/remotes/origin/main
+main_sha=$(git rev-parse origin/main)
+if [ -s main.output ] && [ -f .main.sha ] && [ "$(cat .main.sha)" = "$main_sha" ]; then
+  echo "Reusing cached main-branch results for ${main_sha}"
+else
+  git checkout --detach "$main_sha"
+  echo "Running tests in main branch, this may take a while as no output is displayed..."
+  for version in $PY_VERS; do
+    run_tests "${version}"
+  done 2> main.output 1>/dev/null
+  echo "$main_sha" > .main.sha
+fi
 
 for key in branch main; do
   grep -E "((ERROR|FATAL):|FAILED )" "$key.output" |
