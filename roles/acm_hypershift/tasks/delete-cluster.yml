@@ -34,4 +34,3 @@
     - _ah_hosted_cluster.resources | length == 0
   when:
     - hosted_cluster.resources | default([]) | length == 1
-...

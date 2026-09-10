@@ -33,4 +33,3 @@
     loop_var: operator
   register: extract_result
   changed_when: extract_result.rc != 0
-...

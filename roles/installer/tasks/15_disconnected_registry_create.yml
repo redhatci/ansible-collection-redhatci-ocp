@@ -221,7 +221,7 @@
     - name: Write auth for disconnected to localhost
       ansible.builtin.copy:
         content: "{{ disconnected_auth }}"
-        dest: "{{ lookup ('env', 'PWD') }}/{{ registry_auth_file }}"
+        dest: "{{ lookup('env', 'PWD') }}/{{ registry_auth_file }}"
         backup: true
         force: true
         mode: "0640"
@@ -348,21 +348,21 @@
         daemon_reexec: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
     - name: Enable container-registry.service
       ansible.builtin.systemd:
         name: container-registry
         enabled: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
     - name: Start container-registry.service
       ansible.builtin.systemd:
         name: container-registry
         state: started
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + ansible_effective_user_id | string + '/bus') }}"
     - name: Read in the contents of domain.crt
       ansible.builtin.slurp:
         src: "{{ registry_dir_cert }}/domain.crt"
@@ -387,7 +387,7 @@
     - name: Create install config appends file on localhost
       ansible.builtin.copy:
         content: "{{ install_config_appends }}"
-        dest: "{{ lookup ('env', 'PWD') }}/{{ install_config_appends_file }}"
+        dest: "{{ lookup('env', 'PWD') }}/{{ install_config_appends_file }}"
         backup: true
         force: true
         mode: "0644"

@@ -17,7 +17,7 @@
   ansible.builtin.set_fact:
     ecd_cnfapp_existing_node: "{{ _ecd_cnf_pod.resources[0].spec.nodeName }}"
     ecd_cnf_existing_pod_name: "{{ _ecd_cnf_pod.resources[0].metadata.name }}"
-    ecd_cnf_app_count: "{{ _ecd_cnf_pod.resources|length }}"
+    ecd_cnf_app_count: "{{ _ecd_cnf_pod.resources | length }}"
     ecd_cnf_app_list: "{{ _ecd_cnf_pod | json_query('resources[*].metadata.name') }}"
 
 - name: "Show current node of CNFApp"

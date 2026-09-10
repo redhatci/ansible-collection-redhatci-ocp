@@ -77,8 +77,7 @@
             index_var: batch_index
           vars:
             preflight_current_project_batch: >-
-              {{ preflight_cert_projects[
-              (batch_index * max_images_per_batch) :
+              {{ preflight_cert_projects[(batch_index * max_images_per_batch) :
               (batch_index * max_images_per_batch
               + batched_images | length)] }}
   always:

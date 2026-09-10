@@ -3,10 +3,8 @@
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
-    --authfile {{ mor_auths_file }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
+    --authfile {{ mor_auths_file }}{%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}
     docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
   register: _mor_release_image
   failed_when: false
@@ -19,13 +17,9 @@
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
     --to={{ mor_registry_url }}/{{ mor_registry_path }}
-    --keep-manifest-list=true
-    {%- if mor_allow_insecure_registry | bool %}
-    --insecure
-    {%- endif %}
-    {%- if mor_extra_flags | length > 0 %}
-    {{ mor_extra_flags }}
-    {%- endif %}
+    --keep-manifest-list=true{%- if mor_allow_insecure_registry | bool %}
+    --insecure{%- endif %}{%- if mor_extra_flags | length > 0 %}
+    {{ mor_extra_flags }}{%- endif %}
   retries: 3
   delay: 10
   register: _mor_result
@@ -44,10 +38,11 @@
     --from={{ ocp_release_data['container_image'] | quote }}
     --to-release-image={{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
     --to={{ mor_registry_url }}/{{ mor_registry_path }}
-    {{ mor_version is version("4.14", "<") | ternary("--dry-run", "--print-mirror-instructions=" + mor_is_type | lower ) }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --insecure
-    {%- endif %}
+    {{
+      mor_version is version("4.14", "<")
+      | ternary("--dry-run", "--print-mirror-instructions=" + mor_is_type | lower)
+    }}{%- if mor_allow_insecure_registry | bool %}
+    --insecure{%- endif %}
   retries: 3
   delay: 10
   register: _mor_result

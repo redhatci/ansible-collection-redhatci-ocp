@@ -137,4 +137,3 @@
     - name: Set CA bundle fact
       ansible.builtin.set_fact:
         ah_ca_bundle_file: "{{ ah_tmp_dir }}/{{ bundle_file }}"
-...

@@ -8,12 +8,6 @@
 
 - name: "Populate dns entry for {{ entry_name }}"
   ansible.builtin.set_fact:
-    other_host_dns_records: "{{ (other_host_dns_records | default({})) | combine(
-        {
-          entry_address : {
-            'name': (other_host_dns_records[entry_address]['name'] | default([])) + [entry_name],
-            'address': entry_address,
-            'ip': hostvars[entry_name][host_ip_keyword],
-          }
-        }
-      ) }}"
+    other_host_dns_records: "{{ (other_host_dns_records | default({})) | combine({entry_address: {'name':
+        (other_host_dns_records[entry_address]['name'] | default([])) + [entry_name],
+        'address': entry_address, 'ip': hostvars[entry_name][host_ip_keyword]}}) }}"

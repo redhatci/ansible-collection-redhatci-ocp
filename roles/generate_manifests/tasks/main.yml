@@ -17,15 +17,9 @@
 
 - name: Update pull_secret variable
   ansible.builtin.set_fact:
-    local_pull_secret: "{{ pull_secret | combine({
-        'auths': pull_secret['auths'] | combine({
-            'registry.ci.openshift.org': {
-              'auth': pull_secret['auths'][mirror_registry]['auth'],
-            }
-          })
-        })
-      }}"
-  when: use_local_mirror_registry  | bool
+    local_pull_secret: "{{ pull_secret | combine({'auths': pull_secret['auths'] | combine({'registry.ci.openshift.org': {'auth':
+        pull_secret['auths'][mirror_registry]['auth']}})}) }}"
+  when: use_local_mirror_registry | bool
   no_log: true
 
 - name: Render agent-config templates
