@@ -1,0 +1,9 @@
+---
+apiVersion: updateservice.operator.openshift.io/v1
+kind: UpdateService
+metadata:
+  name: update-service-empty-spec
+  namespace: openshift-update-service
+spec:
+  graphDataImage: ""
+  releases: ""
