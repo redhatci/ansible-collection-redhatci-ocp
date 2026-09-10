@@ -2,6 +2,16 @@
 utils_cm_name: mirror-registry
 utils_monitor_timeout: 90
 utils_monitor_wait_time: 3
+# Fail fast when the AgentClusterInstall stays in a validation-blocked
+# state with Validated=False for this many minutes (0 disables fail-fast,
+# restoring the old pure-timeout behaviour). This avoids waiting the full
+# utils_monitor_timeout on terminal validation failures (e.g. DNS wildcard).
+utils_monitor_validation_grace: 15
+# AgentClusterInstall debugInfo.state values that mean the install has not
+# started because host/cluster validations are not met.
+_utils_blocked_states:
+  - insufficient
+  - pending-for-input
 utils_unqualified_search_registries:
   - registry.redhat.io
   - docker.io
