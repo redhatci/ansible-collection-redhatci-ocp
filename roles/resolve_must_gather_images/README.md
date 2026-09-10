@@ -1,45 +1,53 @@
 # Resolve Must-Gather Images
 
-Resolves must-gather image short names to full image references using
-the `relatedImages` from installed operator ClusterServiceVersion (CSV)
-resources.
+Resolves must-gather hints to full image references using installed
+operator ClusterServiceVersion (CSV) resources.
 
-This allows pipeline configurations to specify short image names
-(e.g. `ptp-must-gather`) instead of hardcoding full image references
-with version tags or digests. The role queries the cluster to find the
-exact image reference matching the installed operator version.
+This allows pipeline configurations to specify hints (e.g. `ptp`,
+`acm`, `gitops`) instead of hardcoding full image references with
+version tags or digests. The role queries the cluster to find the
+exact image for the installed operator version.
 
 ## How It Works
 
-1. Queries all installed CSVs on the cluster.
-2. Collects all `relatedImages` entries from the CSVs.
-3. For each entry in `rmgi_images`:
-   - If it contains a `/`, it is treated as a full image reference and
-     passed through unchanged.
-   - Otherwise, it is matched (substring) against the `relatedImages`
-     name field and replaced with the full image reference.
-   - If no CSV match is found and `rmgi_fallback_registry` is non-empty,
-     the short name is prefixed with `rmgi_fallback_registry`. This
-     handles core OCP images (e.g. `ose-must-gather`) that are not
-     shipped by any operator CSV.
-4. Sets the resolved list as `rmgi_resolved_images`.
+1. Queries all installed CSVs on the cluster (`!olm.copiedFrom`).
+2. Identifies CSVs that match each hint using the CSV name, displayName,
+   annotations, and `relatedImages`.
+3. For each matching CSV, takes the image in this order:
+   1. `operators.openshift.io/must-gather-image` annotation
+   2. Other CSV annotations whose key contains `must-gather`
+      (e.g. Service Mesh `images.v1_28_8.must-gather`)
+   3. `spec.relatedImages` entries whose name or image path contains
+      `must-gather` or `mustgather` (e.g. OADP `oadp-mustgather-rhel9`)
+4. Full image references (containing `/`) are ignored; pass those to
+   must-gather separately.
+5. Hints that cannot be resolved are **omitted** from the result. The
+   role does not invent a registry path for missing operators.
+6. Duplicate pullspecs are returned once (e.g. `mce` and
+   `multicluster-engine`).
+7. Sets the resolved list as `rmgi_resolved_images`.
 
 ## Variables
 
-| Variable               | Default                            | Required | Description                                                                                                                                                                   |
-| ---------------------- | ---------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| rmgi_images            | `["ose-must-gather"]`              | No       | List of must-gather image entries to resolve                                                                                                                                  |
-| rmgi_fallback_registry | `"registry.redhat.io/openshift4"` | No       | Registry prefix for short names that cannot be resolved from any CSV. Core OCP images (e.g. `ose-must-gather`) are not in any CSV. Set to `""` to keep unresolved names as-is |
+| Variable    | Default | Required | Description                                                                                         |
+| ----------- | ------- | -------- | --------------------------------------------------------------------------------------------------- |
+| rmgi_images | `[]`    | No       | List of hints that identify operators. Image names and other full references are ignored. Unresolved hints are dropped. |
 
 ## Output
 
-| Variable                | Description                              |
-| ----------------------- | ---------------------------------------- |
-| rmgi_resolved_images    | List of resolved full image references   |
+| Variable             | Description                            |
+| -------------------- | -------------------------------------- |
+| rmgi_resolved_images | List of resolved full image references |
 
 ## Examples
 
-### Resolve PTP and standard must-gather images
+### Resolve common operator must-gather images
+
+`rmgi_images` is a list of hints that identify the operator, not
+image names. Prefer the CSV or package name when a shorter hint is
+ambiguous (for example `oadp-operator` instead of `oadp`). Some
+operators advertise the operator image itself as must-gather (for
+example Lifecycle Agent).
 
 ```yaml
 - name: Resolve must-gather images
@@ -47,61 +55,43 @@ exact image reference matching the installed operator version.
     name: redhatci.ocp.resolve_must_gather_images
   vars:
     rmgi_images:
-      - "ose-must-gather"
-      - "ptp-must-gather"
+      - acm
+      - mce
+      - multicluster-engine
+      - ptp
+      - gitops
+      - lvms
+      - oadp-operator
+      - migration-toolkit-virtualization
+      - istio
+      - lifecycle-agent
+      - kmm
+      - cluster-logging
+      - local-storage
+      - openshift-compliance
 ```
 
 This resolves to something like:
 
 ```yaml
 rmgi_resolved_images:
-  - "registry.redhat.io/openshift4/ose-must-gather@sha256:abc123..."
-  - "registry.redhat.io/openshift4/ptp-must-gather-rhel9@sha256:def456..."
+  - registry.redhat.io/rhacm2/acm-must-gather-rhel9@sha256:...
+  - registry.redhat.io/multicluster-engine/must-gather-rhel9@sha256:...
+  - registry.redhat.io/openshift5/ptp-must-gather-rhel9@sha256:...
+  - registry.redhat.io/openshift-gitops-1/must-gather-rhel9@sha256:...
+  - registry.redhat.io/lvms4/lvms-must-gather-rhel9@sha256:...
+  - registry.redhat.io/oadp/oadp-mustgather-rhel9@sha256:...
+  - registry.redhat.io/migration-toolkit-virtualization/mtv-must-gather-rhel8@sha256:...
+  - registry.redhat.io/openshift-service-mesh/istio-must-gather-rhel9@sha256:...
+  - registry.redhat.io/openshift4/lifecycle-agent-rhel9-operator@sha256:...
+  - registry.redhat.io/kmm/kernel-module-management-must-gather-rhel9@sha256:...
+  - registry.redhat.io/openshift5/ose-local-storage-mustgather-rhel9@sha256:...
+  - registry.redhat.io/compliance/openshift-compliance-must-gather-rhel8@sha256:...
 ```
 
-### Mix short names with full references
-
-```yaml
-- name: Resolve must-gather images
-  ansible.builtin.include_role:
-    name: redhatci.ocp.resolve_must_gather_images
-  vars:
-    rmgi_images:
-      - "ose-must-gather"
-      - "ptp-must-gather"
-      - "registry.redhat.io/openshift4/custom-must-gather:latest"
-```
-
-### Resolve core OCP images using fallback registry
-
-Core OCP images such as `ose-must-gather` are not shipped by any operator
-CSV, so they cannot be resolved from `relatedImages`. The `rmgi_fallback_registry`
-variable provides a fallback: unresolved short names are prefixed with it.
-
-```yaml
-- name: Resolve must-gather images with fallback for core OCP images
-  ansible.builtin.include_role:
-    name: redhatci.ocp.resolve_must_gather_images
-  vars:
-    rmgi_images:
-      - "ose-must-gather"        # core OCP image — resolved via fallback
-      - "ptp-must-gather"        # operator image — resolved from CSV
-    rmgi_fallback_registry: "registry.redhat.io/openshift4"
-```
-
-This resolves to something like:
-
-```yaml
-rmgi_resolved_images:
-  - "registry.redhat.io/openshift4/ose-must-gather"
-  - "registry.redhat.io/openshift4/ptp-must-gather-rhel9@sha256:def456..."
-```
-
-To disable the fallback and keep unresolved names as-is (original behaviour):
-
-```yaml
-    rmgi_fallback_registry: ""
-```
+`mce` and `multicluster-engine` resolve to the same pullspec and are
+returned once. Hints for operators that are not installed (for example
+`cluster-logging` above) are omitted.
 
 ## Filter Plugin
 
@@ -112,5 +102,5 @@ which can also be used standalone:
 - name: Resolve images inline
   ansible.builtin.set_fact:
     resolved: >-
-      {{ my_images | redhatci.ocp.resolve_must_gather(related_images_list) }}
+      {{ my_images | redhatci.ocp.resolve_must_gather(csv_lookup_list) }}
 ```

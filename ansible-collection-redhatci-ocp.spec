@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.2.EPOCH
+Version:        6.3.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,10 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+
+* Wed Sep  9 2026 Beto Rdz <josearod@redhat.com> - 6.3.EPOCH-VERS
+- Resolve must-gather images from CSV annotations; omit unresolved hints
+
 * Fri Aug 21 2026 Tony Garcia <tonyg@redhat.com> - 6.2.EPOCH-VERS
 - Default ArgoCD to operator-managed ClusterRole, require explicit AppProject
 
