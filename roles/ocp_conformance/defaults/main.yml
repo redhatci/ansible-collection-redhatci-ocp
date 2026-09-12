@@ -1,0 +1,17 @@
+---
+oc_version: "latest"
+oc_image: "registry.redhat.io/openshift4/ose-tests-rhel9:{{ oc_version }}"
+oc_kubeconfig: ""
+oc_suite: "openshift/conformance"
+oc_provider: ""
+oc_log_dir: "/tmp"
+oc_registry_auth: ""
+oc_ca_cert: ""
+oc_registry: ""
+oc_mirror_org: ""
+oc_compress: true
+oc_cleanup: true
+# Non-root UID:GID for the containers
+oc_container_user: "1001:0"
+oc_extra_volumes: []
+oc_extra_env: {}
