@@ -14,17 +14,15 @@ spec:
     - apiVersion: cdi.kubevirt.io/v1beta1
       kind: DataVolume
       metadata:
-        annotations:
-          cdi.kubevirt.io/storage.bind.immediate.requested: "true"
         name: os-disk-{{ vm.namespace | default(kvirt_vm_namespace) }}-{{ vm.name }}
       spec:
-        accessModes: [ "{{ vm.disk_mode | default(kvirt_vm_disk_mode)  }}" ]
-{% if vm.storage_class is defined %}
-        storageClassName: "{{ vm.storage_class }}"
-{% endif %}
         source:
           blank: {}
         storage:
+          accessModes: [ "{{ vm.disk_mode | default(kvirt_vm_disk_mode)  }}" ]
+{% if vm.storage_class is defined %}
+          storageClassName: "{{ vm.storage_class }}"
+{% endif %}
           resources:
             requests:
               storage: "{{ vm.disk_size | default(kvirt_vm_disk_size) }}"
