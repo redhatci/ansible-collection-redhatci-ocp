@@ -1,0 +1,12 @@
+---
+oc_image: "registry.redhat.io/openshift4/ose-tests-rhel9:latest"
+oc_kubeconfig: ""
+oc_suite: "openshift/conformance"
+oc_provider: ""
+oc_log_dir: "/tmp"
+oc_registry_auth: ""
+oc_ca_cert: ""
+oc_registry: ""
+oc_mirror_org: ""
+oc_compress: true
+oc_cleanup: true

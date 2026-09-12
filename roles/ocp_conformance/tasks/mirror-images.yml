@@ -1,0 +1,47 @@
+---
+- name: Gather the list of test images to mirror
+  vars:
+    _oc_uid: "{{ oc_container_uid | default(lookup('community.general.random_string', length=8, special=false), true) }}"
+    _kube_path: /tmp/kubeconfig
+    _oc_run_cmd: >-
+      set -o pipefail;
+      {% if oc_ca_cert | length %}update-ca-trust;{% endif %}
+      openshift-tests images --to-repository {{ oc_registry }}/{{ oc_mirror_org }}
+    _oc_vols: >-
+      {{
+         [oc_kubeconfig ~ ':' ~ _kube_path ~ ':Z']
+         + ([oc_ca_cert ~ ':/etc/pki/ca-trust/source/anchors/cert.pem:Z'] if (oc_ca_cert | length) else [])
+      }}
+  containers.podman.podman_container:
+    name: "ocp-conformance-imgs-{{ _oc_uid }}"
+    image: "{{ oc_image }}"
+    pull: newer
+    detach: false
+    remove: true
+    volumes: "{{ _oc_vols }}"
+    env:
+      KUBECONFIG: "{{ _kube_path }}"
+    command:
+      - bash
+      - -c
+      - "{{ _oc_run_cmd }}"
+  register: _oc_images
+  failed_when: false
+  no_log: true
+
+- name: Mirror the test images into the local registry
+  ansible.builtin.include_role:
+    name: redhatci.ocp.mirror_images
+  vars:
+    mi_images: >-
+      {{ _oc_images.stdout_lines
+         | select('ansible.builtin.search', oc_registry)
+         | map('regex_replace', oc_registry ~ '.*$', '')
+         | map('trim')
+         | list
+         | unique
+      }}
+    mi_registry: "{{ oc_registry }}"
+    mi_dst_org: "{{ oc_mirror_org }}"
+    mi_authfile: "{{ oc_registry_auth | default(omit) }}"
+    mi_is_type: idms

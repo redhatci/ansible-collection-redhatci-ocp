@@ -1,0 +1,77 @@
+---
+- name: Create the conformance logs directory
+  ansible.builtin.file:
+    path: "{{ oc_log_dir }}/logs"
+    state: directory
+    mode: "0755"
+
+- name: Run the openshift conformance suite
+  vars:
+    _oc_uid: "{{ oc_container_uid | default(lookup('community.general.random_string', length=8, special=false), true) }}"
+    _kube_path: /tmp/kubeconfig
+    _oc_run_cmd: >-
+      set -o pipefail;
+      {% if oc_ca_cert | length %}update-ca-trust;{% endif %}
+      openshift-tests run {{ oc_suite }}
+      {% if oc_registry | length %}--from-repository {{ oc_registry }}/{{ oc_mirror_org }}{% endif %}
+      {% if oc_provider | length %}--provider {{ oc_provider }}{% endif %}
+      --junit-dir /logs 2>&1 | tee /logs/conformance-run.log
+    _oc_vols: >-
+      {{
+         [oc_kubeconfig ~ ':' ~ _kube_path ~ ':Z']
+         + [oc_log_dir ~ '/logs:/logs:Z']
+         + ([oc_ca_cert ~ ':/etc/pki/ca-trust/source/anchors/cert.pem:Z'] if (oc_ca_cert | length) else [])
+      }}
+  containers.podman.podman_container:
+    name: "ocp-conformance-tests-{{ _oc_uid }}"
+    image: "{{ oc_image }}"
+    pull: newer
+    detach: false
+    remove: true
+    volumes: "{{ _oc_vols }}"
+    env:
+      KUBECONFIG: "{{ _kube_path }}"
+    command:
+      - bash
+      - -c
+      - "{{ _oc_run_cmd }}"
+  register: _oc_tests
+  failed_when: false
+  no_log: true
+
+- name: Find the JUnit result files and run log
+  ansible.builtin.find:
+    paths: "{{ oc_log_dir }}/logs"
+    patterns:
+      - "junit*.xml"
+      - "e2e-monitor-tests*.xml"
+      - "conformance-run.log"
+  register: _oc_junit_files
+
+- name: Copy the JUnit result files and run log to the top-level log directory
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ oc_log_dir }}/{{ item.path | basename }}"
+    remote_src: true
+    mode: "0644"
+  loop: "{{ _oc_junit_files.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+# Use ansible.builtin.archive and not community.general.archive until support
+# to ansible 2.9 is dropped, the latter collection requires ansible 2.10+
+- name: Compress the conformance logs  # noqa: fqcn[canonical]
+  ansible.builtin.archive:
+    path: "{{ oc_log_dir }}/logs"
+    dest: "{{ oc_log_dir }}/conformance-logs.tar.gz"
+    format: gz
+    mode: "0644"
+  when: oc_compress | bool
+
+- name: Remove the uncompressed logs directory
+  ansible.builtin.file:
+    path: "{{ oc_log_dir }}/logs"
+    state: absent
+  when:
+    - oc_compress | bool
+    - oc_cleanup | bool
