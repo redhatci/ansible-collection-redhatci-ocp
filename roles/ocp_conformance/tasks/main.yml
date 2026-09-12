@@ -1,0 +1,15 @@
+---
+- name: Check that the kubeconfig file exists
+  ansible.builtin.stat:
+    path: "{{ oc_kubeconfig }}"
+  register: _oc_kubeconfig_stat
+  failed_when: not _oc_kubeconfig_stat.stat.exists
+
+- name: Mirror test images
+  ansible.builtin.include_tasks: mirror-images.yml
+  when:
+    - oc_registry | length
+    - oc_mirror_org | length
+
+- name: Run the conformance suite
+  ansible.builtin.include_tasks: run-tests.yml

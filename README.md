@@ -102,6 +102,7 @@ Name | Description
 [redhatci.ocp.node_prep](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/node_prep/README.md) | [Preparation for IPI installer](https://github.com/openshift-kni/baremetal-deploy)
 [redhatci.ocp.oci_mirror](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/oci_mirror/README.md) | Mirror OpenShift operator catalogs and images using oc-mirror.
 [redhatci.ocp.ocp_add_users](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_add_users/README.md) | Add users to an OpenShift cluster through htpasswd Identity Provider.
+[redhatci.ocp.ocp_conformance](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_conformance/README.md) | Run the OpenShift conformance / end-to-end (e2e) test suites.
 [redhatci.ocp.ocp_remove_nodes](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_remove_nodes/README.md) | Remove (worker) nodes from an OCP cluster.
 [redhatci.ocp.ocp_logging](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_logging/README.md) | Enables the OCP logging subsystem.
 [redhatci.ocp.ocp_on_libvirt](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/ocp_on_libvirt/README.md) | Creation of a libvirt environment to install OCP

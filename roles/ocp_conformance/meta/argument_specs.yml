@@ -1,0 +1,79 @@
+---
+argument_specs:
+  main:
+    short_description: Run OpenShift conformance / e2e tests
+    description: >
+      Run the OpenShift conformance (end-to-end) test suites using the openshift-tests binary shipped in the
+      ose-tests image.
+      For disconected/air-gapped clusters the test images are mirrored into a local registry, triggered by
+      setting both `oc_registry` and `oc_mirror_org`.
+    options:
+      oc_image:
+        type: str
+        required: false
+        default: registry.redhat.io/openshift4/ose-tests-rhel9:latest
+        description: Container image (including tag) that provides the openshift-tests binary.
+      oc_container_uid:
+        type: str
+        required: false
+        description: >
+          Optional fixed suffix for the podman container name. When unset a random string is generated
+          for each run.
+      oc_kubeconfig:
+        type: str
+        required: true
+        description: Host path to the kubeconfig used to reach the target cluster.
+      oc_suite:
+        type: str
+        required: false
+        default: openshift/conformance
+        description: Conformance suite to execute.
+      oc_provider:
+        type: str
+        required: false
+        default: ""
+        description: >
+          Value for openshift-tests --provider. When empty the flag is omitted and the provider is
+          autodetected.
+      oc_log_dir:
+        type: str
+        required: false
+        default: /tmp
+        description: Host directory where the JUnit results and run log are written.
+      oc_registry_auth:
+        type: str
+        required: false
+        default: ""
+        description: >
+          Host path to a registry auth file. Required for mirroring in a disconnected environment.
+      oc_ca_cert:
+        type: str
+        required: false
+        default: ""
+        description: >
+          Optional host path to a CA certificate. When set it is mounted into the
+          tests container and update-ca-trust is run before openshift-tests.
+      oc_registry:
+        type: str
+        required: false
+        default: ""
+        description: >
+          Local registry host used as the mirror destination (passed to mirror_images
+          as mi_registry). Set together with oc_mirror_org to run disconnected.
+      oc_mirror_org:
+        type: str
+        required: false
+        default: ""
+        description: >
+          Destination organization/namespace in the mirror registry. Set together with
+          oc_registry to run disconnected.
+      oc_compress:
+        type: bool
+        required: false
+        default: true
+        description: Compress the JUnit results directory into a tarball.
+      oc_cleanup:
+        type: bool
+        required: false
+        default: true
+        description: Remove the uncompressed JUnit results directory after compression.
