@@ -62,9 +62,20 @@ spec:
 {% endif %}
 {% if vm.readiness_probe is defined and vm.readiness_probe %}
 {{ vm.readiness_probe | to_nice_yaml(indent=2) | indent(6, first=True) }}
+{% else %}
+      readinessProbe:
+        guestAgentPing: {}
+        initialDelaySeconds: 120
+        periodSeconds: 20
+        timeoutSeconds: 10
+        failureThreshold: 3
+        successThreshold: 3
 {% endif %}
 {% if vm.node_selector is defined %}
       nodeSelector: {{ vm.node_selector }}
+{% endif %}
+{% if vm.eviction_strategy is defined %}
+      evictionStrategy: {{ vm.eviction_strategy }}
 {% endif %}
       architecture: amd64
       domain:
