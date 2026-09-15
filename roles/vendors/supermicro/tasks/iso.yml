@@ -19,7 +19,7 @@
 - name: ISO config mount
   ansible.builtin.import_tasks: mount.yml
 
-- name: Set Boot for the SuperMicro # noqa var-spacing # linter wrongly detects a var
+- name: Set Boot for the SuperMicro  # noqa: jinja[spacing] # linter wrongly detects a var
   ansible.builtin.uri:
     url: "https://{{ bmc_address }}/redfish/v1/Systems/1"
     user: "{{ bmc_user }}"

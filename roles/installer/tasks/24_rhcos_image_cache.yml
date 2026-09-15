@@ -67,10 +67,10 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     setype: "{{ item[1] }}"
-    mode: '0775'
+    mode: "0775"
   with_nested:
     - ["{{ provision_cache_store }}", "{{ httpd_cache_files }}"]
-    - ['httpd_sys_content_t', '_default']
+    - ["httpd_sys_content_t", "_default"]
   delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
@@ -82,8 +82,8 @@
     group: "{{ ansible_user }}"
     mode: "0644"
   with_nested:
-    - ['magic.j2', 'httpd_conf.j2']
-    - ['magic', 'httpd.conf']
+    - ["magic.j2", "httpd_conf.j2"]
+    - ["magic", "httpd.conf"]
   delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
@@ -114,7 +114,7 @@
     dest: "{{ provision_cache_store }}{{ rhcos_qemu_uri }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0644'
+    mode: "0644"
     setype: httpd_sys_content_t
     checksum: "sha256:{{ rhcos_qemu_sha256 }}"
     timeout: 3600
@@ -128,7 +128,7 @@
     dest: "{{ provision_cache_store }}{{ rhcos_uri }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0644'
+    mode: "0644"
     setype: httpd_sys_content_t
     checksum: "sha256:{{ rhcos_sha256 }}"
     timeout: 3600
@@ -136,12 +136,12 @@
   delegate_to: "{{ url_passed | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
-  # use the hostname from the inventory to groups[registry][0] or provisioner[0] as the http://URL
-  # use a ternary to toggle between the url status
-  # use a ternary for the delegate_to
+# use the hostname from the inventory to groups[registry][0] or provisioner[0] as the http://URL
+# use a ternary to toggle between the url status
+# use a ternary for the delegate_to
 - name: Get URL of host providing the webserver
   ansible.builtin.set_fact:
-    host_url: "{{ (the_url.status in [200,301]) | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
+    host_url: "{{ (the_url.status in [200, 301]) | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
 - name: Set bootstrap image URL override if not provided by the user
@@ -197,7 +197,7 @@
   block:
     - name: Ensure user specific systemd instance are persistent
       ansible.builtin.command: |
-              /usr/bin/loginctl enable-linger {{ ansible_user }}
+        /usr/bin/loginctl enable-linger {{ ansible_user }}
 
     - name: Create systemd user directory
       ansible.builtin.file:
@@ -205,7 +205,7 @@
         state: directory
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
-        mode: '0775'
+        mode: "0775"
 
     - name: Copy the systemd service file
       ansible.builtin.copy:
@@ -224,25 +224,25 @@
         dest: "{{ ansible_user_dir }}/.config/systemd/user/container-cache.service"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
-        mode: '0644'
+        mode: "0644"
 
     - name: Reload systemd service
       ansible.builtin.systemd:
         daemon_reexec: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
     - name: Enable container-cache.service
       ansible.builtin.systemd:
         name: container-cache.service
         enabled: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
     - name: Start container-cache.service
       ansible.builtin.systemd:
         name: container-cache.service
         state: started
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
