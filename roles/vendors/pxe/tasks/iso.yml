@@ -6,6 +6,10 @@
     password: "{{ bmc_password }}"
     port: "{{ bmc_port }}"
     state: "off"
+  register: pxe_power_off
+  retries: "{{ pxe_ipmi_retries }}"
+  delay: "{{ pxe_ipmi_delay }}"
+  until: pxe_power_off is succeeded and pxe_power_off.powerstate == 'off'
 
 - name: Set server to boot from network
   community.general.ipmi_boot:
@@ -16,6 +20,10 @@
     bootdev: network
     persistent: false
     uefiboot: true
+  register: pxe_ipmi_boot
+  retries: "{{ pxe_ipmi_retries }}"
+  delay: "{{ pxe_ipmi_delay }}"
+  until: pxe_ipmi_boot is succeeded
 
 - name: PXE server Power on
   community.general.ipmi_power:
@@ -24,3 +32,7 @@
     password: "{{ bmc_password }}"
     port: "{{ bmc_port }}"
     state: boot
+  register: pxe_power_on
+  retries: "{{ pxe_ipmi_retries }}"
+  delay: "{{ pxe_ipmi_delay }}"
+  until: pxe_power_on is succeeded and pxe_power_on.powerstate == 'on'
