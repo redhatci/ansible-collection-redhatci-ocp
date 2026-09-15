@@ -1,0 +1,7 @@
+---
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: itms-oc-mirror
+spec:
+  imageTagMirrors: []
