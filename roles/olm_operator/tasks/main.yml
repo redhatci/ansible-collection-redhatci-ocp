@@ -59,7 +59,7 @@
     - operator_packagemanifest is defined
     - operator_packagemanifest.resources is defined
     - operator_packagemanifest.resources | length
-  ignore_errors: true
+  failed_when: false
   no_log: true
 
 - name: Set package as not found

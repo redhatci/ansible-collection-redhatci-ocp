@@ -17,7 +17,7 @@
     virtual_media:
       image_url: "{{ boot_iso_url }}"
     resource_id: 1
-  ignore_errors: true
+  failed_when: false
 
 - name: Set HPE OneTimeBoot Hdd
   community.general.redfish_command:

@@ -25,13 +25,13 @@
           - example-cnf-type=pkt-gen-app
           - job-name=job-{{ ecd_trex_app_cr_name }}
       register: _ecd_trex_app_logs
-      ignore_errors: true
+      failed_when: false
 
     - name: "Store logs"
       ansible.builtin.copy:
         content: "{{ _ecd_trex_app_logs.log }}"
         dest: "{{ ecd_job_logs_path }}/{{ ecd_trex_app_cr_name }}.log"
         mode: "0750"
-      when: not _ecd_trex_app_logs.failed
-      ignore_errors: true
+      when: _ecd_trex_app_logs.log is defined
+      failed_when: false
 ...

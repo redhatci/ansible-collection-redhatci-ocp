@@ -36,7 +36,7 @@
       ansible.builtin.uri:
         url: "{{ chart.chart_file }}"
       register: file_response
-      ignore_errors: true
+      failed_when: false
       run_once: true
 
     - name: "Chart file cannot be downloaded"
@@ -166,7 +166,7 @@
       --write-to-file
   args:
     chdir: "{{ work_chart_dir }}"
-  ignore_errors: true
+  failed_when: false
 
 - name: "Copy the report to the Job's log_dir"
   ansible.builtin.copy:
