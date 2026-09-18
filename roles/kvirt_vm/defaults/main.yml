@@ -23,4 +23,7 @@ kvirt_eviction_strategies:
   - LiveMigrate
   - LiveMigrateIfPossible
   - External
+kvirt_reboot_policies:
+  - reboot
+  - terminate
 ...
