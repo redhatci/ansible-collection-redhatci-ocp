@@ -18,4 +18,9 @@ kvirt_vm_interfaces:
 kvirt_vm_networks:
   - name: default
     pod: {}
+kvirt_eviction_strategies:
+  - None
+  - LiveMigrate
+  - LiveMigrateIfPossible
+  - External
 ...

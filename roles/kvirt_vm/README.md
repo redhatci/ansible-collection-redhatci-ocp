@@ -46,6 +46,7 @@ Always, Halted, Manual, RerunOnFailure.
 | annotations                   |                               | no          | A dictionary with annotations for the VM
 | affinity_group                |                               | no          | Name of affinity group to schedule VMs. Currently the template only defines Anti-affinity to deploy VMs in different nodes.
 | readiness_probe               |                               | no          | A dictionary with settings for the readiness probe
+| eviction_strategy             |                               | no          | When defined sets describes the strategy to follow when a node drain occurs, options are: `None`, `LiveMigrate`, `LiveMigrateIfPossible` or `External`.
 
 ## Usage examples
 
