@@ -77,6 +77,9 @@ spec:
 {% endif %}
       architecture: amd64
       domain:
+{% if vm.reboot_policy is defined and (vm.reboot_policy | lower) in kvirt_reboot_policies %}
+        rebootPolicy: {{ vm.reboot_policy | lower | capitalize }}
+{% endif %}
         cpu:
           cores: {{ vm.cpu_cores | default(kvirt_vm_cpu_cores) }}
           sockets: {{ vm.cpu_sockets | default(kvirt_vm_cpu_sockets) }}
