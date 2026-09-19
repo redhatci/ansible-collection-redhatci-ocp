@@ -1,0 +1,10 @@
+---
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: itms-oc-mirror
+spec:
+  imageTagMirrors:
+    - mirrors:
+        - registry.lab.example.com:5000/ubi8
+      source: registry.access.redhat.com/ubi8
