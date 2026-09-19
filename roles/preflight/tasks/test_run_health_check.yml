@@ -64,7 +64,7 @@
     name: "{{ current_operator_image }}"
     state: absent
   become: true
-  ignore_errors: true
+  failed_when: false
 
 - name: Change the ownership of oval report
   ansible.builtin.file:
