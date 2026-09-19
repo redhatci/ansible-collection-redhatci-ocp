@@ -24,9 +24,44 @@ Common misattributions to watch for:
 - `nmcli` → `community.general.nmcli` (NOT ansible.builtin)
 - `dci_*` → bare `dci_job` etc. (`ansible.legacy.dci_*` triggers fqcn[canonical])
 
-## ansible-test and Podman
+## Running tests locally (without docker)
 
-`ansible-test --docker` requires a real Docker daemon. When `docker` is
-a symlink to Podman, the JSON output format differs and ansible-test
-fails with "Unable to get container host server information." Use
-`--local` instead on Podman-only systems.
+**Reproducing a CI failure? Do not run `./hack/run_ansible_test.sh` locally.**
+That script *is* the CI harness: it uses `ansible-test --docker`, runs the
+full sanity/units/integration matrix across every Python version, twice
+(branch vs. `main`), and takes 10+ minutes — and it hard-requires a real
+Docker daemon (a Podman symlink makes it fail). You do **not** need to
+replicate that matrix to reproduce one failing check. Map the failing CI
+test to the single `--local` command below and iterate in seconds.
+`run_ansible_test.sh` is the CI harness — let CI run it.
+
+`./hack/run_ansible_test.sh` runs the full sanity/units/integration matrix
+in containers with `ansible-test --docker`. That is what CI does on Ubuntu
+and is the authoritative check, but it needs a working Docker daemon and
+runs every test twice (branch vs. `main`) — slow for iteration.
+
+For fast local feedback, or when Docker is unavailable, run individual
+`ansible-test` commands with `--local` instead of the script. `--local`
+uses the current Python interpreter and its installed dependencies, so no
+container is launched:
+
+```bash
+# sanity for a single module/plugin (fastest feedback)
+ansible-test sanity --local --requirements plugins/modules/<name>.py
+
+# whole suites
+ansible-test units --local --requirements
+ansible-test integration --local --requirements <target>
+```
+
+Notes:
+- `--local` runs against the current interpreter/venv. Drop `--python X.Y`
+  (used by the docker path to pick a version) — with `--local` it must
+  match the interpreter running ansible-test.
+- `--requirements` installs the command's test dependencies into the
+  current environment on first run.
+- `--docker` requires a real Docker daemon. When `docker` is a symlink to
+  Podman, the JSON output format differs and ansible-test fails with
+  "Unable to get container host server information." Use `--local` there.
+- The branch-vs-`main` regression diff is produced by CI when you open a
+  PR; you do not need to run `run_ansible_test.sh` locally to get it.
