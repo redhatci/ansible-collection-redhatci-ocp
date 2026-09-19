@@ -1,3 +1,4 @@
+---
 - name: Set hardware vendor to "kvm"
   ansible.builtin.set_fact:
     vendor: kvm
@@ -35,7 +36,7 @@
     name: "{{ item }}"
 
 - name: Extract UUID from xmls
-  loop: "{{ range(0, _ool_vms.list_vms | length ,1) | list }}"
+  loop: "{{ range(0, _ool_vms.list_vms | length, 1) | list }}"
   register: _ool_host_uuid
   community.general.xml:
     xmlstring: "{{ _ool_vms_xml.results[item].get_xml }}"
@@ -43,6 +44,6 @@
     content: text
 
 - name: Store KVM hosts UUID
-  loop: '{{ range(0, _ool_vms.list_vms | length ,1) | list  }}'
+  loop: "{{ range(0, _ool_vms.list_vms | length, 1) | list }}"
   ansible.builtin.set_fact:
-    ool_redfish_kvm_uuid: "{{ ool_redfish_kvm_uuid | default({}) | combine({ _ool_vms.list_vms[item]: _ool_host_uuid.results[item].matches[0].uuid }) }}"
+    ool_redfish_kvm_uuid: "{{ ool_redfish_kvm_uuid | default({}) | combine({_ool_vms.list_vms[item]: _ool_host_uuid.results[item].matches[0].uuid}) }}"
