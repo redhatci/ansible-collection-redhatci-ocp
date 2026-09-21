@@ -131,10 +131,11 @@ This task generates the `utils_acm_registries` variable containing the transform
 
 ### Example: Allow assisted-image-service HTTP egress
 
-Creates a NetworkPolicy so assisted-image-service can reach an OS image URL on the
-port from the URL (80 for http, 443 for https, or an explicit port such as 8080).
-Egress is allowed to all IPv4 (`0.0.0.0/0`) and IPv6 (`::/0`) ranges on that port.
-Runs only when the MultiClusterEngine CR has `spec.networkPolicies` set and
+Creates NetworkPolicies so assisted-service and assisted-image-service can resolve
+DNS and reach the Kubernetes API, and so assisted-image-service can reach an OS image
+URL on the port from the URL (80 for http, 443 for https, or an explicit port such as
+8080). The image-port egress is allowed to all IPv4 (`0.0.0.0/0`) and IPv6 (`::/0`)
+ranges. Runs only when the MultiClusterEngine CR has `spec.networkPolicies` set and
 `enabled: true`.
 
 ```yaml

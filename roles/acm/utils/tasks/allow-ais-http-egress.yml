@@ -1,10 +1,13 @@
 ---
-# Allow assisted-image-service egress when MultiClusterEngine has networkPolicies enabled:
-#   1. Same-namespace TCP 8090 to assisted-service (discovery.ign when serving ISOs).
-#      MCE's default AIS policy only allows DNS, kube API 6443, and HTTPS 443.
-#   2. HTTP(S) to the OS image URL port (e.g. http://host:8080/...).
-#      Port comes from the URL, defaulting to 80 (http) or 443 (https).
-#      Egress is allowed to all IPv4 (0.0.0.0/0) and IPv6 (::/0) ranges on that port.
+# Allow assisted-service and assisted-image-service egress when MultiClusterEngine
+# has networkPolicies enabled.
+#   1. DNS (TCP/UDP 53 and 5353)
+#   2. Kubernetes API (TCP 443 and 6443)
+#   3. Same-namespace TCP 8090 from assisted-image-service to assisted-service
+#      (discovery.ign when serving ISOs).
+#   4. HTTP(S) to the OS image URL port (e.g. http://host:8080/...).
+#   5. Mirror registry TCP 4443 from assisted-service.
+
 #
 # Required vars:
 #   utils_os_image_url: URL of the RHCOS live ISO (or other OS image) hosted for Assisted Service
@@ -37,6 +40,64 @@
     _utils_img_parts: "{{ utils_os_image_url | urlsplit }}"
     _utils_port: "{{ _utils_img_parts.port | default((_utils_img_parts.scheme == 'https') | ternary(443, 80), true) | int }}"
   block:
+    - name: "Create NetworkPolicy for assisted DNS egress"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: "{{ item }}-allow-dns"
+            namespace: multicluster-engine
+            labels:
+              app: "{{ item }}"
+          spec:
+            podSelector:
+              matchLabels:
+                app: "{{ item }}"
+            policyTypes:
+              - Egress
+            egress:
+              - ports:
+                  - protocol: TCP
+                    port: 53
+                  - protocol: UDP
+                    port: 53
+                  - protocol: TCP
+                    port: 5353
+                  - protocol: UDP
+                    port: 5353
+      loop:
+        - assisted-service
+        - assisted-image-service
+
+    - name: "Create NetworkPolicy for assisted API server egress"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: "{{ item }}-allow-api-server"
+            namespace: multicluster-engine
+            labels:
+              app: "{{ item }}"
+          spec:
+            podSelector:
+              matchLabels:
+                app: "{{ item }}"
+            policyTypes:
+              - Egress
+            egress:
+              - ports:
+                  - protocol: TCP
+                    port: 443
+                  - protocol: TCP
+                    port: 6443
+      loop:
+        - assisted-service
+        - assisted-image-service
+
     - name: "Create NetworkPolicy for assisted-image-service to assisted-service"
       kubernetes.core.k8s:
         state: present

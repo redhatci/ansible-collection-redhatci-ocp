@@ -103,9 +103,12 @@ argument_specs:
   allow-ais-http-egress:
     short_description: Allow assisted-image-service egress to an OS image HTTP(S) URL
     description: >
-      Create a NetworkPolicy that allows assisted-image-service pods to reach the port
-      used by an OS image URL (from the URL, defaulting to 80 for http or 443 for https)
-      on all IPv4 (0.0.0.0/0) and IPv6 (::/0) ranges. Skipped unless the
+      Create NetworkPolicies so assisted-service and assisted-image-service can resolve
+      DNS (TCP/UDP 53 and 5353), reach the Kubernetes API (TCP 443 and 6443), and so
+      assisted-image-service can reach the OS image URL port (from the URL, defaulting
+      to 80 for http or 443 for https) on all IPv4 (0.0.0.0/0) and IPv6 (::/0) ranges.
+      Also allows assisted-image-service to assisted-service on TCP 8090 and
+      assisted-service to a mirror registry on TCP 4443. Skipped unless the
       MultiClusterEngine CR has spec.networkPolicies.enabled set to true.
     options:
       utils_os_image_url:
