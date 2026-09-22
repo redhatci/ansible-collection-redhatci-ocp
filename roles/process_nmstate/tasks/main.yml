@@ -1,6 +1,7 @@
+---
 - name: "Set rendered_nmstate_yml from raw value for {{ target_name }}"
   ansible.builtin.set_fact:
-    rendered_nmstate_yml: "{{ network_config.raw  | to_yaml | string }}"
+    rendered_nmstate_yml: "{{ network_config.raw | to_yaml | string }}"
   when: network_config.raw is  defined
 
 - name: "Template rendered_nmstate_yml for {{ target_name }}"

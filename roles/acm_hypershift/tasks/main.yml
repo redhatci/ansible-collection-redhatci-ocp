@@ -73,10 +73,8 @@
     cmd: >
       set -x -o pipefail;
       oc adm release info
-      {{ ah_release_image }}
-      {%- if ah_allow_insecure_registry | bool %}
-      --insecure
-      {%- endif %}
+      {{ ah_release_image }}{%- if ah_allow_insecure_registry | bool %}
+      --insecure{%- endif %}
       --output json
       --registry-config={{ ah_pullsecret_file }} |
       jq -r .metadata.version

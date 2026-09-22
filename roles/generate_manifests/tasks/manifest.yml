@@ -12,7 +12,6 @@
     manifest_name: "{{ item.template.rsplit('.j2', 1)[0] | basename }}"
   when: ("template" in item)
 
-
 - name: Load manifest
   ansible.builtin.set_fact:
     manifest_content: "{{ lookup('file', item.file) }}"

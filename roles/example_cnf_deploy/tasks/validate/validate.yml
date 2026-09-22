@@ -1,5 +1,4 @@
 ---
-
 - name: "Set event list variable"
   ansible.builtin.set_fact:
     ecd_event_list: []
@@ -26,13 +25,13 @@
 
 - name: "Merge dropped events to custom object list"
   ansible.builtin.set_fact:
-    ecd_dropped_new: "{{ ecd_dropped_new + [{ 'eventTime': item.eventTime, 'reason': item.reason }] }}"
+    ecd_dropped_new: "{{ ecd_dropped_new + [{'eventTime': item.eventTime, 'reason': item.reason}] }}"
   loop: "{{ _ecd_dropped.resources }}"
   no_log: true
 
 - name: "Merge matched events to custom object list"
   ansible.builtin.set_fact:
-    ecd_matched_new: "{{ ecd_matched_new + [{ 'eventTime': item.eventTime, 'reason': item.reason }] }}"
+    ecd_matched_new: "{{ ecd_matched_new + [{'eventTime': item.eventTime, 'reason': item.reason}] }}"
   loop: "{{ _ecd_matched.resources }}"
   no_log: true
 
