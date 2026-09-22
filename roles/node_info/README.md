@@ -31,6 +31,7 @@ Gathers node hardware and kernel information from an OpenShift cluster. This rol
 - **Automatic node discovery**: Identifies all ready nodes in the cluster
 - **Kernel information**: Captures kernel version and command-line parameters for each node
 - **Hardware details**: Uses `lshw` to gather comprehensive hardware information
+- **Native tools fallback**: When `lshw` fails (e.g. no network access to install packages), collects equivalent data using tools already on RHCOS (`dmidecode`, `lscpu`, `lsblk`, `lspci`, `ip`, `ethtool`)
 - **Disconnected support**: Can build and use custom container image in air-gapped environments
 - **Best-effort execution**: Uses `ignore_errors: true` to continue on failures
 
