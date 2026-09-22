@@ -55,6 +55,8 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Fri Sep 11 2026 Tony Garcia <tonyg@redhat.com> - 6.4.EPOCH-VERS
+- Add ocp_conformance role to run conformance/e2e tests
 
 * Mon Sep 21 2026 Beto Rdz <josearod@redhat.com> - 6.4.EPOCH-VERS
 - Dropped support for custom egress network policies for assisted services
