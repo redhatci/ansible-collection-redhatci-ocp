@@ -19,7 +19,6 @@ Brings functionality that is commonly used among those roles.
 | utils_ocp_version                   | None                                | disconnect-agent                 | OpenShift version to use by the Assisted Images service.
 | utils_iso_url                       | None                                | disconnect-agent                 | The URL to the ISO image to use in the Assisted Images service.
 | utils_root_fs_url                   | None                                | disconnect-agent                 | The URL to the rootfs image to use in the Assisted Images service.
-| utils_os_image_url                  | None                                | allow-ais-http-egress            | OS/RHCOS image URL used to derive the egress port for assisted-image-service (80/443 by scheme, or the URL port).
 | utils_policy_retries                | 30                                  | validate-policies                | Number of retries for policy validation.
 | utils_policy_delay                  | 10                                  | validate-policies                | Delay in seconds between retries for policy validation.
 | utils_policy_namespace              | default                             | validate-policies                | The namespace where the ACM policies are deployed.
@@ -127,23 +126,6 @@ This task generates the `utils_acm_registries` variable containing the transform
   ansible.builtin.include_role:
     name: redhatci.ocp.acm.utils
     tasks_from: disconnect-agent
-```
-
-### Example: Allow assisted-image-service HTTP egress
-
-Creates a NetworkPolicy so assisted-image-service can reach an OS image URL on the
-port from the URL (80 for http, 443 for https, or an explicit port such as 8080).
-Egress is allowed to all IPv4 (`0.0.0.0/0`) and IPv6 (`::/0`) ranges on that port.
-Runs only when the MultiClusterEngine CR has `spec.networkPolicies` set and
-`enabled: true`.
-
-```yaml
-- name: Allow AIS egress to OS image webserver
-  vars:
-    utils_os_image_url: http://webserver.local:8080/rhcos-live.x86_64.iso
-  ansible.builtin.include_role:
-    name: redhatci.ocp.acm.utils
-    tasks_from: allow-ais-http-egress
 ```
 
 ### Example: Validate Policies
