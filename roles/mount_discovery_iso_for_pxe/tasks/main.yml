@@ -10,7 +10,7 @@
 
     - name: Mount the discovery iso
       ansible.posix.mount:
-        src: "{{ DOWNLOAD_DEST_PATH }}/{{ DOWNLOAD_DEST_FILE }}"
+        src: "{{ download_dest_path }}/{{ download_dest_file }}"
         path: /mnt/iso
         state: mounted
         fstype: iso9660

@@ -27,7 +27,7 @@
   vars:
     operator: "{{ ecd_operator.name }}" # noqa: redhat-ci[no-role-prefix]
     source: "{{ ecd_operator.source }}" # noqa: redhat-ci[no-role-prefix]
-    namespace: "{{ ecd_operator.namespace }}" # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ ecd_operator.namespace }}" # noqa: redhat-ci[no-role-prefix] var-naming[no-reserved]
     channel: "{{ ecd_operator.channel | default(omit) }}" # noqa: redhat-ci[no-role-prefix]
     operator_group_name: example-cnf-operator-group # noqa: redhat-ci[no-role-prefix]
     install_approval: "Automatic" # noqa: redhat-ci[no-role-prefix]
