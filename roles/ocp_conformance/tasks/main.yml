@@ -1,0 +1,29 @@
+---
+- name: Check that the kubeconfig file exists
+  ansible.builtin.stat:
+    path: "{{ oc_kubeconfig }}"
+  register: _oc_kubeconfig_stat
+  failed_when: not _oc_kubeconfig_stat.stat.exists
+
+- name: Check that the registry auth file exists
+  ansible.builtin.stat:
+    path: "{{ oc_registry_auth }}"
+  register: _oc_registry_auth_stat
+  failed_when: not _oc_registry_auth_stat.stat.exists
+
+- name: Validate the test container user is non-root
+  ansible.builtin.assert:
+    that:
+      - oc_container_user is match('^[1-9][0-9]*(:[0-9]+)?$')
+    fail_msg: >-
+      oc_container_user must be a non-zero numeric UID, optionally followed
+      by a numeric GID (for example, 1001:0).
+
+- name: Mirror test images
+  ansible.builtin.include_tasks: mirror-images.yml
+  when:
+    - oc_registry | length
+    - oc_mirror_org | length
+
+- name: Run the conformance suite
+  ansible.builtin.include_tasks: run-tests.yml
