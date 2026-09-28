@@ -17,24 +17,50 @@
   ansible.builtin.set_fact:
     fbc_tmp_dir: "{{ fbc_tmp_dir.path }}"
 
-- name: "Set opm cmd"
-  ansible.builtin.set_fact:
-    fbc_opm_cmd: "{{ fbc_tmp_dir }}/opm-rhel{{ ansible_distribution_major_version }} {{ fbc_opm_args }}"
-
 - name: "Download stable opm client"
   vars:
-    ocp_clients_url:
-      "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/\
-      opm-linux{{ ansible_distribution_major_version is version('9', '==') | ternary('-rhel9', '') }}.tar.gz"
-  ansible.builtin.unarchive:
-    src: "{{ ocp_clients_url }}"
-    dest: "{{ fbc_tmp_dir }}"
-    remote_src: true
-    mode: "0755"
-  register: result
-  retries: 3
-  delay: 10
-  until: result is not failed
+    fbc_opm_rhel_url: >-
+      https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux-rhel{{ ansible_distribution_major_version }}.tar.gz
+    fbc_opm_generic_url: >-
+      https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz
+  block:
+    - name: "Check whether the RHEL-specific opm client is published"
+      ansible.builtin.uri:
+        url: "{{ fbc_opm_rhel_url }}"
+        method: HEAD
+        status_code: [200, 404]
+      register: _fc_opm_rhel
+      retries: 3
+      delay: 10
+      until: _fc_opm_rhel.status | default(0) in [200, 404]
+
+    - name: "Download stable opm client"
+      vars:
+        fbc_opm_url: >-
+          {{
+            (_fc_opm_rhel.status | int == 200)
+            | ternary(fbc_opm_rhel_url, fbc_opm_generic_url)
+          }}
+      ansible.builtin.unarchive:
+        src: "{{ fbc_opm_url }}"
+        dest: "{{ fbc_tmp_dir }}"
+        remote_src: true
+        mode: "0755"
+      register: _fc_opm_download
+      retries: 3
+      delay: 10
+      until: _fc_opm_download is not failed
+
+- name: "Find the extracted opm binary"
+  ansible.builtin.find:
+    paths: "{{ fbc_tmp_dir }}"
+    patterns: "opm*"
+    file_type: file
+  register: _fc_opm_binaries
+
+- name: "Set opm cmd"
+  ansible.builtin.set_fact:
+    fbc_opm_cmd: "{{ _fc_opm_binaries.files[0].path }} {{ fbc_opm_args }}"
 
 - name: "Create index build directory"
   ansible.builtin.file:

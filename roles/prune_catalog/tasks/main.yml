@@ -43,24 +43,50 @@
       ansible.builtin.set_fact:
         pc_tmp_dir: "{{ pc_tmp_dir.path }}"
 
-    - name: "Set opm cmd"
-      ansible.builtin.set_fact:
-        pc_opm_cmd: "{{ pc_tmp_dir }}/opm-rhel{{ ansible_distribution_major_version }} {{ pc_opm_args }}"
-
     - name: "Download stable opm client"
       vars:
-        ocp_clients_url:
-          "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable\
-          /opm-linux{{ ansible_distribution_major_version is version('9', '==') | ternary('-rhel9', '') }}.tar.gz"
-      ansible.builtin.unarchive:
-        src: "{{ ocp_clients_url }}"
-        dest: "{{ pc_tmp_dir }}"
-        remote_src: true
-        mode: "0755"
-      register: result
-      retries: 3
-      delay: 10
-      until: result is not failed
+        pc_opm_rhel_url: >-
+          https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux-rhel{{ ansible_distribution_major_version }}.tar.gz
+        pc_opm_generic_url: >-
+          https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz
+      block:
+        - name: "Check whether the RHEL-specific opm client is published"
+          ansible.builtin.uri:
+            url: "{{ pc_opm_rhel_url }}"
+            method: HEAD
+            status_code: [200, 404]
+          register: _pc_opm_rhel
+          retries: 3
+          delay: 10
+          until: _pc_opm_rhel.status | default(0) in [200, 404]
+
+        - name: "Download stable opm client"
+          vars:
+            pc_opm_url: >-
+              {{
+                (_pc_opm_rhel.status | int == 200)
+                | ternary(pc_opm_rhel_url, pc_opm_generic_url)
+              }}
+          ansible.builtin.unarchive:
+            src: "{{ pc_opm_url }}"
+            dest: "{{ pc_tmp_dir }}"
+            remote_src: true
+            mode: "0755"
+          register: _pc_opm_download
+          retries: 3
+          delay: 10
+          until: _pc_opm_download is not failed
+
+    - name: "Find the extracted opm binary"
+      ansible.builtin.find:
+        paths: "{{ pc_tmp_dir }}"
+        patterns: "opm*"
+        file_type: file
+      register: _pc_opm_binaries
+
+    - name: "Set opm cmd"
+      ansible.builtin.set_fact:
+        pc_opm_cmd: "{{ _pc_opm_binaries.files[0].path }} {{ pc_opm_args }}"
 
     - name: "Create index working directory"
       ansible.builtin.file:

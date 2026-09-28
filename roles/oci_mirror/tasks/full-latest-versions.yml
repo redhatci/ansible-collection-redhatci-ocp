@@ -4,7 +4,7 @@
     cmd: >
       set -eo pipefail;
       umask 0022 &&
-      {{ _om_tmp_dir.path }}/opm-rhel{{ ansible_distribution_major_version }} render {{ om_source_index }} |
+      {{ om_opm_bin }} render {{ om_source_index }} |
       {{ _om_tmp_dir.path }}/jq -r 'select(.schema == "olm.package") | .name' |
       sort -u
   register: _om_cmd_output
