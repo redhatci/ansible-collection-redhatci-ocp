@@ -25,18 +25,48 @@
 
 - name: Download stable opm client
   vars:
-    ocp_clients_url:
-      "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable\
-      /opm-linux{{ ansible_distribution_major_version is version('9', '==') | ternary('-rhel9', '') }}.tar.gz"
-  ansible.builtin.unarchive:
-    src: "{{ ocp_clients_url }}"
-    dest: "{{ _om_tmp_dir.path }}"
-    remote_src: true
-    mode: "0755"
-  register: _om_get_opm
-  retries: 3
-  delay: 10
-  until: _om_get_opm is success
+    om_opm_rhel_url: >-
+      https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux-rhel{{ ansible_distribution_major_version }}.tar.gz
+    om_opm_generic_url: >-
+      https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/opm-linux.tar.gz
+  block:
+    - name: Check whether the RHEL-specific opm client is published
+      ansible.builtin.uri:
+        url: "{{ om_opm_rhel_url }}"
+        method: HEAD
+        status_code: [200, 404]
+      register: _om_opm_rhel
+      retries: 3
+      delay: 10
+      until: _om_opm_rhel.status | default(0) in [200, 404]
+
+    - name: Download stable opm client
+      vars:
+        om_opm_url: >-
+          {{
+            (_om_opm_rhel.status | int == 200)
+            | ternary(om_opm_rhel_url, om_opm_generic_url)
+          }}
+      ansible.builtin.unarchive:
+        src: "{{ om_opm_url }}"
+        dest: "{{ _om_tmp_dir.path }}"
+        remote_src: true
+        mode: "0755"
+      register: _om_get_opm
+      retries: 3
+      delay: 10
+      until: _om_get_opm is success
+
+- name: Find the extracted opm binary
+  ansible.builtin.find:
+    paths: "{{ _om_tmp_dir.path }}"
+    patterns: "opm*"
+    file_type: file
+  register: _om_opm_binaries
+
+- name: Set opm binary path
+  ansible.builtin.set_fact:
+    om_opm_bin: "{{ _om_opm_binaries.files[0].path }}"
 
 - name: Download jq binary
   ansible.builtin.get_url:
