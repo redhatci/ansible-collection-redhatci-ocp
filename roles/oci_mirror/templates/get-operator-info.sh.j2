@@ -3,7 +3,7 @@ umask 0022
 
 catalog="{{ catalog }}"
 operators="{{ operators | join(' ') }}"
-opm_bin="{{ opm_bin }}"
+opm_bin="{{ ot_bin.opm }}"
 jq_bin="{{ jq_bin }}"
 
 opm_render_output=$("$opm_bin" render "$catalog" 2>/dev/null)
