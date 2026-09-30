@@ -107,7 +107,7 @@
       retries: 3
       delay: 10
 
-    - name: "Render additional catalogs"
+    - name: "Record catalog render files"
       vars:
         extra_catalogs: >-
           {{ ((pc_operators | type_debug == "dict") | ternary(pc_operators, {})) |
@@ -117,13 +117,29 @@
              list | unique |
              difference([pc_source_catalog])
           }}
+      block:
+        - name: "Record the source catalog render file"
+          ansible.builtin.set_fact:
+            pc_catalog_files: "{{ {pc_source_catalog: pc_tmp_dir + '/index-packages'} }}"
+            pc_extra_catalogs: "{{ extra_catalogs }}"
+
+        - name: "Record each additional catalog render file"
+          ansible.builtin.set_fact:
+            pc_catalog_files: >-
+              {{ pc_catalog_files | combine({
+                   item: pc_tmp_dir + '/index-' + (item | regex_replace('[^A-Za-z0-9._-]', '_'))
+                 }) }}
+          loop: "{{ pc_extra_catalogs }}"
+          when: pc_extra_catalogs | length > 0
+
+    - name: "Render additional catalogs"
       ansible.builtin.shell:
         chdir: "{{ pc_tmp_dir }}"
         cmd: >
           set -x;
-          {{ pc_opm_cmd }} render {{ catalog }} >>
-          index-packages
-      loop: "{{ extra_catalogs }}"
+          {{ pc_opm_cmd }} render {{ catalog }} >
+          {{ pc_catalog_files[catalog] }}
+      loop: "{{ pc_extra_catalogs }}"
       loop_control:
         loop_var: catalog
       register: _pc_render_additional
@@ -132,7 +148,7 @@
       retries: 3
       delay: 10
       when:
-        - extra_catalogs | length > 0
+        - pc_extra_catalogs | length > 0
 
     - name: "Extract the listed channels for each operator"
       when: pc_operators | type_debug == "dict"
