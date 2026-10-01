@@ -8,13 +8,24 @@
   no_log: true
   until:
     - all_policies.resources is defined
-    - all_policies.resources | length > 0
     - >-
       all_policies.resources
-      | json_query("[?status.compliant && status.compliant != 'Compliant' && spec.remediationAction == 'enforce'].metadata.name")
+      | selectattr('metadata.name', 'match',
+      (utils_policy_name_prefix | default('')) | regex_escape)
+      | list | length > 0
+    - >-
+      all_policies.resources
+      | selectattr('metadata.name', 'match',
+      (utils_policy_name_prefix | default('')) | regex_escape)
+      | list
+      | json_query("[?status.compliant && status.compliant != 'Compliant'
+      && spec.remediationAction == 'enforce'].metadata.name")
       | length == 0
     - >-
       all_policies.resources
+      | selectattr('metadata.name', 'match',
+      (utils_policy_name_prefix | default('')) | regex_escape)
+      | list
       | json_query("[?status.compliant && status.compliant != 'Compliant'].metadata.name")
       | length == 0
   retries: "{{ utils_policy_retries }}"
@@ -23,19 +34,23 @@
 
 - name: Validate ACM policies
   vars:
-    non_compliant_policies: >-
+    _selected_policies: >-
       {{ all_policies.resources
+      | selectattr('metadata.name', 'match', (utils_policy_name_prefix | default('')) | regex_escape)
+      | list }}
+    non_compliant_policies: >-
+      {{ _selected_policies
       | json_query("[?status.compliant && status.compliant != 'Compliant'].metadata.name") }}
     non_compliant_enforced_policies: >-
-      {{ all_policies.resources
+      {{ _selected_policies
       | json_query("[?status.compliant && status.compliant != 'Compliant' && spec.remediationAction == 'enforce'].metadata.name") }}
   when:
     - all_policies.resources is defined
-    - all_policies.resources | length > 0
+    - _selected_policies | length > 0
   block:
     - name: List all policies
       ansible.builtin.debug:
-        msg: "Policies: {{ all_policies.resources | json_query('[].metadata.name') }}"
+        msg: "Policies: {{ _selected_policies | json_query('[].metadata.name') }}"
 
     - name: List non-compliant enforced policies
       ansible.builtin.debug:

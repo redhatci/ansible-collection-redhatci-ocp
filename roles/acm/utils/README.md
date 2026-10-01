@@ -22,6 +22,7 @@ Brings functionality that is commonly used among those roles.
 | utils_policy_retries                | 30                                  | validate-policies                | Number of retries for policy validation.
 | utils_policy_delay                  | 10                                  | validate-policies                | Delay in seconds between retries for policy validation.
 | utils_policy_namespace              | default                             | validate-policies                | The namespace where the ACM policies are deployed.
+| utils_policy_name_prefix            | ""                                  | validate-policies                | When set, only policies whose names start with this prefix are checked.
 | utils_policy_strict                 | true                                | validate-policies                | Policy compliance level. If true, the check fails if any policy is non-compliant.
 
 ## Utilities
