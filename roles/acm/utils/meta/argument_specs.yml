@@ -120,6 +120,13 @@ argument_specs:
         required: false
         description: The namespace where the ACM policies are deployed.
         default: default
+      utils_policy_name_prefix:
+        type: str
+        required: false
+        default: ""
+        description: >
+          When set, only policies whose names start with this prefix are checked.
+          When empty, every policy in the namespace is checked.
       utils_policy_strict:
         type: bool
         required: false
