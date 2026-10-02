@@ -5,6 +5,7 @@ This role performs the Advanced Cluster Management (ACM) post-installation tasks
 1. Validates that an storage class is present.
 1. Installation of multicluster-engine and OADP operators
 1. Creation of a multicluster engine
+1. Enable MCE `image-based-install-operator` (IBIO), preserving other `spec.overrides.components` entries
 1. Disable the ClusterImageSet and channel subscriptions for disconnected environments.
 
 The configuration of the ACM hub can be customized by using the following variables:
