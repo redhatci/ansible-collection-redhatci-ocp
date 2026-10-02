@@ -1,0 +1,33 @@
+---
+- name: Validate parameters
+  ansible.builtin.assert:
+    that:
+      - ot_tools is defined
+      - ot_tools | type_debug == "list"
+      - ot_tools | length > 0
+      - ot_tools | difference(ot_supported) | length == 0
+    fail_msg: >-
+      ot_tools must be a non-empty list of supported tools
+      ({{ ot_supported | join(', ') }}).
+
+- name: Create a temporary directory for the tools
+  when: ot_dest | length == 0
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: ocp_tools.
+  register: _ot_tmp_dir
+
+# ot_dir is the working directory; ot_bin accumulates the resolved binary paths
+# as each tool is installed. The download URL (_ot_url) is derived from the
+# inputs in vars/main.yml.
+- name: Set output variables
+  ansible.builtin.set_fact:
+    ot_bin: {}
+    ot_dir: "{{ ot_dest if ot_dest | length > 0 else _ot_tmp_dir.path }}"
+
+- name: Set up the requested tools
+  ansible.builtin.include_tasks: "install-{{ ot_tool }}.yml"
+  loop: "{{ ot_tools }}"
+  loop_control:
+    loop_var: ot_tool
+    label: "{{ ot_tool }}"
