@@ -25,6 +25,7 @@ The configuration of the ACM hub can be customized by using the following variab
 | hub_fs_volume_size           | 50Gi                     | No        | This value specifies how much storage is allocated for storing logs, manifests, and kubeconfig files for the clusters. You might need to use a higher value if there are many clusters
 | hub_img_volume_size          | 80Gi                     | No        | This value specifies how much storage is allocated for the images of the clusters. You need to allow 1 GB of image storage for each instance of Red Hat Enterprise Linux CoreOS
 | hub_img_svc_skip_tls_verify  | false                    | No        | Skip TLS verification in the AgentServiceConfig for image service operations. Useful in environments with self-signed certificates or certificate issues.
+| hub_enable_ibio              | false                    | No        | Enable MCE `image-based-install-operator` (IBIO) for Image-Based Install. This is an MCE override, not MultiClusterHub.
 | hub_os_images                | <Undefined>              | No        | Locations of OS Images to be used when generating the discovery ISOs for different OpenShift versions. See [OS images](./README.md#os-images). It is mandatory for disconnected environments.
 
 ## Requirements
@@ -61,6 +62,7 @@ See below an example of how to use the acm_setup role to configure ACM.
       hub_availabilityConfig: High
       hub_disconnected: true
       hub_img_svc_skip_tls_verify: true
+      hub_enable_ibio: true
       hub_os_images:
         - openshiftVersion: "4.15.0-0.nightly-2024-04-21-051624"
           version: "4.15"
