@@ -17,6 +17,65 @@
     completion_percentage: "{{ install_status.resources[0].status.progress.totalPercentage }}"
     state_info: "{{ install_status.resources[0].status.debugInfo.state }}"
 
+- name: Get blocking conditions
+  ansible.builtin.set_fact:
+    validated_condition: >-
+      {{
+        install_status.resources[0].status.conditions | default([])
+        | selectattr('type', 'equalto', 'Validated')
+        | list | first | default({})
+      }}
+    requirements_condition: >-
+      {{
+        install_status.resources[0].status.conditions | default([])
+        | selectattr('type', 'equalto', 'RequirementsMet')
+        | list | first | default({})
+      }}
+
+# Query every Agent in the namespace, then scope to the ones bound to this
+# ClusterDeployment via spec.clusterDeploymentName. When multiple clusters
+# share a namespace this prevents unrelated Agents from skewing the count and
+# validation diagnostics below.
+- name: Get all agents in the namespace
+  kubernetes.core.k8s_info:
+    api_version: agent-install.openshift.io/v1beta1
+    kind: Agent
+    namespace: "{{ utils_cluster_namespace }}"
+  register: _ns_agents
+  no_log: true
+
+- name: Scope agents to this cluster deployment
+  ansible.builtin.set_fact:
+    _cluster_agents:
+      resources: >-
+        {{
+          _ns_agents.resources | default([])
+          | selectattr('spec.clusterDeploymentName', 'defined')
+          | selectattr('spec.clusterDeploymentName.name',
+                       'equalto', utils_cluster_name)
+          | list
+        }}
+
+- name: Build detailed blocker diagnostics
+  vars:
+    _expected_agents: >-
+      {{
+        install_status.resources[0].spec.provisionRequirements.controlPlaneAgents
+        | default(0) | int
+      }}
+    _agent_validated_messages: >-
+      {{
+        _cluster_agents.resources | default([])
+        | map(attribute='status.conditions') | select | list
+        | map('selectattr', 'type', 'equalto', 'Validated')
+        | map('list') | map('first') | select | list
+        | map(attribute='message') | select | list
+      }}
+  ansible.builtin.set_fact:
+    _agents_registered: "{{ _cluster_agents.resources | default([]) | length }}"
+    _agents_expected: "{{ _expected_agents }}"
+    _host_validation_detail: "{{ _agent_validated_messages | join(' | ') }}"
+
 - name: Print completion status
   ansible.builtin.debug:
     msg:
@@ -28,6 +87,68 @@
   when:
     - completion_percentage | int != 100
   block:
+    - name: Track how long the install has been blocked
+      # Only accrue fail-fast time once at least one host has registered.
+      # Terminal validation failures (DNS wildcard, insufficient resources,
+      # hostname/CIDR mismatch, ...) are host-level Agent validations that
+      # cannot even be evaluated before a host registers. With zero registered
+      # agents, "insufficient + validations failing" simply means the node is
+      # still booting/inspecting, which is governed by utils_monitor_timeout,
+      # not this terminal-blocker fail-fast.
+      ansible.builtin.set_fact:
+        validation_failing_time: >-
+          {{
+            (validation_failing_time | default(0) | int + utils_monitor_wait_time | int)
+            if (
+                 (_agents_registered | int > 0)
+                 and (state_info in _utils_blocked_states)
+                 and (
+                       (validated_condition.status | default('True') == 'False')
+                       or (requirements_condition.status | default('True') == 'False')
+                     )
+               )
+            else 0
+          }}
+
+    - name: Fail fast on persistent terminal install blocker
+      vars:
+        # Prefer the most specific, non-empty message available.
+        # The cluster-level Validated.message is often just a header
+        # (e.g. "The cluster's validations are failing: ") with no detail
+        # until a host registers, so fall back to per-host Agent detail,
+        # then to the RequirementsMet reason/message.
+        _validated_reason: "{{ validated_condition.reason | default('') }}"
+        _requirements_reason: "{{ requirements_condition.reason | default('') }}"
+        _validated_message: "{{ validated_condition.message | default('') | trim }}"
+        _requirements_message: "{{ requirements_condition.message | default('') | trim }}"
+        _blocker_message: >-
+          {{
+            _validated_message
+            if (
+                 _validated_message
+                 and _validated_message != "The cluster's validations are failing:"
+               )
+            else (
+              _host_validation_detail
+              if _host_validation_detail else (
+                _requirements_message
+                if _requirements_message
+                else 'The cluster is blocked on failing validations.'
+              )
+            )
+          }}
+      ansible.builtin.fail:
+        msg:
+          - >-
+            Installation blocked for {{ utils_monitor_validation_grace }} min
+            (state: {{ state_info }}, Validated={{ validated_condition.status | default('?') }}/{{ _validated_reason }},
+            RequirementsMet={{ requirements_condition.status | default('?') }}/{{ _requirements_reason }}).
+          - "Registered agents: {{ _agents_registered }}/{{ _agents_expected }} expected."
+          - "{{ _blocker_message }}"
+      when:
+        - utils_monitor_validation_grace | int > 0
+        - validation_failing_time | int >= ( utils_monitor_validation_grace | int )
+
     - name: Waiting for installation in min - {{ utils_monitor_wait_time }}
       ansible.builtin.pause:
         minutes: "{{ utils_monitor_wait_time }}"
