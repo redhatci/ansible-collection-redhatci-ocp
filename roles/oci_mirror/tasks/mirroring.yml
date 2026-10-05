@@ -11,7 +11,7 @@
   ansible.builtin.shell:
     cmd: >
       umask 0022 &&
-      {{ _om_tmp_dir.path }}/oc-mirror --v2 --config={{ om_imageset_config_path }}
+      {{ ot_bin['oc-mirror'] }} --v2 --config={{ om_imageset_config_path }}
       --workspace file://{{ _om_tmp_dir.path }}
       docker://{{ om_target }}
       --port {{ _om_ephemeral_port.port }}

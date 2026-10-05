@@ -1,0 +1,42 @@
+---
+- name: Download and set up the oc-mirror client
+  vars:
+    _ot_oc_mirror_rhel_url: >-
+      {{ _ot_url }}/oc-mirror.rhel{{ ansible_distribution_major_version }}.tar.gz
+    _ot_oc_mirror_generic_url: "{{ _ot_url }}/oc-mirror.tar.gz"
+  block:
+    - name: Check whether the RHEL-specific oc-mirror build is published
+      ansible.builtin.uri:
+        url: "{{ _ot_oc_mirror_rhel_url }}"
+        method: HEAD
+        status_code: [200, 404]
+      register: _ot_oc_mirror_rhel
+      retries: "{{ ot_retries }}"
+      delay: "{{ ot_delay }}"
+      until: _ot_oc_mirror_rhel.status | default(0) in [200, 404]
+
+    - name: Download and extract the oc-mirror binary
+      vars:
+        _ot_oc_mirror_url: >-
+          {{
+            (_ot_oc_mirror_rhel.status | int == 200)
+            | ternary(_ot_oc_mirror_rhel_url, _ot_oc_mirror_generic_url)
+          }}
+      ansible.builtin.unarchive:
+        src: "{{ _ot_oc_mirror_url }}"
+        dest: "{{ ot_dir }}"
+        remote_src: true
+        mode: "0755"
+        extra_opts:
+          - oc-mirror
+      register: _ot_oc_mirror_get
+      retries: "{{ ot_retries }}"
+      delay: "{{ ot_delay }}"
+      until: _ot_oc_mirror_get is success
+
+    - name: Register the oc-mirror binary path
+      vars:
+        _ot_tools:
+          oc-mirror: "{{ '/'.join([ot_dir, 'oc-mirror']) }}"
+      ansible.builtin.set_fact:
+        ot_bin: "{{ ot_bin | combine(_ot_tools) }}"

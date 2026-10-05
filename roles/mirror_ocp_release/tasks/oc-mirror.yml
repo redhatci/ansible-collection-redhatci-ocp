@@ -74,16 +74,15 @@
       ansible.builtin.debug:
         msg: "{{ _mor_imageset_config.content | b64decode }}"
 
-    - name: Extract latest oc-mirror
-      ansible.builtin.unarchive:
-        src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/oc-mirror.tar.gz"
-        dest: "{{ _mor_tmp_dir.path }}"
-        remote_src: true
-        mode: "0755"
-      register: _mor_get_oc_mirror
-      retries: 3
-      delay: 60
-      until: _mor_get_oc_mirror is success
+    - name: Download latest oc-mirror client
+      ansible.builtin.include_role:
+        name: redhatci.ocp.ocp_tools
+      vars:
+        ot_tools:
+          - oc-mirror
+        ot_dest: "{{ _mor_tmp_dir.path }}"
+        ot_version: "latest"
+        ot_delay: 60
 
     - name: Find an available ephemeral port for oc-mirror
       redhatci.ocp.find_available_port:
@@ -94,7 +93,7 @@
       ansible.builtin.shell:
         cmd: >
           umask 0022 && env -u REGISTRY_AUTH_FILE
-          {{ _mor_tmp_dir.path }}/oc-mirror --v2 --config={{ _mor_tmp_dir.path }}/ocp-release.yaml
+          {{ ot_bin['oc-mirror'] }} --v2 --config={{ _mor_tmp_dir.path }}/ocp-release.yaml
           --authfile {{ mor_auths_file }}
           --workspace file://{{ _mor_tmp_dir.path }}
           docker://{{ mor_registry_url }}/{{ mor_registry_path }}

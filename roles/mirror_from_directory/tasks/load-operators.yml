@@ -13,24 +13,20 @@
     msg: "Manifest directory {{ image_dir }}"
 
 - name: "Download stable oc-mirror plugin"
+  ansible.builtin.include_role:
+    name: redhatci.ocp.ocp_tools
   vars:
-    ocp_mirror_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable-4.14/oc-mirror.tar.gz"
-  ansible.builtin.unarchive:
-    src: "{{ ocp_mirror_url }}"
-    dest: "{{ image_dir }}"
-    remote_src: true
-    mode: "0755"
-  register: result
-  retries: 3
-  delay: 10
-  until: result is not failed
+    ot_tools:
+      - oc-mirror
+    ot_dest: "{{ image_dir }}"
 
 - name: "Load Images to {{ mfd_local_registry }}"
   ansible.builtin.shell:
     chdir: "{{ image_dir }}"
     cmd: >
       set -x;
-      {{ image_dir }}/oc-mirror
+      {{ ot_bin['oc-mirror'] }}
+      --v1
       --from={{ mfd_operators_dir }}
       docker://{{ mfd_local_registry }}/{{ mfd_local_registry_path }}
       --skip-metadata-check

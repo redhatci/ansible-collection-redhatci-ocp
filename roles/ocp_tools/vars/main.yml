@@ -3,6 +3,7 @@
 ot_supported:
   - opm
   - oc
+  - oc-mirror
 
 ot_mirror_root: "https://mirror.openshift.com/pub"
 

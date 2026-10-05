@@ -29,6 +29,7 @@ This is the list of tools currently supported by the role:
 
 - opm
 - oc (includes `kubectl`)
+- oc-mirror (GA/`stable`/`latest` streams only, no dev preview yet)
 
 ## Version handling
 
