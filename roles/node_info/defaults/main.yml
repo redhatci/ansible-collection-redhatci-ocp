@@ -13,4 +13,13 @@ ni_local_registry: ""
 ni_pullsecret_file: ""
 ni_tag: "latest"
 ni_local_img_path: "/dci/lshw"
+
+# BMC out-of-band firmware collection settings
+# Set to true to enable Redfish BMC data collection
+ni_collect_bmc: false
+# Map of node_name -> BMC hostname/IP address for Redfish access
+ni_bmc_address: {}
+# BMC credentials (use vault or secrets management in production)
+ni_bmc_username: ""
+ni_bmc_password: ""
 ...

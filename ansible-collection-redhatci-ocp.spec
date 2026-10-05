@@ -56,6 +56,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 %changelog
 
+* Mon Oct  5 2026 Frederic Lepied <flepied@redhat.com> - 6.5.EPOCH-VERS
+- Extend node_info role to collect BMC firmware version out-of-band via Redfish
+
 * Tue Sep 30 2026 Tony Garcia <tonyg@redhat.com> - 6.5.EPOCH-VERS
 - Add ocp_tools role
 
