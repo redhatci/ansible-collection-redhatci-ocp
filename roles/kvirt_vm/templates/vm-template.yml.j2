@@ -48,15 +48,9 @@ spec:
 {% endfor %}
 {% endif %}
     spec:
-{% if vm.affinity_group is defined %}
+{% if vm.affinity is defined %}
       affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: affinity_group_{{ vm.affinity_group }}
-                operator: Exists
-            topologyKey: kubernetes.io/hostname
+{{ vm.affinity | to_nice_yaml(indent=2) | indent(8, first=True) }}
 {% endif %}
 {% if vm.readiness_probe is defined and vm.readiness_probe %}
 {{ vm.readiness_probe | to_nice_yaml(indent=2) | indent(6, first=True) }}
