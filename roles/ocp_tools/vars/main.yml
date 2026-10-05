@@ -1,0 +1,23 @@
+---
+# Each entry must have a matching tasks/install-<tool>.yml file.
+ot_supported:
+  - opm
+  - oc
+
+ot_mirror_root: "https://mirror.openshift.com/pub"
+
+# Custom version or stable
+_ot_resolved_version: "{{ (ot_version | default('', true) | trim) or 'stable' }}"
+
+# URL resolution for custom versions:
+# - Use major version in path
+# - For engineering candidate use `ocp-dev-preview`
+_ot_url: >-
+  {{ (ot_base_url ~ '/' ~ _ot_resolved_version) if (ot_base_url | length > 0)
+     else ([ot_mirror_root,
+            'openshift-v' ~ (_ot_resolved_version.split('.')[0]
+                             if _ot_resolved_version is match('[0-9]')
+                             else ot_major),
+            'clients',
+            ('ocp-dev-preview' if '-ec' in _ot_resolved_version else 'ocp'),
+            _ot_resolved_version] | join('/')) }}

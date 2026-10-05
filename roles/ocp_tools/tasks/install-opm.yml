@@ -1,0 +1,59 @@
+---
+- name: Download and set up the opm client
+  vars:
+    _ot_opm_rhel_url: >-
+      {{ _ot_url }}/opm-linux-rhel{{ ansible_distribution_major_version }}.tar.gz
+    _ot_opm_generic_url: "{{ _ot_url }}/opm-linux.tar.gz"
+  block:
+    - name: Check whether the RHEL-specific opm build is published
+      ansible.builtin.uri:
+        url: "{{ _ot_opm_rhel_url }}"
+        method: HEAD
+        status_code: [200, 404]
+      register: _ot_opm_rhel
+      retries: "{{ ot_retries }}"
+      delay: "{{ ot_delay }}"
+      until: _ot_opm_rhel.status | default(0) in [200, 404]
+
+    - name: Download and extract the opm client
+      vars:
+        _ot_opm_url: >-
+          {{
+            (_ot_opm_rhel.status | int == 200)
+            | ternary(_ot_opm_rhel_url, _ot_opm_generic_url)
+          }}
+      ansible.builtin.unarchive:
+        src: "{{ _ot_opm_url }}"
+        dest: "{{ ot_dir }}"
+        remote_src: true
+        mode: "0755"
+      register: _ot_opm_get
+      retries: "{{ ot_retries }}"
+      delay: "{{ ot_delay }}"
+      until: _ot_opm_get is success
+
+    # The binary shipped inside the tarball is not consistently named:
+    # opm-linux-rhel9.tar.gz ships opm-rhel9, while the generic
+    # opm-linux.tar.gz ships opm-rhel8. Locate it instead of assuming a name.
+    - name: Locate the extracted opm binary
+      ansible.builtin.find:
+        paths: "{{ ot_dir }}"
+        patterns:
+          - "opm"
+          - "opm-rhel*"
+        file_type: file
+      register: _ot_opm_find
+
+    - name: Fail when the opm binary was not found
+      ansible.builtin.assert:
+        that:
+          - _ot_opm_find.files | length > 0
+        fail_msg: >-
+          Could not locate the opm binary in {{ ot_dir }} after extraction.
+
+    - name: Register the resolved opm binary path
+      vars:
+        _ot_tools:
+          opm: "{{ _ot_opm_find.files[0].path }}"
+      ansible.builtin.set_fact:
+        ot_bin: "{{ ot_bin | combine(_ot_tools) }}"

@@ -1,0 +1,56 @@
+---
+# This file is in sync with defaults/main.yml
+argument_specs:
+  main:
+    short_description: Download and set up OpenShift tooling binaries
+    description: >
+      Downloads and sets up command line tools used across the collection into a destination directory,
+      returning the resolved binary paths in the `ot_bin` dictionary.
+    options:
+      ot_tools:
+        description: List of tools to download and set up.
+        type: list
+        elements: str
+        required: true
+        choices:
+          - opm
+          - oc
+      ot_dest:
+        description: >
+          Directory where the tool binaries are placed. When empty, the role creates a temporary directory.
+          The resolved directory (provided or created) is returned in `ot_dir`.
+        type: str
+        required: false
+        default: ""
+      ot_version:
+        description: >
+          Version to download. Default uses "stable" (latest GA). Set a specific version to get, e.g.
+          "4.22.16", "5.0.0-rc.5", "5.0.0-ec.6", etc. The role resolves the url from this value.
+        type: str
+        required: false
+        default: ""
+      ot_major:
+        description: >
+          Major stream (the X of X.Y.Z) to use when ot_version is non-numeric, e.g. "stable".
+          Ignored when ot_version carries its own numeric major. The default is the current GA major.
+        type: str
+        required: false
+        default: "4"
+      ot_base_url:
+        description: >
+          Optional full override of the base mirror URL, up to (not including) the version segment.
+          When set, the role appends "/<ot_version>" and skips the automatic resolution.
+          Use it for non-version specific resolution like candidate channels, custom mirrors, etc.
+        type: str
+        required: false
+        default: ""
+      ot_retries:
+        description: Number of retries for the download operations.
+        type: int
+        required: false
+        default: 3
+      ot_delay:
+        description: Delay in seconds between download retries.
+        type: int
+        required: false
+        default: 10

@@ -1,0 +1,11 @@
+---
+ot_dest: ""
+# Version to download. Empty -> "stable" (latest GA) or set a specific version to like
+#  "4.22.16", "5.0.0-rc.5", "5.0.0-ec.6", etc.
+ot_version: ""
+# Major stream (the X of X.Y.Z) to use when ot_version is non-numeric, e.g. "stable").
+# Ignored when ot_version carries its own numeric major. The default is the current GA.
+ot_major: "4"
+ot_base_url: ""
+ot_retries: 3
+ot_delay: 10

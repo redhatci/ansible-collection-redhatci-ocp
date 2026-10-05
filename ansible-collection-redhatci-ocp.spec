@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.4.EPOCH
+Version:        6.5.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+
+* Tue Sep 30 2026 Tony Garcia <tonyg@redhat.com> - 6.5.EPOCH-VERS
+- Add ocp_tools role
 
 * Mon Sep 21 2026 Beto Rdz <josearod@redhat.com> - 6.4.EPOCH-VERS
 - Dropped support for custom egress network policies for assisted services

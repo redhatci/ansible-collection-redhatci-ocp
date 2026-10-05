@@ -1,0 +1,44 @@
+---
+- name: Download and set up the oc client
+  vars:
+    _ot_oc_rhel_url: >-
+      {{ _ot_url }}/openshift-client-linux-amd64-rhel{{ ansible_distribution_major_version }}.tar.gz
+    _ot_oc_generic_url: "{{ _ot_url }}/openshift-client-linux.tar.gz"
+  block:
+    - name: Check whether the RHEL-specific oc build is published
+      ansible.builtin.uri:
+        url: "{{ _ot_oc_rhel_url }}"
+        method: HEAD
+        status_code: [200, 404]
+      register: _ot_oc_rhel
+      retries: "{{ ot_retries }}"
+      delay: "{{ ot_delay }}"
+      until: _ot_oc_rhel.status | default(0) in [200, 404]
+
+    - name: Download and extract the oc and kubectl binaries
+      vars:
+        _ot_oc_url: >-
+          {{
+            (_ot_oc_rhel.status | int == 200)
+            | ternary(_ot_oc_rhel_url, _ot_oc_generic_url)
+          }}
+      ansible.builtin.unarchive:
+        src: "{{ _ot_oc_url }}"
+        dest: "{{ ot_dir }}"
+        remote_src: true
+        mode: "0755"
+        extra_opts:
+          - oc
+          - kubectl
+      register: _ot_oc_get
+      retries: "{{ ot_retries }}"
+      delay: "{{ ot_delay }}"
+      until: _ot_oc_get is success
+
+    - name: Register the oc and kubectl binary paths
+      vars:
+        _ot_tools:
+          oc: "{{ '/'.join([ot_dir, 'oc']) }}"
+          kubectl: "{{ '/'.join([ot_dir, 'kubectl']) }}"
+      ansible.builtin.set_fact:
+        ot_bin: "{{ ot_bin | combine(_ot_tools) }}"
