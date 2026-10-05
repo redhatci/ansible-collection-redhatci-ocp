@@ -44,7 +44,7 @@ Always, Halted, Manual, RerunOnFailure.
 | labels                        |                               | no          | A dictionary with labels for the VM
 | networks                      | Pod network                   | no          | VM network definitions
 | annotations                   |                               | no          | A dictionary with annotations for the VM
-| affinity_group                |                               | no          | Name of affinity group to schedule VMs. Currently the template only defines Anti-affinity to deploy VMs in different nodes.
+| affinity                      |                               | no          | A dictionary with the VM's affinity rules.
 | readiness_probe               |                               | no          | A dictionary with settings for the readiness probe
 | eviction_strategy             |                               | no          | When defined sets describes the strategy to follow when a node drain occurs, options are: `None`, `LiveMigrate`, `LiveMigrateIfPossible` or `External`.
 | reboot_policy                 |                               | no          | Specifies how the guest should behave on reboot, options are `Reboot` (default) or `Terminate`. Available since kvirt 1.8+. Note that in 1.8 is behind a feature gate that needs to be enabled.
