@@ -1,0 +1,64 @@
+---
+# Collect BMC firmware information via Redfish for a single node.
+# Expected task vars (set by the caller loop):
+#   node_name  - the OpenShift node name (used as dict key)
+# Expected role vars:
+#   ni_bmc_address    - dict mapping node_name -> BMC hostname/IP
+#   ni_bmc_username   - Redfish username
+#   ni_bmc_password   - Redfish password
+
+- name: "Discover Redfish Managers endpoint"
+  ansible.builtin.uri:
+    url: "https://{{ ni_bmc_address[node_name] }}/redfish/v1/Managers"
+    method: GET
+    user: "{{ ni_bmc_username }}"
+    password: "{{ ni_bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    return_content: true
+    status_code: [200]
+  register: _ni_bmc_managers
+  failed_when: false
+  no_log: true
+
+- name: "Fetch first Redfish Manager details"
+  ansible.builtin.uri:
+    url: "https://{{ ni_bmc_address[node_name] }}{{ _ni_bmc_managers.json['Members'][0]['@odata.id'] }}"
+    method: GET
+    user: "{{ ni_bmc_username }}"
+    password: "{{ ni_bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    return_content: true
+    status_code: [200]
+  register: _ni_bmc_detail
+  failed_when: false
+  no_log: true
+  when:
+    - _ni_bmc_managers is defined
+    - _ni_bmc_managers.status is defined
+    - _ni_bmc_managers.status == 200
+    - _ni_bmc_managers.json is defined
+    - _ni_bmc_managers.json['Members'] is defined
+    - (_ni_bmc_managers.json['Members'] | length) > 0
+    - _ni_bmc_managers.json['Members'][0]['@odata.id'] is defined
+
+- name: "Store BMC firmware data for {{ node_name }}"
+  ansible.builtin.set_fact:
+    ni_bmc_data: >-
+      {{
+        ni_bmc_data | combine({
+          node_name: {
+            'vendor': _ni_bmc_detail.json.Manufacturer | default(''),
+            'version': _ni_bmc_detail.json.FirmwareVersion | default('')
+          }
+        })
+      }}
+  when:
+    - _ni_bmc_detail is defined
+    - _ni_bmc_detail.status is defined
+    - _ni_bmc_detail.status == 200
+    - _ni_bmc_detail.json is defined
+    - _ni_bmc_detail.json.FirmwareVersion is defined
+    - _ni_bmc_detail.json.FirmwareVersion | length > 0
+...

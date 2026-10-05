@@ -1,0 +1,84 @@
+---
+# Argument specification for the node_info role
+argument_specs:
+  main:
+    short_description: Gather node hardware, kernel, and BMC firmware information
+    description:
+      - Collects hardware details using lshw and kernel information from all
+        ready nodes in an OpenShift cluster.
+      - Optionally collects BMC firmware version out-of-band via the Redfish API.
+      - All output is saved as JSON files for diagnostics and analysis.
+    options:
+      ni_oc_tool_path:
+        type: str
+        default: "/usr/local/bin/oc"
+        description: Path to the oc command-line tool binary.
+
+      ni_job_logs_path:
+        type: str
+        default: "/tmp/node-info-logs"
+        description: Directory where output JSON files will be saved.
+
+      ni_disconnected:
+        type: bool
+        default: false
+        description:
+          - Enable disconnected mode.
+          - When true, a custom lshw container image is built and pushed to
+            the local registry instead of pulling from the internet.
+
+      ni_local_registry:
+        type: str
+        default: ""
+        description:
+          - Local registry URL for disconnected environments.
+          - Required when ni_disconnected is true.
+
+      ni_pullsecret_file:
+        type: str
+        default: ""
+        description:
+          - Path to the pull-secret file used for registry authentication.
+          - Required when ni_disconnected is true.
+
+      ni_tag:
+        type: str
+        default: "latest"
+        description: Container image tag for the lshw image in disconnected mode.
+
+      ni_local_img_path:
+        type: str
+        default: "/dci/lshw"
+        description: Image path in the local registry for the lshw container.
+
+      ni_collect_bmc:
+        type: bool
+        default: false
+        description:
+          - Enable out-of-band BMC firmware collection via the Redfish API.
+          - When true, the role queries each node's BMC listed in ni_bmc_address
+            and merges the result into hardware.<node>.json under hardware.data.bmc.
+
+      ni_bmc_address:
+        type: dict
+        default: {}
+        description:
+          - Mapping of OpenShift node name to BMC hostname or IP address.
+          - "Example: {\"node1\": \"192.0.2.10\", \"node2\": \"192.0.2.11\"}"
+          - Only nodes present in this dict are queried when ni_collect_bmc is true.
+
+      ni_bmc_username:
+        type: str
+        default: ""
+        description:
+          - Username for Redfish API authentication.
+          - Used for all BMC hosts listed in ni_bmc_address.
+
+      ni_bmc_password:
+        type: str
+        default: ""
+        no_log: true
+        description:
+          - Password for Redfish API authentication.
+          - Treat this value as a secret; use Ansible Vault or a secrets manager.
+...
