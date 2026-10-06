@@ -47,14 +47,7 @@
         name: agent
         namespace: multicluster-engine
       spec:
-        osImages: >-
-          {{
-            (
-              asg.resources[0].spec.osImages | default([])
-              | rejectattr('version', 'equalto', os_images.version)
-              | list
-            ) + [os_images]
-          }}
+        osImages: "{{ ((asg.resources[0].spec.osImages | default([])) + [os_images]) | unique }}"
         mirrorRegistryRef:
           name: "{{ utils_cm_name }}"
   kubernetes.core.k8s:
