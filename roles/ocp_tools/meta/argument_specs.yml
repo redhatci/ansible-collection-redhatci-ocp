@@ -15,6 +15,7 @@ argument_specs:
         choices:
           - opm
           - oc
+          - oc-mirror
       ot_dest:
         description: >
           Directory where the tool binaries are placed. When empty, the role creates a temporary directory.
