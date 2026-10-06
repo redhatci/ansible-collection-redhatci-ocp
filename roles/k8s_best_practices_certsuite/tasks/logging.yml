@@ -88,4 +88,19 @@
     - _kbpc_claim_json_present.stat.exists|bool
     - kbpc_commit_sha is defined
     - kbpc_check_commit_sha|bool
-...
+
+# DCI rejects uploads larger than 256 MB. The copy above already placed
+# claim.json in the log directory, so replace that copy when it is too big.
+- name: Compress claim.json when it is larger than 256 MB
+  ansible.builtin.archive:  # noqa: fqcn[canonical]
+    path:
+      - "{{ kbpc_log_path }}/claim.json"
+    dest: "{{ kbpc_log_path }}/claim.json.gz"
+    format: gz
+    mode: "0644"
+    remove: true
+  when:
+    - _kbpc_claim_json_present.stat.exists | bool
+    - (_kbpc_claim_json_present.stat.size | default(0) | int) > (256 * 1024 * 1024)
+    - kbpc_log_path is defined
+    - kbpc_log_path | length > 0
