@@ -479,6 +479,30 @@
   delay: 15
   no_log: true
 
+- name: "Wait for assisted-image-service Route"
+  kubernetes.core.k8s_info:
+    api_version: route.openshift.io/v1
+    kind: Route
+    name: assisted-image-service
+    namespace: multicluster-engine
+  register: _as_ais_route
+  until: _as_ais_route.resources | length > 0
+  retries: 20
+  delay: 15
+
+- name: "Extend the assisted-image-service route timeout"
+  kubernetes.core.k8s:
+    api_version: route.openshift.io/v1
+    state: patched
+    merge_type: merge
+    kind: Route
+    name: assisted-image-service
+    namespace: multicluster-engine
+    definition:
+      metadata:
+        annotations:
+          haproxy.router.openshift.io/timeout: 10m
+
 - name: "Create an initial ClusterImageSet based on Hub release info"
   kubernetes.core.k8s:
     definition:
@@ -488,7 +512,7 @@
         labels:
           channel: "{{ cluster_version.resources[0].spec.channel }}"
           visible: 'true'
-        name: "img-{{ cluster_version.resources[0].status.desired.version }}"
+        name: "dci-{{ cluster_version.resources[0].status.desired.version }}"
       spec:
         releaseImage: "{{ cluster_version.resources[0].status.desired.image }}"
   when:
