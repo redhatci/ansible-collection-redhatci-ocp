@@ -4,7 +4,7 @@
   when:
     - sm_action == 'install'
 
-- name: Create Minio deployment
+- name: Clean up Minio resources
   ansible.builtin.include_tasks: cleanup.yml
   when:
     - sm_action == 'cleanup'

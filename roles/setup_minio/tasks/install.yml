@@ -144,7 +144,7 @@
               - name: minio-client
                 image: "{{ sm_minio_client }}"
                 command:
-                  - "/bin/sh"
+                  - "/usr/bin/bash"
                   - "-c"
                   - >
                     mc --config-dir /tmp/
