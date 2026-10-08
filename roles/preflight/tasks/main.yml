@@ -1,4 +1,8 @@
 ---
+- name: Testing if a preflight role change triggers a workload job again
+  ansible.builtin.debug:
+    msg: "second try"
+
 - name: Run preflight certification suite
   block:
     - name: Create tmp directory for custom configurations and preflight binary
