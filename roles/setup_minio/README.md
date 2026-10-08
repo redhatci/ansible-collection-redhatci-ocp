@@ -12,8 +12,8 @@ Role tasks:
 
 | Variable                               | Default                       | Required   | Description                                         |
 | -------------------------------------- | ----------------------------- | ---------- | ----------------------------------------------------|
-| sm_minio_image                         | quay.io/minio/minio           | No         | Default Minio server image                          |
-| sm_minio_client                        | quay.io/minio/mc              | No         | Default Minio client image                          |
+| sm_minio_image                         | cgr.dev/chainguard/minio      | No         | Default Minio server image                          |
+| sm_minio_client                        | cgr.dev/chainguard/minio-client| No        | Default Minio client image                          |
 | sm_claim_size                          | 10Gi                          | No         | Requested storage for Minio                         |
 | sm_storage_class                       | undefined                     | Yes        | A storage Class with Support for RWX volumes        |
 | sm_namespace                           | minio                         | No         | Deployment Namespace                                |
@@ -38,7 +38,7 @@ Passing the variables at role level:
   ansible.builtin.include_role:
     name: redhatci.ocp.setup_minio
   vars:
-    sm_minio_image: quay.io/minio/minio:latest
+    sm_minio_image: cgr.dev/chainguard/minio
 ```
 
 Remove resources created by the role.

@@ -5,7 +5,7 @@ sm_access_key_id: ""
 sm_access_key_secret: ""
 sm_bucket_name: minio
 sm_action: install
-sm_minio_image: quay.io/minio/minio
-sm_minio_client: quay.io/minio/mc
+sm_minio_image: cgr.dev/chainguard/minio         # 07/10/2026
+sm_minio_client: cgr.dev/chainguard/minio-client # 07/10/2026
 sm_service_type: NodePort
 ...
