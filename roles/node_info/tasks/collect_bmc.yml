@@ -43,13 +43,27 @@
     - (_ni_bmc_managers.json['Members'] | length) > 0
     - _ni_bmc_managers.json['Members'][0]['@odata.id'] is defined
 
+- name: "Fetch Redfish root endpoint for {{ node_name }}"
+  ansible.builtin.uri:
+    url: "https://{{ ni_bmc_address[node_name] }}/redfish/v1"
+    method: GET
+    user: "{{ ni_bmc_username }}"
+    password: "{{ ni_bmc_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    return_content: true
+    status_code: [200]
+  register: _ni_bmc_root
+  failed_when: false
+  no_log: true
+
 - name: "Store BMC firmware data for {{ node_name }}"
   ansible.builtin.set_fact:
     ni_bmc_data: >-
       {{
         ni_bmc_data | combine({
           node_name: {
-            'vendor': _ni_bmc_detail.json.Manufacturer | default(''),
+            'vendor': (_ni_bmc_detail.json.Manufacturer | default('')) or (_ni_bmc_root.json.Vendor | default('')),
             'version': _ni_bmc_detail.json.FirmwareVersion | default('')
           }
         })
