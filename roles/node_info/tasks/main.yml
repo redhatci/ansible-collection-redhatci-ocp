@@ -34,6 +34,12 @@
       ansible.builtin.set_fact:
         ni_bmc_data: {}
 
+    - name: Discover BMC address and credentials from BareMetalHosts
+      ansible.builtin.include_tasks: discover_bmh.yml
+      when:
+        - ni_collect_bmc | bool
+        - ni_bmc_from_bmh | bool
+
     - name: Collect BMC firmware data for each node
       ansible.builtin.include_tasks: collect_bmc.yml
       loop: "{{ ni_ready_node_names | default([]) }}"

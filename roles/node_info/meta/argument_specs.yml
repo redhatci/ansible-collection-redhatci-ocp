@@ -81,4 +81,24 @@ argument_specs:
         description:
           - Password for Redfish API authentication.
           - Treat this value as a secret; use Ansible Vault or a secrets manager.
+
+      ni_bmc_from_bmh:
+        type: bool
+        default: false
+        description:
+          - Discover BMC address and credentials from BareMetalHost resources
+            instead of providing ni_bmc_address and credentials manually.
+          - For each BareMetalHost the role uses spec.bmc.address and follows
+            spec.bmc.credentialsName to its Secret, so the Secret naming
+            convention does not matter.
+          - Discovered values are merged on top of any manually provided ones.
+
+      ni_hub_kubeconfig:
+        type: str
+        default: ""
+        description:
+          - Kubeconfig used to read BareMetalHost and Secret resources when
+            ni_bmc_from_bmh is true.
+          - Leave empty to use the current cluster; set to the ACM hub kubeconfig
+            when the BareMetalHosts live on the hub (e.g. ACM/ZTP managed spokes).
 ...

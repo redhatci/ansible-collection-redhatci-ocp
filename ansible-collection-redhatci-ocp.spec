@@ -56,6 +56,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 %changelog
 
+* Wed Oct  8 2026 Frederic Lepied <flepied@redhat.com> - 6.5.EPOCH-VERS
+- Discover node_info BMC address and credentials from BareMetalHost resources
+
 * Mon Oct  5 2026 Frederic Lepied <flepied@redhat.com> - 6.5.EPOCH-VERS
 - Extend node_info role to collect BMC firmware version out-of-band via Redfish
 
