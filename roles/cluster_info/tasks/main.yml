@@ -1,0 +1,198 @@
+---
+# cluster_info role - Gather cluster configuration facts from an OpenShift cluster
+
+- name: Pre-initialize cluster facts to safe defaults
+  ansible.builtin.set_fact:
+    cluster_info_ocp_version: "unknown"
+    cluster_info_platform: "unknown"
+    cluster_info_topology: "unknown"
+    cluster_info_region: "unknown"
+    cluster_info_ip_stack: "unknown"
+    cluster_info_network_type: "unknown"
+    cluster_info_default_storage: []
+    cluster_info_node_count: 0
+    cluster_info_node_count_by_role: {}
+
+- name: Gather cluster configuration facts (best-effort, errors ignored)
+  ignore_errors: true
+  block:
+    - name: Get ClusterVersion resource
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: ClusterVersion
+        name: version
+      register: _ci_cluster_version
+      no_log: true
+
+    - name: Get Infrastructure resource
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Infrastructure
+        name: cluster
+      register: _ci_infrastructure
+      no_log: true
+
+    - name: Get Network resource
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Network
+        name: cluster
+      register: _ci_network
+      no_log: true
+
+    - name: Get first cluster node labels for region detection
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Node
+      register: _ci_nodes
+      no_log: true
+
+    - name: Get StorageClass resources
+      kubernetes.core.k8s_info:
+        api_version: storage.k8s.io/v1
+        kind: StorageClass
+      register: _ci_storage_classes
+      no_log: true
+
+    - name: Set cluster version fact
+      ansible.builtin.set_fact:
+        cluster_info_ocp_version: >-
+          {{
+            _ci_cluster_version.resources[0].status.desired.version
+            | default('unknown')
+          }}
+      when:
+        - _ci_cluster_version.resources is defined
+        - _ci_cluster_version.resources | length > 0
+
+    - name: Set platform and topology facts
+      ansible.builtin.set_fact:
+        cluster_info_platform: >-
+          {{
+            _ci_infrastructure.resources[0].spec.platformSpec.type
+            | default('unknown')
+          }}
+        cluster_info_topology: >-
+          {{
+            _ci_infrastructure.resources[0].status.infrastructureTopology
+            | default('unknown')
+          }}
+      when:
+        - _ci_infrastructure.resources is defined
+        - _ci_infrastructure.resources | length > 0
+
+    - name: Set region fact
+      # Region order: AWS -> GCP -> node label -> unknown
+      # AWS/GCP use dedicated platformStatus.<platform>.region (authoritative).
+      # Azure, IBM Cloud, KubeVirt, vSphere, etc.: fall back to the
+      # topology.kubernetes.io/region node label (cloud controller manager).
+      # Bare-metal without topology labels falls back to 'unknown'.
+      # Node guard removed: AWS/GCP region is derived from Infrastructure alone;
+      # node labels are used as fallback only when nodes are available.
+      vars:
+        _node_labels: "{{ (_ci_nodes.resources | default([]))[0].metadata.labels | default({}) }}"
+        _node_region: "{{ _node_labels['topology.kubernetes.io/region'] | default('unknown') }}"
+      ansible.builtin.set_fact:
+        cluster_info_region: >-
+          {{
+            _ci_infrastructure.resources[0].status.platformStatus.aws.region
+            | default(
+                _ci_infrastructure.resources[0].status.platformStatus.gcp.region
+                | default(_node_region)
+              )
+          }}
+      when:
+        - _ci_infrastructure.resources is defined
+        - _ci_infrastructure.resources | length > 0
+
+    - name: Set total node count fact
+      ansible.builtin.set_fact:
+        cluster_info_node_count: "{{ _ci_nodes.resources | default([]) | length }}"
+      when:
+        - _ci_nodes.resources is defined
+
+    - name: Count nodes per role
+      # cluster_info_node_count is the exact number of nodes (each counted once).
+      # cluster_info_node_count_by_role counts each node once per node-role label
+      # it carries, so the per-role sum can exceed the total: OCP control-plane
+      # nodes carry both 'master' and 'control-plane', and compact/SNO nodes
+      # carry both 'master' and 'worker'.
+      vars:
+        _ci_node_roles: >-
+          {{
+            (_ci_nodes.resources | default([]))
+            | map(attribute='metadata.labels')
+            | map('dict2items')
+            | flatten
+            | selectattr('key', 'match', 'node-role.kubernetes.io/.+')
+            | map(attribute='key')
+            | map('regex_replace', '^node-role\.kubernetes\.io/', '')
+            | list
+          }}
+      ansible.builtin.set_fact:
+        cluster_info_node_count_by_role: >-
+          {{
+            cluster_info_node_count_by_role
+            | combine({item: _ci_node_roles | select('equalto', item) | list | length})
+          }}
+      loop: "{{ _ci_node_roles | unique }}"
+      when:
+        - _ci_nodes.resources is defined
+
+    - name: Set IP stack fact
+      vars:
+        _cidrs: >-
+          {{
+            _ci_network.resources[0].spec.clusterNetwork
+            | default([])
+            | map(attribute='cidr')
+            | list
+          }}
+        _is_ipv6: "{{ _cidrs | select('search', ':') | list | length > 0 }}"
+        _is_ipv4: "{{ _cidrs | reject('search', ':') | list | length > 0 }}"
+      ansible.builtin.set_fact:
+        cluster_info_ip_stack: >-
+          {{
+            'dual' if (_is_ipv6 and _is_ipv4) else
+            ('ipv6' if _is_ipv6 else
+            ('ipv4' if _is_ipv4 else 'unknown'))
+          }}
+      when:
+        - _ci_network.resources is defined
+        - _ci_network.resources | length > 0
+
+    - name: Set network type fact
+      ansible.builtin.set_fact:
+        cluster_info_network_type: >-
+          {{
+            _ci_network.resources[0].spec.networkType
+            | default('unknown')
+          }}
+      when:
+        - _ci_network.resources is defined
+        - _ci_network.resources | length > 0
+
+    - name: Set default storage classes fact
+      ansible.builtin.set_fact:
+        cluster_info_default_storage: >-
+          {{
+            _ci_storage_classes.resources
+            | default([])
+            | json_query('[?metadata.annotations."storageclass.kubernetes.io/is-default-class" == `"true"`].metadata.name')
+          }}
+      when:
+        - _ci_storage_classes.resources is defined
+
+- name: Display cluster configuration facts
+  ansible.builtin.debug:
+    msg:
+      cluster_info_ocp_version: "{{ cluster_info_ocp_version }}"
+      cluster_info_platform: "{{ cluster_info_platform }}"
+      cluster_info_topology: "{{ cluster_info_topology }}"
+      cluster_info_region: "{{ cluster_info_region }}"
+      cluster_info_ip_stack: "{{ cluster_info_ip_stack }}"
+      cluster_info_network_type: "{{ cluster_info_network_type }}"
+      cluster_info_default_storage: "{{ cluster_info_default_storage }}"
+      cluster_info_node_count: "{{ cluster_info_node_count }}"
+      cluster_info_node_count_by_role: "{{ cluster_info_node_count_by_role }}"
+...
