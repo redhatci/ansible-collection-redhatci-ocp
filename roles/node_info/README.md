@@ -17,6 +17,8 @@ Gathers node hardware and kernel information from an OpenShift cluster. This rol
 | ni_bmc_address            | `{}`                                | No*      | Map of node name → BMC hostname/IP. Required when `ni_collect_bmc` is `true`
 | ni_bmc_username           | `""`                                | No*      | Username for Redfish API authentication
 | ni_bmc_password           | `""`                                | No*      | Password for Redfish API authentication. Use Ansible Vault to protect this value
+| ni_bmc_from_bmh           | `false`                             | No       | Discover BMC address and credentials from `BareMetalHost` resources (follows `spec.bmc.credentialsName`). Merged on top of manually provided values
+| ni_hub_kubeconfig         | `""`                                | No       | Kubeconfig to read `BareMetalHost`/`Secret` from. Empty uses the current cluster; set to the ACM hub kubeconfig when BMHs live on the hub
 
 ## Requirements
 
@@ -106,6 +108,31 @@ The `hardware.<node>.json` output will include a `bmc` key under `hardware.data`
   }
 }
 ```
+
+### BMC firmware collection with BareMetalHost discovery
+
+Instead of listing addresses and credentials, the role can discover them from
+`BareMetalHost` resources. For each host it uses `spec.bmc.address` and follows
+`spec.bmc.credentialsName` to its `Secret`, so the Secret naming convention does
+not matter. This works for IPI/ABI (BMHs on the cluster itself) and for ACM/ZTP
+managed spokes (BMHs on the hub, reached via `ni_hub_kubeconfig`).
+
+```yaml
+- name: Gather node information with BMC data discovered from BareMetalHosts
+  ansible.builtin.include_role:
+    name: redhatci.ocp.node_info
+  vars:
+    ni_oc_tool_path: "/usr/bin/oc"
+    ni_job_logs_path: "/var/log/cluster-diagnostics"
+    ni_collect_bmc: true
+    ni_bmc_from_bmh: true
+    # Only needed when the BareMetalHosts live on an ACM hub:
+    ni_hub_kubeconfig: "/path/to/hub/kubeconfig"
+```
+
+The node name is taken from the `bmac.agent-install.openshift.io/hostname`
+annotation when present, otherwise from the BareMetalHost's discovered hostname
+or its name. Only nodes whose name matches a ready node are queried.
 
 ## Notes
 

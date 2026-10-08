@@ -1,0 +1,28 @@
+---
+# Discover BMC address and credentials from BareMetalHost resources.
+# For each BareMetalHost we read spec.bmc.address and follow
+# spec.bmc.credentialsName to its Secret, so the Secret naming convention is
+# irrelevant. Results are merged into ni_bmc_address (node_name -> host) and
+# _ni_bmc_creds (node_name -> {username, password}).
+#
+# ni_hub_kubeconfig selects where to read from: empty means the current
+# cluster, otherwise the given kubeconfig (e.g. the ACM hub for managed spokes).
+
+- name: "Gather BareMetalHosts"
+  kubernetes.core.k8s_info:
+    api_version: metal3.io/v1alpha1
+    kind: BareMetalHost
+    kubeconfig: "{{ ni_hub_kubeconfig | default(omit, true) }}"
+  register: _ni_bmh_list
+  failed_when: false
+  no_log: true
+
+- name: "Resolve BMC address and credentials from each BareMetalHost"
+  ansible.builtin.include_tasks: resolve_bmh_host.yml
+  loop: "{{ _ni_bmh_list.resources | default([]) }}"
+  loop_control:
+    loop_var: _ni_bmh
+    label: "{{ _ni_bmh.metadata.name }}"
+  when:
+    - _ni_bmh.spec.bmc.address is defined
+    - _ni_bmh.spec.bmc.credentialsName is defined
