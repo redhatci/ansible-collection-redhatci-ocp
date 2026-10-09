@@ -37,8 +37,8 @@
       {{
         ni_bmc_creds | default({}) | combine({
           _ni_node: {
-            'username': (_ni_secret_data.username | default('') | b64decode),
-            'password': (_ni_secret_data.password | default('') | b64decode)
+            'username': (_ni_secret_data.username | default('') | b64decode | trim),
+            'password': (_ni_secret_data.password | default('') | b64decode | trim)
           }
         })
       }}
