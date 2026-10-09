@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.5.EPOCH
+Version:        6.6.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+
+* Mon Oct  5 2026 Frederic Lepied <flepied@redhat.com> - 6.6.EPOCH-VERS
+- Add cluster_info role to gather cluster configuration facts
 
 * Tue Sep 30 2026 Tony Garcia <tonyg@redhat.com> - 6.5.EPOCH-VERS
 - Add ocp_tools role
