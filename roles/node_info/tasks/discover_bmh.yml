@@ -13,6 +13,7 @@
     api_version: metal3.io/v1alpha1
     kind: BareMetalHost
     kubeconfig: "{{ ni_hub_kubeconfig | default(omit, true) }}"
+    namespace: "{{ ni_hub_kubeconfig_namespace | default(omit, true) }}"
   register: _ni_bmh_list
   failed_when: false
   no_log: true

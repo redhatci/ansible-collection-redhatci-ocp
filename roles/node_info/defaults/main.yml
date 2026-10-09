@@ -32,4 +32,11 @@ ni_bmc_from_bmh: false
 # the current cluster; set to the ACM hub kubeconfig when the BareMetalHosts
 # live on the hub (e.g. ACM/ZTP managed spokes).
 ni_hub_kubeconfig: ""
+# Namespace to scope BareMetalHost discovery. When using an ACM hub with
+# multiple managed clusters, set this to the namespace of the target managed
+# cluster to avoid mixing BareMetalHosts across clusters. Empty = all namespaces.
+ni_hub_kubeconfig_namespace: ""
+# TLS certificate validation for BMC Redfish requests. Set to false only for
+# BMCs with self-signed certificates in lab environments.
+ni_bmc_validate_certs: true
 ...

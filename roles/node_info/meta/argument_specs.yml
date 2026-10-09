@@ -77,7 +77,6 @@ argument_specs:
       ni_bmc_password:
         type: str
         default: ""
-        no_log: true
         description:
           - Password for Redfish API authentication.
           - Treat this value as a secret; use Ansible Vault or a secrets manager.
@@ -101,4 +100,21 @@ argument_specs:
             ni_bmc_from_bmh is true.
           - Leave empty to use the current cluster; set to the ACM hub kubeconfig
             when the BareMetalHosts live on the hub (e.g. ACM/ZTP managed spokes).
+
+      ni_bmc_validate_certs:
+        type: bool
+        default: true
+        description:
+          - Set to false to skip TLS certificate validation for BMC Redfish requests.
+          - Use only for BMCs with self-signed certificates in lab environments.
+
+      ni_hub_kubeconfig_namespace:
+        type: str
+        default: ""
+        description:
+          - Namespace to scope BareMetalHost discovery when ni_bmc_from_bmh is true.
+          - When using an ACM hub with multiple managed clusters, set this to the
+            namespace of the target managed cluster to avoid mixing BareMetalHosts
+            from different clusters.
+          - Leave empty to query all namespaces (default; safe for single-cluster setups).
 ...

@@ -21,10 +21,15 @@
     _ni_node: >-
       {{ (_ni_bmh.metadata.annotations | default({}))['bmac.agent-install.openshift.io/hostname']
          | default(_ni_bmh.status.hardware.hostname | default(_ni_bmh.metadata.name)) }}
-    # Strip the protocol scheme and any path to keep only host[:port]
-    # (IPv6 brackets are preserved), e.g.
-    # redfish-virtualmedia://[2600:12:129::140]/redfish/v1/Systems/1 -> [2600:12:129::140]
-    _ni_host: "{{ _ni_bmh.spec.bmc.address.split('://')[-1].split('/')[0] }}"
+    # Normalize the BMC address to https://host[:port] or http://host[:port].
+    # Vendor-specific scheme prefixes (redfish-virtualmedia://, idrac-virtualmedia://, etc.)
+    # are replaced with https://, preserving http:// for HTTP-only BMCs.
+    # IPv6 brackets are preserved, e.g.
+    # redfish-virtualmedia://[2600:12:129::140]/redfish/v1/Systems/1 -> https://[2600:12:129::140]
+    # http://192.168.1.1/path -> http://192.168.1.1
+    _ni_host: >-
+      {{ ('https' if _ni_bmh.spec.bmc.address is not search('^http://') else 'http')
+         + '://' + _ni_bmh.spec.bmc.address.split('://')[-1].split('/')[0] }}
     _ni_secret_data: "{{ _ni_bmh_secret.resources[0].data | default({}) }}"
   ansible.builtin.set_fact:
     ni_bmc_address: "{{ ni_bmc_address | combine({_ni_node: _ni_host}) }}"
