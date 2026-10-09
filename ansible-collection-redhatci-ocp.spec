@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.5.EPOCH
+Version:        6.6.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -56,11 +56,14 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 %changelog
 
-* Wed Oct  8 2026 Frederic Lepied <flepied@redhat.com> - 6.5.EPOCH-VERS
+* Wed Oct  8 2026 Frederic Lepied <flepied@redhat.com> - 6.7.EPOCH-VERS
 - Discover node_info BMC address and credentials from BareMetalHost resources
 
-* Mon Oct  5 2026 Frederic Lepied <flepied@redhat.com> - 6.5.EPOCH-VERS
+* Mon Oct  5 2026 Frederic Lepied <flepied@redhat.com> - 6.7.EPOCH-VERS
 - Extend node_info role to collect BMC firmware version out-of-band via Redfish
+
+* Mon Oct  5 2026 Frederic Lepied <flepied@redhat.com> - 6.6.EPOCH-VERS
+- Add cluster_info role to gather cluster configuration facts
 
 * Tue Sep 30 2026 Tony Garcia <tonyg@redhat.com> - 6.5.EPOCH-VERS
 - Add ocp_tools role
