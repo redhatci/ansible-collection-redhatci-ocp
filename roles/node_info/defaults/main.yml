@@ -13,4 +13,30 @@ ni_local_registry: ""
 ni_pullsecret_file: ""
 ni_tag: "latest"
 ni_local_img_path: "/dci/lshw"
+
+# BMC out-of-band firmware collection settings
+# Set to true to enable Redfish BMC data collection
+ni_collect_bmc: false
+# Map of node_name -> BMC hostname/IP address for Redfish access
+ni_bmc_address: {}
+# BMC credentials (use vault or secrets management in production)
+ni_bmc_username: ""
+ni_bmc_password: ""
+# Discover BMC address and credentials from BareMetalHost resources instead
+# of providing ni_bmc_address/ni_bmc_username/ni_bmc_password manually. Each
+# BareMetalHost's spec.bmc.address and the Secret referenced by
+# spec.bmc.credentialsName are used, so the Secret naming convention does not
+# matter. Discovered values are merged on top of any manually provided ones.
+ni_bmc_from_bmh: false
+# Kubeconfig used to read BareMetalHost/Secret resources. Leave empty to use
+# the current cluster; set to the ACM hub kubeconfig when the BareMetalHosts
+# live on the hub (e.g. ACM/ZTP managed spokes).
+ni_hub_kubeconfig: ""
+# Namespace to scope BareMetalHost discovery. When using an ACM hub with
+# multiple managed clusters, set this to the namespace of the target managed
+# cluster to avoid mixing BareMetalHosts across clusters. Empty = all namespaces.
+ni_hub_kubeconfig_namespace: ""
+# TLS certificate validation for BMC Redfish requests. Set to false only for
+# BMCs with self-signed certificates in lab environments.
+ni_bmc_validate_certs: true
 ...

@@ -30,6 +30,26 @@
         var: ni_ready_node_names
       when: ni_ready_node_names is defined
 
+    - name: Initialize BMC data accumulator
+      ansible.builtin.set_fact:
+        ni_bmc_data: {}
+
+    - name: Discover BMC address and credentials from BareMetalHosts
+      ansible.builtin.include_tasks: discover_bmh.yml
+      when:
+        - ni_collect_bmc | bool
+        - ni_bmc_from_bmh | bool
+
+    - name: Collect BMC firmware data for each node
+      ansible.builtin.include_tasks: collect_bmc.yml
+      loop: "{{ ni_ready_node_names | default([]) }}"
+      loop_control:
+        loop_var: node_name
+      when:
+        - ni_collect_bmc | bool
+        - ni_ready_node_names is defined
+        - node_name in ni_bmc_address
+
     # Switch oc context to default namespace for collecting hw data
     - name: Get kernel information for all nodes
       ansible.builtin.shell:
@@ -144,7 +164,14 @@
         content: >-
           {{ { 'hardware': {
             'node': item.node_name,
-            'data': (item.stdout | from_json | dot_to_underscore) if (item.stdout is defined and item.rc == 0) else (null | default({})),
+            'data': (
+              (item.stdout | from_json | dot_to_underscore)
+              if (item.stdout is defined and item.rc == 0) else {}
+            ) | combine(
+              {'bmc': ni_bmc_data[item.node_name]}
+              if (ni_collect_bmc | bool and item.node_name in ni_bmc_data)
+              else {}
+            ),
             'error': item.stderr if (item.rc is defined and item.rc != 0) else (null | default(''))
           } } | to_json }}
         dest: "{{ ni_job_logs_path }}/hardware.{{ item.node_name }}.json"
