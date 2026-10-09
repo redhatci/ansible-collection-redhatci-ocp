@@ -6,16 +6,16 @@
 #   ni_bmc_address    - dict mapping node_name -> BMC hostname/IP
 #   ni_bmc_username   - Redfish username (fallback when no per-node credential)
 #   ni_bmc_password   - Redfish password (fallback when no per-node credential)
-#   _ni_bmc_creds     - optional dict node_name -> {username, password} from
+#   ni_bmc_creds     - optional dict node_name -> {username, password} from
 #                       BareMetalHost discovery; takes precedence when present
 
 - name: "Set effective BMC credentials for {{ node_name }}"
   ansible.builtin.set_fact:
-    _ni_bmc_user: >-
-      {{ (_ni_bmc_creds | default({}))[node_name].username
+    ni_bmc_user: >-
+      {{ (ni_bmc_creds | default({}))[node_name].username
          | default(ni_bmc_username) }}
-    _ni_bmc_pass: >-
-      {{ (_ni_bmc_creds | default({}))[node_name].password
+    ni_bmc_pass: >-
+      {{ (ni_bmc_creds | default({}))[node_name].password
          | default(ni_bmc_password) }}
   no_log: true
 
@@ -26,8 +26,8 @@
           else 'https://' + ni_bmc_address[node_name])
          + '/redfish/v1/Managers' }}
     method: GET
-    user: "{{ _ni_bmc_user }}"
-    password: "{{ _ni_bmc_pass }}"
+    user: "{{ ni_bmc_user }}"
+    password: "{{ ni_bmc_pass }}"
     force_basic_auth: true
     validate_certs: "{{ ni_bmc_validate_certs }}"
     return_content: true
@@ -43,8 +43,8 @@
           else 'https://' + ni_bmc_address[node_name])
          + _ni_bmc_managers.json['Members'][0]['@odata.id'] }}
     method: GET
-    user: "{{ _ni_bmc_user }}"
-    password: "{{ _ni_bmc_pass }}"
+    user: "{{ ni_bmc_user }}"
+    password: "{{ ni_bmc_pass }}"
     force_basic_auth: true
     validate_certs: "{{ ni_bmc_validate_certs }}"
     return_content: true
@@ -68,8 +68,8 @@
           else 'https://' + ni_bmc_address[node_name])
          + '/redfish/v1' }}
     method: GET
-    user: "{{ _ni_bmc_user }}"
-    password: "{{ _ni_bmc_pass }}"
+    user: "{{ ni_bmc_user }}"
+    password: "{{ ni_bmc_pass }}"
     force_basic_auth: true
     validate_certs: "{{ ni_bmc_validate_certs }}"
     return_content: true

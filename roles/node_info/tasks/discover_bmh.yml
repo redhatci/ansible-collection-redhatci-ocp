@@ -3,7 +3,7 @@
 # For each BareMetalHost we read spec.bmc.address and follow
 # spec.bmc.credentialsName to its Secret, so the Secret naming convention is
 # irrelevant. Results are merged into ni_bmc_address (node_name -> host) and
-# _ni_bmc_creds (node_name -> {username, password}).
+# ni_bmc_creds (node_name -> {username, password}).
 #
 # ni_hub_kubeconfig selects where to read from: empty means the current
 # cluster, otherwise the given kubeconfig (e.g. the ACM hub for managed spokes).

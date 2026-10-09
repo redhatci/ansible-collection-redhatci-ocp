@@ -33,9 +33,9 @@
     _ni_secret_data: "{{ _ni_bmh_secret.resources[0].data | default({}) }}"
   ansible.builtin.set_fact:
     ni_bmc_address: "{{ ni_bmc_address | combine({_ni_node: _ni_host}) }}"
-    _ni_bmc_creds: >-
+    ni_bmc_creds: >-
       {{
-        _ni_bmc_creds | default({}) | combine({
+        ni_bmc_creds | default({}) | combine({
           _ni_node: {
             'username': (_ni_secret_data.username | default('') | b64decode),
             'password': (_ni_secret_data.password | default('') | b64decode)
