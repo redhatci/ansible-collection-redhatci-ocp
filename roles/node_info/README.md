@@ -14,11 +14,13 @@ Gathers node hardware and kernel information from an OpenShift cluster. This rol
 | ni_tag                    | `latest`                            | No       | Tag used for the lshw container image in disconnected mode
 | ni_local_img_path         | `/dci/lshw`                         | No       | Image path in the local registry for the lshw container used in disconnected mode
 | ni_collect_bmc            | `false`                             | No       | Enable out-of-band BMC firmware collection via the Redfish API
-| ni_bmc_address            | `{}`                                | No*      | Map of node name → BMC hostname/IP. Required when `ni_collect_bmc` is `true`
+| ni_bmc_address            | `{}`                                | No*      | Map of node name → BMC hostname/IP. Required when `ni_collect_bmc=true` and `ni_bmc_from_bmh=false` (not needed when BareMetalHost discovery supplies addresses)
 | ni_bmc_username           | `""`                                | No*      | Username for Redfish API authentication
 | ni_bmc_password           | `""`                                | No*      | Password for Redfish API authentication. Use Ansible Vault to protect this value
 | ni_bmc_from_bmh           | `false`                             | No       | Discover BMC address and credentials from `BareMetalHost` resources (follows `spec.bmc.credentialsName`). Merged on top of manually provided values
 | ni_hub_kubeconfig         | `""`                                | No       | Kubeconfig to read `BareMetalHost`/`Secret` from. Empty uses the current cluster; set to the ACM hub kubeconfig when BMHs live on the hub
+| ni_hub_kubeconfig_namespace | `""`                              | No       | Namespace to scope `BareMetalHost` discovery. When using an ACM hub with multiple managed clusters, set this to the namespace of the target managed cluster to avoid mixing BareMetalHosts across clusters. Empty = all namespaces
+| ni_bmc_validate_certs     | `true`                              | No       | Set to `false` to skip TLS certificate validation for BMC Redfish requests. Use only for BMCs with self-signed certificates in lab environments
 
 ## Requirements
 
