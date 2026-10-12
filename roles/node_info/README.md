@@ -34,6 +34,10 @@ Gathers node hardware and kernel information from an OpenShift cluster. This rol
   - Podman installed on control node
   - Access to local container registry
 
+- When `ni_bmc_from_bmh: true`, the kubeconfig user (or service account) must have:
+  - `get`/`list` on `BareMetalHost` resources (`metal3.io/v1alpha1`)
+  - `get` on `Secret` resources in the namespaces containing BMC credential secrets
+
 ## Features
 
 - **Automatic node discovery**: Identifies all ready nodes in the cluster

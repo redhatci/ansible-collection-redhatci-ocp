@@ -18,9 +18,10 @@
   vars:
     # Node name as it appears in "oc get nodes": the assisted/ZTP hostname
     # annotation when present, otherwise the discovered or BareMetalHost name.
+    # Use default(..., true) so that an empty-string annotation also falls back.
     _ni_node: >-
       {{ (_ni_bmh.metadata.annotations | default({}))['bmac.agent-install.openshift.io/hostname']
-         | default(_ni_bmh.status.hardware.hostname | default(_ni_bmh.metadata.name)) }}
+         | default(_ni_bmh.status.hardware.hostname | default(_ni_bmh.metadata.name, true), true) }}
     # Normalize the BMC address to https://host[:port] or http://host[:port].
     # Vendor-specific scheme prefixes (redfish-virtualmedia://, idrac-virtualmedia://, etc.)
     # are replaced with https://, preserving http:// for HTTP-only BMCs.
@@ -37,10 +38,15 @@
       {{
         ni_bmc_creds | default({}) | combine({
           _ni_node: {
-            'username': (_ni_secret_data.username | default('') | b64decode | trim),
-            'password': (_ni_secret_data.password | default('') | b64decode | trim)
+            'username': (_ni_secret_data.username | default('') | b64decode | regex_replace('\n$', '')),
+            'password': (_ni_secret_data.password | default('') | b64decode | regex_replace('\n$', ''))
           }
         })
+        if (
+          (_ni_secret_data.username | default('') | b64decode | regex_replace('\n$', '')) | length > 0
+          and (_ni_secret_data.password | default('') | b64decode | regex_replace('\n$', '')) | length > 0
+        )
+        else ni_bmc_creds | default({})
       }}
   when:
     - _ni_bmh_secret.resources is defined
