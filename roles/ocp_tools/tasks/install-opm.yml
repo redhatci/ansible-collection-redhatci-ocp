@@ -27,6 +27,8 @@
         dest: "{{ ot_dir }}"
         remote_src: true
         mode: "0755"
+        extra_opts:
+          - --touch
       register: _ot_opm_get
       retries: "{{ ot_retries }}"
       delay: "{{ ot_delay }}"

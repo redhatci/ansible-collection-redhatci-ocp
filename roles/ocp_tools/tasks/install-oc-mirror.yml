@@ -28,6 +28,7 @@
         remote_src: true
         mode: "0755"
         extra_opts:
+          - --touch
           - oc-mirror
       register: _ot_oc_mirror_get
       retries: "{{ ot_retries }}"
