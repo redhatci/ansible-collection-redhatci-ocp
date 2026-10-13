@@ -34,6 +34,17 @@
       ansible.builtin.set_fact:
         ni_bmc_data: {}
 
+    - name: Validate ni_bmc_address is set when required
+      ansible.builtin.assert:
+        that:
+          - ni_bmc_address | length > 0
+        fail_msg: >-
+          ni_bmc_address must be provided (non-empty) when ni_collect_bmc=true
+          and ni_bmc_from_bmh=false.
+      when:
+        - ni_collect_bmc | bool
+        - not (ni_bmc_from_bmh | bool)
+
     - name: Discover BMC address and credentials from BareMetalHosts
       ansible.builtin.include_tasks: discover_bmh.yml
       when:

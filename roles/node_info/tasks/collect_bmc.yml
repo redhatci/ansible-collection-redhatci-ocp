@@ -39,9 +39,11 @@
 - name: "Fetch first Redfish Manager details"
   ansible.builtin.uri:
     url: >-
-      {{ (ni_bmc_address[node_name] if '://' in ni_bmc_address[node_name]
-          else 'https://' + ni_bmc_address[node_name])
-         + _ni_bmc_managers.json['Members'][0]['@odata.id'] }}
+      {{ _ni_bmc_managers.json['Members'][0]['@odata.id']
+         if '://' in _ni_bmc_managers.json['Members'][0]['@odata.id']
+         else (ni_bmc_address[node_name] if '://' in ni_bmc_address[node_name]
+               else 'https://' + ni_bmc_address[node_name])
+              + _ni_bmc_managers.json['Members'][0]['@odata.id'] }}
     method: GET
     user: "{{ ni_bmc_user }}"
     password: "{{ ni_bmc_pass }}"

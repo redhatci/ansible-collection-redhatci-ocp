@@ -66,6 +66,7 @@ argument_specs:
           - Mapping of OpenShift node name to BMC hostname or IP address.
           - "Example: {\"node1\": \"192.0.2.10\", \"node2\": \"192.0.2.11\"}"
           - Only nodes present in this dict are queried when ni_collect_bmc is true.
+          - Required when ni_collect_bmc is true and ni_bmc_from_bmh is false.
 
       ni_bmc_username:
         type: str
