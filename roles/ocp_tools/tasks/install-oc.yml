@@ -28,6 +28,7 @@
         remote_src: true
         mode: "0755"
         extra_opts:
+          - --touch
           - oc
           - kubectl
       register: _ot_oc_get
