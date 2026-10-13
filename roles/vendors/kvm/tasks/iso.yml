@@ -77,7 +77,7 @@
           {
             "BootSourceOverrideTarget": "Cd",
             "BootSourceOverrideMode": "UEFI",
-            "BootSourceOverrideEnabled": "Continuous",
+            "BootSourceOverrideEnabled": "Once",
           },
       }
     status_code: [200, 204]
