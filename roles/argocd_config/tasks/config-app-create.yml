@@ -22,6 +22,7 @@
           automated:
             prune: true
             selfHeal: true
+            allowEmpty: true
           syncOptions:
             - CreateNamespace=true
   kubernetes.core.k8s:
