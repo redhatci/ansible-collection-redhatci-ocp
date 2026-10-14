@@ -36,8 +36,8 @@
     # Write to an internal fact, not ni_bmc_address: when the role is included
     # with ni_bmc_address passed as a parameter, that parameter shadows any
     # set_fact of the same name for the rest of the role. main.yml merges this
-    # into the effective map (_ni_bmc_targets).
-    _ni_bmc_disc_address: "{{ _ni_bmc_disc_address | default({}) | combine({_ni_node: _ni_host}) }}"
+    # into the effective map (ni_bmc_targets).
+    ni_bmc_disc_address: "{{ ni_bmc_disc_address | default({}) | combine({_ni_node: _ni_host}) }}"
     ni_bmc_creds: >-
       {{
         ni_bmc_creds | default({}) | combine({

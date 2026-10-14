@@ -22,8 +22,8 @@
 - name: "Discover Redfish Managers endpoint"
   ansible.builtin.uri:
     url: >-
-      {{ (_ni_bmc_targets[node_name] if '://' in _ni_bmc_targets[node_name]
-          else 'https://' + _ni_bmc_targets[node_name])
+      {{ (ni_bmc_targets[node_name] if '://' in ni_bmc_targets[node_name]
+          else 'https://' + ni_bmc_targets[node_name])
          + '/redfish/v1/Managers' }}
     method: GET
     user: "{{ ni_bmc_user }}"
@@ -41,8 +41,8 @@
     url: >-
       {{ _ni_bmc_managers.json['Members'][0]['@odata.id']
          if '://' in _ni_bmc_managers.json['Members'][0]['@odata.id']
-         else (_ni_bmc_targets[node_name] if '://' in _ni_bmc_targets[node_name]
-               else 'https://' + _ni_bmc_targets[node_name])
+         else (ni_bmc_targets[node_name] if '://' in ni_bmc_targets[node_name]
+               else 'https://' + ni_bmc_targets[node_name])
               + _ni_bmc_managers.json['Members'][0]['@odata.id'] }}
     method: GET
     user: "{{ ni_bmc_user }}"
@@ -66,8 +66,8 @@
 - name: "Fetch Redfish root endpoint for {{ node_name }}"
   ansible.builtin.uri:
     url: >-
-      {{ (_ni_bmc_targets[node_name] if '://' in _ni_bmc_targets[node_name]
-          else 'https://' + _ni_bmc_targets[node_name])
+      {{ (ni_bmc_targets[node_name] if '://' in ni_bmc_targets[node_name]
+          else 'https://' + ni_bmc_targets[node_name])
          + '/redfish/v1' }}
     method: GET
     user: "{{ ni_bmc_user }}"
