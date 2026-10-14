@@ -9,6 +9,7 @@ A role to manage ArgoCD projects, repositories and applications.
 | ac_cluster_role    | openshift-gitops-{{ ac_namespace }}-argocd-application-controller | config-permissions                               | ClusterRole to bind to the ArgoCD application controller. The default follows the operator-generated naming pattern `<argocd_name>-<argocd_namespace>-argocd-application-controller`, and comes from [GitOps ZTP Reference CR](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/scalability_and_performance/telco-hub-ref-design-specs#gitops-ztp-crs_telco-hub).
 | ac_action          | None                                                              | config-app                                       | The action to perform on the ArgoCD application (create, delete, delete-cascade, sync-on, sync-off).
 | ac_app_dir_recurse | false                                                             | config-app-create                                | Whether to scan a directory recursively for manifests.
+| ac_allow_empty     | false                                                             | config-app-create                                | Set `syncPolicy.automated.allowEmpty`. Keep false for normal apps (with prune, empty source deletes all managed resources). Enable only for IBI site cleanup apps that sync `resources: []` after seed detach.
 | ac_app_name        | None                                                              | config-app-create, wait-for-healthy              | The name of the ArgoCD application to create.
 | ac_app_namespace   | None                                                              | config-app-create, config-project, config-repo   | The namespace where the ArgoCD application will be created.
 | ac_app_path        | None                                                              | config-app-create                                | The path in the Git repository where application is located.
@@ -134,6 +135,26 @@ A role to manage ArgoCD projects, repositories and applications.
     ac_app_path: path/to/app
     ac_repo: git@git.example.com/org/repo.git
     ac_repo_revision: main
+```
+
+### Create IBI site cleanup Application
+
+After seed generation, Phase 7 may leave the site kustomization as `resources: []`.
+Enable `ac_allow_empty` so automated prune can delete ClusterInstance/BMH:
+
+```yaml
+- name: Create ArgoCD application for IBI site cleanup
+  ansible.builtin.include_role:
+    name: redhatci.ocp.argocd_config
+    tasks_from: config-app
+  vars:
+    ac_action: create
+    ac_app_name: sno
+    ac_app_namespace: sno
+    ac_app_path: gitops-sno/target
+    ac_repo: git@git.example.com/org/gitops.git
+    ac_repo_revision: main_rendered_site_sno
+    ac_allow_empty: true
 ```
 
 ### Delete Application

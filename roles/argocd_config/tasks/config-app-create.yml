@@ -22,6 +22,7 @@
           automated:
             prune: true
             selfHeal: true
+            allowEmpty: "{{ ac_allow_empty | default(false) }}"
           syncOptions:
             - CreateNamespace=true
   kubernetes.core.k8s:
