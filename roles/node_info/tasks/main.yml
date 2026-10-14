@@ -51,6 +51,10 @@
         - ni_collect_bmc | bool
         - ni_bmc_from_bmh | bool
 
+    - name: Build effective BMC address map
+      ansible.builtin.set_fact:
+        _ni_bmc_targets: "{{ ni_bmc_address | default({}) | combine(_ni_bmc_disc_address | default({})) }}"
+
     - name: Collect BMC firmware data for each node
       ansible.builtin.include_tasks: collect_bmc.yml
       loop: "{{ ni_ready_node_names | default([]) }}"
@@ -59,7 +63,7 @@
       when:
         - ni_collect_bmc | bool
         - ni_ready_node_names is defined
-        - node_name in ni_bmc_address
+        - node_name in _ni_bmc_targets
 
     # Switch oc context to default namespace for collecting hw data
     - name: Get kernel information for all nodes

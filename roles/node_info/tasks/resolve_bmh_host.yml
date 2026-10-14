@@ -33,7 +33,11 @@
          + '://' + _ni_bmh.spec.bmc.address.split('://')[-1].split('/')[0] }}
     _ni_secret_data: "{{ _ni_bmh_secret.resources[0].data | default({}) }}"
   ansible.builtin.set_fact:
-    ni_bmc_address: "{{ ni_bmc_address | combine({_ni_node: _ni_host}) }}"
+    # Write to an internal fact, not ni_bmc_address: when the role is included
+    # with ni_bmc_address passed as a parameter, that parameter shadows any
+    # set_fact of the same name for the rest of the role. main.yml merges this
+    # into the effective map (_ni_bmc_targets).
+    _ni_bmc_disc_address: "{{ _ni_bmc_disc_address | default({}) | combine({_ni_node: _ni_host}) }}"
     ni_bmc_creds: >-
       {{
         ni_bmc_creds | default({}) | combine({
