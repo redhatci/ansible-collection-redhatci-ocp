@@ -100,6 +100,18 @@ argument_specs:
           - Set to false to skip TLS certificate validation for BMC Redfish requests.
           - Use only for BMCs with self-signed certificates in lab environments.
 
+      ni_hub_kubeconfig:
+        type: str
+        default: ""
+        description:
+          - Kubeconfig used to read BareMetalHost and Secret resources when
+            ni_bmc_from_bmh is true.
+          - Leave empty to use the current cluster context (e.g. IPI, where
+            BareMetalHosts live on the cluster itself).
+          - Set to the ACM hub kubeconfig when the BareMetalHosts live on the hub
+            (e.g. ACM/ZTP managed spokes), so BareMetalHost reads target the hub
+            while node and hardware collection stay on the current cluster.
+
       ni_hub_kubeconfig_namespace:
         type: str
         default: "openshift-machine-api"
