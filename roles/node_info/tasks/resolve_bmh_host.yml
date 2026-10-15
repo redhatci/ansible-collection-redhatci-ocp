@@ -9,7 +9,6 @@
     kind: Secret
     name: "{{ _ni_bmh.spec.bmc.credentialsName }}"
     namespace: "{{ _ni_bmh.metadata.namespace }}"
-    kubeconfig: "{{ ni_hub_kubeconfig | default(omit, true) }}"
   register: _ni_bmh_secret
   failed_when: false
   no_log: true

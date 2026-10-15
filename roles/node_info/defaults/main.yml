@@ -28,14 +28,11 @@ ni_bmc_password: ""
 # spec.bmc.credentialsName are used, so the Secret naming convention does not
 # matter. Discovered values are merged on top of any manually provided ones.
 ni_bmc_from_bmh: false
-# Kubeconfig used to read BareMetalHost/Secret resources. Leave empty to use
-# the current cluster; set to the ACM hub kubeconfig when the BareMetalHosts
-# live on the hub (e.g. ACM/ZTP managed spokes).
-ni_hub_kubeconfig: ""
-# Namespace to scope BareMetalHost discovery. When using an ACM hub with
-# multiple managed clusters, set this to the namespace of the target managed
-# cluster to avoid mixing BareMetalHosts across clusters. Empty = all namespaces.
-ni_hub_kubeconfig_namespace: ""
+# Namespace to scope BareMetalHost discovery. Defaults to openshift-machine-api
+# (the Metal3 namespace). When using an ACM hub with multiple managed clusters,
+# set this to the namespace of the target managed cluster to avoid mixing
+# BareMetalHosts across clusters.
+ni_hub_kubeconfig_namespace: "openshift-machine-api"
 # TLS certificate validation for BMC Redfish requests. Set to false only for
 # BMCs with self-signed certificates in lab environments.
 ni_bmc_validate_certs: true

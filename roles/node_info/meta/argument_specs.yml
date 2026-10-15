@@ -93,15 +93,6 @@ argument_specs:
             convention does not matter.
           - Discovered values are merged on top of any manually provided ones.
 
-      ni_hub_kubeconfig:
-        type: str
-        default: ""
-        description:
-          - Kubeconfig used to read BareMetalHost and Secret resources when
-            ni_bmc_from_bmh is true.
-          - Leave empty to use the current cluster; set to the ACM hub kubeconfig
-            when the BareMetalHosts live on the hub (e.g. ACM/ZTP managed spokes).
-
       ni_bmc_validate_certs:
         type: bool
         default: true
@@ -111,11 +102,11 @@ argument_specs:
 
       ni_hub_kubeconfig_namespace:
         type: str
-        default: ""
+        default: "openshift-machine-api"
         description:
           - Namespace to scope BareMetalHost discovery when ni_bmc_from_bmh is true.
+          - Defaults to openshift-machine-api (the Metal3 namespace).
           - When using an ACM hub with multiple managed clusters, set this to the
             namespace of the target managed cluster to avoid mixing BareMetalHosts
             from different clusters.
-          - Leave empty to query all namespaces (default; safe for single-cluster setups).
 ...
