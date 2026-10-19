@@ -32,6 +32,34 @@
         - "{{ http_data_dir }}"
       become: true
 
+    # Ephemeral (rootless) Podman cannot lsetxattr on leftovers in the shared
+    # data dir (validate_http_store test files labeled httpd_sys_content_t as
+    # root). Label as root and skip ":z" on the volume, same as sno_installer.
+    - name: Figure out status of SELinux
+      ansible.builtin.command: /usr/sbin/selinuxenabled
+      register: _shs_selinux
+      failed_when: false
+      changed_when: false
+
+    - name: Apply SELinux container file context to HTTP data directory
+      community.general.sefcontext:
+        target: "{{ http_data_dir }}(/.*)?"
+        setype: container_file_t
+      become: true
+      when:
+        - _shs_selinux.rc == 0
+
+    - name: Restore SELinux context on HTTP data directory
+      ansible.builtin.command:
+        argv:
+          - /usr/sbin/restorecon
+          - -RF
+          - "{{ http_data_dir }}"
+      become: true
+      changed_when: true
+      when:
+        - _shs_selinux.rc == 0
+
     - name: Ensure variable http_store_ip_version has a valid value
       ansible.builtin.assert:
         that: "http_store_ip_version == 'ipv4' or http_store_ip_version == 'ipv6'"
@@ -64,7 +92,7 @@
         pod: "{{ http_store_pod_name }}"
         state: "{{ container_status }}"
         volumes:
-          - "{{ http_data_dir }}:/var/www/html:z"
+          - "{{ http_data_dir }}:/var/www/html"
       register: container_info
       become: "{{ not (http_store_ephemeral | bool) }}"
 
