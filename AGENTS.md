@@ -30,3 +30,22 @@ Common misattributions to watch for:
 a symlink to Podman, the JSON output format differs and ansible-test
 fails with "Unable to get container host server information." Use
 `--local` instead on Podman-only systems.
+
+## Variable naming in roles (redhat-ci[no-role-prefix])
+
+The custom `redhat-ci[no-role-prefix]` rule (`hack/rules/redhat_ci.py`)
+enforces role-prefixed variable names for `set_fact` and `register`, and it
+treats the two **differently**. The default local `ansible-lint` profile does
+**not** load this rule, so violations pass locally but fail the CI
+"Ansible-lint Check". The prefix is derived from the role name — for
+`roles/<role>` it is the full name or the initials of the `_`-split parts
+(e.g. `node_info` → `node_info` or `ni`); `global` is also always allowed.
+
+- **`set_fact` → NO leading underscore.** Must start with `<prefix>_`
+  (e.g. `ni_bmc_targets`, `node_info_x`, `global_x`). `_ni_foo` is rejected.
+- **`register` → leading underscore REQUIRED.** Must start with `_<prefix>`
+  (e.g. `_ni_bmc_managers`, `_node_info_x`). `ni_foo` (no underscore) is rejected.
+
+So for the `node_info` role: name `set_fact` vars `ni_*` and `register` vars
+`_ni_*`. Task-level `vars:` are not checked. Example of the mistake that keeps
+recurring: a `set_fact: _ni_crd_bmc_version` must be `ni_crd_bmc_version`.
