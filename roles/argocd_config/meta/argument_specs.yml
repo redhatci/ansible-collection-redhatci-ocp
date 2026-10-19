@@ -123,6 +123,16 @@ argument_specs:
         required: false
         default: false
         description: Whether to scan a directory recursively for manifests.
+      ac_allow_empty:
+        type: bool
+        required: false
+        default: false
+        description: >
+          Set syncPolicy.automated.allowEmpty. Keep false for normal apps —
+          with prune enabled, an empty source would delete all managed
+          resources. Enable only for IBI site cleanup apps that intentionally
+          sync an empty kustomization (resources: []) so Argo can prune
+          ClusterInstance/BMH after seed detach.
       ac_app_path:
         type: str
         required: true

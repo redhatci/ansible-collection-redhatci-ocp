@@ -2,6 +2,7 @@
 ac_server_api: https://kubernetes.default.svc
 ac_namespace: openshift-gitops
 ac_app_dir_recurse: false
+ac_allow_empty: false
 ac_hide_secrets: true
 ac_cluster_role: "openshift-gitops-{{ ac_namespace }}-argocd-application-controller"
 ac_permissions_def:
