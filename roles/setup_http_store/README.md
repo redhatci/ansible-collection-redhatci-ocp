@@ -2,6 +2,12 @@
 
 Sets up a web host which can be used to distribute ISO's for `boot_iso` role
 
+The data directory is bind-mounted into a Podman httpd container. On SELinux
+hosts the role labels `http_data_dir` as `container_file_t` as root and does
+**not** use the `:z` volume option. Rootless (ephemeral) Podman cannot relabel
+leftover files in that shared directory, which previously failed container
+create with `lsetxattr ... operation not permitted`.
+
 ## Role Variables
 
 | Variable                  | Required | Default                                            | Comments                                                                                                                             |
@@ -19,6 +25,7 @@ Sets up a web host which can be used to distribute ISO's for `boot_iso` role
 ansible collections:
 
 - containers.podman
+- community.general
 
 ## Example Playbook
 

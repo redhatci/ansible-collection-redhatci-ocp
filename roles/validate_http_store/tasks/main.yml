@@ -12,29 +12,31 @@
     content: "{{ contents }}"
     dest: "{{ http_store_dir }}/{{ vhs_test_file_name }}"
     mode: "0644"
-    setype: httpd_sys_content_t
+    setype: container_file_t
   become: true
   delegate_to: http_store
 
-- name: Retrieve file from http_store
-  ansible.builtin.uri:
-    url: "{{ http_host }}/{{ vhs_test_file_name }}"
-    return_content: true
-  register: response
-  delegate_to: bastion
-  retries: 12
-  delay: 5
-  until: response.status == 200
+- name: Validate HTTP store round trip
+  block:
+    - name: Retrieve file from http_store
+      ansible.builtin.uri:
+        url: "{{ http_host }}/{{ vhs_test_file_name }}"
+        return_content: true
+      register: response
+      delegate_to: bastion
+      retries: 12
+      delay: 5
+      until: response.status == 200
 
-- name: Check content matches
-  ansible.builtin.assert:
-    that:
-      response.content == contents
-    quiet: true
-
-- name: Remove file on http_store
-  ansible.builtin.file:
-    path: "{{ http_store_dir }}/{{ vhs_test_file_name }}"
-    state: absent
-  become: true
-  delegate_to: http_store
+    - name: Check content matches
+      ansible.builtin.assert:
+        that:
+          response.content == contents
+        quiet: true
+  always:
+    - name: Remove file on http_store
+      ansible.builtin.file:
+        path: "{{ http_store_dir }}/{{ vhs_test_file_name }}"
+        state: absent
+      become: true
+      delegate_to: http_store
