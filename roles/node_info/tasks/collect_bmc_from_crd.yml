@@ -1,0 +1,54 @@
+---
+# Collect BMC firmware version from the hostfirmwarecomponents.metal3.io CRD.
+# This is the preferred source when ni_bmc_from_bmh is true because
+# currentVersion reflects the firmware currently running on the BMC;
+# previousVersion holds the prior version (tonyskapunk, Oct 14 2026).
+#
+# Expected task var (set by the caller loop in collect_bmc.yml):
+#   node_name            - the OpenShift node name (key in ni_bmc_data)
+# Expected role facts:
+#   ni_bmc_disc_bmh_meta - dict node_name -> {name, namespace, systemVendor}
+#                          populated by resolve_bmh_host.yml
+# Sets:
+#   ni_crd_bmc_found    - true when a non-empty currentVersion was retrieved
+#   ni_bmc_data          - updated with {vendor, version} for node_name
+
+- name: "Gather HostFirmwareComponents for {{ node_name }}"
+  kubernetes.core.k8s_info:
+    api_version: metal3.io/v1alpha1
+    kind: HostFirmwareComponents
+    name: "{{ ni_bmc_disc_bmh_meta[node_name].name }}"
+    namespace: "{{ ni_bmc_disc_bmh_meta[node_name].namespace }}"
+    kubeconfig: "{{ ni_hub_kubeconfig | default(omit, true) }}"
+  register: _ni_hfc
+  failed_when: false
+  no_log: true
+
+- name: "Extract BMC firmware version from HostFirmwareComponents for {{ node_name }}"
+  ansible.builtin.set_fact:
+    ni_crd_bmc_version: >-
+      {{ ((_ni_hfc.resources | default([]) | first | default({})).status | default({})).components
+         | default([])
+         | selectattr('component', 'equalto', 'bmc')
+         | map(attribute='currentVersion')
+         | select()
+         | first
+         | default('') }}
+  when:
+    - _ni_hfc is defined
+    - (_ni_hfc.resources | default([]) | length) > 0
+
+- name: "Store CRD-sourced BMC firmware data for {{ node_name }}"
+  ansible.builtin.set_fact:
+    ni_bmc_data: >-
+      {{ ni_bmc_data | combine({
+        node_name: {
+          'vendor': (ni_bmc_disc_bmh_meta[node_name].systemVendor | default('')) | regex_replace('(?i)\s*,?\s*inc\.?\s*$', ''),
+          'version': ni_crd_bmc_version
+        }
+      }) }}
+    ni_crd_bmc_found: true
+  when:
+    - ni_crd_bmc_version is defined
+    - (ni_crd_bmc_version | string) | length > 0
+...
