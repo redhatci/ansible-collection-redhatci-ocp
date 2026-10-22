@@ -17,6 +17,18 @@
     completion_percentage: "{{ install_status.resources[0].status.progress.totalPercentage }}"
     state_info: "{{ install_status.resources[0].status.debugInfo.state }}"
 
+# Query every Agent in the namespace. The query is scoped to the ones bound to
+# this ClusterDeployment via spec.clusterDeploymentName in the block vars below,
+# so that when multiple clusters share a namespace unrelated Agents do not skew
+# the registered count and validation diagnostics.
+- name: Get all agents in the namespace
+  kubernetes.core.k8s_info:
+    api_version: agent-install.openshift.io/v1beta1
+    kind: Agent
+    namespace: "{{ utils_cluster_namespace }}"
+  register: _ns_agents
+  no_log: true
+
 - name: Print completion status
   ansible.builtin.debug:
     msg:
@@ -28,6 +40,9 @@
   when:
     - completion_percentage | int != 100
   block:
+    - name: Check for persistent terminal install blocker
+      ansible.builtin.include_tasks: monitor-install-failfast.yml
+
     - name: Waiting for installation in min - {{ utils_monitor_wait_time }}
       ansible.builtin.pause:
         minutes: "{{ utils_monitor_wait_time }}"
