@@ -1,0 +1,31 @@
+---
+# Managed by redhatci.ocp.cluster_compare (cc_mode=generate)
+apiVersion: refgen/v1
+outputDir: {{ cc_generate_ref_dir }}
+{% if cc_omit_annotations | length > 0 %}
+omitAnnotations:
+{% for annotation in cc_omit_annotations %}
+  - {{ annotation }}
+{% endfor %}
+{% endif %}
+{% if cc_omit_labels | length > 0 %}
+omitLabels:
+{% for label in cc_omit_labels %}
+  - {{ label }}
+{% endfor %}
+{% endif %}
+resources:
+{% for resource in cc_generate_resources %}
+  - kind: {{ resource.kind }}
+    apiVersion: {{ resource.apiVersion }}
+    required: {{ resource.required | default(true) | bool | lower }}
+{% if resource.namespace is defined %}
+    namespace: {{ resource.namespace }}
+{% endif %}
+{% if resource.names is defined %}
+    names:
+{% for name in resource.names %}
+      - {{ name }}
+{% endfor %}
+{% endif %}
+{% endfor %}

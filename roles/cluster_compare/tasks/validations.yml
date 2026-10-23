@@ -6,6 +6,7 @@
     name: version
   register: _cc_cluster_version
   no_log: "{{ cc_logging }}"
+  when: cc_must_gather | default('') | length == 0
 
 - name: Set cluster version
   vars:
@@ -14,11 +15,14 @@
     current_ver: "{{ full_ver | string | regex_search('^\\d+\\.\\d+') }}"
   ansible.builtin.set_fact:
     cc_ocp_version: "{{ current_ver }}"
+  when: cc_must_gather | default('') | length == 0
 
 - name: Validate_ if the Cluster Version is supported
   ansible.builtin.fail:
     msg: "OCP version must be >= {{ cc_ocp_supported }} to run cluster compare"
-  when: cc_ocp_version is version( cc_ocp_supported , "<")
+  when:
+    - cc_must_gather | default('') | length == 0
+    - cc_ocp_version is version( cc_ocp_supported , "<")
 
 - name: Ensure report directory is defined
   ansible.builtin.fail:
