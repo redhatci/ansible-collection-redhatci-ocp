@@ -58,7 +58,8 @@
   until:
     - _ecd_cnfapp_pods.resources|length > 0
 
-# At least confirm that the first CNFApp pod is up and running, if using more than one
+# At least confirm that the first CNFApp pod is up and running, if using more than one.
+# Grout has two containers (grout and frr). TestPMD keeps a single container named ecd_cnfapp_name.
 - name: "Check CNFApp pod status to be running"
   kubernetes.core.k8s_info:
     api_version: v1
@@ -68,21 +69,14 @@
       - example-cnf-type=cnf-app
   register: _ecd_cnfapp_pods
   vars:
-    ecd_container_state_running_query: "resources[0].status.containerStatuses[?name=='{{ ecd_cnfapp_name }}'].state.running"
-    ecd_container_started_query: "resources[0].status.containerStatuses[?name=='{{ ecd_cnfapp_name }}'].started"
-    ecd_container_ready_query: "resources[0].status.containerStatuses[?name=='{{ ecd_cnfapp_name }}'].ready"
-    ecd_container_state_running: "{{ _ecd_cnfapp_pods | json_query(ecd_container_state_running_query) }}"
-    ecd_container_started: "{{ _ecd_cnfapp_pods | json_query(ecd_container_started_query) }}"
-    ecd_container_ready: "{{ _ecd_cnfapp_pods | json_query(ecd_container_ready_query) }}"
+    ecd_cnfapp_container_names: "{{ [ecd_cnfapp_name, 'frr'] if ecd_cnfapp_name == 'grout' else [ecd_cnfapp_name] }}"
+    ecd_running_container_names_query: "resources[0].status.containerStatuses[?state.running && started && ready].name"
+    ecd_running_container_names: "{{ _ecd_cnfapp_pods | json_query(ecd_running_container_names_query) | default([], true) }}"
   retries: 60
   delay: 5
   until:
     - _ecd_cnfapp_pods.resources[0].status.phase == 'Running'
-    - ecd_container_state_running | length > 0
-    - ecd_container_started | length > 0
-    - ecd_container_started[0] | bool
-    - ecd_container_ready | length > 0
-    - ecd_container_ready[0] | bool
+    - ecd_cnfapp_container_names | difference(ecd_running_container_names) | length == 0
 
 # Do not launch any TRexApp resource if ecd_run_deployment is different than 1
 # In that case, we need to skip failures when checking TRex test result to make the automation work
