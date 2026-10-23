@@ -1,24 +1,4 @@
 ---
-- name: Download and extract the latest binary files
-  vars:
-    cc_base_repo: https://github.com/openshift/kube-compare/releases/latest/download
-    cc_bins:
-      - kube-compare_addon_tools_linux_amd64.tar.gz
-      - kube-compare_linux_amd64.tar.gz
-  ansible.builtin.unarchive:
-    src: "{{ cc_base_repo }}/{{ binary }}"
-    dest: "{{ cc_work_dir }}"
-    remote_src: true
-    mode: '0755'
-  register: _cc_extract
-  retries: 6
-  delay: 10
-  until: _cc_extract is not failed
-  loop_control:
-    loop_var: binary
-  loop: "{{ cc_bins }}"
-  no_log: "{{ cc_logging }}"
-
 - name: Set Core reference URL for OCP-{{ cc_ocp_version }}
   ansible.builtin.set_fact:
     cc_reference:

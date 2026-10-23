@@ -9,4 +9,58 @@
 cc_infra_type: core
 cc_ocp_supported: 4.16
 cc_logging: true
+
+# Mode of operation: "compare" (default) runs cluster-compare against a reference;
+# "generate" produces a new reference from the cluster (or a must-gather).
+cc_mode: compare
+
+# kube-compare release to install. "generate" requires v0.13.1 or newer (the -g
+# flag). Set to "latest" to track the newest release.
+cc_version: "v0.13.1"
+
+# generate mode: path to an existing refgen/v1 generate-config. When empty, the role
+# templates one from cc_generate_resources.
+cc_generate_config: ""
+# generate mode: optional must-gather directory for offline generation (-f).
+cc_must_gather: ""
+# generate mode: where the generated reference tree is written. Defaults at runtime
+# to "{{ cc_reports_dir }}/reference".
+cc_generate_output_dir: ""
+# generate mode: extra metadata annotation/label keys to strip (defaults still apply).
+cc_omit_annotations: []
+cc_omit_labels: []
+# generate mode: resource types captured into the reference. Each entry supports
+# kind, apiVersion, required (true -> allOf, false -> anyOf), and optional
+# namespace / names.
+cc_generate_resources:
+  # PTP
+  - kind: PtpConfig
+    apiVersion: ptp.openshift.io/v1
+    required: true
+    namespace: openshift-ptp
+  - kind: PtpOperatorConfig
+    apiVersion: ptp.openshift.io/v1
+    required: true
+    namespace: openshift-ptp
+  # SR-IOV
+  - kind: SriovNetworkNodePolicy
+    apiVersion: sriovnetwork.openshift.io/v1
+    required: true
+    namespace: openshift-sriov-network-operator
+  - kind: SriovNetwork
+    apiVersion: sriovnetwork.openshift.io/v1
+    required: true
+    namespace: openshift-sriov-network-operator
+  - kind: SriovOperatorConfig
+    apiVersion: sriovnetwork.openshift.io/v1
+    required: true
+    namespace: openshift-sriov-network-operator
+  # TUNED / PerformanceProfile
+  - kind: PerformanceProfile
+    apiVersion: performance.openshift.io/v2
+    required: true
+  - kind: Tuned
+    apiVersion: tuned.openshift.io/v1
+    required: true
+    namespace: openshift-cluster-node-tuning-operator
 ...
