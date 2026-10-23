@@ -1,11 +1,11 @@
 ---
 - name: Set the generate output directory
   ansible.builtin.set_fact:
-    _cc_generate_output_dir: "{{ cc_generate_output_dir | default('', true) | ternary(cc_generate_output_dir, cc_reports_dir ~ '/reference') }}"
+    cc_generate_ref_dir: "{{ cc_generate_output_dir | default('', true) | ternary(cc_generate_output_dir, cc_reports_dir ~ '/reference') }}"
 
 - name: Ensure the generate output directory exists
   ansible.builtin.file:
-    path: "{{ _cc_generate_output_dir }}"
+    path: "{{ cc_generate_ref_dir }}"
     state: directory
     mode: '0755'
 
@@ -18,7 +18,7 @@
 
 - name: Resolve the generate-config path
   ansible.builtin.set_fact:
-    _cc_generate_config: "{{ cc_generate_config if (cc_generate_config | length > 0) else (cc_work_dir ~ '/generate-config.yaml') }}"
+    cc_generate_config_path: "{{ cc_generate_config if (cc_generate_config | length > 0) else (cc_work_dir ~ '/generate-config.yaml') }}"
 
 - name: Check the kube-compare help output
   ansible.builtin.command: ./kubectl-cluster_compare --help
@@ -39,7 +39,7 @@
 - name: Generate the reference from the cluster
   ansible.builtin.command: >
     ./kubectl-cluster_compare
-    -g {{ _cc_generate_config }}
+    -g {{ cc_generate_config_path }}
     {{ ('-f ' ~ cc_must_gather) if (cc_must_gather | length > 0) else '' }}
   args:
     chdir: "{{ cc_work_dir }}"
@@ -52,11 +52,11 @@
 
 - name: Find the generated reference files
   ansible.builtin.find:
-    paths: "{{ _cc_generate_output_dir }}"
+    paths: "{{ cc_generate_ref_dir }}"
     recurse: true
   register: _cc_generated_files
 
 - name: Report the generated reference location
   ansible.builtin.debug:
-    msg: "Generated {{ _cc_generated_files.matched }} file(s) under {{ _cc_generate_output_dir }}"
+    msg: "Generated {{ _cc_generated_files.matched }} file(s) under {{ cc_generate_ref_dir }}"
 ...

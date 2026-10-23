@@ -1,7 +1,7 @@
 ---
 # Managed by redhatci.ocp.cluster_compare (cc_mode=generate)
 apiVersion: refgen/v1
-outputDir: {{ _cc_generate_output_dir }}
+outputDir: {{ cc_generate_ref_dir }}
 {% if cc_omit_annotations | length > 0 %}
 omitAnnotations:
 {% for annotation in cc_omit_annotations %}

@@ -1,7 +1,7 @@
 ---
 - name: Set kube-compare release base URL
   ansible.builtin.set_fact:
-    _cc_release_base: >-
+    cc_release_base: >-
       {{ 'https://github.com/openshift/kube-compare/releases/latest/download'
          if cc_version == 'latest'
          else 'https://github.com/openshift/kube-compare/releases/download/' ~ cc_version }}
@@ -12,7 +12,7 @@
       - kube-compare_addon_tools_linux_amd64.tar.gz
       - kube-compare_linux_amd64.tar.gz
   ansible.builtin.unarchive:
-    src: "{{ _cc_release_base }}/{{ binary }}"
+    src: "{{ cc_release_base }}/{{ binary }}"
     dest: "{{ cc_work_dir }}"
     remote_src: true
     mode: '0755'
