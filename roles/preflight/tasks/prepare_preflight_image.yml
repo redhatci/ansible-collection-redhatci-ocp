@@ -51,10 +51,15 @@
       podman build .
       --no-cache
       --pull=always
+      --retry 3
       -t {{ preflight_image }}
       --build-arg=release_tag={{ preflight_github_tags.json[0].name }}
       {{ (dci_local_registry | length > 0) | ternary(push_image, "") }}
     chdir: "{{ preflight_tmp_dir.path }}/preflight-source"
+  register: _preflight_build
+  retries: 3
+  delay: 15
+  until: _preflight_build is succeeded
   notify:
     - "Remove the local preflight image"
 
