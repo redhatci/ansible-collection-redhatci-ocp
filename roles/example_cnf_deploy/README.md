@@ -150,7 +150,7 @@ ecd_network_config:
       ip: 172.16.21.61/24
 ```
 
-Remember that each container is deployed with two network interfaces attached to VFs. For each of them, you can specify the IP and the MAC address.
+Remember that each container is deployed with two network interfaces attached to VFs. For each of them, you can specify the IP and the MAC address. When the CNF application is Grout, those TRex addresses are copied onto the Grout CR as `trexMaclist` and `trexIplist`, in interface order, and the Grout init container installs them as static nexthops. TestPMD receives the MAC list only, as `ethpeerMaclist`.
 
 ## TRex extra profiles
 

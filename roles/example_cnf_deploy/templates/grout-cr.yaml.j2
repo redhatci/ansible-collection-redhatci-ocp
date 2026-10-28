@@ -8,6 +8,8 @@ spec:
   imagePullPolicy: {{ ecd_image_pull_policy }}
   size: {{ ecd_grout_deployment_size }}
   networks: {{ ecd_networks_cnfapp }}
+  trexMaclist: {{ ecd_trex_mac_list }}
+  trexIplist: {{ ecd_trex_ip_list }}
   runDeployment: {{ ecd_run_deployment }}
   deploymentType: {{ ecd_deployment_type }}
 {% if ecd_high_perf_runtime is defined and ecd_high_perf_runtime|length %}
