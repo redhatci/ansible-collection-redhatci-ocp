@@ -1,10 +1,16 @@
 ---
+# Parallel spoke jobs can race on the same hub CRB
+# First job GET sees it and deletes it, second job DELETE returns NotFound.
 - name: Remove existing ArgoCD ClusterRoleBinding
   kubernetes.core.k8s:
     api_version: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
     name: "{{ ac_permissions_def.metadata.name }}"
     state: absent
+  register: _ac_crb_delete
+  failed_when:
+    - _ac_crb_delete is failed
+    - "_ac_crb_delete.reason | default('') != 'Not Found'"
 
 - name: Grant ArgoCD Default Permissions
   kubernetes.core.k8s:
