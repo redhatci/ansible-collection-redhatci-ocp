@@ -9,6 +9,9 @@ Features
   - Clones or pulls reference metadata and templates from containers or Git repositories.
   - Executes the kube-compare tool for detailed cluster configuration analysis.
   - Supports both container-based and source-based workflows.
+  - Can also **generate** a new reference (`metadata.yaml` + per-Kind CRs) from a
+    running cluster or a must-gather, using the kube-compare `-g` flag
+    (requires kube-compare v0.13.1 or newer).
 
 ## Requirements
 
@@ -19,9 +22,17 @@ Features
 
 | Variable Name                         | Default Value                      | Required                                          | Description                                                                                            |
 |-------------------------------------- |----------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------|
-| `cc_infra_type`                       | core                               | false                                             | OCP deployment type (core, ran)                                                                        |
+| `cc_infra_type`                       | core                               | false                                             | OCP deployment type (core, ran). Used in compare mode.                                                 |
 | `cc_logging`                          | true                               | false                                             | Controls ansible task's logging output.                                                                |
-| `cc_reports_dir`                      |                                    | true                                              | Output directory for the report files                                                                  |
+| `cc_reports_dir`                      |                                    | true                                              | Output directory for the report files (compare) or the generated reference (generate).                 |
+| `cc_mode`                             | compare                            | false                                             | `compare` runs kube-compare against a reference; `generate` produces a new reference.                  |
+| `cc_version`                          | v0.13.1                            | false                                             | kube-compare release to install. `generate` needs v0.13.1+. Use `latest` to track newest.             |
+| `cc_generate_config`                  | ""                                 | false                                             | generate: path to an existing refgen/v1 config. When empty, one is templated from `cc_generate_resources`. |
+| `cc_must_gather`                      | ""                                 | false                                             | generate: optional must-gather directory for offline generation (`-f`).                                |
+| `cc_generate_output_dir`              | ""                                 | false                                             | generate: where the reference is written. Defaults to `{{ cc_reports_dir }}/reference`.                |
+| `cc_generate_resources`               | PTP, SR-IOV, TUNED set             | false                                             | generate: resource types to capture (kind, apiVersion, required, optional namespace/names).            |
+| `cc_omit_annotations`                 | []                                 | false                                             | generate: extra annotation keys to strip (defaults still apply).                                       |
+| `cc_omit_labels`                      | []                                 | false                                             | generate: extra label keys to strip (defaults still apply).                                            |
 <!-- Variables for containerized version
 | `cc_reference_container_source`       | ""                                                                                     | Pullspec for the container that holds the reference `metadata.yaml` and templates.                |
 | `cc_reference_repository`             | ""                                                                                     | Git repository to clone for obtaining the reference `metadata.yaml` and templates.                     |
@@ -40,6 +51,18 @@ Features
 - name: Run Cluster compare
   vars:
     cc_infra_type: ran
+  ansible.builtin.include_role:
+    name: redhatci.ocp.cluster_compare
+```
+
+Generate a reference from a running cluster (captures the default PTP, SR-IOV and
+TUNED/PerformanceProfile set into `{{ cc_reports_dir }}/reference`):
+
+```yaml
+- name: Generate a kube-compare reference
+  vars:
+    cc_mode: generate
+    cc_reports_dir: /var/tmp/cluster-compare
   ansible.builtin.include_role:
     name: redhatci.ocp.cluster_compare
 ```

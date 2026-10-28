@@ -1,0 +1,27 @@
+---
+- name: Set kube-compare release base URL
+  ansible.builtin.set_fact:
+    cc_release_base: >-
+      {{ 'https://github.com/openshift/kube-compare/releases/latest/download'
+         if cc_version == 'latest'
+         else 'https://github.com/openshift/kube-compare/releases/download/' ~ cc_version }}
+
+- name: Download and extract the kube-compare binaries
+  vars:
+    cc_bins:
+      - kube-compare_addon_tools_linux_amd64.tar.gz
+      - kube-compare_linux_amd64.tar.gz
+  ansible.builtin.unarchive:
+    src: "{{ cc_release_base }}/{{ binary }}"
+    dest: "{{ cc_work_dir }}"
+    remote_src: true
+    mode: '0755'
+  register: _cc_extract
+  retries: 6
+  delay: 10
+  until: _cc_extract is not failed
+  loop_control:
+    loop_var: binary
+  loop: "{{ cc_bins }}"
+  no_log: "{{ cc_logging }}"
+...
