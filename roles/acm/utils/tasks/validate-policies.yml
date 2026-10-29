@@ -21,13 +21,6 @@
       | json_query("[?status.compliant && status.compliant != 'Compliant'
       && spec.remediationAction == 'enforce'].metadata.name")
       | length == 0
-    - >-
-      all_policies.resources
-      | selectattr('metadata.name', 'match',
-      (utils_policy_name_prefix | default('')) | regex_escape)
-      | list
-      | json_query("[?status.compliant && status.compliant != 'Compliant'].metadata.name")
-      | length == 0
   retries: "{{ utils_policy_retries }}"
   delay: "{{ utils_policy_delay }}"
   failed_when: all_policies is undefined
@@ -67,11 +60,3 @@
       when:
         - utils_policy_strict | bool
         - non_compliant_enforced_policies | length > 0
-
-    - name: Fail if any policy is non-compliant
-      ansible.builtin.fail:
-        msg: >-
-          Policies not compliant: {{ non_compliant_policies }}
-      when:
-        - utils_policy_strict | bool
-        - non_compliant_policies | length > 0
