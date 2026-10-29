@@ -59,6 +59,14 @@ argument_specs:
           - When true, the role queries each node's BMC listed in ni_bmc_address
             and merges the result into hardware.<node>.json under hardware.data.bmc.
 
+      ni_collect_bios_settings:
+        type: bool
+        default: false
+        description:
+          - Enable live BIOS settings collection via the Redfish API (best-effort).
+          - Uses the same BMC addresses and credentials as ni_collect_bmc.
+          - Results are merged into hardware.<node>.json under hardware.data.bios_settings.
+
       ni_bmc_address:
         type: dict
         default: {}

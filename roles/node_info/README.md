@@ -14,6 +14,7 @@ Gathers node hardware and kernel information from an OpenShift cluster. This rol
 | ni_tag                    | `latest`                            | No       | Tag used for the lshw container image in disconnected mode
 | ni_local_img_path         | `/dci/lshw`                         | No       | Image path in the local registry for the lshw container used in disconnected mode
 | ni_collect_bmc            | `false`                             | No       | Enable out-of-band BMC firmware collection via the Redfish API
+| ni_collect_bios_settings  | `false`                             | No       | Enable live BIOS settings collection via Redfish (best-effort); reuses BMC addresses and credentials
 | ni_bmc_address            | `{}`                                | No*      | Map of node name → BMC hostname/IP. Required when `ni_collect_bmc=true` and `ni_bmc_from_bmh=false` (not needed when BareMetalHost discovery supplies addresses)
 | ni_bmc_username           | `""`                                | No*      | Username for Redfish API authentication
 | ni_bmc_password           | `""`                                | No*      | Password for Redfish API authentication. Use Ansible Vault to protect this value
@@ -46,6 +47,7 @@ Gathers node hardware and kernel information from an OpenShift cluster. This rol
 - **BMC firmware collection**: Merges vendor and firmware version into `hardware.<node>.json` under `hardware.data.bmc` (keys: `vendor`, `version`) using a two-tier strategy:
   - **Tier 1 — `hostfirmwarecomponents.metal3.io` CRD** (preferred when `ni_bmc_from_bmh: true`): reads `currentVersion` from the CRD. No out-of-band access or credentials required; kubeconfig access is sufficient. `currentVersion` reflects the firmware currently running on the BMC; `previousVersion` holds the prior version.
   - **Tier 2 — Redfish fallback**: used when the CRD is unavailable or carries no `currentVersion` for the `bmc` component, or when `ni_bmc_from_bmh: false` (manual address mode). Queries `/redfish/v1/Managers` out-of-band.
+- **BIOS settings collection**: Queries the live Redfish `Bios` resource (not the BareMetalHost `HostFirmwareSettings`) and merges it into `hardware.<node>.json` under `hardware.data.bios_settings` (keys: `registry`, `attributes`). Attributes are a `name`/`value` list (values stringified) to keep the Elasticsearch mapping stable (`nodes.hardware.data.bios_settings.*`). Collection is best-effort: nodes that fail are simply omitted.
 - **Disconnected support**: Can build and use custom container image in air-gapped environments
 - **Best-effort execution**: Uses `ignore_errors: true` to continue on failures
 
@@ -155,6 +157,36 @@ setting up the kubeconfig environment, as it is for all other k8s tasks in this
 role. The node name is taken from the `bmac.agent-install.openshift.io/hostname`
 annotation when present, otherwise from the BareMetalHost's discovered hostname
 or its name. Only nodes whose name matches a ready node are queried.
+
+### BIOS settings collection
+
+```yaml
+- name: Gather node information with BIOS settings (manual BMC addresses)
+  ansible.builtin.include_role:
+    name: redhatci.ocp.node_info
+  vars:
+    ni_collect_bios_settings: true
+    ni_bmc_address:
+      node1: 192.0.2.10
+    ni_bmc_username: admin
+    ni_bmc_password: "{{ vault_bmc_password }}"
+
+- name: Gather node information with BIOS settings (from BareMetalHosts)
+  ansible.builtin.include_role:
+    name: redhatci.ocp.node_info
+  vars:
+    ni_collect_bios_settings: true
+    ni_bmc_from_bmh: true
+```
+
+Output sample (`hardware.<node>.json`):
+
+```json
+{"hardware": {"data": {"bios_settings": {
+  "registry": "BiosAttributeRegistry.v1_0_0",
+  "attributes": [{"name": "ProcTurboMode", "value": "Enabled"}]
+}}}}
+```
 
 ## Notes
 
