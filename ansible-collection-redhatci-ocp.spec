@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.8.EPOCH
+Version:        6.9.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+
+* Thu Oct 29 2026 Frederic Lepied <flepied@redhat.com> - 6.9.EPOCH-VERS
+- Extend node_info role to collect live BIOS settings via Redfish
 
 * Tue Oct 20 2026 Frederic Lepied <flepied@redhat.com> - 6.8.EPOCH-VERS
 - Extend node_info role to collect BMC firmware version out-of-band via Redfish

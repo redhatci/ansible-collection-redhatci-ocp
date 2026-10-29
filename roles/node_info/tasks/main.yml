@@ -33,6 +33,7 @@
     - name: Initialize BMC data accumulator
       ansible.builtin.set_fact:
         ni_bmc_data: {}
+        ni_bios_data: {}
         ni_bmc_disc_bmh_meta: {}
 
     - name: Validate ni_bmc_address is set when required
@@ -41,15 +42,15 @@
           - ni_bmc_address | length > 0
         fail_msg: >-
           ni_bmc_address must be provided (non-empty) when ni_collect_bmc=true
-          and ni_bmc_from_bmh=false.
+          or ni_collect_bios_settings=true and ni_bmc_from_bmh=false.
       when:
-        - ni_collect_bmc | bool
+        - ni_collect_bmc | bool or ni_collect_bios_settings | bool
         - not (ni_bmc_from_bmh | bool)
 
     - name: Discover BMC address and credentials from BareMetalHosts
       ansible.builtin.include_tasks: discover_bmh.yml
       when:
-        - ni_collect_bmc | bool
+        - ni_collect_bmc | bool or ni_collect_bios_settings | bool
         - ni_bmc_from_bmh | bool
 
     - name: Build effective BMC address map
@@ -63,6 +64,16 @@
         loop_var: node_name
       when:
         - ni_collect_bmc | bool
+        - ni_ready_node_names is defined
+        - node_name in ni_bmc_targets
+
+    - name: Collect BIOS settings for each node
+      ansible.builtin.include_tasks: collect_bios.yml
+      loop: "{{ ni_ready_node_names | default([]) }}"
+      loop_control:
+        loop_var: node_name
+      when:
+        - ni_collect_bios_settings | bool
         - ni_ready_node_names is defined
         - node_name in ni_bmc_targets
 
@@ -186,6 +197,10 @@
             ) | combine(
               {'bmc': ni_bmc_data[item.node_name]}
               if (ni_collect_bmc | bool and item.node_name in ni_bmc_data)
+              else {}
+            ) | combine(
+              {'bios_settings': ni_bios_data[item.node_name]}
+              if (ni_collect_bios_settings | bool and item.node_name in ni_bios_data)
               else {}
             ),
             'error': item.stderr if (item.rc is defined and item.rc != 0) else (null | default(''))

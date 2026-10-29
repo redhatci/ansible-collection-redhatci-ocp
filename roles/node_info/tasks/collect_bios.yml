@@ -1,0 +1,101 @@
+---
+# Collect live BIOS settings for a single node over Redfish (best-effort).
+# Expected task vars (set by the caller loop):
+#   node_name - the OpenShift node name (used as dict key)
+# Expected role vars: ni_bmc_targets, ni_bmc_creds, ni_bmc_username,
+#   ni_bmc_password, ni_bmc_validate_certs
+
+- name: "Collect BIOS settings via Redfish for {{ node_name }}"
+  when:
+    - (((ni_bmc_creds | default({}))[node_name].username | default(ni_bmc_username)) | length) > 0
+    - (((ni_bmc_creds | default({}))[node_name].password | default(ni_bmc_password)) | length) > 0
+  block:
+    - name: "Set effective BMC credentials for BIOS collection on {{ node_name }}"
+      ansible.builtin.set_fact:
+        _ni_bios_user: >-
+          {{ (ni_bmc_creds | default({}))[node_name].username
+             | default(ni_bmc_username) }}
+        _ni_bios_pass: >-
+          {{ (ni_bmc_creds | default({}))[node_name].password
+             | default(ni_bmc_password) }}
+        _ni_bios_base: >-
+          {{ ni_bmc_targets[node_name] if '://' in ni_bmc_targets[node_name]
+             else 'https://' + ni_bmc_targets[node_name] }}
+      no_log: true
+
+    - name: "Get Redfish Systems collection for {{ node_name }}"
+      ansible.builtin.uri:
+        url: "{{ _ni_bios_base }}/redfish/v1/Systems"
+        method: GET
+        user: "{{ _ni_bios_user }}"
+        password: "{{ _ni_bios_pass }}"
+        force_basic_auth: true
+        validate_certs: "{{ ni_bmc_validate_certs }}"
+        return_content: true
+        timeout: 30
+        status_code: [200]
+      register: _ni_bios_systems
+      failed_when: false
+      no_log: true
+
+    - name: "Get Redfish System resource for {{ node_name }}"
+      ansible.builtin.uri:
+        url: >-
+          {{ _ni_bios_base if '://' not in _ni_bios_sys_id else '' }}{{ _ni_bios_sys_id }}
+        method: GET
+        user: "{{ _ni_bios_user }}"
+        password: "{{ _ni_bios_pass }}"
+        force_basic_auth: true
+        validate_certs: "{{ ni_bmc_validate_certs }}"
+        return_content: true
+        timeout: 30
+        status_code: [200]
+      vars:
+        _ni_bios_sys_id: "{{ _ni_bios_systems.json.Members[0]['@odata.id'] | default('') }}"
+      register: _ni_bios_system
+      failed_when: false
+      no_log: true
+      when:
+        - _ni_bios_systems.status | default(0) == 200
+        - _ni_bios_systems.json.Members | default([]) | length > 0
+        - (_ni_bios_systems.json.Members[0]['@odata.id'] | default('')) | length > 0
+
+    - name: "Get Redfish Bios resource for {{ node_name }}"
+      ansible.builtin.uri:
+        url: >-
+          {{ _ni_bios_base if '://' not in _ni_bios_id else '' }}{{ _ni_bios_id }}
+        method: GET
+        user: "{{ _ni_bios_user }}"
+        password: "{{ _ni_bios_pass }}"
+        force_basic_auth: true
+        validate_certs: "{{ ni_bmc_validate_certs }}"
+        return_content: true
+        timeout: 30
+        status_code: [200]
+      vars:
+        _ni_bios_id: "{{ _ni_bios_system.json.Bios['@odata.id'] | default('') }}"
+      register: _ni_bios_res
+      failed_when: false
+      no_log: true
+      when:
+        - _ni_bios_system.status | default(0) == 200
+        - (_ni_bios_system.json.Bios['@odata.id'] | default('')) | length > 0
+
+    - name: "Record BIOS settings for {{ node_name }}"
+      ansible.builtin.set_fact:
+        ni_bios_data: >-
+          {{ ni_bios_data | combine({node_name: {
+            'registry': _ni_bios_res.json.AttributeRegistry | default('') | string,
+            'attributes': _ni_bios_res.json.Attributes | dict2items
+              | json_query('[].{name: key, value: to_string(value)}')
+          }}) }}
+      no_log: true
+      when:
+        - _ni_bios_res.status | default(0) == 200
+        - _ni_bios_res.json.Attributes is defined
+        - _ni_bios_res.json.Attributes is mapping
+  rescue:
+    - name: "BIOS settings collection failed for {{ node_name }}"
+      ansible.builtin.debug:
+        msg: "BIOS settings collection failed for {{ node_name }}; continuing"
+...
