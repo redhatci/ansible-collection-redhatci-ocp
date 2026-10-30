@@ -92,14 +92,13 @@
         # Drop credential-like attributes, keep null values as null and
         # stringify the others (JSON-encode non-string values).
         _ni_bios_attrs: >-
-          {%- set ns = namespace(attrs=[]) -%}
+          {%- set ns = namespace(attrs={}) -%}
           {%- for attr in _ni_bios_res.json.Attributes | dict2items
                 | rejectattr('key', 'search', ni_bios_settings_exclude) -%}
-          {%- set ns.attrs = ns.attrs + [{
-                'name': attr.key,
-                'value': none if attr.value is none
+          {%- set ns.attrs = ns.attrs | combine({
+                attr.key: none if attr.value is none
                   else (attr.value if attr.value is string else attr.value | to_json)
-              }] -%}
+              }) -%}
           {%- endfor -%}
           {{ ns.attrs }}
       no_log: true
