@@ -12,23 +12,23 @@
   block:
     - name: "Set effective BMC credentials for BIOS collection on {{ node_name }}"
       ansible.builtin.set_fact:
-        _ni_bios_user: >-
+        ni_bios_user: >-
           {{ (ni_bmc_creds | default({}))[node_name].username
              | default(ni_bmc_username) }}
-        _ni_bios_pass: >-
+        ni_bios_pass: >-
           {{ (ni_bmc_creds | default({}))[node_name].password
              | default(ni_bmc_password) }}
-        _ni_bios_base: >-
+        ni_bios_base: >-
           {{ ni_bmc_targets[node_name] if '://' in ni_bmc_targets[node_name]
              else 'https://' + ni_bmc_targets[node_name] }}
       no_log: true
 
     - name: "Get Redfish Systems collection for {{ node_name }}"
       ansible.builtin.uri:
-        url: "{{ _ni_bios_base }}/redfish/v1/Systems"
+        url: "{{ ni_bios_base }}/redfish/v1/Systems"
         method: GET
-        user: "{{ _ni_bios_user }}"
-        password: "{{ _ni_bios_pass }}"
+        user: "{{ ni_bios_user }}"
+        password: "{{ ni_bios_pass }}"
         force_basic_auth: true
         validate_certs: "{{ ni_bmc_validate_certs }}"
         return_content: true
@@ -41,17 +41,17 @@
     - name: "Get Redfish System resource for {{ node_name }}"
       ansible.builtin.uri:
         url: >-
-          {{ _ni_bios_base if '://' not in _ni_bios_sys_id else '' }}{{ _ni_bios_sys_id }}
+          {{ ni_bios_base if '://' not in ni_bios_sys_id else '' }}{{ ni_bios_sys_id }}
         method: GET
-        user: "{{ _ni_bios_user }}"
-        password: "{{ _ni_bios_pass }}"
+        user: "{{ ni_bios_user }}"
+        password: "{{ ni_bios_pass }}"
         force_basic_auth: true
         validate_certs: "{{ ni_bmc_validate_certs }}"
         return_content: true
         timeout: 30
         status_code: [200]
       vars:
-        _ni_bios_sys_id: "{{ _ni_bios_systems.json.Members[0]['@odata.id'] | default('') }}"
+        ni_bios_sys_id: "{{ _ni_bios_systems.json.Members[0]['@odata.id'] | default('') }}"
       register: _ni_bios_system
       failed_when: false
       no_log: true
@@ -63,17 +63,17 @@
     - name: "Get Redfish Bios resource for {{ node_name }}"
       ansible.builtin.uri:
         url: >-
-          {{ _ni_bios_base if '://' not in _ni_bios_id else '' }}{{ _ni_bios_id }}
+          {{ ni_bios_base if '://' not in ni_bios_id else '' }}{{ ni_bios_id }}
         method: GET
-        user: "{{ _ni_bios_user }}"
-        password: "{{ _ni_bios_pass }}"
+        user: "{{ ni_bios_user }}"
+        password: "{{ ni_bios_pass }}"
         force_basic_auth: true
         validate_certs: "{{ ni_bmc_validate_certs }}"
         return_content: true
         timeout: 30
         status_code: [200]
       vars:
-        _ni_bios_id: "{{ _ni_bios_system.json.Bios['@odata.id'] | default('') }}"
+        ni_bios_id: "{{ _ni_bios_system.json.Bios['@odata.id'] | default('') }}"
       register: _ni_bios_res
       failed_when: false
       no_log: true
