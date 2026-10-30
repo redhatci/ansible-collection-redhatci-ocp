@@ -132,5 +132,6 @@ argument_specs:
         required: false
         default: true
         description: >
-          Whether to enforce strict compliance checking. If true, the module will fail if any policy is non-compliant.
-          Default is true.
+          Whether to enforce strict compliance checking. If true, the check fails
+          when an enforced policy is non-compliant. Inform policies are reported
+          but do not fail the check. Default is true.
