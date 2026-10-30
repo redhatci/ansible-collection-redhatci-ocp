@@ -30,6 +30,7 @@
         user: "{{ ni_bios_user }}"
         password: "{{ ni_bios_pass }}"
         force_basic_auth: true
+        follow_redirects: none
         validate_certs: "{{ ni_bmc_validate_certs }}"
         return_content: true
         timeout: 30
@@ -40,12 +41,12 @@
 
     - name: "Get Redfish System resource for {{ node_name }}"
       ansible.builtin.uri:
-        url: >-
-          {{ ni_bios_base if '://' not in ni_bios_sys_id else '' }}{{ ni_bios_sys_id }}
+        url: "{{ ni_bios_base }}{{ ni_bios_sys_id }}"
         method: GET
         user: "{{ ni_bios_user }}"
         password: "{{ ni_bios_pass }}"
         force_basic_auth: true
+        follow_redirects: none
         validate_certs: "{{ ni_bmc_validate_certs }}"
         return_content: true
         timeout: 30
@@ -55,19 +56,22 @@
       register: _ni_bios_system
       failed_when: false
       no_log: true
+      # Only follow a relative link on the BMC itself (BMC credentials are sent
+      # with the request) and skip BMCs exposing several systems, as the one
+      # matching node_name cannot be identified.
       when:
         - _ni_bios_systems.status | default(0) == 200
-        - _ni_bios_systems.json.Members | default([]) | length > 0
-        - (_ni_bios_systems.json.Members[0]['@odata.id'] | default('')) | length > 0
+        - _ni_bios_systems.json.Members | default([]) | length == 1
+        - ni_bios_sys_id is match('/[^/]')
 
     - name: "Get Redfish Bios resource for {{ node_name }}"
       ansible.builtin.uri:
-        url: >-
-          {{ ni_bios_base if '://' not in ni_bios_id else '' }}{{ ni_bios_id }}
+        url: "{{ ni_bios_base }}{{ ni_bios_id }}"
         method: GET
         user: "{{ ni_bios_user }}"
         password: "{{ ni_bios_pass }}"
         force_basic_auth: true
+        follow_redirects: none
         validate_certs: "{{ ni_bmc_validate_certs }}"
         return_content: true
         timeout: 30
@@ -79,7 +83,7 @@
       no_log: true
       when:
         - _ni_bios_system.status | default(0) == 200
-        - (_ni_bios_system.json.Bios['@odata.id'] | default('')) | length > 0
+        - ni_bios_id is match('/[^/]')
 
     - name: "Record BIOS settings for {{ node_name }}"
       ansible.builtin.set_fact:

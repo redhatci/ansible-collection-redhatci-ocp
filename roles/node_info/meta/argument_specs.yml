@@ -69,7 +69,7 @@ argument_specs:
 
       ni_bios_settings_exclude:
         type: str
-        default: "(?i)(password|secret|salt)$"
+        default: "(?i)(password|secret|salt|hash)"
         description:
           - Regular expression; BIOS attributes whose name matches it are not collected.
           - Prevents uploading passwords, hashes or secrets that some BMCs return.
