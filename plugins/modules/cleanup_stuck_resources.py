@@ -163,7 +163,7 @@ def extract_item_metadata(item, default_namespace):
     if hasattr(item, "metadata"):
         meta = item.metadata
         return {
-            "deletion_ts": getattr(meta, "deletion_timestamp", None),
+            "deletion_ts": getattr(meta, "deletionTimestamp", None),
             "finalizers": getattr(meta, "finalizers", None),
             "name": getattr(meta, "name", ""),
             "namespace": getattr(meta, "namespace", default_namespace),
