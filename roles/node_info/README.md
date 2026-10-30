@@ -48,7 +48,7 @@ Gathers node hardware and kernel information from an OpenShift cluster. This rol
 - **BMC firmware collection**: Merges vendor and firmware version into `hardware.<node>.json` under `hardware.data.bmc` (keys: `vendor`, `version`) using a two-tier strategy:
   - **Tier 1 — `hostfirmwarecomponents.metal3.io` CRD** (preferred when `ni_bmc_from_bmh: true`): reads `currentVersion` from the CRD. No out-of-band access or credentials required; kubeconfig access is sufficient. `currentVersion` reflects the firmware currently running on the BMC; `previousVersion` holds the prior version.
   - **Tier 2 — Redfish fallback**: used when the CRD is unavailable or carries no `currentVersion` for the `bmc` component, or when `ni_bmc_from_bmh: false` (manual address mode). Queries `/redfish/v1/Managers` out-of-band.
-- **BIOS settings collection**: Queries the live Redfish `Bios` resource (not the BareMetalHost `HostFirmwareSettings`) and merges it into `hardware.<node>.json` under `hardware.data.bios_settings` (keys: `registry`, `attributes`). Attributes are a `name`/`value` list (values stringified, `null` kept as `null`; names matching `ni_bios_settings_exclude` are dropped) to keep the Elasticsearch mapping stable (`nodes.hardware.data.bios_settings.*`). Collection is best-effort: nodes that fail are simply omitted.
+- **BIOS settings collection**: Queries the live Redfish `Bios` resource (not the BareMetalHost `HostFirmwareSettings`) and merges it into `hardware.<node>.json` under `hardware.data.bios_settings` (keys: `registry`, `attributes`). Attributes are a flat attribute name → value mapping (values stringified, `null` kept as `null`; names matching `ni_bios_settings_exclude` are dropped). Collection is best-effort: nodes that fail are simply omitted.
 - **Disconnected support**: Can build and use custom container image in air-gapped environments
 - **Best-effort execution**: Uses `ignore_errors: true` to continue on failures
 
@@ -185,7 +185,7 @@ Output sample (`hardware.<node>.json`):
 ```json
 {"hardware": {"data": {"bios_settings": {
   "registry": "BiosAttributeRegistry.v1_0_0",
-  "attributes": [{"name": "ProcTurboMode", "value": "Enabled"}]
+  "attributes": {"ProcTurboMode": "Enabled", "SriovGlobalEnable": "Enabled"}
 }}}}
 ```
 
