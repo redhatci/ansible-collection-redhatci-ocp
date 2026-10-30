@@ -67,6 +67,13 @@ argument_specs:
           - Uses the same BMC addresses and credentials as ni_collect_bmc.
           - Results are merged into hardware.<node>.json under hardware.data.bios_settings.
 
+      ni_bios_settings_exclude:
+        type: str
+        default: "(?i)(password|secret|salt)$"
+        description:
+          - Regular expression; BIOS attributes whose name matches it are not collected.
+          - Prevents uploading passwords, hashes or secrets that some BMCs return.
+
       ni_bmc_address:
         type: dict
         default: {}

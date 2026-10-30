@@ -86,9 +86,22 @@
         ni_bios_data: >-
           {{ ni_bios_data | combine({node_name: {
             'registry': _ni_bios_res.json.AttributeRegistry | default('') | string,
-            'attributes': _ni_bios_res.json.Attributes | dict2items
-              | json_query('[].{name: key, value: to_string(value)}')
+            'attributes': _ni_bios_attrs
           }}) }}
+      vars:
+        # Drop credential-like attributes, keep null values as null and
+        # stringify the others (JSON-encode non-string values).
+        _ni_bios_attrs: >-
+          {%- set ns = namespace(attrs=[]) -%}
+          {%- for attr in _ni_bios_res.json.Attributes | dict2items
+                | rejectattr('key', 'search', ni_bios_settings_exclude) -%}
+          {%- set ns.attrs = ns.attrs + [{
+                'name': attr.key,
+                'value': none if attr.value is none
+                  else (attr.value if attr.value is string else attr.value | to_json)
+              }] -%}
+          {%- endfor -%}
+          {{ ns.attrs }}
       no_log: true
       when:
         - _ni_bios_res.status | default(0) == 200
