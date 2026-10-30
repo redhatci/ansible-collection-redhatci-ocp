@@ -17,6 +17,12 @@ ni_local_img_path: "/dci/lshw"
 # BMC out-of-band firmware collection settings
 # Set to true to enable Redfish BMC data collection
 ni_collect_bmc: false
+# Set to true to also collect live BIOS settings over Redfish (best-effort).
+# Reuses the BMC addresses and credentials below.
+ni_collect_bios_settings: false
+# BIOS attributes whose name matches this regex are not collected (some BMCs
+# return password hashes or secrets in clear text).
+ni_bios_settings_exclude: "(?i)(password|secret|salt|hash)"
 # Map of node_name -> BMC hostname/IP address for Redfish access
 ni_bmc_address: {}
 # BMC credentials (use vault or secrets management in production)
