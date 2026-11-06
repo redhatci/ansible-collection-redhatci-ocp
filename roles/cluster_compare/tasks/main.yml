@@ -12,8 +12,16 @@
   ansible.builtin.set_fact:
     cc_work_dir: "{{ _cc_tmp_dir.path }}"
 
-- name: Test with Upstream
+- name: Install kube-compare tools
+  ansible.builtin.include_tasks: install_tools.yml
+
+- name: Generate a reference from the cluster
+  ansible.builtin.include_tasks: generate.yml
+  when: cc_mode == "generate"
+
+- name: Compare the cluster against a reference
   ansible.builtin.include_tasks: upstream.yml
+  when: cc_mode != "generate"
 
 # - name: Test with downstream container images
 #   ansible.builtin.include_tasks: containers.yml
