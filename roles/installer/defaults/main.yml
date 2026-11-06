@@ -1,5 +1,6 @@
 ---
 # defaults file for installer
+pullsecret_file: "{{ dir }}/pull-secret.txt"
 cache_enabled: false
 provision_cache_store: "{{ ansible_env.HOME }}/rhcos_image_cache/"
 registry_port_container: 5000

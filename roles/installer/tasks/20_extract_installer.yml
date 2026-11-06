@@ -1,7 +1,14 @@
 ---
+- name: Place PullSecret under the login user's home
+  ansible.builtin.set_fact:
+    installer_pullsecret_file: "{{ ansible_user_dir }}/.pull-secret/{{ pullsecret_file | basename }}"
+  tags:
+    - pullsecret
+    - extract
+
 - name: Ensure parent directory for PullSecret exists
   ansible.builtin.file:
-    path: "{{ pullsecret_file | dirname }}"
+    path: "{{ installer_pullsecret_file | dirname }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -10,10 +17,10 @@
     - pullsecret
     - extract
 
-- name: Copy PullSecret into {{ pullsecret_file }}
+- name: Copy PullSecret into {{ installer_pullsecret_file }}
   ansible.builtin.copy:
     content: "{{ pullsecret }}"
-    dest: "{{ pullsecret_file }}"
+    dest: "{{ installer_pullsecret_file }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0600'
@@ -26,20 +33,20 @@
   ansible.builtin.fetch:
     dest: /tmp/
     flat: true
-    src: "{{ dir }}/pull-secret.txt"
+    src: "{{ installer_pullsecret_file }}"
   when:
     - registry_creation|bool
     - groups['registry_host'][0] != groups['provisioner'][0]
   tags:
     - extract
 
-- name: Create config dir
+- name: Ensure PullSecret directory exists on registry host
   ansible.builtin.file:
-    path: "{{ dir }}"
+    path: "{{ installer_pullsecret_file | dirname }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0755'
+    mode: "0700"
   when:
     - registry_creation|bool
     - groups['registry_host'][0] != groups['provisioner'][0]
@@ -50,11 +57,10 @@
 - name: Copy the PullSecret from control machine to the registry host
   ansible.builtin.copy:
     src: /tmp/pull-secret.txt
-    dest: "{{ dir }}/pull-secret.txt"
+    dest: "{{ installer_pullsecret_file }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0600"
-  become: true
   when:
     - registry_creation|bool
     - groups['registry_host'][0] != groups['provisioner'][0]
@@ -95,7 +101,7 @@
 - name: Extracting the installer
   ansible.builtin.command: >
     /usr/local/bin/oc adm release extract
-    --registry-config {{ pullsecret_file | quote }}
+    --registry-config {{ installer_pullsecret_file | quote }}
     --command={{ installer_cmd |quote }}
     --to {{ tempdir_loc }} {{ disconnected_installer | ternary(disconnected_installer, release_image) }}
   args:
@@ -111,7 +117,7 @@
 
 - name: Remove the temporary copy of the PullSecret on registry host
   ansible.builtin.file:
-    path: "{{ dir }}"
+    path: "{{ installer_pullsecret_file | dirname }}"
     state: absent
   when:
     - registry_creation|bool
