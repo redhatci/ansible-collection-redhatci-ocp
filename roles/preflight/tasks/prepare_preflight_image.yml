@@ -32,14 +32,32 @@
     preflight_image: "{{ preflight_image + '-' + job_id }}"
   when: job_id is defined
 
-- name: Get latest tag from Preflight repository
+# Preflight reports its build version to Pyxis as part of the test results, so
+# build from the newest Preflight version registered in Pyxis.
+- name: Get the newest Preflight version enabled for testing in Pyxis
+  vars:
+    # Pyxis stores tool names without the URL scheme.
+    _preflight_pyxis_tool_name: "{{ preflight_repo_https | regex_replace('^https?://', '') }}"
+    # Only versions enabled for testing can be submitted with test results.
+    _preflight_pyxis_filter: "name=={{ _preflight_pyxis_tool_name }};enabled_for_testing==true"
   ansible.builtin.uri:
-    url: "https://api.github.com/repos/redhat-openshift-ecosystem/openshift-preflight/tags"
+    # Pyxis sorts versions as semver, so the first entry is the newest one.
+    url: "{{ catalog_url }}/tools?page_size=1&sort_by=version[desc]&filter={{ _preflight_pyxis_filter }}"
     method: GET
-  register: preflight_github_tags
+  register: _preflight_pyxis_tools
 
-# We have to tag using the last stable version
-# to make Pyxis submission work
+- name: Set Preflight release tag to the newest version available in Pyxis
+  ansible.builtin.set_fact:
+    preflight_release_tag: "{{ _preflight_pyxis_tools.json.data | map(attribute='version') | first | default('') }}"
+
+- name: Fail when no Preflight version is enabled for testing in Pyxis
+  ansible.builtin.fail:
+    msg: >-
+      Unable to find a Preflight version enabled for testing in Pyxis at
+      {{ catalog_url }}/tools. Refusing to build the image, because Pyxis
+      rejects test results submitted from versions it has not enabled.
+  when: preflight_release_tag | default('') | length == 0
+
 - name: Build Preflight image  # noqa: command-instead-of-shell
   vars:
     push_image: >-
@@ -53,7 +71,7 @@
       --pull=always
       --retry 3
       -t {{ preflight_image }}
-      --build-arg=release_tag={{ preflight_github_tags.json[0].name }}
+      --build-arg=release_tag={{ preflight_release_tag }}
       {{ (dci_local_registry | length > 0) | ternary(push_image, "") }}
     chdir: "{{ preflight_tmp_dir.path }}/preflight-source"
   register: _preflight_build
