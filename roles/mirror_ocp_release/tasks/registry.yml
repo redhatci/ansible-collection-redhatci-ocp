@@ -3,10 +3,10 @@
 - name: Mirror OCP release to local registry
   ansible.builtin.include_tasks: oc-adm-mirror.yml
   when:
-    - mor_version is version('4.20', '<') | bool
+    - mor_version is version('4.14', '<') | bool
 
 - name: Mirror OCP release to local registry
   ansible.builtin.include_tasks: oc-mirror.yml
   when:
-    - mor_version is version('4.20', '>=') | bool
+    - mor_version is version('4.14', '>=') | bool
 ...

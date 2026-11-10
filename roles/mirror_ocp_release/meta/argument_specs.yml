@@ -85,8 +85,11 @@ argument_specs:
         required: false
         default: ""
         description: >
-          Extra flags to pass to the oc adm release mirror command.
-          Example: '--skip-verification'.
+          Extra flags passed to the mirroring client.
+          Below 4.14 they are passed to oc adm release mirror.
+          From 4.14 they are passed to oc-mirror.
+          Flags must be valid for the client in use.
+          Example: '--ignore-release-signature' or '--skip-verification'.
       mor_force:
         type: bool
         required: false
