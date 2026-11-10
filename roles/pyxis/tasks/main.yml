@@ -54,8 +54,25 @@
       X-API-KEY: "{{ pyxis_apikey }}"
     body_format: json
     body: "{{ lookup('template', 'templates/test_results.json.j2') }}"
-    status_code: 201
     timeout: 120
+  register: _pyxis_test_result
   no_log: true
+  failed_when: false
+
+# The submission above runs with no_log, so report the Pyxis response here to
+# keep the failure diagnosable. Only the status and response body are printed,
+# never the headers, which carry the API key.
+- name: Fail with the Pyxis response when the submit is not accepted
+  vars:
+    _pyxis_body: "{{ _pyxis_test_result.json | default({}, true) }}"
+  ansible.builtin.fail:
+    msg: >-
+      Pyxis did not accept the test result submission.
+      status={{ _pyxis_test_result.status | default('no response') }}
+      title={{ _pyxis_body.title | default('-') }}
+      detail={{ _pyxis_body.detail | default('-') }}
+      trace_id={{ _pyxis_body.trace_id | default('-') }}
+      msg={{ _pyxis_test_result.msg | default('-') }}
+  when: _pyxis_test_result.status | default(0) != 201
 
 ...
