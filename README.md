@@ -73,6 +73,7 @@ Name | Description
 [redhatci.ocp.forgejo_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/forgejo_setup/README.md) | A role to deploy and configure Forgejo Git service.
 [redhatci.ocp.generate_agent_iso](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_agent_iso/README.md) | Creates the boot ISO using OpenShift_installer's agent sub-command
 [redhatci.ocp.generate_manifests](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_manifests/README.md) | Generates the manifests required for OpenShift_installer's agent sub-command
+[redhatci.ocp.generate_seed_image](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_seed_image/README.md) | Generates an IBI/IBU seed image for a ZTP-deployed SNO site.
 [redhatci.ocp.generate_ssh_key_pair](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/generate_ssh_key_pair/README.md) | Produces an ssh key pair
 [redhatci.ocp.gitops_configure_repo](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/gitops_configure_repo/README.md) | Configures the SSH Git repo credentials for the openshift-gitops-operator to be able to connect to the repositories.
 [redhatci.ocp.get_logs_from_namespace](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/get_logs_from_namespace/README.md) | Extracts multiple logs from pods and events in a Namespace.

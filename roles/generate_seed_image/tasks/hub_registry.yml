@@ -1,0 +1,94 @@
+---
+# Back the hub image registry with a PVC, expose its default route, and create
+# a service account allowed to push to the openshift namespace.
+
+- name: Get the hub image registry PVC
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: registry-storage-pvc
+    namespace: openshift-image-registry
+  register: _gsi_registry_pvc
+
+- name: Create the hub image registry PVC
+  kubernetes.core.k8s:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: registry-storage-pvc
+        namespace: openshift-image-registry
+      spec:
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: "{{ gsi_registry_storage_size }}"
+        storageClassName: "{{ gsi_registry_storage_class }}"
+  when: _gsi_registry_pvc.resources | length == 0
+
+- name: Configure the hub image registry storage and default route
+  kubernetes.core.k8s:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    state: patched
+    merge_type: merge
+    definition:
+      apiVersion: imageregistry.operator.openshift.io/v1
+      kind: Config
+      metadata:
+        name: cluster
+      spec:
+        managementState: Managed
+        replicas: 2
+        defaultRoute: true
+        storage:
+          managementState: Unmanaged
+          pvc:
+            claim: registry-storage-pvc
+
+- name: Create the registry push service account
+  kubernetes.core.k8s:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: registry-user
+        namespace: openshift
+
+- name: Allow the service account to push to the openshift namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: registry-user-image-builder
+        namespace: openshift
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:image-builder
+      subjects:
+        - kind: ServiceAccount
+          name: registry-user
+          namespace: openshift
+
+- name: Wait for the hub image registry route
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    api_version: route.openshift.io/v1
+    kind: Route
+    name: default-route
+    namespace: openshift-image-registry
+  register: _gsi_registry_route
+  until: _gsi_registry_route.resources | default([]) | length > 0
+  retries: 30
+  delay: 10
+
+- name: Set the hub registry host
+  ansible.builtin.set_fact:
+    gsi_hub_registry: "{{ _gsi_registry_route.resources[0].spec.host }}"
+...

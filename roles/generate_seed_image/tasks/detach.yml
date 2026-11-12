@@ -1,0 +1,116 @@
+---
+# LCA only generates a seed from a cluster detached from the hub. Adding
+# pruneManifests to the ClusterInstance removes the ManagedCluster without
+# deleting the ClusterInstance and BareMetalHost, which avoids the klusterlet
+# cleanup cascade that can break OVN while the seed is generated. The cluster
+# is left detached.
+
+- name: Add pruneManifests to the ClusterInstance
+  block:
+    - name: Create a temporary directory for the GitOps repository
+      ansible.builtin.tempfile:
+        state: directory
+      register: _gsi_gitops_dir
+
+    - name: Clone the GitOps repository
+      ansible.builtin.git:
+        repo: "{{ gsi_gitops_repo }}"
+        dest: "{{ _gsi_gitops_dir.path }}/repo"
+        version: "{{ gsi_gitops_branch }}"
+
+    - name: Add pruneManifests for the ManagedCluster
+      ansible.builtin.blockinfile:
+        path: "{{ _gsi_gitops_dir.path }}/repo/{{ gsi_gitops_clusterinstance_file }}"
+        insertafter: "^spec:"
+        marker: "# {mark} SEED-GENERATION-PRUNE"
+        block: |2
+            pruneManifests:
+            - apiVersion: cluster.open-cluster-management.io/v1
+              kind: ManagedCluster
+
+    - name: Commit and push the ClusterInstance change
+      ansible.builtin.shell: |
+        set -euo pipefail
+        git add -- "{{ gsi_gitops_clusterinstance_file }}"
+        if git diff --cached --quiet; then
+          echo "No change to push"
+          exit 0
+        fi
+        git commit -m "Detach {{ gsi_site }} from the hub for seed generation"
+        git pull --rebase
+        git push
+      args:
+        chdir: "{{ _gsi_gitops_dir.path }}/repo"
+        executable: /bin/bash
+      register: _gsi_gitops_push
+      changed_when: "'No change to push' not in _gsi_gitops_push.stdout"
+
+  always:
+    - name: Remove the GitOps temporary directory
+      ansible.builtin.file:
+        path: "{{ _gsi_gitops_dir.path }}"
+        state: absent
+      when: _gsi_gitops_dir.path is defined
+
+- name: Wait for the ManagedCluster to be removed from the hub
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    api_version: cluster.open-cluster-management.io/v1
+    kind: ManagedCluster
+    name: "{{ gsi_site }}"
+  register: _gsi_managedcluster
+  until: _gsi_managedcluster.resources | length == 0
+  retries: "{{ gsi_detach_retries }}"
+  delay: "{{ gsi_detach_delay }}"
+
+# ACM observability leaves hub-alertmanager-router-ca Secrets behind. They make
+# recert fail during seed generation (SKID mismatch).
+- name: Get the seed cluster monitoring Secrets
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    namespace: "{{ item }}"
+  loop:
+    - openshift-monitoring
+    - openshift-user-workload-monitoring
+  register: _gsi_monitoring_secrets
+  no_log: true
+
+- name: Delete leftover ACM alertmanager router CA Secrets
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Secret
+    namespace: "{{ item.namespace }}"
+    name: "{{ item.name }}"
+  loop: >-
+    {{ _gsi_monitoring_secrets.results | map(attribute='resources') | flatten
+       | map(attribute='metadata') | selectattr('name', 'search', 'hub-alertmanager-router-ca')
+       | list }}
+  loop_control:
+    label: "{{ item.namespace }}/{{ item.name }}"
+
+# LCA also rejects the seed while the klusterlet agent is still present on the
+# seed cluster.
+- name: Wait for the klusterlet agent namespaces to be removed
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: "{{ item }}"
+  loop:
+    - open-cluster-management-agent
+    - open-cluster-management-agent-addon
+  register: _gsi_agent_namespace
+  until: _gsi_agent_namespace.resources | length == 0
+  retries: "{{ gsi_detach_retries }}"
+  delay: "{{ gsi_detach_delay }}"
+
+- name: Wait for the Klusterlet to be removed
+  kubernetes.core.k8s_info:
+    api_version: operator.open-cluster-management.io/v1
+    kind: Klusterlet
+  register: _gsi_klusterlet
+  until: _gsi_klusterlet.resources | default([]) | length == 0
+  retries: "{{ gsi_detach_retries }}"
+  delay: "{{ gsi_detach_delay }}"
+...
