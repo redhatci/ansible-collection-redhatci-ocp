@@ -1,0 +1,76 @@
+---
+# generate_seed_image — IBI/IBU seed image generation
+#
+# Detach method: pruneManifests on ClusterInstance (not kustomization removal)
+# during seed generation. This avoids the full ArgoCD cascade (BMH + ManagedCluster
+# + ClusterInstance deletion) that can crash OVN on certain hardware during
+# klusterlet cleanup while SeedGenerator is running.
+# After hub ManagedCluster is gone, wait for spoke klusterlet / OCM agent
+# namespaces to disappear before applying SeedGenerator (LCA detach check).
+#
+# This role stops once the seed image is published. The site is left detached
+# (pruneManifests in place); reattaching to ACM or recreating the ClusterInstance
+# for an IBI install is left to the downstream deploy pipeline.
+#
+# insecureRegistries: in-place MCO update, no reboot required (OCP 4.14+).
+
+# --- Sites ---------------------------------------------------------------
+# List of site names to generate a seed image for.
+sno_sites_list: "{{ sites_list }}"
+
+# Hostname used in artifact names. When left empty it is derived from the
+# seed cluster kubeconfig (first node).
+du_hostname: ""
+
+# --- Kubeconfigs ---------------------------------------------------------
+# Seed (spoke) cluster. Falls back to $KUBECONFIG, then ~/.kube/config.
+kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default(lookup('env', 'HOME') ~ '/.kube/config', true) }}"
+
+# Management (hub) cluster. Must be provided by the caller.
+# kubeconfig_mgmt_cluster: /home/slcm/.kube/hub_kubeconfig
+
+# --- Seed image ----------------------------------------------------------
+# Seed tag is the upgraded OCP version with dashes removed.
+seed_tag: "{{ du_upgraded_ocp_version | regex_replace('-', '') }}"
+sno_du_ocp_version: "{{ du_ocp_version }}"
+
+# Configure the hub image registry with a PVC-backed backend and route.
+ibu_configure_hub_cluster_storage: false
+
+# --- Operators -----------------------------------------------------------
+oadp_namespace: openshift-adp
+oadp_catalog_source: redhat-operators
+oadp_channel: "{{ 'stable-1.4' if (sno_du_ocp_version is version('4.14', '>=')) else 'stable-1.3' }}"
+
+lca_namespace: openshift-lifecycle-agent
+lca_catalog_source: redhat-operators
+lca_channel: stable
+
+# --- Detach / polling ----------------------------------------------------
+# After hub ManagedCluster is gone, wait for spoke klusterlet/OCM agent cleanup
+# before SeedGenerator (LCA rejects seed if spoke still looks attached).
+seed_spoke_detach_retries: 40
+seed_spoke_detach_delay: 15
+
+# Poll spoke SeedGenerator CR and hub imagestream until seed:{{ seed_tag }} is ready.
+# Default: 120 retries x 15s = 30 minutes.
+seed_generation_poll_retries: 120
+seed_generation_poll_delay: 15
+
+# --- Logs / artifacts ----------------------------------------------------
+# Run a must-gather against the seed cluster at the end of the role.
+gsi_collect_logs: true
+
+# Where the timing report and must-gather archive are written. First one set
+# wins: $RESULTS, artefact_output_dir, then job_logs.path (the DCI agent's
+# per-job log dir, uploaded to DCI). Empty means skip writing artifacts.
+gsi_output_dir: >-
+  {{ lookup('env', 'RESULTS')
+     | default(artefact_output_dir | default(job_logs.path | default(''), true), true) }}
+
+# --- Runtime facts -------------------------------------------------------
+# Declared here so `when:` conditions are safe before Phase 6 runs. They are
+# overwritten with set_fact during generation.
+gsi_seed_generation_complete: false
+gsi_seed_failure_reason: ""
+gsi_seed_completion_source: unknown

@@ -1,0 +1,541 @@
+---
+- name: "Seed generation — start"
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "generate_seed_image"
+      - "Sites: {{ sno_sites_list }}"
+      - "Seed tag: {{ seed_tag }}"
+      - "=========================================="
+
+- name: Validate prerequisites
+  ansible.builtin.include_tasks: validate_prereqs.yml
+
+# ── Phase 1: Operators ──────────────────────────────────────────────
+
+- name: "Phase 1 — Check OADP operator"
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1
+    kind: OperatorGroup
+    namespace: "{{ oadp_namespace }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  register: _gsi_oadp_operatorgroup
+  failed_when: false
+
+- name: "Phase 1 — Install OADP operator"
+  when: _gsi_oadp_operatorgroup.resources | default([]) | length == 0
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: redhat-oadp-operator # noqa: redhat-ci[no-role-prefix]
+    subscription_name: redhat-oadp-operator # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ oadp_namespace }}" # noqa: var-naming[no-reserved] redhat-ci[no-role-prefix]
+    channel: "{{ oadp_channel }}" # noqa: redhat-ci[no-role-prefix]
+    source: "{{ oadp_catalog_source }}" # noqa: redhat-ci[no-role-prefix]
+    source_ns: openshift-marketplace # noqa: redhat-ci[no-role-prefix]
+    install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
+
+- name: "Phase 1 — Check LCA operator"
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1
+    kind: OperatorGroup
+    namespace: "{{ lca_namespace }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  register: _gsi_lca_operatorgroup
+  failed_when: false
+
+- name: "Phase 1 — Install LCA operator"
+  when: _gsi_lca_operatorgroup.resources | default([]) | length == 0
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: lifecycle-agent # noqa: redhat-ci[no-role-prefix]
+    subscription_name: redhat-lca-operator # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ lca_namespace }}" # noqa: var-naming[no-reserved] redhat-ci[no-role-prefix]
+    channel: "{{ lca_channel }}" # noqa: redhat-ci[no-role-prefix]
+    source: "{{ lca_catalog_source }}" # noqa: redhat-ci[no-role-prefix]
+    source_ns: openshift-marketplace # noqa: redhat-ci[no-role-prefix]
+    install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
+
+# ── Phase 2: Hub registry ───────────────────────────────────────────
+
+- name: "Phase 2 — Configure hub registry storage"
+  when: ibu_configure_hub_cluster_storage
+  block:
+    - name: Get existing PVC info for image registry
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: PersistentVolumeClaim
+        name: registry-storage-pvc
+        namespace: openshift-image-registry
+        kubeconfig: "{{ kubeconfig_mgmt_cluster }}"
+      register: _gsi_registry_pvc
+      failed_when: false
+
+    - name: Set storage capacity based on existing PVC or default
+      ansible.builtin.set_fact:
+        gsi_registry_storage_capacity: >-
+          {{ _gsi_registry_pvc.resources[0].spec.resources.requests.storage
+             if (_gsi_registry_pvc.resources | default([]) | length > 0)
+             else '100Gi' }}
+
+    - name: Print registry storage capacity
+      ansible.builtin.debug:
+        msg: "Using registry storage capacity: {{ gsi_registry_storage_capacity }}"
+
+    - name: Create PVC for image registry
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: PersistentVolumeClaim
+        name: registry-storage-pvc
+        namespace: openshift-image-registry
+        kubeconfig: "{{ kubeconfig_mgmt_cluster }}"
+        resource_definition:
+          spec:
+            accessModes:
+              - ReadWriteMany
+            resources:
+              requests:
+                storage: "{{ gsi_registry_storage_capacity }}"
+            storageClassName: ocs-storagecluster-cephfs
+
+    - name: Patch registry config to use PVC and expose route
+      ansible.builtin.shell: |
+        PATCH='{"spec":{"managementState":"Managed","replicas":2,'
+        PATCH="${PATCH}"'"defaultRoute":true,"storage":{"managementState":"Unmanaged",'
+        PATCH="${PATCH}"'"pvc":{"claim":"registry-storage-pvc"}}}}'
+        oc --kubeconfig="{{ kubeconfig_mgmt_cluster }}" patch config.image/cluster \
+          -p "$PATCH" --type=merge
+      register: _gsi_registry_patch
+      changed_when: "'patched' in _gsi_registry_patch.stdout"
+
+    - name: Create service account for registry access
+      ansible.builtin.shell: |
+        set -euo pipefail
+        if ! oc --kubeconfig="{{ kubeconfig_mgmt_cluster }}" get sa registry-user -n openshift >/dev/null 2>&1; then
+          oc --kubeconfig="{{ kubeconfig_mgmt_cluster }}" create sa registry-user -n openshift
+        fi
+        oc --kubeconfig="{{ kubeconfig_mgmt_cluster }}" adm policy add-role-to-user system:image-builder -z registry-user -n openshift
+      changed_when: false
+
+- name: "Phase 2 — Get hub registry route"
+  ansible.builtin.command:
+    argv:
+      - oc
+      - --kubeconfig
+      - "{{ kubeconfig_mgmt_cluster }}"
+      - get
+      - route
+      - -n
+      - openshift-image-registry
+      - default-route
+      - "-o=jsonpath={.spec.host}"
+  register: _gsi_hub_registry_url
+  changed_when: false
+
+- name: "Phase 2 — Hub registry"
+  ansible.builtin.debug:
+    msg: "Hub registry URL: {{ _gsi_hub_registry_url.stdout }}"
+
+# ── Phase 3: insecureRegistries (in-place MCO, no reboot) ──────────
+
+- name: "Phase 3 — Check insecureRegistries on seed cluster"
+  ansible.builtin.shell: |
+    oc --kubeconfig "{{ kubeconfig_path }}" get image.config.openshift.io/cluster \
+      -o jsonpath='{.spec.registrySources.insecureRegistries}' 2>/dev/null
+  register: _gsi_current_insecure_registries
+  changed_when: false
+  failed_when: false
+
+- name: "Phase 3 — Hub registry already trusted"
+  when: _gsi_hub_registry_url.stdout in (_gsi_current_insecure_registries.stdout | default(''))
+  ansible.builtin.debug:
+    msg: "{{ _gsi_hub_registry_url.stdout }} already in insecureRegistries, skipping"
+
+- name: "Phase 3 — Add hub registry to insecureRegistries"
+  when: _gsi_hub_registry_url.stdout not in (_gsi_current_insecure_registries.stdout | default(''))
+  block:
+    - name: Get current rendered MachineConfig name
+      kubernetes.core.k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        name: master
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: _gsi_mcp_before_patch
+
+    - name: Record rendered MC name before patch
+      ansible.builtin.set_fact:
+        gsi_rendered_mc_before: "{{ _gsi_mcp_before_patch.resources[0].spec.configuration.name }}"
+
+    - name: Patch image.config with insecureRegistries
+      ansible.builtin.shell: |
+        oc --kubeconfig "{{ kubeconfig_path }}" patch image.config.openshift.io/cluster \
+          -p='{"spec":{"registrySources":{"insecureRegistries":["{{ _gsi_hub_registry_url.stdout }}"]}}}' --type=merge
+      changed_when: false
+
+    - name: Wait for MCO to render new MachineConfig
+      kubernetes.core.k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        name: master
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: _gsi_mcp_after_patch
+      until: >
+        _gsi_mcp_after_patch.resources is defined
+        and _gsi_mcp_after_patch.resources | length > 0
+        and _gsi_mcp_after_patch.resources[0].spec.configuration.name != gsi_rendered_mc_before
+      retries: 12
+      delay: 15
+
+    - name: Wait for MCP in-place update to complete
+      kubernetes.core.k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        name: master
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: _gsi_mcp_updated
+      until: >
+        _gsi_mcp_updated.resources is defined
+        and _gsi_mcp_updated.resources | length > 0
+        and (_gsi_mcp_updated.resources[0].status.conditions | default([])
+          | selectattr('type', 'equalto', 'Updated') | list | length > 0)
+        and (_gsi_mcp_updated.resources[0].status.conditions
+          | selectattr('type', 'equalto', 'Updated') | first).status == "True"
+      retries: 40
+      delay: 15
+
+    - name: "Phase 3 — MCO in-place update complete"
+      ansible.builtin.debug:
+        msg:
+          - "Rendered MC: {{ _gsi_mcp_updated.resources[0].status.configuration.name }}"
+          - "MCP Updated=True (in-place, no reboot)"
+
+# ── Phase 4: seedgen Secret ─────────────────────────────────────────
+
+- name: "Phase 4 — Create seedgen Secret"
+  block:
+    - name: Create temporary directory for credentials
+      ansible.builtin.tempfile:
+        state: directory
+      register: _gsi_creds_dir
+
+    - name: Generate registry credentials
+      ansible.builtin.shell: |
+        set -euo pipefail
+        TOKEN=$(oc --kubeconfig="{{ kubeconfig_mgmt_cluster }}" create token registry-user -n openshift)
+        REGISTRY=$(oc --kubeconfig="{{ kubeconfig_mgmt_cluster }}" get route/default-route -n openshift-image-registry -o json | jq -r .spec.host)
+        oc --kubeconfig="{{ kubeconfig_mgmt_cluster }}" registry login \
+          --registry="$REGISTRY" --auth-basic="registry-user:$TOKEN" \
+          --to="{{ _gsi_creds_dir.path }}/registry.json"
+      changed_when: false
+
+    - name: Read registry credentials
+      ansible.builtin.slurp:
+        src: "{{ _gsi_creds_dir.path }}/registry.json"
+      register: _gsi_registry_credentials
+
+    - name: Apply seedgen Secret on seed cluster
+      kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ kubeconfig_path }}"
+        definition:
+          apiVersion: v1
+          kind: Secret
+          type: Opaque
+          metadata:
+            name: seedgen
+            namespace: openshift-lifecycle-agent
+          data:
+            seedAuth: "{{ _gsi_registry_credentials.content | trim }}"
+
+    - name: "Phase 4 — seedgen Secret created"
+      ansible.builtin.debug:
+        msg: "Secret seedgen applied in openshift-lifecycle-agent"
+
+  always:
+    - name: Remove credentials temp directory
+      ansible.builtin.file:
+        path: "{{ _gsi_creds_dir.path }}"
+        state: absent
+      when: _gsi_creds_dir.path is defined
+
+# ── Phase 5: Detach ManagedCluster via pruneManifests ───────────────
+
+- name: "Phase 5 — Create GitOps temp directory"
+  ansible.builtin.tempfile:
+    state: directory
+  register: _gsi_gitops_dir
+
+- name: "Phase 5 — Clone GitOps repo"
+  ansible.builtin.git:
+    repo: "{{ ztp_sites_gitops_repo }}"
+    dest: "{{ _gsi_gitops_dir.path }}/ztp-gitops/"
+    version: "{{ ztp_sites_gitops_repo_dst_branch }}"
+    recursive: false
+
+- name: "Phase 5 — Add pruneManifests to ClusterInstance"
+  loop: "{{ sno_sites_list }}"
+  ansible.builtin.blockinfile:
+    path: "{{ _gsi_gitops_dir.path }}/ztp-gitops/{{ ztp_sites_path }}/{{ ztp_site_group }}/{{ item }}/{{ item }}.yaml"
+    insertafter: "^spec:"
+    marker: "# {mark} SEED-GENERATION-PRUNE"
+    block: "  pruneManifests:\n  - apiVersion: cluster.open-cluster-management.io/v1\n    kind: ManagedCluster"
+
+- name: "Phase 5 — Commit and push pruneManifests"
+  ansible.builtin.shell: |
+    set -euo pipefail
+    cd "{{ _gsi_gitops_dir.path }}/ztp-gitops/"
+    git add -u
+    if git diff --cached --quiet; then
+      echo "No pruneManifests changes to commit"
+      exit 0
+    fi
+    git diff --cached --stat
+    git commit -m "seed: add pruneManifests to detach ManagedCluster"
+    git pull --rebase
+    git push
+  register: _gsi_prune_push_result
+  changed_when: "'No pruneManifests changes' not in _gsi_prune_push_result.stdout"
+
+- name: "Phase 5 — Push result"
+  ansible.builtin.debug:
+    msg: "{{ _gsi_prune_push_result.stdout_lines | default([]) }}"
+
+- name: "Phase 5 — Wait for ManagedCluster removal"
+  loop: "{{ sno_sites_list }}"
+  kubernetes.core.k8s_info:
+    api_version: cluster.open-cluster-management.io/v1
+    kind: ManagedCluster
+    name: "{{ item }}"
+    kubeconfig: "{{ kubeconfig_mgmt_cluster }}"
+  register: _gsi_managedcluster
+  until: _gsi_managedcluster.resources | length == 0
+  retries: 40
+  delay: 15
+
+- name: "Phase 5 — ManagedCluster detached"
+  ansible.builtin.debug:
+    msg: "ManagedCluster removed from hub: {{ sno_sites_list }}"
+
+# ── Phase 5.5: Clean up orphaned ACM artifacts ────────────────────
+# pruneManifests only removes the ManagedCluster. ACM observability
+# leaves hub-alertmanager-router-ca secrets in monitoring namespaces
+# that cause recert to crash during seed generation (SKID mismatch).
+
+- name: "Phase 5.5 — Remove orphaned ACM observability secrets"
+  loop:
+    - openshift-monitoring
+    - openshift-user-workload-monitoring
+  ansible.builtin.shell: |
+    set -uo pipefail
+    for secret in $(oc --kubeconfig="{{ kubeconfig_path }}" get secrets -n {{ item }} \
+      -o name 2>/dev/null | grep hub-alertmanager-router-ca); do
+      echo "Deleting $secret from {{ item }}"
+      oc --kubeconfig="{{ kubeconfig_path }}" delete -n {{ item }} "$secret"
+    done
+  register: _gsi_acm_secret_cleanup
+  changed_when: "'Deleting' in _gsi_acm_secret_cleanup.stdout"
+  failed_when: false
+
+- name: "Phase 5.5 — Cleanup result"
+  ansible.builtin.debug:
+    msg: "{{ _gsi_acm_secret_cleanup.results | map(attribute='stdout_lines') | flatten | default(['No orphaned secrets found']) }}"
+
+# ── Phase 5.6: Wait for spoke-side detach ─────────────────────────
+# Hub ManagedCluster gone is not enough. LCA rejects SeedGenerator with
+# "Cluster must be detached from hub prior to seed generation" while
+# klusterlet / open-cluster-management-agent still exist on the spoke.
+
+- name: "Phase 5.6 — Wait for spoke klusterlet / OCM agent cleanup"
+  ansible.builtin.shell: |
+    set -uo pipefail
+    SPOKE_KC="{{ kubeconfig_path }}"
+    NS=$(oc --kubeconfig="$SPOKE_KC" get ns open-cluster-management-agent --ignore-not-found -o name 2>/dev/null || true)
+    ADDON_NS=$(oc --kubeconfig="$SPOKE_KC" get ns open-cluster-management-agent-addon --ignore-not-found -o name 2>/dev/null || true)
+    KL=$(oc --kubeconfig="$SPOKE_KC" get klusterlet --ignore-not-found -o name 2>/dev/null || true)
+    echo "ns=${NS:-none} addon_ns=${ADDON_NS:-none} klusterlet=${KL:-none}"
+    if [[ -z "${NS}" && -z "${ADDON_NS}" && -z "${KL}" ]]; then
+      exit 0
+    fi
+    exit 1
+  register: _gsi_spoke_detach
+  until: _gsi_spoke_detach.rc == 0
+  retries: "{{ seed_spoke_detach_retries }}"
+  delay: "{{ seed_spoke_detach_delay }}"
+  changed_when: false
+
+- name: "Phase 5.6 — Spoke detached"
+  ansible.builtin.debug:
+    msg: "Spoke hub agent cleaned up ({{ _gsi_spoke_detach.stdout }})"
+
+# ── Phase 6: Generate seed image ───────────────────────────────────
+
+- name: "Phase 6 — Generate seed image"
+  block:
+    - name: Delete any existing SeedGenerator CR
+      kubernetes.core.k8s:
+        api_version: lca.openshift.io/v1
+        kind: SeedGenerator
+        name: seedimage
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: absent
+        wait: true
+        wait_timeout: 120
+      failed_when: false
+
+    - name: Capture seed generation start time
+      ansible.builtin.command: date -u +%Y-%m-%dT%H:%M:%SZ
+      register: _gsi_seed_start_time
+      changed_when: false
+
+    - name: Record start time
+      ansible.builtin.set_fact:
+        gsi_seed_generation_started_at: "{{ _gsi_seed_start_time.stdout | trim }}"
+        gsi_seed_generation_complete: false
+        gsi_seed_failure_reason: ""
+
+    - name: Apply SeedGenerator CR
+      kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ kubeconfig_path }}"
+        template:
+          path: 'templates/seed_generator.yaml.j2'
+
+    - name: "Phase 6 — SeedGenerator applied"
+      ansible.builtin.debug:
+        msg: "SeedGenerator CR applied, image={{ _gsi_hub_registry_url.stdout }}/openshift/seed:{{ seed_tag }}"
+
+    - name: Wait for LCA to start processing
+      ansible.builtin.shell: |
+        set -uo pipefail
+        SPOKE_KC="{{ kubeconfig_path }}"
+        RETRIES=24
+        DELAY=5
+        for attempt in $(seq 1 "$RETRIES"); do
+          if SEED_JSON=$(oc --kubeconfig="$SPOKE_KC" get seedgenerator seedimage -o json 2>/dev/null); then
+            CONDITIONS=$(echo "$SEED_JSON" | jq -r '(.status.conditions // []) | length')
+            if [[ "$CONDITIONS" -gt 0 ]]; then
+              STATUS=$(echo "$SEED_JSON" | jq -r '(.status.conditions // [])[] | "\(.type)=\(.status) (\(.reason // "?"))"' | tr '\n' '; ')
+              echo "LCA is processing SeedGenerator: ${STATUS}"
+              exit 0
+            fi
+            echo "Attempt ${attempt}/${RETRIES}: CR exists but LCA has not set conditions yet" >&2
+          else
+            echo "Attempt ${attempt}/${RETRIES}: SeedGenerator CR not found or API unreachable" >&2
+          fi
+          sleep "$DELAY"
+        done
+
+        echo "WARNING: LCA did not start processing within $((RETRIES * DELAY))s. Collecting diagnostics:" >&2
+        echo "--- LCA pod status ---" >&2
+        oc --kubeconfig="$SPOKE_KC" get pods -n openshift-lifecycle-agent -o wide 2>&1 >&2 || true
+        echo "--- LCA pod logs (last 30 lines) ---" >&2
+        oc --kubeconfig="$SPOKE_KC" logs -n openshift-lifecycle-agent -l app.kubernetes.io/name=lifecycle-agent --tail=30 2>&1 >&2 || true
+        echo "--- SeedGenerator CR ---" >&2
+        oc --kubeconfig="$SPOKE_KC" get seedgenerator seedimage -o yaml 2>&1 >&2 || true
+        echo "--- Recent events in openshift-lifecycle-agent ---" >&2
+        oc --kubeconfig="$SPOKE_KC" get events -n openshift-lifecycle-agent --sort-by='.lastTimestamp' 2>&1 | tail -15 >&2 || true
+        echo "lca_readiness_timeout=true"
+        exit 0
+      args:
+        executable: /bin/bash
+      register: _gsi_lca_readiness
+      changed_when: false
+
+    - name: Log LCA readiness result
+      ansible.builtin.debug:
+        msg: "{{ _gsi_lca_readiness.stdout_lines | default([]) }}"
+
+    - name: Poll seed generation status
+      ansible.builtin.include_tasks: poll_seed_status.yml
+
+    - name: Format seed generation duration
+      ansible.builtin.set_fact:
+        gsi_seed_duration_fmt: >-
+          {{ '%dm %02ds' | format((gsi_seed_duration_sec | int) // 60,
+          (gsi_seed_duration_sec | int) % 60)
+          if gsi_seed_duration_sec | default('N/A') != 'N/A' else 'N/A' }}
+      when: gsi_seed_generation_complete | bool
+
+    - name: Capture report generation time
+      ansible.builtin.command: date -u +%Y-%m-%dT%H:%M:%SZ
+      register: _gsi_report_time
+      changed_when: false
+      when: gsi_seed_generation_complete | bool
+
+    - name: Set report generation timestamp
+      ansible.builtin.set_fact:
+        gsi_report_generated_at: "{{ _gsi_report_time.stdout | trim }}"
+      when: gsi_seed_generation_complete | bool
+
+    - name: Resolve seed timing output directory
+      ansible.builtin.set_fact:
+        gsi_timing_output_dir: "{{ gsi_output_dir }}"
+      when: gsi_seed_generation_complete | bool
+
+    - name: Write seed generation timing artifact
+      ansible.builtin.template:
+        src: seed_generation_timing.txt.j2
+        dest: "{{ gsi_timing_output_dir }}/seed_generation_timing_{{ gsi_hostname }}.txt"
+        mode: "0644"
+      when:
+        - gsi_seed_generation_complete | bool
+        - gsi_timing_output_dir | length > 0
+
+    - name: "Phase 6 — Seed generation timing"
+      ansible.builtin.debug:
+        msg:
+          - "Seed image tag              : openshift/seed:{{ seed_tag }}"
+          - "Generation started (UTC)    : {{ gsi_seed_generation_started_at }}"
+          - "LCA completed at (UTC)      : {{ gsi_seed_lca_completed_at | default('N/A (hub registry only)', true) }}"
+          - "Hub tag created at (UTC)    : {{ gsi_seed_hub_detected_at | default('N/A', true) }}"
+          - "Completion detected via     : {{ gsi_seed_completion_source | default('unknown') }}"
+          - "Poll attempts               : {{ gsi_seed_poll_attempts | default('N/A') }}"
+          - "Seed generation duration    : {{ gsi_seed_duration_fmt | default('N/A') }}"
+      when: gsi_seed_generation_complete | bool
+
+    - name: Fail if seed generation did not complete
+      ansible.builtin.fail:
+        msg: >-
+          Seed generation for seed:{{ seed_tag }} did not complete within
+          {{ (seed_generation_poll_retries | int) * (seed_generation_poll_delay | int) }}s.
+          source={{ gsi_seed_completion_source | default('timeout') }},
+          reason={{ gsi_seed_failure_reason | default('timeout or unknown') }},
+          attempts={{ gsi_seed_poll_attempts | default('unknown') }}.
+          Check LCA logs and hub imagestream openshift/seed:{{ seed_tag }}.
+      when: not (gsi_seed_generation_complete | bool)
+
+  rescue:
+    - name: "Seed generation error"
+      ansible.builtin.debug:
+        msg:
+          - "gsi_seed_generation_complete={{ gsi_seed_generation_complete | default(false) }}"
+          - "gsi_seed_completion_source={{ gsi_seed_completion_source | default('unknown') }}"
+          - "gsi_seed_failure_reason={{ gsi_seed_failure_reason | default('') }}"
+          - "gsi_seed_poll_attempts={{ gsi_seed_poll_attempts | default(0) }}"
+          - "seed_poll_result_rc={{ _gsi_seed_poll_result.rc | default('unknown') }}"
+
+    - name: Fail due to seed generation error
+      ansible.builtin.fail:
+        msg: >-
+          Seed generation could not be completed for seed:{{ seed_tag }}.
+          Reason={{ gsi_seed_failure_reason | default('timeout or unknown') }}.
+          Check LCA logs and hub imagestream openshift/seed:{{ seed_tag }}.
+
+  always:
+    - name: Remove GitOps temporary directory
+      ansible.builtin.file:
+        path: "{{ _gsi_gitops_dir.path }}"
+        state: absent
+      when: _gsi_gitops_dir.path is defined
+
+    - name: Collect logs
+      ansible.builtin.include_tasks: collect_logs.yml
+
+- name: "Seed generation — complete"
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "generate_seed_image complete"
+      - "gsi_seed_generation_complete={{ gsi_seed_generation_complete | default(false) }}"
+      - "=========================================="
