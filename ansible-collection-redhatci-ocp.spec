@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.9.EPOCH
+Version:        7.0.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,8 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Thu Nov 12 2026 Rajesh Chiluveru <rchiluve@redhat.com> - 7.0.EPOCH-VERS
+- Add generate_seed_image role for IBI/IBU seed generation
 
 * Thu Oct 29 2026 Frederic Lepied <flepied@redhat.com> - 6.9.EPOCH-VERS
 - Extend node_info role to collect live BIOS settings via Redfish

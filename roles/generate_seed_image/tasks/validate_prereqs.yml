@@ -1,0 +1,65 @@
+---
+# Validate inputs and resolve the seed cluster hostname.
+#
+# kubeconfig_path is a role default (see defaults/main.yml) so an extra var or
+# the $KUBECONFIG environment variable takes precedence.
+# du_hostname is derived from the seed cluster kubeconfig when it is not set,
+# which is the normal case for the DCI pipelines (the inventory host does not
+# necessarily match the node name).
+
+- name: Assert required variables are defined
+  ansible.builtin.assert:
+    that:
+      - kubeconfig_mgmt_cluster is defined
+      - du_upgraded_ocp_version is defined
+      - du_ocp_version is defined
+      - sites_list is defined
+      - ztp_sites_gitops_repo is defined
+      - ztp_sites_gitops_repo_dst_branch is defined
+      - ztp_sites_path is defined
+      - ztp_site_group is defined
+    fail_msg: >-
+      generate_seed_image requires kubeconfig_mgmt_cluster, du_upgraded_ocp_version,
+      du_ocp_version, sites_list, and ztp_sites_gitops_repo /
+      ztp_sites_gitops_repo_dst_branch / ztp_sites_path / ztp_site_group
+      to be defined.
+
+- name: Check seed cluster kubeconfig exists
+  ansible.builtin.stat:
+    path: "{{ kubeconfig_path }}"
+  register: _gsi_kubeconfig
+
+- name: Fail when the seed cluster kubeconfig is missing
+  ansible.builtin.fail:
+    msg: "kubeconfig not found at {{ kubeconfig_path }}"
+  when: not _gsi_kubeconfig.stat.exists
+
+- name: Check hub cluster kubeconfig exists
+  ansible.builtin.stat:
+    path: "{{ kubeconfig_mgmt_cluster }}"
+  register: _gsi_hub_kubeconfig
+
+- name: Fail when the hub cluster kubeconfig is missing
+  ansible.builtin.fail:
+    msg: "kubeconfig not found at {{ kubeconfig_mgmt_cluster }}"
+  when: not _gsi_hub_kubeconfig.stat.exists
+
+- name: Get seed cluster node names
+  ansible.builtin.command:
+    argv:
+      - oc
+      - --kubeconfig
+      - "{{ kubeconfig_path }}"
+      - get
+      - nodes
+      - -o
+      - "jsonpath={.items[*].metadata.name}"
+  register: _gsi_nodenames
+  changed_when: false
+  when: du_hostname | length == 0
+
+- name: Set seed cluster hostname
+  ansible.builtin.set_fact:
+    gsi_hostname: >-
+      {{ du_hostname if du_hostname | length > 0
+         else (_gsi_nodenames.stdout.split(' ') | first) }}

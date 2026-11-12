@@ -1,0 +1,134 @@
+---
+- name: Poll spoke SeedGenerator and hub imagestream for seed completion
+  ansible.builtin.shell: |
+    set -uo pipefail
+    SPOKE_KC="{{ kubeconfig_path }}"
+    HUB_KC="{{ kubeconfig_mgmt_cluster }}"
+    TAG="{{ seed_tag }}"
+    START="{{ gsi_seed_generation_started_at }}"
+    RETRIES={{ seed_generation_poll_retries }}
+    DELAY={{ seed_generation_poll_delay }}
+
+    calc_duration() {
+      local start="$1" end="$2"
+      local start_s end_s
+      start_s=$(date -d "$start" +%s 2>/dev/null || echo "")
+      end_s=$(date -d "$end" +%s 2>/dev/null || echo "")
+      if [[ -n "$start_s" && -n "$end_s" && "$end_s" -ge "$start_s" ]]; then
+        echo $((end_s - start_s))
+      else
+        echo "N/A"
+      fi
+    }
+
+    emit_result() {
+      echo "seed_generation_complete=$1"
+      echo "completion_source=${2:-unknown}"
+      echo "lca_completed_at=${3:-}"
+      echo "hub_detected_at=${4:-}"
+      echo "duration_sec=${5:-N/A}"
+      echo "poll_attempts=${6:-0}"
+      echo "failure_reason=${7:-}"
+    }
+
+    for attempt in $(seq 1 "$RETRIES"); do
+      SPOKE_STATUS=""
+
+      if SPOKE_JSON=$(oc --kubeconfig="$SPOKE_KC" get seedgenerator seedimage -o json 2>/dev/null); then
+        # Check for success
+        if echo "$SPOKE_JSON" | jq -e '(.status.conditions // [])[] | select(.type=="SeedGenCompleted" and .status=="True")' >/dev/null 2>&1; then
+          LCA_TS=$(echo "$SPOKE_JSON" | jq -r '(.status.conditions // [])[] | select(.type=="SeedGenCompleted") | .lastTransitionTime' 2>/dev/null | head -1)
+          emit_result "true" "spoke_seedgenerator" "$LCA_TS" "" "$(calc_duration "$START" "$LCA_TS")" "$attempt"
+          exit 0
+        fi
+
+        # Check for failure: SeedGenInProgress=False with non-Completed reason
+        FAILED_MSG=$(echo "$SPOKE_JSON" | jq -r '
+          (.status.conditions // [])[] |
+          select(.type=="SeedGenInProgress" and .status=="False" and .reason!="Completed") |
+          .message // "unknown error"
+        ' 2>/dev/null | head -1)
+        if [[ -n "$FAILED_MSG" ]]; then
+          echo "ERROR: LCA reported seed generation failure: ${FAILED_MSG}" >&2
+          emit_result "false" "spoke_seedgenerator" "" "" "N/A" "$attempt" "$FAILED_MSG"
+          exit 1
+        fi
+
+        # Capture current status for logging
+        SPOKE_STATUS=$(echo "$SPOKE_JSON" | jq -r '
+          (.status.conditions // [])[] |
+          "\(.type)=\(.status) (\(.reason // "?")): \(.message // "")"
+        ' 2>/dev/null | tr '\n' '; ')
+        if [[ -z "$SPOKE_STATUS" ]]; then
+          SPOKE_STATUS="API up, CR exists, no conditions (LCA not reconciled yet)"
+        fi
+      else
+        if oc --kubeconfig="$SPOKE_KC" get --raw /healthz &>/dev/null; then
+          SPOKE_STATUS="API up, SeedGenerator CR not found"
+        else
+          SPOKE_STATUS="API unreachable"
+        fi
+      fi
+
+      # Check hub imagestream for the seed tag
+      if HUB_JSON=$(oc --kubeconfig="$HUB_KC" get imagestream seed -n openshift -o json 2>/dev/null); then
+        TAG_CREATED=$(echo "$HUB_JSON" | jq -r --arg t "$TAG" '(.status.tags // [])[]? | select(.tag==$t) | .items[0].created // empty' 2>/dev/null | head -1)
+        if [[ -n "$TAG_CREATED" ]]; then
+          START_S=$(date -d "$START" +%s 2>/dev/null || echo "")
+          CREATED_S=$(date -d "$TAG_CREATED" +%s 2>/dev/null || echo "")
+          if [[ -n "$START_S" && -n "$CREATED_S" && "$CREATED_S" -ge "$START_S" ]]; then
+            emit_result "true" "hub_imagestream" "" "$TAG_CREATED" "$(calc_duration "$START" "$TAG_CREATED")" "$attempt"
+            exit 0
+          fi
+        fi
+      fi
+
+      echo "Poll ${attempt}/${RETRIES}: seed:${TAG} not ready — spoke: ${SPOKE_STATUS}" >&2
+      sleep "$DELAY"
+    done
+
+    emit_result "false" "timeout" "" "" "N/A" "$RETRIES"
+    exit 1
+  args:
+    executable: /bin/bash
+  register: _gsi_seed_poll_result
+  changed_when: false
+  failed_when: false
+
+- name: Parse seed poll results
+  ansible.builtin.set_fact:
+    gsi_seed_generation_complete: >-
+      {{ (_gsi_seed_poll_result.stdout_lines
+          | select('match', '^seed_generation_complete=') | first
+          | default('seed_generation_complete=false')
+          | regex_replace('^seed_generation_complete=', '')) == 'true' }}
+    gsi_seed_completion_source: >-
+      {{ _gsi_seed_poll_result.stdout_lines
+         | select('match', '^completion_source=') | first
+         | default('completion_source=unknown')
+         | regex_replace('^completion_source=', '') }}
+    gsi_seed_lca_completed_at: >-
+      {{ _gsi_seed_poll_result.stdout_lines
+         | select('match', '^lca_completed_at=') | first
+         | default('lca_completed_at=')
+         | regex_replace('^lca_completed_at=', '') }}
+    gsi_seed_hub_detected_at: >-
+      {{ _gsi_seed_poll_result.stdout_lines
+         | select('match', '^hub_detected_at=') | first
+         | default('hub_detected_at=')
+         | regex_replace('^hub_detected_at=', '') }}
+    gsi_seed_duration_sec: >-
+      {{ _gsi_seed_poll_result.stdout_lines
+         | select('match', '^duration_sec=') | first
+         | default('duration_sec=N/A')
+         | regex_replace('^duration_sec=', '') }}
+    gsi_seed_poll_attempts: >-
+      {{ _gsi_seed_poll_result.stdout_lines
+         | select('match', '^poll_attempts=') | first
+         | default('poll_attempts=0')
+         | regex_replace('^poll_attempts=', '') }}
+    gsi_seed_failure_reason: >-
+      {{ _gsi_seed_poll_result.stdout_lines
+         | select('match', '^failure_reason=') | first
+         | default('failure_reason=')
+         | regex_replace('^failure_reason=', '') }}

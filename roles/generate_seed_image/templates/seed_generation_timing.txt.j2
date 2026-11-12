@@ -1,0 +1,11 @@
+Seed generation timing report
+============================
+Site                        : {{ gsi_hostname }}
+Seed image tag              : openshift/seed:{{ seed_tag }}
+Generation started (UTC)    : {{ gsi_seed_generation_started_at }}
+LCA completed at (UTC)      : {{ gsi_seed_lca_completed_at | default('N/A', true) }}
+Hub tag created at (UTC)    : {{ gsi_seed_hub_detected_at | default('N/A', true) }}
+Completion detected via     : {{ gsi_seed_completion_source }}
+Poll attempts               : {{ gsi_seed_poll_attempts | default('N/A') }}
+Seed generation duration    : {{ gsi_seed_duration_fmt }}
+Generated at                : {{ gsi_report_generated_at }}

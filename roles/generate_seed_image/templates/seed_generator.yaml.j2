@@ -1,0 +1,6 @@
+apiVersion: lca.openshift.io/v1
+kind: SeedGenerator
+metadata:
+  name: seedimage
+spec:
+  seedImage: "{{ _gsi_hub_registry_url.stdout }}/openshift/seed:{{ seed_tag }}"

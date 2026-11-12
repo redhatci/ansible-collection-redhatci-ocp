@@ -1,0 +1,80 @@
+---
+# Best-effort seed cluster diagnostics. Runs in the role's always block and
+# never fails the play. Set gsi_collect_logs=false to skip.
+#
+# Output directory, first one set wins: $RESULTS, artefact_output_dir, then
+# job_logs.path (the DCI agent's per-job log dir, which DCI uploads). If none
+# is set, the archive is skipped. There is no /tmp fallback: the role must not
+# try to create or chmod a shared system directory.
+- name: Collect seed cluster logs
+  when: gsi_collect_logs | bool
+  block:
+    - name: Resolve logs output directory
+      ansible.builtin.set_fact:
+        gsi_logs_output_dir: "{{ gsi_output_dir }}"
+
+    - name: Skip log archive when no output directory is set
+      ansible.builtin.debug:
+        msg: >-
+          No output directory set ($RESULTS, artefact_output_dir or
+          job_logs.path); skipping the must-gather archive.
+      when: gsi_logs_output_dir | length == 0
+
+    - name: Create logs temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+      register: _gsi_logs_dir
+      when: gsi_logs_output_dir | length > 0
+
+    - name: Run must-gather on the seed cluster
+      ansible.builtin.command:
+        argv:
+          - oc
+          - --kubeconfig
+          - "{{ kubeconfig_path }}"
+          - adm
+          - must-gather
+          - --dest-dir={{ _gsi_logs_dir.path }}/must-gather
+      register: _gsi_must_gather
+      changed_when: false
+      failed_when: false
+      when: _gsi_logs_dir.path is defined
+
+    - name: Check logs output directory
+      ansible.builtin.stat:
+        path: "{{ gsi_logs_output_dir }}"
+      register: _gsi_logs_output_stat
+      when: (_gsi_must_gather.rc | default(1)) == 0
+
+    # Only create the directory when it is missing; never change the mode of
+    # an existing one.
+    - name: Create logs output directory
+      ansible.builtin.file:
+        path: "{{ gsi_logs_output_dir }}"
+        state: directory
+        mode: "0755"
+      when:
+        - (_gsi_must_gather.rc | default(1)) == 0
+        - not (_gsi_logs_output_stat.stat.exists | default(false))
+
+    - name: Archive collected logs
+      community.general.archive:
+        path: "{{ _gsi_logs_dir.path }}/*"
+        dest: "{{ gsi_logs_output_dir }}/seed_must_gather_{{ gsi_hostname }}.tar.gz"
+        format: gz
+        mode: "0644"
+      when: (_gsi_must_gather.rc | default(1)) == 0
+
+  rescue:
+    - name: Log collection failed (best-effort, not failing the play)
+      ansible.builtin.debug:
+        msg: >-
+          Seed log collection failed and was skipped:
+          {{ ansible_failed_result.msg | default('unknown error') }}
+
+  always:
+    - name: Remove logs temporary directory
+      ansible.builtin.file:
+        path: "{{ _gsi_logs_dir.path }}"
+        state: absent
+      when: _gsi_logs_dir.path is defined
