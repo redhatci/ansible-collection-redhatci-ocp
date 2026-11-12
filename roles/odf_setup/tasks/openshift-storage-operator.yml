@@ -24,6 +24,42 @@
     - ocs_install_type == 'internal'
     - odf_setup_ocs_on_control_plane | default(false) | bool
 
+- name: Wait for Ceph CSI drivers
+  kubernetes.core.k8s_info:
+    api_version: csi.ceph.io/v1
+    kind: Driver
+    namespace: "{{ ocs_storage_namespace }}"
+  register: _odf_setup_csi_drivers
+  retries: 60
+  delay: 10
+  until:
+    - _odf_setup_csi_drivers.resources is defined
+    - ocs_storage_namespace ~ '.rbd.csi.ceph.com' in (_odf_setup_csi_drivers.resources | map(attribute='metadata.name') | list)
+    - ocs_storage_namespace ~ '.cephfs.csi.ceph.com' in (_odf_setup_csi_drivers.resources | map(attribute='metadata.name') | list)
+  when:
+    - ocs_install_type == 'internal'
+    - odf_setup_ocs_on_control_plane | default(false) | bool
+    - odf_setup_odf_version is version('4.19', '>=')
+
+- name: Configure CSI driver node plugin tolerations
+  kubernetes.core.k8s:
+    api_version: csi.ceph.io/v1
+    kind: Driver
+    name: "{{ item }}"
+    namespace: "{{ ocs_storage_namespace }}"
+    merge_type: merge
+    definition:
+      spec:
+        nodePlugin:
+          tolerations: "{{ odf_setup_csi_plugin_tolerations | from_yaml }}"
+  loop:
+    - "{{ ocs_storage_namespace }}.rbd.csi.ceph.com"
+    - "{{ ocs_storage_namespace }}.cephfs.csi.ceph.com"
+  when:
+    - ocs_install_type == 'internal'
+    - odf_setup_ocs_on_control_plane | default(false) | bool
+    - odf_setup_odf_version is version('4.19', '>=')
+
 - name: Tasks for External OCS/ODF Integration
   when:
     - ocs_install_type == 'external'
