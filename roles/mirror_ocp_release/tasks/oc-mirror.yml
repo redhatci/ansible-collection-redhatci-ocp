@@ -103,6 +103,9 @@
           --src-tls-verify=false
           {% endif %}
           --ignore-release-signature
+          {%- if mor_extra_flags | length > 0 %}
+          {{ mor_extra_flags }}
+          {%- endif %}
       register: _mor_cmd_output
       retries: 3
       delay: 10
