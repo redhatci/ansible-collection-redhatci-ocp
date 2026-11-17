@@ -26,7 +26,7 @@ If enabled, the role requires a container registry to mirror the OCP container i
 | mor_webserver_url            | undefined                                                          | No*      | URL of the web server where the installation artifacts are stored. Required when `mor_write_custom_config` is True (default).
 | mor_write_custom_config      | true                                                               | No       | Writes the OCP configuration files and sets the custom URL facts. Requires `mor_webserver_url` to be set.
 | mor_allow_insecure_registry  | true                                                               | No       | Allow interacting with registries that are using an unknown CA certificate.
-| mor_extra_flags              | ""                                                                 | No       | Extra flags to pass to the `oc adm release mirror` command when mirroring release images.
+| mor_extra_flags              | ""                                                                 | No       | Extra flags passed to the mirroring client: `oc adm release mirror` below 4.14, `oc-mirror` from 4.14. Flags must be valid for that client.
 | mor_build                    | ga                                                                 | No       | The build type of the OCP release. Supported values: ga, candidate, dev, nightly.
 
 ## Requirements
