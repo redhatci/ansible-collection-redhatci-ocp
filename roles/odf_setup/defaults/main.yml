@@ -41,7 +41,8 @@ odf_setup_key_rotation_period: weekly
 # ODF enable Ceph Tools
 odf_setup_enable_ceph_tools: true
 
-# CSI_PLUGIN_TOLERATIONS for rook-ceph-operator-config
+# CSI_PLUGIN_TOLERATIONS for rook-ceph-operator-config.
+# From ODF 4.19 the same YAML is applied to the csi.ceph.io Driver CRs.
 odf_setup_csi_plugin_tolerations: |
   - key: node-role.kubernetes.io/master
     operator: Exists

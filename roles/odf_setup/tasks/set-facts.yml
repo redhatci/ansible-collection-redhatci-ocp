@@ -20,3 +20,23 @@
     ocs_default_storage_class: "{{ ocs_sc_rbd_name }}"
   when:
     - ocs_default_storage_class is undefined
+
+- name: Get the installed odf-operator CSV
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: "{{ ocs_storage_namespace }}"
+    label_selectors:
+      - "operators.coreos.com/odf-operator.{{ ocs_storage_namespace }}"
+  register: _odf_setup_odf_csv
+  retries: 12
+  delay: 10
+  until: _odf_setup_odf_csv.resources | length > 0
+
+- name: Set the installed ODF version
+  ansible.builtin.set_fact:
+    odf_setup_odf_version: "{{ item.spec.version | regex_replace('-.*$', '') }}"
+  loop: "{{ _odf_setup_odf_csv.resources }}"
+  when: >-
+    odf_setup_odf_version is not defined
+    or (item.spec.version | regex_replace('-.*$', '')) is version(odf_setup_odf_version, '>')
