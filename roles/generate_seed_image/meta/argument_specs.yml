@@ -1,0 +1,133 @@
+---
+# Argument specification for the generate_seed_image role
+argument_specs:
+  main:
+    short_description: Generate an image-based install/upgrade seed image
+    description:
+      - Generates a Lifecycle Agent seed image from a ZTP-deployed single-node
+        OpenShift cluster and pushes it to the hub image registry as
+        openshift/seed_<gsi_site>:<gsi_seed_tag>.
+      - The seed cluster is the one selected by the KUBECONFIG environment
+        variable. The hub is reached with gsi_hub_kubeconfig.
+      - The seed cluster is detached from the hub by adding pruneManifests to
+        its ClusterInstance in the GitOps repository, and is left detached.
+    options:
+      gsi_hub_kubeconfig:
+        type: path
+        required: true
+        description: Kubeconfig of the ACM hub cluster.
+
+      gsi_seed_tag:
+        type: str
+        required: true
+        description: Tag of the seed image, pushed as openshift/seed_<gsi_site>:<tag> on the hub registry.
+
+      gsi_site:
+        type: str
+        required: true
+        description: Name of the seed cluster (ManagedCluster and ClusterInstance name).
+
+      gsi_gitops_repo:
+        type: str
+        required: true
+        description: GitOps repository that holds the seed cluster ClusterInstance.
+
+      gsi_gitops_branch:
+        type: str
+        required: true
+        description: Branch of gsi_gitops_repo to update.
+
+      gsi_gitops_clusterinstance_file:
+        type: str
+        required: true
+        description: Path of the seed cluster ClusterInstance file, relative to the repository root.
+
+      gsi_oc_path:
+        type: str
+        default: /usr/local/bin/oc
+        description: Path to the oc binary.
+
+      gsi_output_dir:
+        type: str
+        default: ""
+        description: Directory for the timing report. Empty skips the report.
+
+      gsi_install_operators:
+        type: bool
+        default: false
+        description:
+          - Install OADP and the Lifecycle Agent on the seed cluster.
+          - When false the role only checks that both are installed.
+
+      gsi_operators_source:
+        type: str
+        default: redhat-operators
+        description: CatalogSource used when installing the operators.
+
+      gsi_operators_source_ns:
+        type: str
+        default: openshift-marketplace
+        description: Namespace of gsi_operators_source.
+
+      gsi_oadp_namespace:
+        type: str
+        default: openshift-adp
+        description: OADP operator namespace.
+
+      gsi_oadp_channel:
+        type: str
+        default: ""
+        description: >-
+          OADP operator channel. When empty, redhatci.ocp.olm_operator uses the
+          operator's default channel (PackageManifest status.defaultChannel).
+
+      gsi_lca_namespace:
+        type: str
+        default: openshift-lifecycle-agent
+        description: Lifecycle Agent namespace (also holds the seedgen Secret).
+
+      gsi_lca_channel:
+        type: str
+        default: stable
+        description: Lifecycle Agent operator channel.
+
+      gsi_registry_storage_class:
+        type: str
+        default: ocs-storagecluster-cephfs
+        description: StorageClass of the hub image registry PVC, when it is created.
+
+      gsi_registry_storage_size:
+        type: str
+        default: 100Gi
+        description: Size of the hub image registry PVC, when it is created.
+
+      gsi_detach_retries:
+        type: int
+        default: 40
+        description: Retries while waiting for the seed cluster to detach from the hub.
+
+      gsi_detach_delay:
+        type: int
+        default: 15
+        description: Seconds between detach retries.
+
+      gsi_mcp_retries:
+        type: int
+        default: 40
+        description: Retries while waiting for the seed cluster MachineConfigPool update.
+
+      gsi_mcp_delay:
+        type: int
+        default: 15
+        description: Seconds between MachineConfigPool retries.
+
+      gsi_seed_retries:
+        type: int
+        default: 120
+        description: Retries while waiting for the seed image and the seed cluster restore.
+
+      gsi_seed_delay:
+        type: int
+        default: 15
+        description: Seconds between seed image retries.
+...

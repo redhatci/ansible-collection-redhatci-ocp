@@ -1,0 +1,121 @@
+---
+- name: Delete any previous SeedGenerator
+  kubernetes.core.k8s:
+    state: absent
+    api_version: lca.openshift.io/v1
+    kind: SeedGenerator
+    name: seedimage
+    wait: true
+    wait_timeout: 120
+
+- name: Set the seed imagestream
+  ansible.builtin.set_fact:
+    gsi_seed_imagestream: "seed_{{ gsi_site }}"
+    # Creation times of the seed tag in the imagestream. JMESPath is used
+    # because on Jinja2 2.10 (Ansible 2.9) `tag.items` resolves to dict.items().
+    gsi_seed_created_query: "resources[].status.tags[?tag=='{{ gsi_seed_tag }}'][].items[].created"
+
+- name: Set the seed image and start time
+  ansible.builtin.set_fact:
+    gsi_seed_image: "{{ gsi_hub_registry }}/openshift/{{ gsi_seed_imagestream }}:{{ gsi_seed_tag }}"
+    gsi_seed_started_at: "{{ now(utc=true).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+
+- name: Create the SeedGenerator
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: lca.openshift.io/v1
+      kind: SeedGenerator
+      metadata:
+        name: seedimage
+      spec:
+        seedImage: "{{ gsi_seed_image }}"
+
+# The seed cluster API is down while LCA builds the image, so completion is
+# read from the hub imagestream.
+- name: Wait for the seed image on the hub registry
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ gsi_hub_kubeconfig }}"
+    api_version: image.openshift.io/v1
+    kind: ImageStream
+    name: "{{ gsi_seed_imagestream }}"
+    namespace: openshift
+  register: _gsi_seed_imagestream
+  until: >-
+    _gsi_seed_imagestream | json_query(gsi_seed_created_query) | default([], true)
+    | select('>=', gsi_seed_started_at) | list | length > 0
+  retries: "{{ gsi_seed_retries }}"
+  delay: "{{ gsi_seed_delay }}"
+  failed_when: false
+
+- name: Set the seed image creation time
+  ansible.builtin.set_fact:
+    gsi_seed_created_at: >-
+      {{ _gsi_seed_imagestream | json_query(gsi_seed_created_query) | default([], true)
+         | select('>=', gsi_seed_started_at) | first | default('') }}
+
+- name: Report the seed generation failure
+  when: gsi_seed_created_at | length == 0
+  block:
+    - name: Get the SeedGenerator status
+      kubernetes.core.k8s_info:
+        api_version: lca.openshift.io/v1
+        kind: SeedGenerator
+        name: seedimage
+      register: _gsi_seedgenerator
+      failed_when: false
+
+    - name: Fail when the seed image was not pushed
+      ansible.builtin.fail:
+        msg: >-
+          {{ gsi_seed_image }} was not pushed after
+          {{ gsi_seed_retries * gsi_seed_delay }}s. SeedGenerator conditions:
+          {{ _gsi_seedgenerator.resources[0].status.conditions | default('unavailable')
+             if _gsi_seedgenerator.resources | default([]) | length > 0 else 'unavailable' }}
+
+# After the push, LCA restores the seed cluster. Wait for it.
+- name: Wait for the seed cluster to complete seed generation
+  kubernetes.core.k8s_info:
+    api_version: lca.openshift.io/v1
+    kind: SeedGenerator
+    name: seedimage
+  register: _gsi_seedgenerator
+  until: >-
+    _gsi_seedgenerator.resources | default([])
+    | selectattr('status', 'defined') | map(attribute='status')
+    | selectattr('conditions', 'defined') | map(attribute='conditions') | flatten
+    | selectattr('type', 'equalto', 'SeedGenCompleted')
+    | selectattr('status', 'equalto', 'True')
+    | list | length > 0
+  retries: "{{ gsi_seed_retries }}"
+  delay: "{{ gsi_seed_delay }}"
+  failed_when: false
+
+- name: Set the seed generation duration
+  ansible.builtin.set_fact:
+    gsi_seed_duration: >-
+      {{ ((gsi_seed_created_at | to_datetime('%Y-%m-%dT%H:%M:%SZ'))
+          - (gsi_seed_started_at | to_datetime('%Y-%m-%dT%H:%M:%SZ'))).total_seconds() | int }}
+    gsi_seed_cluster_restored: >-
+      {{ _gsi_seedgenerator.resources | default([])
+         | selectattr('status', 'defined') | map(attribute='status')
+         | selectattr('conditions', 'defined') | map(attribute='conditions') | flatten
+         | selectattr('type', 'equalto', 'SeedGenCompleted')
+         | selectattr('status', 'equalto', 'True')
+         | list | length > 0 }}
+
+- name: Write the seed generation timing report
+  ansible.builtin.template:
+    src: seed_generation_timing.txt.j2
+    dest: "{{ gsi_output_dir }}/seed_generation_timing_{{ gsi_site }}.txt"
+    mode: "0644"
+  when: gsi_output_dir | length > 0
+
+- name: Seed image generated
+  ansible.builtin.debug:
+    msg:
+      - "Seed image      : {{ gsi_seed_image }}"
+      - "Started (UTC)   : {{ gsi_seed_started_at }}"
+      - "Pushed (UTC)    : {{ gsi_seed_created_at }}"
+      - "Duration        : {{ (gsi_seed_duration | int) // 60 }}m {{ '%02d' | format((gsi_seed_duration | int) % 60) }}s"
+      - "Cluster restored: {{ gsi_seed_cluster_restored }}"
+...

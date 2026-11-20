@@ -1,0 +1,30 @@
+---
+- name: Check the hub kubeconfig exists
+  ansible.builtin.stat:
+    path: "{{ gsi_hub_kubeconfig }}"
+  register: _gsi_hub_kubeconfig_stat
+
+- name: Fail when the hub kubeconfig is missing
+  ansible.builtin.assert:
+    that:
+      - _gsi_hub_kubeconfig_stat.stat.exists
+    fail_msg: "Hub kubeconfig not found at {{ gsi_hub_kubeconfig }}"
+
+- name: Expose the hub image registry
+  ansible.builtin.include_tasks: hub_registry.yml
+
+- name: Check the seed cluster operators
+  ansible.builtin.include_tasks: operators.yml
+
+- name: Trust the hub registry on the seed cluster
+  ansible.builtin.include_tasks: insecure_registry.yml
+
+- name: Create the seedgen Secret
+  ansible.builtin.include_tasks: seedgen_secret.yml
+
+- name: Detach the seed cluster from the hub
+  ansible.builtin.include_tasks: detach.yml
+
+- name: Generate the seed image
+  ansible.builtin.include_tasks: generate.yml
+...

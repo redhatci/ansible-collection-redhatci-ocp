@@ -1,0 +1,8 @@
+Seed generation timing report
+=============================
+Site                     : {{ gsi_site }}
+Seed image               : {{ gsi_seed_image }}
+Generation started (UTC) : {{ gsi_seed_started_at }}
+Image pushed (UTC)       : {{ gsi_seed_created_at }}
+Duration                 : {{ (gsi_seed_duration | int) // 60 }}m {{ '%02d' | format((gsi_seed_duration | int) % 60) }}s
+Seed cluster restored    : {{ gsi_seed_cluster_restored }}

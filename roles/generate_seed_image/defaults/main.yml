@@ -1,0 +1,47 @@
+---
+# generate_seed_image role default variables
+#
+# Required variables (no defaults, see meta/argument_specs.yml):
+#   gsi_hub_kubeconfig, gsi_seed_tag, gsi_site, gsi_gitops_repo,
+#   gsi_gitops_branch, gsi_gitops_clusterinstance_file
+#
+# The seed cluster is the one selected by the KUBECONFIG environment variable.
+
+# Path to the oc binary (used to request a registry token on the hub).
+gsi_oc_path: /usr/local/bin/oc
+
+# Directory where the seed generation timing report is written. Leave empty to
+# skip the report (e.g. set to job_logs.path in DCI).
+gsi_output_dir: ""
+
+# --- Operators on the seed cluster ----------------------------------------
+# Install OADP and the Lifecycle Agent with redhatci.ocp.olm_operator. When
+# false the role only checks they are installed.
+gsi_install_operators: false
+gsi_operators_source: redhat-operators
+gsi_operators_source_ns: openshift-marketplace
+gsi_oadp_namespace: openshift-adp
+# Empty lets redhatci.ocp.olm_operator use the operator's default channel
+# (PackageManifest status.defaultChannel), so it tracks the catalog instead of
+# pinning a version that goes stale. Set explicitly to override.
+gsi_oadp_channel: ""
+gsi_lca_namespace: openshift-lifecycle-agent
+gsi_lca_channel: stable
+
+# --- Hub image registry ---------------------------------------------------
+# Storage for the hub image registry PVC. Only used when the PVC does not
+# exist yet.
+gsi_registry_storage_class: ocs-storagecluster-cephfs
+gsi_registry_storage_size: 100Gi
+
+# --- Waits ----------------------------------------------------------------
+# Hub ManagedCluster removal and seed cluster agent cleanup.
+gsi_detach_retries: 40
+gsi_detach_delay: 15
+# Seed cluster MachineConfigPool update after trusting the hub registry.
+gsi_mcp_retries: 40
+gsi_mcp_delay: 15
+# Seed image build (default 120 x 15s = 30 minutes), then seed cluster restore.
+gsi_seed_retries: 120
+gsi_seed_delay: 15
+...
