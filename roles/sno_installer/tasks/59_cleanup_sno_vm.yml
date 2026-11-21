@@ -36,6 +36,7 @@
 - name: "Undefine old SNO VMs, if any"
   ansible.builtin.command:
     cmd: "virsh undefine --nvram {{ item }}"  # community.libvirt.virt undefine doesn't have the ability to specify --nvram
+  changed_when: true
   with_items: "{{ all_vms.list_vms }}"
   when: item is search(host['name'])
   become: true
