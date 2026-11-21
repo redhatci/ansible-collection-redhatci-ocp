@@ -12,10 +12,11 @@
     status_code: 200
     timeout: 120
   register: pl_published
-  ignore_errors: true
+  failed_when: false
 
 # PUT is not yet implemented by Pyxis, and we have to use PATCH
 - name: Patch PL to attach PL ID to container project
+  when: pl_published.status == 200
   vars:
     pyxis_apikey: "{{ lookup('file', pyxis_apikey_path) }}"
     template_filename: "templates/attach_product_listing.json.j2"

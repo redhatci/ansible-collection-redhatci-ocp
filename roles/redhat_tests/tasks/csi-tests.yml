@@ -12,5 +12,5 @@
      /bin/bash -c
        "openshift-tests run openshift/csi --junit-dir /logs"
      > {{ ts_log_dir }}/csi-report.log
-  ignore_errors: true
+  failed_when: false
 ...
