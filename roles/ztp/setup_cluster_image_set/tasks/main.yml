@@ -50,6 +50,7 @@
           set -eo pipefail
           grep -r clusterImageSetNameRef {{ scis_tmp.path }}/gitops/{{ scis_sites_path }} | awk '{ print $NF }' | sed -e 's/"//g'
       register: scis_cluster_image_sets_output
+      changed_when: false  # Read-only grep over the GitOps checkout
 
   always:
     - name: Delete temporary directory

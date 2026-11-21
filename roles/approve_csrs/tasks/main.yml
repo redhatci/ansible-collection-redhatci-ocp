@@ -6,6 +6,7 @@
   register: oc_nodes
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  changed_when: false  # Retry loop: per-attempt change reports are meaningless
   until: (groups['day2_workers'] | difference(oc_nodes.stdout | default('{}') | from_json | json_query('items[].metadata.name') | list )) | length == 0
   retries: 60
   delay: 60

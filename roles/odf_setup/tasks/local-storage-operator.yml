@@ -36,6 +36,7 @@
   retries: 10
   delay: 30
   until: disk_id.rc == 0
+  changed_when: false  # Read-only log gathering
 
 - name: Configure Local Storage Volumes
   kubernetes.core.k8s:

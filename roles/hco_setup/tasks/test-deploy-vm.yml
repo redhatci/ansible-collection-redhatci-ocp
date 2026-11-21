@@ -13,6 +13,7 @@
           docker://{{ hs_test_vm_image }}
           docker://{{ hs_registry }}/{{ '/'.join(hs_test_vm_image.split('/')[1:]) }}
       register: copy
+      changed_when: true
       retries: 5
       delay: 5
       until:
