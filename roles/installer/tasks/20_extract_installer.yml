@@ -102,7 +102,7 @@
   ansible.builtin.command: >
     /usr/local/bin/oc adm release extract
     --registry-config {{ installer_pullsecret_file | quote }}
-    --command={{ installer_cmd |quote }}
+    --command={{ installer_cmd | quote }}
     --to {{ tempdir_loc }} {{ disconnected_installer | ternary(disconnected_installer, release_image) }}
   args:
     chdir: "{{ tempdir }}"

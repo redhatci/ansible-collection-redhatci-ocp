@@ -141,7 +141,7 @@
   # use a ternary for the delegate_to
 - name: Get URL of host providing the webserver
   ansible.builtin.set_fact:
-    host_url: "{{ (the_url.status in [200,301]) | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
+    host_url: "{{ (the_url.status in [200, 301]) | ternary(groups['provisioner'][0], groups['registry_host'][0]) }}"
   tags: cache
 
 - name: Set bootstrap image URL override if not provided by the user
@@ -231,18 +231,18 @@
         daemon_reexec: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
     - name: Enable container-cache.service
       ansible.builtin.systemd:
         name: container-cache.service
         enabled: true
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"
     - name: Start container-cache.service
       ansible.builtin.systemd:
         name: container-cache.service
         state: started
         scope: user
       environment:
-        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS|default('unix:path=/run/user/' +  ansible_effective_user_id|string + '/bus') }}"
+        DBUS_SESSION_BUS_ADDRESS: "{{ ansible_env.DBUS_SESSION_BUS_ADDRESS | default('unix:path=/run/user/' + (ansible_effective_user_id | string) + '/bus') }}"

@@ -16,7 +16,7 @@
 
     - name: Get RHCOS JSON File
       ansible.builtin.uri:
-        url: "{{ (disconnected_installer|length == 0 and the_url.status == -1) | ternary(offline_url, online_url) }}"
+        url: "{{ (disconnected_installer | length == 0 and the_url.status == -1) | ternary(offline_url, online_url) }}"
         return_content: true
       until: rhcos_json.status == 200
       retries: 6 # 1 minute (10 * 6)

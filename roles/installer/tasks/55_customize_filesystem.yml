@@ -1,7 +1,7 @@
 ---
 - name: Check if override path is defined for customize_filesystem
   ansible.builtin.set_fact:
-    custom_path: "{{ customize_node_filesystems | default( role_path + '/files/customize_filesystem' ) }}"
+    custom_path: "{{ customize_node_filesystems | default(role_path + '/files/customize_filesystem') }}"
 
 - name: Verify if custom filesystem path master/worker is empty
   ansible.builtin.find:

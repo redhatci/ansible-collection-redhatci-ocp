@@ -56,7 +56,7 @@
 
 - name: Create list of old paths
   ansible.builtin.set_fact:
-    vm_paths: "{{ vm_paths  | default([]) + find_results.results[item|int] | json_query('files[*].path') }}"
+    vm_paths: "{{ vm_paths | default([]) + find_results.results[item | int] | json_query('files[*].path') }}"
   with_sequence: start=0 count={{ default_libvirt_pool_dir | length }}
 
 - name: Delete old bootstrap VMs Storage
