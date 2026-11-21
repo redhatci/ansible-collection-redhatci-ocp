@@ -3,3 +3,4 @@ om_allow_insecure_registries: false
 om_keep_working_dir: false
 om_remove_signatures: false
 om_ignore_errors: false
+om_validate_manifests: true

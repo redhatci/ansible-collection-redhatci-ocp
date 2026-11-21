@@ -1,0 +1,11 @@
+---
+apiVersion: catalogd.operatorframework.io/v1
+kind: ClusterCatalog
+metadata:
+  name: cc-redhat-operators
+spec:
+  source:
+    type: Image
+    image:
+      ref: registry.lab.example.com:5000/redhat/redhat-operator-index:v4.17
+      pollInterval: 24h
