@@ -7,6 +7,7 @@
         set -o pipefail
         /usr/local/bin/{{ installer_cmd }} version | grep '^built from commit' | awk '{print $4}'
       register: commit_id
+      changed_when: false
       tags: rhcospath
 
     - name: Get the URLs
@@ -44,6 +45,7 @@
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} coreos print-stream-json
       register: rhcos_json_stream
+      changed_when: false
       retries: 3
       delay: 10
       until: rhcos_json_stream is not failed

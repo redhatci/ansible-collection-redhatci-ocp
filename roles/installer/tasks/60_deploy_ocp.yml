@@ -17,6 +17,7 @@
   when:
     - increase_bootstrap_timeout is not defined
     - increase_install_timeout is not defined
+  changed_when: true
   tags: install
   no_log: true
 
@@ -29,6 +30,7 @@
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug create cluster
       async: 3600
       poll: 0
+      changed_when: true
       ignore_errors: true
       register: installer_result
 
@@ -42,6 +44,7 @@
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for bootstrap-complete
       register: wait_for_bootstrap_result
+      changed_when: false
       until: wait_for_bootstrap_result is succeeded
       retries: "{{ increase_bootstrap_timeout|default(1)|int }}"
       delay: 1
@@ -50,6 +53,7 @@
       ansible.builtin.shell: |
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug wait-for install-complete
       register: wait_for_install_result
+      changed_when: false
       until: wait_for_install_result is succeeded
       retries: "{{ increase_install_timeout|default(1)|int }}"
       delay: 1
