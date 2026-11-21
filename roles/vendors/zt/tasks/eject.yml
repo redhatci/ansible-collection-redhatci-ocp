@@ -30,8 +30,7 @@
                 (ConnectedVia == `URL` || ConnectedVia == `URI`)
                 && Image != null
                 && contains(MediaTypes, `CD`)
-              )]'
-            ) | from_yaml
+              )]') | from_yaml
           }}"
 
     - name: Debug
