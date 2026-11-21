@@ -3,14 +3,46 @@ argument_specs:
   main:
     short_description: Mirror operators using oc-mirror
     description: >
-      Mirrors catalog images to om_target. With om_custom_config you supply an
+      Mirrors catalog images using oc-mirror v2. Supports three operation modes:
+      'mirror' (registry-to-registry, default), 'm2d' (mirror-to-disk), and
+      'd2m' (disk-to-mirror). With om_custom_config you supply an
       ImageSetConfiguration; otherwise the role uses om_target_versions,
       om_source_index, and optionally om_operators to build one.
     options:
+      om_operation:
+        type: str
+        required: false
+        default: mirror
+        choices:
+          - mirror
+          - m2d
+          - d2m
+        description: >
+          Operation mode: 'mirror' mirrors directly between registries,
+          'm2d' mirrors from a registry to a local disk workspace,
+          'd2m' pushes a previously saved disk workspace to a registry.
       om_target:
         type: str
-        required: true
-        description: Destination registry (e.g. registry.example.com:5000).
+        required: false
+        description: >
+          Destination registry (e.g. registry.example.com:5000). Required
+          when om_operation is 'mirror' or 'd2m'.
+      om_workspace_dir:
+        type: str
+        required: false
+        default: ''
+        description: >
+          Path to the local disk workspace directory used for 'm2d' and 'd2m'
+          operations. Required when om_operation is 'm2d' or 'd2m'.
+      om_helm_charts:
+        type: list
+        elements: dict
+        required: false
+        default: []
+        description: >
+          List of Helm chart repositories to include in the ImageSetConfiguration.
+          Each entry should have 'name' and 'url' keys, and an optional 'charts'
+          list with 'name' and optional 'version' keys.
       om_custom_config:
         type: str
         required: false
