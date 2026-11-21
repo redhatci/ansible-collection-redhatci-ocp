@@ -32,7 +32,9 @@
   changed_when: false
 
 - name: "Apply new SELinux file context to file"
-  ansible.builtin.command: /usr/sbin/restorecon -R "{{ mor_dir }}/{{ mor_uri | basename }}"
+  ansible.builtin.command: /usr/sbin/restorecon -Rv "{{ mor_dir }}/{{ mor_uri | basename }}"
+  register: _mor_restorecon
+  changed_when: _mor_restorecon.stdout | length > 0
   become: true
   when: _mor_selinux.rc == 0
 ...
