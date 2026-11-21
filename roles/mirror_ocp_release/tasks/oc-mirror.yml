@@ -8,10 +8,8 @@
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
-    --authfile {{ mor_auths_file }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
+    --authfile {{ mor_auths_file }}{%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}
     --format '{{ "{{" }} .Digest {{ "}}" }}'
     docker://{{ mor_pull_url | regex_replace('^docker://', '') }}
   register: _mor_skopeo_pull_digest
@@ -31,10 +29,8 @@
   ansible.builtin.command: >
     skopeo inspect
     --no-tags
-    --authfile {{ mor_auths_file }}
-    {%- if mor_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
+    --authfile {{ mor_auths_file }}{%- if mor_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}
     docker://{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images@{{ mor_release_image_digest }}
   register: _mor_release_image
   failed_when: false
@@ -102,10 +98,8 @@
           --dest-tls-verify=false
           --src-tls-verify=false
           {% endif %}
-          --ignore-release-signature
-          {%- if mor_extra_flags | length > 0 %}
-          {{ mor_extra_flags }}
-          {%- endif %}
+          --ignore-release-signature{%- if mor_extra_flags | length > 0 %}
+          {{ mor_extra_flags }}{%- endif %}
       register: _mor_cmd_output
       retries: 3
       delay: 10
