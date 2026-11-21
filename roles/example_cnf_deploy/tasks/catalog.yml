@@ -24,6 +24,7 @@
   until: _ecd_skopeo_inspect.rc == 0
   retries: 5
   delay: 5
+  changed_when: false
 
 - name: "Get index digest"
   ansible.builtin.set_fact:
