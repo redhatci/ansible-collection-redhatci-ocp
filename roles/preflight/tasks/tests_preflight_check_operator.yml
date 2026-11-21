@@ -54,6 +54,7 @@
   async: 600
   poll: 0
   register: preflight_exec
+  changed_when: false
 
 - name: "Retrieve async logs for {{ operator.name }}"
   ansible.builtin.include_tasks: test_async_logs_check_operator.yml

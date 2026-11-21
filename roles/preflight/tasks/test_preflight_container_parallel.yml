@@ -43,6 +43,7 @@
       async: 600
       poll: 0
       register: _preflight_results
+      changed_when: false
 
     - name: Check back on preflight tasks
       ansible.builtin.async_status:
