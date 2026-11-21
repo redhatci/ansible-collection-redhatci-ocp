@@ -34,6 +34,7 @@
     docker://{{ mor_registry_url }}/{{ mor_registry_path }}/openshift/release-images@{{ mor_release_image_digest }}
   register: _mor_release_image
   failed_when: false
+  changed_when: false
   when: not mor_force | bool
 
 - name: Mirror the release to the local registry

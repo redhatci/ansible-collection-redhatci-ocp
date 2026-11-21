@@ -41,6 +41,7 @@
       retries: 5
       delay: 5
       until: _mi_skopeo_copy is not failed
+      changed_when: true
 
     - name: Record mirrored image mapping
       ansible.builtin.set_fact:
@@ -86,6 +87,7 @@
         docker://{{ _tgt_image_location }}
       register: _mi_dst_inspect
       failed_when: _mi_dst_inspect.rc != 0
+      changed_when: false
 
     - name: Verify source and destination digests match
       ansible.builtin.assert:

@@ -51,6 +51,7 @@
   retries: 6
   delay: 2
   until: not catalog_validation.failed
+  changed_when: false
 
 - name: "Add Dockerfile"
   ansible.builtin.template:
@@ -66,6 +67,7 @@
     -t {{ fbc_index_image }}
   args:
     chdir: "{{ fbc_tmp_dir }}"
+  changed_when: true
 
 - name: "Delete temp directory"
   ansible.builtin.file:
