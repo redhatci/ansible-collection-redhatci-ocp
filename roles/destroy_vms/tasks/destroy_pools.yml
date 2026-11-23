@@ -29,7 +29,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ images_to_remove.files |  map(attribute='path') | list }}"
+  loop: "{{ images_to_remove.files | map(attribute='path') | list }}"
 
 - name: Remove pools
   community.libvirt.virt_pool:

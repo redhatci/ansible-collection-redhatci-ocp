@@ -29,7 +29,7 @@
             expected:
               {{ failed.value.expected | indent(14) }}
             stdout:
-              {{ failed.value.stdout | indent(14)}}
+              {{ failed.value.stdout | indent(14) }}
             stderr:
               {{ failed.value.stderr | indent(14) }}
         {% endfor %}
