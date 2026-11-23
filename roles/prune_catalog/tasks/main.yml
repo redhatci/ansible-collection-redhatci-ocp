@@ -13,13 +13,9 @@
 
 - name: "Check if image is pullable - {{ pc_source_catalog }}"
   ansible.builtin.command: >
-    skopeo inspect --no-tags
-    {%- if pc_allow_insecure_registry | bool %}
-    --tls-verify=false
-    {%- endif %}
-    {%- if lookup('ansible.builtin.env', 'DOCKER_CONFIG') | length %}
-    --authfile "$DOCKER_CONFIG/config.json"
-    {%- endif %}
+    skopeo inspect --no-tags{%- if pc_allow_insecure_registry | bool %}
+    --tls-verify=false{%- endif %}{%- if lookup('ansible.builtin.env', 'DOCKER_CONFIG') | length %}
+    --authfile "$DOCKER_CONFIG/config.json"{%- endif %}
     docker://{{ pc_source_catalog }}
   register: skopeo_result
   changed_when: skopeo_result.rc == 0
