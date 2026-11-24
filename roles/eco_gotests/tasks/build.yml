@@ -1,12 +1,10 @@
 ---
 
+# The Makefile builds the local image as eco-gotests:latest. The runner uses it
+# whenever eco_gotests_path points to a local checkout.
 - name: "Build the eco-gotests image"
   ansible.builtin.command:
     cmd: "make build-docker-image"
     chdir: "{{ eco_gotests_path }}"
-
-- name: "Overwrite image name"
-  ansible.builtin.set_fact:
-    eco_gotests_image: "eco-gotests:latest"
 
 ...

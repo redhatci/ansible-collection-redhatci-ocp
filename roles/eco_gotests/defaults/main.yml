@@ -1,7 +1,12 @@
 ---
 
 # Eco-gotests configuration
-eco_gotests_image: "quay.io/ocp-edge-qe/eco-gotests:latest"
+# Keep latest as the default to preserve the previous behaviour.
+eco_gotests_image_version: "latest"
+eco_gotests_image: "quay.io/ocp-edge-qe/eco-gotests:{{ eco_gotests_image_version }}"
+# Effective image used by the test runner: a local build takes precedence.
+_eco_gotests_image: >-
+  {{ 'eco-gotests:latest' if (eco_gotests_path | default('') | length > 0) else eco_gotests_image }}
 eco_gotests_test_suites: []  # ['ptp', 'sriov']
 eco_gotests_log_dir: "/tmp/gotests_log"
 eco_gotests_registry_auth_file: ""
