@@ -1,0 +1,51 @@
+---
+# Seed generation needs the Lifecycle Agent, and the seed cluster must carry
+# OADP for image-based install/upgrade. Install them on request, then check
+# both CSVs succeeded.
+
+- name: Install the OADP operator
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: redhat-oadp-operator # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ gsi_oadp_namespace }}" # noqa: var-naming[no-reserved] redhat-ci[no-role-prefix]
+    channel: "{{ gsi_oadp_channel }}" # noqa: redhat-ci[no-role-prefix]
+    source: "{{ gsi_operators_source }}" # noqa: redhat-ci[no-role-prefix]
+    source_ns: "{{ gsi_operators_source_ns }}" # noqa: redhat-ci[no-role-prefix]
+    install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
+  when: gsi_install_operators | bool
+
+- name: Install the Lifecycle Agent operator
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: lifecycle-agent # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ gsi_lca_namespace }}" # noqa: var-naming[no-reserved] redhat-ci[no-role-prefix]
+    channel: "{{ gsi_lca_channel }}" # noqa: redhat-ci[no-role-prefix]
+    source: "{{ gsi_operators_source }}" # noqa: redhat-ci[no-role-prefix]
+    source_ns: "{{ gsi_operators_source_ns }}" # noqa: redhat-ci[no-role-prefix]
+    install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
+  when: gsi_install_operators | bool
+
+- name: Check the operator CSV succeeded
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: "{{ item.namespace }}"
+  loop:
+    - csv: oadp-operator
+      namespace: "{{ gsi_oadp_namespace }}"
+    - csv: lifecycle-agent
+      namespace: "{{ gsi_lca_namespace }}"
+  loop_control:
+    label: "{{ item.namespace }}/{{ item.csv }}"
+  register: _gsi_operator_csvs
+  until: >-
+    _gsi_operator_csvs.resources | default([])
+    | selectattr('metadata.name', 'match', item.csv ~ '\.')
+    | selectattr('status.phase', 'defined')
+    | selectattr('status.phase', 'equalto', 'Succeeded')
+    | list | length > 0
+  retries: 10
+  delay: 15
+...
