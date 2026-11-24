@@ -4,6 +4,7 @@
     {{ ocp_binary_path }}/openshift-install
     --dir {{ dir }}
     create single-node-ignition-config
+  changed_when: true
   tags:
     - ignition
 

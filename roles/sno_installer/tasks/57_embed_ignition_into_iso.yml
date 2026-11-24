@@ -17,6 +17,7 @@
         --ignition-file /data/bootstrap-in-place-for-live-iso.ign \
         --output /data/embedded.iso
   register: rhcos_iso_live_info
+  changed_when: true
   tags: embedded
 
 - name: Set embedded iso in path fact
