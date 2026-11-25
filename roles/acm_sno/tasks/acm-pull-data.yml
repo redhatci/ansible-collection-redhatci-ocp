@@ -5,6 +5,9 @@
     kind: MachineConfigPool
     name: worker
   register: worker_mcp
+  until: worker_mcp is not failed
+  retries: 3
+  delay: 10
 
 - name: "Get current worker's Machine config Pools"
   ansible.builtin.set_fact:
@@ -16,6 +19,9 @@
     kind: MachineConfig
     name: "{{ acm_mc }}"
   register: worker_mc
+  until: worker_mc is not failed
+  retries: 3
+  delay: 10
 
 - name: "Get cluster user-ca cert if exists"
   kubernetes.core.k8s_info:
@@ -24,6 +30,9 @@
     name: "user-ca-bundle"
     namespace: openshift-config
   register: user_ca_bundle
+  until: user_ca_bundle is not failed
+  retries: 3
+  delay: 10
 
 - name: "Get the user_ca_bundle content"
   ansible.builtin.set_fact:
@@ -39,6 +48,9 @@
     name: "pull-secret"
     namespace: openshift-config
   register: acm_pull_secret
+  until: acm_pull_secret is not failed
+  retries: 3
+  delay: 10
   no_log: true
 
 - name: "Setting config facts based on Hub Cluster configs"
