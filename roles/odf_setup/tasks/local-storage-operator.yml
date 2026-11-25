@@ -50,10 +50,11 @@
 
 - name: Check LSO Storage Class exists
   kubernetes.core.k8s_info:
+    api_version: storage.k8s.io/v1
     kind: StorageClass
     name: "{{ local_storage_class }}"
   register: lso_storage_class
   retries: 30
   delay: 10
-  until: lso_storage_class.resources != []
+  until: (lso_storage_class.resources | default([])) | length > 0
 ...
