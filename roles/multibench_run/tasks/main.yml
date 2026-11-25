@@ -4,7 +4,7 @@
     crucible help
   delegate_to: "{{ multibench_host }}"
   register: _multibench_run_binaries
-  ignore_errors: true
+  failed_when: false
   become: true
 
 - name: Fail if the host is not setup properly

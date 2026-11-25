@@ -11,13 +11,13 @@
       /bin/bash -c
       "openshift-tests run {{ ts_conformance_tests }} --junit-dir /logs"
       > {{ ts_log_dir }}/conformance-run.log
-  ignore_errors: true
+  failed_when: false
   when:
     - not (dci_disconnected | default(false) | bool)
     - ts_ocp_version_maj|int == 4
     - ts_ocp_version_min|int >= 7
 
-- name: "test_ redhat_tests: Run the openshift conformance test suite (disconnected) only for OCP 4.8+"  # noqa: name[casing]
+- name: "test_ redhat_tests: Run the openshift conformance test suite (disconnected) only for OCP 4.8+"  # noqa: name[casing] risky-shell-pipe
   ansible.builtin.shell:
     cmd: >
      podman run --pull=always --rm
@@ -38,7 +38,7 @@
        --provider='{\"type\":\"baremetal\",\"disconnected\":true}'
        --junit-dir /logs"
      > {{ ts_log_dir }}/conformance-run.log
-  ignore_errors: true
+  failed_when: false
   when:
     - dci_disconnected | default(false) | bool
     - ts_ocp_version_maj|int == 4

@@ -28,7 +28,7 @@
       retries: 3
       delay: 5
       until: _cc_cc_output.rc == 0
-      ignore_errors: true
+      failed_when: false
 
     - name: Debug cluster-compare output
       ansible.builtin.debug:
@@ -42,7 +42,7 @@
         2>/dev/null || true
       args:
         chdir: "{{ cc_work_dir }}"
-      ignore_errors: true
+      failed_when: false
       register: _cc_human_output
       retries: 3
       delay: 5
@@ -54,7 +54,7 @@
         -o {{ cc_reports_dir }}/{{ cc_report_name }}
       args:
         chdir: "{{ cc_work_dir }}"
-      ignore_errors: true
+      failed_when: false
       register: _cc_junit_output
       retries: 3
       delay: 5

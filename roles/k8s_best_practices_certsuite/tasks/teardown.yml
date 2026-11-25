@@ -19,7 +19,7 @@
   containers.podman.podman_image:
     name: "{{ kbpc_certsuite_image }}"
     state: absent
-  ignore_errors: true
+  failed_when: false
 
 # Deleting resources created by the certsuite to support the execution
 - name: Clean certsuite resources
