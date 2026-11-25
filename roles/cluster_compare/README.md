@@ -1,8 +1,8 @@
 # Cluster Compare
 
 A role to facilitate the comparison of Kubernetes cluster configurations against the Red Hat Design References (RDS) by using the kube-compare tool. It leverages reference metadata from the upstream RDS repositories:
-  - https://github.com/openshift-kni/telco-reference/ (Core)
-  - https://github.com/openshift-kni/cnf-features-deploy/ (RAN)
+  - https://github.com/openshift-kni/telco-reference/ (Core, and RAN from 4.19)
+  - https://github.com/openshift-kni/cnf-features-deploy/ (RAN through 4.18)
 
 Features
 

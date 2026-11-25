@@ -7,13 +7,24 @@
   when:
     - cc_infra_type == "core"
 
-- name: Set RAN reference path URL OCP-{{ cc_ocp_version }}
+# RAN metadata moved to telco-reference in 4.19. 4.16-4.18 remain in cnf-features-deploy.
+- name: Set RAN reference URL from telco-reference for OCP-{{ cc_ocp_version }}
+  ansible.builtin.set_fact:
+    cc_reference:
+      "https://raw.githubusercontent.com/openshift-kni/telco-reference/refs/heads/release-{{ cc_ocp_version }}/\
+      telco-ran/configuration/kube-compare-reference/metadata.yaml"
+  when:
+    - cc_infra_type == "ran"
+    - cc_ocp_version is version("4.19", ">=")
+
+- name: Set RAN reference URL from cnf-features-deploy for OCP-{{ cc_ocp_version }}
   ansible.builtin.set_fact:
     cc_reference:
       "https://raw.githubusercontent.com/openshift-kni/cnf-features-deploy/refs/heads/release-{{ cc_ocp_version }}/\
       ztp/kube-compare-reference/metadata.yaml"
   when:
     - cc_infra_type == "ran"
+    - cc_ocp_version is version("4.19", "<")
 
 - name: Run cluster compare using manifest for current OCP {{ cc_ocp_version }}
   block:
