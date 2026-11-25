@@ -96,7 +96,7 @@
 
 - name: Verify DNS records for Wildcard (Ingress) VIP
   ansible.builtin.set_fact:
-    ingressvip: "{{ lookup('dig', 'foo.apps.{{ cluster |quote }}.{{ domain | quote }}.', '{{ qtype }}' ) }}"
+    ingressvip: "{{ lookup('dig', 'foo.apps.{{ cluster |quote }}.{{ domain | quote }}.', '{{ qtype }}') }}"
   when: ((ingressvip is undefined) or (ingressvip|length == 0))
   tags:
     - always
@@ -104,7 +104,7 @@
 
 - name: Verify DNS records for API VIP
   ansible.builtin.set_fact:
-    apivip: "{{ lookup('dig', 'api.{{ cluster |quote }}.{{ domain | quote }}.', '{{ qtype }}' ) }}"
+    apivip: "{{ lookup('dig', 'api.{{ cluster |quote }}.{{ domain | quote }}.', '{{ qtype }}') }}"
   when: ((apivip is undefined) or (apivip|length == 0))
   tags:
     - always
@@ -310,7 +310,7 @@
   block:
     - name: Verify DNS records for Wildcard (Ingress) IPv6 VIP
       ansible.builtin.set_fact:
-        ingressvip6: "{{ lookup('dig', 'foo.apps.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA' ) }}"  # noqa: redhat-ci[no-role-prefix]
+        ingressvip6: "{{ lookup('dig', 'foo.apps.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA') }}"  # noqa: redhat-ci[no-role-prefix]
       when: ((ingressvip6 is undefined) or (ingressvip6|length == 0))
       tags:
         - always
@@ -318,7 +318,7 @@
 
     - name: Verify DNS records for API IPv6 VIP
       ansible.builtin.set_fact:
-        apivip6: "{{ lookup('dig', 'api.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA' ) }}"  # noqa: redhat-ci[no-role-prefix]
+        apivip6: "{{ lookup('dig', 'api.{{ cluster |quote }}.{{ domain | quote }}.', 'qtype=AAAA') }}"  # noqa: redhat-ci[no-role-prefix]
       when: ((apivip6 is undefined) or (apivip6|length == 0))
       tags:
         - always
@@ -460,7 +460,7 @@
   community.general.redfish_info:
     category: Chassis
     command: GetChassisInventory
-    baseuri: "{{ hostvars[item]['ipmi_address']|ipwrap }}"
+    baseuri: "{{ hostvars[item]['ipmi_address'] | ipwrap }}"
     username: "{{ hostvars[item]['ipmi_user'] }}"
     password: "{{ hostvars[item]['ipmi_password'] }}"
   register: chassis_result
@@ -478,7 +478,7 @@
   community.general.redfish_info:
     category: Update
     command: GetFirmwareInventory
-    baseuri: "{{ hostvars[item]['ipmi_address']|ipwrap }}"
+    baseuri: "{{ hostvars[item]['ipmi_address'] | ipwrap }}"
     username: "{{ hostvars[item]['ipmi_user'] }}"
     password: "{{ hostvars[item]['ipmi_password'] }}"
   register: firmware_result
@@ -495,8 +495,8 @@
     - name: Add all the hosts that are Dell to a group with iDRAC firmware higher than 4.20.20.20
       ansible.builtin.add_host:
         groups: dell_hosts_redfish
-        hostname: "{{ chassis_result.results[item|int].item }}"
-      loop: "{{ range(0, numworkers|int + nummasters|int, 1)|list }}"
+        hostname: "{{ chassis_result.results[item | int].item }}"
+      loop: "{{ range(0, numworkers | int + nummasters | int, 1) | list }}"
       when:
         - not chassis_result.results[item].failed|bool
         - not firmware_result.results[item].failed|bool
@@ -518,8 +518,8 @@
     - name: Add all the hosts that are HP to a group
       ansible.builtin.add_host:
         groups: hp_hosts_redfish
-        hostname: "{{ chassis_result.results[item|int].item }}"
-      loop: "{{ range(0, numworkers|int + nummasters|int, 1)|list }}"
+        hostname: "{{ chassis_result.results[item | int].item }}"
+      loop: "{{ range(0, numworkers | int + nummasters | int, 1) | list }}"
       when:
         - not chassis_result.results[item].failed|bool
         - not firmware_result.results[item].failed|bool
