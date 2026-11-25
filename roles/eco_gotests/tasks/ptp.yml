@@ -34,7 +34,7 @@
 - name: "Show relevant PTP variables for verification"
   ansible.builtin.debug:
     msg:
-      eco_gotests_image: "{{ eco_gotests_image }}"
+      eco_gotests_image: "{{ _eco_gotests_image }}"
       eco_gotests_kubconfig_dir: "{{ eco_gotests_kubconfig_dir }}"
       eco_gotests_log_dir: "{{ eco_gotests_log_dir }}"
       eco_gotests_eco_test_features_ptp: "{{ eco_gotests_eco_test_features_ptp }}"

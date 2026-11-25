@@ -34,7 +34,7 @@
       ECO_DUMP_FAILED_TESTS: "{{ eco_gotests_dump_failed_tests | bool }}"
   containers.podman.podman_container:
     name: "eco-gotests-{{ eco_gotests_generic_features }}-{{ eco_gotests_date }}"
-    image: "{{ eco_gotests_image }}"
+    image: "{{ _eco_gotests_image }}"
     pull: newer
     state: started
     interactive: true
