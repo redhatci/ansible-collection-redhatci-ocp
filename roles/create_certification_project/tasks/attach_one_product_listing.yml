@@ -12,7 +12,16 @@
     status_code: 200
     timeout: 120
   register: pl_published
-  ignore_errors: true
+  failed_when: false
+
+- name: Warn when the PL published state could not be verified
+  ansible.builtin.debug:
+    msg: >-
+      WARNING: could not verify that product listing {{ pyxis_product_list_identifier }}
+      is published (status: {{ pl_published.status | default('unknown') }}).
+      Continuing anyway.
+  when:
+    - pl_published.status | default(0) | int != 200
 
 # PUT is not yet implemented by Pyxis, and we have to use PATCH
 - name: Patch PL to attach PL ID to container project
