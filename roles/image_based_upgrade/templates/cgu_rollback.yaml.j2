@@ -1,0 +1,16 @@
+apiVersion: ran.openshift.io/v1alpha1
+kind: ClusterGroupUpgrade
+metadata:
+  name: "{{ ibu_site }}-ibu-rollback"
+  namespace: "{{ ibu_rollback_cgu_namespace }}"
+spec:
+  backup: false
+  clusters:
+    - "{{ ibu_site }}"
+  enable: true
+  managedPolicies:
+    - "{{ ibu_policy_prefix }}-rollback-policy"
+  preCaching: false
+  remediationStrategy:
+    maxConcurrency: 1
+    timeout: 240

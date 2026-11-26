@@ -1,0 +1,51 @@
+---
+# IBU needs the Lifecycle Agent and OADP on the SNO. Install them on request,
+# then check that both CSVs succeeded.
+
+- name: Install the OADP operator
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: redhat-oadp-operator # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ ibu_oadp_namespace }}" # noqa: var-naming[no-reserved] redhat-ci[no-role-prefix]
+    channel: "{{ ibu_oadp_channel }}" # noqa: redhat-ci[no-role-prefix]
+    source: "{{ ibu_operators_source }}" # noqa: redhat-ci[no-role-prefix]
+    source_ns: "{{ ibu_operators_source_ns }}" # noqa: redhat-ci[no-role-prefix]
+    install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
+  when: ibu_install_operators | bool
+
+- name: Install the Lifecycle Agent operator
+  ansible.builtin.include_role:
+    name: redhatci.ocp.olm_operator
+  vars:
+    operator: lifecycle-agent # noqa: redhat-ci[no-role-prefix]
+    namespace: "{{ ibu_lca_namespace }}" # noqa: var-naming[no-reserved] redhat-ci[no-role-prefix]
+    channel: "{{ ibu_lca_channel }}" # noqa: redhat-ci[no-role-prefix]
+    source: "{{ ibu_operators_source }}" # noqa: redhat-ci[no-role-prefix]
+    source_ns: "{{ ibu_operators_source_ns }}" # noqa: redhat-ci[no-role-prefix]
+    install_approval: Automatic # noqa: redhat-ci[no-role-prefix]
+  when: ibu_install_operators | bool
+
+- name: Check that the OADP and Lifecycle Agent CSVs succeeded
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: "{{ item.namespace }}"
+  loop:
+    - csv: oadp-operator
+      namespace: "{{ ibu_oadp_namespace }}"
+    - csv: lifecycle-agent
+      namespace: "{{ ibu_lca_namespace }}"
+  loop_control:
+    label: "{{ item.namespace }}/{{ item.csv }}"
+  register: _ibu_operator_csvs
+  until: >-
+    _ibu_operator_csvs.resources | default([])
+    | selectattr('metadata.name', 'match', item.csv ~ '\.')
+    | selectattr('status.phase', 'defined')
+    | selectattr('status.phase', 'equalto', 'Succeeded')
+    | list | length > 0
+  retries: 20
+  delay: 30
+...

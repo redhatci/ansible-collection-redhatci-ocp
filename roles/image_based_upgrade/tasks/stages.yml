@@ -1,0 +1,49 @@
+---
+- name: Check and install the operators
+  ansible.builtin.include_tasks: operators.yml
+
+- name: Check and configure OADP backups
+  ansible.builtin.include_tasks: oadp.yml
+
+- name: Resolve the seed image registry
+  ansible.builtin.include_tasks: seed_registry.yml
+
+- name: Trust the registry on the SNO
+  ansible.builtin.include_tasks: insecure_registry.yml
+  when: >-
+    ibu_configure_insecure_registry | bool
+    and (ibu_seed_registry | length == 0 or ibu_seed_registry_insecure | bool)
+
+- name: Create the LCA pull Secret
+  ansible.builtin.include_tasks: lca_pull_secret.yml
+  when: ibu_configure_lca_secret | bool
+
+- name: Enable the IBU policies on the site
+  ansible.builtin.include_tasks: update_site_labels.yml
+  vars:
+    ibu_site_labels:
+      - label: "{{ ibu_configuration_version_label }}"
+        value: "{{ ibu_target_version }}"
+      - label: "{{ ibu_ibu_label }}"
+        value: "true"
+  when: ibu_gitops_update_labels | bool
+
+- name: Run the Preparation stage
+  ansible.builtin.include_tasks: prepare.yml
+
+- name: Run the Upgrade stage
+  ansible.builtin.include_tasks: upgrade.yml
+
+- name: Collect the IBU timing
+  ansible.builtin.include_tasks: timing.yml
+  when: ibu_collect_timing | bool
+
+- name: Run the Rollback stage
+  ansible.builtin.include_tasks: rollback.yml
+  when: ibu_run_rollback | bool
+
+- name: Report that Rollback was skipped
+  ansible.builtin.debug:
+    msg: "Rollback skipped (ibu_run_rollback={{ ibu_run_rollback }})"
+  when: not (ibu_run_rollback | bool)
+...

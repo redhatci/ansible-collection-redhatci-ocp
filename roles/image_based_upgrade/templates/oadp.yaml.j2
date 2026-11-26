@@ -1,0 +1,31 @@
+apiVersion: oadp.openshift.io/v1alpha1
+kind: DataProtectionApplication
+metadata:
+  name: "{{ ibu_oadp_name }}"
+  namespace: "{{ ibu_oadp_namespace }}"
+spec:
+  configuration:
+    velero:
+      defaultPlugins:
+        - aws
+        - openshift
+      resourceTimeout: 10m
+    nodeAgent:
+      enable: true
+      uploaderType: kopia
+  backupLocations:
+    - velero:
+        config:
+          profile: default
+          region: "{{ ibu_backup_s3_region }}"
+          s3Url: "{{ ibu_backup_s3_url }}"
+          insecureSkipTLSVerify: "{{ ibu_backup_s3_insecure | bool | lower }}"
+          s3ForcePathStyle: "true"
+        provider: aws
+        default: true
+        credential:
+          key: cloud
+          name: "{{ ibu_backup_credentials_secret }}"
+        objectStorage:
+          bucket: "{{ ibu_backup_bucket }}"
+          prefix: "{{ ibu_backup_bucket_prefix }}"

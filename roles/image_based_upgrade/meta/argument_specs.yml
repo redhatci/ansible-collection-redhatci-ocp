@@ -1,0 +1,301 @@
+---
+# Argument specification for the image_based_upgrade role
+argument_specs:
+  main:
+    short_description: Perform an Image-Based Upgrade (IBU) of a SNO cluster
+    description:
+      - Performs an Image-Based Upgrade of a ZTP-deployed single-node OpenShift
+        cluster managed by ACM and TALM.
+      - Installs OADP and the Lifecycle Agent, prepares OADP backups, trusts
+        the hub image registry, drives the Prep, Upgrade and optional Rollback
+        ClusterGroupUpgrades, and writes an IBU timing report.
+      - The SNO is reached with ibu_sno_kubeconfig and the hub with
+        ibu_hub_kubeconfig.
+    options:
+      ibu_hub_kubeconfig:
+        type: path
+        required: true
+        description: Kubeconfig of the ACM hub cluster.
+
+      ibu_sno_kubeconfig:
+        type: path
+        required: true
+        description: Kubeconfig of the single-node cluster to upgrade.
+
+      ibu_site:
+        type: str
+        required: true
+        description: >-
+          Name of the SNO site. Used as the ManagedCluster/policy namespace and
+          in the ClusterGroupUpgrade names.
+
+      ibu_target_version:
+        type: str
+        required: true
+        description: >-
+          Target solution configuration version, used in the site label and the
+          IBU policy names.
+
+      ibu_oc_path:
+        type: str
+        default: /usr/local/bin/oc
+        description: Path to the oc binary.
+
+      ibu_install_operators:
+        type: bool
+        default: false
+        description:
+          - Install OADP and the Lifecycle Agent on the SNO.
+          - When false the role only checks that both are installed.
+
+      ibu_operators_source:
+        type: str
+        default: redhat-operators
+        description: CatalogSource used when installing the operators.
+
+      ibu_operators_source_ns:
+        type: str
+        default: openshift-marketplace
+        description: Namespace of ibu_operators_source.
+
+      ibu_oadp_namespace:
+        type: str
+        default: openshift-adp
+        description: OADP operator namespace.
+
+      ibu_oadp_channel:
+        type: str
+        default: ""
+        description: >-
+          OADP operator channel. When empty redhatci.ocp.olm_operator uses the
+          operator's default channel.
+
+      ibu_lca_namespace:
+        type: str
+        default: openshift-lifecycle-agent
+        description: Lifecycle Agent namespace.
+
+      ibu_lca_channel:
+        type: str
+        default: stable
+        description: Lifecycle Agent operator channel.
+
+      ibu_configure_oadp:
+        type: bool
+        default: false
+        description:
+          - Create a DataProtectionApplication when none exists on the SNO.
+          - An existing DataProtectionApplication is always left untouched.
+
+      ibu_oadp_name:
+        type: str
+        default: ibu
+        description: Name of the DataProtectionApplication created by the role.
+
+      ibu_backup_s3_url:
+        type: str
+        default: ""
+        description: S3 endpoint used by the created DataProtectionApplication.
+
+      ibu_backup_s3_region:
+        type: str
+        default: minio
+        description: S3 region used by the created DataProtectionApplication.
+
+      ibu_backup_s3_insecure:
+        type: bool
+        default: false
+        description: Skip TLS verification for the S3 endpoint.
+
+      ibu_backup_bucket:
+        type: str
+        default: ""
+        description: Bucket used for the IBU backups.
+
+      ibu_backup_bucket_prefix:
+        type: str
+        default: backups
+        description: Prefix of the backups inside the bucket.
+
+      ibu_backup_credentials_secret:
+        type: str
+        default: cloud-credentials
+        description: >-
+          Secret in ibu_oadp_namespace with the S3 credentials under the
+          'cloud' key.
+
+      ibu_backup_access_key:
+        type: str
+        default: ""
+        description: >-
+          S3 access key. When set together with ibu_backup_secret_key the role
+          creates ibu_backup_credentials_secret.
+
+      ibu_backup_secret_key:
+        type: str
+        default: ""
+        description: S3 secret key. Used to create ibu_backup_credentials_secret.
+
+      ibu_seed_registry:
+        type: str
+        default: ""
+        description:
+          - External registry (host[:port]) the seed image is pulled from.
+          - Empty uses the hub internal image registry default route.
+
+      ibu_seed_registry_authfile:
+        type: str
+        default: ""
+        description: >-
+          Pull secret / authfile with the external registry credentials.
+          Defaults to pullsecret_file / dci_pullsecret_file.
+
+      ibu_seed_registry_insecure:
+        type: bool
+        default: false
+        description: >-
+          Add the external registry to the SNO insecureRegistries. Only needed
+          for a self-signed or HTTP registry.
+
+      ibu_configure_insecure_registry:
+        type: bool
+        default: true
+        description: Add the seed image registry to the SNO insecureRegistries.
+
+      ibu_wait_mcp:
+        type: bool
+        default: true
+        description: Wait for the MachineConfigPool update after patching insecureRegistries.
+
+      ibu_mcp_retries:
+        type: int
+        default: 40
+        description: Retries while waiting for the MachineConfigPool update.
+
+      ibu_mcp_delay:
+        type: int
+        default: 15
+        description: Seconds between MachineConfigPool retries.
+
+      ibu_configure_lca_secret:
+        type: bool
+        default: true
+        description: Create the LCA image pull Secret with the hub registry credentials.
+
+      ibu_registry_user:
+        type: str
+        default: registry-user
+        description: Hub service account used to pull the seed image.
+
+      ibu_registry_user_namespace:
+        type: str
+        default: openshift
+        description: Namespace of ibu_registry_user.
+
+      ibu_lca_pull_secret_name:
+        type: str
+        default: ibu-pull-secret
+        description: Name of the pull Secret in the LCA namespace.
+
+      ibu_gitops_update_labels:
+        type: bool
+        default: true
+        description: >-
+          Update the site labels in the ZTP GitOps repository. Requires
+          ibu_gitops_repo, ibu_gitops_branch and ibu_gitops_site_file.
+
+      ibu_gitops_repo:
+        type: str
+        default: ""
+        description: GitOps repository that holds the site manifest.
+
+      ibu_gitops_branch:
+        type: str
+        default: ""
+        description: Branch of ibu_gitops_repo to update.
+
+      ibu_gitops_site_file:
+        type: str
+        default: ""
+        description: Path of the site manifest, relative to the repository root.
+
+      ibu_configuration_version_label:
+        type: str
+        default: configuration-version
+        description: Site label holding the configuration version.
+
+      ibu_ibu_label:
+        type: str
+        default: ibu
+        description: Site label that enables the IBU policies.
+
+      ibu_site_policy_namespace:
+        type: str
+        default: "{{ ibu_site }}"
+        description: Namespace of the policies on the hub.
+
+      ibu_oadp_policy:
+        type: str
+        default: ibu-oadp-oadp-cm-policy
+        description: Name of the OADP ConfigMap policy included in the Preparation CGU.
+
+      ibu_policy_prefix:
+        type: str
+        default: "group-ibu-cv{{ ibu_target_version }}"
+        description: Prefix of the per-version IBU policies.
+
+      ibu_prep_policy:
+        type: str
+        default: prep-policy
+        description: Name fragment of the Preparation policy.
+
+      ibu_upgrade_policy:
+        type: str
+        default: upgrade-policy
+        description: Name fragment of the Upgrade policy.
+
+      ibu_rollback_policy:
+        type: str
+        default: rollback-policy
+        description: Name fragment of the Rollback policy.
+
+      ibu_prep_cgu_namespace:
+        type: str
+        default: ztp-install
+        description: Namespace of the Preparation ClusterGroupUpgrade.
+
+      ibu_upgrade_cgu_namespace:
+        type: str
+        default: default
+        description: Namespace of the Upgrade ClusterGroupUpgrade.
+
+      ibu_rollback_cgu_namespace:
+        type: str
+        default: default
+        description: Namespace of the Rollback ClusterGroupUpgrade.
+
+      ibu_policy_retries:
+        type: int
+        default: 120
+        description: Retries while waiting for a policy to reach the expected state.
+
+      ibu_policy_delay:
+        type: int
+        default: 30
+        description: Seconds between policy retries.
+
+      ibu_run_rollback:
+        type: bool
+        default: true
+        description: Run the Rollback stage after a successful Upgrade.
+
+      ibu_collect_timing:
+        type: bool
+        default: true
+        description: Write the IBU timing report after the Upgrade stage.
+
+      ibu_output_dir:
+        type: str
+        default: ""
+        description: Directory for the timing report and raw artifacts. Empty skips them.
+...

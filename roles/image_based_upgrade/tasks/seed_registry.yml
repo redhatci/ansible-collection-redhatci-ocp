@@ -1,0 +1,28 @@
+---
+# Resolve the registry the seed image is pulled from. An external registry is
+# used when ibu_seed_registry is set; otherwise the hub internal image registry
+# default route.
+
+- name: Get the hub image registry route
+  when: ibu_seed_registry | length == 0
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_hub_kubeconfig }}"
+    api_version: route.openshift.io/v1
+    kind: Route
+    name: default-route
+    namespace: openshift-image-registry
+  register: _ibu_registry_route
+  until: _ibu_registry_route.resources | default([]) | length > 0
+  retries: 30
+  delay: 10
+
+- name: Set the hub registry host
+  when: ibu_seed_registry | length == 0
+  ansible.builtin.set_fact:
+    ibu_hub_registry: "{{ _ibu_registry_route.resources[0].spec.host }}"
+
+- name: Set the seed image registry
+  ansible.builtin.set_fact:
+    ibu_seed_image_registry: >-
+      {{ ibu_seed_registry if ibu_seed_registry | length > 0 else ibu_hub_registry }}
+...

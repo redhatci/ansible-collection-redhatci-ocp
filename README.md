@@ -79,6 +79,7 @@ Name | Description
 [redhatci.ocp.get_logs_from_namespace](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/get_logs_from_namespace/README.md) | Extracts multiple logs from pods and events in a Namespace.
 [redhatci.ocp.hco_setup](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hco_setup/README.md) | Deploys and configures the `hco-operator` through the `kubevirt-hyperconverged` CRs.
 [redhatci.ocp.hostedbm](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/hostedbm/README.md) | This role allows to create hosted guest clusters with BM workers.
+[redhatci.ocp.image_based_upgrade](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/image_based_upgrade/README.md) | Performs an Image-Based Upgrade (IBU) of a ZTP-deployed SNO site.
 [redhatci.ocp.include_components](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/include_components/README.md) | Create and attach DCI components to DCI jobs from git repositories, RPMs or commit URLs.
 [redhatci.ocp.insert_dns_records](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/insert_dns_records/README.md) | Setups `dnsmasq` (either directly or via `NetworkManager`) inserting the DNS A records required for OpenShift install.
 [redhatci.ocp.installer](https://github.com/redhatci/ansible-collection-redhatci-ocp/blob/main/roles/installer/README.md) | [IPI installer](https://github.com/openshift-kni/baremetal-deploy)

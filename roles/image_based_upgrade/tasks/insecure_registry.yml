@@ -1,0 +1,74 @@
+---
+# Add the seed image registry to the SNO insecureRegistries so LCA can pull the
+# seed image. MCO applies this in place (no reboot on OCP 4.14+).
+
+- name: Get the SNO image configuration
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    api_version: config.openshift.io/v1
+    kind: Image
+    name: cluster
+  register: _ibu_image_config
+
+- name: Set the current insecure registries
+  ansible.builtin.set_fact:
+    ibu_insecure_registries: >-
+      {{ _ibu_image_config.resources[0].spec.registrySources.insecureRegistries | default([]) }}
+
+- name: Add the seed image registry to insecureRegistries
+  when: ibu_seed_image_registry not in ibu_insecure_registries
+  block:
+    - name: Get the master MachineConfigPool
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ ibu_sno_kubeconfig }}"
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        name: master
+      register: _ibu_mcp
+
+    - name: Record the current rendered MachineConfig
+      ansible.builtin.set_fact:
+        ibu_rendered_mc: "{{ _ibu_mcp.resources[0].spec.configuration.name }}"
+
+    - name: Patch the SNO image configuration
+      kubernetes.core.k8s:
+        kubeconfig: "{{ ibu_sno_kubeconfig }}"
+        state: patched
+        merge_type: merge
+        definition:
+          apiVersion: config.openshift.io/v1
+          kind: Image
+          metadata:
+            name: cluster
+          spec:
+            registrySources:
+              insecureRegistries: "{{ ibu_insecure_registries + [ibu_seed_image_registry] }}"
+
+    - name: Wait for the new MachineConfig to be rendered
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ ibu_sno_kubeconfig }}"
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        name: master
+      register: _ibu_mcp
+      until: _ibu_mcp.resources[0].spec.configuration.name != ibu_rendered_mc
+      retries: 20
+      delay: 15
+
+    - name: Wait for the MachineConfigPool to be updated
+      when: ibu_wait_mcp | bool
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ ibu_sno_kubeconfig }}"
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        name: master
+      register: _ibu_mcp
+      until:
+        - _ibu_mcp.resources[0].status.configuration.name == _ibu_mcp.resources[0].spec.configuration.name
+        - >-
+          _ibu_mcp.resources[0].status.conditions | default([])
+          | selectattr('type', 'equalto', 'Updated')
+          | map(attribute='status') | first | default('False') == 'True'
+      retries: "{{ ibu_mcp_retries }}"
+      delay: "{{ ibu_mcp_delay }}"
+...

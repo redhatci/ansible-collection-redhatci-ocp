@@ -1,0 +1,51 @@
+---
+# Preparation stage: the site labels enable the IBU policies; run the Prep CGU
+# and wait for the policies to reconcile.
+
+- name: Wait for the Preparation policy to become NonCompliant
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_hub_kubeconfig }}"
+    api_version: policy.open-cluster-management.io/v1
+    kind: Policy
+    namespace: "{{ ibu_site_policy_namespace }}"
+  register: _ibu_policies
+  retries: "{{ ibu_policy_retries }}"
+  delay: "{{ ibu_policy_delay }}"
+  until: >-
+    _ibu_policies.resources | default([])
+    | selectattr('metadata.name', 'search', ibu_prep_policy)
+    | selectattr('status.compliant', 'defined')
+    | selectattr('status.compliant', 'equalto', 'NonCompliant')
+    | list | length > 0
+
+- name: Delete any previous Preparation CGU
+  kubernetes.core.k8s:
+    kubeconfig: "{{ ibu_hub_kubeconfig }}"
+    state: absent
+    template:
+      path: "{{ role_path }}/templates/cgu_prep.yaml.j2"
+  failed_when: false
+
+- name: Create the Preparation CGU
+  kubernetes.core.k8s:
+    kubeconfig: "{{ ibu_hub_kubeconfig }}"
+    state: present
+    template:
+      path: "{{ role_path }}/templates/cgu_prep.yaml.j2"
+
+- name: Wait for the Preparation policy to become Compliant
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_hub_kubeconfig }}"
+    api_version: policy.open-cluster-management.io/v1
+    kind: Policy
+    namespace: "{{ ibu_site_policy_namespace }}"
+  register: _ibu_policies
+  retries: "{{ ibu_policy_retries }}"
+  delay: "{{ ibu_policy_delay }}"
+  until: >-
+    _ibu_policies.resources | default([])
+    | selectattr('metadata.name', 'search', ibu_prep_policy)
+    | selectattr('status.compliant', 'defined')
+    | selectattr('status.compliant', 'equalto', 'Compliant')
+    | list | length > 0
+...

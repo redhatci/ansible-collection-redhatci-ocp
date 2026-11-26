@@ -1,0 +1,217 @@
+---
+# IBU timing report. Collect the Upgrade phase timestamps from the IBU CR on
+# the SNO and the Upgrade CGU on the hub, then write a phase breakdown.
+
+- name: Get the Upgrade CGU from the hub
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_hub_kubeconfig }}"
+    api_version: ran.openshift.io/v1alpha1
+    kind: ClusterGroupUpgrade
+    name: "{{ ibu_site }}-ibu-upgrade"
+    namespace: "{{ ibu_upgrade_cgu_namespace }}"
+  register: _ibu_cgu
+  failed_when: false
+
+- name: Get the IBU CR from the SNO
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    api_version: lca.openshift.io/v1
+    kind: ImageBasedUpgrade
+    name: upgrade
+  register: _ibu_ibu_cr
+  failed_when: false
+
+- name: Get the ClusterVersion from the SNO
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    api_version: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: _ibu_cv
+  failed_when: false
+
+- name: Extract the OCP versions and CGU timestamps
+  ansible.builtin.set_fact:
+    ibu_ocp_version_current: >-
+      {{ _ibu_cv.resources[0].status.desired.version | default('N/A')
+         if (_ibu_cv.resources | default([]) | length > 0
+             and _ibu_cv.resources[0].status is defined
+             and _ibu_cv.resources[0].status.desired is defined)
+         else 'N/A' }}
+    ibu_ocp_version_target: >-
+      {{ _ibu_ibu_cr.resources[0].spec.seedImageRef.version | default(ibu_target_version)
+         if (_ibu_ibu_cr.resources | default([]) | length > 0
+             and _ibu_ibu_cr.resources[0].spec is defined
+             and _ibu_ibu_cr.resources[0].spec.seedImageRef is defined)
+         else ibu_target_version }}
+    ibu_cgu_started_at: >-
+      {{ _ibu_cgu.resources[0].status.status.startedAt | default('N/A')
+         if (_ibu_cgu.resources | default([]) | length > 0
+             and _ibu_cgu.resources[0].status is defined
+             and _ibu_cgu.resources[0].status.status is defined)
+         else 'N/A' }}
+    ibu_cgu_completed_at: >-
+      {{ _ibu_cgu.resources[0].status.status.completedAt | default('N/A')
+         if (_ibu_cgu.resources | default([]) | length > 0
+             and _ibu_cgu.resources[0].status is defined
+             and _ibu_cgu.resources[0].status.status is defined)
+         else 'N/A' }}
+
+- name: Extract the IBU Upgrade history
+  ansible.builtin.set_fact:
+    ibu_history_upgrade: >-
+      {{ _ibu_ibu_cr.resources[0].status.history
+         | selectattr('stage', 'equalto', 'Upgrade') | first | default(None)
+         if (_ibu_ibu_cr.resources | default([]) | length > 0
+             and _ibu_ibu_cr.resources[0].status is defined
+             and _ibu_ibu_cr.resources[0].status.history is defined)
+         else None }}
+
+- name: Extract the IBU phase timestamps
+  ansible.builtin.set_fact:
+    ibu_upgrade_start: "{{ ibu_history_upgrade.startTime | default('N/A') if ibu_history_upgrade else 'N/A' }}"
+    ibu_upgrade_end: "{{ ibu_history_upgrade.completionTime | default('N/A') if ibu_history_upgrade else 'N/A' }}"
+    ibu_prepivot_start: >-
+      {{ ibu_history_upgrade.phases | selectattr('phase', 'equalto', 'PrePivot')
+         | map(attribute='startTime') | first | default('N/A')
+         if (ibu_history_upgrade and ibu_history_upgrade.phases is defined) else 'N/A' }}
+    ibu_prepivot_end: >-
+      {{ ibu_history_upgrade.phases | selectattr('phase', 'equalto', 'PrePivot')
+         | map(attribute='completionTime') | first | default('N/A')
+         if (ibu_history_upgrade and ibu_history_upgrade.phases is defined) else 'N/A' }}
+    ibu_postpivot_start: >-
+      {{ ibu_history_upgrade.phases | selectattr('phase', 'equalto', 'PostPivot')
+         | map(attribute='startTime') | first | default('N/A')
+         if (ibu_history_upgrade and ibu_history_upgrade.phases is defined) else 'N/A' }}
+    ibu_postpivot_end: >-
+      {{ ibu_history_upgrade.phases | selectattr('phase', 'equalto', 'PostPivot')
+         | map(attribute='completionTime') | first | default('N/A')
+         if (ibu_history_upgrade and ibu_history_upgrade.phases is defined) else 'N/A' }}
+
+- name: Collect the raw IBU and CGU artifacts
+  when: ibu_output_dir | length > 0
+  block:
+    - name: Create the output directory
+      ansible.builtin.file:
+        path: "{{ ibu_output_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Save the raw CGU resource
+      ansible.builtin.shell: |
+        "{{ ibu_oc_path }}" --kubeconfig "{{ ibu_hub_kubeconfig }}" get cgu \
+          "{{ ibu_site }}-ibu-upgrade" -n "{{ ibu_upgrade_cgu_namespace }}" -o yaml \
+          > "{{ ibu_output_dir }}/cgu_ibu_{{ ibu_site }}.yaml"
+      changed_when: false
+      failed_when: false
+
+    - name: Save the raw IBU resource
+      ansible.builtin.shell: |
+        "{{ ibu_oc_path }}" --kubeconfig "{{ ibu_sno_kubeconfig }}" get ibu upgrade -o yaml \
+          > "{{ ibu_output_dir }}/ibu_{{ ibu_site }}.yaml"
+      changed_when: false
+      failed_when: false
+
+    - name: Save the LCA controller logs
+      ansible.builtin.shell: |
+        "{{ ibu_oc_path }}" --kubeconfig "{{ ibu_sno_kubeconfig }}" logs \
+          -n "{{ ibu_lca_namespace }}" deploy/lifecycle-agent-controller-manager --timestamps \
+          > "{{ ibu_output_dir }}/lca_logs_{{ ibu_site }}.txt" 2>&1
+      changed_when: false
+      failed_when: false
+
+    - name: Save the MCO controller logs
+      ansible.builtin.shell: |
+        "{{ ibu_oc_path }}" --kubeconfig "{{ ibu_sno_kubeconfig }}" logs \
+          -n openshift-machine-config-operator deploy/machine-config-controller --timestamps \
+          > "{{ ibu_output_dir }}/mco_logs_{{ ibu_site }}.txt" 2>&1
+      changed_when: false
+      failed_when: false
+
+- name: Calculate the phase durations
+  ansible.builtin.shell: |
+    calc_duration() {
+      local start="$1" end="$2"
+      if [[ "$start" == "N/A" || "$end" == "N/A" ]]; then
+        echo "N/A"
+        return
+      fi
+      local start_s end_s
+      start_s=$(date -d "$start" +%s 2>/dev/null)
+      end_s=$(date -d "$end" +%s 2>/dev/null)
+      if [[ -z "$start_s" || -z "$end_s" ]]; then
+        echo "N/A"
+      else
+        echo $((end_s - start_s))
+      fi
+    }
+    echo "talm_overhead=$(calc_duration '{{ ibu_cgu_started_at }}' '{{ ibu_upgrade_start }}')"
+    echo "prepivot=$(calc_duration '{{ ibu_prepivot_start }}' '{{ ibu_prepivot_end }}')"
+    echo "reboot=$(calc_duration '{{ ibu_prepivot_end }}' '{{ ibu_postpivot_start }}')"
+    echo "postpivot=$(calc_duration '{{ ibu_postpivot_start }}' '{{ ibu_postpivot_end }}')"
+    echo "policy_reconciliation=$(calc_duration '{{ ibu_upgrade_end }}' '{{ ibu_cgu_completed_at }}')"
+    echo "lca_upgrade_total=$(calc_duration '{{ ibu_upgrade_start }}' '{{ ibu_upgrade_end }}')"
+    echo "total_orchestrated=$(calc_duration '{{ ibu_cgu_started_at }}' '{{ ibu_cgu_completed_at }}')"
+  register: _ibu_durations
+  changed_when: false
+
+- name: Parse the phase durations
+  ansible.builtin.set_fact:
+    ibu_durations_sec:
+      talm_overhead: >-
+        {{ _ibu_durations.stdout_lines | select('match', '^talm_overhead=')
+           | first | regex_replace('^talm_overhead=', '') }}
+      prepivot: >-
+        {{ _ibu_durations.stdout_lines | select('match', '^prepivot=')
+           | first | regex_replace('^prepivot=', '') }}
+      reboot: >-
+        {{ _ibu_durations.stdout_lines | select('match', '^reboot=')
+           | first | regex_replace('^reboot=', '') }}
+      postpivot: >-
+        {{ _ibu_durations.stdout_lines | select('match', '^postpivot=')
+           | first | regex_replace('^postpivot=', '') }}
+      policy_reconciliation: >-
+        {{ _ibu_durations.stdout_lines | select('match', '^policy_reconciliation=')
+           | first | regex_replace('^policy_reconciliation=', '') }}
+      lca_upgrade_total: >-
+        {{ _ibu_durations.stdout_lines | select('match', '^lca_upgrade_total=')
+           | first | regex_replace('^lca_upgrade_total=', '') }}
+      total_orchestrated: >-
+        {{ _ibu_durations.stdout_lines | select('match', '^total_orchestrated=')
+           | first | regex_replace('^total_orchestrated=', '') }}
+
+- name: Format the phase durations
+  ansible.builtin.set_fact:
+    ibu_durations_fmt: >-
+      {{ ibu_durations_fmt | default({}) | combine({item.key:
+         'N/A' if item.value == 'N/A'
+         else '%dm %02ds' | format((item.value | int) // 60, (item.value | int) % 60)}) }}
+  loop: "{{ ibu_durations_sec | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Write the IBU timing report
+  when: ibu_output_dir | length > 0
+  block:
+    - name: Render the IBU timing report
+      ansible.builtin.template:
+        src: ibu_upgrade_timing.txt.j2
+        dest: "{{ ibu_output_dir }}/ibu_upgrade_timing_{{ ibu_site }}.txt"
+        mode: "0644"
+
+    - name: Display the IBU timing report
+      ansible.builtin.debug:
+        msg: "{{ lookup('file', ibu_output_dir ~ '/ibu_upgrade_timing_' ~ ibu_site ~ '.txt') }}"
+
+- name: Report the IBU phase durations
+  ansible.builtin.debug:
+    msg:
+      - "OCP version: {{ ibu_ocp_version_pre_upgrade }} -> {{ ibu_ocp_version_target }}"
+      - "Current OCP version: {{ ibu_ocp_version_current }}"
+      - >-
+        {{ item.key }}: {{ ibu_durations_fmt[item.key] }}
+        ({{ ibu_durations_sec[item.key] }}s)
+  loop: "{{ ibu_durations_sec | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+...

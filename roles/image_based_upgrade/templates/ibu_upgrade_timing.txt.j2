@@ -1,0 +1,91 @@
+
+======================================================================
+IMAGE-BASED UPGRADE (IBU) TIMING REPORT
+Site: {{ ibu_site }}
+======================================================================
+Generated: {{ now(utc=true).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+
+----------------------------------------------------------------------
+OCP Versions
+----------------------------------------------------------------------
+Starting Version (pre-upgrade) : {{ ibu_ocp_version_pre_upgrade }}
+Target Version (seed image)    : {{ ibu_ocp_version_target }}
+Current Version (post-upgrade) : {{ ibu_ocp_version_current }}
+
+----------------------------------------------------------------------
+Upgrade Timeline (from IBU CR status.history)
+----------------------------------------------------------------------
+CGU Remediation Started  : {{ ibu_cgu_started_at }}
+LCA Upgrade Start        : {{ ibu_upgrade_start }}
+PrePivot Start           : {{ ibu_prepivot_start }}
+PrePivot End             : {{ ibu_prepivot_end }}
+PostPivot Start          : {{ ibu_postpivot_start }}
+PostPivot End            : {{ ibu_postpivot_end }}
+CGU Completed            : {{ ibu_cgu_completed_at }}
+
+----------------------------------------------------------------------
+Phase Breakdown
+----------------------------------------------------------------------
+
+TALM Overhead
+  CGU Started -> LCA Upgrade Start
+  Duration: {{ ibu_durations_fmt.talm_overhead }} ({{ ibu_durations_sec.talm_overhead }}s)
+
+PrePivot
+  LCA backs up resources, prepares target stateroot
+  Duration: {{ ibu_durations_fmt.prepivot }} ({{ ibu_durations_sec.prepivot }}s)
+
+Reboot
+  Node reboots into new stateroot
+  Duration: {{ ibu_durations_fmt.reboot }} ({{ ibu_durations_sec.reboot }}s)
+
+PostPivot
+  LCA restores resources, reconfigures cluster
+  Duration: {{ ibu_durations_fmt.postpivot }} ({{ ibu_durations_sec.postpivot }}s)
+
+Policy Reconciliation
+  Klusterlet re-registers, RHACM re-evaluates policies
+  Duration: {{ ibu_durations_fmt.policy_reconciliation }} ({{ ibu_durations_sec.policy_reconciliation }}s)
+
+----------------------------------------------------------------------
+Totals
+----------------------------------------------------------------------
+
+LCA Upgrade Duration        : {{ ibu_durations_fmt.lca_upgrade_total }} ({{ ibu_durations_sec.lca_upgrade_total }}s)
+  (IBU Upgrade Start -> IBU Upgrade End)
+
+Total Orchestrated Duration : {{ ibu_durations_fmt.total_orchestrated }} ({{ ibu_durations_sec.total_orchestrated }}s)
+  (CGU Started -> CGU Completed)
+
+----------------------------------------------------------------------
+Data Sources
+----------------------------------------------------------------------
+Hub Cluster:
+  CR    : ClusterGroupUpgrade/{{ ibu_site }}-ibu-upgrade
+  NS    : {{ ibu_upgrade_cgu_namespace }}
+  Fields: status.status.startedAt, status.status.completedAt
+
+SNO Cluster ({{ ibu_site }}):
+  CR    : ImageBasedUpgrade/upgrade
+  Fields: status.history[stage=Upgrade].phases[PrePivot/PostPivot]
+
+Raw data files (when ibu_output_dir is set):
+  - {{ ibu_output_dir }}/cgu_ibu_{{ ibu_site }}.yaml
+  - {{ ibu_output_dir }}/ibu_{{ ibu_site }}.yaml
+  - {{ ibu_output_dir }}/lca_logs_{{ ibu_site }}.txt
+  - {{ ibu_output_dir }}/mco_logs_{{ ibu_site }}.txt
+
+======================================================================
+SUMMARY - {{ ibu_site }}
+======================================================================
+OCP Version            : {{ ibu_ocp_version_pre_upgrade }} -> {{ ibu_ocp_version_target }}
+                         -----------------
+TALM Overhead          : {{ ibu_durations_fmt.talm_overhead }} ({{ ibu_durations_sec.talm_overhead }}s)
+PrePivot               : {{ ibu_durations_fmt.prepivot }} ({{ ibu_durations_sec.prepivot }}s)
+Reboot                 : {{ ibu_durations_fmt.reboot }} ({{ ibu_durations_sec.reboot }}s)
+PostPivot              : {{ ibu_durations_fmt.postpivot }} ({{ ibu_durations_sec.postpivot }}s)
+Policy Reconciliation  : {{ ibu_durations_fmt.policy_reconciliation }} ({{ ibu_durations_sec.policy_reconciliation }}s)
+                         -----------------
+LCA Upgrade            : {{ ibu_durations_fmt.lca_upgrade_total }} ({{ ibu_durations_sec.lca_upgrade_total }}s)
+Total Orchestrated     : {{ ibu_durations_fmt.total_orchestrated }} ({{ ibu_durations_sec.total_orchestrated }}s)
+======================================================================

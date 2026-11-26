@@ -1,0 +1,70 @@
+---
+- name: Check the hub kubeconfig exists
+  ansible.builtin.stat:
+    path: "{{ ibu_hub_kubeconfig }}"
+  register: _ibu_hub_kubeconfig_stat
+
+- name: Check the SNO kubeconfig exists
+  ansible.builtin.stat:
+    path: "{{ ibu_sno_kubeconfig }}"
+  register: _ibu_sno_kubeconfig_stat
+
+- name: Fail when a kubeconfig is missing
+  ansible.builtin.assert:
+    that:
+      - _ibu_hub_kubeconfig_stat.stat.exists
+      - _ibu_sno_kubeconfig_stat.stat.exists
+    fail_msg: >-
+      Kubeconfig not found: hub={{ ibu_hub_kubeconfig }}
+      sno={{ ibu_sno_kubeconfig }}
+
+- name: Fail when the GitOps site manifest is not configured
+  ansible.builtin.assert:
+    that:
+      - ibu_gitops_repo | length > 0
+      - ibu_gitops_branch | length > 0
+      - ibu_gitops_site_file | length > 0
+    fail_msg: >-
+      ibu_gitops_repo, ibu_gitops_branch and ibu_gitops_site_file are required
+      when ibu_gitops_update_labels is true.
+  when: ibu_gitops_update_labels | bool
+
+- name: Capture the starting OCP version before the upgrade
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    api_version: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: _ibu_cv_pre_upgrade
+  failed_when: false
+
+- name: Set the starting OCP version fact
+  ansible.builtin.set_fact:
+    ibu_ocp_version_pre_upgrade: >-
+      {{ _ibu_cv_pre_upgrade.resources[0].status.desired.version | default('N/A')
+         if (_ibu_cv_pre_upgrade.resources | default([]) | length > 0
+             and _ibu_cv_pre_upgrade.resources[0].status is defined
+             and _ibu_cv_pre_upgrade.resources[0].status.desired is defined)
+         else 'N/A' }}
+
+- name: Perform the Image-Based Upgrade
+  block:
+    - name: Run the IBU stages
+      ansible.builtin.include_tasks: stages.yml
+
+  always:
+    - name: Disable the IBU policies on the site
+      ansible.builtin.include_tasks: update_site_labels.yml
+      vars:
+        ibu_site_labels:
+          - label: "{{ ibu_ibu_label }}"
+            value: "false"
+      when: ibu_gitops_update_labels | bool
+
+- name: Image-Based Upgrade complete
+  ansible.builtin.debug:
+    msg:
+      - "IBU complete for {{ ibu_site }}"
+      - "Starting OCP version: {{ ibu_ocp_version_pre_upgrade }}"
+      - "Target version: {{ ibu_target_version }}"
+...

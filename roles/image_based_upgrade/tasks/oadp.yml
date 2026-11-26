@@ -1,0 +1,117 @@
+---
+# The IBU oadpContent Backup/Restore objects target a BackupStorageLocation
+# named default, so OADP must have a DataProtectionApplication. The role never
+# overwrites an existing DPA: when one is present it is left untouched, and
+# when none exists the role creates one only from explicitly supplied bucket
+# and credentials inputs.
+
+- name: Get the existing DataProtectionApplications
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    api_version: oadp.openshift.io/v1alpha1
+    kind: DataProtectionApplication
+    namespace: "{{ ibu_oadp_namespace }}"
+  register: _ibu_dpa
+
+- name: Use the existing OADP configuration
+  when: _ibu_dpa.resources | default([]) | length > 0
+  ansible.builtin.debug:
+    msg: >-
+      DataProtectionApplication already present in {{ ibu_oadp_namespace }};
+      leaving OADP untouched. Make sure it provides a BackupStorageLocation
+      named default.
+
+- name: Require the inputs to create a DataProtectionApplication
+  when: _ibu_dpa.resources | default([]) | length == 0
+  ansible.builtin.assert:
+    that:
+      - ibu_configure_oadp | bool
+      - ibu_backup_s3_url | length > 0
+      - ibu_backup_bucket | length > 0
+    fail_msg: >-
+      No DataProtectionApplication found in {{ ibu_oadp_namespace }}. Configure
+      OADP with a BackupStorageLocation named default, or set
+      ibu_configure_oadp true and provide ibu_backup_s3_url and
+      ibu_backup_bucket.
+
+- name: Create the backup credentials Secret
+  when:
+    - _ibu_dpa.resources | default([]) | length == 0
+    - ibu_configure_oadp | bool
+    - ibu_backup_access_key | length > 0
+    - ibu_backup_secret_key | length > 0
+  kubernetes.core.k8s:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        name: "{{ ibu_backup_credentials_secret }}"
+        namespace: "{{ ibu_oadp_namespace }}"
+      data:
+        cloud: >-
+          {{ ('[default]' ~ '\n'
+              ~ 'aws_access_key_id=' ~ ibu_backup_access_key ~ '\n'
+              ~ 'aws_secret_access_key=' ~ ibu_backup_secret_key ~ '\n') | b64encode }}
+  no_log: true
+
+- name: Check the backup credentials Secret
+  when:
+    - _ibu_dpa.resources | default([]) | length == 0
+    - ibu_configure_oadp | bool
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    api_version: v1
+    kind: Secret
+    name: "{{ ibu_backup_credentials_secret }}"
+    namespace: "{{ ibu_oadp_namespace }}"
+  register: _ibu_backup_secret
+  no_log: true
+
+- name: Fail when the backup credentials Secret is missing
+  when:
+    - _ibu_dpa.resources | default([]) | length == 0
+    - ibu_configure_oadp | bool
+  ansible.builtin.assert:
+    that:
+      - _ibu_backup_secret.resources | default([]) | length > 0
+      - _ibu_backup_secret.resources[0].data.cloud is defined
+    fail_msg: >-
+      Secret {{ ibu_backup_credentials_secret }} with key 'cloud' not found in
+      {{ ibu_oadp_namespace }}. Set ibu_backup_access_key and
+      ibu_backup_secret_key to have the role create it.
+  no_log: true
+
+- name: Create a temporary directory for the OADP manifest
+  when:
+    - _ibu_dpa.resources | default([]) | length == 0
+    - ibu_configure_oadp | bool
+  ansible.builtin.tempfile:
+    state: directory
+  register: _ibu_oadp_dir
+
+- name: Render the DataProtectionApplication
+  when:
+    - _ibu_dpa.resources | default([]) | length == 0
+    - ibu_configure_oadp | bool
+  ansible.builtin.template:
+    src: oadp.yaml.j2
+    dest: "{{ _ibu_oadp_dir.path }}/oadp.yaml"
+    mode: "0644"
+
+- name: Apply the DataProtectionApplication
+  when:
+    - _ibu_dpa.resources | default([]) | length == 0
+    - ibu_configure_oadp | bool
+  kubernetes.core.k8s:
+    kubeconfig: "{{ ibu_sno_kubeconfig }}"
+    state: present
+    src: "{{ _ibu_oadp_dir.path }}/oadp.yaml"
+
+- name: Remove the OADP temporary directory
+  ansible.builtin.file:
+    path: "{{ _ibu_oadp_dir.path }}"
+    state: absent
+  when: _ibu_oadp_dir.path is defined
+...

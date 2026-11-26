@@ -3,7 +3,7 @@
 %global forgeurl https://github.com/%{org}/%{repo}
 
 Name:           %{repo}
-Version:        6.10.EPOCH
+Version:        6.11.EPOCH
 Release:        VERS%{?dist}
 Summary:        Red Hat OCP CI Collection for Ansible
 
@@ -55,6 +55,9 @@ find -type f ! -executable -name '*.py' -print -exec sed -i -e '1{\@^#!.*@d}' '{
 
 
 %changelog
+* Wed Nov 25 2026 Rajesh Chiluveru <rchiluve@redhat.com> - 6.11.EPOCH-VERS
+- Add image_based_upgrade role for IBU of a ZTP-deployed SNO
+
 * Thu Nov 19 2026 Rajesh Chiluveru <rchiluve@redhat.com> - 6.10.EPOCH-VERS
 - Add generate_seed_image role for IBI/IBU seed generation
 

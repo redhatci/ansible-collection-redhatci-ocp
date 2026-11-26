@@ -1,0 +1,17 @@
+apiVersion: ran.openshift.io/v1alpha1
+kind: ClusterGroupUpgrade
+metadata:
+  name: "{{ ibu_site }}-ibu-prep"
+  namespace: "{{ ibu_prep_cgu_namespace }}"
+spec:
+  backup: false
+  clusters:
+    - "{{ ibu_site }}"
+  enable: true
+  managedPolicies:
+    - "{{ ibu_oadp_policy }}"
+    - "{{ ibu_policy_prefix }}-prep-policy"
+  preCaching: false
+  remediationStrategy:
+    maxConcurrency: 1
+    timeout: 240

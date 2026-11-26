@@ -1,0 +1,47 @@
+---
+# Update site labels in the ZTP GitOps repository. The caller passes the
+# labels to set in ibu_site_labels, a list of {label, value}.
+
+- name: Create a temporary directory for the GitOps repository
+  ansible.builtin.tempfile:
+    state: directory
+  register: _ibu_gitops_dir
+
+- name: Clone the GitOps repository
+  ansible.builtin.git:
+    repo: "{{ ibu_gitops_repo }}"
+    dest: "{{ _ibu_gitops_dir.path }}/repo"
+    version: "{{ ibu_gitops_branch }}"
+
+- name: Set the site labels
+  ansible.builtin.replace:
+    path: "{{ _ibu_gitops_dir.path }}/repo/{{ ibu_gitops_site_file }}"
+    regexp: "{{ item.label }}:.*"
+    replace: '{{ item.label }}: "{{ item.value }}"'
+  loop: "{{ ibu_site_labels }}"
+  loop_control:
+    label: "{{ item.label }}={{ item.value }}"
+
+- name: Commit and push the site label change
+  ansible.builtin.shell: |
+    set -euo pipefail
+    git add -- "{{ ibu_gitops_site_file }}"
+    if git diff --cached --quiet; then
+      echo "No change to push"
+      exit 0
+    fi
+    git commit -m "IBU: set site labels for {{ ibu_site }}"
+    git pull --rebase
+    git push
+  args:
+    chdir: "{{ _ibu_gitops_dir.path }}/repo"
+    executable: /bin/bash
+  register: _ibu_gitops_push
+  changed_when: "'No change to push' not in _ibu_gitops_push.stdout"
+
+- name: Remove the GitOps temporary directory
+  ansible.builtin.file:
+    path: "{{ _ibu_gitops_dir.path }}"
+    state: absent
+  when: _ibu_gitops_dir.path is defined
+...

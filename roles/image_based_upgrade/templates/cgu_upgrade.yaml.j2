@@ -1,0 +1,20 @@
+apiVersion: ran.openshift.io/v1alpha1
+kind: ClusterGroupUpgrade
+metadata:
+  name: "{{ ibu_site }}-ibu-upgrade"
+  namespace: "{{ ibu_upgrade_cgu_namespace }}"
+spec:
+  actions:
+    beforeEnable:
+      addClusterAnnotations:
+        import.open-cluster-management.io/disable-auto-import: "true"
+    afterCompletion:
+      removeClusterAnnotations:
+        - import.open-cluster-management.io/disable-auto-import
+  clusters:
+    - "{{ ibu_site }}"
+  enable: true
+  managedPolicies:
+    - "{{ ibu_policy_prefix }}-upgrade-policy"
+  remediationStrategy:
+    maxConcurrency: 1

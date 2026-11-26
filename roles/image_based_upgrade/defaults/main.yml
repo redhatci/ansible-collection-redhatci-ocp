@@ -1,0 +1,113 @@
+---
+# image_based_upgrade role default variables
+#
+# Required variables (no defaults, see meta/argument_specs.yml):
+#   ibu_hub_kubeconfig, ibu_sno_kubeconfig, ibu_site, ibu_target_version
+#
+# The role performs an Image-Based Upgrade (IBU) of a ZTP-deployed single-node
+# OpenShift cluster through TALM/ACM: it installs the required operators,
+# prepares OADP, trusts the hub registry, drives the Prep, Upgrade and optional
+# Rollback ClusterGroupUpgrades, and writes an IBU timing report.
+
+# Path to the oc binary (used for registry tokens, backups and artifacts).
+ibu_oc_path: /usr/local/bin/oc
+
+# --- Operators ------------------------------------------------------------
+# Install OADP and the Lifecycle Agent with redhatci.ocp.olm_operator. When
+# false the role only checks that they are installed.
+ibu_install_operators: false
+ibu_operators_source: redhat-operators
+ibu_operators_source_ns: openshift-marketplace
+ibu_oadp_namespace: openshift-adp
+# Empty lets redhatci.ocp.olm_operator use the operator's default channel.
+ibu_oadp_channel: ""
+ibu_lca_namespace: openshift-lifecycle-agent
+ibu_lca_channel: stable
+
+# --- OADP backup ----------------------------------------------------------
+# The IBU oadpContent Backup/Restore objects target a BackupStorageLocation
+# named default, so OADP must have a DataProtectionApplication. An existing
+# DataProtectionApplication is never overwritten. Set ibu_configure_oadp true
+# to create one from the inputs below when none exists.
+ibu_configure_oadp: false
+ibu_oadp_name: ibu
+ibu_backup_s3_url: ""
+ibu_backup_s3_region: minio
+ibu_backup_s3_insecure: false
+ibu_backup_bucket: ""
+ibu_backup_bucket_prefix: backups
+# Secret in ibu_oadp_namespace with the S3 credentials under the 'cloud' key.
+# When ibu_backup_access_key and ibu_backup_secret_key are set, the role
+# creates this Secret; otherwise it must already exist.
+ibu_backup_credentials_secret: cloud-credentials
+ibu_backup_access_key: ""
+ibu_backup_secret_key: ""
+
+# --- Registry -------------------------------------------------------------
+# Registry the seed image is pulled from. Empty means the hub internal image
+# registry (its default route); set it, or provide a registry_host inventory
+# group, to use an external registry both the SNO and the hub can reach.
+ibu_seed_registry: >-
+  {{ (groups['registry_host'][0] ~ ':' ~ (registry_port | default(5000)))
+     if (groups['registry_host'] | default([]) | length > 0) else '' }}
+# File with the external registry credentials. Reuse the pull secret the
+# mirror_images role already uses (pullsecret_file / dci_pullsecret_file), then
+# fall back to the registry_host disconnected_registry_auths_file. Both a full
+# pull secret ({"auths": ...}) and a plain registry -> auth map are accepted.
+# The pull is anonymous when there is no entry for the registry.
+ibu_seed_registry_authfile: >-
+  {{ pullsecret_file
+     | default(dci_pullsecret_file
+       | default(disconnected_registry_auths_file | default(''))) }}
+# Add the external registry to the SNO insecureRegistries. Only needed when the
+# registry uses a self-signed certificate or plain HTTP; the hub registry route
+# is always added.
+ibu_seed_registry_insecure: false
+
+# Add the seed image registry to the SNO insecureRegistries so LCA can pull
+# the seed image.
+ibu_configure_insecure_registry: true
+ibu_wait_mcp: true
+ibu_mcp_retries: 40
+ibu_mcp_delay: 15
+# Pull credentials for the seed image, used by LCA on the SNO.
+ibu_configure_lca_secret: true
+ibu_registry_user: registry-user
+ibu_registry_user_namespace: openshift
+ibu_lca_pull_secret_name: ibu-pull-secret
+
+# --- Site labels ----------------------------------------------------------
+# Update the site labels in the ZTP GitOps repository: the configuration
+# version is moved to ibu_target_version and ibu is set to true so the IBU
+# policies match the site. The ibu label is reset to false on exit.
+ibu_gitops_update_labels: true
+ibu_gitops_repo: ""
+ibu_gitops_branch: ""
+ibu_gitops_site_file: ""
+ibu_configuration_version_label: configuration-version
+ibu_ibu_label: ibu
+
+# --- ClusterGroupUpgrades and policies ------------------------------------
+ibu_site_policy_namespace: "{{ ibu_site }}"
+ibu_oadp_policy: ibu-oadp-oadp-cm-policy
+# Prefix of the generated per-version IBU policies.
+ibu_policy_prefix: "group-ibu-cv{{ ibu_target_version }}"
+ibu_prep_policy: prep-policy
+ibu_upgrade_policy: upgrade-policy
+ibu_rollback_policy: rollback-policy
+ibu_prep_cgu_namespace: ztp-install
+ibu_upgrade_cgu_namespace: default
+ibu_rollback_cgu_namespace: default
+# Default: 120 retries x 30s = 60 minutes.
+ibu_policy_retries: 120
+ibu_policy_delay: 30
+
+# Run the Rollback stage after a successful Upgrade.
+ibu_run_rollback: true
+
+# --- Timing report --------------------------------------------------------
+ibu_collect_timing: true
+# Directory where the timing report and raw IBU/CGU/LCA artifacts are written.
+# Empty skips the report and the artifacts.
+ibu_output_dir: ""
+...
