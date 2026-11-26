@@ -41,6 +41,10 @@
     chdir: "{{ scorecard_tmp_dir.path }}/operator-sdk-source/"
   changed_when: true
 
+- name: Record that operator_sdk_img was built by this run
+  ansible.builtin.set_fact:
+    operator_sdk_img_built: true
+
 - name: Display Operator-SDK version to ensure that the image build went fine
   ansible.builtin.command: podman run --rm {{ operator_sdk_img }} version
   changed_when: false

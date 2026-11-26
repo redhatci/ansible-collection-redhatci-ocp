@@ -29,5 +29,7 @@
 - name: Remove operator_sdk_img built from the source
   ansible.builtin.command: podman rmi -f {{ operator_sdk_img }}
   changed_when: true
-  when: operator_sdk_source_dir is defined
+  when:
+    - operator_sdk_source_dir is defined
+    - operator_sdk_img_built | default(false) | bool
 ...
