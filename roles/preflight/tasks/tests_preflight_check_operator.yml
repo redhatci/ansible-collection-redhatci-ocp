@@ -56,22 +56,34 @@
   register: preflight_exec
 
 - name: "Retrieve async logs for {{ operator.name }}"
-  ansible.builtin.include_tasks: test_async_logs_check_operator.yml
-  ignore_errors: true
+  block:
+    - name: "Retrieve async logs for {{ operator.name }}"
+      ansible.builtin.include_tasks: test_async_logs_check_operator.yml
+  rescue:
+    - name: Do not fail when the async logs cannot be retrieved
+      ansible.builtin.debug:
+        msg: "Unable to retrieve the async logs for {{ operator.name }}"
 
 - name: Check on preflight execution
-  ansible.builtin.async_status:
-    jid: "{{ preflight_exec.ansible_job_id }}"
-  register: job_result
-  until: job_result.finished
-  retries: 20
-  delay: 30
-  ignore_errors: true
+  block:
+    - name: Check on preflight execution
+      ansible.builtin.async_status:
+        jid: "{{ preflight_exec.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 20
+      delay: 30
+  rescue:
+    - name: Do not fail when the preflight execution check does not complete
+      ansible.builtin.debug:
+        msg: "Preflight execution for {{ operator.name }} did not complete in time"
 
 - name: Check cleanup
   ansible.builtin.async_status:
     jid: "{{ preflight_exec.ansible_job_id }}"
     mode: cleanup
+  when: preflight_exec.ansible_job_id is defined
+  failed_when: false
 
 - name: Upload logs for preflight check operator into DCI
   vars:
