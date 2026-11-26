@@ -34,4 +34,15 @@
   when:
     - operator_sdk_source_dir is defined
     - operator_sdk_img_built | default(false) | bool
+
+# The removal task above cannot fail the always: block, so surface any
+# failure other than "image is in use by a container" instead of hiding it.
+- name: Warn when operator_sdk_img could not be removed
+  ansible.builtin.debug:
+    msg: >-
+      podman rmi {{ operator_sdk_img }} returned rc={{
+      _operator_sdk_rmi.rc | default(0) }}: {{
+      _operator_sdk_rmi.stderr | default('') | trim }}
+  changed_when: false
+  when: _operator_sdk_rmi.rc | default(0) != 0
 ...
