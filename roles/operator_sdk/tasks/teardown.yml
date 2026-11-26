@@ -3,6 +3,7 @@
   kubernetes.core.k8s:
     state: absent
     definition: "{{ lookup('file', scorecard_is_file) }}"
+  when: scorecard_is_file is defined
 
 - name: Wait for MCP status
   ansible.builtin.include_role:
@@ -11,6 +12,7 @@
     resource_to_check: "MachineConfigPool"
     check_wait_retries: 60
     check_wait_delay: 20
+  when: scorecard_is_file is defined
 
 - name: Remove tmp directory
   ansible.builtin.file:
