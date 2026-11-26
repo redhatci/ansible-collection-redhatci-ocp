@@ -1,13 +1,26 @@
 ---
-- name: Does network exist
-  community.libvirt.virt_net:
-    name: "{{ network['name'] }}"
-    command: status
-  register: network_exists
-  become: true
-  ignore_errors: true
-  tags:
-    - cleanup
+- name: Check if SNO network exists
+  block:
+    - name: Does network exist
+      community.libvirt.virt_net:
+        name: "{{ network['name'] }}"
+        command: status
+      register: _snp_net_status
+      become: true
+      tags:
+        - cleanup
+
+    - name: Record that the SNO network exists
+      ansible.builtin.set_fact:
+        snp_network_exists: true
+      tags:
+        - cleanup
+  rescue:
+    - name: Record that the SNO network is absent
+      ansible.builtin.set_fact:
+        snp_network_exists: false
+      tags:
+        - cleanup
 
 - name: Stop SNO network
   community.libvirt.virt_net:
@@ -15,7 +28,7 @@
     name: "{{ network['name'] }}"
   become: true
   when:
-    - not network_exists.failed
+    - snp_network_exists | bool
   tags:
     - cleanup
 
@@ -25,7 +38,7 @@
     name: "{{ network['name'] }}"
   become: true
   when:
-    - not network_exists.failed
+    - snp_network_exists | bool
   tags:
     - cleanup
 ...
