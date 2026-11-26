@@ -24,6 +24,5 @@ skip_list:
   - var-naming[no-role-prefix]
 
 warn_list:
-  - ignore-errors
   - no-changed-when
 ...
