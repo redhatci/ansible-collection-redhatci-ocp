@@ -40,6 +40,7 @@
     --authfile {{ partner_creds }}
     {{ oo_index }};
     podman rmi {{ oo_index }}
+  changed_when: true
 
 - name: Check if IDMS is supported
   kubernetes.core.k8s_info:

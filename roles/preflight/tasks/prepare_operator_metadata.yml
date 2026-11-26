@@ -9,6 +9,7 @@
   retries: 2
   delay: 10
   until: rendered_bundle.rc == 0
+  changed_when: false
 
 - name: "Get inspected data"
   ansible.builtin.set_fact:
