@@ -27,8 +27,10 @@
   when: scorecard_is_file is defined
 
 - name: Remove operator_sdk_img built from the source
-  ansible.builtin.command: podman rmi -f {{ operator_sdk_img }}
-  changed_when: true
+  ansible.builtin.command: podman rmi {{ operator_sdk_img }}
+  register: _operator_sdk_rmi
+  failed_when: false
+  changed_when: _operator_sdk_rmi.rc == 0
   when:
     - operator_sdk_source_dir is defined
     - operator_sdk_img_built | default(false) | bool

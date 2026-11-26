@@ -26,7 +26,7 @@
     operator_sdk_img: "{{ operator_sdk_img + '-' + job_id }}"
   when: job_id is defined
 
-- name: Build Operator-SDK image
+- name: Build Operator-SDK image locally
   ansible.builtin.shell:
     cmd: >
       podman buildx build
@@ -34,16 +34,22 @@
       --label quay.expires-after=1d
       --no-cache
       -f ./images/operator-sdk/Dockerfile
-      --load . &&
-      podman push
-      --authfile {{ scorecard_partner_creds }}
-      {{ operator_sdk_img }}
+      --load .
     chdir: "{{ scorecard_tmp_dir.path }}/operator-sdk-source/"
   changed_when: true
 
 - name: Record that operator_sdk_img was built by this run
   ansible.builtin.set_fact:
     operator_sdk_img_built: true
+
+- name: Push Operator-SDK image to the local registry
+  ansible.builtin.shell:
+    cmd: >
+      podman push
+      --authfile {{ scorecard_partner_creds }}
+      {{ operator_sdk_img }}
+    chdir: "{{ scorecard_tmp_dir.path }}/operator-sdk-source/"
+  changed_when: true
 
 - name: Display Operator-SDK version to ensure that the image build went fine
   ansible.builtin.command: podman run --rm {{ operator_sdk_img }} version
