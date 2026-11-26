@@ -63,7 +63,13 @@
       git push origin --delete {{ local_branch }}
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}"
-  ignore_errors: true
+  register: _cp_chart_branch_del
+  # Tolerate only the missing remote ref, still surface auth/network errors
+  failed_when: >-
+    _cp_chart_branch_del.rc != 0 and
+    'remote ref does not exist' not in (_cp_chart_branch_del.stderr | default('')) and
+    'src refspec' not in (_cp_chart_branch_del.stderr | default(''))
+  changed_when: _cp_chart_branch_del.rc == 0
 
 - name: "Push branch and create PR to the forked repository"
   ansible.builtin.shell:
