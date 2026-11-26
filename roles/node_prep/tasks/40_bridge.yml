@@ -20,7 +20,7 @@
     - name: Disconnect provisioning bridge connection
       ansible.builtin.command: |
         nmcli dev dis "{{ provisioning_bridge }}"
-      ignore_errors: true
+      failed_when: false
       when:
         - not enable_virtualmedia|bool
 
