@@ -15,7 +15,7 @@
       ansible.builtin.shell: >
         crucible help
       register: crucible_help
-      ignore_errors: true
+      failed_when: false
 
     - name: "Install the crucible binaries"
       when:
