@@ -13,8 +13,7 @@
     cluster_info_node_count: 0
     cluster_info_node_count_by_role: {}
 
-- name: Gather cluster configuration facts (best-effort, errors ignored)
-  ignore_errors: true
+- name: Gather cluster configuration facts (best-effort)
   block:
     - name: Get ClusterVersion resource
       kubernetes.core.k8s_info:
@@ -182,6 +181,13 @@
           }}
       when:
         - _ci_storage_classes.resources is defined
+
+  rescue:
+    - name: Warn that best-effort cluster information is unavailable
+      ansible.builtin.debug:
+        msg: >-
+          cluster_info: best-effort cluster configuration data collection did
+          not complete; keeping the pre-initialized unknown defaults.
 
 - name: Display cluster configuration facts
   ansible.builtin.debug:

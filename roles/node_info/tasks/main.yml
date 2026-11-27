@@ -2,8 +2,7 @@
 # node_info role - Gather node hardware and kernel information from
 # an OpenShift cluster
 
-- name: Gather cluster hardware/kernel data (best-effort, errors ignored)
-  ignore_errors: true
+- name: Gather cluster hardware/kernel data (best-effort)
   block:
     - name: Get list of nodes from cluster
       kubernetes.core.k8s_info:
@@ -209,5 +208,18 @@
         mode: '0644'
       loop: "{{ _ni_hardware_info.results | default([]) }}"
       no_log: true
+
+  rescue:
+    - name: Keep empty hardware data defaults when collection did not complete
+      ansible.builtin.set_fact:
+        ni_bmc_data: "{{ ni_bmc_data | default({}) }}"
+        ni_bios_data: "{{ ni_bios_data | default({}) }}"
+        ni_bmc_disc_bmh_meta: "{{ ni_bmc_disc_bmh_meta | default({}) }}"
+
+    - name: Warn that best-effort node information is unavailable
+      ansible.builtin.debug:
+        msg: >-
+          node_info: best-effort hardware/kernel data collection did not
+          complete; continuing with empty defaults.
 
 ...
