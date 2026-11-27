@@ -32,6 +32,7 @@
       delay: 5
       until:
         - image_digest.stdout | regex_search('^sha')
+      changed_when: false
 
     - name: Set catalog with digest
       vars:
@@ -68,6 +69,7 @@
   retries: 3
   delay: 10
   until: catalog_manifests_output.rc == 0
+  changed_when: true
 
 - name: Set the Image Source file
   ansible.builtin.tempfile:
@@ -86,6 +88,7 @@
           {{ mc_tmp.path }}/manifests/imageContentSourcePolicy.yaml
           --dest-dir {{ mc_tmp.path }}
       register: migrate_result
+      changed_when: true
 
     - name: Set new image source file
       ansible.builtin.set_fact:

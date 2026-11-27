@@ -8,6 +8,7 @@
     docker://{{ mor_registry_url }}/{{ mor_registry_path }}:{{ mor_version }}
   register: _mor_release_image
   failed_when: false
+  changed_when: false
   when: not mor_force | bool
 
 - name: Mirror release images to local registry

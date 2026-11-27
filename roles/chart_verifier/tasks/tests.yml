@@ -134,6 +134,7 @@
       {{ helm_tool_path }} show chart {{ work_chart_dir }}/{{ chart.chart_file | basename }} |
       {{ yq_tool_path }} e -o json -
   register: chart_show
+  changed_when: false
 
 - name: "Set charts details"
   vars:
@@ -167,6 +168,7 @@
   args:
     chdir: "{{ work_chart_dir }}"
   ignore_errors: true
+  changed_when: false
 
 - name: "Copy the report to the Job's log_dir"
   ansible.builtin.copy:
@@ -185,6 +187,7 @@
   args:
     chdir: "{{ work_chart_dir }}"
     executable: /bin/bash
+  changed_when: false
 
 # Only submit the results if there are no failed tests
 - name: "Submit CV and create pull request"
