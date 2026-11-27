@@ -29,8 +29,8 @@
         /usr/local/bin/{{ installer_cmd }} --dir {{ dir }} --log-level debug create cluster
       async: 3600
       poll: 0
-      ignore_errors: true
       register: installer_result
+      failed_when: false
 
     - name: Wait for kubeconfig file
       ansible.builtin.wait_for:
