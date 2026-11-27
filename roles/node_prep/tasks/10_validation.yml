@@ -456,38 +456,53 @@
     - always
     - validation
 
-- name: Get all the chassis results from all the hosts
-  community.general.redfish_info:
-    category: Chassis
-    command: GetChassisInventory
-    baseuri: "{{ hostvars[item]['ipmi_address'] | ipwrap }}"
-    username: "{{ hostvars[item]['ipmi_user'] }}"
-    password: "{{ hostvars[item]['ipmi_password'] }}"
-  register: chassis_result
-  until: chassis_result is succeeded
-  retries: 3
-  delay: 10
-  with_items:
-    - "{{ groups.masters }}"
-    - "{{ groups.workers | default([]) }}"
-  ignore_errors: true
-  when: redfish_inspection|bool
+- name: Collect the chassis inventory from all the hosts
   tags: validation
+  when: redfish_inspection|bool
+  block:
+    - name: Get all the chassis results from all the hosts
+      community.general.redfish_info:
+        category: Chassis
+        command: GetChassisInventory
+        baseuri: "{{ hostvars[item]['ipmi_address'] | ipwrap }}"
+        username: "{{ hostvars[item]['ipmi_user'] }}"
+        password: "{{ hostvars[item]['ipmi_password'] }}"
+      register: chassis_result
+      until: chassis_result is succeeded
+      retries: 3
+      delay: 10
+      with_items:
+        - "{{ groups.masters }}"
+        - "{{ groups.workers | default([]) }}"
+  rescue:
+    - name: Chassis inspection through Redfish failed
+      ansible.builtin.debug:
+        msg: >-
+          Retrieving the chassis inventory through Redfish failed after all the
+          retries. Redfish inspection is best-effort, the affected hosts will
+          fall back to IPMI.
 
-- name: Get all the firmware results from all the hosts
-  community.general.redfish_info:
-    category: Update
-    command: GetFirmwareInventory
-    baseuri: "{{ hostvars[item]['ipmi_address'] | ipwrap }}"
-    username: "{{ hostvars[item]['ipmi_user'] }}"
-    password: "{{ hostvars[item]['ipmi_password'] }}"
-  register: firmware_result
-  with_items:
-    - "{{ groups.masters }}"
-    - "{{ groups.workers | default([]) }}"
-  ignore_errors: true
-  when: redfish_inspection|bool
+- name: Collect the firmware inventory from all the hosts
   tags: validation
+  when: redfish_inspection|bool
+  block:
+    - name: Get all the firmware results from all the hosts
+      community.general.redfish_info:
+        category: Update
+        command: GetFirmwareInventory
+        baseuri: "{{ hostvars[item]['ipmi_address'] | ipwrap }}"
+        username: "{{ hostvars[item]['ipmi_user'] }}"
+        password: "{{ hostvars[item]['ipmi_password'] }}"
+      register: firmware_result
+      with_items:
+        - "{{ groups.masters }}"
+        - "{{ groups.workers | default([]) }}"
+  rescue:
+    - name: Firmware inspection through Redfish failed
+      ansible.builtin.debug:
+        msg: >-
+          Retrieving the firmware inventory through Redfish failed. Redfish
+          inspection is best-effort, the affected hosts will fall back to IPMI.
 
 - name: Adding hosts to to their dynamic Dell inventory group
   tags: validation

@@ -6,7 +6,7 @@
     state: present
     pool: '^(Red Hat Enterprise Linux Server, Standard (8 sockets) (Unlimited guests))$'
     force_register: true
-  ignore_errors: true
+  failed_when: false
   become: true
   when:
     - activation_key != ""
