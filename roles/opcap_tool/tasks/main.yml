@@ -33,7 +33,7 @@
       {% endif %}
     chdir: "{{ opcap_dir.path }}/opcap/bin"
   register: opcap_check
-  changed_when: false
+  changed_when: "'Install' in opcap_audit_plan"
 
 - name: "Copy results in {{ opcap_output_dir }}"
   ansible.builtin.copy:
