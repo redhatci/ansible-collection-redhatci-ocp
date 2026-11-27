@@ -3,10 +3,10 @@
     cmd: |
       set -o pipefail
       oc get csr | { grep -i pending || true; } | cut -f 1 -d ' ' | xargs -rn 1 oc adm certificate approve
-  register: csr_approve
+  register: _ac_csr_approve
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  changed_when: csr_approve.stdout | length > 0
+  changed_when: _ac_csr_approve.stdout | length > 0
 
 - name: Wait up to an 60 mins for CSRs to be approved  # loop kept: re-approves late CSRs from joining day2 workers
   ansible.builtin.shell:
