@@ -21,7 +21,7 @@ Either you point the role at an existing **ImageSetConfiguration**, or you let i
 | `om_auths_file` | string | (none) | Pull secret / registry auth JSON path. |
 | `om_keep_working_dir` | bool | `false` | Keep the temp workspace after the role finishes (useful for debugging). |
 | `om_remove_signatures` | bool | `false` | Pass `--remove-signatures` to `oc-mirror` (needed for some unsigned images). |
-| `om_ignore_errors` | bool | `false` | Sets Ansible `ignore_errors` on the mirror task. |
+| `om_ignore_errors` | bool | `false` | Suppress a non-zero `oc-mirror` exit code (the task still retries). |
 
 ### Standard path only (`om_custom_config` not set)
 

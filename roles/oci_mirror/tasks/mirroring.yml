@@ -29,7 +29,7 @@
   retries: 3
   delay: 10
   until: _om_cmd_output.rc == 0
-  ignore_errors: "{{ om_ignore_errors }}"
+  failed_when: (not (om_ignore_errors | bool)) and (_om_cmd_output.rc != 0)
   changed_when: _om_cmd_output.rc == 0
 
 - name: "Find generated CatalogSource manifests"
