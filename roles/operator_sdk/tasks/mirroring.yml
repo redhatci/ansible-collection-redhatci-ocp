@@ -10,6 +10,7 @@
   ansible.builtin.include_role:
     name: redhatci.ocp.mirror_images
   vars:
+    mi_registry: "{{ scorecard_dci_local_registry }}"
     mi_images: "{{ scorecard_images }}"
     mi_authfile: "{{ scorecard_partner_creds }}"
     mi_options: "--preserve-digests"
@@ -38,6 +39,7 @@
     --authfile {{ scorecard_partner_creds }}
     {{ oo_index }};
     podman rmi {{ oo_index }}
+  changed_when: true
 
 - name: Check if IDMS is supported
   kubernetes.core.k8s_info:
