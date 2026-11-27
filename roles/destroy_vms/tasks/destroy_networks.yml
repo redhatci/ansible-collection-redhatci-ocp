@@ -1,6 +1,6 @@
+---
 - name: Remove network
   become: true
-  ignore_errors: true
   block:
     - name: Destroy network
       community.libvirt.virt_net:
@@ -11,6 +11,10 @@
       community.libvirt.virt_net:
         name: "{{ network_name }}"
         command: undefine
+  rescue:
+    - name: Report that the network could not be removed
+      ansible.builtin.debug:
+        msg: "Network {{ network_name }} could not be destroyed or undefined, continuing."
 
 - name: Delete existing bridges (if any)
   community.general.nmcli:
