@@ -8,6 +8,7 @@
         set -o pipefail
         nmcli device show {{ prov_nic }} | grep GENERAL.CONNECTION | awk '{sub(/[^ ]+[ ]+/,"")}1'
       register: prov_con_name
+      changed_when: false
       when:
         - not enable_virtualmedia|bool
 
@@ -16,11 +17,13 @@
         set -o pipefail
         nmcli device show {{ pub_nic }} | grep GENERAL.CONNECTION | awk '{sub(/[^ ]+[ ]+/,"")}1'
       register: pub_con_name
+      changed_when: false
 
     - name: Disconnect provisioning bridge connection
       ansible.builtin.command: |
         nmcli dev dis "{{ provisioning_bridge }}"
       ignore_errors: true
+      changed_when: true
       when:
         - not enable_virtualmedia|bool
 
@@ -157,6 +160,7 @@
       with_items:
         - "{{ baremetal_bridge }}"
         - "{{ pub_nic }}"
+      changed_when: true
 
     - name: Reload provisioning bridge and slave interfaces
       ansible.builtin.shell: |
@@ -164,5 +168,6 @@
       with_items:
         - "{{ provisioning_bridge }}"
         - "{{ prov_nic }}"
+      changed_when: true
       when:
         - not enable_virtualmedia|bool
