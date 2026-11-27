@@ -19,6 +19,7 @@
   ansible.builtin.command: "git checkout -b {{ local_branch }}"  # noqa: command-instead-of-module
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
+  changed_when: true
 
 - name: "Create target directory on the repository"
   ansible.builtin.file:
@@ -54,6 +55,7 @@
       git commit -m 'Added files for {{ chart_name }}_{{ chart_version }}'
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
+  changed_when: true
 
 - name: Ensure that remote branch is absent to avoid merge conflicts
   ansible.builtin.shell:
@@ -84,6 +86,7 @@
   args:
     chdir: "{{ work_dir }}/{{ fork_name }}/charts"
   register: pr_details
+  changed_when: true
 
 - name: "Append details to the general report"
   ansible.builtin.lineinfile:
