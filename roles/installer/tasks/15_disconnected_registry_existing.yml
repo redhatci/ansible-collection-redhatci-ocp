@@ -49,6 +49,7 @@
         echo '{{ pullsecret }}' | jq -c \
           '.auths += {{ disconnected_auths_b64.content | string | b64decode }}'
       register: new_pullsecret
+      changed_when: false
       no_log: true
 
     - name: Set pullsecret with new auth
