@@ -1,0 +1,187 @@
+---
+# Verify that the idempotency patterns used to fix the `no-changed-when`
+# ansible-lint rule behave as expected on a real host:
+#
+#   * `/usr/bin/loginctl enable-linger <user>` with
+#     `creates: /var/lib/systemd/linger/<user>`
+#   * `/usr/sbin/restorecon -Rv <path>` with
+#     `register: ...` + `changed_when: <reg>.stdout | length > 0`
+#
+# Each pattern is applied twice. The first run must report `changed` (the
+# state was actually modified) and the second run must report `ok` (the
+# state was already correct).
+#
+# Each part is skipped when the underlying tool is not usable on the host
+# (no systemd/loginctl, or SELinux disabled / restorecon missing).
+#
+# The playbook runs with become by default (root is needed to relabel files
+# and to write /var/lib/systemd/linger). Pass `-e ir_become=false` to run it
+# without escalation, e.g. to only validate the playbook logic.
+#
+# Usage:
+#   ansible-playbook -i localhost, -c local tests/idempotency/linger_restorecon.yml
+#
+# Run it twice in a row to also prove the whole playbook is repeatable.
+- name: Verify loginctl enable-linger and restorecon idempotency
+  hosts: all
+  become: "{{ ir_become | default(true) }}"
+  gather_facts: true
+  vars:
+    ir_linger_user: "{{ ansible_user | default(ansible_user_id) }}"
+    ir_linger_file: "/var/lib/systemd/linger/{{ ansible_user | default(ansible_user_id) }}"
+    ir_restorecon_dir: "/tmp/linger_restorecon_test"
+    ir_restorecon_file: "/tmp/linger_restorecon_test/test_file"
+  tasks:
+    - name: Look for the loginctl binary
+      ansible.builtin.stat:
+        path: /usr/bin/loginctl
+      register: _ir_loginctl
+
+    - name: Check that loginctl can talk to the systemd user manager
+      ansible.builtin.command: /usr/bin/loginctl show-user {{ ir_linger_user }} -p Linger
+      register: _ir_linger_check
+      changed_when: false
+      failed_when: false
+      when: _ir_loginctl.stat.exists
+
+    - name: Look for the restorecon binary
+      ansible.builtin.stat:
+        path: /usr/sbin/restorecon
+      register: _ir_restorecon_bin
+
+    - name: Look for the chcon binary
+      ansible.builtin.stat:
+        path: /usr/bin/chcon
+      register: _ir_chcon_bin
+
+    - name: Check the SELinux state
+      ansible.builtin.command: getenforce
+      register: _ir_getenforce
+      changed_when: false
+      failed_when: false
+      when: _ir_restorecon_bin.stat.exists
+
+    - name: Compute which patterns can be exercised on this host
+      ansible.builtin.set_fact:
+        _ir_linger_available: >-
+          {{ _ir_loginctl.stat.exists
+             and (_ir_linger_check.rc | default(1)) == 0 }}
+        _ir_restorecon_available: >-
+          {{ _ir_restorecon_bin.stat.exists
+             and _ir_chcon_bin.stat.exists
+             and (_ir_getenforce.stdout | default('')) in ['Enforcing', 'Permissive'] }}
+
+    # ------------------------------------------------------------------
+    # loginctl enable-linger / creates:
+    # ------------------------------------------------------------------
+    - name: Reset linger state before the first run
+      ansible.builtin.command: /usr/bin/loginctl disable-linger {{ ir_linger_user }}
+      changed_when: false
+      when: _ir_linger_available
+
+    - name: Enable linger (first run)
+      ansible.builtin.command:
+        cmd: /usr/bin/loginctl enable-linger {{ ir_linger_user }}
+        creates: "{{ ir_linger_file }}"
+      register: _ir_linger_run1
+      when: _ir_linger_available
+
+    - name: Enable linger (second run)
+      ansible.builtin.command:
+        cmd: /usr/bin/loginctl enable-linger {{ ir_linger_user }}
+        creates: "{{ ir_linger_file }}"
+      register: _ir_linger_run2
+      when: _ir_linger_available
+
+    - name: Assert loginctl reported a change on the first run
+      ansible.builtin.assert:
+        that:
+          - _ir_linger_run1 is changed
+        fail_msg: >-
+          loginctl enable-linger did not report a change on the first run:
+          {{ _ir_linger_run1 }}
+      when: _ir_linger_available
+
+    - name: Assert loginctl reported no change on the second run
+      ansible.builtin.assert:
+        that:
+          - _ir_linger_run2 is not changed
+        fail_msg: >-
+          loginctl enable-linger reported a change on the second run:
+          {{ _ir_linger_run2 }}
+      when: _ir_linger_available
+
+    # ------------------------------------------------------------------
+    # restorecon -Rv / register + stdout length
+    # ------------------------------------------------------------------
+    - name: Create the restorecon test directory
+      ansible.builtin.file:
+        path: "{{ ir_restorecon_dir }}"
+        state: directory
+        mode: "0755"
+      when: _ir_restorecon_available
+
+    - name: Create the restorecon test file
+      ansible.builtin.copy:
+        content: "idempotency test\n"
+        dest: "{{ ir_restorecon_file }}"
+        mode: "0644"
+      when: _ir_restorecon_available
+
+    - name: Force a wrong SELinux context on the test file
+      ansible.builtin.command: chcon -t bin_t "{{ ir_restorecon_file }}"
+      changed_when: false
+      when: _ir_restorecon_available
+
+    - name: Restore the SELinux context (first run)
+      ansible.builtin.command: /usr/sbin/restorecon -Rv "{{ ir_restorecon_file }}"
+      register: _ir_restorecon_run1
+      changed_when: _ir_restorecon_run1.stdout | length > 0
+      when: _ir_restorecon_available
+
+    - name: Restore the SELinux context (second run)
+      ansible.builtin.command: /usr/sbin/restorecon -Rv "{{ ir_restorecon_file }}"
+      register: _ir_restorecon_run2
+      changed_when: _ir_restorecon_run2.stdout | length > 0
+      when: _ir_restorecon_available
+
+    - name: Assert restorecon reported a change on the first run
+      ansible.builtin.assert:
+        that:
+          - _ir_restorecon_run1 is changed
+        fail_msg: >-
+          restorecon -Rv did not report a change on the first run:
+          {{ _ir_restorecon_run1 }}
+      when: _ir_restorecon_available
+
+    - name: Assert restorecon reported no change on the second run
+      ansible.builtin.assert:
+        that:
+          - _ir_restorecon_run2 is not changed
+        fail_msg: >-
+          restorecon -Rv reported a change on the second run:
+          {{ _ir_restorecon_run2 }}
+      when: _ir_restorecon_available
+
+    - name: Warn when no pattern could be exercised
+      ansible.builtin.debug:
+        msg: >-
+          SKIPPED: neither loginctl nor SELinux restorecon are usable on this
+          host, so no idempotency assertion was executed.
+      when: not (_ir_linger_available | bool or _ir_restorecon_available | bool)
+
+    - name: Report which patterns were exercised
+      ansible.builtin.debug:
+        msg:
+          - "loginctl enable-linger creates: exercised: {{ _ir_linger_available }}"
+          - "restorecon -Rv stdout check exercised: {{ _ir_restorecon_available }}"
+
+    # ------------------------------------------------------------------
+    # Cleanup
+    # ------------------------------------------------------------------
+    - name: Remove the restorecon test directory
+      ansible.builtin.file:
+        path: "{{ ir_restorecon_dir }}"
+        state: absent
+      when: _ir_restorecon_available
+...
