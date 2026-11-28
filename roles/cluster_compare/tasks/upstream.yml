@@ -40,6 +40,7 @@
       delay: 5
       until: _cc_cc_output.rc == 0
       ignore_errors: true
+      changed_when: false
 
     - name: Debug cluster-compare output
       ansible.builtin.debug:
@@ -58,6 +59,7 @@
       retries: 3
       delay: 5
       until: _cc_human_output.rc == 0
+      changed_when: false
 
     - name: Generate JUnit report
       ansible.builtin.shell: >
@@ -70,4 +72,5 @@
       retries: 3
       delay: 5
       until: _cc_junit_output.rc == 0
+      changed_when: false
 ...
