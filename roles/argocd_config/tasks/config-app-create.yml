@@ -27,3 +27,7 @@
             - CreateNamespace=true
   kubernetes.core.k8s:
     definition: "{{ app_def }}"
+  register: _ac_app
+  retries: 5
+  delay: 10
+  until: _ac_app is not failed
